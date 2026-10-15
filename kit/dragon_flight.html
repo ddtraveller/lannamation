@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>dragon flight - the three manners of the dragon's flight, on the kit</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="naga.js"></script>
+<script src="dragon.js"></script>
+<script>
+// The "dragon flight" sheet: the same dragon three times, each in one manner
+// of flight. At the top it glides, the travelling dragon: the tail undulates
+// up and down, and now and then a corkscrew runs the whole length of it (twice
+// in twelve seconds). In the middle it hovers: slow swells, the tail waving slowly.
+// At the bottom it goes fast: a nearly straight body with quick ripples, the
+// tail whipping, everything blown back.
+var DURATION = 12;
+
+var BEAT = 0.5;
+
+var ROWS = [["glide", 160, "glide: the travelling dragon; the tail undulates behind the arches, and now and then a corkscrew runs the whole length"],
+            ["hover", 525, "hover: as good as still; slow swells, the tail waving slowly, mane and whiskers afloat"],
+            ["fast", 890, "fast: a streak; quick ripples down a straight body, the tail whips, everything blown back"]];
+
+function sheet(t) {
+  pen.fillStyle = "#e9dfc6";                         // the colour of the painting's silk
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  for (var n = 0; n < ROWS.length; n++) {
+    dragon(300, ROWS[n][1], {size: 0.72, face: -1, fly: ROWS[n][0], breath: 0.4 + 0.4 * Math.sin(t * Math.PI / 2 + n)});
+    pen.fillText(ROWS[n][2], 720, ROWS[n][1] + 172);
+  }
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows the sheet as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

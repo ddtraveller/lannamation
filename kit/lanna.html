@@ -1,0 +1,533 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>lanna - a Lanna girl, and the games outside</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>
+// This film's lens. The kit's own is an old print: it takes colour out and
+// softens the line. A film painted by the rules of the murals keeps both.
+window.FILM_STYLE = {lens: "saturate(1.06) contrast(1.03)"};
+</script>
+<script src="oldcartoon.js"></script>
+<script src="dance_track.js"></script>
+<script>
+// A Lanna girl. Three children come to a kalae house and knock; the older
+// girl inside ties her sabai, puts a flower in her hair and opens the door;
+// they go down the stairs to the lane, where everyone is playing the games
+// children played: skipping rope, takraw, coconut-shell stilts, hopscotch,
+// kites and tops; she dances and the children copy her; and at night the
+// whole village dances under lanterns. The plot follows a music video the
+// owner gave as the example (a girl answers her door to three children and
+// takes them out to where the block is playing); every scene here is a
+// Lanna one, and nothing of that video is copied. The song is
+// lanna_music.py and lanna_sing.py, about all there is to do outside.
+var DURATION = 60;
+
+var BEAT = 0.5;                         // the same number as in lanna_music.py
+
+// The song, one line to a row: the beat it starts on, its syllables (one is
+// sung on each beat), the line as it is written under the picture, and what
+// it means. The mouths and the words under the picture read this list, and
+// so does lanna_sing.py, which sings it.
+var CUES = [
+  [8, "เพื่อน สาม คน มา หา ที่ บ้าน", "เพื่อนสามคน มาหาที่บ้าน", "Three friends come to the house"],
+  [16, "เปิด ประ ตู พี่ สาว ออก มา", "เปิดประตู พี่สาวออกมา", "The door opens, the big sister comes out"],
+  [26, "ออก ไป เล่น ข้าง นอก กัน เถอะ", "ออกไปเล่น ข้างนอกกันเถอะ", "Let's go out and play"],
+  [36, "กระ โดด เชือก เตะ ตะ กร้อ", "กระโดดเชือก เตะตะกร้อ", "Skip the rope, kick the takraw"],
+  [48, "เดิน กะ ลา เล่น ตั้ง เต", "เดินกะลา เล่นตั้งเต", "Walk on coconut shells, play hopscotch"],
+  [60, "เล่น ว่าว ปั่น ลูก ข่าง", "เล่นว่าว ปั่นลูกข่าง", "Fly a kite, spin a top"],
+  [72, "ฟ้อน รำ กัน ทั้ง ซอย", "ฟ้อนรำ กันทั้งซอย", "The whole lane dances"],
+  [88, "กลาง คืน มี โคม มี ไฟ", "กลางคืน มีโคมมีไฟ", "At night, lanterns and lights"],
+  [100, "ออก ไป เล่น ข้าง นอก กัน เถอะ", "ออกไปเล่น ข้างนอกกันเถอะ", "Let's go out and play"],
+  [110, "สะ หนุก จัง สะ หนุก จัง", "สนุกจัง สนุกจัง", "What fun, what fun"]
+];
+
+var SUNG = sungBeats(CUES);            // a flat list of [beat, syllable], for the mouths
+
+// the cast of this film
+// Each has skin, dress and ornaments of their own, as the paintings give
+// every figure. The sister: a rose wrap blouse with a patterned band, a cream
+// sabai, a green skirt, a fan of gold leaves at her bun. The children: a boy
+// in a mo hom the colour of turmeric; a darker boy with an indigo head-cloth
+// and a purple sarong; a small girl in a brick-red sin with an indigo foot.
+CAST.sister = cast("lady", {size: 1.25, shirt: "#e6a7b6", legs: "#2f6b5a", weave: 2,
+                            sabai: ["#f6e3a1", "#e86f9a"], flower: "#f28fa8", garland: true, pins: false,
+                            collar: ["#b2455a", "#f6e3a1"], fan: true, bangles: 4, skin: "#f6dcc6"});
+var KIDS = [cast("child", {shirt: "#e9c45c", legs: "#3d4f78", size: 0.9, skin: "#f0c9a2", eyes: 1.14}),
+            cast("child", {shirt: "#c4654f", size: 0.84, sarong: "#814a77", turban: "#2f4a7a", skin: "#d9a67a", eyes: 1.04, lips: 1.1}),
+            cast("child", {bun: true, dance: true, shirt: "#f2ead8", size: 0.8, sin: 2,
+                           sabai: ["#f6e3a1", "#8a2a3a"], flower: "#e9c45c", skin: "#f4d3b4", eyes: 1.25, head: 1})];   // a child's round head
+
+function kid(n, x, y, more) {
+  person(x, y, Object.assign({}, KIDS[n], more));
+}
+
+// ---------- the sets ----------
+function paint(wide, kind, part) {
+  var paper = document.createElement("canvas");
+  paper.width = wide;
+  paper.height = 1080;
+  var brush = paper.getContext("2d");
+  var sky = brush.createLinearGradient(0, 0, 0, 1080);
+  sky.addColorStop(0, kind === "dawn" ? "#3a3560" : "#8ccfc6");
+  sky.addColorStop(0.6, kind === "dawn" ? "#e8b08a" : "#f4ecd2");
+  sky.addColorStop(1, "#f1d3bd");
+  brush.fillStyle = sky;
+  brush.fillRect(0, 0, wide, 1080);
+  if (kind !== "dawn") { clouds(brush, wide); }
+  hills(brush, wide, 720, 420, 1.0, "#a9cfc9");       // three ranges, the furthest first; nothing is blurred
+  hills(brush, wide, 780, 300, 2.6, "#8dbfa9");
+  hills(brush, wide, 840, 170, 4.4, "#79ad84");
+  var flowers = ["#f08a5c", "#ee7f9c", "#f4c542", "#e86f6f", "#7f9fd8"];
+  if (kind === "inside") {
+    brush.fillStyle = "#d8b98f";                     // the inside of the house: boards round a window
+    brush.fillRect(0, 0, wide, 250);
+    brush.fillRect(0, 250, 860, 620);
+    brush.fillRect(1300, 250, wide - 1300, 620);
+    brush.fillRect(860, 640, 440, 230);
+    brush.strokeStyle = "rgba(90, 50, 30, 0.28)";
+    brush.lineWidth = 2;
+    for (var board = 0; board * 40 < wide; board++) {
+      var bx = 20 + board * 40;
+      brush.beginPath();
+      brush.moveTo(bx, 0);
+      brush.lineTo(bx, bx > 860 && bx < 1300 ? 250 : 870);
+      brush.stroke();
+    }
+    brush.strokeStyle = "#8f5636";
+    brush.lineWidth = 16;
+    brush.strokeRect(860, 250, 440, 390);
+    brush.fillStyle = "#8f5636";                     // a shelf, with a comb and a mirror on it
+    brush.fillRect(120, 560, 500, 14);
+    brush.fillStyle = "#e0b23a";
+    brush.fillRect(180, 540, 60, 8);
+    brush.fillStyle = "#cfd6dd";
+    brush.beginPath();
+    brush.ellipse(400, 500, 40, 52, 0, 0, 7);
+    brush.fill();
+    brush.strokeStyle = "#8a5a36";
+    brush.lineWidth = 6;
+    brush.stroke();
+    brush.fillStyle = "#c9a57a";
+    brush.fillRect(0, 870, wide, 210);
+  } else {
+    brush.fillStyle = "#efd2b4";
+    brush.fillRect(0, 850, wide, 230);
+    var ground = brush.createLinearGradient(0, 850, 0, 1080);
+    ground.addColorStop(0, "#f3dcc0");
+    ground.addColorStop(1, "#e2b895");
+    brush.fillStyle = ground;
+    brush.fillRect(0, 850, wide, 230);
+    if (kind === "house") {                          // one big house, with the stairs we will climb
+      tree(brush, 200, 846, 1.0);
+      palm(brush, 1250, 850, 380);
+      banana(brush, 1100, 852);
+      house(brush, 640, 850, 1.35);
+      banana(brush, 160, 852);
+      flowerSpray(brush, 1010, 850, 0.6, flowers[1], 3);   // flowers along the fence
+      flowerSpray(brush, 1390, 850, 0.7, flowers[0], 6);
+      flowerSpray(brush, 380, 850, 0.55, flowers[2], 4);
+    } else {
+      for (var n = 0; n * 700 < wide; n++) {
+        tree(brush, 450 + n * 700, 846, 0.9);
+        palm(brush, 90 + n * 700, 850, 380);
+        house(brush, 600 + n * 700, 838, 0.55);
+        banana(brush, 200 + n * 700, 850);
+        house(brush, 330 + n * 700, 850, 1);
+        palm(brush, 560 + n * 700, 850, 300);
+        banana(brush, 500 + n * 700, 852);
+        flowerSpray(brush, 30 + n * 700, 850, 0.6, flowers[n % 5], n + 3);          // flowers along the fence
+        flowerSpray(brush, 745 + n * 700, 850, 0.7, flowers[(n + 2) % 5], n + 9);
+      }
+    }
+    pathside(brush, wide, part);
+    if (kind === "house") {                          // a lotus pond at the corner of the yard:
+      if (part !== "front") {                        // its water lies behind the people,
+        pond(brush, 1000, 992, 470, 100);
+        fish(brush, 1290, 1050, 0.8, -1, "#f0803a");
+        fish(brush, 1120, 1062, 0.6, 1, "#f6a24a");
+      }
+      if (part !== "back") {                         // and its lotus stands in front of them
+        lotusClump(brush, 1150, 1082, 0.6, 4, "#ee7f9c");
+        lotusClump(brush, 1345, 1090, 0.8, 1, "#e9627f");
+      }
+    } else if (part === "front") {                   // flowering plants at the front corners of the lane
+      flowerSpray(brush, 46, 1090, 0.8, flowers[1], 5);
+      flowerSpray(brush, 1424, 1094, 0.7, flowers[0], 8);
+    }
+  }
+  if (part !== "front") { wash(brush, wide); }
+  return paper;
+}
+
+var DAWN = paint(WIDE, "dawn");
+
+var HOUSE = paint(WIDE, "house", "back");
+
+var HOUSE_FRONT = paint(WIDE, "house", "front");   // what grows in front of the people in the yard
+
+var INSIDE = paint(WIDE, "inside");
+
+var LANE = paint(WIDE, "lane", "back");
+
+var LANE_FRONT = paint(WIDE, "lane", "front");
+
+// ---------- the things they play with ----------
+function rope(x1, y1, x2, y2, t) {                   // a skipping rope, turned by two: a loop that swings round
+  var swing = Math.cos(t * Math.PI / BEAT), mid = (y1 + y2) / 2;
+  // The loop reaches 0.75 of "reach" past the hands: at the top it clears the
+  // skipper's head, at the bottom it passes under her feet while she is up.
+  var reach = swing > 0 ? 380 : 300;
+  pen.strokeStyle = "#8a6a4a";
+  pen.lineWidth = 4;
+  pen.lineCap = "round";
+  pen.beginPath();
+  pen.moveTo(x1, y1);
+  pen.bezierCurveTo(x1 + (x2 - x1) * 0.2, mid + swing * reach, x2 - (x2 - x1) * 0.2, mid + swing * reach, x2, y2);
+  pen.stroke();
+}
+
+function takraw(x, y) {                               // a woven rattan ball
+  oval(x, y, 16, 16, "#d9a86c");
+  pen.strokeStyle = "rgba(90, 50, 30, 0.6)";
+  pen.lineWidth = 1.5;
+  pen.beginPath();
+  pen.ellipse(x, y, 16, 7, 0.5, 0, 7);
+  pen.ellipse(x, y, 16, 7, -0.5, 0, 7);
+  pen.ellipse(x, y, 7, 16, 0, 0, 7);
+  pen.stroke();
+}
+
+function shells(x, y) {                               // a pair of coconut-shell stilts under the feet
+  oval(x - 22, y, 16, 7, "#6a4a32");
+  oval(x + 22, y, 16, 7, "#6a4a32");
+}
+
+// Hopscotch: squares scratched in the dirt, lying on the ground. Five rows
+// run to the left from (x, y), a single square and a pair by turns; y is the
+// ground under the middle of the track, where the player's feet come down.
+// The ground is seen from the side and a little from above, so a square is
+// as wide as it is, a third as deep, and its far edge leans to the right.
+// (Owner, 2026-10-12: she must not "travel up into the sky". The squares
+// were stacked up the picture, and she was moved up a row at each hop.)
+var HOP_SQUARE = 62;                                  // one row, along the ground
+
+function hopscotch(x, y) {
+  var half = HOP_SQUARE / 2 - 3;
+  function corner(along, back, first) {               // a point of the ground: so far along it, so far back
+    if (first) { pen.moveTo(along + back * 0.3, y - back * 0.34); } else { pen.lineTo(along + back * 0.3, y - back * 0.34); }
+  }
+  function square(middle, back) {
+    pen.beginPath();
+    corner(middle - half, back - half, true);
+    corner(middle + half, back - half);
+    corner(middle + half, back + half);
+    corner(middle - half, back + half);
+    pen.closePath();
+    pen.stroke();
+  }
+  pen.strokeStyle = "rgba(120, 80, 50, 0.6)";
+  pen.lineWidth = 3;
+  pen.lineJoin = "round";
+  for (var n = 0; n < 5; n++) {
+    if (n % 2) {                                      // a pair: one square behind the other
+      square(x - n * HOP_SQUARE, -HOP_SQUARE / 2);
+      square(x - n * HOP_SQUARE, HOP_SQUARE / 2);
+    } else {
+      square(x - n * HOP_SQUARE, 0);
+    }
+  }
+}
+
+function kite(x, y, t, handX, handY) {                // a diamond kite on a string, swaying in the wind
+  var kx = x + Math.sin(t * 1.1) * 40, ky = y + Math.sin(t * 1.7) * 20;
+  pen.strokeStyle = "rgba(60, 40, 30, 0.7)";
+  pen.lineWidth = 1.5;
+  pen.beginPath();
+  pen.moveTo(handX, handY);
+  pen.quadraticCurveTo((handX + kx) / 2 + 40, (handY + ky) / 2, kx, ky);
+  pen.stroke();
+  pen.beginPath();
+  pen.moveTo(kx, ky - 40);
+  pen.lineTo(kx + 28, ky);
+  pen.lineTo(kx, ky + 50);
+  pen.lineTo(kx - 28, ky);
+  pen.closePath();
+  shape("#d9573a");
+  pen.strokeStyle = INK;
+  pen.lineWidth = 2;
+  pen.beginPath();
+  pen.moveTo(kx, ky - 40);
+  pen.lineTo(kx, ky + 50);
+  pen.moveTo(kx - 28, ky);
+  pen.lineTo(kx + 28, ky);
+  pen.stroke();
+  for (var tail = 1; tail <= 4; tail++) {             // a tail of paper bows
+    oval(kx + Math.sin(t * 5 + tail) * 10, ky + 50 + tail * 16, 7, 4, tail % 2 ? "#e9c45c" : "#5a9686");
+  }
+}
+
+function spinTop(x, y, t) {                       // ("top" is a name the browser keeps)                               // a wooden top, spinning
+  pen.save();
+  pen.translate(x, y);
+  pen.rotate(Math.sin(t * 3) * 0.12);
+  pen.beginPath();
+  pen.moveTo(-18, -30);
+  pen.quadraticCurveTo(-20, -8, 0, 8);
+  pen.quadraticCurveTo(20, -8, 18, -30);
+  pen.closePath();
+  shape("#b07a4a");
+  pen.fillStyle = "rgba(255, 255, 255, 0.35)";
+  pen.fillRect(-14, -27, 28, 4);
+  pen.fillRect(-10, -19, 20, 3);
+  pen.restore();
+  pen.strokeStyle = "rgba(60, 40, 30, 0.3)";          // the blur of its spin
+  pen.lineWidth = 2;
+  pen.beginPath();
+  pen.ellipse(x, y - 20, 24, 6, 0, 0, 7);
+  pen.stroke();
+}
+
+// ---------- the scenes ----------
+function sceneDawn(t) {
+  if (t < 3) {
+    card("A Lanna Girl", "สาวล้านนา");
+    return;
+  }
+  pen.drawImage(t < 5.5 ? DAWN : HOUSE, 0, 0);
+  var yard = t >= 5.5;                               // the yard, with what grows in front of it
+  if (t < 5.5) {                                     // the last stars fade
+    for (var s = 0; s < 40; s++) {
+      pen.fillStyle = "rgba(255, 250, 220, " + (0.8 * (1 - between(t, 3, 5.5)) * dice(s + 70)) + ")";
+      pen.beginPath();
+      pen.arc(dice(s) * WIDE, dice(s + 90) * 420, 1.5 + dice(s + 20) * 1.5, 0, 7);
+      pen.fill();
+    }
+  }
+  var walk = between(t, 3, 7);                      // the three come up the lane to the house
+  for (var n = 0; n < 3; n++) {
+    kid(n, mix(60 - n * 150, 450 - n * 130, walk), GROUND + 60, {
+      late: n * 0.3, step: walk < 1 ? t * 1.6 : 0, at: [640, 560], smile: 1, wonder: 0.3,
+      handA: walk < 1 ? undefined : [36, -70 - hop(t, n * 0.3) * 20], mouth: mouthAt(SUNG)   // walking, the arms swing by themselves; then one waves
+    });
+  }
+  if (t > 7.5) {                                     // a knock: three short lines from the door
+    pen.strokeStyle = INK;
+    pen.lineWidth = 3;
+    pen.beginPath();
+    for (var k = -1; k <= 1; k++) {
+      pen.moveTo(720 + k * 12, 586 - 20 * hop(t, 0));
+      pen.lineTo(726 + k * 16, 566 - 20 * hop(t, 0));
+    }
+    pen.stroke();
+  }
+  if (yard) { pen.drawImage(HOUSE_FRONT, 0, 0); }
+}
+
+function sceneInside(t) {
+  pen.drawImage(INSIDE, 0, 0);
+  // the older girl, getting ready: hands to the hair, then the sabai, then a turn to the door
+  var hair = t < 1.6, sash = t >= 1.6 && t < 3.2;
+  person(760, GROUND - 10, Object.assign({}, CAST.sister, {
+    late: 0, spring: 0.2, mouth: mouthAt(SUNG), smile: 1, turn: 0.5, at: hair ? [380, 500] : [1500, 600],
+    handA: hair ? [28, -108] : sash ? [26, -36] : undefined, handB: hair ? [-30, -104] : sash ? [-28, -34] : undefined,
+    wristA: hair ? -0.6 : 0, wristB: hair ? 0.6 : 0
+  }));
+}
+
+function sceneDoor(t) {
+  pen.drawImage(HOUSE, 0, 0);
+  var open = between(t, 0, 1.2), down = between(t, 1.5, 4), gone = between(t, 4, 5);
+  pen.save();                                        // the door swings open: it narrows as it turns
+  pen.translate(704, 548);
+  pen.scale(1 - 0.85 * open, 1);
+  pen.beginPath();
+  pen.rect(0, 0, 70, 150);
+  shape("#6a3b29");
+  pen.restore();
+  for (var n = 0; n < 3; n++) {                      // the three wait below, jumping, then follow her
+    kid(n, mix(450 - n * 130, 1700 - n * 150, gone), GROUND + 60, {
+      late: n * 0.3, spring: 1, step: gone > 0 ? t * 1.6 : 0, at: [760, 600], smile: 1, wonder: 0.4,
+      handA: gone > 0 ? undefined : [40, -80 - hop(t, n * 0.3) * 20], mouth: mouthAt(SUNG)
+    });
+  }
+  // the sister: in the doorway, then down the stairs, then away with them
+  var sx = mix(740, 790, down), sy = mix(GROUND - 170, GROUND + 60, down);
+  person(mix(sx, 1900, gone), sy, Object.assign({}, CAST.sister, {
+    late: 0.5, spring: 0.3, size: mix(0.95, 1.25, down), step: down > 0 ? t * 1.4 : 0, mouth: mouthAt(SUNG), smile: 1,
+    at: [450, 700]                                  // her arms hang, and swing as she walks
+  }));
+  pen.drawImage(HOUSE_FRONT, 0, 0);                  // the lotus at the corner of the yard, in front of them all
+}
+
+function sceneLane(t) {
+  pen.drawImage(LANE, 0, 0);
+  crowd(t, 866, 0);
+  // The lane's games follow the song, not the clock. Lines 4, 5 and 6 of
+  // CUES name the games, and a game begins a second before the line that
+  // names it, so the picture is there when its words come. Line 4 names two
+  // games, and each has half of its six seconds.
+  var line = Math.max(3, Math.min(5, cueAt(clock + 1, CUES).line));
+  var into = clock + 1 - CUES[line][0] * BEAT;      // seconds into this line's games
+  var game = line === 3 ? (into < 3 ? 0 : 1) : line - 2;    // 0 skipping, 1 takraw, 2 shells and hopscotch, 3 kites and tops
+  var g = game === 1 ? into - 3 : into;             // seconds since this game began
+  if (game === 0) {                                  // two turn the rope, the sister skips in it, a kid waits
+    var handY = 655 + 39 * Math.cos(t * Math.PI / BEAT);   // the turners' hands, where the rope's ends are
+    if (Math.cos(t * Math.PI / BEAT) < 0) { rope(458, handY, 982, handY, t); }   // the rope behind her, then in front
+    kid(0, 380, GROUND + 60, {late: 0, spring: 0.3, handA: [60, -30 + 30 * Math.cos(t * Math.PI / BEAT)], at: [720, 500], smile: 1});
+    kid(1, 1060, GROUND + 60, {late: 0, spring: 0.3, face: -1, handA: [60, -30 + 30 * Math.cos(t * Math.PI / BEAT)], at: [720, 500], smile: 1});
+    person(720, GROUND + 60, Object.assign({}, CAST.sister, {late: 0.5, spring: 1.4, mouth: mouthAt(SUNG), smile: 1, turn: 0.6,
+      handA: [40, 20], handB: [-40, 20], at: [720, 300]}));
+    kid(2, 1300, GROUND + 60, {late: 0.25, spring: 0.6, handA: [40, -70], at: [720, 500], smile: 1, wonder: 0.5});
+    if (Math.cos(t * Math.PI / BEAT) >= 0) { rope(458, handY, 982, handY, t); }
+  } else if (game === 1) {                           // takraw: three keep the ball up with their feet
+    // The ball is kicked, never headed. A flight lasts one second, and
+    // "touches" says whose foot the ball is on at the start of each: the
+    // one on the left feeds the other two, so nobody has to kick behind
+    // them. A player's leg comes up as the ball comes down, meets it on
+    // the instep with the toes held up, and goes down again.
+    var players = [{x: 420, face: 1, look: KIDS[0], late: 0, high: 62, forward: 34},
+                   {x: 900, face: -1, look: CAST.sister, late: 0.4, high: 34, forward: 92},   // under long cloth the foot goes low and far forward, out where it shows
+                   {x: 1250, face: -1, look: KIDS[1], late: 0.8, high: 30, forward: 90}];
+    var touches = [0, 1, 0, 2];
+    function kickOf(n) {                             // how far up player n's kicking leg is, 0 to 1: 1 as it meets the ball
+      var most = 0;
+      for (var m = 0; m < touches.length; m++) {
+        var since = g - m;
+        if (touches[m] === n) { most = Math.max(most, since < 0 ? between(since, -0.35, 0) : 1 - between(since, 0, 0.45)); }
+      }
+      return most;
+    }
+    function instep(p) {                             // where the ball's middle is, lying on player p's foot at the top of the kick
+      var scale = p.look.size * 0.82, long = p.look.skirt ? 40 : 48, turn = -0.3;
+      var across = 20 + p.forward + Math.cos(turn) * long * 0.72 + Math.sin(turn) * 9;   // on top of the foot, toward the toes
+      var down = -p.high + Math.sin(turn) * long * 0.72 - Math.cos(turn) * 9;
+      return [p.x + p.face * across * scale, GROUND + 60 + down * scale - hop(clock, p.late) * 0.3 * 26 * scale - 12];
+    }
+    var flight = Math.min(2, Math.floor(g)), u = g - flight;
+    var from = instep(players[touches[flight]]), to = instep(players[touches[flight + 1]]);
+    var ball = [mix(from[0], to[0], u),              // foot to foot, in an arc that is higher the further it has to go
+                mix(from[1], to[1], u) - Math.sin(u * Math.PI) * (300 + 0.25 * Math.abs(to[0] - from[0]))];
+    for (var n = 0; n < 3; n++) {
+      var p = players[n], kick = kickOf(n);
+      person(p.x, GROUND + 60, Object.assign({}, p.look, {late: p.late, spring: 0.3, face: p.face, smile: 1, at: ball,
+        mouth: n === 1 ? mouthAt(SUNG) : null,
+        raise: kick > 0.01 ? [1, p.high * kick, p.forward * kick, -0.3 * kick] : undefined,
+        handA: [50, -20 - 26 * kick], handB: [-50, 10 - 20 * kick]}));   // the arms go out and up, for balance
+    }
+    kid(2, 700, GROUND + 110, {late: 0.2, spring: 0.6, handA: [40, -70], handB: [-40, -70], at: ball, smile: 1, wonder: 0.4});
+    takraw(ball[0], ball[1]);
+  } else if (game === 2) {                           // coconut-shell stilts, and hopscotch
+    shells(420 + g * 40, GROUND + 66);
+    kid(0, 420 + g * 40, GROUND + 50, {late: 0, spring: 0.2, step: t * 1.2, handA: [50, 40], handB: [-50, 40], wristA: 0.4, wristB: -0.4, at: [900, 600], smile: 1});
+    // The track lies on the ground and she hops along it, a row to each
+    // beat: out to the far end, a turn, and back. Her feet stay on the
+    // ground under the middle of the track; she moves along it while she is
+    // in the air, and lands on a row. A single square takes one foot (the
+    // other is lifted); a pair takes both.
+    var trackX = 1250, trackY = GROUND + 62;
+    hopscotch(trackX, trackY);
+    var rows = [0, 1, 2, 3, 4, 4, 3, 2, 1, 0, 0];     // the row she is on at each beat of the game
+    var beat = Math.min(9, Math.floor(g / BEAT));
+    var part = clamp((g / BEAT - beat - HOLD) / (1 - 2 * HOLD));   // how far through this hop's flight (she is still while her feet are down)
+    var row = mix(rows[beat], rows[beat + 1], part), back = beat >= 5;   // coming back, she faces the other way
+    var pair = mix(rows[beat] % 2, rows[beat + 1] % 2, part);      // 0 over a single square, 1 over a pair
+    var hopX = trackX - row * HOP_SQUARE;
+    person(hopX, trackY, Object.assign({}, CAST.sister, {late: 0, spring: 1.2, face: back ? 1 : -1, mouth: mouthAt(SUNG), smile: 1,
+      raise: pair > 0.98 ? undefined : [0, 40 * (1 - pair), -10 * (1 - pair)], handA: [50, -40], handB: [-50, -40],
+      at: [hopX + (back ? 160 : -160), trackY], size: 1.1}));
+    kid(1, 1420, GROUND + 60, {late: 0.5, spring: 0.6, face: -1, handA: [40, -70], at: [hopX, 500], smile: 1, wonder: 0.4});
+    kid(2, 760, GROUND + 100, {late: 0.3, spring: 0.6, handA: [40, -70], at: [hopX, 500], smile: 1});
+  } else {                                           // a kite high up, and a top spinning
+    kite(1000, 260, t, 520, 600);
+    kid(0, 460, GROUND + 60, {late: 0, spring: 0.3, handA: [60, -80], at: [1000, 260], smile: 1, wonder: 0.5, wristA: -0.5});
+    spinTop(1150, GROUND + 60, t);
+    kid(1, 1250, GROUND + 60, {late: 0.5, spring: 0.4, face: -1, bend: 0.25, handA: [70, 30], at: [1150, 900], smile: 1});
+    person(800, GROUND + 60, Object.assign({}, CAST.sister, {late: 0.25, spring: 0.5, mouth: mouthAt(SUNG), smile: 1, turn: 0.4,
+      handA: [36, -84], at: [1000, 260]}));
+    kid(2, 1480, GROUND + 60, {late: 0.75, spring: 0.6, face: -1, handA: [40, -70], at: [1150, 900], smile: 1, wonder: 0.5});
+  }
+  pen.drawImage(LANE_FRONT, 0, 0);
+}
+
+function sceneDance(t) {
+  pen.drawImage(LANE, 0, 0);
+  crowd(t, 866, 0);
+  var pose = poseAt(t * 1.0 + 20, TRACK, 0);         // the sister dances the dance read from the video
+  person(820, GROUND + 60, Object.assign({}, CAST.sister, {late: 0, spring: 0.1, mouth: mouthAt(SUNG), smile: 1}, pose));
+  for (var n = 0; n < 3; n++) {                      // the children copy her, each a little late
+    var copy = poseAt(t + 20 - 0.4 * (n + 1), TRACK, 0);
+    kid(n, [440, 1200, 1480][n], GROUND + 60 + (n === 2 ? 30 : 0), Object.assign({late: n * 0.3, spring: 0.2, smile: 1, at: [820, 400]}, copy,
+        {glance: undefined, blink: undefined}));
+  }
+  pen.drawImage(LANE_FRONT, 0, 0);
+}
+
+function sceneNight(t) {
+  pen.drawImage(LANE, 0, 0);
+  var dusk = pen.createLinearGradient(0, 420, 0, 800);
+  dusk.addColorStop(0, "rgba(255, 150, 70, 0)");
+  dusk.addColorStop(1, "rgba(255, 150, 70, 0.4)");
+  pen.fillStyle = dusk;
+  pen.fillRect(0, 420, WIDE, 380);
+  pen.fillStyle = "rgba(70, 40, 110, " + mix(0.3, 0.55, between(t, 0, 8)) + ")";
+  pen.fillRect(0, 0, WIDE, 1080);
+  crowd(t, 872, 0, true);
+  for (var n = 0; n < 26; n++) {
+    var age = t - n * 0.5;
+    if (age > 0 && age < 12) { lantern(120 + dice(n) * 1200 + Math.sin(age + n) * 30, 760 - age * 70, 40 - age * 1.5); }
+  }
+  var bow = between(t, 12, 12.6) * (1 - between(t, 15.4, 16));   // a wai to say good night
+  var pose = poseAt(t + 40, TRACK, 0);
+  person(820, GROUND + 60, Object.assign({}, CAST.sister, {late: 0, spring: 0.1, mouth: mouthAt(SUNG), smile: 1}, pose,
+    bow > 0.5 ? {handA: [24, 6], handB: [-24, 6], bend: 0.28, sit: 0, tilt: 0, raise: undefined, turn: 1, at: [720, 1300]} : {}));
+  for (var k = 0; k < 3; k++) {
+    var late = k * 0.5 + 0.1, high = hop(t, late);
+    kid(k, [430, 1180, 1460][k], GROUND + 60, Object.assign({late: late, mouth: mouthAt(SUNG), smile: 1, at: [800, 300 - high * 40],
+      handA: [44, -84 - high * 24], handB: [-44, -84 - hop(t, late + 0.5) * 24]},
+      bow > 0.5 ? {handA: [24, 6], handB: [-24, 6], bend: 0.28, turn: 1, at: [720, 1300]} : {}));
+  }
+  pen.fillStyle = "rgba(70, 40, 110, " + mix(0.08, 0.16, between(t, 0, 8)) + ")";
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.save();
+  pen.globalCompositeOperation = "soft-light";
+  var warm = pen.createRadialGradient(720, 480, 0, 720, 480, 900);
+  warm.addColorStop(0, "rgba(255, 190, 100, " + (0.9 * between(t, 0.5, 4)) + ")");
+  warm.addColorStop(1, "rgba(255, 190, 100, 0)");
+  pen.fillStyle = warm;
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.restore();
+  if (t > 14) {
+    pen.globalAlpha = between(t, 14, 14.6);
+    card("The End", "จบ");
+    pen.globalAlpha = 1;
+  }
+}
+
+// each scene begins on a beat, just before its line of the song
+var SCENES = [[0, 8, sceneDawn], [8, 12, sceneInside], [12, 17, sceneDoor], [17, 36, sceneLane],
+              [36, 44, sceneDance], [44, 60, sceneNight]];
+
+function draw(t) {
+  film(t, SCENES);
+  words(t, CUES);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

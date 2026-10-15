@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>buildings - the kit's buildings, large</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="backdrops.js"></script>
+<script>
+// The "buildings" sheet: what the kit builds, large enough to see how each
+// is given depth. Four seconds each: the house of the north on its posts;
+// the temple, with its two chedis and its guardians; the hall and the stupa
+// of the backdrops; and then the house and the temple at a film's sizes,
+// with a lady and a fellow before them.
+var DURATION = 16;
+
+var BEAT = 0.5;
+
+function caption(text) {
+  pen.fillStyle = "#3f4a3a";
+  pen.textAlign = "center";
+  pen.font = "24px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, WIDE / 2, 1056);
+}
+
+function sheet(t) {
+  var view = Math.floor(t / 4) % 4;
+  pen.fillStyle = "#cfe0d8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.fillStyle = "#9fb37a";
+  pen.fillRect(0, 960, WIDE, 120);
+  if (view === 0) {
+    house(pen, 720, 1000, 2.5);
+    caption("house(brush, x, base, size): tiles in rows, boards, a window set in, shade under the eave and the floor");
+  } else if (view === 1) {
+    pen.save();
+    pen.translate(720, 1000);
+    pen.scale(1.7, 1.7);
+    temple(pen, 0, 0);
+    pen.restore();
+    caption("temple(brush, x, base): three roofs of glazed tiles, pillars, a door under a gold arch, two chedis");
+  } else if (view === 2) {
+    bdHall(pen, 420, 1000, 520, 460, true);
+    bdHall(pen, 1000, 1000, 300, 280, false);
+    bdStupa(pen, 1280, 1000, 1.6);
+    caption("backdrops.js: bdHall (gilded, and with a flat roof) and bdStupa");
+  } else {
+    house(pen, 300, 980, 1.2);
+    temple(pen, 1000, 980);
+    person(520, 1000, cast("lady", {late: 0}));
+    person(650, 1000, cast("fellow", {late: 0.5}));
+    caption("at a film's sizes");
+  }
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>landscape - mountains, plants, rocks and water in the manner of a thangka</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script>
+// The "landscape" sheet: the kit's painters of nature that were read from a
+// thangka. A heap of peaks under a dark sky of gold dots (peaks), hills laid
+// one before another (the kit's own hills), trees whose dark clumps each
+// carry a pale tassel (tasselTree), plants that are fans of long leaves
+// (fanPlant), banded rocks (rocks), a stream of waves whose crests curl
+// (foam), and clouds whose undersides are another colour (scrollCloud's
+// "foot"). All of it but the clouds is painted once, as a set is; the clouds
+// drift. The little girl and the little boy of the cast stand on a hill and
+// look at the peaks, to give the land its size.
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+// the four ranges of hills, the furthest first: where each one's foot is, how tall, its shape, its colour
+var RANGES = [[540, 120, 0.4, "#7d8a3c"], [690, 130, 1.7, "#5f7c36"], [870, 140, 2.9, "#869240"], [1050, 120, 4.1, "#4f6e33"]];
+
+function ridgeOf(range, x) {                         // how high a range stands at x: the kit's own rule for hills()
+  var r = RANGES[range];
+  return r[0] - r[1] * (0.5 + 0.3 * Math.sin(x * 0.004 + r[2]) + 0.2 * Math.sin(x * 0.011 + r[2] * 3));
+}
+
+var PLACE = (function () {                           // a set is painted once, not in every frame
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var brush = paper.getContext("2d"), n, x;
+  brush.fillStyle = "#38221a";                       // the sky, and the gold dots that fill it
+  brush.fillRect(0, 0, WIDE, 1080);
+  brush.fillStyle = "#e0b23a";
+  for (n = 0; n < 320; n++) {
+    brush.beginPath();
+    brush.arc(dice(n) * WIDE, dice(n + 500) * 470, 1.4 + 1.6 * dice(n + 900), 0, 7);
+    brush.fill();
+  }
+  peaks(brush, 1060, 452, 300, 120, "#c98f3a", 2);   // two small ranges far off, and the great heap
+  peaks(brush, 1300, 446, 240, 96, "#d9a441", 3);
+  peaks(brush, 430, 470, 470, 270, "#d9a441", 1);
+  for (var range = 0; range < RANGES.length; range++) {
+    hills(brush, WIDE, RANGES[range][0], RANGES[range][1], RANGES[range][2], RANGES[range][3]);
+    if (range === 0) {
+      for (n = 0; n < 7; n++) { x = 70 + n * 205 + 60 * dice(n + 40); fanPlant(brush, x, ridgeOf(0, x) + 26, 0.62, n % 3 ? "#4f8a4a" : "#8a4a2f", n + 1); }
+    }
+    if (range === 1) {
+      for (n = 0; n < 4; n++) { x = 110 + n * 150 + 40 * dice(n + 60); tasselTree(brush, x, ridgeOf(1, x) + 30, 0.72, n % 2 ? "#2f4a34" : "#4a2f22", n + 1); }
+      rocks(brush, 1210, ridgeOf(1, 1210) + 44, 1.0, "#8a3f2f", 1);
+      rocks(brush, 1350, ridgeOf(1, 1350) + 60, 0.8, "#5f6f86", 2);
+      foam(brush, 1030, ridgeOf(1, 1100) + 40, 190, 54, "#7f9fc0", 1);
+      for (n = 0; n < 4; n++) { x = 720 + n * 90 + 30 * dice(n + 70); fanPlant(brush, x, ridgeOf(1, x) + 30, 0.8, n % 2 ? "#8a4a2f" : "#4f8a4a", n + 11); }
+    }
+    if (range === 2) {
+      foam(brush, 900, ridgeOf(2, 1000) + 30, 250, 66, "#7f9fc0", 2);
+      for (n = 0; n < 3; n++) { x = 1180 + n * 100; tasselTree(brush, x, ridgeOf(2, x) + 40, 0.9, n % 2 ? "#4a2f22" : "#2f4a34", n + 7); }
+      for (n = 0; n < 6; n++) { x = 60 + n * 140 + 50 * dice(n + 80); fanPlant(brush, x, ridgeOf(2, x) + 36, 1.0, n % 3 === 1 ? "#8a4a2f" : "#4f8a4a", n + 21); }
+    }
+    if (range === 3) {
+      foam(brush, 640, ridgeOf(3, 800) + 10, 420, 80, "#7f9fc0", 3);
+      tasselTree(brush, 150, ridgeOf(3, 150) + 60, 1.15, "#4a2f22", 12);
+      tasselTree(brush, 330, ridgeOf(3, 330) + 70, 1.0, "#2f4a34", 13);
+      for (n = 0; n < 4; n++) { x = 470 + n * 60 + 20 * dice(n + 90); fanPlant(brush, x, ridgeOf(3, x) + 50, 1.2, n % 2 ? "#4f8a4a" : "#8a4a2f", n + 31); }
+      rocks(brush, 1250, 1070, 1.3, "#8a3f2f", 3);
+    }
+  }
+  return paper;
+})();
+
+var SKY = [[230, 150, 0.8, "#e9a54a", "#3f6a4a"], [760, 120, 1.0, "#e7b25a", "#3f6a4a"], [1210, 190, 0.85, "#e08a4a", "#7a3a2a"]];
+
+function label(words, x, y) {
+  pen.font = "bold 22px Georgia, 'Times New Roman', serif";
+  pen.textAlign = "center";
+  pen.lineJoin = "round";
+  pen.strokeStyle = "rgba(30, 18, 10, 0.85)";
+  pen.lineWidth = 5;
+  pen.strokeText(words, x, y);
+  pen.fillStyle = "#fff0c8";
+  pen.fillText(words, x, y);
+}
+
+function sheet(t) {
+  pen.drawImage(PLACE, 0, 0);
+  for (var n = 0; n < SKY.length; n++) {             // the clouds drift, each its own way
+    scrollCloud(pen, SKY[n][0] + 40 * Math.sin(t * Math.PI / 4 + n * 2.1), SKY[n][1], SKY[n][2], SKY[n][3], "#4a2a18", SKY[n][4]);
+  }
+  person(560, 846, cast("girl", {late: 0, spring: 0.5, handA: [44, -84], at: [430, 300]}));   // two children on the hill, to give the land its size
+  person(650, 852, cast("boy", {late: 0.25, spring: 0.5, at: [430, 300], wonder: 1}));
+  label("peaks", 430, 250);
+  label("scrollCloud, with a foot of another colour", 760, 60);
+  label("fanPlant", 660, 900);
+  label("tasselTree", 240, 1070);
+  label("rocks", 1250, 1000);
+  label("foam", 860, 1076);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows the sheet as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

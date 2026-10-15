@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>pig - the pig of beasts.js</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="beasts.js"></script>
+<script>
+// The "pig" sheet: the pig of beasts.js. Above, large: a pig that walks, a
+// black one that grunts (colour, mouth), and one with patches (points).
+// Below, at their own sizes: a sow who walks across and back with three
+// piglets behind her (amble), and the little boy.
+var DURATION = 16;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+// A walk out and, later, the walk home.
+function thereAndBack(t, from, to, out, home, look) {
+  return t < home ? amble("pig", t, from, to, out, look) : amble("pig", t, to, from, home, look);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var top = 440, low = 1000;
+  pig(230, top, {size: 1.1, step: t / BEAT / 2, late: 0});
+  caption("pig, walking: step", 240, top + 40);
+  pig(700, top, {size: 1.1, colour: "#3d3638", late: 0.5, mouth: Math.max(0, Math.sin(t * Math.PI * 1.5)) * 0.9});
+  caption("a black pig that grunts: colour, mouth", 710, top + 40);
+  pig(1210, top, {size: 1.1, face: -1, points: "#4a3c3a", late: 0.25});
+  caption("one with patches: points", 1200, top + 40);
+  // A sow walks across and back, and three piglets keep up behind her. A
+  // piglet's stride is shorter than hers, so it takes more steps for the
+  // same ground: its step is how far she has gone, counted in its own strides.
+  var sow = thereAndBack(t, 620, 1000, 0.5, 8.5, {size: 1}), way = sow.look.face, small = 0.42;
+  var gone = Math.abs(sow.x - (t < 8.5 ? 620 : 1000)) / (GAITS.pig[1] / 0.62 * GAITS.pig[0] * small);
+  for (var n = 3; n >= 1; n--) {
+    var piglet = {size: small, face: way, points: n === 2 ? "#4a3c3a" : undefined};
+    if (sow.look.step !== undefined) { piglet.step = gone + n * 0.3; }
+    pig(sow.x - way * (70 + n * 160), low + 4, piglet);
+  }
+  pig(sow.x, low, sow.look);
+  caption("a sow and three piglets: amble(\"pig\", ...)", 660, low + 40);
+  person(1340, low, cast("boy", {late: 0, spring: 0.4, face: -1, smile: 1, at: [900, low - 120]}));
+  caption("the little boy", 1340, low + 40);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

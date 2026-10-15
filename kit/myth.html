@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>myth - three creatures of the myths of Lanna</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="naga.js"></script>
+<script src="beasts.js"></script>
+<script src="myth.js"></script>
+<script>
+// The "myth" sheet: the three creatures of myth.js. Above, large: a Mom that
+// walks and opens its mouth, a Luang that flies where it is led, its body
+// behind its head, and a Hatsadiling bird that lifts its trunk. Below, at
+// their own sizes beside the little girl and the little boy: a Mom that
+// walks across and back (amble), and the bird flying over.
+var DURATION = 18;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+// Where the Luang's head is at a time: a slow turn about the top of the sheet.
+function course(at) {
+  return [690 + 300 * Math.sin(at * 0.6), 240 + 50 * Math.sin(at * 1.2)];
+}
+
+// A walk out and, later, the walk home.
+function thereAndBack(t, from, to, out, home, look) {
+  return t < home ? amble("mom", t, from, to, out, look) : amble("mom", t, to, from, home, look);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var top = 680, low = 1010, head = course(t);
+  luang(head[0], head[1], {size: 0.5, face: Math.cos(t * 0.6) >= 0 ? 1 : -1, trail: course, late: 0});
+  caption("luang: the dragon of the north. It flies where its trail leads, and its body follows", 720, 40);
+  mom(250, top, {size: 1.15, step: t / BEAT / 2, late: 0, mouth: Math.max(0, Math.sin(t * Math.PI * 0.8)) * 0.9});
+  caption("mom, walking: step, mouth", 250, top + 40);
+  hatsadiling(1190, top, {size: 0.68, late: 0.5, trunk: Math.max(0, Math.sin(t * 1.1))});
+  caption("hatsadiling: trunk", 1190, top + 40);
+  var walker = thereAndBack(t, 150, 470, 0.5, 9.5, {size: 0.8});
+  mom(walker.x, low, walker.look);
+  caption("amble(\"mom\", ...)", 310, low + 40);
+  person(800, low, cast("girl", {late: 0, spring: 0.4, smile: 1, at: [head[0], head[1]]}));
+  person(920, low, cast("boy", {late: 0.5, spring: 0.4, smile: 1, at: [head[0], head[1]]}));
+  hatsadiling(1250, low, {size: 0.42, face: -1, fly: true});
+  caption("hatsadiling: fly", 1250, low + 40);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

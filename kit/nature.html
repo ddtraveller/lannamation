@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>nature - what grows, drawn by the rules of the paintings</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script>
+// The nature sheet: the kit's painters of what grows, large, with no film
+// lens, so the drawing can be judged against the paintings the rules came
+// from. Left: a lotus pond, as a Thai mural paints one (an orange sky going
+// down into teal water, rows of wave arcs, clumps of lotus, fish). Right: a
+// hillside, as a thangka paints one (ranges of graded hills, scroll clouds,
+// a tree in pads, a palm, a banana tree, flowering plants).
+// The sheets are painted once, as a film's sets are; the pond's water is drawn
+// each frame over it, moving with the second (waves, ripples), the fish ride it,
+// and the lotus stirs in a breeze. Nothing is kept from one frame to the next.
+var DURATION = 6;
+
+var BEAT = 0.5;
+
+var SHEET = (function () {
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var brush = paper.getContext("2d"), n;
+  // the pond
+  var ground = brush.createLinearGradient(0, 0, 0, 1080);
+  ground.addColorStop(0, "#f0642a");
+  ground.addColorStop(0.42, "#f2a23c");
+  ground.addColorStop(0.62, "#7fb89a");
+  ground.addColorStop(1, "#1f6a6a");
+  brush.fillStyle = ground;
+  brush.fillRect(0, 0, 640, 1080);
+  // the hillside
+  brush.save();
+  brush.beginPath();
+  brush.rect(660, 0, WIDE - 660, 1080);
+  brush.clip();
+  var sky = brush.createLinearGradient(0, 0, 0, 760);
+  sky.addColorStop(0, "#2f5fa8");
+  sky.addColorStop(1, "#dcecd8");
+  brush.fillStyle = sky;
+  brush.fillRect(660, 0, WIDE - 660, 1080);
+  scrollCloud(brush, 860, 170, 1.0, "#f6f1e6", "rgba(90, 110, 150, 0.7)");
+  scrollCloud(brush, 1250, 110, 0.8, "#f6f1e6", "rgba(90, 110, 150, 0.7)");
+  hills(brush, WIDE, 700, 380, 1.0, "#8fc3bd");
+  hills(brush, WIDE, 780, 280, 2.6, "#7fb596");
+  hills(brush, WIDE, 860, 170, 4.4, "#6fa870");
+  brush.fillStyle = "#8fc47a";
+  brush.fillRect(660, 880, WIDE - 660, 200);
+  palm(brush, 1330, 900, 400);
+  tree(brush, 900, 900, 1.15);
+  banana(brush, 1180, 905);
+  var colours = ["#f08a5c", "#ee7f9c", "#5f8fd0", "#f4c542", "#e86f6f"];
+  for (n = 0; n < 5; n++) {
+    flowerSpray(brush, 720 + n * 160, 1040 - (n % 2) * 40, 1.0 + (n % 3) * 0.15, colours[n], n + 2);
+  }
+  for (n = 0; n < 9; n++) { blossom(brush, 700 + n * 82, 1058 - (n % 3) * 10, 9, colours[(n + 2) % 5]); }
+  brush.restore();
+  brush.fillStyle = "#3a2418";                       // the edge between the two
+  brush.fillRect(640, 0, 20, 1080);
+  return paper;
+})();
+
+var FISH = [[470, 800, 1.1, -1, "#f0803a"], [540, 870, 0.8, -1, "#f6a24a"], [120, 940, 0.9, 1, "#e8693a"]];
+
+function draw(t) {
+  clock = t;
+  pen.drawImage(SHEET, 0, 0);
+  waves(pen, 0, 430, 640, 650, "rgba(255, 244, 214, 0.55)", t);
+  FISH.forEach(function (f, n) { fish(pen, f[0], f[1] + 3 * Math.sin(t * 2 + n * 2), f[2], f[3], f[4]); });   // each rides the swell
+  ripples(pen, [[470, 790, 1], [120, 930, 3.5]], t);     // a fish rose at 1 s, another at 3.5 s
+  lotusClump(pen, 150, 1010, 0.8, 4, "#ee7f9c", t);   // the lotus over the water, stirring
+  lotusClump(pen, 330, 1060, 1.5, 1, "#e9627f", t);
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

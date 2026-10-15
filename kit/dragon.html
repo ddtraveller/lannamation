@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>dragon - a dragon among clouds, a character on the kit</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="naga.js"></script>
+<script src="dragon.js"></script>
+<script>
+// The "dragon" sheet. The large one is the dragon as the painting has it:
+// among clouds, looking left, breathing flame, a pearl in every paw. It stays
+// where it is, and the arches of its body travel down it. Below, a smaller
+// one in other colours flies across: the sheet moves its head with fly(t)
+// and gives the dragon that same function as its trail, so the body follows
+// the head as a chain.
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+var CLOUDS = [[200, 250, 1.0], [520, 170, 0.9], [900, 230, 1.1], [1230, 170, 0.9], [1330, 420, 0.8], [90, 520, 0.8]];
+
+var NEAR = [[330, 640, 0.9], [760, 690, 1.1], [1160, 640, 0.9]];
+
+function fly(t) {                                    // across the sheet in eight seconds, rising and falling as it goes
+  return [1700 - 330 * t, 900 + 46 * Math.sin(t * 4.4)];
+}
+
+function cloudsOf(list, t) {
+  for (var n = 0; n < list.length; n++) {
+    scrollCloud(pen, list[n][0] + 26 * Math.sin(t * Math.PI / 4 + n * 1.7), list[n][1], list[n][2], "#f6f1e6", "rgba(110, 110, 120, 0.75)");
+  }
+}
+
+function sheet(t) {
+  pen.fillStyle = "#e9dfc6";                         // the colour of the painting's silk
+  pen.fillRect(0, 0, WIDE, 1080);
+  cloudsOf(CLOUDS, t);
+  dragon(390, 420, {size: 1.05, face: -1, breath: 0.6 + 0.4 * Math.sin(t * Math.PI / 2)});
+  cloudsOf(NEAR, t);                                 // some clouds are nearer than it is
+  var head = fly(t);
+  dragon(head[0], head[1], {size: 0.42, face: -1, trail: fly, body: "#8fb7a6", spots: "#2f5a4a", belly: "#f1dfa0", flame: "#d9a441",
+                            mane: "#f6f1e6", pearls: false, late: 0, sing: true});
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText("as the painting has it: among clouds, breathing flame, a pearl in every paw", 720, 770);
+  pen.fillText("trail: its head is led across the sheet, and the body follows as a chain", 720, 1062);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows the sheet as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

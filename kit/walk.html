@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>walk - people who stand still, and walk from place to place</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>var FILM_STYLE = {hop: false};   // this film's style: nobody hops</script>
+<script src="oldcartoon.js"></script>
+<script src="beasts.js"></script>
+<script>
+// The "walk" sheet: the kit's other style, hop: false. Above, people who
+// stand: each is given "late", as in any film, and stands still all the same.
+// The first lady is drawn twice, the first time as the 1930s cartoon has her
+// (hop: true), so the two styles can be seen side by side. In the middle,
+// people who walk from one place to another and back with stroll(). Below,
+// animals that do the same with amble(), and the little boy.
+var DURATION = 24;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+// A walk out and, later, the walk home: "walker" is stroll, or amble for an animal.
+function thereAndBack(walker, t, from, to, out, home) {
+  return t < home ? walker(t, from, to, out) : walker(t, to, from, home);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var top = 345, middle = 705, low = 1030;
+  var lady = cast("lady", {size: 0.7, sin: 1, skirt: false, late: 0, smile: 0.6});
+  STYLE.hop = true;                                 // only on this sheet: a film sets its style once, before the kit loads
+  person(110, top, lady);
+  STYLE.hop = false;
+  caption("hop: true", 110, top + 34);
+  person(330, top, lady);
+  caption("hop: false", 330, top + 34);
+  person(560, top, cast("fellow", {size: 0.7, late: 0.5, wai: true, smile: 1}));
+  caption("a wai", 560, top + 34);
+  person(770, top, cast("elder", {size: 0.7, late: 0.25}));
+  caption("the elder", 770, top + 34);
+  person(970, top, cast("grandmother", {size: 0.7, late: 0.75, at: [1160, top - 150]}));
+  person(1150, top, cast("girl", {size: 0.7, late: 0, handA: [44, -40], smile: 1, at: [970, top - 260]}));
+  caption("a grandmother and the little girl", 1070, top + 34);
+  person(1340, top, cast("lady", {size: 0.7, late: 0.5, sing: true}));
+  caption("one who sings", 1340, top + 34);
+
+  var fellow = cast("fellow", {size: 0.7, smile: 0.6}), girl = cast("girl", {size: 0.7});
+  var he = thereAndBack(function (at, from, to, start) { return stroll(at, from, to, start, fellow); }, t, 1310, 130, 0.5, 12.5);
+  var child = thereAndBack(function (at, from, to, start) { return stroll(at, from, to, start, girl); }, t, 300, 640, 3, 15);
+  var she = thereAndBack(function (at, from, to, start) { return stroll(at, from, to, start, lady); }, t, 130, 1310, 0.5, 12.5);
+  var puss = thereAndBack(function (at, from, to, start) { return amble("cat", at, from, to, start, {size: 1}); }, t, 1340, 1000, 1, 13);
+  person(he.x, middle - 16, he.look);
+  person(child.x, middle - 8, child.look);
+  person(she.x, middle, she.look);
+  cat(puss.x, middle + 6, puss.look);
+  caption("stroll(): a walk from one place to another and back, one step on every beat. The cat: amble()", 720, middle + 40);
+
+  var jumbo = thereAndBack(function (at, from, to, start) { return amble("elephant", at, from, to, start, {size: 0.3}); }, t, 200, 620, 0.5, 12.5);
+  var stripes = thereAndBack(function (at, from, to, start) { return amble("tiger", at, from, to, start, {size: 0.5}); }, t, 1300, 420, 0.5, 12.5);
+  elephant(jumbo.x, low - 34, jumbo.look);
+  tiger(stripes.x, low, stripes.look);
+  caption("amble(): the same for an animal", 720, low + 36);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

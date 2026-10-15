@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>pieces - the inanimate things of the north, large</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="beasts.js"></script>
+<script src="pieces.js"></script>
+<script>
+// The "pieces" sheet: pieces.js, large enough to see, in three rows. By day:
+// the water jar at the gate (namton), three Songkran sand pagodas with their
+// flags (chediSai), a tung with a hong on its pole, and the hong alone,
+// large. Across the middle: the kit's buffalo ambles over pulling the ox
+// cart, its wheels turning with the ground covered, and the great drum on
+// its cart stands at the right. By night: a row of phang pratheep lamps
+// along a path, and three krathong afloat on dark water.
+var DURATION = 16;
+
+var BEAT = 0.5;
+
+function caption(text, x, y, colour) {
+  pen.fillStyle = colour || "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "21px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 720);
+  pen.fillStyle = "#9fb37a";
+  pen.fillRect(0, 300, WIDE, 60);
+  pen.fillRect(0, 660, WIDE, 60);
+  namton(pen, 130, 300, 1.9);
+  caption("namton", 130, 345);
+  chediSai(pen, 360, 300, 1.7, t, 0);
+  chediSai(pen, 470, 310, 1.3, t, 1);
+  chediSai(pen, 560, 300, 1.5, t, 2);
+  caption("chediSai: the flags flutter", 460, 345);
+  pen.save();
+  pen.translate(700, 300);
+  pen.scale(0.62, 0.62);
+  tung(pen, 0, 0, t, true);
+  pen.restore();
+  caption("tung(..., true): a hong on the pole", 760, 345);
+  hong(pen, 1150, 290, 4);
+  caption("hong", 1150, 345);
+  var walk = amble("buffalo", t, -150, 650, 0, {size: 0.5, cloth: "#8a2a3a"});   // the buffalo and its cart, across the middle row
+  var face = walk.look.face, scale = 0.5 * GAITS.buffalo[0];                     // the buffalo's own scale, from its look
+  var yoke = [walk.x + 150 * scale * face, 660 - 310 * scale];                    // the withers, where the yoke sits
+  oxcart(pen, walk.x - 460 * scale * face, 660, 1.3, (walk.x + 150) / (62 * 1.3), face, yoke);   // the axle behind the tail
+  buffalo(walk.x, 660, walk.look);
+  caption("amble(\"buffalo\") pulling oxcart(brush, x, base, size, turn, facing, yoke): the cart is drawn first", 400, 705);
+  drumCart(pen, 1180, 660, 0.55, -1);
+  caption("drumCart(brush, x, base, size, facing)", 1180, 705);
+  pen.fillStyle = "#121a2c";                       // the night
+  pen.fillRect(0, 720, WIDE, 360);
+  pen.fillStyle = "#2a2f26";
+  pen.fillRect(0, 880, WIDE, 50);
+  pen.fillStyle = "#13263a";
+  pen.fillRect(0, 930, WIDE, 150);
+  pratheepRow(pen, 70, 880, 12, 50, 1.9, t);
+  caption("pratheepRow: the flames flicker, the glow", 340, 840, "#d8c8a0");
+  krathong(pen, 950, 1000, 1.9, t, true);
+  krathong(pen, 1150, 1030, 1.4, t + 2, true);
+  krathong(pen, 1300, 985, 1.1, t + 4, true);
+  caption("krathong, afloat", 1150, 1065, "#d8c8a0");
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

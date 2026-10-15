@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>floor - sitting on the floor: legs folded to one side, and cross-legged</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script>
+// The "floor" sheet: everyone in the cast sitting on the floor (floor: true).
+// Top row: those with their hair tied up fold both legs to one side, the
+// knees to the front and the feet out behind (phap phiap). Bottom row: the
+// others sit cross-legged, in trousers or with a sarong pulled over the
+// knees. The last one in each row is told which way to sit, against the
+// kit's own choice. Everyone keeps time: the seat stays on the ground and
+// what is above it moves.
+// SEATS keeps, for each figure in the frame just drawn, where its hips, a
+// knee and its neck came to on the sheet (checks/floor_check.py).
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+var SEATS = [];
+
+var ROWS = [
+  [["lady", {}, "lady"],
+   ["maiden", {wai: true, face: -1, bend: 0.1}, "maiden, a wai"],
+   ["weaver", {handA: [44, 30], at: [640, 330]}, "weaver, a hand lifted"],
+   ["dancer", {face: -1, turn: -0.5}, "dancer"],
+   ["lady", {build: 1}, "lady, build 1"],
+   ["fellow", {floor: "side"}, "fellow, floor: \"side\""]],
+  [["fellow", {}, "fellow"],
+   ["villager", {face: -1}, "villager, in a sarong"],
+   ["monk", {}, "monk"],
+   ["child", {face: -1}, "child"],
+   ["fellow", {build: 1}, "fellow, build 1"],
+   ["maiden", {floor: "cross"}, "maiden, floor: \"cross\""]]
+];
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  SEATS = [];
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  for (var row = 0; row < 2; row++) {
+    var ground = 440 + row * 500;
+    pen.strokeStyle = "rgba(90, 70, 48, 0.35)";      // the floor
+    pen.lineWidth = 2;
+    pen.beginPath();
+    pen.moveTo(30, ground + 8);
+    pen.lineTo(WIDE - 30, ground + 8);
+    pen.stroke();
+    for (var n = 0; n < ROWS[row].length; n++) {
+      var who = ROWS[row][n], x = 130 + n * 236;
+      var joints = person(x, ground, cast(who[0], Object.assign({floor: true, size: 1.12, late: n * 0.25, spring: 0.5, smile: 1}, who[1])));
+      SEATS.push([who[2], joints.hip, joints.kneeA, joints.neck]);
+      pen.fillStyle = "#5a4630";
+      pen.fillText(who[2], x, ground + 50);
+    }
+  }
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

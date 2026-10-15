@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>together - hands that go to a place: holding hands, a rope, a wai</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script>
+// The "together" sheet: wrists that are sent to a point of the scene
+// (reachA, reachB), and the hands of a wai. Left: two children hold hands,
+// and hop a quarter of a beat apart, so the point between them has to be
+// found again in every frame. Middle: a lady and a fellow wai to each other.
+// Right: a maiden's wrist follows a lotus that goes round, and for part of
+// the way round it is further off than her arm is long.
+// MISSED keeps, for each reach in the frame just drawn, how far the wrist
+// came to rest from the point it was sent to (checks/reach_check.py).
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+var MISSED = [];
+
+function far(a, b) { return Math.sqrt((a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1])); }
+
+function mark(x, y) {                                // a small ring where a wrist is sent to
+  pen.strokeStyle = "rgba(190, 60, 40, 0.8)";
+  pen.lineWidth = 2;
+  pen.beginPath();
+  pen.arc(x, y, 9, 0, 7);
+  pen.stroke();
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  MISSED = [];
+  var ground = 900;
+
+  // two children hold hands: one point, given to both
+  var held = [300, ground - 300 + 14 * Math.sin(t * 2.2)];
+  var left = person(180, ground, cast("child", {size: 1.3, late: 0, spring: 0.5, smile: 1, at: [300, 500], reachA: held}));
+  var right = person(420, ground, cast("child", {size: 1.3, late: 0.25, spring: 0.5, smile: 1, face: -1, at: [300, 500],
+                                                 shirt: "#c8553d", reachA: held}));
+  MISSED.push(["the two children's wrists", far(left.wristA, right.wristA), true]);
+
+  // a wai, to each other
+  person(640, ground, cast("lady", {size: 1.3, late: 0, spring: 0.15, smile: 1, turn: -0.6, bend: 0.12, wai: true}));
+  person(860, ground, cast("fellow", {size: 1.3, late: 0.5, spring: 0.15, smile: 1, face: -1, turn: -0.6, bend: 0.12, wai: true}));
+
+  // a wrist that follows a thing: the lotus goes round, and part of the way round it is out of her reach
+  var bloom = [1273 + 45 * Math.cos(t * Math.PI / 4), ground - 340 + 70 * Math.sin(t * Math.PI / 4)];
+  var maiden = person(1150, ground, cast("maiden", {size: 1.3, late: 0, spring: 0.1, smile: 1, at: bloom, reachA: bloom}));
+  lotus(pen, bloom[0], bloom[1] - 16, 0.9, "#f28fa8");
+  mark(bloom[0], bloom[1]);
+  // How far the lotus is from her shoulder, in the kit's own measure. An arm
+  // is 120 long and folds no closer than 32; and a figure is squashed as it
+  // lands and stretched as it springs, by up to a tenth, so "within reach"
+  // is counted with that much to spare.
+  var away = far(bloom, maiden.shoulderA) / maiden.size;
+  var within = away > 38 && away < 106;
+  MISSED.push(["the maiden's wrist and the lotus", far(maiden.wristA, bloom), within]);
+
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "24px Georgia, 'Times New Roman', serif";
+  pen.fillText("one point for two wrists: " + MISSED[0][1].toFixed(1) + " px apart", 300, 960);
+  pen.fillText("a wai", 750, 960);
+  pen.fillText("a wrist sent to the lotus: " + MISSED[1][1].toFixed(1) + " px off" + (within ? "" : " (out of reach)"), 1170, 960);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

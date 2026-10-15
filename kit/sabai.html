@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>sabai - a shoulder cloth woven with figures that walk</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="naga.js"></script>
+<script src="dragon.js"></script>
+<script src="beasts.js"></script>
+<script src="khom.js"></script>
+<script src="sabai.js"></script>
+<script>
+// The "sabai" sheet, in two parts. First, ten seconds: a lady wears the
+// woven cloth; the camera opens on one row of it close up, the rows begin
+// to flow at the second second, and from 2 to 9 the camera pulls back to
+// the whole stage, as the sash film opens. Then six seconds at their own
+// sizes: three people, each with a cloth of her own - the twelve rows, a
+// cloth of six rows in indigo that flows faster, and a still one.
+var DURATION = 16;
+
+var BEAT = 0.5;
+
+var LADY = cast("lady", {size: 1.45, shirt: "#f2ead8", legs: "#2f3f6e", sin: 0, sabai: false, weave: 1,   // sabai: false: the woven cloth is the sabai, the kit draws no band of its own
+                         flower: "#f28fa8", pins: true, smile: 1, id: "lady", at: [720, 380]});
+var MAIDEN = cast("maiden", {size: 1.3, id: "maiden", at: [720, 500], smile: 1, sabai: false});
+var CELESTIAL = cast("celestial", {size: 1.3, id: "celestial", at: [720, 500], face: -1, sabai: false});
+
+var WOVEN = {from: 2};                                         // the twelve rows, flowing from the second second
+var SIX = {rows: SABAI_ROWS.slice(0, 6), cloth: "#2f4a7a", flow: 5, from: 10};   // six rows on indigo, flowing faster
+var STILL = {rows: SABAI_ROWS.slice(6), cloth: "#3f6a3a", flow: 0};              // the other six, still
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "19px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function ground() {
+  var sky = pen.createLinearGradient(0, 0, 0, 900);
+  sky.addColorStop(0, "#8ccfc6");
+  sky.addColorStop(1, "#f4ecd2");
+  pen.fillStyle = sky;
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.fillStyle = "#8fc47a";
+  pen.fillRect(0, 880, WIDE, 200);
+}
+
+function sheetOpening(t) {
+  var where = sabaiOf(t, 720, 1010, LADY);
+  pen.save();
+  sabaiCamera(t, where, WOVEN, 2, 9);
+  ground();
+  sabai(t, where, WOVEN, "back");                        // the end that hangs behind her shoulder
+  person(720, 1010, sabaiWorn(LADY, t, where, WOVEN));   // the cloth, worn under her arm
+  pen.restore();
+}
+
+function sheetThree(t) {
+  ground();
+  var who = [[300, MAIDEN, SIX], [720, LADY, WOVEN], [1140, CELESTIAL, STILL]];
+  for (var n = 0; n < who.length; n++) {
+    var where = sabaiOf(t, who[n][0], 1010, who[n][1]);
+    sabai(t, where, who[n][2], "back");
+    person(who[n][0], 1010, sabaiWorn(who[n][1], t, where, who[n][2]));
+  }
+  caption("six rows on indigo, flowing faster", 300, 1062);
+  caption("the twelve rows of the sash film", 720, 1062);
+  caption("six rows, still", 1140, 1062);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    if (at < 10) { sheetOpening(at); } else { sheetThree(at); }
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

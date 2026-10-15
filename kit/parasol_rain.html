@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>parasol_rain - three women with parasols walk the rice fields through a storm that clears</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false};</script>
+<script src="oldcartoon.js"></script>
+<script src="backdrops.js"></script>
+<script src="cumulus.js"></script>
+<script>
+// parasol_rain.html - a scene of the kit's parasols. Three women walk along
+// the rice fields (the paddy backdrop) under a rain storm: dark cumulus over
+// the hills, rain slanting down, one flash of lightning. The clouds thin and
+// blow away, the rain stops and the sun comes out. The women stop, tip their
+// parasols to the viewer and spin them, and the rain flies off the rims for a
+// moment. Then they open and close them twice, close them for good, and walk
+// on. Every woman carries a different parasol: the Thai borders, the yantra,
+// and the elephants round the Buddha, who keeps still as the rest turns.
+// Nothing is kept between frames: second t alone says where everything is.
+var DURATION = 35;
+
+var BEAT = 0.5;
+
+var GROUND = 1000;                      // where the women's feet stand on the paddy's near ground
+var STORM_END = 8;                      // the storm begins to clear
+var TWIRL = 13;                         // the spin begins (each woman a little after the one before)
+var FOLD = 19;                          // tipped down still, they close the parasols, snap them open to shake the rain off, close them, and swing them down to the side
+var WALK_ON = 25.5;                     // they walk on, the parasols carried
+
+// Each woman: who, which parasol, where she walks in from and stops, when she
+// sets off, and how far behind the first she does everything.
+var WOMEN = [
+  {name: "lady", kind: "lai", from: -500, to: 400, start: 0.6, late: 0},
+  {name: "maiden", kind: "yantra", from: -200, to: 720, start: 1.2, late: 0.3},
+  {name: "weaver", kind: "buddha", from: 100, to: 1040, start: 1.8, late: 0.6}
+];
+
+function smooth(u) { u = clamp(u); return u * u * (3 - 2 * u); }
+
+function storm(t) { return 1 - smooth((t - STORM_END) / 5); }     // the dark and the clouds, 1 to 0
+function rainfall(t) { return 1 - smooth((t - STORM_END + 1) / 4); }   // the rain, which stops a little before the sky clears
+
+var STORM_LOOK = {count: 8, lit: "#9aa2b4", shade: "#55607a", below: false, ink: "#2b3142"};
+var STORM = document.createElement("canvas");    // the storm clouds are drawn whole here, then laid on at the storm's strength
+STORM.width = WIDE;
+STORM.height = 1080;
+var STORM_PEN = STORM.getContext("2d");
+
+// The parasol a woman holds at second t: open and upright while she walks
+// in; tipped down and spun, and kept down; closed, opened, closed, opened
+// and closed again down there, where the parasol hides the hand that does
+// it; lifted furled and swung to her side; and carried as she walks on.
+function umbrellaOf(w, t) {
+  if (t < TWIRL + w.late) { return w.kind; }
+  if (t < FOLD + w.late) { return parasolAt(t, TWIRL + w.late, w.kind, undefined, "spin"); }
+  return parasolAt(t, FOLD + w.late, w.kind, undefined, "fold");
+}
+
+// Where a woman is at second t, and the look to draw her with.
+function place(w, t) {
+  var look = cast(w.name, {size: 1.3, parasol: umbrellaOf(w, t), id: w.name});
+  if (t < WALK_ON + w.late) { return stroll(t, w.from, w.to, w.start, look); }
+  return stroll(t, w.to, w.to + 1400, WALK_ON + w.late, look);
+}
+
+// Rain: streaks that fall slanting, each on its own course, in two layers
+// (behind the women and before them). "amount" is 0 to 1.
+function rain(brush, t, amount, layer) {
+  if (amount <= 0) { return; }
+  var n = Math.round(240 * amount), i;
+  brush.strokeStyle = layer ? "rgba(230, 238, 250, 0.6)" : "rgba(220, 230, 245, 0.45)";
+  brush.lineWidth = layer ? 2 : 1.4;
+  brush.lineCap = "round";
+  brush.beginPath();
+  for (i = 0; i < n; i++) {
+    var seed = i * 7 + layer * 3, quick = 900 + 500 * dice(seed + 2);
+    var y = (dice(seed) * 1200 + t * quick) % 1200 - 60;
+    var x = ((dice(seed + 1) * (WIDE + 300) - t * quick * 0.14) % (WIDE + 300) + (WIDE + 300)) % (WIDE + 300) - 150;
+    brush.moveTo(x, y);
+    brush.lineTo(x + 4, y - 28);
+  }
+  brush.stroke();
+}
+
+// Rain flying off a spinning parasol: for a moment after the spin begins,
+// drops leave the rim along its turn and fall away. The rim is where
+// person() put it (joints.parasol, joints.parasolRim).
+function rainOff(brush, w, t, joints) {
+  var d = t - (TWIRL + w.late), i;
+  if (d < 1.9 || d > 5.2 || !joints.parasol) { return; }
+  var cx = joints.parasol[0], cy = joints.parasol[1], R = Math.hypot(joints.parasolRim[0] - cx, joints.parasolRim[1] - cy);
+  brush.lineCap = "round";
+  for (i = 0; i < 60; i++) {
+    var born = 1.9 + dice(i * 3 + 11) * 2.0, age = d - born;
+    if (age < 0 || age > 0.6) { continue; }
+    var angle = parasolAt(born, 0, undefined, undefined, "spin").spin + i * 0.9, px = cx + R * Math.cos(angle), py = cy + R * Math.sin(angle);
+    var vx = -Math.sin(angle) * 380, vy = Math.cos(angle) * 380 + 1040 * age;   // flung along the rim's turn, then falling
+    var x = px - Math.sin(angle) * 380 * age, y = py + Math.cos(angle) * 380 * age + 520 * age * age;
+    var fade = (1 - age / 0.6).toFixed(2);
+    brush.beginPath();                             // a drop is a short streak along its way: blue, with a white light down its middle
+    brush.moveTo(x - vx * 0.035, y - vy * 0.035);
+    brush.lineTo(x, y);
+    brush.strokeStyle = "rgba(70, 120, 190, " + fade + ")";
+    brush.lineWidth = 6 * (1 - age / 0.9);
+    brush.stroke();
+    brush.strokeStyle = "rgba(235, 245, 255, " + fade + ")";
+    brush.lineWidth = 2.4 * (1 - age / 0.9);
+    brush.stroke();
+  }
+}
+
+function scene(t) {
+  var dark = storm(t), wet = rainfall(t), n, w, go, joints;
+  pen.drawImage(backdrop("paddy"), 0, 0);
+  if (dark > 0) {                                  // the storm clouds, drifting, and blown away as the sky clears
+    STORM_PEN.clearRect(0, 0, WIDE, 1080);
+    cumulus(STORM_PEN, t * (1 + 2 * (1 - dark)), STORM_LOOK);
+    pen.globalAlpha = dark;
+    pen.drawImage(STORM, 0, 0);
+    pen.globalAlpha = 1;
+    pen.fillStyle = "rgba(50, 60, 85, " + (0.42 * dark).toFixed(3) + ")";   // the dark of the storm over everything
+    pen.fillRect(0, 0, WIDE, 1080);
+  }
+  if (dark < 1) {                                  // the sun, out again
+    pen.fillStyle = "rgba(255, 222, 140, " + (0.1 * (1 - dark)).toFixed(3) + ")";
+    pen.fillRect(0, 0, WIDE, 1080);
+  }
+  rain(pen, t, wet, 0);
+  if (t > 4.0 && t < 4.12) {                       // one flash of lightning
+    pen.fillStyle = "rgba(255, 255, 255, 0.55)";
+    pen.fillRect(0, 0, WIDE, 1080);
+  }
+  for (n = 0; n < WOMEN.length; n++) {
+    w = WOMEN[n];
+    go = place(w, t);
+    joints = person(go.x, GROUND, go.look);
+    rainOff(pen, w, t, joints);
+  }
+  rain(pen, t, wet, 1);
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    scene(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

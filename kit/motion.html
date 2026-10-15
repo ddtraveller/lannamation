@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>motion - eases, a spring, a crowd and a course, on the kit</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="motion.js"></script>
+<script>
+// The "motion" sheet: what motion.js adds to the kit, each in a row. Nothing here
+// keeps state between frames, so a still at any second is the frame the film shows.
+// Row 1: one ball a lane, each lane an ease, all leaving at 0.5 s and arriving at 3 s,
+//        the last three eases made from numbers; the last lane is drawn on threes.
+//        Row 2: three lanterns on springs, damped less and more, the third asked for in
+//        seconds and bounce; a fourth tugged along by springTween(); a sun that rises
+//        and sets by tween(), its colour too; and a flag by cycle(). Row 3: a row of
+//        ladies raising a hand from the centre outward, the stagger. Row 4: an arrow on
+//        a course, turned to its heading, and the distance it has come.
+var DURATION = 4;
+
+var BEAT = 0.5;
+
+var LANES = ["linear", "smooth", "in", "out", "back", "bounce", "elastic", "wobble", "anticipate", "spring", "back in", "elastic inout",
+             "spring 0.6 0.7", "steps 4", "bezier .4 0 .2 1"];
+var LANE = 23;
+
+var SUN = [[0.5, 600], [1.6, 480], [2.4, 480], [3.5, 600]];
+var SUN_COLOUR = [[0.5, "#e0b23a"], [1.6, "#f3e39a"], [2.4, "#f3e39a"], [3.5, "#d8702e"]];
+var TUGS = [[0.5, 0], [1.3, 60], [2.0, 20], [2.8, 80]];
+
+var COURSE = [[0.5, 120, 1000], [1.5, 420, 880], [2.5, 760, 1040], [3.5, 1320, 900]];
+
+function label(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.font = "20px Georgia, 'Times New Roman', serif";
+  pen.textAlign = "left";
+  pen.fillText(text, x, y);
+}
+
+function ball(x, y, colour) {
+  pen.fillStyle = colour;
+  pen.beginPath();
+  pen.arc(x, y, 14, 0, 7);
+  pen.fill();
+}
+
+function sheet(t) {
+  pen.fillStyle = "#e9dfc6";
+  pen.fillRect(0, 0, WIDE, 1080);
+  // row 1: the eases, one a lane, and the curve of each drawn small at the lane's end
+  LANES.forEach(function (name, n) {
+    var y = 44 + n * LANE, u = ramp(t, 0.5, 3, name);
+    label(name, 30, y + 7);
+    pen.strokeStyle = "rgba(90, 70, 48, 0.25)";
+    pen.lineWidth = 2;
+    pen.beginPath();
+    pen.moveTo(260, y);
+    pen.lineTo(1100, y);
+    pen.stroke();
+    ball(260 + 840 * u, y, "#b23a3a");
+    pen.strokeStyle = "#5a4630";
+    pen.beginPath();
+    for (var k = 0; k <= 40; k++) { var v = ease(name, k / 40); if (k) { pen.lineTo(1150 + k * 2, y + 12 - 24 * v); } else { pen.moveTo(1150, y + 12 - 24 * v); } }
+    pen.stroke();
+  });
+  var twos = ramp(held(t, 3), 0.5, 3, "smooth"), y8 = 44 + LANES.length * LANE;
+  label("held, on threes", 30, y8 + 7);
+  ball(260 + 840 * twos, y8, "#3f8f5a");
+  // row 2: three lanterns let go at 0.5 s, each on a spring: two by damping, one asked for in seconds and bounce
+  [[{damping: 4}, "damping 4"], [{damping: 25}, "damping 25"], [{seconds: 0.8, bounce: 0.5}, "0.8 s, bounce 0.5"]].forEach(function (one, n) {
+    var x = 200 + n * 300, drop = springAt(t - 0.5, one[0]);
+    label(one[1] + " (settles " + springTime(one[0]).toFixed(1) + " s)", x - 100, 430);
+    lantern(x, 450 + 60 * drop, 36);
+  });
+  // a fourth lantern tugged to new heights at four seconds, on one spring: springTween()
+  lantern(1050, 450 + springTween(t, TUGS, {seconds: 0.5, bounce: 0.5}), 36);
+  label("springTween(TUGS)", 1010, 430);
+  // a sun through four points in time: up by 1.6 s, held, down again by 3.5 s; its colour through the same seconds
+  pen.fillStyle = tween(t, SUN_COLOUR);
+  pen.beginPath();
+  pen.arc(1330, tween(t, SUN, "smooth"), 30, 0, 7);
+  pen.fill();
+  label("tween(t, SUN), colour too", 1180, 565);
+  // and a flag that waves by cycle(): out in 0.3 s and back by the same ease, resting 0.2 s each time
+  var wave = cycle(t, 0.3, {kind: "mirror", rest: 0.2});
+  pen.strokeStyle = "#5a4630";
+  pen.lineWidth = 3;
+  pen.beginPath();
+  pen.moveTo(1300, 340);
+  pen.lineTo(1300, 90);
+  pen.stroke();
+  pen.fillStyle = "#b23a3a";
+  pen.beginPath();
+  pen.moveTo(1300, 90);
+  pen.lineTo(1300 + 90 * wave, 110 - 10 * wave);
+  pen.lineTo(1300, 150);
+  pen.closePath();
+  pen.fill();
+  label("cycle(t, 0.3, {kind:", 1245, 375);
+  label("\"mirror\", rest: 0.2})", 1245, 397);
+  // a ball kicked at 0.5 s and rolling to a stop by glide(): 900 px/s, slowing over 0.6 s
+  pen.fillStyle = "#3f8f5a";
+  pen.beginPath();
+  pen.arc(glide(t - 0.5, 60, 900, {seconds: 0.6, max: 600}), 866, 10, 0, 7);
+  pen.fill();
+  label("glide(t - 0.5, 60, 900, {seconds: 0.6, max: 600}): kicked, rolls, stops", 620, 872);
+  // row 3: nine girls raise a hand, the middle one first: stagger from the centre
+  for (var n = 0; n < 9; n++) {
+    var late = stagger(n, 9, {from: "centre", gap: 0.25}), lift = ramp(t, 0.5 + late, 1.1 + late, "back");
+    person(150 + n * 140, 815, cast("lady", {size: 0.5, handA: [36, -70 - 60 * lift], late: late}));
+  }
+  label("stagger(n, 9, {from: \"centre\", gap: 0.25}): the middle one first, then outward", 30, 852);
+  // row 4: a course, its curve, and an arrow turned to the heading where() gives
+  pen.setLineDash([8, 8]);
+  pen.strokeStyle = "rgba(90, 70, 48, 0.5)";
+  pen.beginPath();
+  for (var q = 0; q <= 60; q++) { var w = where(COURSE, 0.5 + 3 * q / 60); if (q) { pen.lineTo(w[0], w[1]); } else { pen.moveTo(w[0], w[1]); } }
+  pen.stroke();
+  pen.setLineDash([]);
+  var p = where(COURSE, t);
+  pen.save();
+  pen.translate(p[0], p[1]);
+  pen.rotate(p[5]);
+  pen.fillStyle = "#4a6797";
+  pen.beginPath();
+  pen.moveTo(34, 0);
+  pen.lineTo(-20, -18);
+  pen.lineTo(-20, 18);
+  pen.closePath();
+  pen.fill();
+  pen.restore();
+  label("where(COURSE, t): one curve through four points, the arrow turned by its heading, p[5]; " + Math.round(p[6]) + " px along, key " + p[7] + " reached, " + Math.round(p[8]) + " px/s", 30, 1062);
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>build - the cartoon's figure and the paintings', side by side</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script>
+// The build sheet. The same lady and the same fellow, four times each, with
+// "build" going from 0 (the cartoon's figure: a big head on short legs) to 1
+// (the figure of the Thai and Lanna paintings: a small head on long legs).
+// Under each is how many heads tall it stands. The ladies hop on the beat and
+// wave; the fellows walk in place. Nothing else about them differs.
+var DURATION = 6;
+
+var BEAT = 0.5;
+
+var BUILDS = [0, 0.33, 0.66, 1];
+
+var SISTER = cast("lady", {shirt: "#e6a7b6", legs: "#2f6b5a", weave: 2, sabai: ["#f6e3a1", "#e86f9a"],
+                           flower: "#f28fa8", garland: true, pins: false});
+var FELLOW = cast("fellow", {});
+
+// How many heads tall a figure stands: from the ground to the crown, over
+// the crown to the chin. person() gives back where both came to. The figure
+// is drawn once for this, standing straight, far off the sheet.
+function headsTall(look, build) {
+  var ground = 1000;
+  var joints = person(-3000, ground, Object.assign({}, look, {up: 1, build: build}));
+  return (ground - joints.crown[1]) / (joints.chin[1] - joints.crown[1]);
+}
+
+var TALL = BUILDS.map(function (build) { return [headsTall(SISTER, build), headsTall(FELLOW, build)]; });
+
+function label(x, y, build, heads) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "24px Georgia, 'Times New Roman', serif";
+  pen.fillText("build " + build + ":  " + heads.toFixed(1) + " heads tall", x, y);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var gap = WIDE / BUILDS.length;
+  for (var n = 0; n < BUILDS.length; n++) {
+    var x = gap * (n + 0.5);
+    person(x, 490, Object.assign({}, SISTER, {size: 1.0, late: 0, spring: 0.5, smile: 1, turn: 0.3,
+                                              at: [720, 200], handA: [44, -70], build: BUILDS[n]}));
+    label(x, 528, BUILDS[n], TALL[n][0]);
+    person(x, 1012, Object.assign({}, FELLOW, {size: 1.0, late: 0, spring: 0.3, step: t * 1.1, smile: 1,
+                                               at: [720, 700], build: BUILDS[n]}));
+    label(x, 1050, BUILDS[n], TALL[n][1]);
+  }
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>beasts - an elephant and a water buffalo</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="beasts.js"></script>
+<script>
+// The "beasts" sheet: the elephant and the water buffalo of beasts.js.
+// Above: an elephant that walks, one that walks toward us (front: true),
+// and one that stands in a cloth with its trunk lifted and a fellow astride
+// its neck. Below: a buffalo that walks with the little boy astride its
+// back, one that walks toward us, and one that stands on a rope beside the
+// little girl, so their sizes can be seen against the cast.
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var top = 540, low = 1000, stride = t / BEAT / 4;                // one stride in four beats
+  elephant(220, top, {size: 0.4, step: stride});
+  caption("elephant, walking: step", 240, top + 40);
+  elephant(690, top, {size: 0.4, front: true, step: stride, trunk: 0.5 + 0.5 * Math.sin(t * Math.PI / 2)});
+  caption("toward us: front", 690, top + 40);
+  var ride = elephant(1200, top, {size: 0.4, face: -1, cloth: "#a8322c", trunk: 0.5 + 0.5 * Math.sin(t * Math.PI / 2), late: 0});
+  person(ride.seat[0], ride.seat[1], cast("fellow", {size: 0.52, floor: "astride", face: -1, late: 0, spring: 0.3, smile: 1}));
+  caption("in a cloth, its trunk lifting, a fellow astride", 1170, top + 40);
+  var back = buffalo(230, low, {size: 0.56, step: stride});
+  person(back.seat[0], back.seat[1], cast("boy", {size: 0.47, floor: "astride", late: 0.25, spring: 0.3}));
+  caption("buffalo, walking, the little boy astride", 250, low + 40);
+  buffalo(690, low, {size: 0.56, front: true, step: stride});
+  caption("toward us: front", 690, low + 40);
+  buffalo(1130, low, {size: 0.56, face: -1, rope: true, late: 0.5});
+  person(1370, low, cast("girl", {size: 0.47, late: 0, spring: 0.5, face: -1}));
+  caption("on a rope, beside the little girl", 1190, low + 40);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

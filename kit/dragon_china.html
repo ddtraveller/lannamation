@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>dragon_china - the Chinese dragon: scales, spines, a long head, eagle's feet, the pearl it chases</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="naga.js"></script>
+<script src="dragon.js"></script>
+<script>
+// The "dragon_china" sheet: dragon() with kind: "chinese", read from the
+// Nine-Dragon Walls and Chen Rong's scroll (the rules are at the top of
+// dragon.js). Above, an emperor's five-clawed gold dragon among scroll clouds,
+// chasing its flaming pearl; below left, its head two and a half times the
+// size with the mouth open; below right, an azure four-clawed one, hovering.
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#dfe9ee";
+  pen.fillRect(0, 0, WIDE, 1080);
+  for (var n = 0; n < 5; n++) { scrollCloud(pen, 160 + n * 340, 120 + (n % 2) * 60, 0.9, "#f6f1e6", "rgba(120, 130, 150, 0.65)"); }
+  dragon(300, 430, {kind: "chinese", size: 1.05, face: -1, claws: 5});
+  caption("kind: chinese, claws: 5: the emperor's, chasing its pearl", 700, 700);
+  pen.save();                                       // the head close up
+  pen.beginPath();
+  pen.rect(60, 710, 700, 350);
+  pen.clip();
+  pen.fillStyle = "#eef3f5";
+  pen.fillRect(60, 710, 700, 350);
+  dragon(300, 885, {kind: "chinese", size: 1.4, face: -1, claws: 4, mouth: 0.7, chase: false});
+  pen.restore();
+  caption("the head, mouth 0.7", 410, 1066);
+  dragon(870, 860, {kind: "chinese", size: 0.42, face: -1, body: "#5d87b8", spots: "#1f3f66", belly: "#dfe8f0",
+                    flame: "#2c4a7a", mane: "#d9d2b8", fly: "hover", late: 0.5});
+  caption("an azure one, four claws, hovering", 1090, 1066);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

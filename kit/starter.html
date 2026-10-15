@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>starter - a second film, from the kit</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<!-- The look is changed before the kit loads: a darker ink, a heavier line, a cleaner lens. -->
+<script>var FILM_STYLE = {ink: "#1a1a2a", line: 2.8, lens: "blur(0.4px) saturate(1.05)"};</script>
+<script src="oldcartoon.js"></script>
+<script>
+// A second film, to show that the kit is a framework: the same people as
+// village.html plus three models from the cast, a darker ink, and a scene of its own.
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+var PLACE = (function () {               // the set is painted once, when the page opens
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var brush = paper.getContext("2d");
+  brush.fillStyle = "#8ccfc6";
+  brush.fillRect(0, 0, WIDE, 1080);
+  clouds(brush, WIDE);
+  brush.filter = "blur(3px)";
+  hills(brush, WIDE, 780, 300, 2.6, "#8dbfa9");
+  brush.filter = "blur(1px)";
+  brush.fillStyle = "#efd2b4";
+  brush.fillRect(0, 850, WIDE, 230);
+  tree(brush, 300, 846, 0.9);
+  house(brush, 900, 850, 1);
+  pathside(brush, WIDE);
+  wash(brush, WIDE);
+  return paper;
+})();
+
+function sceneHello(t) {
+  pen.drawImage(PLACE, 0, 0);
+  person(330, GROUND + 60, cast("celestial", {late: 0, handA: [44, -84], handB: [-60, 20], at: [900, 500]}));
+  person(720, GROUND + 60, cast("dancer", {late: 0.25, handA: [60, -70], handB: [-50, -30], turn: 0.3}));
+  person(1060, GROUND + 60, cast("monk", {late: 0.5, handA: [26, 8], handB: [-26, 8], turn: 0.5, bend: 0.1}));
+  person(1360, GROUND + 60, cast("villager", {late: 0.75, step: t, handA: [40, -66], handB: [-20, 70]}));
+}
+
+var SCENES = [[0, 8, sceneHello]];
+
+function draw(t) {
+  film(t, SCENES);
+  subtitle("a second film, from the kit", "a celestial, a dancer, a monk, a villager; a darker ink");
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

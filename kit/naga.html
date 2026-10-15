@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>naga - the many-headed serpent, a character on the kit</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="naga.js"></script>
+<script>
+// The "naga" sheet. The large one is the Naga as the drawing lays it: five
+// heads, the body in an S and one loop, a flame at the tail. It looks left,
+// as the drawing's does, and keeps the beat. Beside it are two more, to show
+// what a look can change: the number of heads and the colours. Along the
+// bottom a fourth one travels: the sheet moves its chest with swim(t), and
+// gives the Naga that same function as its trail, so the body follows the
+// chest as a chain (the rule of procedural_animation.html).
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+function swim(t) {                                   // across the sheet in eight seconds, rising and falling as it goes
+  return [-220 + 330 * t, 962 + 44 * Math.sin(t * 4.8)];
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  naga(320, 650, {size: 1.05, face: -1, late: 0, sing: true});
+  naga(1230, 300, {size: 0.5, heads: 1, body: "#d9a441", belly: "#f6e3a1", bars: "#3a2418", crest: "#3a2418", fire: "#b23a2a"});
+  naga(1260, 620, {size: 0.5, heads: 7, body: "#2f4a7a", crest: "#e9dcc0", late: 0.5});
+  var chest = swim(t);
+  naga(chest[0], chest[1], {size: 0.5, heads: 3, trail: swim, mouth: 0.2});
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText("five heads, as the drawing has it: it keeps the beat, and sings", 560, 716);
+  pen.fillText("heads: 1, in gold and ink", 1230, 356);
+  pen.fillText("heads: 7, in indigo", 1260, 676);
+  pen.fillText("trail: its chest is led across the sheet, and the body follows as a chain", 720, 1062);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows the sheet as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

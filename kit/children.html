@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>children - a little boy and a little girl</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script>
+// The "children" sheet: the little boy and the little girl of the cast
+// (cast("boy"), cast("girl")). Top left, each drawn large, to be looked at.
+// Top right, at their own size beside a lady and a fellow, to see how small
+// they are. Along the bottom, what they do: walk, sit on the floor, wai,
+// wave, and hold hands.
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var top = 560, low = 1010, step = t / BEAT / 2;
+  person(210, top, cast("girl", {size: 1.2, late: 0, spring: 0.6}));
+  person(480, top, cast("boy", {size: 1.2, late: 0.25, spring: 0.6}));
+  caption("girl", 210, top + 38);
+  caption("boy", 480, top + 38);
+  person(800, top, cast("lady", {late: 0.5, spring: 0.5, smile: 1}));
+  person(960, top, cast("girl", {late: 0, spring: 0.6}));
+  person(1090, top, cast("boy", {late: 0.25, spring: 0.6}));
+  person(1260, top, cast("fellow", {late: 0.75, spring: 0.5, smile: 1}));
+  caption("at their own size, beside a lady and a fellow", 1030, top + 38);
+
+  person(130, low, cast("girl", {size: 0.96, step: step}));
+  person(270, low, cast("boy", {size: 0.98, step: step + 0.5}));
+  caption("walking", 200, low + 38);
+  person(470, low, cast("girl", {size: 0.96, floor: true, late: 0, spring: 0.5}));
+  person(650, low, cast("boy", {size: 0.98, floor: true, late: 0.25, spring: 0.5}));
+  caption("sitting on the floor", 560, low + 38);
+  person(840, low, cast("girl", {size: 0.96, wai: true, bend: 0.1, late: 0.5, spring: 0.3}));
+  caption("a wai", 840, low + 38);
+  person(980, low, cast("boy", {size: 0.98, handA: [44, -84], late: 0, spring: 0.8, wonder: 1}));
+  caption("waving", 980, low + 38);
+  var held = [1240, low - 172 + 10 * Math.sin(t * 2.2)];           // one point for two wrists, well below their shoulders
+  person(1180, low, cast("girl", {size: 0.96, late: 0, spring: 0.5, at: [1300, low - 300], reachA: held}));
+  person(1300, low, cast("boy", {size: 0.98, late: 0.25, spring: 0.5, face: -1, at: [1180, low - 300], reachA: held}));
+  caption("holding hands", 1240, low + 38);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

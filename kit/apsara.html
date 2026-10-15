@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>apsara - the celestial dancer of the Siamese stage, a paperdoll on the kit</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<!-- the painting's hair and gold, before the kit loads (her skin is her own, in CAST.apsara) -->
+<script>var FILM_STYLE = {hair: "#1e1b24", gold: "#d9b045"};</script>
+<script src="oldcartoon.js"></script>
+<script src="dance_track.js"></script>
+<script src="paperdoll.js"></script>
+<script src="apsara.js"></script>
+<script>
+// The paperdoll's sheet, on the painting's own orange ground, no lens. Left:
+// the dancer in the painting's pose, moving her arms from one pose to the
+// next, so both ends of the sabai are flung and settle. Middle: the same
+// dancer dancing the tracked dance. Right: her head, four times the size,
+// three-quarter, for the crown and the face.
+var DURATION = 10;
+
+var BEAT = 0.5;
+
+// the painting's pose, and three others, hit with a snap
+var POSES = [[0, {handA: [40, -104], handB: [-16, -42]}],
+             [2.5, {handA: [70, -70], handB: [-40, -80]}, "snap"],
+             [5, {handA: [20, -120], handB: [-60, -30]}],
+             [7.5, {handA: [60, -20], handB: [-30, -96]}, "snap"],
+             [10, {handA: [40, -104], handB: [-16, -42]}]];
+
+function sheet(t) {
+  pen.fillStyle = APSARA.ground;
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.strokeStyle = "rgba(60, 20, 10, 0.25)";
+  pen.lineWidth = 2;
+  pen.beginPath();
+  pen.moveTo(0, 820);
+  pen.lineTo(WIDE, 820);
+  pen.stroke();
+  apsara(300, 820, Object.assign({size: 1.85, at: [560, 120]}, poseAt(t % DURATION, POSES, 0.4)));
+  apsara(760, 820, Object.assign({size: 1.85}, poseAt(t + 20, TRACK, 0)));
+  pen.save();
+  pen.beginPath();
+  pen.rect(980, 40, 440, 700);
+  pen.clip();
+  apsara(1200, 40 + 1680, {size: 4.4, turn: 0.4, at: [1500, 300], handA: [34, 80], handB: [-34, 80], mouth: null});
+  pen.restore();
+}
+
+// The cloth is moved a frame at a time, so a still asked for at one second
+// is painted through the kit's settled(): on a jump of the clock it first
+// runs the frames before it. A chain remembers further back than the kit's
+// springs: measured with checks/kit_check.py, 60 frames left 15,473 pixels
+// of this sheet different from the film's own frame, 150 left none.
+SETTLE = 150;
+
+function draw(t) {
+  settled(t, function (at) { clock = at; sheet(at); });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

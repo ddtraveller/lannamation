@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>looks - a picture for every name a look can have</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script>
+// The "looks" sheet: every name a look can have, each on a figure of its
+// own, with the name and the value that figure was given written under it.
+// There are too many for one picture, so the sheet has six parts, and shows
+// each for five seconds: what is worn, the head, the face, the arms, the
+// hands and what they hold, and the body and how it moves.
+// Each row of a part is [the name, a cast member, the look's changes, the
+// words under the figure]. The changes are a function of the time and of
+// where the figure stands, because some names want a number that grows
+// (step) or a point of the scene (at, reachA). Everyone hops on the beat, as
+// in a film, unless the row is about the hop itself (up, late, spring).
+// MISSING is every name the kit knows that no row here shows. The sheet
+// warns about them, and checks/kit_check.py fails a page that warns: a name
+// added to the kit has to be added here.
+var DURATION = 30;
+
+var BEAT = 0.5;
+
+var PARTS = [
+  ["what is worn", [
+    ["shirt", "fellow", function () { return {bare: false, shirt: "#c8553d"}; }, 'bare: false,|shirt: "#c8553d"'],
+    ["legs", "fellow", function () { return {bare: false, sarong: undefined, legs: "#7a5a2a"}; }, 'bare: false,|legs: "#7a5a2a"'],
+    ["bare", "fellow", function () { return {}; }, "bare: true"],
+    ["regalia", "noble", function () { return {}; }, "regalia: true"],
+    ["skirt", "lady", function () { return {}; }, "skirt: true"],
+    ["weave", "lady", function () { return {weave: 2}; }, "weave: 2"],
+    ["sabai", "lady", function () { return {sabai: ["#3f8f5a", "#e0b23a"]}; }, 'sabai: ["#3f8f5a",|"#e0b23a"]'],
+    ["worn", "lady", function () { return {sabai: false, worn: function () {   // a painter the kit calls before the arms: a band under them
+      pen.strokeStyle = "#8a2a3a"; pen.lineWidth = 16; pen.lineCap = "round";
+      pen.beginPath(); pen.moveTo(34, -118); pen.lineTo(-30, -10); pen.stroke();
+    }}; }, "worn: a painter|under the arms"],
+    ["sin", "maiden", function () { return {sin: 2}; }, "sin: 2"],
+    ["sarong", "villager", function () { return {sarong: "#2f6b5a"}; }, 'sarong: "#2f6b5a"'],
+    ["patoi", "farmer", function () { return {patoi: true}; }, "patoi: true"],
+    ["tattoo", "farmer", function () { return {patoi: 0.55, tattoo: true}; }, "patoi: 0.55,|tattoo: true"],
+    ["collar", "maiden", function () { return {collar: ["#b23a2a", "#e0b23a"]}; }, 'collar: ["#b23a2a",|"#e0b23a"]'],
+    ["coat", "scientist", function () { return {}; }, "coat: true"],
+    ["buttons", "fellow", function () { return {buttons: false}; }, "buttons: false"],
+    ["plain", "monk", function () { return {}; }, "plain: true"],
+    ["shoes", "fellow", function () { return {shoes: true}; }, "shoes: true"]
+  ]],
+  ["the head", [
+    ["bun", "lady", function () { return {}; }, "bun: true"],
+    ["hat", "fellow", function () { return {hat: true}; }, "hat: true"],
+    ["turban", "fellow", function () { return {turban: "#c4654f"}; }, 'turban: "#c4654f"'],
+    ["shaved", "monk", function () { return {}; }, "shaved: true"],
+    ["flower", "lady", function () { return {flower: "#fff6ea"}; }, 'flower: "#fff6ea"'],
+    ["garland", "lady", function () { return {}; }, "garland: true"],
+    ["pins", "lady", function () { return {}; }, "pins: true"],
+    ["earplug", "maiden", function () { return {earplug: "#d9b24a"}; }, 'earplug: "#d9b24a"'],
+    ["tail", "dancer", function () { return {}; }, "tail: true"],
+    ["fan", "dancer", function () { return {}; }, "fan: true"],
+    ["halo", "celestial", function () { return {}; }, "halo: true"],
+    ["head", "lady", function () { return {head: 1.1}; }, "head: 1.1"],
+    ["skin", "fellow", function () { return {skin: "#c98f62"}; }, 'skin: "#c98f62"'],
+    ["eyes", "child", function () { return {eyes: 1.3}; }, "eyes: 1.3"],
+    ["lips", "fellow", function () { return {lips: 1.4}; }, "lips: 1.4"],
+    ["hair", "lady", function () { return {hair: "#e8e3da"}; }, 'hair: "#e8e3da"'],
+    ["beard", "fellow", function () { return {beard: "#f4f0e6", hair: "#ece7dd"}; }, 'beard: "#f4f0e6"']
+  ]],
+  ["the face", [
+    ["face", "fellow", function () { return {face: -1}; }, "face: -1"],
+    ["turn", "lady", function () { return {turn: -1}; }, "turn: -1"],
+    ["at", "lady", function (t, x, y) { return {at: [x + 300 * Math.cos(t * 2), y - 300 + 200 * Math.sin(t * 2)]}; }, "at: [x, y] (going round)"],
+    ["glance", "lady", function () { return {glance: [0.8, 0.3]}; }, "glance: [0.8, 0.3]"],
+    ["blink", "lady", function () { return {blink: 1}; }, "blink: 1"],
+    ["wonder", "child", function () { return {wonder: 1, smile: 0}; }, "wonder: 1"],
+    ["smile", "fellow", function () { return {smile: 1}; }, "smile: 1"],
+    ["fear", "fellow", function () { return {fear: 1}; }, "fear: 1"],
+    ["anger", "fellow", function () { return {anger: 1}; }, "anger: 1"],
+    ["sad", "fellow", function () { return {sad: 1}; }, "sad: 1"],
+    ["feel", "lady", function () { return {feel: "surprise"}; }, 'feel: "surprise"'],
+    ["mouth", "lady", function () { return {mouth: {open: 0.9, wide: 0.2, round: 0.8}}; }, "mouth: {open: 0.9,|wide: 0.2, round: 0.8}"],
+    ["sing", "fellow", function () { return {sing: true}; }, "sing: true"],
+    ["tilt", "lady", function () { return {tilt: 0.25}; }, "tilt: 0.25"],
+    ["age", "fellow", function () { return {age: 1}; }, "age: 1"],
+    ["twist", "lady", function () { return {twist: -1}; }, "twist: -1 (the body|turned to profile)"]
+  ]],
+  ["the arms", [
+    ["handA", "fellow", function () { return {handA: [44, -84]}; }, "handA: [44, -84]"],
+    ["handB", "fellow", function () { return {handB: [-70, -10]}; }, "handB: [-70, -10]"],
+    ["reachA", "fellow", function (t, x, y) { return {reachA: [x + 92, y - 236 + 22 * Math.sin(t * 3)]}; }, "reachA: [x, y] (the ring)"],
+    ["reachB", "fellow", function (t, x, y) { return {reachB: [x - 92, y - 236 + 22 * Math.sin(t * 3)]}; }, "reachB: [x, y] (the ring)"],
+    ["wai", "maiden", function () { return {wai: true}; }, "wai: true"],
+    ["wristA", "fellow", function () { return {handA: [60, 10], wristA: -1}; }, "wristA: -1"],
+    ["wristB", "fellow", function () { return {handB: [-60, 10], wristB: 1}; }, "wristB: 1"],
+    ["grip", "fellow", function () { return {grip: true, handA: [30, 40], handB: [-10, 40]}; }, "grip: true"]
+  ]],
+  ["the hands, and what they hold", [
+    ["fingersA", "fellow", function () { return {handA: [60, -40], fingersA: [0, 1, 1, 1, 0.8]}; }, "fingersA: [0, 1, 1, 1, 0.8]"],
+    ["fingersB", "fellow", function () { return {handB: [-60, -40], fingersB: [0, 0, 1, 1, 0.8]}; }, "fingersB: [0, 0, 1, 1, 0.8]"],
+    ["palmA", "lady", function () { return {handA: [50, -30], palmA: 1}; }, "palmA: 1 (the palm|toward us)"],
+    ["palmB", "lady", function () { return {handB: [-50, 20], palmB: 0.5}; }, "palmB: 0.5 (the|thumb's edge)"],
+    ["gloves", "fellow", function () { return {gloves: true}; }, "gloves: true"],
+    ["nails", "dancer", function () { return {handA: [44, -84]}; }, 'nails: "long"'],
+    ["bangles", "lady", function () { return {bangles: 5, handA: [50, -30]}; }, "bangles: 5"],
+    ["holding", "celestial", function () { return {}; }, 'holding: "lotus"'],
+    ["parasol", "lady", function (t) { return {parasol: parasolAt(t % 8, 1)}; }, "parasol: parasolAt(t, 1)"],
+    ["dance", "lady", function () { return {handA: [50, -70]}; }, "dance: true"],
+    ["drum", "drummer", function () { return {}; }, "drum: true"]
+  ]],
+  ["the body, and how it moves", [
+    ["size", "fellow", function () { return {size: 0.5}; }, "size: 0.5"],
+    ["build", "lady", function () { return {build: 1}; }, "build: 1"],
+    ["up", "fellow", function () { return {up: 1}; }, "up: 1"],
+    ["late", "fellow", function () { return {late: 0.5}; }, "late: 0.5 (off the beat)"],
+    ["spring", "fellow", function () { return {late: 0, spring: 2}; }, "spring: 2"],
+    ["step", "fellow", function (t) { return {step: t / BEAT / 2}; }, "step: t / BEAT / 2"],
+    ["stride", "fellow", function (t) { return {step: t / BEAT / 2, stride: 1.8}; }, "stride: 1.8 (with step)"],
+    ["bend", "fellow", function () { return {bend: 0.4}; }, "bend: 0.4"],
+    ["shoulders", "lady", function () { return {shoulders: 0.2}; }, "shoulders: 0.2"],
+    ["sway", "lady", function () { return {sway: 0.1}; }, "sway: 0.1"],
+    ["sit", "lady", function () { return {sit: 1}; }, "sit: 1"],
+    ["floor", "lady", function () { return {floor: true}; }, "floor: true"],
+    ["raise", "fellow", function () { return {raise: [1, 50, 30]}; }, "raise: [1, 50, 30]"],
+    ["id", "lady", function () { return {id: "nan"}; }, 'id: "nan"'],
+    ["rig", null, null, "rig: a drawing cut|into parts (rig_draw.py)"]
+  ]]
+];
+
+var MISSING = (function () {
+  var shown = {};
+  PARTS.forEach(function (part) { part[1].forEach(function (row) { shown[row[0]] = true; }); });
+  return Object.keys(LOOK_KEYS).filter(function (name) { return !shown[name]; });
+})();
+
+if (MISSING.length) { warn("looks.html shows no figure for: " + MISSING.join(", ")); }
+
+function sheet(t) {
+  var which = Math.floor(t / 5) % PARTS.length, part = PARTS[which], rows = part[1];
+  var across = Math.ceil(rows.length / 2), wide = (WIDE - 40) / across;
+  var before = 0;
+  for (var p = 0; p < which; p++) { before += PARTS[p][1].length; }
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.textAlign = "center";
+  pen.fillStyle = "#5a4630";
+  pen.font = "bold 30px Georgia, 'Times New Roman', serif";
+  pen.fillText(part[0] + ": names " + (before + 1) + " to " + (before + rows.length) + " of " + Object.keys(LOOK_KEYS).length, WIDE / 2, 44);
+  for (var n = 0; n < rows.length; n++) {
+    var row = rows[n], x = 20 + wide * (n % across + 0.5), ground = n < across ? 486 : 1002;
+    if (row[1]) {
+      var changes = row[2](t, x, ground);
+      if (changes.reachA || changes.reachB) {         // a small ring where the wrist is sent to
+        var point = changes.reachA || changes.reachB;
+        pen.strokeStyle = "rgba(190, 60, 40, 0.8)";
+        pen.lineWidth = 2;
+        pen.beginPath();
+        pen.arc(point[0], point[1], 8, 0, 7);
+        pen.stroke();
+      }
+      var hops = changes.up === undefined && changes.late === undefined ? {late: 0.25 * (n % 4)} : {};
+      person(x, ground, cast(row[1], Object.assign({size: 0.9, id: "looks" + which + "/" + n}, hops, changes)));
+    }
+    pen.textAlign = "center";
+    pen.fillStyle = "#3a2a1a";
+    pen.font = "bold 20px Georgia, 'Times New Roman', serif";
+    pen.fillText(row[0], x, ground + 32);
+    pen.fillStyle = "#5a4630";
+    pen.font = "14px Consolas, 'Courier New', monospace";
+    var lines = row[3].split("|");                    // a long value is written on two lines
+    for (var k = 0; k < lines.length; k++) { pen.fillText(lines[k], x, ground + 50 + k * 16); }
+  }
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

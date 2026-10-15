@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>body - the torso turned, the shoulders at work, and a hand in the round</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script>
+// The "body" sheet (2026-10-15): the movement model's three parts, each
+// large enough to judge. Above, the lady and the fellow turned about the
+// spine with "twist", from profile (-1) through three-quarter (0) to full
+// face (1). In the middle, the fellow's shoulders at work: an arm hanging,
+// held out, sent across the body, raised, both raised; and a walker, large,
+// whose shoulders turn against the stride. Below, the hand in the round at
+// five times its size, in the poses a film asks for.
+var DURATION = 12;
+
+var BEAT = 0.5;
+
+function caption(text, x, y, small) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = (small ? "16px" : "20px") + " Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+var TURNS = [-1, -0.5, 0, 0.5, 1];
+
+var SHOULDERS = [["hanging", {}], ["out to the side", {handA: [96, 4]}], ["across the body", {handA: [-44, -24]}],
+                 ["raised", {handA: [40, -84]}], ["both overhead", {handA: [24, -116], handB: [-24, -116]}]];
+
+var HANDS = [["at rest (palm 0.15)", Math.PI / 2 + 0.2, {curls: REST, palm: 0.15, thumb: -1}],
+             ["lifted, open (0.85)", -Math.PI / 2 - 0.3, {curls: [0.05, 0.1, 0.18, 0.26, 0.1], spread: 0.24, palm: 0.85, thumb: 1}],
+             ["the dance hand (0.15)", -Math.PI / 2 + 0.3, {curls: [0, 0, 0, 0, 0.7], spread: 0.37, arch: 0.3, palm: 0.15, thumb: -1, nails: "long"}],
+             ["a fist (0.3)", Math.PI / 2, {curls: [1, 1, 1, 1, 1], palm: 0.3, thumb: -1}],
+             ["a wai (0.25)", -Math.PI / 2, {curls: WAI, spread: 0, palm: 0.25, thumb: -1}],
+             ["pointing (0.4)", 0, {curls: [0, 1, 1, 1, 0.8], palm: 0.4, thumb: 1}],
+             ["the palm (1)", -Math.PI / 2 + 0.3, {curls: [0.05, 0.1, 0.15, 0.2, 0.1], spread: 0.2, palm: 1, thumb: -1}],
+             ["the edge (0.5)", Math.PI / 2, {curls: REST, palm: 0.5, thumb: -1}]];
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var top = 330, middle = 690, low = 1040, n;
+  var lady = cast("lady", {size: 0.66, late: 0, spring: 0, smile: 1, handA: [40, 60], handB: [-40, 60], mouth: null});
+  var fellow = cast("fellow", {size: 0.66, late: 0, spring: 0, smile: 1, handA: [40, 60], handB: [-40, 60], mouth: null});
+  for (n = 0; n < TURNS.length; n++) {
+    person(80 + n * 130, top, Object.assign({}, lady, {twist: TURNS[n], at: [720, 100]}));
+    person(760 + n * 130, top, Object.assign({}, fellow, {twist: TURNS[n], at: [720, 100]}));
+    caption("twist: " + TURNS[n], 80 + n * 130, top + 30, true);
+    caption("twist: " + TURNS[n], 760 + n * 130, top + 30, true);
+  }
+  caption("the body turned about its spine: profile, three-quarter (as drawn), full face", 720, top + 56);
+
+  var bare = cast("fellow", {size: 0.72, late: 0, spring: 0, smile: 1, mouth: null, at: [720, 400]});
+  for (n = 0; n < SHOULDERS.length; n++) {
+    person(90 + n * 160, middle, Object.assign({}, bare, SHOULDERS[n][1]));
+    caption(SHOULDERS[n][0], 90 + n * 160, middle + 30, true);
+  }
+  caption("the shoulders rise and come in with the arm; a reach across brings one forward", 410, middle + 56);
+  var walker = cast("fellow", {size: 1.15, late: 0, spring: 0.3, smile: 1, mouth: null, step: t * 1.1, stride: 1.4, at: [720, 300]});
+  person(1040, middle + 10, walker);
+  person(1300, middle + 10, cast("lady", {size: 1.15, late: 0.5, spring: 0.3, smile: 1, mouth: null, step: t * 1.1 + 0.25, stride: 1.2, at: [720, 300]}));
+  caption("walking: the shoulders turn against the stride", 1170, middle + 56);
+
+  for (n = 0; n < HANDS.length; n++) {
+    var x = 90 + n * 160;
+    pen.save();
+    pen.translate(x, low - 120);
+    pen.scale(3.2, 3.2);
+    hand(0, 0, HANDS[n][1], HANDS[n][2]);
+    pen.restore();
+    caption(HANDS[n][0], x, low + 22, true);
+  }
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

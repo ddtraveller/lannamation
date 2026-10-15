@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>felines - a Siamese cat and a tiger</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="beasts.js"></script>
+<script>
+// The "felines" sheet: the cat and the tiger of beasts.js. Above, the cat,
+// drawn at twice its size so it can be seen: the Siamese walking and
+// sitting, and the two other cats its colours make, a white one sitting and
+// a dark one walking. Below, the tiger: sitting, walking, and roaring, with
+// the little girl and a cat beside it, all four at one size.
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var top = 430, low = 1000, stride = t / BEAT / 3;
+  cat(180, top, {size: 2, step: stride, late: 0});
+  caption("cat, walking: the Siamese", 200, top + 40);
+  cat(540, top, {size: 2, sit: true, late: 0.5, mouth: Math.max(0, Math.sin(t * Math.PI)) * 0.8});
+  caption("sitting: sit, and a mew: mouth", 560, top + 40);
+  cat(915, top, {size: 2, sit: true, face: -1, colour: "#f6f1e6", eyes: "#e9c45c"});
+  caption("a white cat: colour", 900, top + 40);
+  cat(1195, top, {size: 2, step: stride + 0.4, colour: "#3f4a5c", eyes: "#e9c45c"});
+  caption("a dark cat", 1220, top + 40);
+  tiger(110, low, {size: 0.56, sit: true, late: 0.5});
+  caption("tiger, sitting: sit", 125, low + 40);
+  tiger(500, low, {size: 0.56, step: stride, late: 0});
+  caption("walking: step", 490, low + 40);
+  tiger(960, low, {size: 0.56, mouth: 0.5 + 0.5 * Math.sin(t * Math.PI / 2)});
+  caption("a roar: mouth", 950, low + 40);
+  person(1275, low, cast("girl", {size: 0.56, late: 0, spring: 0.5, face: -1, wonder: 1}));
+  cat(1385, low, {size: 0.56, sit: true, face: -1});
+  caption("the girl and a cat", 1330, low + 40);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

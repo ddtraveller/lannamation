@@ -1,0 +1,477 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>village - a day in a village in northern Thailand</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script>
+// A day in a village in northern Thailand: morning, a walk to the temple,
+// a herb doctor and two assistants who make a medicine, lanterns. Drawn the way cartoons were
+// drawn in the 1930s: soft painted backgrounds, people with thin ink lines
+// and arms like rubber hoses, everything bouncing on the beat of the music,
+// a round "iris" that closes between scenes, and a nearly square picture
+// with film grain. The music is made by village_music.py, and the Thai words are
+// sung over it by village_sing.py: both keep the same beat as this page.
+var DURATION = 36;
+
+var BEAT = 0.5;                         // the same number as in village_music.py
+
+// The syllables of the song and the beat each is sung on, the same as LINES
+// in village_sing.py. The mouths follow them: see mouthAt() in the kit.
+var SUNG = sungBeats([
+  [8, "ไก่ ขัน แล้ว ตะ วัน ขึ้น ฟ้า"],
+  [18, "ตี กลอง ยาว เดิน ไป วัด"],
+  [26, "ตี กลอง ยาว เดิน ไป วัด"],
+  [38, "ตำ ที ละ ที ยา สะ หมุน ไพร"],
+  [46, "เสร็จ แล้ว เสร็จ แล้ว"],
+  [50, "เสร็จ แล้ว เสร็จ แล้ว"],
+  [58, "โคม ลอย ขึ้น ฟ้า"],
+  [62, "รา ตรี สะ หวัด"]
+]);
+
+// the things of a herb doctor's house
+
+// a tall wooden mortar standing on the floor, its base at (x, y), with
+// crushed herbs inside; on every strike, bits of leaf jump out of it
+function mortar(x, y, t) {
+  pen.beginPath();
+  pen.moveTo(x - 62, y - 150);
+  pen.quadraticCurveTo(x - 48, y - 80, x - 50, y);
+  pen.lineTo(x + 50, y);
+  pen.quadraticCurveTo(x + 48, y - 80, x + 62, y - 150);
+  pen.closePath();
+  shape("#8a5a36");
+  pen.strokeStyle = "rgba(60, 30, 20, 0.3)";       // the grain
+  pen.lineWidth = 2;
+  for (var g = -1; g <= 1; g++) {
+    pen.beginPath();
+    pen.moveTo(x + g * 24, y - 140);
+    pen.quadraticCurveTo(x + g * 20, y - 70, x + g * 22, y - 6);
+    pen.stroke();
+  }
+  oval(x, y - 150, 62, 14, "#6a4a32");             // the rim
+  oval(x, y - 150, 48, 9, "#3a2a20");              // the dark inside
+  oval(x, y - 152, 36, 6, "#5a8a3a");              // the herbs in it
+  var since = (t / (BEAT / 2)) % 1;                 // a pestle strikes every half beat
+  for (var bit = 0; bit < 7; bit++) {
+    pen.globalAlpha = 1 - since;
+    oval(x + (dice(bit + 30) - 0.5) * 100 * (0.3 + since), y - 156 - Math.sin(since * Math.PI) * (30 + dice(bit + 40) * 50) + since * 10,
+         4, 2.5, bit % 2 ? "#5a8a3a" : "#8fb05a", dice(bit) * 3);
+    pen.globalAlpha = 1;
+  }
+}
+
+// a long pestle, from the hands at (x1, y1) down into the mortar at (x2, y2)
+function pestle(x1, y1, x2, y2) {
+  bone(x1, y1, x2, y2, 9 + LINE, 7 + LINE, 2);
+  pen.fillStyle = INK;
+  pen.fill();
+  bone(x1, y1, x2, y2, 9, 7, 2);
+  pen.fillStyle = "#b07a4a";
+  pen.fill();
+}
+
+// the doctor's table: a high wooden table with a grinding stone, leaves,
+// and the bowl the medicine is made in. "found" is 0 before it is ready
+// and 1 after: then the bowl glows gold.
+function table(x, y, found, t) {
+  if (found > 0) {
+    var light = pen.createRadialGradient(x + 40, y - 30, 0, x + 40, y - 30, 300);
+    light.addColorStop(0, "rgba(255, 220, 110, " + (0.6 * found) + ")");
+    light.addColorStop(1, "rgba(255, 220, 110, 0)");
+    pen.fillStyle = light;
+    pen.fillRect(x - 260, y - 330, 600, 600);
+  }
+  pen.beginPath();
+  pen.rect(x - 100, y, 200, 14);                    // the top
+  shape("#b9774a");
+  pen.beginPath();
+  pen.rect(x - 86, y + 14, 14, 290);                // the legs, to the floor
+  shape("#8a5a36");
+  pen.beginPath();
+  pen.rect(x + 72, y + 14, 14, 290);
+  shape("#8a5a36");
+  pen.beginPath();
+  pen.roundRect(x - 80, y - 14, 90, 14, 5);         // a grinding stone
+  shape("#9a9a92");
+  for (var leaf = 0; leaf < 4; leaf++) { oval(x - 70 + leaf * 18, y - 18, 9, 4, "#5a8a3a", 0.4 + leaf * 0.3); }
+  pen.beginPath();                                  // the bowl
+  pen.moveTo(x + 10, y - 26);
+  pen.quadraticCurveTo(x + 40, y + 4, x + 70, y - 26);
+  pen.closePath();
+  shape("#6a4a32");
+  oval(x + 40, y - 26, 30, 7, found > 0 ? "#ffc93c" : "#6a7a3a");   // what is in it: green, then gold
+  if (found > 0) {
+    pen.fillStyle = "rgba(255, 255, 255, 0.5)";
+    pen.beginPath();
+    pen.ellipse(x + 30, y - 28, 8, 2.5, 0, 0, 7);
+    pen.fill();
+  }
+}
+
+function star(x, y, size) {
+  pen.beginPath();
+  for (var point = 0; point < 8; point++) {
+    var reach = point % 2 === 0 ? size : size * 0.35;
+    var angle = point / 8 * Math.PI * 2;
+    pen.lineTo(x + Math.cos(angle) * reach, y + Math.sin(angle) * reach);
+  }
+  pen.closePath();
+  shape("#fff3b0", 3);
+}
+
+function paint(wide, kind, part) {
+  var paper = document.createElement("canvas");
+  paper.width = wide;
+  paper.height = 1080;
+  var brush = paper.getContext("2d");
+  var sky = brush.createLinearGradient(0, 0, 0, 1080);
+  sky.addColorStop(0, "#8ccfc6");
+  sky.addColorStop(0.6, "#f4ecd2");
+  sky.addColorStop(1, "#f1d3bd");
+  brush.fillStyle = sky;
+  brush.fillRect(0, 0, wide, 1080);
+  if (kind !== "village") { clouds(brush, wide); }   // the village draws its own clouds, drifting
+  brush.filter = "blur(3px)";           // soft edges, like watercolour
+  hills(brush, wide, 720, 420, 1.0, "#a9cfc9");
+  hills(brush, wide, 780, 300, 2.6, "#8dbfa9");
+  hills(brush, wide, 840, 170, 4.4, "#79ad84");
+  brush.filter = "blur(1px)";
+  if (kind === "lab") {
+    // a herb doctor's house: a wall of boards round a window, so the hills
+    // show through; herbs hang to dry from a string; clay jars on a shelf
+    brush.fillStyle = "#d8b98f";
+    brush.fillRect(0, 0, wide, 250);
+    brush.fillRect(0, 250, 860, 620);
+    brush.fillRect(1300, 250, wide - 1300, 620);
+    brush.fillRect(860, 640, 440, 230);
+    brush.strokeStyle = "rgba(90, 50, 30, 0.28)";    // the boards
+    brush.lineWidth = 2;
+    for (var board = 0; board * 40 < wide; board++) {
+      var bx = 20 + board * 40;
+      brush.beginPath();
+      brush.moveTo(bx, 0);
+      brush.lineTo(bx, bx > 860 && bx < 1300 ? 250 : 870);
+      if (bx > 860 && bx < 1300) { brush.moveTo(bx, 640); brush.lineTo(bx, 870); }
+      brush.stroke();
+    }
+    brush.strokeStyle = "#8f5636";
+    brush.lineWidth = 16;
+    brush.strokeRect(860, 250, 440, 390);
+    brush.beginPath();
+    brush.moveTo(1080, 250);
+    brush.lineTo(1080, 640);
+    brush.stroke();
+    brush.strokeStyle = "#6a4a32";                   // a string across the wall
+    brush.lineWidth = 3;
+    brush.beginPath();
+    brush.moveTo(60, 290);
+    brush.quadraticCurveTo(440, 318, 820, 290);
+    brush.stroke();
+    var greens = ["#5a8a3a", "#8fb05a", "#7a6a3a", "#4f7a3a", "#a08a4a"];
+    for (var bunch = 0; bunch < 6; bunch++) {        // bunches of herbs, tied and hung to dry
+      var hx = 110 + bunch * 128, hy = 300 + Math.sin(bunch) * 8;
+      brush.strokeStyle = "#6a4a32";
+      brush.lineWidth = 2;
+      brush.beginPath();
+      brush.moveTo(hx, hy);
+      brush.lineTo(hx, hy + 16);
+      brush.stroke();
+      for (var leaf = 0; leaf < 7; leaf++) {
+        var la = Math.PI / 2 + (leaf - 3) * 0.22, ll = 42 + (leaf % 3) * 10;
+        brush.fillStyle = greens[(bunch + leaf) % 5];
+        brush.beginPath();
+        brush.ellipse(hx + Math.cos(la) * ll * 0.5, hy + 16 + Math.sin(la) * ll * 0.5, ll * 0.5, 7, la, 0, 7);
+        brush.fill();
+      }
+      brush.fillStyle = "#e9c45c";                   // the tie
+      brush.fillRect(hx - 6, hy + 12, 12, 6);
+    }
+    brush.fillStyle = "#8f5636";                     // a shelf of clay jars
+    brush.fillRect(120, 560, 600, 14);
+    for (var jar = 0; jar < 5; jar++) {
+      var jx = 160 + jar * 120;
+      brush.fillStyle = jar % 2 ? "#a8552f" : "#8a5a36";
+      brush.beginPath();
+      brush.roundRect(jx, 490, 64, 70, 14);
+      brush.fill();
+      brush.fillStyle = "#6a4a32";
+      brush.fillRect(jx + 8, 482, 48, 10);
+      brush.fillStyle = "rgba(255, 240, 220, 0.25)";
+      brush.fillRect(jx + 10, 500, 10, 44);
+    }
+    brush.fillStyle = "#c9a57a";                   // the wooden floor
+    brush.fillRect(0, 870, wide, 210);
+  } else {
+    brush.fillStyle = "#efd2b4";        // the path through the village
+    brush.fillRect(0, 850, wide, 230);
+    var ground = brush.createLinearGradient(0, 850, 0, 1080);
+    ground.addColorStop(0, "#f3dcc0");
+    ground.addColorStop(1, "#e2b895");
+    brush.fillStyle = ground;
+    brush.fillRect(0, 850, wide, 230);
+    for (var n = 0; n * 700 < wide; n++) {
+      tree(brush, 450 + n * 700, 846, 0.9);           // a big tree behind the houses
+      palm(brush, 90 + n * 700, 850, 380);
+      house(brush, 600 + n * 700, 838, 0.55);       // a rice barn, further back
+      banana(brush, 200 + n * 700, 850);
+      house(brush, 330 + n * 700, 850, 1);
+      palm(brush, 560 + n * 700, 850, 300);
+      banana(brush, 500 + n * 700, 852);
+    }
+    if (kind === "road") { temple(brush, wide - 620, 850); }
+    pathside(brush, wide, part);
+  }
+  if (part !== "front") { wash(brush, wide); }
+  return paper;
+}
+
+
+// The dance, in eight positions read from a video of a classical dancer
+// and given a Thai manner: a shallower sit, the dance hand. poseAt() holds
+// each position and then eases into the next. The parade's dancers take the
+// arms, head and torso of it while they walk; the evening's take all of it.
+var DANCE = [
+  [0, {sit: 0.3, handA: [52, 12], handB: [-52, 12], tilt: 0, bend: 0}],
+  [2, {sit: 0.3, handA: [12, -120], handB: [-104, -4], tilt: -0.16, bend: -0.05}],
+  [4, {sit: 0.25, handA: [84, -72], handB: [-92, 32], tilt: 0.12, bend: 0.08, raise: [1, 30, 22]}],
+  [6, {sit: 0.35, handA: [32, -22], handB: [-32, -22], tilt: 0, bend: 0}],
+  [8, {sit: 0.3, handA: [104, -12], handB: [-104, -12], tilt: 0.05, bend: 0}],
+  [10, {sit: 0.3, handA: [22, -92], handB: [-62, 32], tilt: -0.18, bend: 0, raise: [0, 36, 12]}],
+  [12, {sit: 0.4, handA: [62, 2], handB: [-62, 2], tilt: 0, bend: 0, raise: [1, 52, 0]}],
+  [12.6, {sit: 0.4, handA: [62, 2], handB: [-62, 2], tilt: 0, bend: 0, raise: [1, 0, 0]}],
+  [14, {sit: 0.25, handA: [8, -118], handB: [-42, 32], tilt: -0.2, bend: 0}],
+  [16, {sit: 0.3, handA: [52, 12], handB: [-52, 12], tilt: 0, bend: 0}]
+];
+
+// the dance for someone walking: arms, head and torso only
+function danceArms(t) {
+  var pose = poseAt(t, DANCE);
+  return {handA: pose.handA, handB: pose.handB, tilt: pose.tilt, bend: pose.bend};
+}
+
+var VILLAGE = paint(WIDE, "village");
+
+var LAB = paint(WIDE, "lab");
+
+var ROAD = paint(3100, "road", "back");           // the houses, and the fence behind the people
+
+var ROAD_FRONT = paint(3100, "road", "front");    // the flowers in front of them, on clear glass
+
+function sceneMorning(t) {
+  if (t < 3) {
+    card("A Day in the Village", "หนึ่งวันในหมู่บ้าน");
+    return;
+  }
+  // the whole village breathes with the music: a very old cartoon habit
+  pen.save();
+  pen.translate(0, 850);
+  pen.scale(1, 1 + 0.012 * hop(t, 0));
+  pen.drawImage(VILLAGE, 0, -850);
+  pen.restore();
+  cloud(160 + t * 14, 150, 1);
+  cloud(760 + t * 9, 110, 0.8);
+  cloud(1240 + t * 12, 190, 0.9);
+  sun(1160, mix(520, 230, between(t, 3, 7)), t);
+  if (t > 3.5) { birds(t, -100 + (t - 3.5) * 150, 250 + Math.sin(t) * 20); }
+  rooster(1030, 505, t);
+  var out = between(t, 4.5, 6.5);
+  person(mix(260, 520, out), GROUND, cast("fellow", {
+    late: 0, step: out < 1 ? t * 2 : 0, at: [1160, 300], turn: 0.4, smile: 1, turban: "#c4654f", sarong: "#3d4f78",
+    mouth: mouthAt(SUNG), size: 1.5, handA: [40, -70 - hop(t, 0) * 30], handB: [-40, -70 - hop(t, 0.5) * 30]
+  }));
+  if (t < 4.6) { curtain(between(t, 3, 4.6)); }
+}
+
+function sceneMedicine(t) {
+  var found = between(t, 5, 5.3);                  // the medicine is ready, on the words "it's done"
+  var up = found * between(t, 7.5, 5.3);
+  var lift = 70 * hop(t, 0), liftB = 70 * hop(t, 0.5);   // the pestles rise between the beats and strike on them
+  pen.drawImage(LAB, 0, 0);
+  if (found < 1) {                                 // the pestles, behind the hands that hold them
+    pestle(628 - lift * 0.33, 450 - lift * 0.5, 690, 790);
+    pestle(792 + liftB * 0.33, 450 - liftB * 0.5, 710, 790);
+  }
+  mortar(700, 920, t);
+  person(520, GROUND - 10, {                       // an assistant, pounding on the beat
+    shirt: "#4a6797", legs: "#3d4f78", size: 1.25, late: 0, spring: 0.25 + 0.75 * found, mouth: mouthAt(SUNG), grip: found < 1,
+    at: found ? [1120, 560] : [700, 760], turn: 0.1, wonder: up, smile: found,
+    handA: found ? [44, -84 - hop(t, 0) * 24] : [52, -58 - lift],
+    handB: found ? [-44, -84 - hop(t, 0.5) * 24] : [30, -30 - lift]
+  });
+  person(900, GROUND - 10, {                       // the other, on the off-beat
+    shirt: "#5a9686", legs: "#3d4f78", size: 1.25, face: -1, late: 0.5, spring: 0.25 + 0.75 * found, grip: found < 1,
+    mouth: mouthAt(SUNG), at: found ? [1120, 560] : [700, 760], turn: 0.1, wonder: up, smile: found,
+    handA: found ? [44, -84 - hop(t, 0.5) * 24] : [52, -58 - liftB],
+    handB: found ? [-44, -84 - hop(t, 0) * 24] : [30, -30 - liftB]
+  });
+  table(1100, 600, found, t);
+  person(1230, GROUND - 10, {                      // the herb doctor, grinding at his table; then his arms go up
+    shirt: "#f2ead8", legs: "#814a77", sarong: "#814a77", turban: "#c4654f", size: 1.3, face: -1,
+    late: 0.25, spring: 0.2 + 0.8 * found, bend: 0.22 * (1 - found), mouth: mouthAt(SUNG),
+    at: found ? [1120, 520] : [1070, 590], turn: 0.3 * found, wonder: up, smile: 1,
+    handA: found ? [44, -84 - hop(t, 0.25) * 24] : [64 + 16 * Math.sin(t * 7), 34], wristA: found ? 0 : 0.9,   // flat on the stone
+    handB: found ? [-44, -84 - hop(t, 0.75) * 24] : [36, 52]
+  });
+  if (found > 0) {
+    for (var n = 0; n < 6; n++) {
+      var angle = n / 6 * Math.PI * 2 + t;
+      star(1140 + Math.cos(angle) * 200, 520 + Math.sin(angle) * 140, 16 + hop(t, n / 6) * 14);
+    }
+  }
+}
+
+function sceneParade(t) {
+  pen.drawImage(ROAD, -t * 160, 0);
+  for (var flag = 0; flag < 5; flag++) { tung(pen, 640 + flag * 700 - t * 160, 850, t); }
+  crowd(t, 866, t * 160);
+  var step = t / BEAT / 2;
+  var hit = hop(t, 0);
+  dog(130, GROUND + 60, t);
+  person(350, GROUND + 60, {                       // a child, waving
+    shirt: "#e9c45c", legs: "#3d4f78", late: 0.5, step: step + 0.5, size: 0.95, wonder: 0.6, smile: 1,
+    face: t > 6 && t < 8 ? -1 : 1, at: t > 6 && t < 8 ? [130, 860] : [1180, 500],   // a look back at the dog
+    handA: [40, -66 - hop(t, 0) * 26], handB: [-20, 70]
+  });
+  for (var n = 0; n < 2; n++) {                    // two dancers, in the positions of the dance
+    var moves = danceArms(t + n * 1);
+    person(610 + n * 260, GROUND + 60, {
+      size: 1.35,
+      skirt: true,                                 // two dancers, dressed differently
+      shirt: n ? "#e9c45c" : "#d9573a", legs: n ? "#8a2a3a" : "#1f1a1a", weave: n ? 0 : 1,
+      sabai: n ? ["#8a2a3a", "#e0b23a"] : ["#3f8f5a", "#e0b23a"],
+      flower: n ? "#f28fa8" : null, garland: !!n, pins: true, tail: !n, nails: !n,
+      bun: true, mouth: mouthAt(SUNG), late: n * 0.5, step: step + n * 0.5, dance: true,
+      at: n ? [610, 520] : [870, 520], turn: n ? 0.5 : 0.15, smile: 1,
+      face: !n && t > 4 && t < 7.5 ? -1 : 1,         // the front one turns to her partner
+      handA: moves.handA, handB: moves.handB, tilt: moves.tilt, bend: moves.bend
+    });
+  }
+  person(1180, GROUND + 60, cast("drummer", {    // the drummer leads
+    late: 0, step: step, handA: [8, 30 + hit * 14], handB: [72, 42 - hit * 14],   // both hands on the drum head
+    wristA: 1.0, wristB: 1.0
+  }));
+  pen.drawImage(ROAD_FRONT, -t * 290, 0);          // nearer things pass faster
+}
+
+function sceneEvening(t) {
+  pen.drawImage(VILLAGE, 0, 0);
+  var dusk = pen.createLinearGradient(0, 420, 0, 800);          // the sky glows at the horizon
+  dusk.addColorStop(0, "rgba(255, 150, 70, 0)");
+  dusk.addColorStop(1, "rgba(255, 150, 70, 0.4)");
+  pen.fillStyle = dusk;
+  pen.fillRect(0, 420, WIDE, 380);
+  cloud(300 + t * 10, 140, 1.1, "rgba(200, 180, 220, 0.55)");
+  cloud(1000 + t * 7, 100, 0.9, "rgba(200, 180, 220, 0.5)");
+  pen.fillStyle = "rgba(70, 40, 110, " + mix(0.25, 0.5, between(t, 0, 6)) + ")";
+  pen.fillRect(0, 0, WIDE, 1080);
+  crowd(t, 872, 400, true);
+  for (var n = 0; n < 26; n++) {
+    var age = t - n * 0.5;
+    if (age > 0 && age < 9) {
+      lantern(120 + dice(n) * 1200 + Math.sin(age + n) * 30, 760 - age * 95, 40 - age * 2);
+    }
+  }
+  var shirts = ["#c4654f", "#f2ead8", "#4a6797", "#e6a7b6", "#5a9686"];
+  // Five people, and no two alike: each hops a little after the one before,
+  // each has a way of its own with its arms, and the ladies stand in front.
+  var order = [0, 2, 4, 1, 3];
+  for (var place = 0; place < 5; place++) {
+    var k = order[place];
+    var woman = k % 2 === 1;
+    var late = k * 0.5 + k * 0.07;
+    var high = hop(t, late);
+    var swing = Math.sin(t * Math.PI / BEAT / 2 + k * 1.3);     // one slow wave of an arm
+    var bow = between(t, 3, 3.5) * (1 - between(t, 5.6, 6.2)); // on "good night": a wai, and a bow
+    var arms = [
+      [[44, -84 - high * 24], [-44, -84 - hop(t, late + 0.5) * 24]],   // both arms up
+      [[66 + swing * 24, -56 + swing * 30], [-34, 44]],                 // one waves, one on the hip
+      [[26, -100 - high * 16], [-84, -6 + swing * 22]]                  // one up, one out to the side
+    ][k % 3];
+    var pose = woman ? poseAt(t + k, DANCE) : {};   // the women dance; each a second behind the other
+    if (woman) { arms = [pose.handA, pose.handB]; }
+    if (bow > 0.5) { arms = [[24, 6], [-24, 6]]; }  // the hands meet at the chest
+    person(170 + k * 275, GROUND + (woman ? 78 : 46), {
+      size: woman ? 1.3 : 1.2, shirt: shirts[k], legs: woman ? (k === 1 ? "#2f6b5a" : "#814a77") : "#3d4f78",
+      weave: k === 1 ? 2 : 3, sabai: k === 1 ? ["#f6e3a1", "#e86f9a"] : ["#3f8f5a", "#e0b23a"],
+      flower: k === 1 ? "#f28fa8" : "#e9c45c", garland: k === 1, pins: k === 3, tail: k === 3,
+      skirt: woman, bun: woman, mouth: mouthAt(SUNG), late: late, face: k < 3 ? 1 : -1, dance: woman,
+      turban: k === 0 ? "#3d4f78" : k === 4 ? "#e9c45c" : null,
+      sarong: k === 0 ? "#814a77" : k === 4 ? "#b2455a" : null,   // two of the men wear sarongs, one trousers
+      turn: mix(woman ? 0.6 : 0.3, 1, bow), at: bow > 0.5 ? [720, 1300] : [700 + k * 60, 300 - high * 40],
+      smile: 1, wonder: 0.3 * (1 - bow),
+      bend: (woman ? (pose.bend || 0) : swing * 0.06) * (1 - bow) + 0.28 * bow, handA: arms[0], handB: arms[1],
+      sit: woman ? (pose.sit || 0) * (1 - bow) : 0, tilt: woman ? (pose.tilt || 0) * (1 - bow) : 0,
+      raise: woman && bow < 0.5 ? pose.raise : undefined
+    });
+  }
+  // Dusk is on the people as well as the village; then the lanterns throw
+  // a warm light over everything, and sparks rise from them.
+  pen.fillStyle = "rgba(70, 40, 110, " + mix(0.08, 0.16, between(t, 0, 6)) + ")";
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.save();
+  pen.globalCompositeOperation = "soft-light";
+  var warm = pen.createRadialGradient(720, 480, 0, 720, 480, 900);
+  warm.addColorStop(0, "rgba(255, 190, 100, " + (0.9 * between(t, 0.5, 4)) + ")");
+  warm.addColorStop(1, "rgba(255, 190, 100, 0)");
+  pen.fillStyle = warm;
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.restore();
+  for (var spark = 0; spark < 40; spark++) {
+    var life = ((t * 0.5 + dice(spark + 60)) % 1);
+    pen.fillStyle = "rgba(255, 220, 140, " + (0.8 * (1 - life)) + ")";
+    pen.beginPath();
+    pen.arc(120 + dice(spark + 70) * 1200 + Math.sin(life * 9 + spark) * 20, 760 - life * 420 - dice(spark + 80) * 200,
+            1.5 + (1 - life) * 1.5, 0, 7);
+    pen.fill();
+  }
+  if (t > 6) {
+    pen.globalAlpha = between(t, 6, 6.6);
+    card("The End", "จบ");
+    pen.globalAlpha = 1;
+  }
+}
+
+// When each scene starts and ends. Each scene begins on a beat, a little
+// before its line of the song is sung (see LINES in village_sing.py).
+var SCENES = [[0, 8, sceneMorning], [8, 18, sceneParade], [18, 28, sceneMedicine],
+              [28, 36, sceneEvening]];
+
+// The words of the song: the second each line begins and ends, the line as
+// it is sung, and what it means. The seconds are the beats in LINES of
+// village_sing.py, times BEAT.
+var WORDS = [
+  [4, 7.7, "ไก่ขันแล้ว ตะวันขึ้นฟ้า", "The rooster crows, the sun is up"],
+  [9, 12.2, "ตีกลองยาว เดินไปวัด", "Beat the long drum, walk to the temple"],
+  [13, 16.2, "ตีกลองยาว เดินไปวัด", "Beat the long drum, walk to the temple"],
+  [19, 23, "ตำทีละที ยาสมุนไพร", "Pound by pound, the herbal medicine"],
+  [23, 27.2, "เสร็จแล้ว เสร็จแล้ว", "It's done! It's done!"],
+  [29, 31, "โคมลอยขึ้นฟ้า", "Lanterns rise to the sky"],
+  [31, 33.2, "ราตรีสวัสดิ์", "Good night"]
+];
+
+function draw(t) {
+  film(t, SCENES);
+  for (var n = 0; n < WORDS.length; n++) {
+    if (t >= WORDS[n][0] && t < WORDS[n][1]) { subtitle(WORDS[n][2], WORDS[n][3]); }
+  }
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+# Draw, render and check: render.py, stills.py, peek.py, checks/
+playwright==1.59.0
+pillow==12.2.0
+numpy==2.4.4
+scipy==1.17.1
+
+# The films' songs: *_sing.py, singer.py, sing_check.py
+librosa==0.11.0
+edge-tts==7.3.1
+pyworld==0.3.5
+faster-whisper==1.2.1
+
+# The dance track: dance_track.py
+mediapipe==1.1.0
+opencv-python==4.13.0.92

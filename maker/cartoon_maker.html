@@ -1,0 +1,2175 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>โรงหนังการ์ตูน: ทำการ์ตูนล้านนาของตัวเอง | Cartoon Maker · Krueng AI</title>
+<meta name="description" content="ลากตัวละครมาวางบนจอ วาดเส้นทางให้เดิน ใส่ข้อความตามเวลา แล้วดูโค้ด JavaScript ของหนังและบันทึกเป็นวิดีโอ ใช้ชุดวาดการ์ตูนล้านนา oldcartoon.js | Drag characters onto the stage, plot their courses, add text on a timeline; the page writes the film's JavaScript with the Lanna cartoon kit and records a video.">
+<style>
+  /* Page style: paper and crayon, this page's own. styles.refero.design (the site's
+     catalogue of styles) holds no children's or toy style, so none was taken from it;
+     the owner may pick one later. The rules: a cream paper sheet, big round buttons a
+     child can hit, the film's own brown ink (#3a2418) for text, one accent (the kit's
+     red #b23a3a) for what is selected, Thai first and English small under it. */
+  :root {
+    --paper: #f6efe0; --sheet: #fffaf0; --ink: #3a2418; --soft: #8a7256; --line: #d9ccb2;
+    --red: #b23a3a; --green: #4f8f5a; --gold: #e0b23a; --sky: #cfe5f3;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Leelawadee UI", "Noto Sans Thai", Tahoma, "Segoe UI", sans-serif; font-size: 16px; }
+  button { font: inherit; color: var(--ink); background: var(--sheet); border: 2px solid var(--line);
+    border-radius: 14px; padding: 8px 12px; cursor: pointer; touch-action: none; }
+  button:hover { border-color: var(--soft); }
+  button.on { border-color: var(--red); background: #fde9e4; }
+  small, .en { color: var(--soft); font-size: 12px; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 16px; }
+  header h1 { font-size: 20px; margin: 0 12px 0 0; }
+  header h1 .en { display: block; font-weight: normal; }
+  .maker { display: grid; grid-template-columns: 190px minmax(0, 1fr) 250px; gap: 12px; padding: 0 16px 16px; }
+  .palette, .panel { background: var(--sheet); border: 2px solid var(--line); border-radius: 16px; padding: 10px; min-width: 0; }
+  .palette h2, .panel h2 { font-size: 15px; margin: 8px 0 6px; }
+  .fold { cursor: pointer; user-select: none; }
+  .fold::before { content: "▾ "; color: var(--red); font-size: 12px; }
+  .fold.folded::before { content: "▸ "; }
+  .palette h2.fold.folded + .row { display: none; }
+  .panel .group label.fold.folded ~ * { display: none; }
+  .palette .row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .palette .row button { padding: 6px 8px; font-size: 14px; }
+  .palette .row button[data-pic] { padding: 3px 3px 2px; font-size: 12px; line-height: 1.2; flex: 0 0 calc(50% - 3px); min-width: 0; }
+  .palette .row button[data-pic] canvas { display: block; width: 100%; height: auto; border-radius: 8px; background: var(--paper); margin-bottom: 2px; }
+  .stage-wrap { min-width: 0; }
+  .stage-box { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; }
+  .stage-box canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform-origin: 0 0; }
+  .tools .zoom { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
+  .tools .zoom span { min-width: 44px; text-align: center; font-weight: bold; }
+  #marks { touch-action: none; cursor: crosshair; }
+  .tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 14px; }
+  .tools button { padding: 5px 10px; }
+  .stage-box.moving #marks { cursor: grab; }
+  .stage-box.moving.held #marks { cursor: grabbing; }
+  .stage-box.pathing { outline: 4px solid var(--red); outline-offset: -4px; }
+  .stage-box.pathing #marks { cursor: cell; }
+  .path-banner { position: absolute; left: 0; right: 0; top: 0; z-index: 3; display: none; align-items: center; gap: 10px;
+    background: rgba(178, 58, 58, 0.92); color: #fff6dc; padding: 6px 12px; font-size: 14px; }
+  .stage-box.pathing .path-banner { display: flex; }
+  .grip { position: absolute; top: 0; bottom: 0; width: 14px; z-index: 5; cursor: ew-resize; touch-action: none; background: rgba(255, 255, 255, 0); transition: background 0.2s; }
+  .grip::after { content: ""; position: absolute; top: 50%; width: 4px; height: 44px; margin-top: -22px; border-radius: 2px; background: rgba(255, 255, 255, 0.55); }
+  .grip.left { left: 0; }
+  .grip.left::after { left: 5px; }
+  .grip.right { right: 0; }
+  .grip.right::after { right: 5px; }
+  .grip:hover, .grip.held { background: rgba(224, 178, 58, 0.35); }
+  @media (max-width: 900px) { .grip { display: none; } }
+  .path-banner span { flex: 1; }
+  .time-pop { position: absolute; z-index: 4; display: none; background: var(--sheet); border: 3px solid var(--red); border-radius: 12px;
+    padding: 8px 10px; font-size: 14px; box-shadow: 0 4px 14px rgba(58, 36, 24, 0.35); transform: translate(-50%, 12px); white-space: nowrap; }
+  .time-pop.open { display: block; }
+  .time-pop input { width: 64px; font: inherit; font-weight: bold; padding: 4px; border: 2px solid var(--line); border-radius: 8px; margin: 0 6px; }
+  .time-pop button { padding: 4px 10px; border-radius: 10px; }
+  .time-pop .en { display: block; }
+  .panel li.pt { gap: 4px; }
+  .panel textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; padding: 6px; border: 2px solid var(--line); border-radius: 8px; resize: vertical; }
+  .panel li.pt.on { background: #fde9e4; border-radius: 8px; }
+  .panel li.pt input { width: 56px; font: inherit; padding: 2px 4px; border: 2px solid var(--line); border-radius: 6px; }
+  .panel li.pt .go { background: none; border: none; padding: 0 2px; cursor: pointer; white-space: nowrap; }
+  .panel li.pt span { font-size: 12px; white-space: nowrap; }
+  .panel li.pt input[type=checkbox] { width: 20px; height: 20px; margin: 0; padding: 0; flex: none; accent-color: var(--red); cursor: pointer; }
+  .panel li.pt.picked { background: #f6d5cf; border-radius: 8px; }
+  .panel button:disabled { opacity: 0.45; cursor: default; }
+  .path-banner button { padding: 4px 10px; border-radius: 10px; background: #fff6dc; border-color: #fff6dc; }
+  .ghost { position: fixed; pointer-events: none; padding: 6px 10px; background: var(--gold); border-radius: 10px;
+    font-weight: bold; transform: translate(-50%, -50%); display: none; z-index: 9; }
+  .timeline { margin-top: 8px; background: var(--sheet); border: 2px solid var(--line); border-radius: 12px; padding: 6px; }
+  #ruler { display: block; width: 100%; height: 120px; touch-action: none; cursor: pointer; }
+  .tl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 4px 2px 0; }
+  .tl-bar input[type=number] { width: 64px; font: inherit; padding: 4px; border: 2px solid var(--line); border-radius: 8px; }
+  .panel label { display: block; margin: 8px 0 2px; font-size: 14px; }
+  .panel input[type=range] { width: 100%; }
+  .panel input[type=text], .panel input[type=number] { width: 100%; font: inherit; padding: 6px; border: 2px solid var(--line); border-radius: 8px; }
+  .panel .poses { display: flex; flex-wrap: wrap; gap: 5px; }
+  .panel .poses button { padding: 5px 8px; font-size: 14px; }
+  .panel ul { list-style: none; padding: 0; margin: 6px 0; }
+  .panel li { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
+  .panel li button { padding: 2px 8px; border-radius: 8px; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-top: 4px; }
+  .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); padding: 0; cursor: pointer; }
+  .swatch.on { border-color: var(--red); box-shadow: 0 0 0 2px #fde9e4; }
+  .swatches input[type=color] { width: 34px; height: 30px; border: 2px solid var(--line); border-radius: 8px; padding: 2px; background: var(--sheet); cursor: pointer; }
+  .danger { color: var(--red); border-color: #e3b9b4; }
+  .sheet { position: fixed; inset: 0; background: rgba(58, 36, 24, 0.55); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 20; }
+  .sheet.open { display: flex; }
+  .sheet > div { background: var(--sheet); border-radius: 16px; padding: 16px; width: min(900px, 100%); max-height: 90vh; display: flex; flex-direction: column; gap: 8px; }
+  .sheet textarea { width: 100%; flex: 1; min-height: 50vh; font: 12px/1.4 Consolas, "Courier New", monospace; border: 2px solid var(--line); border-radius: 8px; padding: 8px; white-space: pre; }
+  .hint { font-size: 14px; line-height: 1.5; }
+  .hint ol { padding-left: 20px; margin: 6px 0; }
+  .help { overflow: auto; font-size: 15px; line-height: 1.55; padding-right: 6px; }
+  .help h3 { margin: 14px 0 4px; font-size: 16px; }
+  .help h3 small { display: block; font-weight: normal; }
+  .help p { margin: 4px 0; }
+  .help ul { margin: 4px 0; padding-left: 20px; }
+  .help .en { display: block; margin-bottom: 4px; }
+  .ai label { display: block; margin: 8px 0 2px; font-size: 14px; }
+  .ai input, .ai textarea { width: 100%; font: inherit; padding: 6px; border: 2px solid var(--line); border-radius: 8px; }
+  .ai textarea { min-height: 70px; }
+  .ai .three { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; }
+  .ai .status { min-height: 22px; font-size: 14px; color: var(--red); }
+  @media (max-width: 700px) { .ai .three { grid-template-columns: 1fr; } }
+  .help kbd { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 0 5px; font: inherit; }
+  @media (max-width: 900px) {
+    .maker { grid-template-columns: 1fr; }
+    .palette .row { flex-wrap: nowrap; overflow-x: auto; }
+    .palette .row button[data-pic] { flex: none; width: 104px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>โรงหนังการ์ตูน <span class="en">Cartoon maker · drawn by the <a href="https://krueng.ai/lanna_cartoon.html">Lanna cartoon kit</a></span></h1>
+  <button id="playBtn">▶ เล่น <small>play</small></button>
+  <button id="rewindBtn">⏮ ไปต้นเรื่อง</button>
+  <button id="exampleBtn">✨ ตัวอย่าง <small>example</small></button>
+  <button id="helpBtn">❓ วิธีใช้ <small>help</small></button>
+  <button id="aiBtn">🤖 ให้ AI สร้าง <small>a model writes it</small></button>
+  <button id="codeBtn">📜 ดูโค้ด <small>code</small></button>
+  <button id="videoBtn">🎥 บันทึกวิดีโอ <small>video</small></button>
+  <button id="clearBtn" class="danger">🔄 เริ่มใหม่ <small>reset · start over</small></button>
+</header>
+
+<main class="maker">
+  <aside class="palette">
+    <h2 class="fold" data-fold="cast">ตัวละคร <small>characters · ลากไปวางบนจอ</small></h2>
+    <div class="row" id="castRow"></div>
+    <h2 class="fold" data-fold="things">สัตว์และของ <small>things</small></h2>
+    <div class="row" id="thingRow"></div>
+    <h2 class="fold" data-fold="flora">ดอกไม้และผลไม้ <small>flowers and fruits</small></h2>
+    <div class="row" id="floraRow"></div>
+    <h2 class="fold" data-fold="pieces">ฉาก <small>set pieces</small></h2>
+    <div class="row" id="pieceRow"></div>
+    <h2 class="fold" data-fold="backdrop">ฉากหลัง <small>backdrop</small></h2>
+    <div class="row" id="backdropRow"></div>
+    <h2 class="fold" data-fold="text">ข้อความ <small>text</small></h2>
+    <div class="row">
+      <button id="addCard">🎞️ ป้ายชื่อเรื่อง</button>
+      <button id="addSubtitle">💬 คำบรรยาย</button>
+      <button id="openScript">📝 บทพูดทุกตอน</button>
+    </div>
+  </aside>
+
+  <section class="stage-wrap">
+    <div class="tools">
+      <span>เครื่องมือ <small>tool</small></span>
+      <button id="toolMove">✋ เลือกและย้าย <small>select &amp; move</small></button>
+      <button id="toolCourse" class="on">📍 เส้นทาง <small>course</small></button>
+      <span class="en" id="toolHint">ลากตัวละครไปที่ใหม่: จุดถัดไปของเส้นทาง · drag a character: the next point of its course</span>
+      <span class="zoom"><button id="zoomOut" title="ย่อ · zoom out">🔍−</button><span id="zoomLabel">100%</span><button id="zoomIn" title="ขยาย · zoom in">🔍+</button><button id="zoomReset" title="พอดีจอ · fit the stage">↺ พอดีจอ</button></span>
+    </div>
+    <div class="stage-box" id="stageBox">
+      <canvas id="stage" width="1920" height="1080"></canvas>
+      <canvas id="marks" width="1920" height="1080"></canvas>
+      <div class="path-banner" id="pathBanner"><span id="pathText"></span><button id="pathDone">✓ เสร็จ <small>done</small></button></div>
+      <div class="time-pop" id="timePop"><span id="timePopLabel"></span><input type="number" id="timePopBox" step="0.5" min="0"><span>วินาที</span><button id="timePopOk">ตกลง</button><span class="en" id="timePopEn"></span></div>
+      <div class="grip left" id="gripLeft" title="ดึงเพื่อขยายจอ · pull to widen the stage"></div>
+      <div class="grip right" id="gripRight" title="ดึงเพื่อขยายจอ · pull to widen the stage"></div>
+    </div>
+    <div class="timeline">
+      <canvas id="ruler" width="1200" height="120"></canvas>
+      <div class="tl-bar">
+        <span id="timeLabel">0.0 วินาที</span>
+        <label>ความยาว <input type="number" id="durationBox" min="3" max="90" step="1"> วินาที <small>duration</small></label>
+        <span class="en">เลื่อนเวลา แล้วลากตัวละครไปที่ใหม่: นั่นคือเส้นทางของมัน · scrub, then drag a character: that is its course</span>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel" id="panel"></aside>
+</main>
+
+<div class="ghost" id="ghost"></div>
+
+<div class="sheet" id="aiSheet">
+  <div>
+    <div class="help ai">
+      <h2 style="margin:0">🤖 ให้โมเดลเขียนหนัง <small>Let a model write the film</small></h2>
+      <p>เล่าเรื่องสั้น ๆ แล้วโมเดลตอบกลับมาเป็นข้อมูลของหน้านี้: ตัวละคร เส้นทาง ฉาก ข้อความ หน้านี้วาดและบันทึกวิดีโอให้ ใช้ได้กับ OpenAI และทุกบริการที่พูด API แบบเดียวกัน เช่น Ollama บนเครื่องของคุณเอง หรือจะคัดลอกคำสั่งไปถามโมเดลไหนก็ได้ แล้ววางคำตอบกลับมาที่นี่</p>
+      <span class="en">Tell a short story and the model answers with this page's own data: characters, courses, set and text. The page draws it and records the video. Works with OpenAI and any service that speaks the same API, such as Ollama on your own computer; or copy the instructions to any model you like and paste its answer back here.</span>
+      <label>เรื่อง <small>the story</small></label>
+      <textarea id="aiStory">เด็กชายกับเด็กหญิงเดินไปหาแม่ที่บ้าน หมาวิ่งตาม มีพญานาคบินผ่านท้องฟ้า จบด้วยทุกคนไหว้กัน</textarea>
+      <div class="three">
+        <label>ที่อยู่ API <small>base URL</small><input id="aiBase" value="https://api.openai.com/v1"></label>
+        <label>โมเดล <small>model</small><input id="aiModel" value="gpt-4o-mini"></label>
+        <label>คีย์ <small>API key; none for Ollama</small><input id="aiKey" type="password" autocomplete="off"></label>
+      </div>
+      <p><button id="aiGo">✨ สร้างหนัง <small>make the film</small></button> <button id="aiCopyPrompt">📋 คัดลอกคำสั่ง <small>copy the instructions</small></button> <button id="aiPaste">📥 วางคำตอบ <small>load a pasted answer</small></button></p>
+      <div class="status" id="aiStatus"></div>
+      <textarea id="aiJson" placeholder="วาง JSON ที่โมเดลตอบมาที่นี่ แล้วกด วางคำตอบ · paste a model's JSON answer here, then press load"></textarea>
+      <p class="en">Ollama: address http://your-spark.local:11434/v1, model qwen2.5:14b, no key; the server must allow this page with OLLAMA_ORIGINS=https://krueng.ai. The address, model and key are kept in this browser only.</p>
+    </div>
+    <div style="display:flex;gap:8px"><button id="closeAi">ปิด <small>close</small></button></div>
+  </div>
+</div>
+
+<div class="sheet" id="helpSheet">
+  <div>
+    <div class="help">
+      <h2 style="margin:0">❓ วิธีใช้โรงหนังการ์ตูน <small>How to use the cartoon maker</small></h2>
+      <h3>1. จอและจานสี <small>The stage and the palette</small></h3>
+      <p>ทางซ้ายคือจานสี ลากตัวละคร สัตว์ ของ ดอกไม้ ผลไม้ หรือชิ้นฉากไปปล่อยบนจอ มันจะยืนตรงที่ปล่อย คนกับชิ้นฉาก และดอกไม้ผลไม้ ยืนบนพื้น ตะวันกับฝูงนกอยู่บนฟ้า พญานาคและมังกรปล่อยได้ทุกที่: จุดที่ปล่อยคืออกของพญานาคหรือหัวของมังกร ลำตัวทอดตามหลัง สัตว์ในตำนานล้านนามีสองตัว: มอมเดินบนพื้น และพญาลวงบินไปตามเส้นทาง ลำตัวทอดตามหัว</p>
+      <span class="en">The palette is on the left. Drag a character, an animal, a thing, a flower or fruit, or a set piece onto the stage; it stands where you drop it. People, set pieces, flowers and fruits stand on the ground, the sun and the birds in the sky. The Naga and the dragon can go anywhere: the point you drop is the Naga's chest or the dragon's head, and the body trails behind. Two are creatures of the myths of Lanna: the Mom walks on the ground, and the Luang flies along its course, its body behind its head.</span>
+      <p>โคมลอยไม่ลอยเอง: ให้เส้นทางขึ้นฟ้ามัน (ข้อ 2) แล้วมันจะลอยขึ้น และสว่างที่สุดบนท้องฟ้ากลางคืน</p>
+      <span class="en">A lantern does not rise by itself: give it a course up into the sky (part 2) and it climbs, brightest on the night backdrop.</span>
+      <p>โคมล้านนาแขวนจากจุดที่ปล่อย: มันแกว่งและหมุนตามลม หางแกว่งเบาๆ เทียนข้างในดับตอนกลางวันและติดตอนเย็นกับกลางคืน หรือเลือกเองในแผง ให้เส้นทางมันแล้วมันจะเอนตามทาง เหมือนโคมที่ถือไป</p>
+      <span class="en">A Lanna lantern hangs from the point you drop: it swings and turns in the breeze, its tail sways, and its candle is off by day and on at dusk and at night, or set it in the panel. Give it a course and it leans as it is carried.</span>
+      <p>แตะสิ่งใดบนจอเพื่อเลือก กรอบสีแดงล้อมสิ่งที่เลือก และแผงทางขวาแสดงสิ่งที่เปลี่ยนได้ แตะที่ว่างเพื่อเลิกเลือก</p>
+      <span class="en">Tap anything on the stage to select it: a red frame marks it, and the panel on the right shows what can be changed. Tap an empty spot to unselect.</span>
+      <p>ลบสิ่งที่เลือกด้วยปุ่ม <kbd>Delete</kbd> บนคีย์บอร์ด หรือปุ่ม 🗑️ ในแผง</p>
+      <span class="en">Remove what is selected with the <kbd>Delete</kbd> key, or the 🗑️ button in the panel.</span>
+      <p><b>เครื่องมือเหนือจอ:</b> ✋ เลือกและย้าย ลากสิ่งใดก็ได้ไปที่ใหม่ ทั้งเส้นทางของมันย้ายตามไปด้วย และปุ่มลูกศรขยับสิ่งที่เลือกทีละ 10 (กด Shift ค้าง ทีละ 50) 📍 เส้นทาง คือแบบปกติ: การลากคือจุดถัดไปของเส้นทาง (ข้อ 2)</p>
+      <span class="en">The tools above the stage: ✋ select &amp; move picks any sprite up and carries it, its whole course along with it, and the arrow keys nudge the selected one by 10 (hold Shift for 50). 📍 course is the usual way: a drag is the next point of a course (part 2).</span>
+      <p><b>ซูม:</b> ปุ่ม 🔍+ และ 🔍− ที่มุมขวาเหนือจอขยายและย่อจอ หรือกด Ctrl ค้างแล้วหมุนล้อเมาส์ตรงจุดที่อยากดู เมื่อขยายแล้ว ลากที่ว่างบนจอเพื่อเลื่อนดู ↺ พอดีจอ กลับมาเต็มจอ</p>
+      <span class="en">Zoom: 🔍+ and 🔍− at the right above the stage zoom in and out, or hold Ctrl and roll the mouse wheel over the spot you want to see. Zoomed in, drag empty stage to look around; ↺ fit returns to the whole stage.</span>
+      <h3>2. เส้นทาง <small>Courses: how a character moves</small></h3>
+      <p>แถบล่างคือเวลาของหนัง เส้นแดงคือวินาทีที่กำลังดู ลากหรือแตะบนแถบเพื่อเลื่อนเวลา</p>
+      <p>เมื่อวางตัวละคร กล่องถามว่าเริ่มที่วินาทีไหน ลากตัวละครไปที่ใหม่: นั่นคือ<b>จุด</b>ถัดไปบนเส้นทางของมัน และกล่องถามว่าถึงจุดนั้นที่วินาทีไหน จุดใหม่มาหลังจุดสุดท้ายเสมอ และเวลาของจุดต้องมากขึ้นเรื่อย ๆ: ใส่เลขน้อยกว่าจุดก่อน กล่องจะเลื่อนให้เอง ตัวละครเดินตามเส้นโค้งเรียบผ่านทุกจุดเอง ผ่านจุดกลางทางโดยไม่หยุด หันหน้าไปทางที่เดิน และหยุดที่จุดสุดท้าย อยากให้พักกลางทาง ให้วางจุดถัดไปที่เดิมในวินาทีที่จะออกเดินต่อ เส้นประบนจอคือเส้นทาง จุดสีทองคือจุดที่วินาทีนี้ ลากตัวละครขณะที่เวลาอยู่ที่จุดหนึ่งพอดีคือย้ายจุดนั้น</p>
+      <span class="en">The bar at the bottom is the film's time; the red line is the second you are looking at. Drag or tap on the bar to move it. When you drop a character, a box asks which second it starts at. Drag the character somewhere else: that is the next point of its course, and a box asks which second it arrives there. A new point always comes after the last one, and the seconds only go up: a number lower than the point before is raised for you. The character walks a smooth curve through its points by itself, passing the ones in between without stopping, faces the way it goes, and stops at the last one. For a rest on the way, put the next point at the same place, at the second it walks on. The dotted line on the stage is the course; the gold dot is the point at this second. Dragging while the time sits exactly on a point moves that point.</span>
+      <p><b>วิธีที่ง่ายกว่า:</b> เลือกตัวละครแล้วกด ✏️ วาดเส้นทาง ในแผง แถบสีแดงบนจอบอกว่าเปิดอยู่ จากนั้นแตะบนจอทีละจุด: แต่ละจุดอยู่ถัดจากจุดก่อนตามช่วงที่ตั้ง (2 วินาที) จุดมีเลขและวินาทีกำกับ กด ✓ เสร็จ หรือ Esc เมื่อพอ</p>
+      <span class="en">The easier way: select the figure and press ✏️ path in the panel. A red bar across the stage says it is on. Then tap the stage once per point: each point comes the set gap (2 seconds) after the one before, and the points are numbered with their second. Press ✓ done or Esc when you have enough.</span>
+      <p>ในแผงทางขวา รายการ "จุดบนเส้นทาง" คือตัวจัดการจุด: แตะ 📍 เพื่อไปที่จุดนั้น แก้วินาทีในช่อง (อยู่ระหว่างจุดข้างเคียงเสมอ) กด ✕ เพื่อลบจุด หรือ "ลบจุดสุดท้าย" จะลบหลายจุดพร้อมกัน: ติ๊กช่องหน้าแถวของจุดที่ไม่ต้องการ (จุดที่ติ๊กมีวงแดงบนจอ) แล้วกด 🗑️ ลบจุดที่เลือก หรือปุ่ม Delete แถวในแถบเวลาแสดงจุดของแต่ละตัว แตะจุดในแถบเพื่อกระโดดไปวินาทีนั้น หมา ไก่ นก พญานาค และมังกรก็มีเส้นทางได้เหมือนกัน</p>
+      <span class="en">In the panel, "points of the course" is the point manager: 📍 goes to a point, the box changes its second (always between its neighbours), ✕ deletes it, and "remove last point" undoes the newest. To delete several at once, tick the box at the start of each row you do not want (a ticked point gets a red ring on the stage), then press 🗑️ delete the ticked points, or the Delete key. Each mover has a row on the time bar; tap a dot there to jump to that second. The dog, the rooster, the birds, the Naga and the dragon take courses too.</span>
+      <h3>3. ท่าทางและขนาด <small>Poses and size</small></h3>
+      <p>เลือกคนแล้วเลื่อน "ขนาด" และ "ยิ้ม" ท่าทางมีห้าแบบ: ปกติ (เดินเมื่อมีเส้นทาง ยืนเมื่อถึง) โบกมือ ไหว้ นั่ง และร้องเพลง ทุกคนเต้นตามจังหวะเพลงของหนังอยู่แล้ว</p>
+      <span class="en">Select a sprite to set its size: the slider, the square handle at its top-right corner on the stage (drag it out to grow, in to shrink), or Alt and the mouse wheel over the stage. A person also has a smile. Five poses: normal (walks on a course, stands when there), wave, wai, sit, and sing. Everyone keeps the beat of the film by themselves.</span>
+      <p><b>สี:</b> เลือกส่วนก่อน (เสื้อ ขา/ซิ่น ผิว; พญานาค: ตัว ท้อง หงอน ปาก; มังกร: ตัว จุด ท้อง ไฟ แผงคอ ไข่มุก) แล้วแตะสีในจานสี หรือเลือกสีใดก็ได้จากช่องสีข้าง ๆ "คืนสีเดิม" กลับไปสีของชุดวาด</p>
+      <span class="en">Colours: pick a part first (shirt, legs or sin, skin; the Naga: body, belly, crest, mouth; the dragon: body, spots, belly, flame, mane, pearls), then tap a swatch, or choose any colour in the box beside them. "Reset" returns to the kit's own colours.</span>
+      <h3>4. ข้อความ <small>Text on the timeline</small></h3>
+      <p><b>ป้ายชื่อเรื่อง</b> เต็มจอในช่วงเวลาของมัน: บรรทัดใหญ่กับบรรทัดเล็ก ตั้งแต่วินาทีไหนถึงวินาทีไหน <b>คำบรรยาย</b> คือคำใต้ภาพในช่วงเวลาของมัน ข้อความถูกสร้างที่วินาทีที่กำลังดู ยาวสามวินาที แล้วแก้ในแผงทางขวา แถบสีบนแถบเวลาคือข้อความ แตะเพื่อเลือก</p>
+      <span class="en">A title card fills the screen during its time: a big line and a small line, from one second to another. A subtitle is words under the picture during its time. A text starts at the second you are looking at, lasts three seconds, and is edited in the panel. The coloured bars on the time bar are the texts; tap one to select it.</span>
+      <p><b>บทพูดทุกตอน</b> แสดงข้อความทุกตอนเรียงตามเวลา แตะตอนไหนก็แก้ตอนนั้น "ตอนถัดไป" เพิ่มตอนใหม่ต่อจากตอนสุดท้าย และกล่อง "หลายตอนทีเดียว" ทำหลายตอนจากบรรทัดที่พิมพ์: บรรทัดละตอน บรรทัดใหญ่ | บรรทัดเล็ก ตอนละกี่วินาทีก็ตั้งได้ ต่อกันไปเรื่อย ๆ บรรทัดที่ขึ้นต้นด้วย = คือป้ายชื่อเรื่อง ในแผงของตอนหนึ่งมีปุ่มไปตอนก่อน ตอนถัดไป และเพิ่มตอนใหม่ต่อจากตอนนี้</p>
+      <span class="en">"The script" lists every passage in time order; tap one to edit it. "Next passage" adds one after the last, and the "many at once" box makes a run of passages from typed lines: one passage per line, big | small, each the same number of seconds, one after another; a line that starts with = is a title card. A passage's own panel has previous, next, and a new passage after this one.</span>
+      <h3>5. ฉาก <small>Backdrop and set pieces</small></h3>
+      <p>ฉากหลังมีสองพวก พวกแรกคือเนินเขาสีเขียวสามเวลา กลางวัน เย็น กลางคืน เมฆลอยไปเองทั้งเรื่อง ก้อนใกล้ใหญ่และเร็ว ก้อนไกลเล็ก ช้า และจางลงในระยะไกล พวกที่สองคือภาพวาดทั้งภาพ เช่น นาข้าว แม่น้ำ ดอย น้ำตก หมู่บ้าน ตลาด และคืนยี่เป็ง แตะรูปเล็กเพื่อเลือก ภาพพวกนี้มีท้องฟ้าของตัวเอง และเมฆในภาพไม่ลอย ชิ้นฉาก (บ้าน ต้นไม้ มะพร้าว กล้วย วัด ยักษ์ และต้นไม้ที่ออกดอกออกผล เช่น ต้นลำไย ต้นราชพฤกษ์) อยู่นิ่ง ลากเพื่อย้าย คนที่ยืนต่ำกว่าบนจอจะอยู่หน้ากว่า</p>
+      <span class="en">Two kinds of backdrop. The first is the green hills at three hours: day, dusk, night. Their clouds drift by themselves all film long: near ones big and quick, far ones small, slow and faded with distance. The second is whole painted pictures, such as rice fields, a river, a mountain, a waterfall, a village, a market and the night of Yi Peng: tap a small picture to choose it. A picture has its own sky, and the clouds in it do not drift. Set pieces (house, tree, palm, banana, temple, yak, and the trees in flower or fruit, such as a longan or a golden shower tree) stand still; drag one to move it. Whoever stands lower on the stage is drawn in front.</span>
+      <p><b>มังกรบินเข้าหาและออกจากจอ:</b> เลือกมังกร แต่ละจุดบนเส้นทางมีแถบเลื่อน ไกล–ใกล้ ไกลคือตัวเล็ก จาง และอยู่หลังทุกคน ใกล้คือตัวใหญ่และอยู่หน้าสุด ตั้งจุดแรกไกลและจุดท้ายใกล้ มันจะบินเข้ามาหาเรา</p>
+      <span class="en">The dragon flies toward and away from the screen: select it, and each point of its course has a far–near slider. Far is small, faint and behind everyone; near is big and in front of them all. Set the first point far and the last near and it flies in at you.</span>
+      <h3>6. เล่น โค้ด วิดีโอ <small>Play, code, video</small></h3>
+      <p>▶ เล่นหนังวนไป ⏮ กลับไปต้นเรื่อง "ความยาว" ตั้งความยาวของหนังเป็นวินาที</p>
+      <p>📜 ดูโค้ด: หนังทั้งเรื่องเป็นหน้าเว็บหนึ่งหน้า เขียนด้วยชุดวาดการ์ตูนล้านนา สิ่งที่เห็นบนจอคือโค้ดนี้ที่กำลังรันอยู่ ดาวน์โหลดเป็นไฟล์ .html เปิดในเบราว์เซอร์ก็เล่นได้ หรือทำเป็นไฟล์วิดีโอด้วย render.py ของชุดวาด</p>
+      <p>🎥 บันทึกวิดีโอ: หนังเล่นหนึ่งรอบตั้งแต่ต้น แล้วเบราว์เซอร์บันทึกจอเป็นไฟล์ .webm ให้ดาวน์โหลด กดปุ่มเดิมอีกครั้งเพื่อหยุดก่อน</p>
+      <span class="en">▶ plays the film in a loop, ⏮ goes to the start, and "duration" sets the film's length in seconds. Code: the whole film as one web page, written with the Lanna cartoon kit; what you see on the stage is this code running. Download it as .html and open it in a browser, or make a video file with the kit's render.py. Video: the film plays once from the start while the browser records the stage to a .webm file; press the same button again to stop early.</span>
+      <h3>7. ชุดวาดและหนัง <small>The kit and the film</small></h3>
+      <p>ทุกอย่างบนจอวาดด้วย oldcartoon.js ชุดวาดการ์ตูนล้านนา หน้า <a href="https://krueng.ai/lanna_cartoon.html">การ์ตูนล้านนาที่ทำด้วยโค้ด</a> เล่าเรื่องหนังหนึ่งนาทีที่ทำด้วยมัน อธิบายชุดวาด และสอนเขียนหนังเองทีละขั้น โค้ดที่หน้านี้สร้างให้คือหนังแบบเดียวกัน</p>
+      <span class="en">Everything on the stage is drawn by oldcartoon.js, the Lanna cartoon kit. The page <a href="https://krueng.ai/lanna_cartoon.html">A Lanna cartoon made in code</a> tells the story of the one-minute film made with it, explains the kit, and teaches writing a film by hand, step by step. The code this page writes for you is a film of that same kind.</span>
+      <h3>8. ให้ AI สร้าง <small>A model writes the film</small></h3>
+      <p>กด 🤖 ให้ AI สร้าง เล่าเรื่องสั้น ๆ ใส่ที่อยู่ API โมเดล และคีย์ (OpenAI หรือบริการที่พูด API แบบเดียวกัน เช่น Ollama บนเครื่องของคุณ) แล้วกด สร้างหนัง โมเดลตอบเป็นข้อมูลของหน้านี้ หน้านี้ตรวจทุกชื่อและทุกตัวเลขก่อนวาด แล้วคุณแก้ต่อได้เหมือนหนังที่ทำเอง ไม่มีคีย์ก็ได้: คัดลอกคำสั่ง ไปถามโมเดลไหนก็ได้ แล้ววางคำตอบ JSON กลับมา</p>
+      <span class="en">Press 🤖, tell a short story, give the API address, model and key (OpenAI, or any service with the same API, such as Ollama on your own computer), and press make. The model answers with this page's data; the page checks every name and number before drawing, and you can edit the result like any film. Without a key: copy the instructions, ask any model, and paste its JSON answer back.</span>
+      <p><b>จากบรรทัดคำสั่ง หรือจากเอเจนต์:</b> <a href="cartoon_maker_assets/film.py">film.py</a> รับหนังเป็น JSON แบบเดียวกัน แล้วให้หน้านี้ตรวจและเขียนโค้ด ออกมาเป็นหน้าเว็บ ภาพนิ่ง และวิดีโอ <a href="cartoon_maker_assets/SKILL.md">SKILL.md</a> บอกเอเจนต์ AI ว่าใช้มันอย่างไร</p>
+      <span class="en">From the command line, or from an AI agent: film.py takes the same JSON, has this page check it and write the code, and gives a page, stills and a video. SKILL.md tells an agent how to use it.</span>
+      <h3>9. ต่อกับเอเจนต์ AI <small>Wiring the skill to an AI agent</small></h3>
+      <p>เอเจนต์เขียนโค้ด (Claude Code, Codex, OpenCode) ทำการ์ตูนได้เองทั้งเรื่อง ถ้ามี<b>สกิล</b>: ไฟล์คำแนะนำที่บอกว่าใช้เครื่องมือนี้อย่างไร วิธีต่อ:</p>
+      <ol>
+        <li>ดาวน์โหลด <a href="cartoon_maker_assets/film.py">film.py</a> และ <a href="cartoon_maker_assets/SKILL.md">SKILL.md</a> ไว้ในโฟลเดอร์เดียวกัน ติดตั้ง Python, <code>pip install playwright</code>, Chrome และ ffmpeg</li>
+        <li>รัน <code>python film.py skill claude_code</code> (หรือ <code>codex</code> หรือ <code>opencode</code>) มันคัดลอก SKILL.md ไปไว้ในโฟลเดอร์สกิลของเอเจนต์นั้น: <code>~/.claude/skills/lanna-cartoon/</code> สำหรับ Claude Code, <code>~/.agents/skills/lanna-cartoon/</code> สำหรับ Codex และ OpenCode ในโปรเจกต์ Claude Code ยังอ่าน <code>.claude/skills/</code> ด้วย</li>
+        <li>เริ่มเอเจนต์ใหม่ แล้วบอกว่า "ทำการ์ตูนเรื่อง..." เอเจนต์อ่านสกิล ขอคำศัพท์จากหน้านี้ เขียนหนังเป็น JSON ดูภาพนิ่ง แก้ แล้วเรนเดอร์วิดีโอให้</li>
+      </ol>
+      <span class="en">A coding agent (Claude Code, Codex, OpenCode) can make a whole cartoon by itself if it has the skill: the file of instructions that says how to use this tool. To wire it: download film.py and SKILL.md into one folder, with Python, <code>pip install playwright</code>, Chrome and ffmpeg; run <code>python film.py skill claude_code</code> (or codex, or opencode), which copies SKILL.md into that agent's skills folder, <code>~/.claude/skills/lanna-cartoon/</code> for Claude Code and <code>~/.agents/skills/lanna-cartoon/</code> for Codex and OpenCode (in a project, Claude Code also reads <code>.claude/skills/</code>); start the agent again and say "make a cartoon of ...". The agent reads the skill, asks this page for the vocabulary, writes the film as JSON, looks at stills, fixes, and renders the video.</span>
+      <p>หนังที่เกินกว่า JSON จะบอกได้ เช่น กล้องที่เคลื่อน หรือผ้าที่ทอรูปคน เอเจนต์เขียนเองเป็นหน้าของชุดวาด ตามที่ <a href="https://krueng.ai/lanna_cartoon.html">การ์ตูนล้านนาที่ทำด้วยโค้ด</a> สอน แล้วเรนเดอร์ด้วย render.py: หน้านี้กับสกิลทำแบบนั้นมาแล้วกับหนังเรื่องหนึ่ง</p>
+      <span class="en">A film beyond what the JSON can say, such as a camera that moves or a cloth woven with figures, the agent writes by hand as a page of the kit, as the Lanna cartoon page teaches, and renders with render.py; this page's skill has made one such film already.</span>
+      <h3>10. เก็บงาน <small>Saving</small></h3>
+      <p>งานของคุณถูกเก็บในเบราว์เซอร์นี้เองทุกครั้งที่เปลี่ยน ปิดแล้วเปิดใหม่ก็ยังอยู่ ✨ ตัวอย่าง โหลดหนังตัวอย่างมาแก้ต่อ 🔄 เริ่มใหม่ ล้างทุกอย่างกลับไปเหมือนตอนเปิดหน้าครั้งแรก: หนัง เวลา สิ่งที่เลือก โหมดเส้นทาง เครื่องมือ การซูม แผงทางขวา สีที่เลือก และแผ่นคู่มือ โค้ด และโมเดล กับสิ่งที่พิมพ์ไว้ในนั้น ถามสองครั้งก่อนทำ</p>
+      <span class="en">Your work is kept in this browser every time it changes, and is still there after you close the page. Example loads a sample film to change. Reset puts everything back as it was when the page first opened: the film, the time, the selection, path mode and the tool; it asks twice first.</span>
+    </div>
+    <div style="display:flex;gap:8px"><button id="closeHelp">ปิด <small>close</small></button></div>
+  </div>
+</div>
+
+<div class="sheet" id="codeSheet">
+  <div>
+    <div class="hint">โค้ดของหนังเรื่องนี้ทั้งหน้า: บันทึกเป็นไฟล์ .html แล้วเปิดในเบราว์เซอร์ก็เล่นได้ หรือใช้ <code>render.py</code> ของชุดวาดทำเป็นไฟล์วิดีโอ
+      <span class="en">The whole film as one page. Save it as .html and open it; or render it with the kit's render.py.</span></div>
+    <textarea id="codeBox" spellcheck="false"></textarea>
+    <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="downloadBtn">💾 ดาวน์โหลด .html</button>
+      <button id="copyBtn">📋 คัดลอก</button>
+      <button id="closeCode">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<script src="../kit/oldcartoon.js"></script>
+<script src="../kit/naga.js"></script>
+<script src="../kit/dragon.js"></script>
+<script src="../kit/beasts.js"></script>
+<script src="../kit/myth.js"></script>
+<script src="../kit/flora.js"></script>
+<script src="../kit/khom.js"></script>
+<script src="../kit/motion.js"></script>
+<script src="../kit/cumulus.js"></script>
+<script src="../kit/sabai.js"></script>
+<script src="../kit/backdrops.js"></script>
+<script src="../kit/pieces.js"></script>
+<script>
+// ---------- what the palette offers ----------
+// Each entry: the kit's name, and what a child sees. The kit draws every one of
+// these; this page only chooses where and when.
+// The kit's monk is not offered here, out of respect: a temple may stand in a film, but nobody plays at being a monk.
+var CASTS = [["boy", "👦 เด็กชาย"], ["girl", "👧 เด็กหญิง"], ["lady", "👩 สาว"], ["fellow", "👨 หนุ่ม"], ["villager", "👳 ชาวบ้าน"], ["farmer", "👨‍🌾 หนุ่มเจียงใหม่"], ["noble", "👑 เจ้าชาย"],
+             ["maiden", "🌸 แม่หญิง"], ["weaver", "👵 แม่อุ๊ย"], ["elder", "👴 พ่ออุ๊ย"], ["grandmother", "👩‍🦳 ยาย"],
+             ["oldfarmer", "👨‍🌾 ลุงชาวนา"], ["devotee", "🙏 ยายไปวัด"], ["dancer", "💃 ช่างฟ้อน"], ["celestial", "🪷 เทวดา"],
+             ["drummer", "🥁 มือกลอง"], ["scientist", "🥼 นักวิทย์"]];
+// The old of the cast. Four are the kit's own old people, who have white or grey hair, the lines of age and a stoop
+// as the kit draws them: an elder with a beard and a stick, a small bent grandmother, an old farmer under his hat,
+// and an old woman in white for the temple. The fifth is the kit's weaver, a grown woman with black hair: here she is
+// แม่อุ๊ย, a grandmother, so this page gives her what makes a face and a head of hair old, in the kit's own look names.
+var AGED = {weaver: 'hair: "#e8e3da", age: 1'};
+// The kit's Hatsadiling bird (myth.js) is not offered here, out of respect: in the north it is known from the
+// cremations of revered monks and of rulers, and that is not a thing for a child's cartoon.
+var THINGS = [["dog", "🐕 หมา"], ["rooster", "🐓 ไก่"], ["naga", "🐉 พญานาค"], ["dragon", "🐲 มังกร"], ["mom", "🦁 มอม"], ["luang", "⚡ พญาลวง"], ["sun", "☀️ ตะวัน"], ["birds", "🐦 ฝูงนก"], ["lantern", "🏮 โคมลอย"], ["khom", "🎐 โคมล้านนา"],
+              ["chedisai", "🏖️ เจดีย์ทราย"], ["pratheep", "🕯️ ผางประทีป"], ["krathong", "🪷 กระทง"], ["oxcart", "🐃 เกวียน"]];
+var PIECES = [["house", "🏠 บ้าน"], ["tree", "🌳 ต้นไม้"], ["palm", "🌴 มะพร้าว"], ["banana", "🍌 กล้วย"], ["temple", "🛕 วัด"], ["yak", "👹 ยักษ์"],
+              ["namton", "🏺 น้ำต้น"], ["tung", "🎏 ตุง"], ["drumcart", "🥁 กลองหลวง"]];   // pieces.js: the water jar at the gate, a tung with a hong on its pole, the great drum on its cart
+// The flowers and fruits of flora.js, with the kit's own Thai names: each stands on the
+// ground as a thing; the ones a tree can bear are also a tree in flower or fruit, a set piece.
+var FLORAS = Object.keys(window.FLORA || {}).map(function (n) { return [n, (FLORA[n].kind === "flower" ? "🌸 " : "🍈 ") + FLORA[n].thai]; });
+var TREES = Object.keys(window.FLORA_TREES || {}).map(function (n) { return [n + "Tree", "🌳 ต้น" + FLORA[n].thai]; });
+// The backdrops. Three are this page's own: the green hills at three hours of the day, under clouds that drift.
+// The rest are the pictures of backdrops.js, whose table is BACKDROPS (a name, a line about it, its name in Thai):
+// each is a whole painting with its own sky. A picture that has the name of one of the three is not offered.
+var HOURS = [["day", "🌤️ กลางวัน"], ["dusk", "🌇 เย็น"], ["night", "🌙 กลางคืน"]];
+var PICTURES = (window.BACKDROPS || []).filter(function (row) { return !HOURS.some(function (h) { return h[0] === row[0]; }); })
+                                       .map(function (row) { return [row[0], row[2] || row[0], row[1]]; });
+var BACKS = HOURS.concat(PICTURES);     // every backdrop a film may have
+var POSES = [["walk", "🚶 ปกติ"], ["wave", "👋 โบกมือ"], ["wai", "🙏 ไหว้"], ["sit", "🧘 นั่ง"], ["sing", "🎤 ร้องเพลง"],
+             ["parasol", "🌂 กางร่ม"], ["furled", "🌂 ร่มหุบ"], ["carry", "🌂 ถือร่ม"], ["twirl", "🎡 หมุนร่ม"], ["spin", "🎡 หมุนค้างไว้"],
+             ["fold", "🎡 หุบแล้วถือ"], ["open", "☂️ เปิดร่ม"], ["close", "🌂 หุบร่ม"], ["bloom", "🎡 บานแล้วหุบ"]];
+// The parasol poses are for the women: held open, held furled, carried furled at her side, tipped to the viewer and
+// spun (twirl: it comes back up; spin: the other hand comes to it and it stays down), fold (down: closed, snapped open
+// as if shaking the rain off, closed, and swung down to her side, 5.6 s), opened upright, furled upright, and bloom (tipped furled,
+// opened, spun, furled, lifted).
+// Which parasol she carries:
+var PARASOLS = [["lai", "🌂 ลายไทย"], ["yantra", "🌂 ยันต์แปดทิศ"], ["buddha", "🌂 พระพุทธรูป"]];
+// The colours a child can pick: the kit's own cloths and skins first, then a few more.
+var COLOURS = ["#f4d6b8", "#f1cda8", "#e6bd95", "#d9a878", "#c08a5a", "#f2ead8", "#ffffff", "#e9c45c", "#f4c542", "#f08a5c",
+               "#f28fa8", "#e86f6f", "#d9573a", "#b23a3a", "#8a2a3a", "#814a77", "#8fc0cf", "#4a6797", "#2f3f6e", "#8fc47a",
+               "#3f8f5a", "#2f7d5c", "#e0b23a", "#3a2418", "#1f1a1a"];
+// The parts of a person, and of the Naga, that a colour can change: the kit's name for each
+var PARTS = {person: [["shirt", "👕 เสื้อ"], ["legs", "👖 ขา/ซิ่น"], ["skin", "✋ ผิว"]],
+             naga: [["body", "🐉 ตัว"], ["belly", "🟡 ท้อง"], ["crest", "🔥 หงอน"], ["fire", "👄 ปาก"]],
+             dragon: [["body", "🐲 ตัว"], ["spots", "⚫ จุด"], ["belly", "🩷 ท้อง"], ["flame", "🔥 ไฟ"], ["mane", "💛 แผงคอ"], ["pearl", "⚪ ไข่มุก"]],
+             // two creatures of the myths of Lanna (myth.js)
+             mom: [["colour", "🦁 ตัว"], ["gold", "🟡 ครีบ"], ["belly", "⚪ ท้อง"]],
+             luang: [["colour", "⚡ ตัว"], ["gold", "🔥 หงอน"], ["belly", "🟡 ท้อง"], ["wings", "🪶 ปีก"]],
+             // the hanging lantern of Lanna (khom.js): its paper, and the gold worked on it
+             khom: [["colour", "🎐 กระดาษ"], ["gold", "🟡 ลายทอง"]]};
+var colourPart = null;                  // the part the swatches paint, while something is selected
+
+var BEAT = 0.5;                         // the kit reads this: how long one beat of the music is
+var rendering = false;                  // the kit's settled() looks for it
+
+// ---------- the film, as data ----------
+// item: {id, kind: "person" | "thing" | "piece", name, keys: [[second, x, y] ...], size, smile, pose, sabai (a person in the woven cloth)}
+// text: {id, kind: "card" | "subtitle", big, small, from, to}
+var movie = freshFilm();
+var time = 0, playing = false, selected = null, playedAt = null;
+var pathing = null, pathStep = 2;       // the mover whose course is being charted by taps, and the seconds between taps
+var picked = [];                        // the points ticked in the panel's list, to delete together: each is a [second, x, y] of the selected mover
+var scripting = false;                  // the panel shows the script: every passage of text in time order
+
+function freshFilm() { return {duration: 12, backdrop: "day", items: [], texts: [], cuts: [], camera: [], next: 1}; }
+
+// A cut, {at, backdrop}, begins a new scene at that second; the camera is a course of
+// [second, x, y, zoom] (the centre shown, 1 to 3 times closer). Both are kept sorted.
+function cutsOf() { movie.cuts = (movie.cuts || []).sort(function (a, b) { return a.at - b.at; }); return movie.cuts; }
+function cameraOf() { movie.camera = (movie.camera || []).sort(function (a, b) { return a[0] - b[0]; }); return movie.camera; }
+function cameraAt(t) {                    // the index of the camera point at second t, or -1
+  var cam = cameraOf();
+  for (var i = 0; i < cam.length; i++) { if (Math.abs(cam[i][0] - t) < 0.05) { return i; } }
+  return -1;
+}
+function aimCamera(c) {                   // keep the frame on the sheet: the centre may not come nearer an edge than half the frame
+  c[3] = Math.max(1, Math.min(3, c[3]));
+  c[1] = Math.round(Math.max(720 / c[3], Math.min(1440 - 720 / c[3], c[1])));
+  c[2] = Math.round(Math.max(540 / c[3], Math.min(1080 - 540 / c[3], c[2])));
+  return c;
+}
+function cameraNow() {                    // the camera at the current time, as the film has it, or null
+  var cam = cameraOf();
+  if (!cam.length) { return null; }
+  return tween(time, cam.map(function (c) { return [c[0], [c[1], c[2], c[3]]]; }), "smooth");
+}
+
+// ---------- folding ----------
+// A heading or a label with class "fold" folds what follows it away, and opens it again,
+// when tapped. Which ones are folded is kept in this browser, so the palette stays the way
+// the child left it.
+var folded = {};
+try { folded = JSON.parse(localStorage.getItem("cartoon_maker_folds")) || {}; } catch (error) { /* nothing kept */ }
+
+function wireFolds(root) {
+  root.querySelectorAll(".fold[data-fold]").forEach(function (head) {
+    var name = head.getAttribute("data-fold");
+    head.classList.toggle("folded", !!folded[name]);
+    head.onclick = function () {
+      folded[name] = !folded[name];
+      head.classList.toggle("folded", folded[name]);
+      try { localStorage.setItem("cartoon_maker_folds", JSON.stringify(folded)); } catch (error) { /* a browser that keeps nothing */ }
+    };
+  });
+}
+
+function byId(id) { return document.getElementById(id); }
+
+var stage = byId("stage"), marks = byId("marks"), marker = marks.getContext("2d");
+var ruler = byId("ruler"), rulerPen = ruler.getContext("2d");
+
+// ---------- the film's code ----------
+// The page does not draw the film itself. It writes the film as JavaScript, the
+// way the kit's films are written by hand, and runs that code to show it. What
+// "ดูโค้ด" shows is exactly what the preview runs.
+// The sky and the land are painted on two sheets, so the clouds can drift between them.
+var SKY_CODE = {
+  day: ['  var sky = brush.createLinearGradient(0, 0, 0, 760);',
+        '  sky.addColorStop(0, "#2f5fa8");',
+        '  sky.addColorStop(1, "#dcecd8");',
+        '  brush.fillStyle = sky;',
+        '  brush.fillRect(0, 0, WIDE, 1080);'],
+  dusk: ['  var sky = brush.createLinearGradient(0, 0, 0, 900);',
+         '  sky.addColorStop(0, "#f0642a");',
+         '  sky.addColorStop(0.5, "#f2a23c");',
+         '  sky.addColorStop(1, "#7fb89a");',
+         '  brush.fillStyle = sky;',
+         '  brush.fillRect(0, 0, WIDE, 1080);'],
+  night: ['  var sky = brush.createLinearGradient(0, 0, 0, 900);',
+          '  sky.addColorStop(0, "#101a3a");',
+          '  sky.addColorStop(1, "#2a3a6a");',
+          '  brush.fillStyle = sky;',
+          '  brush.fillRect(0, 0, WIDE, 1080);',
+          '  for (var s = 0; s < 60; s++) {                   // stars',
+          '    brush.fillStyle = "rgba(255, 250, 220, " + (0.4 + 0.6 * dice(s + 70)) + ")";',
+          '    brush.beginPath();',
+          '    brush.arc(dice(s) * WIDE, dice(s + 90) * 600, 1.5 + dice(s + 20) * 1.5, 0, 7);',
+          '    brush.fill();',
+          '  }']
+};
+var LAND_CODE = {
+  day: ['  hills(brush, WIDE, 700, 380, 1.0, "#8fc3bd");',
+        '  hills(brush, WIDE, 780, 280, 2.6, "#7fb596");',
+        '  hills(brush, WIDE, 860, 170, 4.4, "#6fa870");',
+        '  brush.fillStyle = "#8fc47a";',
+        '  brush.fillRect(0, 880, WIDE, 200);'],
+  dusk: ['  hills(brush, WIDE, 720, 360, 1.0, "#7a8a9a");',
+         '  hills(brush, WIDE, 790, 270, 2.6, "#5f7a6a");',
+         '  hills(brush, WIDE, 860, 170, 4.4, "#4f6a52");',
+         '  brush.fillStyle = "#6f8a4a";',
+         '  brush.fillRect(0, 880, WIDE, 200);'],
+  night: ['  hills(brush, WIDE, 720, 360, 1.0, "#223a4a");',
+          '  hills(brush, WIDE, 790, 270, 2.6, "#1a2e3c");',
+          '  hills(brush, WIDE, 860, 170, 4.4, "#142430");',
+          '  brush.fillStyle = "#2a4a3a";',
+          '  brush.fillRect(0, 880, WIDE, 200);']
+};
+
+function js(value) { return JSON.stringify(value); }
+
+function keysCode(item) {                 // the course as where() reads it: a key's fourth number is a depth; a person's pose at a key is written elsewhere
+  return "[" + item.keys.map(function (k) {
+    return "[" + k[0].toFixed(2) + ", " + Math.round(k[1]) + ", " + Math.round(k[2]) + (typeof k[3] === "number" ? ", " + k[3].toFixed(2) : "") + "]";
+  }).join(", ") + "]";
+}
+
+// The pose a person holds from each key on: a key may carry a pose name as its fourth
+// entry ("wave" when she reaches the tree); without one, the pose before carries on,
+// and before any, the person's own pose.
+function posesOf(item) {
+  var pose = item.pose, out = [];
+  item.keys.forEach(function (k) { if (typeof k[3] === "string") { pose = k[3]; } out.push(pose); });
+  return out;
+}
+
+// The size a person has reached at each key: a key may carry a size as its fifth entry
+// (bigger as she comes nearer); it is reached on arriving, growing along the way.
+function sizesOf(item) {
+  var size = item.size, out = [];
+  item.keys.forEach(function (k) { if (typeof k[4] === "number") { size = k[4]; } out.push(size); });
+  return out;
+}
+
+function sizeValue(item) {                // a person's size as code: one number, or a tween through the keys' sizes
+  var sizes = sizesOf(item);
+  if (sizes.every(function (s) { return s === sizes[0]; })) { return String(item.size); }
+  return "tween(t, [" + item.keys.map(function (k, i) { return "[" + k[0].toFixed(2) + ", " + sizes[i] + "]"; }).join(", ") + "], \"linear\")";
+}
+
+function sizeCode(item) { return "size: " + sizeValue(item); }
+
+function poseLook(pose, late, second, item) {   // the look entries of a pose; "walk" has none; "second" is when its key is reached
+  var kind = js((item && item.parasol) || "lai");
+  if (pose === "wave") { return ["handA: [36, -70 - hop(t, " + late + ") * 20]"]; }
+  if (pose === "parasol") { return ["parasol: " + kind]; }
+  if (pose === "furled") { return ["parasol: {open: 0, kind: " + kind + "}"]; }
+  if (pose === "carry") { return ["parasol: {open: 0, hang: 1, kind: " + kind + "}"]; }
+  if (pose === "twirl") { return ["parasol: parasolAt(t, " + num(second) + ", " + kind + ")"]; }   // the kit's shows, from that key
+  if (pose === "open" || pose === "close" || pose === "bloom" || pose === "spin" || pose === "fold") { return ["parasol: parasolAt(t, " + num(second) + ", " + kind + ", undefined, " + js(pose) + ")"]; }
+  if (pose === "wai") { return ["wai: true"]; }
+  if (pose === "sit") { return ["floor: true"]; }
+  if (pose === "sing") { return ["sing: true"]; }
+  return [];
+}
+
+// the code that paints one set piece on the sheet, standing on (x, base)
+// A new item's size is 1.2, and for a thing or a set piece that is the size the
+// kit draws it at: its scale is its size over 1.2, and the film draws it scaled
+// about its foot point, or hands the scale to a painter that takes a size.
+var SIZE_AS_DRAWN = 1.2;
+
+function scaleOf(item) { return Math.round((item.size || SIZE_AS_DRAWN) / SIZE_AS_DRAWN * 100) / 100; }
+
+function num(v) { return String(Math.round(v * 100) / 100); }
+
+function pieceCode(item) {
+  var x = Math.round(item.keys[0][1]), base = Math.round(item.keys[0][2]), s = scaleOf(item);
+  var calls = {house: "house(brush, X, Y, 1)", tree: "tree(brush, X, Y, 1.1)", palm: "palm(brush, X, Y, 400)",
+               banana: "banana(brush, X, Y)", temple: "temple(brush, X, Y)", yak: "yak(brush, X, Y, 1)",
+               namton: "namton(brush, X, Y, 1)", tung: "tung(brush, X, Y, undefined, true)", drumcart: "drumCart(brush, X, Y, 0.7, 1)"};
+  var call = calls[item.name] || "floraTree(brush, X, Y, 1, " + js(item.name.replace(/Tree$/, "")) + ", " + item.id + ")";   // a tree in flower or fruit, flora.js
+  call = call.replace("X", x).replace("Y", base);
+  if (s !== 1) {                          // scaled about its foot
+    call = "brush.save(); brush.translate(" + x + ", " + base + "); brush.scale(" + num(s) + ", " + num(s) + "); brush.translate(" + (-x) + ", " + (-base) + "); " + call + "; brush.restore()";
+  }
+  return "  " + call + ";";
+}
+
+function grounded(item) {               // what stands on the ground: people, pieces, flowers and fruits (the rest may fly)
+  return item.kind !== "thing" || !!(window.FLORA && FLORA[item.name]);
+}
+
+// the look of one person at this moment: what the child chose, and the walk the course gives
+function personCode(item, n) {
+  // The steps are counted from the ground covered (p[6], the distance along the course): one stride
+  // cycle each 112 pixels at size 1 in the kit's walk, so the feet keep to the ground on a slow leg
+  // of the course and a quick one alike.
+  var late = (n * 0.3).toFixed(1), poses = posesOf(item), same = poses.every(function (q) { return q === poses[0]; });
+  var look = [sizeCode(item), "smile: " + item.smile, "late: " + late, "spring: 0.5",
+              "face: p" + n + "[3]", "step: p" + n + "[2] ? p" + n + "[6] / (112 * " + sizeValue(item) + ") : 0", "id: " + js("i" + item.id)];
+  if (same) { look = look.concat(poseLook(poses[0], late, item.keys[0][0], item)); }
+  if (AGED[item.name]) { look.push(AGED[item.name]); }
+  var more = "{" + look.concat(colourCode(item)).join(", ") + "}";
+  if (!same) {                          // the pose changes along the course: the one of the key reached, p[7]
+    more = "Object.assign(" + more + ", [" + poses.map(function (q, i) { return "{" + poseLook(q, late, item.keys[i][0], item).join(", ") + "}"; }).join(", ") + "][p" + n + "[7]])";
+  }
+  var cast_ = "cast(" + js(item.name) + ", " + more + ")";
+  if (item.sabai) {                     // the woven sabai of sabai.js: the cloth is read off the person's joints; its back is drawn behind them, its band under their arm
+    return "(function () { var look = Object.assign(" + cast_ + ", {sabai: false}), w = sabaiOf(t, p" + n + "[0], p" + n + "[1], look); sabai(t, w, SABAI_CLOTH, \"back\"); person(p" + n + "[0], p" + n + "[1], sabaiWorn(look, t, w, SABAI_CLOTH)); })()";   // sabai: false: the kit draws no band of its own under the woven cloth
+  }
+  return "person(p" + n + "[0], p" + n + "[1], " + cast_ + ")";
+}
+
+// the colours the child chose for an item, as entries of its look: shirt: "#e9c45c"
+function colourCode(item) {
+  var chosen = item.colours || {};
+  return Object.keys(chosen).map(function (part) { return part + ": " + js(chosen[part]); });
+}
+
+function thingCode(item, n, sc) {
+  var p = "p" + n, s = scaleOf(item);
+  // The Naga is given the course itself as its "trail": naga.js then leads the
+  // chest along it and lets the body follow as a chain.
+  var naga = "naga(P[0], P[1], {size: " + num(0.5 * s) + ", late: " + (n * 0.3).toFixed(1) + ", face: P[3]" + colourCode(item).map(function (c) { return ", " + c; }).join("") +
+             ", trail: function (tt) { return where(" + keysCode(item) + ", tt); }})";
+  // The dragon the same way: (x, y) is its head, and the body follows as a chain. Its
+  // depth P[4] (0 far, 1 near) is the course's fourth number: dragon.js draws it small
+  // and faint in the distance, big and bold close up.
+  var dragon = "dragon(P[0], P[1], {size: " + num(0.4 * s) + ", depth: P[4], late: " + (n * 0.3).toFixed(1) + ", face: P[3], breath: 0.5" + colourCode(item).map(function (c) { return ", " + c; }).join("") +
+               ", trail: function (tt) { return where(" + keysCode(item) + ", tt); }})";
+  // Two creatures of the myths of Lanna (myth.js). The Mom walks while its course moves it. The Luang is led as
+  // the dragon is: its point is its head, and the body follows.
+  var tints = colourCode(item).map(function (c) { return ", " + c; }).join("");
+  // A walker's steps are counted from the ground covered (P[6]): one stride each "pace" pixels, read from the
+  // creature's row of the beasts' GAITS table the way amble() reads it (a foot is on the ground 0.62 of a stride).
+  function stepCode(kind, size) {
+    var gait = window.GAITS && GAITS[kind];
+    return gait ? "P[2] ? P[6] / " + Math.round(gait[1] / 0.62 * gait[0] * size) + " : undefined" : "P[2] ? t * 1.6 : undefined";
+  }
+  var mom = "mom(P[0], P[1], {size: " + num(0.8 * s) + ", face: P[3], late: " + (n * 0.3).toFixed(1) + ", step: " + stepCode("mom", 0.8 * s) + tints + "})";
+  var luang = "luang(P[0], P[1], {size: " + num(0.45 * s) + ", late: " + (n * 0.3).toFixed(1) + ", face: P[3]" + tints +
+              ", trail: function (tt) { return where(" + keysCode(item) + ", tt); }})";
+  // The hanging lantern of Lanna (khom.js) is tied at its point. Its candle shows by the scene's hour: bright on a
+  // night backdrop, faint by day. Carried along its course it hangs back against its speed (P[8] pixels a second,
+  // P[5] the way it goes), as a lantern carried on a pole does.
+  // The candle is on or off: off by day, on at dusk and at night, unless the child set it (item.candle "on" / "off").
+  var hour = sc ? sc.backdrop : movie.backdrop, dark = hour === "night" || hour === "midnight" || hour === "yipeng" || hour === "dusk";
+  var lit = item.candle === "on" ? 1 : item.candle === "off" ? 0 : dark ? 1 : 0;
+  var khom = "khom(P[0], P[1], {size: " + num(0.9 * s) + ", lit: " + lit + ", late: " + (n * 0.7).toFixed(1) +
+             ", lean: Math.max(-0.5, Math.min(0.5, P[8] * Math.cos(P[5]) * 0.001))" + tints + "})";
+  // The dog and the rooster are drawn facing right, so they are turned to face the way their course goes (P[3]).
+  var S = s === 1 ? "" : " * " + num(s), about = s === 1 ? "" : " pen.scale(" + num(s) + ", " + num(s) + ");";   // the scale, where a painter takes none
+  var calls = {dog: "pen.save(); pen.translate(P[0], P[1]); pen.scale(P[3]" + S + ", 1" + S + "); dog(0, 0, t); pen.restore()",
+               rooster: "pen.save(); pen.translate(P[0], P[1]); pen.scale(P[3]" + S + ", 1" + S + "); rooster(0, 0, t); pen.restore()",
+               sun: s === 1 ? "sun(P[0], P[1], t)" : "pen.save(); pen.translate(P[0], P[1]);" + about + " sun(0, 0, t); pen.restore()",
+               birds: s === 1 ? "birds(t, P[0], P[1])" : "pen.save(); pen.translate(P[0], P[1]);" + about + " birds(t, 0, 0); pen.restore()",
+               lantern: "lantern(P[0], P[1], " + num(70 * s) + ")", naga: naga, dragon: dragon,
+               mom: mom, luang: luang, khom: khom,
+               chedisai: "chediSai(pen, P[0], P[1], " + num(1.0 * s) + ", t, " + item.id + ")",      // pieces.js: the flags flutter
+               pratheep: "pratheepRow(pen, P[0] - " + Math.round(120 * s) + ", P[1], 5, " + Math.round(60 * s) + ", " + num(1.2 * s) + ", t)",   // a row of five lamps about its point
+               krathong: "krathong(pen, P[0], P[1], " + num(1.2 * s) + ", t, true)",              // afloat: it bobs as its course carries it
+               oxcart: "oxcart(pen, P[0] - " + num(288 * s) + " * P[3], P[1], " + num(1.3 * s) + ", P[6] / " + num(81 * s) + ", P[3], [P[0] + " + num(94 * s) + " * P[3], P[1] - " + num(194 * s) + "]); " +
+                       "buffalo(P[0], P[1], {size: " + num(0.5 * s) + ", face: P[3], late: " + (n * 0.3).toFixed(1) + ", step: " + stepCode("buffalo", 0.5 * s) + "})"};   // the buffalo pulls the cart; its wheels turn with the ground covered
+  return (calls[item.name] || "flora(" + js(item.name) + ", P[0], P[1], {size: " + num(1.2 * s) + "})").split("P").join(p);   // or a flower or fruit of flora.js
+}
+
+// The film as the kit's films are written: a sheet painted once a scene, the scenes
+// cut by the kit's iris, draw(t). A scene is a stretch of the film on one backdrop:
+// the first from second 0 on movie.backdrop, then one more at each of movie.cuts.
+// A set piece stands in the scene its key's second falls in; a mover is drawn in a
+// scene its course overlaps or begins in. The camera, movie.camera, is a course of
+// [second, x, y, zoom]: the centre of what is shown and how close; the film moves
+// smoothly between its points. In the page the camera is off while a child edits
+// (the marks must lie on the picture) and on while the film plays; an exported
+// page has it on.
+function scenesOf() {                     // [{start, end, backdrop}, ...] in order
+  var cuts = (movie.cuts || []).slice().sort(function (a, b) { return a.at - b.at; }), out = [], start = 0, backdrop = movie.backdrop;
+  cuts.forEach(function (c) { out.push({start: start, end: c.at, backdrop: backdrop}); start = c.at; backdrop = c.backdrop; });
+  out.push({start: start, end: movie.duration, backdrop: backdrop});
+  return out;
+}
+
+function sceneAt(t) {                     // the scene the second t is in, with its index k
+  var all = scenesOf(), k = 0;
+  while (k < all.length - 1 && t >= all[k + 1].start) { k++; }
+  all[k].k = k;
+  return all[k];
+}
+
+function inScene(item, sc) {              // a mover is in a scene its course overlaps, or begins in
+  var first = item.keys[0][0], last = item.keys[item.keys.length - 1][0];
+  return first < sc.end && (last > sc.start || first >= sc.start);
+}
+
+function cameraCode() {                   // the camera's course as a tween list, or "" when there is none
+  var cam = (movie.camera || []).slice().sort(function (a, b) { return a[0] - b[0]; });
+  if (!cam.length) { return ""; }
+  return "[" + cam.map(function (c) { return "[" + c[0].toFixed(2) + ", [" + Math.round(c[1]) + ", " + Math.round(c[2]) + ", " + c[3].toFixed(2) + "]]"; }).join(", ") + "]";
+}
+
+function sheetCode(name, sc, k) {         // the code that paints one scene's sky (an hour) and its land and set pieces, once
+  var lines = [], picture = !SKY_CODE[sc.backdrop];
+  if (!picture) {
+    lines.push("var SKY" + k + " = (function () {", "  var paper = document.createElement(\"canvas\");",
+               "  paper.width = WIDE;", "  paper.height = 1080;", "  var brush = paper.getContext(\"2d\");");
+    lines = lines.concat(SKY_CODE[sc.backdrop]);
+    lines.push("  return paper;", "})();", "");
+  }
+  lines.push("var " + name + " = (function () {", "  var paper = document.createElement(\"canvas\");",
+             "  paper.width = WIDE;", "  paper.height = 1080;", "  var brush = paper.getContext(\"2d\");");
+  if (!picture) { lines = lines.concat(LAND_CODE[sc.backdrop]); }
+  movie.items.filter(function (i) { return i.kind === "piece" && i.keys[0][0] >= sc.start && i.keys[0][0] < sc.end; })
+      .sort(function (a, b) { return a.keys[0][2] - b.keys[0][2]; })
+      .forEach(function (i) { lines.push(pieceCode(i)); });
+  lines.push("  return paper;", "})();", "");
+  return lines;
+}
+
+function filmCode() {
+  var lines = [], scenes = scenesOf(), camera = cameraCode();
+  lines.push("var DURATION = " + movie.duration + ";", "", "var BEAT = 0.5;", "");
+  if (movie.items.some(function (i) { return i.kind === "person" && i.sabai; })) {
+    lines.push("// the woven sabai (sabai.js): one cloth, its tiles made once, worn by whoever asks for it; its rows flow from the start",
+               "var SABAI_CLOTH = {from: 0};", "");
+  }
+  if (camera) {
+    lines.push("// the camera: the centre of what is shown and how close, through points in time (motion.js tween)",
+               "var CAMERA = " + camera + ";",
+               "var CAMERA_ON = typeof MAKER_CAMERA === \"undefined\" ? true : MAKER_CAMERA;   // the maker turns it off while a child edits", "");
+  }
+  scenes.forEach(function (sc, k) {
+    lines.push(scenes.length > 1 ? "// scene " + (k + 1) + ", " + sc.start + " to " + sc.end + " s, on " + sc.backdrop + ": painted once"
+                                 : (!SKY_CODE[sc.backdrop] ? "// the set pieces: painted once on a clear sheet, laid over the backdrop"
+                                                           : "// the sky, then the land and the set pieces: painted once, as a film's sets are"));
+    lines = lines.concat(sheetCode("SHEET" + k, sc, k));
+  });
+  var movers = movie.items.filter(function (i) { return i.kind !== "piece"; });
+  scenes.forEach(function (sc, k) {
+    var picture = !SKY_CODE[sc.backdrop], here = movers.filter(function (i) { return inScene(i, sc); });
+    lines.push("function scene" + (k + 1) + "(tt) {", "  var t = tt + " + sc.start + ";   // the film's clock: a scene is given its own seconds");
+    movie.texts.filter(function (x) { return x.kind === "card" && x.from < sc.end && x.to > sc.start; }).forEach(function (x) {
+      lines.push("  if (t >= " + x.from + " && t < " + x.to + ") {", "    card(" + js(x.big) + ", " + js(x.small) + ");", "    return;", "  }");
+    });
+    if (camera) {
+      lines.push("  var cam = tween(t, CAMERA, \"smooth\");", "  if (CAMERA_ON) {", "    pen.save();", "    pen.translate(720, 540);",
+                 "    pen.scale(cam[2], cam[2]);", "    pen.translate(-cam[0], -cam[1]);", "  }");
+    }
+    if (picture) {
+      lines.push("  pen.drawImage(backdrop(" + js(sc.backdrop) + "), 0, 0);   // backdrops.js: a whole picture, painted the first time it is asked for, and kept",
+                 "  pen.drawImage(SHEET" + k + ", 0, 0);");
+    } else {
+      lines.push("  pen.drawImage(SKY" + k + ", 0, 0);", "  cumulus(pen, t, CLOUD_LOOKS." + sc.backdrop + ");   // cumulus.js: puffy clouds that drift by depth", "  pen.drawImage(SHEET" + k + ", 0, 0);");
+    }
+    if (here.length) {
+      lines.push("  // everyone on a course: where each is now, then drawn from the back of the picture to the front");
+      if (here.some(function (i) { return i.name === "dragon"; })) {
+        lines.push("  // (the dragon by its depth too: far, it is behind everyone; near, in front of them all)");
+      }
+      lines.push("  var who = [];");
+      here.forEach(function (item) {
+        var n = movers.indexOf(item);
+        lines.push("  var p" + n + " = where(" + keysCode(item) + ", t);");
+        var call = item.kind === "person" ? personCode(item, n) : thingCode(item, n, sc), p = "p" + n;
+        lines.push("  who.push([" + p + "[1]" + (item.name === "dragon" ? " + (" + p + "[4] - 0.5) * 2400" : "") + ", function () { " + call + "; }]);");
+      });
+      lines.push("  who.sort(function (a, b) { return a[0] - b[0]; });",
+                 "  who.forEach(function (w) { w[1](); });");
+    }
+    if (camera) { lines.push("  if (CAMERA_ON) { pen.restore(); }"); }
+    lines.push("}", "");
+  });
+  lines.push("var SCENES = [" + scenes.map(function (sc, k) { return "[" + sc.start + ", " + (k === scenes.length - 1 ? "DURATION" : sc.end) + ", scene" + (k + 1) + "]"; }).join(", ") + "];", "",
+             "function draw(t) {", "  film(t, SCENES);");
+  movie.texts.filter(function (x) { return x.kind === "subtitle"; }).forEach(function (x) {
+    lines.push("  if (t >= " + x.from + " && t < " + x.to + ") { subtitle(" + js(x.big) + ", " + js(x.small) + "); }");
+  });
+  lines.push("}");
+  return lines.join("\n");
+}
+
+// the whole page, as a film of the kit is: the exported file
+function pageCode() {
+  var title = (movie.texts.filter(function (x) { return x.kind === "card"; })[0] || {}).big || "my cartoon";
+  return ['<!doctype html>', '<html>', '<head>', '<meta charset="utf-8">', '<title>' + title.replace(/</g, "&lt;") + '</title>',
+          '<style>', '  html, body { margin: 0; background: #111; }',
+          '  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }', '</style>', '</head>', '<body>',
+          '<canvas id="stage" width="1920" height="1080"></canvas>',
+          '<!-- the Lanna cartoon kit; for render.py, copy this file next to oldcartoon.js and use src="oldcartoon.js" -->',
+          '<script src="https://krueng.ai/js_animation_assets/oldcartoon.js"><\/script>',
+          '<script src="https://krueng.ai/js_animation_assets/naga.js"><\/script>',
+          '<script src="https://krueng.ai/js_animation_assets/dragon.js"><\/script>',
+          '<script src="https://krueng.ai/js_animation_assets/beasts.js"><\/script>',
+          '<script src="https://krueng.ai/js_animation_assets/myth.js"><\/script>',
+          '<script src="https://krueng.ai/js_animation_assets/flora.js"><\/script>',
+          '<script src="https://krueng.ai/js_animation_assets/khom.js"><\/script>',
+          '<script src="https://krueng.ai/js_animation_assets/motion.js"><\/script>',
+          '<script src="https://krueng.ai/js_animation_assets/cumulus.js"><\/script>',
+          '<script src="https://krueng.ai/js_animation_assets/sabai.js"><\/script>',
+          '<script src="https://krueng.ai/js_animation_assets/backdrops.js"><\/script>', '<script>',
+          '// Made with krueng.ai/cartoon_maker.html. draw(t) paints second t of the film from nothing.',
+          filmCode(), '',
+          '// In a browser the film plays by the clock. render.py sets "rendering" and asks for each frame itself.',
+          'var rendering = false;', 'function play(now) {', '  if (!rendering) { draw((now / 1000) % DURATION); }',
+          '  requestAnimationFrame(play);', '}', 'requestAnimationFrame(play);', '<\/script>', '</body>', '</html>', ''].join("\n");
+}
+
+// ---------- running the film's code ----------
+var drawFilm = function () {};
+
+function rebuild() {
+  var code = filmCode();
+  try {
+    drawFilm = new Function(code + "\nreturn draw;")();
+  } catch (error) {
+    console.error("the film's code did not run:", error);
+  }
+  save();
+}
+
+function show() {
+  time = Math.max(0, Math.min(movie.duration, time));
+  window.MAKER_CAMERA = playing;          // the camera moves only while the film plays (or records): edited, the marks must lie on the picture
+  try { drawFilm(time); } catch (error) { console.error(error); }
+  paintMarks();
+  paintRuler();
+  byId("timeLabel").textContent = time.toFixed(1) + " วินาที";
+  byId("stageBox").className = pathing ? "stage-box pathing" : tool === "move" ? "stage-box moving" + (held ? " held" : "") : "stage-box";
+  if (pathing) {
+    var last = pathing.keys[pathing.keys.length - 1][0];
+    byId("pathText").textContent = "✏️ กำลังวาดเส้นทางของ " + labelOf(pathing) + ": แตะบนจอเพื่อเพิ่มจุดถัดไป ที่วินาที " +
+                                   nextPathTime().toFixed(1) + " (มี " + pathing.keys.length + " จุด ถึงวินาที " + last.toFixed(1) + ") · tap the stage to add the next point";
+  }
+}
+
+// The second the next tap's point goes to: the time bar's second if it was moved
+// past the last point, otherwise one step after the last point.
+function nextPathTime() {
+  var last = pathing.keys[pathing.keys.length - 1][0];
+  return Math.min(movie.duration, Math.max(round2(time), round2(last + pathStep)));
+}
+
+function startPath(item) {
+  pathing = item;
+  selected = item;
+  time = item.keys[item.keys.length - 1][0];
+  show();
+  panel();
+}
+
+function endPath() {
+  pathing = null;
+  show();
+  panel();
+}
+
+function tick(now) {
+  if (playing) {
+    if (playedAt === null) { playedAt = now - time * 1000; }
+    time = (now - playedAt) / 1000;
+    if (time >= movie.duration) {
+      if (recorder) { stopRecording(); }
+      time = 0;
+      playedAt = now;
+    }
+    show();
+  }
+  requestAnimationFrame(tick);
+}
+
+function setPlaying(on) {
+  playing = on;
+  playedAt = null;
+  byId("playBtn").innerHTML = on ? "⏸ หยุด <small>pause</small>" : "▶ เล่น <small>play</small>";
+}
+
+// ---------- the film's geometry on the screen ----------
+// The sheet is WIDE (1440) wide and sits at x = 240 on the 1920 screen, and the camera
+// pushes in slowly through the film; the marks follow the same move.
+function push() { var sc = sceneAt(time); return 1 + 0.06 * (time - sc.start) / Math.max(0.01, sc.end - sc.start); }   // the kit pushes in once a scene
+function toScreen(x, y) { var k = push(); return [240 + 720 + (x - 720) * k, 620 + (y - 620) * k]; }
+function toSheet(sx, sy) { var k = push(); return [720 + (sx - 240 - 720) / k, 620 + (sy - 620) / k]; }
+
+function pointerOnStage(event) {        // the screen pixel under the pointer
+  var box = marks.getBoundingClientRect();
+  return [(event.clientX - box.left) * 1920 / box.width, (event.clientY - box.top) * 1080 / box.height];
+}
+
+function whereNow(item) {               // the item's place on the sheet at the current time: [x, y, ...], as the film has it
+  return where(item.keys, time);
+}
+
+function reach(item) {                  // how far from its foot point a click still means this item
+  if (item.kind === "person") { return {up: 440 * item.size, side: 90 * item.size}; }
+  var s = scaleOf(item), r = item.kind === "piece" ? {up: 320, side: 160}
+        : item.name === "naga" ? {up: 230, side: 400, down: 260} : item.name === "dragon" ? {up: 160, side: 440, down: 160}
+        : item.name === "mom" ? {up: 210, side: 160} : item.name === "luang" ? {up: 120, side: 400, down: 120}
+        : item.name === "khom" ? {up: 20, side: 70, down: 420} : {up: 120, side: 120};
+  return {up: r.up * s, side: r.side * s, down: r.down ? r.down * s : undefined};
+}
+
+// ---------- the size handle ----------
+// The selected sprite shows a handle at its top-right corner: dragged, it
+// scales the sprite about its foot point, 0.5 to 2 (a person's key sizes go
+// with it). Alt and the wheel over the stage do the same in steps.
+var scaling = null;
+
+function scaleHandle(item) {            // where the handle is on the screen
+  var at = whereNow(item), r = reach(item);
+  return toScreen(at[0] + r.side, at[1] - r.up);
+}
+
+function setSize(item, size, keySizes) {
+  size = Math.max(0.5, Math.min(2, Math.round(size * 20) / 20));
+  var f = size / (item.size || SIZE_AS_DRAWN);
+  item.size = size;
+  if (keySizes) {                       // a person's sizes by its keys scale with it
+    item.keys.forEach(function (k, i) {
+      if (typeof keySizes[i] === "number") { k[4] = Math.max(0.5, Math.min(2, Math.round(keySizes[i] * f * 20) / 20)); }
+    });
+  }
+  if (byId("sizeBox")) { byId("sizeBox").value = size; }
+}
+
+function hit(sx, sy) {                  // the topmost item under a screen point, or null
+  var p = toSheet(sx, sy), found = null, best = Infinity;
+  movie.items.forEach(function (item) {
+    var at = whereNow(item), r = reach(item);
+    if (Math.abs(p[0] - at[0]) <= r.side && p[1] - at[1] <= (r.down || 30) && at[1] - p[1] <= r.up) {
+      var d = Math.abs(p[0] - at[0]) + Math.abs(p[1] - at[1]) * 0.3;
+      if (d < best) { best = d; found = item; }
+    }
+  });
+  return found;
+}
+
+// ---------- the marks over the picture ----------
+function paintMarks() {
+  marker.clearRect(0, 0, 1920, 1080);
+  movie.items.forEach(function (item) {
+    if (item.kind === "piece") { return; }
+    var on = item === selected;
+    marker.strokeStyle = on ? "rgba(178, 58, 58, 0.9)" : "rgba(255, 246, 220, 0.55)";
+    marker.lineWidth = on ? 4 : 2;
+    marker.setLineDash([10, 10]);
+    marker.beginPath();                               // the course as the film walks it: the curve, ten samples a second
+    var from = item.keys[0][0], span = item.keys[item.keys.length - 1][0] - from, steps = Math.max(1, Math.ceil(span * 10));
+    for (var q = 0; q <= steps; q++) {
+      var w = where(item.keys, from + span * q / steps), s = toScreen(w[0], w[1]);
+      if (q) { marker.lineTo(s[0], s[1]); } else { marker.moveTo(s[0], s[1]); }
+    }
+    marker.stroke();
+    marker.setLineDash([]);
+    if (item === pathing) { marker.lineWidth = 7; marker.strokeStyle = "rgba(178, 58, 58, 0.95)"; marker.setLineDash([18, 10]); marker.stroke(); marker.setLineDash([]); }
+    if (on && !pathing) {                             // the size handle at the corner: a square with a slanted arrow
+      var hs = scaleHandle(item);
+      marker.fillStyle = scaling ? "#e0b23a" : "#fff6dc";
+      marker.strokeStyle = "#b23a3a";
+      marker.lineWidth = 3;
+      marker.beginPath();
+      marker.rect(hs[0] - 14, hs[1] - 14, 28, 28);
+      marker.fill();
+      marker.stroke();
+      marker.beginPath();
+      marker.moveTo(hs[0] - 7, hs[1] + 7);
+      marker.lineTo(hs[0] + 7, hs[1] - 7);
+      marker.moveTo(hs[0] + 1, hs[1] - 7);
+      marker.lineTo(hs[0] + 7, hs[1] - 7);
+      marker.lineTo(hs[0] + 7, hs[1] - 1);
+      marker.moveTo(hs[0] - 7, hs[1] + 1);
+      marker.lineTo(hs[0] - 7, hs[1] + 7);
+      marker.lineTo(hs[0] - 1, hs[1] + 7);
+      marker.stroke();
+    }
+    item.keys.forEach(function (k, n) {
+      var s = toScreen(k[1], k[2]), here = Math.abs(k[0] - time) < 0.05;
+      marker.fillStyle = here ? "#e0b23a" : on ? "#b23a3a" : "rgba(255, 246, 220, 0.8)";
+      marker.beginPath();
+      marker.arc(s[0], s[1], here ? 14 : 9, 0, 7);
+      marker.fill();
+      if (on && picked.indexOf(k) >= 0) {             // ticked in the panel: a ring and a cross say this point is to go
+        marker.fillStyle = "#fff6dc";
+        marker.beginPath();
+        marker.arc(s[0], s[1], 15, 0, 7);
+        marker.fill();
+        marker.strokeStyle = "#fff6dc";
+        marker.lineWidth = 10;
+        marker.beginPath();
+        marker.arc(s[0], s[1], 25, 0, 7);
+        marker.stroke();
+        marker.strokeStyle = "#b23a3a";
+        marker.lineWidth = 5;
+        marker.beginPath();
+        marker.arc(s[0], s[1], 25, 0, 7);
+        marker.moveTo(s[0] - 8, s[1] - 8);
+        marker.lineTo(s[0] + 8, s[1] + 8);
+        marker.moveTo(s[0] + 8, s[1] - 8);
+        marker.lineTo(s[0] - 8, s[1] + 8);
+        marker.stroke();
+      }
+      if (on) {                                       // the selected course says which point is which, and when
+        marker.font = "bold 26px Leelawadee UI, Tahoma, sans-serif";
+        marker.fillStyle = "#fff6dc";
+        marker.strokeStyle = "rgba(58, 36, 24, 0.9)";
+        marker.lineWidth = 5;
+        marker.lineJoin = "round";
+        var tag = (n + 1) + " · " + k[0].toFixed(1) + "s";
+        marker.strokeText(tag, s[0] + 18, s[1] - 14);
+        marker.fillText(tag, s[0] + 18, s[1] - 14);
+      }
+    });
+  });
+  if (selected && selected.keys) {                 // a text has no place on the picture
+    var at = whereNow(selected), s = toScreen(at[0], at[1]), r = reach(selected), k = push();
+    marker.strokeStyle = "#b23a3a";
+    marker.lineWidth = 4;
+    marker.setLineDash([14, 8]);
+    marker.strokeRect(s[0] - r.side * k, s[1] - r.up * k, 2 * r.side * k, (r.up + 30) * k);
+    marker.setLineDash([]);
+  }
+  var cam = playing ? null : cameraNow();           // the camera's frame: what the viewer will see at this second
+  if (cam) {
+    var own = cameraAt(time) >= 0, c0 = toScreen(cam[0] - 720 / cam[2], cam[1] - 540 / cam[2]), c1 = toScreen(cam[0] + 720 / cam[2], cam[1] + 540 / cam[2]);
+    marker.strokeStyle = own ? "#e0b23a" : "rgba(224, 178, 58, 0.55)";
+    marker.lineWidth = own ? 6 : 3;
+    marker.strokeRect(c0[0], c0[1], c1[0] - c0[0], c1[1] - c0[1]);
+    marker.font = "bold 26px Leelawadee UI, Tahoma, sans-serif";
+    marker.fillStyle = "#e0b23a";
+    marker.fillText("🎥 " + Math.round(cam[2] * 100) + "%" + (own ? " · ลากกรอบเพื่อเล็ง · drag the frame to aim" : ""), c0[0] + 12, c0[1] + 32);
+  }
+}
+
+// ---------- the timeline ----------
+var ROW0 = 34, ROW = 14;
+
+function rulerX(t) { return 12 + (ruler.width - 24) * t / movie.duration; }
+function rulerT(x) { return Math.max(0, Math.min(movie.duration, (x - 12) / (ruler.width - 24) * movie.duration)); }
+
+function paintRuler() {
+  ruler.width = ruler.clientWidth * 2 || 1200;
+  var rows = movie.items.filter(function (i) { return i.kind !== "piece"; }).length;   // one row per mover; the ruler grows with them
+  ruler.height = Math.max(240, 110 + rows * 22 + 20);
+  ruler.style.height = (ruler.height / 2) + "px";
+  var g = rulerPen, W = ruler.width;
+  g.clearRect(0, 0, W, ruler.height);
+  g.font = "20px Leelawadee UI, Tahoma, sans-serif";
+  g.fillStyle = "#8a7256";
+  for (var s = 0; s <= movie.duration; s++) {
+    var x = rulerX(s);
+    g.fillRect(x, 20, 1, s % 5 ? 8 : 16);
+    if (s % 5 === 0) { g.fillText(s + "", x - 6, 18); }
+  }
+  movie.texts.forEach(function (x, n) {
+    g.fillStyle = x === selected ? "#b23a3a" : x.kind === "card" ? "#e0b23a" : "#8fc0cf";
+    g.fillRect(rulerX(x.from), 44 + (n % 2) * 16, Math.max(4, rulerX(x.to) - rulerX(x.from)), 12);
+  });
+  var movers = movie.items.filter(function (i) { return i.kind !== "piece"; });
+  movers.forEach(function (item, n) {
+    var y = 90 + n * 22;
+    g.fillStyle = item === selected ? "#b23a3a" : "#3a2418";
+    g.font = "18px Leelawadee UI, Tahoma, sans-serif";
+    g.fillText(labelOf(item), 12, y + 6);
+    g.fillStyle = item === selected ? "rgba(178, 58, 58, 0.25)" : "rgba(58, 36, 24, 0.12)";
+    g.fillRect(rulerX(item.keys[0][0]), y - 2, Math.max(2, rulerX(item.keys[item.keys.length - 1][0]) - rulerX(item.keys[0][0])), 4);
+    item.keys.forEach(function (k) {
+      g.fillStyle = Math.abs(k[0] - time) < 0.05 ? "#e0b23a" : item === selected ? "#b23a3a" : "#3a2418";
+      g.beginPath();
+      g.arc(rulerX(k[0]), y, 7, 0, 7);
+      g.fill();
+    });
+  });
+  cutsOf().forEach(function (c) {                   // a cut: a dashed line the height of the bar, scissors at its top
+    g.fillStyle = "#3a2418";
+    for (var yy = 24; yy < ruler.height; yy += 10) { g.fillRect(rulerX(c.at) - 1, yy, 2, 5); }
+    g.font = "18px Leelawadee UI, Tahoma, sans-serif";
+    g.fillText("✂", rulerX(c.at) - 8, 18);
+  });
+  cameraOf().forEach(function (c) {                 // a camera point: a small square on its own line under the texts
+    g.fillStyle = Math.abs(c[0] - time) < 0.05 ? "#e0b23a" : "#8a6a2a";
+    g.fillRect(rulerX(c[0]) - 5, 72, 10, 10);
+  });
+  g.fillStyle = "#b23a3a";
+  g.fillRect(rulerX(time) - 1.5, 10, 3, ruler.height - 10);
+  g.beginPath();
+  g.moveTo(rulerX(time) - 10, 4);
+  g.lineTo(rulerX(time) + 10, 4);
+  g.lineTo(rulerX(time), 18);
+  g.fill();
+}
+
+function labelOf(item) {
+  var list = item.kind === "person" ? CASTS : item.kind === "thing" ? THINGS.concat(FLORAS) : PIECES.concat(TREES);
+  for (var i = 0; i < list.length; i++) { if (list[i][0] === item.name) { return list[i][1]; } }
+  return item.name;
+}
+
+// ---------- changing the film ----------
+function addItem(kind, name, x, y) {
+  var small = name === "boy" || name === "girl";
+  var key = [kind === "piece" ? sceneAt(time).start : round2(time), x, y];   // a set piece stands in the scene the time bar is in
+  if (name === "dragon") { key.push(0.5); }                     // a dragon's point has a depth: it starts halfway
+  var item = {id: movie.next++, kind: kind, name: name, keys: [key], size: small ? 0.95 : 1.2, smile: 1, pose: "walk"};
+  movie.items.push(item);
+  selected = item;
+  rebuild();
+  show();
+  panel();
+  if (kind !== "piece") { openTimePop(item, 0, "start"); }
+}
+
+// ---------- points ----------
+// A course is points in time order, and the order never changes: a point's time
+// stays between its neighbours', and a new point always comes after the last.
+function clampTime(item, i, t) {
+  var low = i > 0 ? item.keys[i - 1][0] + 0.5 : 0;
+  var high = i < item.keys.length - 1 ? item.keys[i + 1][0] - 0.5 : movie.duration;
+  return round2(Math.max(low, Math.min(high, isNaN(t) ? low : t)));
+}
+
+function addPoint(item, x, y, t) {        // a new point after the last one, at second t (or one step on)
+  var before = item.keys[item.keys.length - 1], last = before[0];
+  var when = t === undefined ? last + pathStep : t;
+  item.keys.push([Math.min(movie.duration, Math.max(round2(last + 0.5), round2(when))), x, y].concat(typeof before[3] === "number" ? [before[3]] : []));   // a depth carries on; a pose carries on by itself
+  return item.keys.length - 1;
+}
+
+function pointAt(item, t) {               // the index of the point at second t, or -1
+  for (var i = 0; i < item.keys.length; i++) { if (Math.abs(item.keys[i][0] - t) < 0.05) { return i; } }
+  return -1;
+}
+
+function removePoint(item, i) {
+  if (item.keys.length < 2) { return; }
+  item.keys.splice(i, 1);
+  time = item.keys[Math.min(i, item.keys.length - 1)][0];
+  rebuild();
+  show();
+  panel();
+}
+
+// The ticked points go together. A mover has to be somewhere, so if every
+// point is ticked the first one stays.
+function removePicked(item) {
+  var keep = item.keys.filter(function (k) { return picked.indexOf(k) < 0; });
+  if (keep.length === item.keys.length) { return; }
+  if (popItem === item) { byId("timePop").className = "time-pop"; popItem = null; }   // the time box may be asking about a point that goes
+  item.keys = keep.length ? keep : [item.keys[0]];
+  picked = [];
+  rebuild();
+  show();
+  panel();
+}
+
+// The time box: it appears by the point and asks for its second. Enter or the
+// button keeps the number, clamped to the order; Escape keeps what was there.
+var popItem = null, popIndex = -1;
+
+function openTimePop(item, i, why) {
+  popItem = item;
+  popIndex = i;
+  var k = item.keys[i], at = toScreen(k[1], k[2]), pop = byId("timePop");
+  var where = onBox(at);
+  pop.style.left = Math.max(18, Math.min(82, where[0])) + "%";
+  pop.style.top = Math.max(4, Math.min(80, where[1])) + "%";
+  byId("timePopLabel").textContent = why === "start" ? "เริ่มที่วินาที" : "ถึงจุดนี้ที่วินาที";
+  byId("timePopEn").textContent = why === "start" ? "start at second" : "arrive at this point at second";
+  byId("timePopBox").min = i > 0 ? item.keys[i - 1][0] + 0.5 : 0;
+  byId("timePopBox").max = i < item.keys.length - 1 ? item.keys[i + 1][0] - 0.5 : movie.duration;
+  byId("timePopBox").value = k[0];
+  pop.className = "time-pop open";
+  byId("timePopBox").focus();
+  byId("timePopBox").select();
+}
+
+function closeTimePop(keep) {
+  if (!popItem) { return; }
+  if (keep) {
+    popItem.keys[popIndex][0] = clampTime(popItem, popIndex, Number(byId("timePopBox").value));
+    time = popItem.keys[popIndex][0];
+  }
+  byId("timePop").className = "time-pop";
+  popItem = null;
+  rebuild();
+  show();
+  panel();
+}
+
+byId("timePopOk").onclick = function () { closeTimePop(true); };
+byId("timePopBox").onkeydown = function (event) {
+  if (event.key === "Enter") { closeTimePop(true); }
+  if (event.key === "Escape") { closeTimePop(false); }
+  event.stopPropagation();
+};
+
+function round2(t) { return Math.round(t * 100) / 100; }
+
+
+function addText(kind, from, seconds, big, small) {     // a passage: at second "from" (the second being looked at), for "seconds" (3)
+  from = round2(from === undefined ? time : from);
+  var text = {id: movie.next++, kind: kind, big: big || (kind === "card" ? "เรื่องของฉัน" : "สวัสดี"), small: small || (kind === "card" ? "my story" : "hello"),
+              from: from, to: Math.min(movie.duration, round2(from + (seconds || 3)))};
+  if (text.to <= text.from) { return null; }               // past the end of the film
+  movie.texts.push(text);
+  return text;
+}
+
+function passages() {                   // every text, in the order it shows
+  return movie.texts.slice().sort(function (a, b) { return a.from - b.from || a.id - b.id; });
+}
+
+function lastEnd() {                    // the second the last passage ends, or the second being looked at if that is later
+  return movie.texts.reduce(function (end, x) { return Math.max(end, x.to); }, round2(time));
+}
+
+function nextPassage(kind, after) {     // a new passage right after "after" (or after the last one), 3 seconds
+  var text = addText(kind, after ? after.to : lastEnd(), 3);
+  if (text) { selected = text; time = text.from; scripting = false; }
+  rebuild();
+  show();
+  panel();
+}
+
+// Many passages at once, from lines typed in a box: one passage a line, "big | small",
+// each "seconds" long, one after another from second "from". A line that begins with
+// "=" is a title card. Gives back how many were made.
+function makePassages(lines, from, seconds) {
+  var at = from, made = 0;
+  lines.split("\n").forEach(function (line) {
+    line = line.trim();
+    if (!line) { return; }
+    var kind = "subtitle";
+    if (line.charAt(0) === "=") { kind = "card"; line = line.slice(1).trim(); }
+    var halves = line.split("|"), big = halves[0].trim(), small = (halves[1] || "").trim();
+    var text = addText(kind, at, seconds, big.slice(0, 80), small.slice(0, 80));
+    if (!text) { return; }
+    at = text.to;
+    made += 1;
+  });
+  return made;
+}
+
+function remove(thing) {
+  if (pathing === thing) { pathing = null; }
+  if (popItem === thing) { byId("timePop").className = "time-pop"; popItem = null; }
+  movie.items = movie.items.filter(function (i) { return i !== thing; });
+  movie.texts = movie.texts.filter(function (x) { return x !== thing; });
+  if (selected === thing) { selected = null; }
+  rebuild();
+  show();
+  panel();
+}
+
+function save() {
+  try { localStorage.setItem("cartoon_maker", JSON.stringify(movie)); } catch (error) { /* a browser that keeps nothing */ }
+}
+
+function load() {
+  try {
+    var kept = JSON.parse(localStorage.getItem("cartoon_maker"));
+    if (kept && kept.items) { movie = kept; }
+    if (!BACKS.some(function (b) { return b[0] === movie.backdrop; })) { movie.backdrop = "day"; }   // a backdrop this page does not have
+    movie.cuts = (movie.cuts || []).filter(function (c) { return c && BACKS.some(function (b) { return b[0] === c.backdrop; }); });   // a film kept before there were scenes or a camera
+    movie.camera = (movie.camera || []).filter(function (c) { return Array.isArray(c) && c.length === 4; });
+    movie.items = movie.items.filter(function (item) { return labelOf(item) !== item.name; });         // and a thing it does not offer
+  } catch (error) { /* nothing kept, or not ours */ }
+}
+
+// ---------- the panel on the right ----------
+function panel() {
+  var p = byId("panel"), h = [];
+  // A tick belongs to a point of the selected mover: any other tick is dropped.
+  picked = selected && selected.keys ? picked.filter(function (k) { return selected.keys.indexOf(k) >= 0; }) : [];
+  if (selected) { scripting = false; }
+  if (!selected && scripting) {
+    var all = passages();
+    h.push("<h2>📝 บทพูดทุกตอน <small>the script: every passage, in order</small></h2>",
+           all.length ? "<ul>" + all.map(function (x) {
+             var here = time >= x.from && time < x.to;
+             return "<li class='pt" + (here ? " on" : "") + "'><button class='go' data-text='" + x.id + "'>" + (x.kind === "card" ? "🎞️" : "💬") + " " +
+                    x.from + "–" + x.to + " วิ</button><span>" + attr(x.big).slice(0, 26) + (x.big.length > 26 ? "…" : "") + "</span></li>";
+           }).join("") + "</ul>" : "<p class='hint'>ยังไม่มีข้อความ <span class='en'>no passages yet</span></p>",
+           "<p><button id='nextSub'>➕ คำบรรยายตอนถัดไป <small>next subtitle, after the last</small></button> " +
+           "<button id='nextCard'>➕ ป้ายถัดไป <small>next card</small></button></p>",
+           "<label>หลายตอนทีเดียว <small>many at once: one passage per line, big | small; a line that starts with = is a card</small></label>" +
+           "<textarea id='scriptBox' rows='6' placeholder='สวัสดี | hello\nไปเล่นกันเถอะ | let&#39;s go and play\n= จบ | the end'></textarea>",
+           "<p>ตอนละ <input type='number' id='eachBox' min='0.5' step='0.5' value='3' style='width:58px'> วินาที ต่อจาก <input type='number' id='fromBox2' min='0' step='0.5' value='" + lastEnd() + "' style='width:64px'> วิ " +
+           "<button id='makeScript'>✨ สร้าง <small>make them</small></button></p>",
+           "<p class='hint'>แตะตอนในรายการเพื่อแก้ แถบสีบนแถบเวลาคือตอน <span class='en'>Tap a passage in the list to edit it. The coloured bars on the time bar are the passages.</span></p>");
+    p.innerHTML = h.join("");
+    p.querySelectorAll("[data-text]").forEach(function (b) {
+      b.onclick = function () {
+        var id = Number(b.getAttribute("data-text"));
+        selected = movie.texts.filter(function (x) { return x.id === id; })[0] || null;
+        if (selected) { time = selected.from; scripting = false; }
+        show(); panel();
+      };
+    });
+    byId("nextSub").onclick = function () { nextPassage("subtitle"); };
+    byId("nextCard").onclick = function () { nextPassage("card"); };
+    byId("makeScript").onclick = function () {
+      var made = makePassages(byId("scriptBox").value, Math.max(0, Number(byId("fromBox2").value) || 0), Math.max(0.5, Number(byId("eachBox").value) || 3));
+      if (made) { byId("scriptBox").value = ""; }
+      rebuild(); show(); panel();
+    };
+    return;
+  }
+  if (!selected) {
+    h.push("<h2>วิธีใช้ <small>how</small></h2>",
+           "<div class='hint'><ol><li>ลากตัวละครจากซ้ายมาวางบนจอ</li>",
+           "<li>เลื่อนเวลาที่แถบล่าง แล้วลากตัวละครไปที่ใหม่: มันจะเดินไปเอง</li>",
+           "<li>ใส่ป้ายชื่อเรื่องหรือคำบรรยาย แล้วตั้งเวลา</li>",
+           "<li>กดเล่น ดูโค้ด หรือบันทึกวิดีโอ</li></ol>",
+           "<p><button id='openHelp'>📖 คู่มือทั้งหมด <small>full help</small></button></p>",
+           // the scenes: the film begins on one backdrop; a cut at a second begins the next scene, and the backdrop
+           // buttons then change the scene the time bar is in
+           "<div class='group'><label class='fold' data-fold='scenes'>✂️ ฉาก <small>scenes: a cut starts a new scene at the time bar's second; the backdrop buttons then change the scene the bar is in</small></label><ul>" +
+           scenesOf().map(function (sc, k) {
+             var here = time >= sc.start && time < sc.end, pic = BACKS.filter(function (b) { return b[0] === sc.backdrop; })[0];
+             return "<li class='pt" + (here ? " on" : "") + "'><span>" + (k + 1) + " · " + (pic ? pic[1] : sc.backdrop) + "</span>" +
+                    (k ? "<input type='number' step='0.5' data-cut='" + (k - 1) + "' value='" + sc.start + "'> วิ<button data-drop-cut='" + (k - 1) + "' title='ลบการตัดนี้ · remove this cut'>✕</button>"
+                       : "<span>0 วิ</span><span></span>") + "</li>";
+           }).join("") + "</ul><p><button id='addCut'" + (time < 0.5 || time > movie.duration - 0.5 || sceneAt(time).start > time - 0.5 ? " disabled" : "") + ">✂️ ตัดฉากที่นี่ <small>cut here, at " + time.toFixed(1) + " s</small></button></p></div>",
+           // the camera: points in time of what the viewer sees (the centre and how close); between them it moves smoothly
+           "<div class='group'><label class='fold' data-fold='camera'>🎥 กล้อง <small>camera: a point says where it looks and how close at that second; it glides between points; the frame on the stage shows it, drag it to aim</small></label><ul>" +
+           cameraOf().map(function (c, i) {
+             var here = Math.abs(c[0] - time) < 0.05;
+             return "<li class='pt" + (here ? " on" : "") + "'><button class='go' data-cam-go='" + i + "' title='ไปที่จุดนี้'>" + (i + 1) + " 📍</button>" +
+                    "<input type='number' step='0.5' data-cam-time='" + i + "' value='" + c[0] + "'> วิ<span>" + Math.round(c[3] * 100) + "%</span><button data-drop-cam='" + i + "' title='ลบจุดกล้องนี้'>✕</button></li>";
+           }).join("") + "</ul>" +
+           (cameraAt(time) >= 0 ? "<label>ใกล้แค่ไหน ที่วินาที " + time.toFixed(1) + " <small>how close, at this second</small></label><input type='range' id='camZoom' min='1' max='3' step='0.05' value='" + cameraOf()[cameraAt(time)][3] + "'>"
+                                : "<p><button id='addCam'>➕ จุดกล้องที่นี่ <small>a camera point here, at " + time.toFixed(1) + " s</small></button></p>") + "</div>",
+           "<p class='hint'>ตัวละครและฉากทั้งหมดวาดด้วยชุดวาดการ์ตูนล้านนา: ดูหนังที่ทำด้วยมัน และวิธีเขียนหนังเอง ที่ <a href='lanna_cartoon.html'>การ์ตูนล้านนาที่ทำด้วยโค้ด</a> <span class='en'>Everything here is drawn by the Lanna cartoon kit: see the film made with it, and how to write a film by hand, on the Lanna cartoon page.</span></p>",
+           "<span class='en'>The stage's edges pull: drag the grip on its left or right edge outward and the stage widens, the palette or the panel beside it narrowing to make room; drag it back, or double-tap it, to return. Headings in the palette fold: tap one to fold its row away or open it again, and the page remembers which are folded. In the panel, the colours and the points of a course fold the same way. Drag a character onto the stage. Move the time, drag the character somewhere else: it walks there. Add a title card or a subtitle. Play, read the code, or record a video.</span></div>");
+  } else if (selected.kind === "card" || selected.kind === "subtitle") {
+    h.push("<h2>" + (selected.kind === "card" ? "🎞️ ป้ายชื่อเรื่อง" : "💬 คำบรรยาย") + "</h2>",
+           "<label>บรรทัดใหญ่ <small>big</small></label><input type='text' id='bigBox' value='" + attr(selected.big) + "'>",
+           "<label>บรรทัดเล็ก <small>small</small></label><input type='text' id='smallBox' value='" + attr(selected.small) + "'>",
+           "<label>ตั้งแต่วินาที <small>from</small></label><input type='number' id='fromBox' step='0.5' min='0' value='" + selected.from + "'>",
+           "<label>ถึงวินาที <small>to</small></label><input type='number' id='toBox' step='0.5' min='0' value='" + selected.to + "'>",
+           "<p><button id='prevText'>◀ ตอนก่อน</button> <button id='nextText'>ตอนถัดไป ▶</button> " +
+           "<button id='afterThis'>➕ ตอนถัดไปต่อจากนี้ <small>a new passage after this one</small></button> " +
+           "<button id='allTexts'>📝 ทุกตอน <small>the script</small></button></p>",
+           "<p><button class='danger' id='removeBtn'>🗑️ ลบข้อความนี้</button></p>");
+  } else {
+    h.push("<h2>" + labelOf(selected) + "</h2>");
+    h.push("<label>ขนาด <small>size: or drag the corner handle on the stage, or Alt + wheel</small></label><input type='range' id='sizeBox' min='0.5' max='2' step='0.05' value='" + selected.size + "'>");
+    if (selected.kind === "person") {
+      h.push("<label>ยิ้ม <small>smile</small></label><input type='range' id='smileBox' min='0' max='1' step='0.1' value='" + selected.smile + "'>",
+             "<label>ท่าทาง <small>pose</small></label><div class='poses'>" +
+             POSES.map(function (q) { return "<button data-pose='" + q[0] + "'" + (q[0] === selected.pose ? " class='on'" : "") + ">" + q[1] + "</button>"; }).join("") + "</div>",
+           "<label>ร่ม <small>which parasol, for the parasol poses</small></label><select id='parasolKind'>" + PARASOLS.map(function (q) { return "<option value='" + q[0] + "'" + (q[0] === (selected.parasol || "lai") ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + "</select>",
+             "<label>สไบ <small>sabai: a shoulder cloth woven with figures that walk</small></label><div class='poses'>" +
+             "<button id='sabaiBtn'" + (selected.sabai ? " class='on'" : "") + ">🧣 สไบทอ <small>woven sabai</small></button></div>");
+    }
+    if (selected.name === "khom") {
+      h.push("<label>เทียน <small>candle: off by day, on at dusk and night, unless you say</small></label><div class='poses'>" +
+             [["auto", "🕐 ตามเวลา"], ["on", "🕯️ ติด"], ["off", "⚫ ดับ"]].map(function (q) {
+               return "<button data-candle='" + q[0] + "'" + ((selected.candle || "auto") === q[0] ? " class='on'" : "") + ">" + q[1] + "</button>"; }).join("") + "</div>");
+    }
+    var parts = selected.kind === "person" ? PARTS.person : PARTS[selected.name] || null;
+    if (parts) {
+      if (!colourPart || !parts.some(function (q) { return q[0] === colourPart; })) { colourPart = parts[0][0]; }
+      var current = (selected.colours || {})[colourPart] || "";
+      h.push("<div class='group'><label class='fold' data-fold='colour'>สี <small>colour: pick a part, then a colour</small></label><div class='poses'>" +
+             parts.map(function (q) { return "<button data-part='" + q[0] + "'" + (q[0] === colourPart ? " class='on'" : "") + ">" + q[1] + "</button>"; }).join("") + "</div>",
+             "<div class='swatches'>" +
+             COLOURS.map(function (c) { return "<button class='swatch" + (c === current ? " on" : "") + "' data-colour='" + c + "' style='background:" + c + "' title='" + c + "'></button>"; }).join("") +
+             "<input type='color' id='anyColour' value='" + (current || "#e9c45c") + "' title='สีอื่น · any colour'>" +
+             "<button id='resetColours'>↩ คืนสีเดิม</button></div></div>");
+    }
+    if (selected.kind !== "piece") {
+      h.push("<p><button id='pathBtn'" + (selected === pathing ? " class='on'" : "") + ">✏️ วาดเส้นทาง <small>path</small></button> " +
+             "ช่วงละ <input type='number' id='stepBox' min='0.5' step='0.5' value='" + pathStep + "' style='width:58px'> วินาที</p>" +
+             (selected === pathing ? "<p class='hint'>เปิดอยู่: แตะบนจอทีละจุด กด ✓ เสร็จ เมื่อพอ <span class='en'>on: tap the stage once per point; ✓ when done</span></p>" : ""));
+      var many = selected.keys.length > 1, going = Math.min(picked.length, selected.keys.length - 1);
+      h.push("<div class='group'><label class='fold' data-fold='points'>จุดบนเส้นทาง <small>points of the course: tap a row to go there, change its second, ✕ removes it; tick rows to remove several" +
+             (selected.name === "dragon" ? "; the slider is how near the screen it flies, far to near" : "") + "</small></label><ul>" +
+             selected.keys.map(function (k, n) {
+               var here = Math.abs(k[0] - time) < 0.05, ticked = picked.indexOf(k) >= 0;
+               return "<li class='pt" + (here ? " on" : "") + (ticked ? " picked" : "") + "'>" +
+                      (many ? "<input type='checkbox' data-pick='" + n + "'" + (ticked ? " checked" : "") + " title='เลือกจุดนี้ · tick this point'>" : "") +
+                      "<button class='go' data-go='" + n + "' title='ไปที่จุดนี้'>" + (n + 1) + " 📍</button>" +
+                      "<input type='number' step='0.5' data-time='" + n + "' value='" + k[0] + "'> วิ" +
+                      (typeof k[3] === "number" ? "<input type='range' data-depth='" + n + "' min='0' max='1' step='0.05' value='" + k[3] + "' style='width:58px' title='ไกล–ใกล้ · far–near'>"
+                                    : selected.kind === "person" ?      // a person's pose from this point on: the one before carries on unless this point says
+                                      "<select data-pose-at='" + n + "' title='ท่าตั้งแต่จุดนี้ · pose from this point on'><option value=''" + (typeof k[3] === "string" ? "" : " selected") + ">〰 เหมือนเดิม</option>" +
+                                      POSES.map(function (q) { return "<option value='" + q[0] + "'" + (k[3] === q[0] ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + "</select>"
+                                    : "<span>" + Math.round(k[1]) + ", " + Math.round(k[2]) + "</span>") +
+                      (many ? "<button data-key='" + n + "' title='ลบจุดนี้'>✕</button>" : "<span></span>") + "</li>" +
+                      // the point under the time bar, of a person: the size reached by it, grown along the way (a row of its own)
+                      (here && selected.kind === "person" ?
+                        "<li class='pt on' style='padding-left:28px'><span>ขนาดถึงจุดนี้ <small>size by here</small></span>" +
+                        "<input type='range' data-size-at='" + n + "' min='0.7' max='1.7' step='0.05' value='" + sizesOf(selected)[n] + "' style='width:64px'>" +
+                        "<button data-same-size='" + n + "' title='เหมือนเดิม · same as before'" + (typeof k[4] === "number" ? "" : " disabled") + ">〰</button></li>" : "");
+             }).join("") + "</ul>" +
+             (many ? "<p><button id='dropPicked' class='danger'" + (picked.length ? "" : " disabled") + ">🗑️ ลบจุดที่เลือก (" + going + ") <small>delete the ticked points</small></button> " +
+                     "<button id='dropLast'>↩ ลบจุดสุดท้าย <small>remove last point</small></button></p>" : "") +
+             (many && picked.length === selected.keys.length ?
+               "<p class='hint'>จุดแรกจะอยู่ต่อ: ตัวละครต้องมีที่ยืน <span class='en'>the first point stays: a character has to stand somewhere</span></p>" : "") +
+             "</div>");
+    }
+    h.push("<p><button class='danger' id='removeBtn'>🗑️ ลบออก</button></p>");
+  }
+  p.innerHTML = h.join("");
+  wireFolds(p);
+  if (!selected) {
+    byId("openHelp").onclick = function () { byId("helpSheet").className = "sheet open"; };
+    // the scenes' controls: a cut here, a cut's second, a cut gone
+    if (byId("addCut")) { byId("addCut").onclick = function () { cutsOf().push({at: round2(time), backdrop: sceneAt(time).backdrop}); markBackdrop(); rebuild(); show(); panel(); }; }
+    p.querySelectorAll("[data-cut]").forEach(function (box) {
+      box.onchange = function () {
+        var c = cutsOf()[Number(box.getAttribute("data-cut"))], t = Number(box.value);
+        c.at = round2(Math.max(0.5, Math.min(movie.duration - 0.5, isNaN(t) ? c.at : t)));
+        markBackdrop(); rebuild(); show(); panel();
+      };
+    });
+    p.querySelectorAll("[data-drop-cut]").forEach(function (b) {
+      b.onclick = function () { cutsOf().splice(Number(b.getAttribute("data-drop-cut")), 1); markBackdrop(); rebuild(); show(); panel(); };
+    });
+    // the camera's controls: a point here, go to one, its second, how close, a point gone
+    if (byId("addCam")) {
+      byId("addCam").onclick = function () {
+        var now = cameraNow() || [720, 540, 1];
+        cameraOf().push(aimCamera([round2(time), now[0], now[1], now[2]]));
+        rebuild(); show(); panel();
+      };
+    }
+    if (byId("camZoom")) {
+      byId("camZoom").oninput = function () { var c = cameraOf()[cameraAt(time)]; if (c) { c[3] = Number(byId("camZoom").value); aimCamera(c); rebuild(); show(); } };
+      byId("camZoom").onchange = function () { panel(); };
+    }
+    p.querySelectorAll("[data-cam-go]").forEach(function (b) {
+      b.onclick = function () { time = cameraOf()[Number(b.getAttribute("data-cam-go"))][0]; show(); panel(); };
+    });
+    p.querySelectorAll("[data-cam-time]").forEach(function (box) {
+      box.onchange = function () {
+        var c = cameraOf()[Number(box.getAttribute("data-cam-time"))], t = Number(box.value);
+        c[0] = round2(Math.max(0, Math.min(movie.duration, isNaN(t) ? c[0] : t)));
+        time = c[0]; rebuild(); show(); panel();
+      };
+    });
+    p.querySelectorAll("[data-drop-cam]").forEach(function (b) {
+      b.onclick = function () { cameraOf().splice(Number(b.getAttribute("data-drop-cam")), 1); rebuild(); show(); panel(); };
+    });
+    return;
+  }
+  var that = selected;
+  if (byId("removeBtn")) { byId("removeBtn").onclick = function () { remove(that); }; }
+  if (byId("prevText")) {
+    var order = passages(), at = order.indexOf(that);
+    byId("prevText").onclick = function () { if (at > 0) { selected = order[at - 1]; time = selected.from; show(); panel(); } };
+    byId("nextText").onclick = function () { if (at < order.length - 1) { selected = order[at + 1]; time = selected.from; show(); panel(); } };
+    byId("afterThis").onclick = function () { nextPassage(that.kind, that); };
+    byId("allTexts").onclick = function () { selected = null; scripting = true; show(); panel(); };
+  }
+  ["bigBox", "smallBox", "fromBox", "toBox", "sizeBox", "smileBox"].forEach(function (name) {
+    var box = byId(name);
+    if (!box) { return; }
+    box.oninput = function () {
+      var field = name.replace("Box", "");
+      that[field] = box.type === "text" ? box.value : Number(box.value);
+      if (field === "to" && that.to < that.from + 0.5) { that.to = that.from + 0.5; }
+      rebuild();
+      show();
+    };
+  });
+  p.querySelectorAll("[data-pose]").forEach(function (b) {
+    b.onclick = function () { that.pose = b.getAttribute("data-pose"); rebuild(); show(); panel(); };
+  });
+  if (byId("parasolKind")) { byId("parasolKind").onchange = function () { that.parasol = byId("parasolKind").value; rebuild(); show(); }; }
+  if (byId("sabaiBtn")) { byId("sabaiBtn").onclick = function () { that.sabai = !that.sabai; rebuild(); show(); panel(); }; }
+  p.querySelectorAll("[data-candle]").forEach(function (b) {
+    b.onclick = function () { var c = b.getAttribute("data-candle"); if (c === "auto") { delete that.candle; } else { that.candle = c; } rebuild(); show(); panel(); };
+  });
+  if (byId("pathBtn")) { byId("pathBtn").onclick = function () { if (pathing === that) { endPath(); } else { startPath(that); } }; }
+  if (byId("stepBox")) { byId("stepBox").oninput = function () { pathStep = Math.max(0.5, Number(byId("stepBox").value) || 2); show(); }; }
+  p.querySelectorAll("[data-part]").forEach(function (b) {
+    b.onclick = function () { colourPart = b.getAttribute("data-part"); panel(); };
+  });
+  p.querySelectorAll("[data-colour]").forEach(function (b) {
+    b.onclick = function () { paint(that, b.getAttribute("data-colour")); };
+  });
+  if (byId("anyColour")) { byId("anyColour").oninput = function () { paint(that, byId("anyColour").value); }; }
+  if (byId("resetColours")) { byId("resetColours").onclick = function () { delete that.colours; rebuild(); show(); panel(); }; }
+  p.querySelectorAll("[data-key]").forEach(function (b) {
+    b.onclick = function () { removePoint(that, Number(b.getAttribute("data-key"))); };
+  });
+  p.querySelectorAll("[data-go]").forEach(function (b) {
+    b.onclick = function () { time = that.keys[Number(b.getAttribute("data-go"))][0]; show(); panel(); };
+  });
+  // a key of a person: [second, x, y, pose or null, size]; the entries after y are dropped from the end when not set
+  function trimKey(k) { if (k.length > 4 && typeof k[4] !== "number") { k.length = 4; } if (k.length === 4 && typeof k[3] !== "string") { k.length = 3; } }
+  p.querySelectorAll("[data-pose-at]").forEach(function (box) {
+    box.onchange = function () {
+      var k = that.keys[Number(box.getAttribute("data-pose-at"))];
+      k[3] = box.value || null;
+      trimKey(k);
+      rebuild(); show(); panel();
+    };
+  });
+  p.querySelectorAll("[data-size-at]").forEach(function (box) {
+    box.oninput = function () {
+      var k = that.keys[Number(box.getAttribute("data-size-at"))];
+      if (k.length < 4) { k[3] = null; }
+      k[4] = Number(box.value);
+      rebuild(); show();
+    };
+    box.onchange = function () { panel(); };
+  });
+  p.querySelectorAll("[data-same-size]").forEach(function (b) {
+    b.onclick = function () {
+      var k = that.keys[Number(b.getAttribute("data-same-size"))];
+      k.length = 4;
+      trimKey(k);
+      rebuild(); show(); panel();
+    };
+  });
+  p.querySelectorAll("[data-time]").forEach(function (box) {
+    box.onchange = function () {
+      var i = Number(box.getAttribute("data-time"));
+      that.keys[i][0] = clampTime(that, i, Number(box.value));
+      time = that.keys[i][0];
+      rebuild(); show(); panel();
+    };
+  });
+  p.querySelectorAll("[data-depth]").forEach(function (box) {
+    box.oninput = function () { that.keys[Number(box.getAttribute("data-depth"))][3] = Number(box.value); rebuild(); show(); };
+  });
+  if (byId("dropLast")) { byId("dropLast").onclick = function () { removePoint(that, that.keys.length - 1); }; }
+  p.querySelectorAll("[data-pick]").forEach(function (box) {
+    box.onchange = function () {
+      var k = that.keys[Number(box.getAttribute("data-pick"))];
+      if (box.checked) { picked.push(k); } else { picked = picked.filter(function (q) { return q !== k; }); }
+      show();
+      panel();
+    };
+  });
+  if (byId("dropPicked")) { byId("dropPicked").onclick = function () { removePicked(that); }; }
+}
+
+function paint(item, colour) {         // give the chosen part of the item this colour
+  item.colours = item.colours || {};
+  item.colours[colourPart] = colour;
+  rebuild();
+  show();
+  panel();
+}
+
+function attr(s) { return String(s).replace(/&/g, "&amp;").replace(/'/g, "&#39;").replace(/</g, "&lt;"); }
+
+// ---------- dragging from the palette ----------
+var ghost = byId("ghost"), dragging = null;
+
+function fillRow(rowId, list, kind) {
+  var row = byId(rowId);
+  list.forEach(function (entry) {
+    var b = document.createElement("button");
+    b.textContent = entry[1];
+    b.onpointerdown = function (event) {
+      dragging = {kind: kind, name: entry[0], label: entry[1]};
+      ghost.textContent = entry[1];
+      ghost.style.display = "block";
+      ghost.style.left = event.clientX + "px";
+      ghost.style.top = event.clientY + "px";
+      b.setPointerCapture(event.pointerId);
+    };
+    b.onpointermove = function (event) {
+      if (!dragging) { return; }
+      ghost.style.left = event.clientX + "px";
+      ghost.style.top = event.clientY + "px";
+    };
+    b.onpointerup = function (event) {
+      if (!dragging) { return; }
+      ghost.style.display = "none";
+      var box = marks.getBoundingClientRect();
+      if (event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom) {
+        var s = pointerOnStage(event), p = toSheet(s[0], s[1]);
+        var y = grounded(dragging) ? Math.max(700, Math.min(1040, p[1])) : Math.max(60, Math.min(1040, p[1]));
+        if ((dragging.name === "sun" || dragging.name === "birds") && y > 600) { y = 300; }
+        addItem(dragging.kind, dragging.name, Math.round(p[0]), Math.round(y));
+      }
+      dragging = null;
+    };
+    row.appendChild(b);
+  });
+}
+
+wireFolds(document.querySelector(".palette"));
+fillRow("castRow", CASTS.filter(function (entry) { return CAST[entry[0]]; }), "person");   // only what this kit knows
+fillRow("thingRow", THINGS, "thing");
+fillRow("floraRow", FLORAS, "thing");
+fillRow("pieceRow", PIECES.concat(TREES), "piece");
+// A picture's button shows the picture itself, small, over its name in Thai. A picture takes a moment to
+// paint, so they are painted one at a time once the page is up: each on the kit's big sheet, then drawn small.
+var smalls = [];                        // the small pictures still to be painted: [name, canvas]
+BACKS.forEach(function (entry) {
+  var b = document.createElement("button");
+  if (entry.length > 2) {               // a picture: its line about itself is its tip
+    var small = document.createElement("canvas");
+    small.width = 184;
+    small.height = 138;
+    b.appendChild(small);
+    b.setAttribute("data-pic", entry[0]);
+    b.title = entry[2];
+    smalls.push([entry[0], small]);
+  }
+  b.appendChild(document.createTextNode(entry[1]));
+  b.setAttribute("data-backdrop", entry[0]);
+  b.onclick = function () {               // the backdrop of the scene the time bar is in
+    var sc = sceneAt(time);
+    if (sc.k === 0) { movie.backdrop = entry[0]; } else { cutsOf()[sc.k - 1].backdrop = entry[0]; }
+    markBackdrop(); rebuild(); show(); panel();
+  };
+  byId("backdropRow").appendChild(b);
+});
+
+function markBackdrop() {
+  var now = sceneAt(time).backdrop;
+  document.querySelectorAll("[data-backdrop]").forEach(function (b) { b.className = b.getAttribute("data-backdrop") === now ? "on" : ""; });
+  letGo();
+}
+
+// The kit keeps every picture it has painted, a sheet of 1440 x 1080 each. This page keeps only the film's
+// own (one a scene): a child who tries them all would otherwise fill a phone's memory with sheets.
+function letGo() {
+  var keep = scenesOf().map(function (sc) { return sc.backdrop; });
+  Object.keys(window.BACKDROP_SETS || {}).forEach(function (name) { if (keep.indexOf(name) < 0) { delete BACKDROP_SETS[name]; } });
+}
+
+function paintSmalls() {
+  var next = smalls.shift();
+  if (!next) { return; }
+  next[1].getContext("2d").drawImage(backdrop(next[0]), 0, 0, next[1].width, next[1].height);
+  letGo();
+  setTimeout(paintSmalls, 40);
+}
+
+// ---------- the tool ----------
+// "course" (the default): a drag on a sprite is the next point of its course, or moves
+// the point under the time bar. "move": a drag picks the sprite up and carries it, its
+// whole course with it, so a child can place things without making points.
+var tool = "course";
+
+function setTool(name) {
+  tool = name;
+  byId("toolMove").className = name === "move" ? "on" : "";
+  byId("toolCourse").className = name === "course" ? "on" : "";
+  byId("toolHint").textContent = name === "move" ? "ลากสิ่งที่เลือกไปที่ใหม่ ทั้งเส้นทางย้ายตาม ปุ่มลูกศรขยับทีละนิด · drag a sprite to carry it, course and all; arrow keys nudge it"
+                                                 : "ลากตัวละครไปที่ใหม่: จุดถัดไปของเส้นทาง · drag a character: the next point of its course";
+  show();
+}
+
+byId("toolMove").onclick = function () { setTool("move"); };
+byId("toolCourse").onclick = function () { setTool("course"); };
+
+// ---------- zoom ----------
+// The stage is drawn at 1920 by 1080 and fitted to its box. Zoom scales the two
+// canvases (the picture and the marks) by CSS and pans them, and the box clips the
+// rest. The pointer maths reads the canvas's own rectangle on the screen, so a zoomed
+// tap lands where it looks. Zoomed in, a drag on empty stage pans; Ctrl + wheel zooms
+// at the pointer; the fit button is 100% again.
+var zoom = 1, pan = [0, 0], panning = null;
+
+// ---------- pulling the stage's edges ----------
+// The palette and the panel are the grid's side columns. A grip on each edge of the
+// stage drags that column's width: pull outward and the stage widens, the column
+// narrowing to make room, down to a strip; pull back and it returns. The widths are
+// kept in this browser. The stage keeps its 16:9, so it grows taller as it widens.
+var SIDES_FIRST = [190, 250], SIDE_LEAST = 56, SIDE_MOST = 480;
+var sides = SIDES_FIRST.slice();
+try { var keptSides = JSON.parse(localStorage.getItem("cartoon_maker_sides")); if (keptSides && keptSides.length === 2) { sides = keptSides.map(Number); } } catch (error) { /* nothing kept */ }
+
+function applySides() {
+  sides = sides.map(function (w) { return Math.max(SIDE_LEAST, Math.min(SIDE_MOST, Math.round(w))); });
+  document.querySelector(".maker").style.gridTemplateColumns = sides[0] + "px minmax(0, 1fr) " + sides[1] + "px";
+  try { localStorage.setItem("cartoon_maker_sides", JSON.stringify(sides)); } catch (error) { /* a browser that keeps nothing */ }
+  applyZoom();
+  show();
+}
+
+[["gripLeft", 0, 1], ["gripRight", 1, -1]].forEach(function (grip) {
+  var el = byId(grip[0]), which = grip[1], way = grip[2], fromX = 0, fromWidth = 0;
+  el.onpointerdown = function (event) {
+    fromX = event.clientX; fromWidth = sides[which];
+    el.classList.add("held");
+    el.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  };
+  el.onpointermove = function (event) {
+    if (!el.classList.contains("held")) { return; }
+    sides[which] = fromWidth + (event.clientX - fromX) * way;   // the left grip moved left widens the stage: the palette narrows
+    applySides();
+  };
+  el.onpointerup = el.onpointercancel = function () { el.classList.remove("held"); };
+  el.ondblclick = function () { sides[which] = SIDES_FIRST[which]; applySides(); };   // a double tap puts that side back
+});
+applySides();
+
+function applyZoom() {
+  var box = byId("stageBox"), w = box.clientWidth, h = box.clientHeight;
+  if (zoom >= 1) {                                  // the picture covers the box: no gap at any edge
+    pan[0] = Math.min(0, Math.max(w * (1 - zoom), pan[0]));
+    pan[1] = Math.min(0, Math.max(h * (1 - zoom), pan[1]));
+  } else {                                          // smaller than the box: in the middle of it
+    pan[0] = w * (1 - zoom) / 2;
+    pan[1] = h * (1 - zoom) / 2;
+  }
+  [stage, marks].forEach(function (c) { c.style.transform = "translate(" + pan[0] + "px, " + pan[1] + "px) scale(" + zoom + ")"; });
+  byId("zoomLabel").textContent = Math.round(zoom * 100) + "%";
+}
+
+function zoomTo(z, atX, atY) {                      // to z, keeping the stage point under the box point (atX, atY) where it is
+  var box = byId("stageBox");
+  z = Math.max(0.5, Math.min(4, z));
+  if (atX === undefined) { atX = box.clientWidth / 2; atY = box.clientHeight / 2; }
+  pan[0] = atX - (atX - pan[0]) * z / zoom;
+  pan[1] = atY - (atY - pan[1]) * z / zoom;
+  zoom = z;
+  applyZoom();
+}
+
+function onBox(s) {                                 // a stage pixel as a percent of the box, zoom and pan included
+  var box = byId("stageBox");
+  return [(s[0] / 1920 * box.clientWidth * zoom + pan[0]) / box.clientWidth * 100,
+          (s[1] / 1080 * box.clientHeight * zoom + pan[1]) / box.clientHeight * 100];
+}
+
+byId("zoomIn").onclick = function () { zoomTo(zoom * 1.25); };
+byId("zoomOut").onclick = function () { zoomTo(zoom / 1.25); };
+byId("zoomReset").onclick = function () { zoom = 1; pan = [0, 0]; applyZoom(); };
+byId("stageBox").addEventListener("wheel", function (event) {
+  if (event.altKey && selected && selected.keys) {   // Alt and the wheel: the selected sprite grows or shrinks a step
+    event.preventDefault();
+    setSize(selected, selected.size * (event.deltaY < 0 ? 1.05 : 1 / 1.05), selected.keys.map(function (k) { return k[4]; }));
+    rebuild();
+    show();
+    return;
+  }
+  if (!event.ctrlKey) { return; }
+  event.preventDefault();
+  var b = byId("stageBox").getBoundingClientRect();
+  zoomTo(zoom * (event.deltaY < 0 ? 1.15 : 1 / 1.15), event.clientX - b.left, event.clientY - b.top);
+}, {passive: false});
+window.addEventListener("resize", applyZoom);
+
+// Carry a sprite by (dx, dy): every point of its course moves together, and the move
+// is held back so that no point leaves the band the sprite may stand in.
+function shiftItem(item, dx, dy) {
+  var low = grounded(item) ? 700 : 60, high = 1040;
+  item.keys.forEach(function (k) { dy = Math.max(low - k[2], Math.min(high - k[2], dy)); });
+  item.keys.forEach(function (k) { k[1] = Math.round(k[1] + dx); k[2] = Math.round(k[2] + dy); });
+}
+
+// ---------- dragging on the stage ----------
+var held = null, heldIndex = -1, heldNew = false, heldFrom = null, heldCamera = -1;   // heldCamera: the camera point being aimed by a drag
+
+marks.onpointerdown = function (event) {
+  var s = pointerOnStage(event), item = hit(s[0], s[1]);
+  if (popItem) { closeTimePop(true); }
+  if (selected && selected.keys && !pathing) {     // on the size handle: this drag scales
+    var hs = scaleHandle(selected), foot = whereNow(selected), q0 = toSheet(s[0], s[1]);
+    if (Math.abs(s[0] - hs[0]) <= 18 && Math.abs(s[1] - hs[1]) <= 18) {
+      scaling = {item: selected, size0: selected.size, keySizes: selected.keys.map(function (k) { return k[4]; }),
+                 far0: Math.max(1, Math.hypot(q0[0] - foot[0], q0[1] - foot[1]))};
+      marks.setPointerCapture(event.pointerId);
+      show();
+      return;
+    }
+  }
+  if (pathing && item !== pathing) {              // path mode: this tap is the next point of the course
+    var p = toSheet(s[0], s[1]);
+    addPoint(pathing, Math.round(p[0]), Math.round(grounded(pathing) ? Math.max(700, Math.min(1040, p[1])) : p[1]), nextPathTime());
+    time = pathing.keys[pathing.keys.length - 1][0];
+    rebuild();
+    show();
+    panel();
+    return;
+  }
+  selected = item;
+  held = item;
+  heldCamera = -1;
+  if (!item && cameraAt(time) >= 0) {             // empty stage, a camera point at this second: a drag inside its frame aims it
+    var cam = cameraOf()[cameraAt(time)], q = toSheet(s[0], s[1]);
+    if (Math.abs(q[0] - cam[1]) <= 720 / cam[3] && Math.abs(q[1] - cam[2]) <= 540 / cam[3]) { heldCamera = cameraAt(time); marks.setPointerCapture(event.pointerId); }
+  }
+  if (!item && heldCamera < 0 && zoom !== 1) { panning = [event.clientX, event.clientY]; marks.setPointerCapture(event.pointerId); }   // empty stage, zoomed: a drag pans
+  heldFrom = toSheet(s[0], s[1]);                 // where the move tool picked it up
+  heldIndex = item && item.kind !== "piece" ? pointAt(item, time) : 0;   // the point under the time bar, or -1: a new one
+  heldNew = false;
+  if (item) { marks.setPointerCapture(event.pointerId); }
+  panel();
+  show();
+};
+marks.onpointermove = function (event) {
+  if (scaling) {                                  // the handle's distance from the foot is the size
+    var sz = pointerOnStage(event), qz = toSheet(sz[0], sz[1]), footZ = whereNow(scaling.item);
+    setSize(scaling.item, scaling.size0 * Math.hypot(qz[0] - footZ[0], qz[1] - footZ[1]) / scaling.far0, scaling.keySizes);
+    rebuild();
+    show();
+    return;
+  }
+  if (panning) {
+    pan[0] += event.clientX - panning[0];
+    pan[1] += event.clientY - panning[1];
+    panning = [event.clientX, event.clientY];
+    applyZoom();
+    return;
+  }
+  if (heldCamera >= 0) {                          // aim the camera: its centre follows the drag, the frame kept on the sheet
+    var sc = pointerOnStage(event), qc = toSheet(sc[0], sc[1]), cam = cameraOf()[heldCamera];
+    cam[1] += qc[0] - heldFrom[0];
+    cam[2] += qc[1] - heldFrom[1];
+    aimCamera(cam);
+    heldFrom = qc;
+    rebuild();
+    show();
+    return;
+  }
+  if (!held) { return; }
+  var s = pointerOnStage(event), p = toSheet(s[0], s[1]);
+  if (tool === "move") {                          // carry it: the whole course goes along
+    shiftItem(held, p[0] - heldFrom[0], p[1] - heldFrom[1]);
+    heldFrom = p;
+    rebuild();
+    show();
+    return;
+  }
+  var x = Math.round(p[0]), y = Math.round(grounded(held) ? Math.max(700, Math.min(1040, p[1])) : p[1]);
+  if (held.kind === "piece") {
+    held.keys = [[held.keys[0][0], x, y]];          // it keeps its second, and so its scene
+  } else {
+    if (heldIndex < 0) {                            // not on a point: this drag makes a new one, after the last
+      heldIndex = addPoint(held, x, y);
+      heldNew = true;
+      time = held.keys[heldIndex][0];
+    }
+    held.keys[heldIndex][1] = x;
+    held.keys[heldIndex][2] = y;
+  }
+  rebuild();
+  show();
+};
+marks.onpointerup = function () {
+  panning = null;
+  if (scaling) { scaling = null; panel(); show(); return; }
+  if (heldCamera >= 0) { heldCamera = -1; panel(); show(); return; }
+  if (!held) { return; }
+  var item = held, index = heldIndex, fresh = heldNew;
+  held = null;
+  panel();
+  show();
+  if (fresh) { openTimePop(item, index, "arrive"); }
+};
+
+// ---------- the timeline's pointer ----------
+var scrubbing = false;
+
+ruler.onpointerdown = function (event) {
+  var box = ruler.getBoundingClientRect(), x = (event.clientX - box.left) * ruler.width / box.width, y = (event.clientY - box.top) * 240 / box.height;
+  var movers = movie.items.filter(function (i) { return i.kind !== "piece"; }), chosen = null;
+  movers.forEach(function (item, n) {
+    item.keys.forEach(function (k) { if (Math.abs(rulerX(k[0]) - x) < 12 && Math.abs(90 + n * 22 - y) < 12) { chosen = [item, k[0]]; } });
+  });
+  movie.texts.forEach(function (t, n) {
+    if (x >= rulerX(t.from) - 4 && x <= rulerX(t.to) + 4 && Math.abs(50 + (n % 2) * 16 - y) < 10) { chosen = [t, t.from]; }
+  });
+  setPlaying(false);
+  if (chosen) { selected = chosen[0]; time = chosen[1]; panel(); } else { time = rulerT(x); scrubbing = true; ruler.setPointerCapture(event.pointerId); }
+  show();
+};
+ruler.onpointermove = function (event) {
+  if (!scrubbing) { return; }
+  var box = ruler.getBoundingClientRect();
+  time = rulerT((event.clientX - box.left) * ruler.width / box.width);
+  show();
+};
+ruler.onpointerup = function () { scrubbing = false; };
+
+// ---------- the keyboard ----------
+// Delete (or Backspace) removes what is selected, unless the child is typing in a box.
+// With points ticked in the panel it removes those points, and not the whole mover.
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Escape" && popItem) { closeTimePop(false); return; }
+  if (event.key === "Escape" && pathing) { endPath(); return; }
+  var box = event.target, typing = box.tagName === "TEXTAREA" || (box.tagName === "INPUT" && box.type !== "checkbox");
+  var nudge = {ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1]}[event.key];
+  if (nudge && selected && selected.keys && !typing && !document.querySelector(".sheet.open")) {   // the arrows carry the selected sprite
+    event.preventDefault();
+    shiftItem(selected, nudge[0] * (event.shiftKey ? 50 : 10), nudge[1] * (event.shiftKey ? 50 : 10));
+    rebuild();
+    show();
+    panel();
+    return;
+  }
+  if (event.key !== "Delete" && event.key !== "Backspace") { return; }
+  if (!selected || typing || document.querySelector(".sheet.open")) { return; }
+  event.preventDefault();
+  if (picked.length) { removePicked(selected); } else { remove(selected); }
+});
+
+// ---------- the buttons ----------
+byId("playBtn").onclick = function () { setPlaying(!playing); };
+byId("rewindBtn").onclick = function () { setPlaying(false); time = 0; show(); };
+byId("addCard").onclick = function () { var t = addText("card"); if (t) { selected = t; scripting = false; } rebuild(); show(); panel(); };
+byId("addSubtitle").onclick = function () { var t = addText("subtitle"); if (t) { selected = t; scripting = false; } rebuild(); show(); panel(); };
+byId("openScript").onclick = function () { selected = null; scripting = true; show(); panel(); };
+byId("durationBox").onchange = function () {
+  movie.duration = Math.max(3, Math.min(90, Number(byId("durationBox").value) || 12));
+  byId("durationBox").value = movie.duration;
+  rebuild();
+  show();
+};
+// Reset: back to the start, as the page was before anything was made. The film is
+// emptied, and so is everything the page itself holds: the second, the play, the
+// selection, the ticks, path mode, the time box and the tool. It asks twice, three
+// seconds apart, so a child's slip does not throw a film away.
+var clearAsked = null, CLEAR_LABEL = "🔄 เริ่มใหม่ <small>reset · start over</small>";
+
+var AI_STORY_FIRST = byId("aiStory").value;   // the model's story as the page first shows it
+
+// Everything back to how the page first opened: the film, the time, what is selected,
+// the path mode, the tool and the zoom; and the panel, the colour part, the path step,
+// the ticked points, a held drag, the sheets and what was typed in them.
+function resetAll() {
+  setPlaying(false);
+  if (recorder) { stopRecording(); }
+  recorded = [];
+  movie = freshFilm();
+  selected = null; pathing = null; picked = []; time = 0;
+  scripting = false; colourPart = null; pathStep = 2;
+  held = null; heldIndex = -1; heldNew = false; heldFrom = null; heldCamera = -1; scrubbing = false; panning = null;
+  byId("timePop").className = "time-pop"; popItem = null;
+  ["helpSheet", "codeSheet", "aiSheet"].forEach(function (id) { byId(id).className = "sheet"; });
+  byId("codeBox").value = "";
+  byId("aiJson").value = "";
+  byId("aiStory").value = AI_STORY_FIRST;
+  if (byId("aiStatus")) { byId("aiStatus").textContent = ""; }
+  byId("durationBox").value = movie.duration;
+  markBackdrop();
+  setTool("course");
+  zoom = 1; pan = [0, 0]; applyZoom();
+  rebuild(); show(); panel();
+}
+
+byId("clearBtn").onclick = function () {
+  if (clearAsked && Date.now() - clearAsked < 3000) {
+    clearAsked = null;
+    byId("clearBtn").innerHTML = CLEAR_LABEL;
+    resetAll();
+  } else {
+    clearAsked = Date.now();
+    byId("clearBtn").textContent = "แน่ใจ? กดอีกครั้ง · sure? press again";
+    setTimeout(function () { byId("clearBtn").innerHTML = CLEAR_LABEL; }, 3000);
+  }
+};
+byId("exampleBtn").onclick = function () {
+  movie = {duration: 14, backdrop: "day", next: 15,
+          items: [{id: 1, kind: "piece", name: "house", keys: [[0, 1150, 905]], size: 1.2, smile: 1, pose: "walk"},
+                  {id: 2, kind: "piece", name: "tree", keys: [[0, 240, 900]], size: 1.2, smile: 1, pose: "walk"},
+                  {id: 13, kind: "piece", name: "longanTree", keys: [[0, 1400, 915]], size: 1.2, smile: 1, pose: "walk"},
+                  {id: 14, kind: "thing", name: "marigold", keys: [[0, 900, 1010]], size: 1, smile: 1, pose: "walk"},
+                  {id: 3, kind: "thing", name: "sun", keys: [[0, 1200, 170]], size: 1.2, smile: 1, pose: "walk"},
+                  {id: 4, kind: "person", name: "boy", keys: [[3, 160, 960], [9, 620, 950], [14, 620, 950]], size: 1.0, smile: 1, pose: "wave"},
+                  {id: 11, kind: "person", name: "girl", keys: [[3, 40, 980], [10, 480, 975], [14, 480, 975]], size: 0.95, smile: 1, pose: "walk"},
+                  {id: 5, kind: "person", name: "lady", keys: [[3, 1020, 940], [8, 1020, 940], [11, 900, 950]], size: 1.25, smile: 1, pose: "walk"},
+                  {id: 6, kind: "thing", name: "dog", keys: [[3, 40, 1000], [10, 600, 1000]], size: 1, smile: 1, pose: "walk"},
+                  {id: 7, kind: "thing", name: "birds", keys: [[0, 300, 220], [14, 1300, 160]], size: 1, smile: 1, pose: "walk"},
+                  {id: 10, kind: "thing", name: "naga", keys: [[0, 1700, 430], [14, -300, 380]], size: 1, smile: 1, pose: "walk"},
+                  {id: 12, kind: "thing", name: "dragon", keys: [[0, -400, 560, 0.25], [14, 1800, 520, 0.9]], size: 1, smile: 1, pose: "walk"}],
+          texts: [{id: 8, kind: "card", big: "ไปหาแม่", small: "Going to see mother", from: 0, to: 3},
+                  {id: 9, kind: "subtitle", big: "สวัสดีเจ้า!", small: "Hello!", from: 9, to: 13}]};
+  movie.items.forEach(function (i) { if (i.kind === "person" && !CAST[i.name]) { i.name = "child"; } });   // an older kit
+  selected = null; time = 0;
+  byId("durationBox").value = movie.duration; markBackdrop(); rebuild(); show(); panel();
+};
+byId("codeBtn").onclick = function () { byId("codeBox").value = pageCode(); byId("codeSheet").className = "sheet open"; };
+byId("closeCode").onclick = function () { byId("codeSheet").className = "sheet"; };
+byId("helpBtn").onclick = function () { byId("helpSheet").className = "sheet open"; };
+byId("pathDone").onclick = function () { endPath(); };
+byId("closeHelp").onclick = function () { byId("helpSheet").className = "sheet"; };
+byId("copyBtn").onclick = function () { byId("codeBox").select(); document.execCommand("copy"); };
+byId("downloadBtn").onclick = function () {
+  var blob = new Blob([pageCode()], {type: "text/html"}), a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "my_cartoon.html";
+  a.click();
+};
+
+// ---------- a video ----------
+// The browser records what the stage shows while the film plays once from the
+// start. Chrome writes a .webm file; a phone or a Mac plays it, and ffmpeg turns
+// it into .mp4. render.py makes a sharper file, one frame at a time.
+var recorder = null, recorded = [];
+
+byId("videoBtn").onclick = function () {
+  if (recorder) { stopRecording(); return; }
+  if (!window.MediaRecorder || !stage.captureStream) { byId("videoBtn").textContent = "เบราว์เซอร์นี้บันทึกไม่ได้"; return; }
+  var kind = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
+  recorded = [];
+  recorder = new MediaRecorder(stage.captureStream(30), {mimeType: kind, videoBitsPerSecond: 8000000});
+  recorder.ondataavailable = function (event) { if (event.data.size) { recorded.push(event.data); } };
+  recorder.onstop = function () {
+    var blob = new Blob(recorded, {type: "video/webm"}), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "my_cartoon.webm";
+    a.click();
+    byId("videoBtn").innerHTML = "🎥 บันทึกวิดีโอ <small>video</small>";
+  };
+  time = 0;
+  selected = null;
+  panel();
+  recorder.start(200);
+  byId("videoBtn").textContent = "⏺ กำลังบันทึก... (กดเพื่อหยุด)";
+  setPlaying(true);
+};
+
+function stopRecording() {
+  if (!recorder) { return; }
+  setPlaying(false);
+  recorder.stop();
+  recorder = null;
+}
+
+// ---------- a model writes the film ----------
+// The page tells the model its own vocabulary (the names the kit knows, the
+// sheet's coordinates, the rules of a course) and asks for the film as JSON,
+// the same data the palette makes. What comes back is checked name by name
+// and number by number before it is shown: an unknown name is dropped, a
+// number out of range is pulled in, and the seconds of a course only go up.
+function aiSettings(save) {
+  var keep = {base: byId("aiBase").value.trim(), model: byId("aiModel").value.trim(), key: byId("aiKey").value.trim()};
+  if (save) { try { localStorage.setItem("cartoon_maker_ai", JSON.stringify(keep)); } catch (error) { /* nothing kept */ } }
+  return keep;
+}
+
+function filmPrompt() {
+  var people = CASTS.filter(function (c) { return CAST[c[0]]; }).map(function (c) { return c[0]; });
+  return [
+    "You write a short cartoon for a web page that draws it. Answer with ONE JSON object and nothing else.",
+    "The stage is a sheet 1440 wide and 1080 high; x runs 0..1440 left to right, y runs 0..1080 top to bottom. The ground is y 880..1040 (feet stand there, 900 is typical); the sky is y 60..600.",
+    "JSON shape: {\"duration\": seconds 5..60, \"backdrop\": one of " + JSON.stringify(BACKS.map(function (b) { return b[0]; })) + ",",
+    " \"items\": [ {\"kind\": \"person\", \"name\": one of " + JSON.stringify(people) + ", \"keys\": [[second, x, y], ...], \"size\": 0.7..1.7, \"smile\": 0..1, \"pose\": one of " + JSON.stringify(POSES.map(function (p) { return p[0]; })) + ", \"parasol\": one of " + JSON.stringify(PARASOLS.map(function (p) { return p[0]; })) + " (which parasol a woman carries, with a parasol pose; optional), \"sabai\": true for a shoulder cloth woven with small figures that walk (optional), \"colours\": {\"shirt\"|\"legs\"|\"skin\": \"#rrggbb\"} },",
+    "            {\"kind\": \"thing\", \"name\": one of " + JSON.stringify(THINGS.concat(FLORAS).map(function (t) { return t[0]; })) + ", \"keys\": [[second, x, y], ...], \"size\": 0.5..2 (1.2 is as the kit draws it; optional)},",
+    "            {\"kind\": \"piece\", \"name\": one of " + JSON.stringify(PIECES.concat(TREES).map(function (p) { return p[0]; })) + ", \"keys\": [[0, x, y]]} ],",
+    " \"texts\": [ {\"kind\": \"card\", \"big\": title, \"small\": second line, \"from\": second, \"to\": second}, {\"kind\": \"subtitle\", \"big\": words under the picture, \"small\": translation, \"from\": s, \"to\": s} ],",
+    " \"cuts\": [ {\"at\": second, \"backdrop\": one of the backdrops} ] (optional: a new scene from that second on; the film begins on \"backdrop\"; the kit closes and opens an iris at each cut),",
+    " \"camera\": [ [second, x, y, zoom], ... ] (optional: what the viewer sees at that second: the centre of the view on the stage and how close, zoom 1 = the whole stage, 2 = twice as close, up to 3; the camera glides between points; leave it out for the whole stage),",
+    " \"marks\": {name: second, ...} (optional) }",
+    "A second may be a word: \"+2\" is 2 seconds after the previous (a text's from: after the previous text ends; its to: after its own from; a key: after the item's key before), \"<\" is with the previous text's start and \"<+1\" a second after it, and a mark's name, \"dance\" or \"dance+2\", is that mark's second.",
+    "Rules: keys are the points of a course: the first is where and when the item appears, the next ones are where it is by later seconds, and the seconds must strictly increase. A course is one smooth curve through its points, passed without stopping; to make an item wait, repeat the same x, y at a later second. A person's key may carry a pose as a fourth entry, [second, x, y, \"wave\"]: the person holds that pose from that key on (she waves when she reaches the tree); without one the pose before carries on. The poses are walk, wave, wai, sit, sing, and the parasol poses: parasol (she holds a paper parasol up, open), furled (up, closed), carry (closed, carried at her side, tip to the ground: how she walks with a closed one), twirl (from that key she tips the parasol down toward the viewer, spins it three times, and lifts it again: six seconds), spin (the same, but her other hand comes to it before it turns and it stays down after), fold (after spin: down there she closes it, snaps it open as if shaking the rain off, closes it again, and swings it closed down to her side: 5.6 seconds, then carry), open (upright, it opens over 1.4 seconds), close (upright, it furls), and bloom (from that key, furled, she tips it down, opens it, spins it, furls it and lifts it: nine seconds). Give her next key after the show. A parasol is for the women: girl, lady, maiden, weaver, grandmother, devotee, dancer, celestial. Her parasol is lai (Thai border patterns, red on cream), yantra (the eight-direction yantra, ivory on black) or buddha (a Lanna cloth of elephants round a seated Buddha, who stays still while the rest spins). A fifth entry is a size, 0.5..2, reached by that key, growing along the way (bigger as she comes nearer); write null for the pose to keep it: [second, x, y, null, 1.5]. People and pieces keep y between 880 and 1040. The sun and the birds fly at y 100..400. A flower or fruit (" + FLORAS.map(function (f) { return f[0]; }).join(", ") + ") is a thing that stands on the ground; a name ending in Tree is that tree in flower or fruit, a piece. The naga's point is its chest and the dragon's its head; both may fly. Three things are of the festivals of the north and stand on the ground: chedisai, a Songkran sand pagoda with little flags; pratheep, a row of the clay lamps of Yi Peng, for a night; krathong, a krathong afloat, for a river or a pond at night. oxcart is a water buffalo pulling the wooden cart of the north: its point is under the buffalo, the cart follows behind it, it walks along its course on the ground (y 880..1040) and the wheels turn; it is about 580 pixels long, so give its course room. Two things are creatures of the myths of Lanna: mom, a scaly guardian of temple stairs, walks on the ground; luang, the dragon of the north, flies, and its point is its head. A dragon's key takes a fourth number, its depth: 0 far from the screen (small, faint, behind everyone) to 1 near (big, in front); change it along the course to make it fly toward or away from the viewer. khom is the hanging paper lantern of Lanna: its point is where its string is tied (y 60..500 to hang it high), it swings in the breeze, its candle is off by day and on at dusk and night (or say \"candle\": \"on\" or \"off\"), and carried along a course it leans; lantern is the flying khom loi, which rises only if its course goes up. A piece (house, tree, palm, banana, temple, yak, namton: the water jar at a gate, tung: a banner on a pole with a hong bird on top, drumcart: a temple's great drum on its wheeled cart) has exactly one key; its second says which scene it stands in (0 for the first scene, a cut's second for the scene that cut begins). A person or thing is drawn in the scenes its course overlaps or begins in: give it a key in each scene it belongs to, and none in a scene it is away from. A card covers the whole screen while it shows, so put it at the start or the end. Five of the people are old, with white or grey hair: weaver (a grandmother), grandmother (small and bent), elder (an old man with a white beard and a stick), oldfarmer (an old farmer under his hat) and devotee (an old woman in white, holding a lotus). The backdrops day, dusk and night are green hills at that hour, under clouds that drift. Every other backdrop is one painted picture with its own sky, and people stand on its ground at y 880 to 1040 as on the hills: " + PICTURES.map(function (p) { return p[0] + " (" + p[2] + ")"; }).join("; ") + ". Use 3 to 8 items. Thai is welcome in the texts. Colours are optional. No comments, no markdown, JSON only.",
+  ].join("\n");
+}
+
+function parseJson(text) {
+  try { return JSON.parse(text); } catch (error) { /* the model wrapped it in words or a fence */ }
+  var start = text.indexOf("{"), end = text.lastIndexOf("}");
+  if (start < 0 || end <= start) { throw new Error("no JSON in the answer"); }
+  return JSON.parse(text.slice(start, end + 1));
+}
+
+function clean(value, low, high, fallback) {
+  var n = Number(value);
+  return isNaN(n) ? fallback : Math.max(low, Math.min(high, n));
+}
+
+// A second in the film's data may be a word instead of a number: "+2" is two
+// seconds after the previous thing ended (for a text's "from", the previous text's
+// end; for its "to", its own "from"; for a key, the item's key before), "<" is with
+// the previous text's start and "<+1" a second after it, and a name is a mark the
+// film's "marks" object gives a second ("dance", "dance+2", "dance-1"). The words
+// are resolved here, once, so the page's data stays numbers.
+function secondOf(value, after, since, marks, unknown) {
+  if (typeof value === "number") { return value; }
+  var m = /^(<)?([A-Za-z_]\w*)?([+-]?\d+(?:\.\d+)?)?$/.exec(String(value === undefined || value === null ? "" : value).trim()), base;
+  if (!m || (!m[1] && !m[2] && !m[3])) { return NaN; }
+  if (m[1]) { base = since; }
+  else if (m[2]) { base = marks[m[2]]; if (base === undefined) { unknown.push("mark " + m[2]); return NaN; } }
+  else { base = /^[+-]/.test(m[3]) ? after : 0; }
+  return base + (m[3] ? Number(m[3]) : 0);
+}
+
+// the model's answer as this page's film, with every name and number checked
+function adoptFilm(data) {
+  var film = freshFilm(), dropped = [], marks = {};
+  Object.keys(data.marks && typeof data.marks === "object" ? data.marks : {}).forEach(function (name) {
+    if (/^[A-Za-z_]\w*$/.test(name) && !isNaN(Number(data.marks[name]))) { marks[name] = Number(data.marks[name]); }
+  });
+  film.duration = Math.round(clean(data.duration, 3, 90, 12));
+  film.backdrop = BACKS.some(function (b) { return b[0] === data.backdrop; }) ? data.backdrop : "day";
+  (data.items || []).slice(0, 20).forEach(function (raw) {
+    var kind = raw.kind, name = String(raw.name || "");
+    var known = kind === "person" ? CASTS.some(function (c) { return c[0] === name; }) && !!CAST[name] : kind === "thing" ? THINGS.concat(FLORAS).some(function (t) { return t[0] === name; })
+              : kind === "piece" ? PIECES.concat(TREES).some(function (p) { return p[0] === name; }) : false;
+    if (!known) { dropped.push(kind + " " + name); return; }
+    var grounded = kind !== "thing" || !!(window.FLORA && FLORA[name]), keys = [], last = -1;
+    (Array.isArray(raw.keys) ? raw.keys : []).forEach(function (k) {
+      if (!Array.isArray(k) || k.length < 3) { return; }
+      var t = round2(clean(secondOf(k[0], Math.max(last, 0), Math.max(last, 0), marks, dropped), 0, film.duration, 0));
+      if (t <= last) { t = round2(last + 0.5); }          // the seconds only go up
+      if (t > film.duration) { return; }
+      var key = [t, Math.round(clean(k[1], -400, 1840, 720)), Math.round(clean(k[2], grounded ? 700 : 40, 1040, grounded ? 920 : 400))];
+      if (name === "dragon") { key.push(clean(k[3], 0, 1, 0.5)); }
+      if (kind === "person") {                                                                         // a pose from this key on, and a size reached by it
+        var posed = POSES.some(function (p) { return p[0] === k[3]; }), sized = typeof k[4] === "number" && !isNaN(k[4]);
+        if (posed || sized) { key.push(posed ? k[3] : null); }
+        if (sized) { key.push(clean(k[4], 0.5, 2, 1.2)); }
+      }
+      keys.push(key);
+      last = t;
+    });
+    if (!keys.length) { keys = [[0, 720, grounded ? 920 : 400].concat(name === "dragon" ? [0.5] : [])]; }
+    if (kind === "piece") { keys = [[keys[0][0], keys[0][1], keys[0][2]]]; }   // one key; its second says which scene it stands in
+    var item = {id: film.next++, kind: kind, name: name, keys: keys, size: clean(raw.size, 0.5, 2, name === "boy" || name === "girl" ? 0.95 : 1.2),
+                smile: clean(raw.smile, 0, 1, 1), pose: POSES.some(function (p) { return p[0] === raw.pose; }) ? raw.pose : "walk"};
+    if (kind === "person" && raw.sabai === true) { item.sabai = true; }
+    if (kind === "person" && PARASOLS.some(function (q) { return q[0] === raw.parasol; })) { item.parasol = raw.parasol; }
+    if (name === "khom" && (raw.candle === "on" || raw.candle === "off")) { item.candle = raw.candle; }
+    var parts = kind === "person" ? PARTS.person : PARTS[name];
+    if (parts && raw.colours && typeof raw.colours === "object") {
+      parts.forEach(function (part) {
+        var c = raw.colours[part[0]];
+        if (typeof c === "string" && /^#[0-9a-fA-F]{6}$/.test(c)) { item.colours = item.colours || {}; item.colours[part[0]] = c.toLowerCase(); }
+      });
+    }
+    film.items.push(item);
+  });
+  // the cuts: {at, backdrop}, the seconds going up, inside the film, none within half a second of another
+  var lastCut = 0;
+  (Array.isArray(data.cuts) ? data.cuts : []).slice(0, 8).forEach(function (raw) {
+    if (!raw || typeof raw !== "object") { return; }
+    var at = round2(clean(secondOf(raw.at, lastCut, lastCut, marks, dropped), 0.5, film.duration - 0.5, NaN));
+    if (isNaN(at) || at < lastCut + 0.5) { dropped.push("cut at " + JSON.stringify(raw.at)); return; }
+    var backdrop = BACKS.some(function (b) { return b[0] === raw.backdrop; }) ? raw.backdrop : null;
+    if (!backdrop) { dropped.push("cut to " + JSON.stringify(raw.backdrop)); return; }
+    film.cuts.push({at: at, backdrop: backdrop});
+    lastCut = at;
+  });
+  // the camera: [second, x, y, zoom], the seconds going up; the frame is kept on the sheet
+  var lastCam = -1;
+  (Array.isArray(data.camera) ? data.camera : []).slice(0, 20).forEach(function (raw) {
+    if (!Array.isArray(raw) || raw.length < 4) { return; }
+    var at = round2(clean(secondOf(raw[0], Math.max(lastCam, 0), Math.max(lastCam, 0), marks, dropped), 0, film.duration, NaN));
+    if (isNaN(at) || at <= lastCam) { dropped.push("camera at " + JSON.stringify(raw[0])); return; }
+    film.camera.push(aimCamera([at, clean(raw[1], 0, 1440, 720), clean(raw[2], 0, 1080, 540), clean(raw[3], 1, 3, 1)]));
+    lastCam = at;
+  });
+  var lastFrom = 0, lastTo = 0;
+  (data.texts || []).slice(0, 60).forEach(function (raw) {
+    if (raw.kind !== "card" && raw.kind !== "subtitle") { return; }
+    var from = round2(clean(secondOf(raw.from, lastTo, lastFrom, marks, dropped), 0, film.duration, 0));
+    var to = round2(clean(secondOf(raw.to, from, from, marks, dropped), 0, film.duration, from + 3));
+    if (to <= from) { to = Math.min(film.duration, from + 3); }
+    film.texts.push({id: film.next++, kind: raw.kind, big: String(raw.big || "").slice(0, 80), small: String(raw.small || "").slice(0, 80), from: from, to: to});
+    lastFrom = from;
+    lastTo = to;
+  });
+  return {film: film, dropped: dropped};
+}
+
+function takeFilm(data) {
+  var got = adoptFilm(data);
+  if (!got.film.items.length) { throw new Error("the answer had no character, thing or piece the kit knows"); }
+  movie = got.film;
+  selected = null; pathing = null; time = 0;
+  byId("durationBox").value = movie.duration;
+  markBackdrop(); rebuild(); show(); panel();
+  return got.film.items.length + " items, " + got.film.texts.length + " texts" + (got.dropped.length ? "; dropped unknown: " + got.dropped.join(", ") : "");
+}
+
+function askModel(story, settings, strict) {
+  var headers = {"Content-Type": "application/json"};
+  if (settings.key) { headers.Authorization = "Bearer " + settings.key; }
+  var body = {model: settings.model, temperature: 0.7,
+              messages: [{role: "system", content: filmPrompt()}, {role: "user", content: story}]};
+  if (strict) { body.response_format = {type: "json_object"}; }   // asks for JSON where the server knows the option
+  return fetch(settings.base.replace(/\/+$/, "") + "/chat/completions", {method: "POST", headers: headers, body: JSON.stringify(body)})
+    .then(function (reply) {
+      if (reply.status === 400 && strict) { return askModel(story, settings, false); }   // a 400 may mean the server does not know response_format: ask again without it
+      if (!reply.ok) { return reply.text().then(function (text) { throw new Error("the server said " + reply.status + ": " + text.slice(0, 200)); }); }
+      return reply.json().then(function (answer) { return answer.choices[0].message.content; });
+    });
+}
+
+byId("aiBtn").onclick = function () {
+  try {
+    var kept = JSON.parse(localStorage.getItem("cartoon_maker_ai"));
+    if (kept) { byId("aiBase").value = kept.base || byId("aiBase").value; byId("aiModel").value = kept.model || byId("aiModel").value; byId("aiKey").value = kept.key || ""; }
+  } catch (error) { /* nothing kept */ }
+  byId("aiStatus").textContent = "";
+  byId("aiSheet").className = "sheet open";
+};
+byId("closeAi").onclick = function () { byId("aiSheet").className = "sheet"; };
+byId("aiCopyPrompt").onclick = function () {
+  var text = filmPrompt() + "\n\nThe story: " + byId("aiStory").value;
+  navigator.clipboard.writeText(text).then(function () { byId("aiStatus").textContent = "คัดลอกแล้ว: วางให้โมเดล แล้วนำ JSON ที่ตอบมาวางในช่องล่าง · copied: give it to any model, paste its JSON below"; });
+};
+byId("aiPaste").onclick = function () {
+  try { byId("aiStatus").textContent = "โหลดแล้ว · loaded: " + takeFilm(parseJson(byId("aiJson").value)); byId("aiSheet").className = "sheet"; }
+  catch (error) { byId("aiStatus").textContent = "อ่านคำตอบไม่ได้ · could not read the answer: " + error.message; }
+};
+byId("aiGo").onclick = function () {
+  var settings = aiSettings(true), story = byId("aiStory").value.trim();
+  if (!story) { byId("aiStatus").textContent = "เล่าเรื่องก่อน · tell the story first"; return; }
+  byId("aiStatus").textContent = "กำลังถาม " + settings.model + " ... · asking the model";
+  byId("aiGo").disabled = true;
+  askModel(story, settings, true)
+    .then(function (content) { byId("aiJson").value = content; byId("aiStatus").textContent = "โหลดแล้ว · loaded: " + takeFilm(parseJson(content)); byId("aiSheet").className = "sheet"; })
+    .catch(function (error) { byId("aiStatus").textContent = "ไม่สำเร็จ · failed: " + error.message; })
+    .then(function () { byId("aiGo").disabled = false; });
+};
+
+// ---------- start ----------
+load();
+byId("durationBox").value = movie.duration;
+markBackdrop();
+rebuild();
+show();
+panel();
+window.addEventListener("resize", show);
+requestAnimationFrame(tick);
+setTimeout(paintSmalls, 400);           // the small pictures of the backdrops, after the stage has shown
+</script>
+</body>
+</html>

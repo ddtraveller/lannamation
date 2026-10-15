@@ -1,0 +1,236 @@
+"""film.py - a cartoon from the command line: a film as JSON in; a page, stills and a video out.
+
+    python film.py vocabulary                       the names the kit knows, the JSON shape and the rules
+    python film.py page film.json out.html          the film as a page of the Lanna cartoon kit
+    python film.py stills film.json 2 6 10          one picture per second named: stills/film_2.0s.png ...
+    python film.py render film.json out.mp4         the video (add --from 2 --to 8 for a part of it)
+    python film.py write "a story" film.json --base http://127.0.0.1:11434/v1 --model qwen2.5:3b
+                                                    a model writes the JSON (--key KEY for OpenAI)
+    python film.py skill claude_code                give the skill to an agent: claude_code, codex or opencode
+
+The JSON is the same data that krueng.ai/cartoon_maker.html makes with its
+palette, and this program uses that page itself, open in a browser with no
+window, to check the film and to write its code. So the page and this program
+can never disagree. The page loads from the site; --maker gives another
+address, such as a copy served on your own computer.
+
+Needs: Python 3, playwright (pip install playwright) with Chrome installed,
+and ffmpeg on the PATH for a video.
+"""
+import argparse
+import json
+import pathlib
+import subprocess
+import sys
+import urllib.request
+
+MAKER = "https://krueng.ai/cartoon_maker.html"
+SITE = "https://krueng.ai/js_animation_assets/"
+HERE = pathlib.Path(__file__).resolve().parent
+
+
+def open_maker(url):
+    """The maker page in a browser with no window: its functions are ours to call."""
+    from playwright.sync_api import sync_playwright
+    playwright = sync_playwright().start()
+    browser = playwright.chromium.launch(channel="chrome", headless=True)
+    page = browser.new_page(viewport={"width": 1300, "height": 800})
+    page.goto(url, wait_until="load")
+    page.wait_for_function("() => typeof pageCode === 'function' && typeof takeFilm === 'function'")
+    page.evaluate("() => { try { localStorage.removeItem('cartoon_maker'); } catch (e) {} }")
+    return playwright, browser, page
+
+
+def close_maker(playwright, browser):
+    browser.close()
+    playwright.stop()
+
+
+def take(page, film):
+    """Hand the film to the page: it checks every name and number, and says what it kept."""
+    summary = page.evaluate("data => { try { return takeFilm(data); } catch (error) { return 'ERROR ' + error.message; } }", film)
+    if summary.startswith("ERROR"):
+        raise SystemExit("the page refused the film: " + summary[6:])
+    seconds = page.evaluate("() => movie.items.map(i => i.keys.map(k => k[0])).flat().concat(movie.texts.map(t => t.from))")
+    warnings = page.evaluate("secs => { WARNINGS.length = 0; secs.forEach(s => { time = s; show(); }); return WARNINGS.slice(); }",
+                             sorted(set([0] + seconds)))
+    return summary, warnings
+
+
+def vocabulary(args):
+    playwright, browser, page = open_maker(args.maker)
+    print(page.evaluate("() => filmPrompt()"))
+    close_maker(playwright, browser)
+
+
+def read_film(path):
+    return json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+
+
+def page_code(page, local):
+    code = page.evaluate("() => pageCode()")
+    if local:                           # the kit's files beside the page, for render.py without the site
+        code = code.replace('src="' + SITE, 'src="')
+    return code
+
+
+def make_page(args):
+    playwright, browser, page = open_maker(args.maker)
+    summary, warnings = take(page, read_film(args.film))
+    pathlib.Path(args.out).write_text(page_code(page, args.local), encoding="utf-8")
+    close_maker(playwright, browser)
+    report(args.out, summary, warnings)
+
+
+def report(what, summary, warnings):
+    print(what + ": " + summary)
+    for warning in warnings:
+        print("the kit warns: " + warning)
+    if not warnings:
+        print("the kit raised no warning")
+
+
+def stills(args):
+    """One picture per second named, from the film's own page: draw(t), then a photograph of the stage."""
+    playwright, browser, page = open_maker(args.maker)
+    summary, warnings = take(page, read_film(args.film))
+    html = pathlib.Path(args.film).with_suffix(".html")
+    html.write_text(page_code(page, False), encoding="utf-8")
+    film_page = browser.new_page(viewport={"width": 1920, "height": 1080})
+    film_page.goto(html.resolve().as_uri(), wait_until="load")
+    film_page.wait_for_function("() => typeof draw === 'function'")
+    film_page.evaluate("() => { rendering = true; }")
+    folder = pathlib.Path(args.folder)
+    folder.mkdir(parents=True, exist_ok=True)
+    stem = pathlib.Path(args.film).stem
+    for second in args.seconds:
+        film_page.evaluate("t => draw(t)", second)
+        out = folder / ("%s_%.1fs.png" % (stem, second))
+        film_page.locator("#stage").screenshot(path=str(out))
+        print("wrote " + str(out))
+    close_maker(playwright, browser)
+    report(str(html), summary, warnings)
+
+
+def find_render():
+    """The kit's render.py: beside the kit in this repository, or fetched from the site once."""
+    beside = HERE.parent / "js_animation_assets" / "render.py"
+    if beside.exists():
+        return beside
+    cached = HERE / "tools" / "render.py"
+    if not cached.exists():
+        cached.parent.mkdir(exist_ok=True)
+        with urllib.request.urlopen(SITE + "render.py") as reply:
+            cached.write_bytes(reply.read())
+        print("fetched render.py from the site into " + str(cached))
+    return cached
+
+
+def render(args):
+    playwright, browser, page = open_maker(args.maker)
+    summary, warnings = take(page, read_film(args.film))
+    html = pathlib.Path(args.film).with_suffix(".html")
+    html.write_text(page_code(page, False), encoding="utf-8")
+    close_maker(playwright, browser)
+    report(str(html), summary, warnings)
+    command = [sys.executable, str(find_render()), str(html), args.out, "--from", str(args.start)]
+    if args.end is not None:
+        command += ["--to", str(args.end)]
+    if args.audio:
+        command += ["--audio", args.audio]
+    raise SystemExit(subprocess.call(command))
+
+
+def write(args):
+    """Ask a model for the film, with the page's own instructions, and keep what the page accepts."""
+    playwright, browser, page = open_maker(args.maker)
+    prompt = page.evaluate("() => filmPrompt()")
+    body = {"model": args.model, "temperature": 0.7,
+            "messages": [{"role": "system", "content": prompt}, {"role": "user", "content": args.story}],
+            "response_format": {"type": "json_object"}}
+    headers = {"Content-Type": "application/json"}
+    if args.key:
+        headers["Authorization"] = "Bearer " + args.key
+    request = urllib.request.Request(args.base.rstrip("/") + "/chat/completions", data=json.dumps(body).encode("utf-8"),
+                                     headers=headers, method="POST")
+    try:
+        with urllib.request.urlopen(request, timeout=600) as reply:
+            content = json.load(reply)["choices"][0]["message"]["content"]
+    except urllib.error.HTTPError as error:
+        raise SystemExit("the server said %d: %s" % (error.code, error.read().decode("utf-8", "replace")[:300]))
+    start, end = content.find("{"), content.rfind("}")
+    film = json.loads(content[start:end + 1])
+    summary, warnings = take(page, film)
+    kept = page.evaluate("() => movie")
+    pathlib.Path(args.out).write_text(json.dumps(kept, ensure_ascii=False, indent=1), encoding="utf-8")
+    close_maker(playwright, browser)
+    report(args.out, summary, warnings)
+
+
+# Where each agent looks for its skills: a folder per skill, holding SKILL.md.
+# Claude Code reads the personal folder below (and .claude/skills in a project);
+# Codex and OpenCode share one folder, as REA's setup showed on a Mac.
+SKILL_FOLDERS = {"claude_code": "~/.claude/skills", "codex": "~/.agents/skills", "opencode": "~/.agents/skills"}
+
+
+def skill(args):
+    """Put SKILL.md where the agent finds it, so that "make a cartoon of ..." reaches this tool."""
+    source = HERE / "SKILL.md"
+    if not source.exists():                       # film.py alone was downloaded: fetch its skill from the site
+        with urllib.request.urlopen("https://krueng.ai/cartoon_maker_assets/SKILL.md") as reply:
+            source.write_bytes(reply.read())
+        print("fetched SKILL.md from the site into " + str(source))
+    folder = pathlib.Path(SKILL_FOLDERS[args.agent]).expanduser() / "lanna-cartoon"
+    folder.mkdir(parents=True, exist_ok=True)
+    target = folder / "SKILL.md"
+    target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+    print("wrote " + str(target).replace(str(pathlib.Path.home()), "~"))
+    print("the agent needs this file beside it too: " + str(HERE / "film.py").replace(str(pathlib.Path.home()), "~"))
+    print("start " + args.agent.replace("_", " ") + " again, then ask it for a cartoon")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="a cartoon from the command line, on the Lanna cartoon kit")
+    parser.add_argument("--maker", default=MAKER, help="the maker page to use (default: the one on the site)")
+    commands = parser.add_subparsers(dest="command", required=True)
+
+    commands.add_parser("vocabulary", help="the names, the JSON shape and the rules").set_defaults(run=vocabulary)
+
+    one = commands.add_parser("page", help="the film as a page of the kit")
+    one.add_argument("film")
+    one.add_argument("out")
+    one.add_argument("--local", action="store_true", help="load the kit from files beside the page, not from the site")
+    one.set_defaults(run=make_page)
+
+    two = commands.add_parser("stills", help="one picture per second named")
+    two.add_argument("film")
+    two.add_argument("seconds", nargs="+", type=float)
+    two.add_argument("--folder", default="stills")
+    two.set_defaults(run=stills)
+
+    three = commands.add_parser("render", help="the video")
+    three.add_argument("film")
+    three.add_argument("out")
+    three.add_argument("--from", dest="start", type=float, default=0.0)
+    three.add_argument("--to", dest="end", type=float)
+    three.add_argument("--audio")
+    three.set_defaults(run=render)
+
+    four = commands.add_parser("write", help="a model writes the film")
+    four.add_argument("story")
+    four.add_argument("out")
+    four.add_argument("--base", default="https://api.openai.com/v1")
+    four.add_argument("--model", default="gpt-4o-mini")
+    four.add_argument("--key", default="")
+    four.set_defaults(run=write)
+
+    five = commands.add_parser("skill", help="give the skill to an agent")
+    five.add_argument("agent", choices=sorted(SKILL_FOLDERS))
+    five.set_defaults(run=skill)
+
+    args = parser.parse_args()
+    args.run(args)
+
+
+if __name__ == "__main__":
+    main()

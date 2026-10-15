@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>legs - standing, walking, a kick, a dancer's lift and a half-sit, on the measured legs</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>var FILM_STYLE = {hop: false};</script>
+<script src="oldcartoon.js"></script>
+<script>
+// The "legs" sheet, for the numbers measured from photographs (docs/STYLE.md,
+// "Legs, ankles and feet, measured from photographs", 2026-10-15): the ankle 16 up and
+// 7 forward of the heel, a standing knee of about 171 degrees, and a kick that lowers
+// the hips and bends the standing leg. Nobody hops here, so the standing legs show.
+// Left to right: standing; walking; a teep held as a kick (raise with its fourth
+// number: the hips drop and go over the standing foot); a dancer's lift (no fourth
+// number: as before); a half-sit; a lady walking.
+var DURATION = 4;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.strokeStyle = "rgba(60, 30, 10, 0.35)";
+  pen.beginPath();
+  pen.moveTo(0, 900);
+  pen.lineTo(WIDE, 900);
+  pen.stroke();
+  var y = 900;
+  person(180, y, cast("villager", {size: 1.6}));
+  caption("standing", 180, y + 40);
+  person(460, y, cast("villager", {size: 1.6, step: t * 1.4}));
+  caption("walking", 460, y + 40);
+  var high = 60 + 50 * Math.sin(t * 1.5);                       // the kicking foot rises and falls
+  person(760, y, cast("villager", {size: 1.6, raise: [1, high, 70, -0.5], handA: [40, -40], handB: [-30, -20], face: 1}));
+  caption("a teep, held", 760, y + 40);
+  person(1060, y, cast("maiden", {size: 1.6, raise: [1, 70, 30], dance: true, handA: [40, -90]}));
+  caption("a dancer's lift", 1060, y + 40);
+  person(1360, y, cast("villager", {size: 1.6, sit: 1}));
+  caption("a half-sit", 1360, y + 40);
+  person(1660, y, cast("maiden", {size: 1.6, step: t * 1.4}));
+  caption("a lady walking", 1660, y + 40);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

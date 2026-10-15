@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>elephant - what the elephant of beasts.js can do</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="beasts.js"></script>
+<script>
+// The "elephant" sheet: the elephant of beasts.js, in all it can do. Above,
+// from the side: walking; dressed, with a howdah and a lady in it, its trunk
+// lifting and its mouth opening; and lying down with a fellow astride its
+// neck. Below, the same three from the front.
+var DURATION = 12;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var top = 480, low = 1022, big = 0.38, stride = t / BEAT / 4, lifted = 0.5 + 0.5 * Math.sin(t * Math.PI / 2), ride;
+  var dressed = {size: big, cloth: "#a8322c", howdah: true, trunk: lifted, late: 0};
+  var slope = 0.32 * Math.sin(t * Math.PI / 6);      // the ground tilts under the first one, down ahead and then up, as a path that rises and falls
+  pen.strokeStyle = "#b8a888";
+  pen.lineWidth = 3;
+  pen.beginPath();
+  pen.moveTo(230 - 240, top + 240 * Math.tan(slope) * -1);
+  pen.lineTo(230 + 240, top + 240 * Math.tan(slope));
+  pen.stroke();
+  elephant(230, top, {size: big, step: stride, slope: slope});
+  caption("walking on a slope: step, slope", 250, top + 38);
+  ride = elephant(690, top, dressed);
+  person(ride.seat[0], ride.seat[1], cast("lady", {size: 0.5, floor: "cross", late: 0, spring: 0.3, smile: 0.6}));
+  caption("dressed: cloth, howdah. The trunk lifts: trunk", 720, top + 38);
+  ride = elephant(1200, top, {size: big, sit: true, face: -1, late: 0.5});
+  person(ride.seat[0], ride.seat[1], cast("fellow", {size: 0.5, floor: "astride", face: -1, late: 0.5, spring: 0.3, smile: 1}));
+  caption("lying down, a fellow astride: sit", 1180, top + 38);
+  elephant(250, low, {size: big, front: true, step: stride});
+  caption("toward us: front", 250, low + 38);
+  ride = elephant(720, low, Object.assign({front: true}, dressed));
+  person(ride.seat[0], ride.seat[1], cast("lady", {size: 0.5, floor: "cross", late: 0, spring: 0.3, smile: 0.6}));
+  caption("dressed, toward us", 720, low + 38);
+  elephant(1190, low, {size: big, front: true, sit: true, cloth: "#2f5f8a", late: 0.5});
+  caption("lying down, toward us", 1190, low + 38);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

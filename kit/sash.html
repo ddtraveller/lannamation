@@ -1,0 +1,603 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>sash - the cloth that holds a village</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>
+// The film's style, read by the kit as it loads: nobody hops (the dance turns
+// it on for its own scene), the old print shows at six tenths, the light comes
+// from the upper left and throws a shadow to the right, and the sheet is drawn
+// at two device pixels per film pixel and smoothed down to the picture.
+window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6, 0.5]};
+// The film was staged on the kit's 1440 sheet. On the 1920 one, the sets are
+// painted across the whole width with what stands on them moved in by SIDE,
+// the old bar's width, and each scene draws its figures under a translation
+// by SIDE: every old coordinate keeps its place in the picture.
+</script>
+<script src="oldcartoon.js"></script>
+<script src="backdrops.js"></script>
+<script src="beasts.js"></script>
+<script src="naga.js"></script>
+<script src="dragon.js"></script>
+<script src="motion.js"></script>
+<script src="cumulus.js"></script>
+<script src="sabai.js"></script>
+<script src="khom.js"></script>
+<script src="pieces.js"></script>
+<script>
+// sash.html - a film of the kit. It opens on a cloth, close up: twelve rows
+// of the small things of Thai life, woven across it. Music begins, and the
+// things on the cloth begin to dance. The camera pulls back: the rows were a
+// sabai, the shoulder cloth of a Lanna woman, and she stands in a village.
+// Then four scenes of the life the cloth showed: the lane, the pond, the
+// rice fields in a rain that clears, a night of dancing.
+var DURATION = 68;
+
+var BEAT = 0.5;                         // the same number as in sash_music.py
+
+var MUSIC_AT = 3;                       // the second the music begins and the cloth starts to move (sash_music.py leaves three seconds of silence)
+
+// ---------- the men ----------
+// The men of Chiang Mai as the record has them. Holt Hallett (1890): no chignon
+// and no head-cloth, the hair shaved at the sides with a brush at the crown,
+// "tattooed from the waist downwards". Lillian Curtis (1903): the pa toi, plain
+// or plaid, "should fall to the knee", a scarf over the shoulders in the cool
+// season, "the feet are always bare, and the head uncovered". Manop Manasaem
+// (Fine Arts Journal 1:1): shirts only from the reign of Rama V on, round-necked,
+// open down the front and tied or buttoned, undyed cotton or indigo; the pha ta
+// kong in black and white checks; a pha khao ma at the waist or over the shoulder.
+// Since 2026-10-14 the kit's men are drawn from the owner's reference picture
+// (a Chiang Mai costume studio's revival of the old dress): the hair in a knot
+// on top under a red head-cloth, the chest bare and tattooed, a checked cloth
+// over the shoulder, a brown cloth hitched high over tattooed thighs. The film
+// takes them as the kit draws them.
+var LANNA_MAN = {};
+
+// ---------- the woman and her cloth ----------
+// The cloth is the kit's woven sabai (sabai.js): its twelve rows, with the
+// woman herself woven into one row of her own, in the same look. The film opens
+// on that row.
+var WOMAN = cast("lady", {size: 1.45, shirt: "#f2ead8", legs: "#2f3f6e", sin: 0, sabai: false, weave: 1,   // no band of the kit's own: the woven cloth of sabai.js is her sabai
+                          flower: "#f28fa8", pins: true, smile: 1, id: "woman", at: [720 + SIDE, 380]});
+
+var WOMAN_ROW = 4;
+
+var ROWS = SABAI_ROWS.slice();
+ROWS[WOMAN_ROW] = SABAI_ROWS[WOMAN_ROW].slice(0, 3).concat([function (b, u) { person(0, 0, Object.assign({}, WOMAN, {size: 1.1, step: u, id: "woman-woven", at: undefined})); }]);
+
+var CLOTH = {rows: ROWS, from: MUSIC_AT, row: WOMAN_ROW};   // the rows flow and the figures walk when the music begins
+
+// ---------- the sets ----------
+// The sky of a scene, painted once: day, dusk or night, with the stars at
+// night. The clouds are not on it: cumulus.js drifts them over it, under the
+// land, in every frame.
+function paintSky(kind) {
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var brush = paper.getContext("2d"), n;
+  var sky = brush.createLinearGradient(0, 0, 0, 1080);
+  if (kind === "night") {
+    sky.addColorStop(0, "#070b24"); sky.addColorStop(0.6, "#1b2350"); sky.addColorStop(1, "#40336b");
+  } else if (kind === "dusk") {
+    sky.addColorStop(0, "#f0642a"); sky.addColorStop(0.5, "#f2a23c"); sky.addColorStop(1, "#7fb89a");
+  } else {
+    sky.addColorStop(0, "#8ccfc6"); sky.addColorStop(0.6, "#f4ecd2"); sky.addColorStop(1, "#f1d3bd");
+  }
+  brush.fillStyle = sky;
+  brush.fillRect(0, 0, WIDE, 1080);
+  if (kind === "night") {
+    for (n = 0; n < 70; n++) {
+      brush.fillStyle = "rgba(255, 250, 220, " + (0.4 + 0.6 * dice(n + 70)) + ")";
+      brush.beginPath();
+      brush.arc(dice(n) * WIDE, dice(n + 90) * 620, 1.5 + dice(n + 20) * 1.5, 0, 7);
+      brush.fill();
+    }
+  }
+  return paper;
+}
+
+// The land of a set on a clear sheet: the hills, the ground and what stands on it.
+function paintSet(kind) {
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var brush = paper.getContext("2d"), n;
+  var far = kind === "night" ? ["#223a4a", "#1a2e3c", "#142430", "#2a4a3a"] : kind === "dusk" ? ["#7a8a9a", "#5f7a6a", "#4f6a52", "#6f8a4a"] : ["#a9cfc9", "#8dbfa9", "#79ad84", "#8fc47a"];
+  hills(brush, WIDE, 720, 400, 1.0, far[0]);
+  hills(brush, WIDE, 790, 280, 2.6, far[1]);
+  if (kind === "dusk") {                           // trees on the middle range, where its ridge is
+    [[130, 0.3], [215, 0.26], [600, 0.3], [690, 0.27], [1250, 0.3], [1440, 0.28]].forEach(function (one) {
+      tree(brush, one[0] + SIDE, ridgeAt(one[0] + SIDE) + 6, one[1]);
+    });
+  }
+  // The air between: a veil of the sky's colour over the far ranges, thick at
+  // the horizon and gone by the near range, so the far hills sit further off.
+  var haze = brush.createLinearGradient(0, 640, 0, 880);
+  var veil = kind === "night" ? "20, 30, 60" : kind === "dusk" ? "245, 190, 120" : "226, 238, 240";
+  haze.addColorStop(0, "rgba(" + veil + ", 0.42)");
+  haze.addColorStop(1, "rgba(" + veil + ", 0)");
+  brush.fillStyle = haze;
+  brush.fillRect(0, 640, WIDE, 240);
+  hills(brush, WIDE, 860, 170, 4.4, far[2]);
+  brush.fillStyle = far[3];
+  brush.fillRect(0, 880, WIDE, 200);
+  if (kind === "village" || kind === "day") {
+    tree(brush, 200 + SIDE, 900, 1.1);
+    house(brush, 1180 + SIDE, 905, 1);
+    banana(brush, 1000 + SIDE, 915);
+    namton(brush, 1425 + SIDE, 912, 1.1);          // the water jar at the gate, beside the house's ladder (pieces.js)
+    tung(brush, 1570 + SIDE, 905, 0, true);         // and a tung on its pole, a hong on top
+  }
+  if (kind === "pond") {                            // the water, the lotus and the fish are drawn live, in scenePond
+    tree(brush, 160 + SIDE, 880, 1.0);
+  }
+  return paper;
+}
+
+// The front of the dusk set on a clear sheet: the temple, the yak and the tung.
+// The elephant on the hill is drawn between this and the dusk sheet, so it walks behind them.
+function paintTempleFront() {
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var brush = paper.getContext("2d");
+  temple(brush, 1050 + SIDE, 905);
+  yak(brush, 760 + SIDE, 910, -1);
+  tung(brush, 300 + SIDE, 900, 0);
+  tung(brush, 420 + SIDE, 900, 0);
+  return paper;
+}
+
+// The ridge of the middle range of hills, column by column: the range is
+// painted alone on a scratch sheet and the first painted pixel of each column
+// is the ridge. Trees and the elephant stand on it.
+var RIDGE = (function () {
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var brush = paper.getContext("2d");
+  hills(brush, WIDE, 790, 280, 2.6, "#000000");
+  var data = brush.getImageData(0, 0, WIDE, 1080).data, tops = [];
+  for (var x = 0; x < WIDE; x++) {
+    var y = 0;
+    while (y < 1080 && data[(y * WIDE + x) * 4 + 3] < 60) { y++; }
+    tops.push(y);
+  }
+  return tops;
+})();
+
+function ridgeAt(x) { return RIDGE[Math.max(0, Math.min(WIDE - 1, Math.round(x)))]; }
+
+// A Siamese cat sitting, facing right: cream coat, seal-brown points on the face,
+// the ears, the legs and the tail, blue eyes. "t" sways the tail and blinks.
+function siamese(x, base, size, t) {
+  var CREAM = "#efe2c8", POINT = "#4a3028", sway = Math.sin(t * 1.3) * 0.25;
+  var blink = (t % 4) > 3.7 ? 0.15 : 1;
+  pen.save();
+  pen.translate(x, base);
+  pen.scale(size, size);
+  hose(-30, -42, -74, -112, 0.45 + sway, 13, POINT);            // the tail, curling up behind
+  oval(-16, -46, 36, 40, CREAM);                                // the haunch
+  hose(6, -56, 4, -6, 0, 15, POINT);                            // the front legs, dark to the paws
+  hose(26, -56, 26, -6, 0, 15, POINT);
+  oval(12, -78, 30, 46, CREAM);                                 // the chest
+  oval(28, -124, 30, 27, CREAM);                                // the head
+  pen.fillStyle = POINT;                                        // the ears
+  pen.strokeStyle = INK;
+  pen.lineWidth = 2;
+  pen.lineJoin = "round";
+  [[8, -142, 12, -172, 28, -146], [38, -146, 52, -172, 56, -140]].forEach(function (e) {
+    pen.beginPath();
+    pen.moveTo(e[0], e[1]);
+    pen.lineTo(e[2], e[3]);
+    pen.lineTo(e[4], e[5]);
+    pen.closePath();
+    pen.fill();
+    pen.stroke();
+  });
+  oval(36, -118, 21, 16, POINT);                                // the mask
+  oval(30, -121, 5, 6 * blink, "#6fb7e6");                      // blue eyes
+  oval(46, -120, 5, 6 * blink, "#6fb7e6");
+  pen.fillStyle = INK;
+  pen.beginPath();
+  pen.ellipse(31, -121, 1.6, 5 * blink, 0, 0, 7);
+  pen.ellipse(47, -120, 1.6, 5 * blink, 0, 0, 7);
+  pen.fill();
+  pen.fillStyle = "#d98a90";                                    // the nose
+  pen.beginPath();
+  pen.moveTo(52, -112);
+  pen.lineTo(58, -112);
+  pen.lineTo(55, -108);
+  pen.closePath();
+  pen.fill();
+  pen.strokeStyle = "rgba(60, 40, 30, 0.6)";                    // whiskers
+  pen.lineWidth = 1.2;
+  pen.beginPath();
+  pen.moveTo(56, -110); pen.lineTo(78, -116);
+  pen.moveTo(56, -108); pen.lineTo(78, -104);
+  pen.moveTo(16, -112); pen.lineTo(-4, -118);
+  pen.moveTo(16, -110); pen.lineTo(-4, -106);
+  pen.stroke();
+  pen.restore();
+}
+
+var SKY_DAY = paintSky("day"), SKY_DUSK = paintSky("dusk"), SKY_NIGHT = paintSky("night");
+var VILLAGE = paintSet("village"), POND = paintSet("pond"), TEMPLE = paintSet("dusk"), TEMPLE_FRONT = paintTempleFront(), NIGHT = paintSet("night");
+
+// A scene's sky: its sheet, then the cumulus drifting by the film's clock T,
+// so that the same clouds cross the sky from one scene to the next.
+function skyOf(sheet, look, T) {
+  pen.drawImage(sheet, 0, 0);
+  cumulus(pen, T, look);
+}
+
+// ---------- the scenes ----------
+function sceneCloth(t) {                // 0-22: one row, still; the music and the walk; one steady pull-back
+  // She stands still while the cloth dances and the camera pulls back; once it
+  // is back she keeps the beat, and makes a wai (owner: "have the woman wai
+  // instead of raise her arm and wave").
+  var look = t < 20 ? WOMAN : Object.assign({}, WOMAN, {late: 0, spring: 0.5, wai: true});
+  var where = sabaiOf(t, 720 + SIDE, 1010, look);
+  pen.save();
+  sabaiCamera(t, where, CLOTH, 6, 20);
+  skyOf(SKY_DAY, CLOUD_LOOKS.day, t);
+  pen.drawImage(VILLAGE, 0, 0);
+  sabai(t, where, CLOTH, "back");         // the end of the cloth that hangs behind her shoulder
+  person(720 + SIDE, 1010, sabaiWorn(look, t, where, CLOTH));   // the cloth across her chest, worn under her arm
+  pen.restore();
+}
+
+function sceneLane(t) {                 // 22-31: the lane: a man and a child come one way, a woman the other
+  skyOf(SKY_DAY, CLOUD_LOOKS.day, t + 22);
+  pen.drawImage(VILLAGE, 0, 0);
+  pen.save();
+  pen.translate(SIDE, 0);                 // the figures, at their places on the old sheet
+  rooster(1060, 1000, t);
+  // The man and the child walk in from the left and stop; the woman walks in
+  // from the right, her hands down, and stops before them. She wais them; the
+  // child wais her back; the man nods his head to her, twice.
+  // Each walks with stroll(): a step a beat, the foot on the ground planted, a
+  // short first and last step; the stride is set so each arrives about when
+  // the old walk did. The nod is a tween: a small dip back first, two bows.
+  var nod = tween(t, [[7, 0], [7.2, -0.06], [7.6, 0.35], [8.1, 0.05], [8.5, 0.3], [9, 0]], "smooth");
+  var man = stroll(t, -100, 420, 0, cast("farmer", {stride: 0.9, late: 0, spring: 0.4, feel: "joy", at: [820, 700], bend: nod}));
+  var woman = stroll(t, 1500, 820, 0.5, cast("weaver", {stride: 0.9, late: 0.3, spring: 0.4, at: [420, 700], wai: t >= 6.3}));
+  var kid = stroll(t, -200, 300, 1, cast("child", {stride: 0.9, late: 0.5, spring: 0.7, smile: 1, at: [820, 700], wai: t >= 7.2,
+                                                   wonder: tween(t, [[6, 0.3], [6.5, 1], [7.4, 1], [8, 0.4]], "smooth")}));   // her wai takes him
+  person(man.x, 960, man.look);
+  person(woman.x, 950, woman.look);
+  person(kid.x, 985, kid.look);
+  dog(mix(-300, 1500, between(t, 0, 9)), 1005, t);
+  birds(t, 300 + t * 40, 220);
+  pen.restore();
+}
+
+// The dragon's course through the pond scene (31 to 40), in the film's time:
+// [second, x, y, depth], where depth is 0 far from the screen and 1 near. It
+// comes in small and faint over the far hills and sweeps nearer and bigger
+// across the pond. motion.js's where() leads it along one smooth curve through
+// these points, and dragon.js leads the body along the same course as its trail.
+var POND_AT = 31;
+
+var DRAGON_COURSE = [[29, -700, 330, 0.05], [34.5, 250, 260, 0.3], [38.3, 900, 340, 0.6], [43.3, 2200, 230, 0.9]];   // a touch slower than it was (owner, 2026-10-15)
+
+function dragonFly(T) { return where(DRAGON_COURSE, T); }
+
+// Drops on the pond, in the scene's seconds: a fish rising, twice, and a drop from a leaf.
+var POND_RINGS = [[760, 905, 2.0], [1000, 960, 5.5], [640, 985, 7.8]];
+
+// Far off on the middle range, behind a grove of banana trees, an elephant and
+// her calf amble along the ridge, right to left, the calf a little behind. They
+// are drawn on the set's own ridge (ridgeAt) and the grove over them, so they
+// show between its stems and leaves; all of it is drawn on a sheet of its own
+// and veiled there with the set's haze, over the figures alone, so they sit as
+// far off as the hills they walk on and the veil has no edge.
+var POND_GROVE = [[1040, 0.42], [1110, 0.5], [1190, 0.46], [1270, 0.4]];   // each banana tree: x on the old sheet, its scale
+var FAR = document.createElement("canvas");
+FAR.width = WIDE;
+FAR.height = 1080;
+var FAR_PEN = FAR.getContext("2d");
+
+function pondElephants(t) {
+  var cow = amble("elephant", t, 1180 + SIDE, 1000 + SIDE, 0, {size: 0.09, late: 0});
+  var calf = amble("elephant", t, 1290 + SIDE, 1110 + SIDE, 0.7, {size: 0.052, late: 0.3, tusks: false});
+  var film = pen;
+  pen = FAR_PEN;                                  // the kit's painters draw on "pen": the far sheet for the length of this
+  pen.clearRect(0, 0, WIDE, 1080);
+  elephant(cow.x, ridgeAt(cow.x) + 6, cow.look);
+  elephant(calf.x, ridgeAt(calf.x) + 6, calf.look);
+  POND_GROVE.forEach(function (one) {
+    pen.save();
+    pen.translate(one[0] + SIDE, ridgeAt(one[0] + SIDE) + 14);
+    pen.scale(one[1], one[1]);
+    banana(pen, 0, 0);
+    pen.restore();
+  });
+  pen.globalCompositeOperation = "source-atop";  // the haze on what was drawn, and nowhere else
+  pen.fillStyle = "rgba(226, 238, 240, 0.4)";
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.globalCompositeOperation = "source-over";
+  pen = film;
+  pen.drawImage(FAR, 0, 0);
+}
+
+function scenePond(t) {                 // 31-40: the pond: lotus, fish, a maiden at the bank who wais; a dragon flies by; elephants far off
+  skyOf(SKY_DAY, CLOUD_LOOKS.day, t + POND_AT);
+  pen.drawImage(POND, 0, 0);
+  pondElephants(t);
+  pen.save();
+  pen.translate(SIDE, 0);                 // the figures, the water and the dragon, at their places on the old sheet
+  pond(pen, 380, 700, 900, 340, {t: t, rings: POND_RINGS});          // the water moves, and the drops ring it
+  lotusClump(pen, 520, 1010, 0.9, 4, "#ee7f9c", t);                 // the lotus stirs in the breeze
+  lotusClump(pen, 1150, 1030, 1.2, 1, "#e9627f", t);
+  fish(pen, 700 + Math.sin(t * 0.6) * 24, 940, 1.1, -1, "#f0803a");
+  fish(pen, 900 - Math.sin(t * 0.5) * 24, 980, 0.9, 1, "#f6a24a");
+  birds(t, 100 + t * 60, 180);
+  var head = dragonFly(t + POND_AT);
+  dragon(head[0], head[1], {size: 0.34, depth: head[4], trail: dragonFly, fly: "glide", breath: 0.3 + 0.3 * Math.sin(t * 2), late: 0.5,
+                            corkscrew: [POND_AT + 4]});   // one corkscrew runs the whole body, from behind the head at the left of the sheet off the tip near the middle
+  siamese(130, 1012, 0.9, t);                                 // her Siamese cat sits beside her
+  var awe = tween(t, [[3, 0], [3.6, 1], [6, 1], [6.8, 0]], "smooth");             // the dragon passes over: eyes up, brows up
+  var sky = [head[0], head[1]];
+  person(300, 1000, cast("maiden", {floor: true, late: 0, spring: 0.4, smile: 1, wonder: awe, at: awe > 0.5 ? sky : [700, 800], wai: t > 4}));
+  var fellow = stroll(t, 1600, 1330, 0, cast("fellow", {stride: 0.8, late: 0.25, spring: 0.4, smile: 1, wonder: awe, at: awe > 0.5 ? sky : [300, 800]}));   // he stops short of the water's edge
+  person(fellow.x, 990, fellow.look);
+  blossom(pen, 1300 + Math.sin(t) * 10, 700 + t * 20, 10, "#ee7f9c");
+  pen.restore();
+}
+
+// 40-60: the rice fields in a rain storm that clears. Three women walk in
+// under their parasols (the Thai borders, the yantra, the elephants round the
+// Buddha), dark cumulus over the hills and rain slanting down, one flash of
+// lightning; the clouds thin and blow away and the sun comes out; the women
+// stop, tip their parasols to the viewer and spin them, the rain flying off
+// the rims; close them, snap them open to shake the rain off, close them and
+// swing them to their sides; and walk on, until the first of them has left
+// the frame. The same scene, on its own, is parasol_rain.html.
+var PADDY_WOMEN = [
+  {name: "lady", kind: "lai", from: 60, to: 400, start: 0, late: 0},
+  {name: "maiden", kind: "yantra", from: 360, to: 720, start: 0.3, late: 0.3},
+  {name: "weaver", kind: "buddha", from: 680, to: 1040, start: 0.6, late: 0.6}
+];
+var PADDY_TWIRL = 3.2;                  // the spin begins, each woman a little after the one before
+var PADDY_FOLD = 8.8;                   // tipped down still: close, snap open, close, and swing the parasol to the side (5.6 s)
+var PADDY_WALK = 15.0;                  // they walk on, the parasols carried
+
+var STORM_LOOK = {count: 8, lit: "#9aa2b4", shade: "#55607a", below: false, ink: "#2b3142"};
+var STORM = document.createElement("canvas");    // the storm clouds are drawn whole here, then laid on at the storm's strength
+STORM.width = WIDE;
+STORM.height = 1080;
+var STORM_PEN = STORM.getContext("2d");
+
+function smooth(u) { u = clamp(u); return u * u * (3 - 2 * u); }
+
+function storm(t) { return 1 - smooth((t - 2.5) / 3); }       // the dark and the clouds, 1 to 0
+function rainfall(t) { return 1 - smooth((t - 2.0) / 2.5); }  // the rain, which stops a little before the sky clears
+
+function rain(brush, t, amount, layer) {   // streaks that fall slanting, each on its own course, behind the women (0) and before them (1)
+  if (amount <= 0) { return; }
+  var n = Math.round(300 * amount), i;
+  brush.strokeStyle = layer ? "rgba(230, 238, 250, 0.6)" : "rgba(220, 230, 245, 0.45)";
+  brush.lineWidth = layer ? 2 : 1.4;
+  brush.lineCap = "round";
+  brush.beginPath();
+  for (i = 0; i < n; i++) {
+    var seed = i * 7 + layer * 3, quick = 900 + 500 * dice(seed + 2);
+    var y = (dice(seed) * 1200 + t * quick) % 1200 - 60;
+    var x = ((dice(seed + 1) * (WIDE + 300) - t * quick * 0.14) % (WIDE + 300) + (WIDE + 300)) % (WIDE + 300) - 150;
+    brush.moveTo(x, y);
+    brush.lineTo(x + 4, y - 28);
+  }
+  brush.stroke();
+}
+
+function rainOff(brush, w, t, joints) {    // for a moment after the spin begins, drops leave the rim along its turn and fall away
+  var d = t - (PADDY_TWIRL + w.late), i;
+  if (d < 1.9 || d > 5.2 || !joints.parasol) { return; }
+  var cx = joints.parasol[0], cy = joints.parasol[1], R = Math.hypot(joints.parasolRim[0] - cx, joints.parasolRim[1] - cy);
+  brush.lineCap = "round";
+  for (i = 0; i < 60; i++) {
+    var born = 1.9 + dice(i * 3 + 11) * 2.0, age = d - born;
+    if (age < 0 || age > 0.6) { continue; }
+    var angle = parasolAt(born, 0, undefined, undefined, "spin").spin + i * 0.9, px = cx + R * Math.cos(angle), py = cy + R * Math.sin(angle);
+    var vx = -Math.sin(angle) * 380, vy = Math.cos(angle) * 380 + 1040 * age;
+    var x = px - Math.sin(angle) * 380 * age, y = py + Math.cos(angle) * 380 * age + 520 * age * age;
+    var fade = (1 - age / 0.6).toFixed(2);
+    brush.beginPath();
+    brush.moveTo(x - vx * 0.035, y - vy * 0.035);
+    brush.lineTo(x, y);
+    brush.strokeStyle = "rgba(70, 120, 190, " + fade + ")";
+    brush.lineWidth = 6 * (1 - age / 0.9);
+    brush.stroke();
+    brush.strokeStyle = "rgba(235, 245, 255, " + fade + ")";
+    brush.lineWidth = 2.4 * (1 - age / 0.9);
+    brush.stroke();
+  }
+}
+
+function scenePaddy(t) {                // 40-60: the rice fields: a storm that clears, the parasols spun, closed and carried off
+  var dark = storm(t), wet = rainfall(t), n, w, go, joints;
+  pen.drawImage(backdrop("paddy"), 0, 0);
+  if (dark > 0) {
+    STORM_PEN.clearRect(0, 0, WIDE, 1080);
+    cumulus(STORM_PEN, (t + 40) * (1 + 2 * (1 - dark)), STORM_LOOK);
+    pen.globalAlpha = dark;
+    pen.drawImage(STORM, 0, 0);
+    pen.globalAlpha = 1;
+    pen.fillStyle = "rgba(50, 60, 85, " + (0.42 * dark).toFixed(3) + ")";
+    pen.fillRect(0, 0, WIDE, 1080);
+  }
+  if (dark < 1) {
+    pen.fillStyle = "rgba(255, 222, 140, " + (0.1 * (1 - dark)).toFixed(3) + ")";
+    pen.fillRect(0, 0, WIDE, 1080);
+  }
+  rain(pen, t, wet, 0);
+  if (t > 1.0 && t < 1.12) {
+    pen.fillStyle = "rgba(255, 255, 255, 0.55)";
+    pen.fillRect(0, 0, WIDE, 1080);
+  }
+  pen.save();
+  pen.translate(SIDE, 0);
+  // Along the back of the wide bund, behind the women, a buffalo pulls the ox
+  // cart (pieces.js) from the right, through the rain and on under the
+  // clearing sky: amble() gives its place and step, the cart's axle sits 460
+  // of its scale behind it, the yoke on its withers, and the wheels turn with
+  // the ground covered.
+  var ox = amble("buffalo", t, 2100, 1050, 0, {size: 0.55}), oxScale = 0.55 * GAITS.buffalo[0];
+  oxcart(pen, ox.x - 460 * oxScale * ox.look.face, 872, 1.3, (2100 - ox.x) / (62 * 1.3), ox.look.face,
+         [ox.x + 150 * oxScale * ox.look.face, 872 - 310 * oxScale]);
+  var nose = buffalo(ox.x, 872, ox.look).head;   // the crown of its head, in the film's own pixels
+  // A small boy leads it by a rope through its nose (owner, 2026-10-15):
+  // he walks ahead of its head at its own pace, his feet planted by the
+  // ground it has covered, and stands when it stands. His back hand holds
+  // the rope, which runs from his wrist to the nose with a little sag.
+  var lead = ox.look.face, boyX = ox.x + lead * 330, boyLook = cast("boy", {size: 0.58, id: "boy-paddy", face: lead, smile: 1,
+                                                                            at: [boyX + lead * 300, 760], handB: [-56, 26],
+                                                                            fingersB: [0.75, 0.85, 0.9, 0.95, 0.7]});
+  if (ox.look.step !== undefined) {
+    boyLook.stride = 1.4;
+    boyLook.step = (2100 - ox.x) / (136 * boyLook.stride * 0.82 * boyLook.size);
+  }
+  var led = person(boyX, 884, boyLook);
+  pen.save();                             // the rope is drawn in the film's own pixels, as the joints and the crown are given
+  pen.setTransform(1, 0, 0, 1, 0, 0);
+  var oxS = 0.55 * GAITS.buffalo[0] * PIX, noseAt = [nose[0] + lead * 104 * oxS, nose[1] + 92 * oxS];
+  pen.strokeStyle = "#c9a878";
+  pen.lineWidth = 3 * PIX;
+  pen.lineCap = "round";
+  pen.beginPath();
+  pen.moveTo(led.wristB[0], led.wristB[1]);
+  pen.quadraticCurveTo((led.wristB[0] + noseAt[0]) / 2, Math.max(led.wristB[1], noseAt[1]) + 26 * PIX, noseAt[0], noseAt[1]);
+  pen.stroke();
+  pen.restore();
+  for (n = 0; n < PADDY_WOMEN.length; n++) {
+    w = PADDY_WOMEN[n];
+    var umbrella = t < PADDY_TWIRL + w.late ? w.kind
+                 : t < PADDY_FOLD + w.late ? parasolAt(t, PADDY_TWIRL + w.late, w.kind, undefined, "spin")
+                 : parasolAt(t, PADDY_FOLD + w.late, w.kind, undefined, "fold");
+    var look = cast(w.name, {size: 1.3, smile: 1, id: w.name + "-paddy", parasol: umbrella});
+    go = t < PADDY_WALK + w.late ? stroll(t, w.from, w.to, w.start, look) : stroll(t, w.to, w.to + 1400, PADDY_WALK + w.late, look);
+    joints = person(go.x, 1000, go.look);
+    pen.restore();                          // the drops are in the film's own pixels, as the joints are
+    rainOff(pen, w, t, joints);
+    pen.save();
+    pen.translate(SIDE, 0);
+  }
+  pen.restore();
+  rain(pen, t, wet, 1);
+}
+
+// The string of khom over the night: a cord tied between two bamboo poles,
+// sagging a little in the middle, and the hanging lanterns of khom.js along it,
+// lit, in the three colours, each swinging a little out of step with the next.
+var KHOM_STRING = [KHOM_RED, KHOM_BLUE, KHOM_GREEN, KHOM_GOLD, KHOM_RED, KHOM_GREEN, KHOM_BLUE, KHOM_RED, KHOM_GREEN];
+
+function cordAt(x) { return 64 + 48 * Math.sin(Math.PI * (x - 60) / 1800); }   // the cord's height across the picture
+
+function khomString(t) {
+  pen.strokeStyle = "#6a4a2a";                                  // the two poles, and the cord between them
+  pen.lineCap = "round";
+  pen.lineWidth = 9;
+  pen.beginPath();
+  pen.moveTo(60, 54); pen.lineTo(60, 990);
+  pen.moveTo(1860, 54); pen.lineTo(1860, 990);
+  pen.stroke();
+  pen.strokeStyle = "#4a3420";
+  pen.lineWidth = 3;
+  pen.beginPath();
+  pen.moveTo(60, 64);
+  for (var x = 60; x <= 1860; x += 30) { pen.lineTo(x, cordAt(x)); }
+  pen.stroke();
+  KHOM_STRING.forEach(function (colour, n) {
+    var x = 210 + n * 187.5;
+    khom(x, cordAt(x), {size: 0.5, colour: colour, lit: 1, late: n * 1.1});
+  });
+}
+
+// Khom hung from bamboo poles planted among the crowd, each pole with a short
+// arm at the top and the lantern tied to its end, lit, in the four colours:
+// [the pole's x, the height of its top, the lantern's colour].
+var KHOM_POLES = [[220, 600, KHOM_GOLD], [580, 640, KHOM_RED], [1260, 620, KHOM_GREEN], [1700, 650, KHOM_BLUE]];
+
+function khomPoles(t) {
+  KHOM_POLES.forEach(function (one, n) {
+    pen.strokeStyle = "#6a4a2a";
+    pen.lineCap = "round";
+    pen.lineWidth = 7;
+    pen.beginPath();
+    pen.moveTo(one[0], 985);
+    pen.lineTo(one[0], one[1]);
+    pen.lineTo(one[0] + 46, one[1] + 10);
+    pen.stroke();
+    khom(one[0] + 46, one[1] + 10, {size: 0.55, colour: one[2], lit: 1, late: 2 + n * 0.9});
+  });
+}
+
+function sceneDance(t) {                // 60-66: a night of dancing: a dancer, a drummer, a celestial
+  skyOf(SKY_NIGHT, CLOUD_LOOKS.night, t + 60);
+  pen.drawImage(NIGHT, 0, 0);
+  khomString(t);
+  // Six khom loi leave the ground behind the crowd one after another, from the
+  // scene's first second, and climb through the night, smaller as they go;
+  // the rest of the night's lanterns hang, on the string and on the poles.
+  for (var n = 0; n < 6; n++) {
+    var age = t - 0.3 - n * 0.45;
+    if (age > 0) { lantern(120 + ((n * 7) % 11) * 168 + Math.sin(age * 0.8 + n) * 30, 975 - age * 115, 46 - age * 1.5); }
+  }
+  crowd(t, 985, 30, true);
+  khomPoles(t);
+  pen.save();
+  pen.translate(SIDE, 0);                 // the three, at their places on the old sheet
+  drumCart(pen, 110, 988, 0.75, 1);       // the temple's great drum on its cart (pieces.js), brought out for the night, beside the drummer
+  person(380, 990, cast("drummer", Object.assign({late: 0, spring: 0.6, smile: 1, sing: true, mouth: mouthAt(SUNG), at: [720, 700]}, LANNA_MAN)));   // he sings the last line
+  person(720, 985, cast("dancer", {late: 0.25, spring: 0.7, smile: 1, dance: true, at: [900, 500],
+                                  handA: [70 + Math.sin(t * 3) * 20, -130 - hop(t, 0.25) * 30], handB: [-60, -110 + Math.cos(t * 3) * 20]}));
+  person(1060, 990, cast("celestial", {late: 0.5, spring: 0.6, smile: 1, face: -1, at: [720, 500], handA: [50, -120 - hop(t, 0.5) * 25]}));
+  pen.restore();
+}
+
+function sceneEnd(t) {                  // 66-68: the card
+  card("วิถีล้านนา", "Lanna life, woven on a cloth");
+}
+
+var SCENES = [[0, 22, sceneCloth], [22, 31, sceneLane], [31, 40, scenePond], [40, 60, scenePaddy], [60, 66, sceneDance], [66, 68, sceneEnd]];
+
+// The words, in one list: the seconds each line shows under the picture, its
+// syllables as they are sung, one to a beat from the line's first second, the
+// line as written, and its meaning. CUES is the kit's cue sheet made from it,
+// [beat, syllables, line, meaning]: sash_sing.py reads CUES out of this page
+// and sings the syllables over sash.wav, and the drummer's mouth is shaped by
+// SUNG, the flat list of its syllables, through the kit's mouthAt(). One list,
+// so the voice, the mouth and the words cannot drift apart.
+var WORDS = [[23, 30, "วิ ถี ชี วิต ใน หมู่ บ้าน", "วิถีชีวิตในหมู่บ้าน", "life in the village"],
+             [32, 39, "สะ บัว ปลา และ นก", "สระบัว ปลา และนก", "the lotus pond, the fish and the birds"],
+             [41, 48, "ร่ม บาน เมื่อ ฝน ซา แล้ว", "ร่มบานเมื่อฝนซาแล้ว", "the parasols open when the rain has passed"],
+             [61, 65.5, "ฟ้อน รำ กลาง คืน", "ฟ้อนรำกลางคืน", "a night of dancing"]];
+var CUES = WORDS.map(function (w) { return [Math.round(w[0] / BEAT), w[2], w[3], w[4]]; });
+var SUNG = sungBeats(CUES);
+
+function draw(t) {
+  STYLE.hop = t >= 60 && t < 66;          // only the dance hops on the beat
+  film(t, SCENES);
+  WORDS.forEach(function (w) { if (t >= w[0] && t < w[1]) { subtitle(w[3], w[4]); } });
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>puman - the whisperer, a paperdoll on the kit</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<!-- the mural's hair, before the kit loads (his skin is his own, in CAST.puman) -->
+<script>var FILM_STYLE = {hair: "#2a1f22"};</script>
+<script src="oldcartoon.js"></script>
+<script src="paperdoll.js"></script>
+<script src="puman.js"></script>
+<script>
+// The paperdoll's sheet, on the mural's ochre wall, no lens. Left: the
+// whisperer in the mural's pose and three others, hit with a snap. Middle:
+// the same man walking. Right: his head, four times the size, for the knot
+// and the face.
+var DURATION = 10;
+
+var BEAT = 0.5;
+
+// the mural's pose - a hand beside the mouth, the other arm round her shoulder - and three others
+var POSES = [[0, {handA: [30, -66], handB: [-56, -34], bend: 0.12, grip: true}],
+             [2.5, {handA: [82, -40], handB: [-40, 40], bend: 0.04}, "snap"],
+             [5, {handA: [20, -92], handB: [-30, 60], bend: -0.04}],
+             [7.5, {handA: [60, -70], handB: [-70, -50], bend: 0.08}, "snap"],
+             [10, {handA: [30, -66], handB: [-56, -34], bend: 0.12, grip: true}]];
+
+function sheet(t) {
+  pen.fillStyle = PUMAN.wall;
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.strokeStyle = "rgba(90, 50, 20, 0.22)";                     // the wall's planks
+  pen.lineWidth = 2;
+  pen.beginPath();
+  for (var plank = 0; plank < 1080; plank += 54) {
+    pen.moveTo(0, plank);
+    pen.lineTo(WIDE, plank);
+  }
+  pen.stroke();
+  pen.strokeStyle = "rgba(60, 30, 10, 0.35)";
+  pen.beginPath();
+  pen.moveTo(0, 820);
+  pen.lineTo(WIDE, 820);
+  pen.stroke();
+  puman(300, 820, Object.assign({size: 1.85, at: [620, 300]}, poseAt(t % DURATION, POSES, 0.4)));
+  puman(760, 820, {size: 1.85, step: t * 1.1, at: [1400, 300], smile: 0.5, tattoo: "long"});   // the walker wears the long form, to the knee
+  pen.save();
+  pen.beginPath();
+  pen.rect(980, 40, 440, 700);
+  pen.clip();
+  puman(1200, 40 + 1680, {size: 4.4, turn: 0.3, at: [1500, 300], handA: [34, 80], handB: [-34, 80], mouth: null});
+  pen.restore();
+}
+
+// The cloth is moved a frame at a time, so a still asked for at one second
+// is painted through the kit's settled(): on a jump of the clock it first
+// runs the frames before it. His chains are short and the kit's 60 frames
+// settle them (4 pixels left); 150, as the other dolls' sheets take, costs
+// a few seconds a still and keeps every doll's sheet alike.
+SETTLE = 150;
+
+function draw(t) {
+  settled(t, function (at) { clock = at; sheet(at); });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

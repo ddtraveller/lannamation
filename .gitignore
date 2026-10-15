@@ -1,0 +1,12 @@
+# What the tools make: renders, sounds, still sheets, model files
+*.mp4
+*.webm
+*.wav
+*.mp3
+*.jpg
+*.png
+*.task
+out/
+spoken/
+sing_check_out/
+__pycache__/

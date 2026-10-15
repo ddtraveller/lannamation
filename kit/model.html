@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>model - the character model on its own, large</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="dance_track.js"></script>
+<script>
+// The model sheet: the character model drawn large on a plain ground, with
+// no film lens, so the drawing and the movement can be judged on their own.
+// Left: a lady walking in place. Middle: the same lady dancing (the track
+// read from the video). Right: her head, four times the size, blinking and
+// looking about. Below: the other models, standing.
+var DURATION = 12;
+
+var BEAT = 0.5;
+
+// The build everyone on the sheet has: 0, the cartoon's, unless a page that
+// makes a still sets window.BUILD (1 is the paintings' build).
+var BUILD = window.BUILD || 0;
+
+// a test line for the big head's lips: M, F, L, S and K onsets, one a beat
+var SUNG_TEST = sungBeats([[0, "มา ฟ้า ลา สา กา"]]);
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.strokeStyle = "rgba(120, 90, 60, 0.25)";
+  pen.lineWidth = 2;
+  pen.beginPath();
+  pen.moveTo(0, 760);
+  pen.lineTo(WIDE, 760);
+  pen.stroke();
+  var sister = cast("lady", {shirt: "#e6a7b6", legs: "#2f6b5a", weave: 2, sabai: ["#f6e3a1", "#e86f9a"], flower: "#f28fa8", garland: true, pins: false, build: BUILD});
+  // walking in place, with the beat under the walk
+  person(250, 760, Object.assign({}, sister, {size: 2.0, late: 0, spring: 0.4, step: t * 1.1, at: [1000, 300], smile: 1}));
+  // dancing
+  var pose = poseAt(t + 20, TRACK, 0);
+  person(700, 760, Object.assign({}, sister, {size: 2.0, late: 0, spring: 0.1, smile: 1}, pose));
+  // the head, large: the feet stand below the picture
+  pen.save();
+  pen.beginPath();
+  pen.rect(980, 40, 440, 700);
+  pen.clip();
+  // the head's turn here comes from HEAD_TURN when a page sets it (a still of the profile, or the full face)
+  var headTurn = window.HEAD_TURN === undefined ? 0.5 : window.HEAD_TURN;
+  var headLook = {size: 4.4, late: 0, spring: 0.08, turn: headTurn, at: [1000 + 300 * Math.sin(t * 0.7), 300 + 150 * Math.sin(t * 1.1)]};
+  if (window.HEAD_FEEL) { headLook.feel = window.HEAD_FEEL; }   // a feeling by name, for a still of it
+  else { headLook.smile = 1; headLook.mouth = t < 2.5 ? mouthAt(SUNG_TEST) : t % 4 < 1 ? {open: 0.5 + 0.5 * Math.sin(t * 9), wide: 0.3, round: 0} : null; }
+  person(1200 - 70 * Math.max(0, -headTurn), 40 + 1680, Object.assign({}, sister, headLook));
+  pen.restore();
+  // the bottom-left row: the feelings (six on the lady, anger on the fellow), or, with
+  // window.ROW = "turns", the head turning from profile (-1) to full face (1)
+  if (window.ROW === "turns") {
+    for (var k = 0; k < 7; k++) {
+      var turn = -1 + k / 3;
+      person(60 + k * 100, 1050, Object.assign({}, sister, {size: 0.66, late: 0, spring: 0, smile: 1, turn: turn, at: [1000, 300],
+                                                             handA: [40, 60], handB: [-40, 60], mouth: null}));
+    }
+  } else {
+    var feelings = ["calm", "joy", "surprise", "fear", "anger", "sad"];
+    for (var f = 0; f < feelings.length; f++) {
+      person(60 + f * 100, 1050, Object.assign({}, sister, {size: 0.66, late: 0, spring: 0, feel: feelings[f], turn: 0.5, at: [1000, 300],
+                                                             handA: [40, 60], handB: [-40, 60]}));
+    }
+    person(660, 1050, cast("fellow", {size: 0.66, late: 0, spring: 0, feel: "anger", turn: 0.5, at: [1000, 300], handA: [40, 60], handB: [-40, 60], build: BUILD}));
+  }
+  // the other models, small, standing
+  var row = [["fellow", 750], ["child", 830], ["villager", 910], ["monk", 990], ["weaver", 1070], ["maiden", 1150], ["dancer", 1230], ["celestial", 1310], ["drummer", 1390]];
+  for (var n = 0; n < row.length; n++) {
+    person(row[n][1], 1050, cast(row[n][0], {size: 0.6, late: n * 0.12, spring: 0.3, smile: 1, at: [700, 700],
+                                             handA: [40, 60], handB: [-40, 60], mouth: null,
+                                             build: row[n][0] === "child" ? 0 : BUILD}));   // a child keeps a child's build
+  }
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

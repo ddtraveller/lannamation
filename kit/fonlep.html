@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>fonlep - the fingernail dancer, a paperdoll on the kit</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<!-- the painting's hair and gold, before the kit loads (her skin is her own, in CAST.fonlep) -->
+<script>var FILM_STYLE = {hair: "#26252c", gold: "#d9b24a"};</script>
+<script src="oldcartoon.js"></script>
+<script src="dance_track.js"></script>
+<script src="paperdoll.js"></script>
+<script src="fonlep.js"></script>
+<script>
+// The paperdoll's sheet, like model.html: a plain ground, no lens. Left: the
+// dancer in the painting's stage dress (stage: true) and pose, moving her
+// arms from one pose to the next, so the scarf is flung and settles. Middle:
+// the same dancer as a fon lep dancer wore (the sabai, the striped sin, the
+// flowers at the bun, the ear plug), dancing the tracked dance. Right: her
+// head, four times the size, in profile, for the ornament and the face.
+var DURATION = 10;
+
+var BEAT = 0.5;
+
+// the painting's pose, and three others, hit with a snap
+var POSES = [[0, {handA: [26, -118], handB: [-34, 56]}],
+             [2.5, {handA: [78, -52], handB: [-40, 50]}, "snap"],
+             [5, {handA: [36, -112], handB: [-62, -36]}],
+             [7.5, {handA: [-6, -126], handB: [-30, 60]}, "snap"],
+             [10, {handA: [26, -118], handB: [-34, 56]}]];
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.strokeStyle = "rgba(120, 90, 60, 0.25)";
+  pen.lineWidth = 2;
+  pen.beginPath();
+  pen.moveTo(0, 820);
+  pen.lineTo(WIDE, 820);
+  pen.stroke();
+  fonlep(300, 820, Object.assign({size: 1.85, at: [700, 60], stage: true}, poseAt(t % DURATION, POSES, 0.4)));
+  fonlep(760, 820, Object.assign({size: 1.85}, poseAt(t + 20, TRACK, 0)));
+  pen.save();
+  pen.beginPath();
+  pen.rect(980, 40, 440, 700);
+  pen.clip();
+  // the painted profile (kit 189b8f96) reaches 75 units before the face and the fan 100 behind: at
+  // size 3.6 that is 434 px, inside the 440-px panel
+  fonlep(1230, 40 + 1441, {size: 3.6, turn: -1, tilt: -0.3, at: [1600, 0], handA: [34, 80], handB: [-34, 80], mouth: null});
+  pen.restore();
+}
+
+// The cloth is moved a frame at a time, so a still asked for at one second
+// is painted through the kit's settled(): on a jump of the clock it first
+// runs the frames before it. A chain remembers further back than the kit's
+// springs: measured with checks/kit_check.py, 60 frames left 6,988 pixels
+// of this sheet different from the film's own frame, 150 left none.
+SETTLE = 150;
+
+function draw(t) {
+  settled(t, function (at) { clock = at; sheet(at); });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

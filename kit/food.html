@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>food - a dozen Thai dishes</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="beasts.js"></script>
+<script src="food.js"></script>
+<script>
+// The "food" sheet: the twelve dishes of food.js. Above, each one large,
+// with its Thai name, how that is said, and the name food() takes. Below,
+// at their own sizes: a grandmother and the little girl on the floor at a
+// khantok, more dishes on the mat beside them, and a pig that has come to see.
+var DURATION = 12;
+
+var BEAT = 0.5;
+
+function caption(text, x, y, thai) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = thai ? "bold 24px 'Leelawadee UI', Tahoma, sans-serif" : "19px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var names = Object.keys(FOODS), low = 1024;
+  for (var n = 0; n < names.length; n++) {
+    var x = 120 + (n % 6) * 240, y = 268 + Math.floor(n / 6) * 340, name = names[n];
+    food(name, x, y, {size: name === "khantoke" ? 1.3 : 2.3});
+    caption(FOODS[name].thai, x, y + 44, true);
+    caption(FOODS[name].say + " · " + name, x, y + 70);
+  }
+  pen.fillStyle = "#d8c49a";                         // a mat on the floor
+  pen.beginPath();
+  pen.ellipse(720, low + 4, 480, 24, 0, 0, 7);
+  pen.fill();
+  person(400, low, cast("grandmother", {floor: true, late: 0, spring: 0.3, at: [700, low - 100], smile: 0.6}));
+  food("stickyrice", 560, low + 4, {});
+  food("khantoke", 700, low, {});
+  food("somtam", 838, low + 6, {});
+  person(950, low, cast("girl", {floor: true, face: -1, late: 0.5, spring: 0.3, at: [700, low - 100], smile: 1}));
+  food("muping", 1070, low + 8, {});
+  pig(1280, low, {size: 0.9, face: -1, late: 0.25, mouth: Math.max(0, Math.sin(t * Math.PI)) * 0.5});
+  caption("at their own sizes: a meal on the floor at a khantok, and a pig that has come to see", 720, 1070);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

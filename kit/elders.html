@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>elders - two old men and two old women, each of a different style</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script>
+// The "elders" sheet: the four old people of the cast. An elder of the
+// village with a white beard and a stick, an old farmer under his hat, a
+// grandmother, small and bent, and an old woman dressed in white for the
+// temple with a lotus in her hand. Above, each as the cast has them. Below,
+// what they do: the elder walks with his stick, the grandmother sits on the
+// floor, the old woman in white makes a wai, the farmer waves, and the
+// grandmother holds the little girl's hand.
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var top = 540, low = 1010, names = ["elder", "oldfarmer", "grandmother", "devotee"];
+  for (var n = 0; n < 4; n++) {
+    person(190 + n * 350, top, cast(names[n], {late: n * 0.25, spring: 0.3}));
+    caption(names[n], 190 + n * 350, top + 38);
+  }
+  person(150, low, cast("elder", {size: 0.95, step: t / BEAT / 3}));
+  caption("walking with his stick", 150, low + 38);
+  person(420, low, cast("grandmother", {size: 0.95, floor: true, late: 0, spring: 0.3}));
+  caption("sitting on the floor", 420, low + 38);
+  person(680, low, cast("devotee", {size: 0.95, wai: true, holding: null, bend: 0.14, late: 0.5, spring: 0.2}));
+  caption("a wai", 680, low + 38);
+  person(920, low, cast("oldfarmer", {size: 0.95, handA: [44, -84], late: 0.25, spring: 0.4}));
+  caption("waving", 920, low + 38);
+  var held = [1240, low - 186 + 8 * Math.sin(t * 2.2)];            // one point for two wrists
+  person(1170, low, cast("grandmother", {size: 0.95, late: 0, spring: 0.3, at: [1300, low - 200], reachA: held}));
+  person(1300, low, cast("girl", {late: 0.25, spring: 0.5, face: -1, at: [1170, low - 330], reachA: held}));
+  caption("with the little girl", 1235, low + 38);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

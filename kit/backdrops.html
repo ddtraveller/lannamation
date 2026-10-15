@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>backdrops - nineteen backgrounds to start a film from</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="backdrops.js"></script>
+<script>
+// The "backdrops" sheet: the nineteen backgrounds of backdrops.js. For the
+// first six seconds, all of them at once, small, each with its name: the
+// seven places of the north of Thailand, and then the twelve in the manner
+// of the thangka painters. Then each one whole for two seconds, with three
+// of the cast standing in it, as a film would begin: a set laid down, and
+// people on its ground.
+var DURATION = 6 + BACKDROPS.length * 2;
+
+var BEAT = 0.5;
+
+function named(words, x, y, size) {
+  pen.font = "bold " + size + "px Georgia, 'Times New Roman', serif";
+  pen.textAlign = "center";
+  pen.lineJoin = "round";
+  pen.strokeStyle = "rgba(30, 18, 10, 0.85)";
+  pen.lineWidth = size / 4;
+  pen.strokeText(words, x, y);
+  pen.fillStyle = "#fff0c8";
+  pen.fillText(words, x, y);
+}
+
+function sheet(t) {
+  var n;
+  if (t < 6) {                                       // all nineteen, five across and four down
+    pen.fillStyle = "#2a1c14";
+    pen.fillRect(0, 0, WIDE, 1080);
+    for (n = 0; n < BACKDROPS.length; n++) {
+      var x = 12 + (n % 5) * 285.6, y = 12 + Math.floor(n / 5) * 266;
+      pen.drawImage(backdrop(BACKDROPS[n][0]), x, y, 272, 204);
+      named(BACKDROPS[n][0], x + 136, y + 236, 22);
+    }
+    return;
+  }
+  n = Math.min(BACKDROPS.length - 1, Math.floor((t - 6) / 2));
+  pen.drawImage(backdrop(BACKDROPS[n][0]), 0, 0);
+  person(560, 930, cast("grandmother", {late: 0, spring: 0.3}));
+  person(720, 940, cast("girl", {late: 0.25, spring: 0.6}));
+  person(850, 936, cast("boy", {late: 0.5, spring: 0.6, handA: [44, -84]}));
+  named('backdrop("' + BACKDROPS[n][0] + '")  ' + BACKDROPS[n][2], 720, 64, 38);
+  named(BACKDROPS[n][1], 720, 104, 22);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

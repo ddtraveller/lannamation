@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>khom - the hanging lanterns of Lanna, on the kit</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="motion.js"></script>
+<script src="khom.js"></script>
+<script>
+// The "khom" sheet. Five lanterns hang from a bamboo pole on a night of Yi
+// Peng: red, blue and green, each lit, each swinging and turning on its
+// string a little out of step with the others, their tails rippling. Below,
+// a sixth is carried along a course (motion.js where): the sheet hands it
+// its speed as a lean, so it hangs back against the way it goes. On the
+// left, the same lantern by day, unlit, and still (sway 0, wind 0).
+var DURATION = 10;
+
+var BEAT = 0.5;
+
+var ROW = [[300, KHOM_RED, 1.0], [540, KHOM_BLUE, 0.85], [760, KHOM_GREEN, 1.0], [980, KHOM_RED, 0.8], [1180, KHOM_BLUE, 0.95]];
+
+var COURSE = [[0, 1500, 560], [4, 600, 520], [6, 600, 520], [10, 1500, 560]];     // there and back, waiting in the middle
+
+function sheet(t) {
+  var sky = pen.createLinearGradient(0, 0, 0, 1080);  // the night
+  sky.addColorStop(0, "#0b1430");
+  sky.addColorStop(1, "#1c2a55");
+  pen.fillStyle = sky;
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.fillStyle = "#f6ecc8";
+  for (var n = 0; n < 40; n++) { pen.fillRect(37 * n * 1.7 % WIDE, (n * 97) % 500, 2, 2); }   // stars
+  pen.strokeStyle = "#8a6a3c";                       // the pole
+  pen.lineWidth = 7;
+  pen.lineCap = "round";
+  pen.beginPath();
+  pen.moveTo(220, 60);
+  pen.lineTo(1260, 60);
+  pen.stroke();
+  ROW.forEach(function (row, n) {
+    khom(row[0], 60, {size: row[2], colour: row[1], lit: 1, late: n * 1.3});
+  });
+  var p = where(COURSE, t);                          // carried: it leans back against its speed
+  khom(p[0], p[1], {size: 0.75, colour: KHOM_GREEN, lit: 1, late: 7, lean: Math.max(-0.5, Math.min(0.5, p[8] * Math.cos(p[5]) * 0.001))});
+  pen.fillStyle = "#cfe3ff";                         // by day, unlit and still, for comparison
+  pen.fillRect(40, 560, 220, 500);
+  khom(150, 580, {size: 0.9, colour: KHOM_RED, lit: 0, sway: 0, wind: 0, spin: 0});
+  pen.fillStyle = "#f6ecc8";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText("khom(x, y, look): the hanging lantern of Lanna, tied at (x, y); lit, it glows; it swings and turns, and its tail sways", 860, 1030);
+  pen.fillText("carried along a course, it leans back against the way it goes (lean); by day, unlit and still, at the left", 860, 1062);
+}
+
+function draw(t) {
+  clock = t;                                         // nothing is kept between frames: a jump is a run
+  sheet(t);
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>
