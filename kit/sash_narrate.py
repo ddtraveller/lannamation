@@ -1,0 +1,145 @@
+"""sash_narrate.py - tell the story of sash.html in Kam Mueang over sash.wav, saved as sash_voice.wav.
+
+    python sash_music.py
+    python sash_narrate.py <the Kam Mueang Voice extension's model folder> --takes 4
+    python render.py sash.html sash.mp4 --audio sash_voice.wav
+
+The words are the film's own: the page is opened in Chrome with no window, as render.py opens it,
+and asked for its WORDS: for each line, the seconds it shows, what the voice says and what is
+written. Each line is spoken by the voice of the Kam Mueang Voice extension (say.mjs: Meta's MMS
+Northern Thai, run by transformers.js as the extension runs it) once, and kept in spoken_km/ under a
+name made from its words, so a line is spoken again only when its words change; the voice draws its
+timing from noise, and the same line is never quite the same twice. With --takes N each new line is
+spoken N times and the take a speech recogniser (faster-whisper, medium, Thai) hears closest to the
+words is kept: the takes differ, and one can be much clearer than another (four takes of one line
+scored 0.57 to 0.72 of its letters heard back, the first take 0.47). Delete spoken_km/ to speak every
+line again. Each line starts at its second.
+The music is lowered while the voice speaks and comes back between lines, and fades over the film's
+last two seconds. Then it says, line by line, how long the voice took and whether the line is over
+before its words leave the screen.
+
+The model folder is model/ in the extension (krueng.ai/downloads/kammuang_voice_chrome.zip,
+unzipped); say.mjs needs "npm install" in this folder first.
+"""
+import argparse
+import difflib
+import hashlib
+import json
+import re
+import subprocess
+import wave
+from pathlib import Path
+
+import numpy
+from playwright.sync_api import sync_playwright
+from scipy.signal import resample_poly
+
+RATE = 44100
+HERE = Path(__file__).resolve().parent
+SPOKEN = HERE / "spoken_km"
+MUSIC = 0.7          # the music between lines, of the level sash_music.py made it
+UNDER = 0.3          # the music while the voice speaks, of that
+RAMP = 0.35          # seconds the music takes to go down before a line and to come back after it
+VOICE = 0.9          # the voice's peak
+FADE = 2.0           # seconds of the music's fade at the end
+
+
+def words_of(page_file):
+    """The film's lines and its length, asked of the page itself."""
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(channel="chrome")
+        page = browser.new_page()
+        page.goto(Path(page_file).resolve().as_uri())
+        words, seconds = page.evaluate("[WORDS, DURATION]")
+        browser.close()
+    return words, seconds
+
+
+def read(name):
+    """a WAV as numbers from -1 to 1, and its rate"""
+    with wave.open(str(name), "rb") as file:
+        frames = numpy.frombuffer(file.readframes(file.getnframes()), dtype=numpy.int16)
+        return frames.astype(numpy.float64) / 32768, file.getframerate()
+
+
+def file_of(text):
+    return SPOKEN / (hashlib.sha1(text.encode("utf-8")).hexdigest()[:12] + ".wav")
+
+
+def heard(text, sound_file, listener):
+    """how much of a line's letters the recogniser hears back, 0 to 1"""
+    said = "".join(part.text for part in listener.transcribe(str(sound_file), language="th", beam_size=5)[0])
+    return difflib.SequenceMatcher(None, re.sub(r"[\sๆ]", "", text), re.sub(r"[\sๆ]", "", said)).ratio()
+
+
+def speak(texts, model, takes):
+    """Every line not spoken yet goes to say.mjs, in one run, "takes" times; the clearest take is kept."""
+    missing = [text for text in texts if not file_of(text).exists()]
+    if not missing:
+        return
+    SPOKEN.mkdir(exist_ok=True)
+    listing = SPOKEN / "to_say.json"
+    listing.write_text(json.dumps([[file_of(text).stem + "_%d" % k, text] for text in missing for k in range(takes)],
+                                  ensure_ascii=False), encoding="utf-8")
+    subprocess.run(["node", str(HERE / "say.mjs"), model, str(listing), str(SPOKEN)], check=True)
+    listing.unlink()
+    listener = None
+    if takes > 1:
+        from faster_whisper import WhisperModel
+        listener = WhisperModel("medium", device="cpu", compute_type="int8")
+    for text in missing:
+        files = [SPOKEN / (file_of(text).stem + "_%d.wav" % k) for k in range(takes)]
+        scores = [heard(text, one, listener) for one in files] if listener else [0]
+        best = scores.index(max(scores))
+        files[best].rename(file_of(text))
+        for one in files:
+            one.unlink(missing_ok=True)
+        if listener:
+            print("%s  takes heard %s: kept %.2f" % (text, " ".join("%.2f" % s for s in scores), scores[best]))
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("model", help="the extension's model folder")
+    parser.add_argument("--page", default=str(HERE / "sash.html"))
+    parser.add_argument("--music", default=str(HERE / "sash.wav"))
+    parser.add_argument("--out", default=str(HERE / "sash_voice.wav"))
+    parser.add_argument("--takes", type=int, default=1, help="takes of each new line; the clearest is kept")
+    args = parser.parse_args()
+
+    words, seconds = words_of(args.page)
+    speak([w[2] for w in words], args.model, args.takes)
+    length = int(seconds * RATE)
+    music, rate = read(args.music)
+    music = numpy.pad(music, (0, max(0, length - len(music))))[:length] * MUSIC
+    voice = numpy.zeros(length)
+    gain = numpy.ones(length)
+    clock = numpy.arange(length) / RATE
+    print("line   from    voice  ends   shown to")
+    for n, (start, shown, said, written, meaning) in enumerate(words):
+        sound, rate = read(file_of(said))
+        sound = resample_poly(sound, RATE, rate)
+        sound = sound / numpy.abs(sound).max() * VOICE
+        at = int(start * RATE)
+        voice[at:at + len(sound)] += sound[:max(0, length - at)]
+        end = start + len(sound) / RATE
+        # down to UNDER from RAMP before the line, back up over RAMP after it
+        dip = numpy.clip(numpy.minimum((clock - (start - RAMP)) / RAMP, ((end + RAMP) - clock) / RAMP), 0, 1)
+        gain = numpy.minimum(gain, 1 - (1 - UNDER) * dip)
+        after = words[n + 1][0] if n + 1 < len(words) else seconds
+        late = end - min(shown, after)
+        print("%3d  %6.1f  %5.2f  %5.1f  %5.1f   %s" % (n + 1, start, len(sound) / RATE, end, shown,
+                                                     "fits" if late <= 0 else "TOO LONG by %.2f s" % late))
+    gain[-int(FADE * RATE):] *= numpy.linspace(1, 0, int(FADE * RATE))
+    track = music * gain + voice
+    track = track / max(1.0, numpy.abs(track).max() / 0.97)
+    with wave.open(args.out, "wb") as file:
+        file.setnchannels(1)
+        file.setsampwidth(2)
+        file.setframerate(RATE)
+        file.writeframes((track * 32767).astype(numpy.int16).tobytes())
+    print("%s: %.1f s, %d lines" % (Path(args.out).name, seconds, len(words)))
+
+
+if __name__ == "__main__":
+    main()

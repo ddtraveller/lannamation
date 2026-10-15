@@ -22,9 +22,10 @@ for each page, in Chrome with no window:
             spine, forearms folded past 150 degrees. A page passes with none, or with no more than KNOWN allows.
   ms        how long one frame takes to draw, after a warm-up (whatever is timed first comes out about five times
             too slow)
-  cues      only for a page with a song's cue sheet (CUES): every line of the song is sung inside one scene (a cut
-            in the middle of a line fails), and has ended before the next line begins. One more line is printed
-            under the page's.
+  cues      only for a page with a cue sheet (CUES): every line of the song is sung inside one scene (a cut
+            in the middle of a line fails), and has ended before the next line begins. A line sung a syllable to
+            the beat ends after its syllables; a spoken line gives its own end, in seconds, as the cue's fifth
+            entry. One more line is printed under the page's.
 A page that needs a file which is not on this computer (a page's pictures are not kept in git) is left out, and said
 so. It prints one line a page, then what failed, and ends with exit code 1 if anything did.
 """
@@ -42,7 +43,7 @@ HERE = Path(__file__).resolve().parent.parent
 # Faults that are known, with why. A page may have these and no more.
 KNOWN = {
     "dance.html": {"flips": 7, "why": "the tracked wrist lies within 12 units of its shoulder in those frames"},
-    "sash.html": {"folded": 4, "why": "the first frame of each wai (20.0, 28.3, 29.2 and 35.0 s): while the elbow swings across by way of the shoulder (bendOf), the blended elbow measures 154-155 degrees for that one frame; each candidate elbow is within ELBOW"},
+    "sash.html": {"folded": 4, "why": "the first frame of each wai (20.0, 28.3, 29.2 and 36.0 s): while the elbow swings across by way of the shoulder (bendOf), the blended elbow measures 154-155 degrees for that one frame; each candidate elbow is within ELBOW"},
 }
 
 PLACES = (0.4, 0.78)      # where in a page "same" is measured, as parts of its length
@@ -102,7 +103,7 @@ CUES = """() => {
   if (typeof CUES === "undefined" || typeof SCENES === "undefined") { return null; }
   var bad = [];
   CUES.forEach(function (cue, n) {
-    var from = cue[0] * BEAT, to = from + cue[1].split(" ").length * BEAT;
+    var from = cue[0] * BEAT, to = cue[4] !== undefined ? cue[4] : from + cue[1].split(" ").length * BEAT;
     var whole = SCENES.some(function (scene) { return from >= scene[0] && to <= scene[1]; });
     if (!whole) { bad.push("line " + (n + 1) + " of the song (" + from + " to " + to + " s) is cut by a change of scene"); }
     if (n + 1 < CUES.length && to > CUES[n + 1][0] * BEAT) {

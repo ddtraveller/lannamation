@@ -12,3 +12,6 @@ sing_check_out/
 __pycache__/
 # but the README's picture
 !docs/stills.jpg
+node_modules/
+package-lock.json
+spoken_km/

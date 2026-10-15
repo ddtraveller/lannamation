@@ -2401,6 +2401,30 @@ to one picture). What the photographs showed against the kit, and what was chang
 
 Checked: `kit_check.py` on the sheets below after the change, and the two teaching pages refreshed.
 
+## The story told in Kam Mueang (2026-10-16)
+
+The owner: "When you render the video can you use the kam muang Chrome plugin for the audio to tell the
+history of Lanna instead of using the song lyrics? Use notebooklm notebooks on kam muang and create
+another on Lanna history to get the text." Asked, they chose to replace the song in the hero film, Kam
+Mueang with its English under the picture, and the film's music softly under the voice. Then: "Remove
+the title screen from the end of the video"; "Make the words relevant to the cartoon. Like it was for
+little kids. In ancient times, life moved more slowly..."; "Then go on explaining the special artifacts
+that are uniquely Lanna. Mention that the dragon is actually Chinese just before the man looks up at the
+dragon. Have a people's republic of China flag appear in the dragon's claw for a moment and wave back and
+forth a few times and then disappear. You may have to extend the scene a bit"; "no facts about china
+just a joke about the dragon"; "You can give a fact about Chinese dragon's though".
+
+| What | How it is made |
+|---|---|
+| The facts | A NotebookLM notebook, "History of Lanna: narration for the Lanna cartoon hero film", of Wikipedia on the Lanna Kingdom (English and Thai), Mangrai, Tilokaraj, Kawila, Chiang Mai, the Burmese–Siamese wars, Bo Sang, Yi Peng, the Chinese dragon, สไบ (the sabai), ตุง (the tung), โคมลอย (khom loi) and เกวียน (the kwian). Thai Wikipedia has no page for the kalae, the Lanna lantern, the water jar at the gate or the great drum (each 404), so the words say nothing of them. Every fact in a line has its citation; a line that only says what is on screen needs none. The joke's fact is the Chinese dragon's: "Many pictures of Chinese dragons show a flaming pearl under their chin or in their claws." |
+| The Kam Mueang | A second notebook, "Northern Thai (Kam Mueang): models and language resources, 2026", asked to put each line in Chiang Mai Kam Mueang and name each dialect word's source (`pythainlp/lanna_dict`, the Charatrit KamMuang-Thai-English pairs, a guide to speaking Lanna). Three lines mended by hand: the parasols are Bo Sang's kind, not spun at Bo Sang; "a million fields" without ทุ่งนก ("fields of birds"); ถือ (hold) for คาบ (hold in the mouth). No native speaker has checked it. |
+| The voice | The Kam Mueang Voice extension's own model, Meta's MMS Northern Thai (CC BY-NC 4.0) at full precision, run by transformers.js 4.3.1 in Node as the extension runs it: `say.mjs`. It says about 12 to 13 Thai characters a second. It drops ๆ (จ๊าๆ came out as one จ๊า, 1.8 s for the first line), so each line in `WORDS` has a spoken form with the word said twice beside its written one. |
+| Takes | The voice draws its timing from noise, so a line is never said the same way twice. `sash_narrate.py --takes 4` speaks each line four times and keeps the take that faster-whisper (medium, Thai) hears closest to its words. Kept takes: 0.59 to 0.93 of the letters heard back, mean 0.78; one take a line had given 0.47 to 0.96, mean 0.74. The recogniser knows Central Thai, so these numbers are a floor for the dialect words, not a grade. |
+| The mix | `sash_music.py` makes 152 beats now (79 s of notes; the first 132 are the beats they were). The music plays at 0.7 of its level, goes down to 0.3 of that over 0.35 s before each line and comes back after it; the voice's peak is 0.9; the music fades over the film's last two seconds (the end card had hidden that `render.py` stops the sound at the last frame). Every line ends before its words leave the screen, which the script prints line by line. |
+| The film | 79 s, with no end card: the cloth 0–22, the lane 22–35, the pond 35–50, the rice fields 50–70, the dance 70–79. The pond's dragon is the Chinese kind; its course and the look-up come five seconds later in the scene than before, so the voice says "this dragon came from China" (39.8 s) before the two at the pond look up (43 s). The maiden wais from the scene's first second, as the voice says she greets us. The drummer no longer mouths a song. |
+| The flag | `dragon()` now gives back `{claw, size}`: its near front foot in the points of the frame it was drawn in, and its size. `chinaFlag()` in `sash.html` draws the flag of the People's Republic of China as its law sets it out (3:2, red, the large star at (5, 5) of a 30 by 20 grid, the four small ones each pointing a tip at it), on a pole in that claw, from 8.8 to 11.6 s of the pond scene: it grows out of the claw, rocks back and forth three times as the cloth ripples, and shrinks away. The pole leans 0.4 forward, so the cloth flies above the head (0.7 and 1.0, drawn side by side, made the flag read as falling); 2.6 times the dragon's size; nearly opaque even far off, or the body showed through it. The dragon's pearl is gone while it holds the flag: that is the joke of line 10, "Chinese dragons usually hold a pearl, not a flag!" |
+| The checks | `kit_check.py sash.html dragon.html dragon_china.html dragon_flight.html`: 4 pages, 0 failures; the 17 lines each inside one scene; the wai whose first frame folds an arm is at 36.0 s now (the pond's maiden, a second into the scene), so the allowance names it there. `kit_check.py`'s cue check takes a cue's own end, as its fifth entry, for a spoken line. `dragon.html`, `dragon_china.html` and `dragon_flight.html` drawn with the old and the new `dragon.js`: 0, 2 and 3 frames of 12 differ, by 1 to 3 pixels, the kit's own spread from one load to the next. |
+
 ## The kit's own checks
 
 **One command after any change to the kit**, from `kit/`:

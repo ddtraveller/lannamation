@@ -1,4 +1,4 @@
-"""sash_music.py - 69 seconds of music for sash.html, saved as sash.wav.
+"""sash_music.py - 79 seconds of music for sash.html, saved as sash.wav.
 
     python sash_music.py
 
@@ -8,8 +8,8 @@ under everything and a plucked pentatonic tune on top; from the twenty-second
 second a low drum on every beat, for the dancing scenes; a fade at the end.
 
 The tune is drawn beat by beat from one seeded chooser, so it is the same every
-time, and tune_notes() gives the note it plays on each beat: sash_sing.py sings
-each syllable on the note of its beat, so the voice and the band agree.
+time: a longer film adds beats at the end and leaves the ones before as they were.
+sash_narrate.py lays the Kam Mueang voice over it.
 """
 import random
 import wave
@@ -19,7 +19,7 @@ import numpy
 RATE = 44100
 BEAT = 0.5                   # sash.html uses the same number
 SILENCE = 3.0                # seconds before the first note
-BEATS = 132                  # 66 seconds of music
+BEATS = 152                  # 76 seconds of music: the film is 79 s
 TUNE_NOTES = [220.0, 261.63, 293.66, 329.63, 392.0, 440.0, 523.25]
 CHORDS = [[110.0, 164.81, 220.0, 261.63],
           [87.31, 174.61, 220.0, 261.63],
@@ -78,11 +78,6 @@ def tune():
         octave = beat % 2 == 1 and chooser.random() < 0.5
         beats.append((note, plucked, octave))
     return beats
-
-
-def tune_notes():
-    """The note the tune is on at each beat of the music, as an index into TUNE_NOTES."""
-    return [note for note, plucked, octave in tune()]
 
 
 def compose():

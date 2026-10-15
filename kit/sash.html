@@ -37,8 +37,11 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6,
 // things on the cloth begin to dance. The camera pulls back: the rows were a
 // sabai, the shoulder cloth of a Lanna woman, and she stands in a village.
 // Then four scenes of the life the cloth showed: the lane, the pond, the
-// rice fields in a rain that clears, a night of dancing.
-var DURATION = 68;
+// rice fields in a rain that clears, a night of dancing. A grandmother's
+// voice tells the story in Kam Mueang over the music (WORDS, at the end; the
+// voice is the Kam Mueang Voice extension's, made by sash_narrate.py), and the
+// film ends on the dance, with no card (owner, 2026-10-16).
+var DURATION = 79;
 
 var BEAT = 0.5;                         // the same number as in sash_music.py
 
@@ -255,7 +258,7 @@ function sceneCloth(t) {                // 0-22: one row, still; the music and t
   pen.restore();
 }
 
-function sceneLane(t) {                 // 22-31: the lane: a man and a child come one way, a woman the other
+function sceneLane(t) {                 // 22-35: the lane: a man and a child come one way, a woman the other
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t + 22);
   pen.drawImage(VILLAGE, 0, 0);
   pen.save();
@@ -280,16 +283,82 @@ function sceneLane(t) {                 // 22-31: the lane: a man and a child co
   pen.restore();
 }
 
-// The dragon's course through the pond scene (31 to 40), in the film's time:
+// The dragon's course through the pond scene (35 to 50), in the film's time:
 // [second, x, y, depth], where depth is 0 far from the screen and 1 near. It
 // comes in small and faint over the far hills and sweeps nearer and bigger
 // across the pond. motion.js's where() leads it along one smooth curve through
 // these points, and dragon.js leads the body along the same course as its trail.
-var POND_AT = 31;
+// It comes five seconds into the scene later than it did, so that the voice
+// can say where it is from before the two at the pond look up at it.
+var POND_AT = 35;
 
-var DRAGON_COURSE = [[29, -700, 330, 0.05], [34.5, 250, 260, 0.3], [38.3, 900, 340, 0.6], [43.3, 2200, 230, 0.9]];   // a touch slower than it was (owner, 2026-10-15)
+var DRAGON_COURSE = [[38, -700, 330, 0.05], [43.5, 250, 260, 0.3], [47.3, 900, 340, 0.6], [52.3, 2200, 230, 0.9]];   // a touch slower than it was (owner, 2026-10-15)
 
 function dragonFly(T) { return where(DRAGON_COURSE, T); }
+
+// The dragon's joke (owner, 2026-10-16: "Have a people's republic of China flag
+// appear in the dragon's claw for a moment and wave back and forth a few times
+// and then disappear"): the flag of the People's Republic of China on a short
+// pole in its near front claw (dragon() gives back where that claw is), from
+// FLAG[0] to FLAG[1] of the pond scene, while the two at the pond look up. It
+// grows out of the claw, the pole rocks back and forth three times as the cloth
+// ripples, and it shrinks away. The flag as its law draws it: 3 by 2, red, one
+// large gold star and four small ones in an arc toward the fly, each small one
+// pointing a tip at the large one's centre (on a grid of 30 by 20: the large
+// star at (5, 5), radius 3; the small at (10, 2), (12, 4), (12, 7), (10, 9),
+// radius 1).
+var FLAG = [8.8, 11.6];
+var FLAG_LEAN = 0.4;                    // how far the pole leans forward from upright: more and the flag reads as falling
+
+function flagStar(cx, cy, r, toward) {   // a five-pointed star with one tip toward the angle "toward"
+  pen.beginPath();
+  for (var k = 0; k < 10; k++) {
+    var a = toward + k * Math.PI / 5, d = k % 2 ? r * 0.382 : r;
+    if (k) { pen.lineTo(cx + Math.cos(a) * d, cy + Math.sin(a) * d); } else { pen.moveTo(cx + Math.cos(a) * d, cy + Math.sin(a) * d); }
+  }
+  pen.closePath();
+  pen.fill();
+}
+
+function chinaFlag(x, y, size, t) {     // the flag in the claw at (x, y), at second t of the pond scene
+  var u = (t - FLAG[0]) / (FLAG[1] - FLAG[0]);
+  if (u <= 0 || u >= 1) { return; }
+  var grow = smooth(Math.min(u, 1 - u) / 0.1);                 // it pops out of the claw, and back into it
+  var sway = Math.sin(u * Math.PI * 6) * 0.35;                  // three times back and forth
+  var g = 3, W = 30 * g, H = 20 * g, top = -190;               // the cloth, 90 by 60, from the pole's top, high enough to fly above the head
+  function ripple(fx) { return 6 * Math.sin(fx / W * Math.PI * 2.4 - t * 9) * (fx / W); }   // still at the pole, most at the fly
+  pen.save();
+  pen.translate(x, y);
+  pen.scale(size * 2.6 * grow, size * 2.6 * grow);
+  pen.rotate(FLAG_LEAN + sway);
+  pen.lineCap = "round";
+  pen.strokeStyle = "#5a3b22";                                  // the pole, gripped by the claw
+  pen.lineWidth = 6;
+  pen.beginPath();
+  pen.moveTo(0, 18);
+  pen.lineTo(0, top);
+  pen.stroke();
+  pen.fillStyle = STYLE.gold;                                   // its knob
+  pen.beginPath();
+  pen.arc(0, top - 4, 5, 0, Math.PI * 2);
+  pen.fill();
+  pen.beginPath();                                              // the cloth: the top edge out, the bottom edge back
+  for (var n = 0; n <= 24; n++) { var fx = W * n / 24; pen.lineTo(fx, top + ripple(fx)); }
+  for (n = 24; n >= 0; n--) { fx = W * n / 24; pen.lineTo(fx, top + H + ripple(fx)); }
+  pen.closePath();
+  pen.fillStyle = "#de2910";
+  pen.fill();
+  pen.strokeStyle = inkFor("#de2910");
+  pen.lineWidth = 2;
+  pen.stroke();
+  pen.fillStyle = "#ffde00";
+  flagStar(5 * g, top + 5 * g + ripple(5 * g), 3 * g, -Math.PI / 2);
+  [[10, 2], [12, 4], [12, 7], [10, 9]].forEach(function (s) {
+    var cx = s[0] * g, cy = top + s[1] * g + ripple(s[0] * g);
+    flagStar(cx, cy, g, Math.atan2(top + 5 * g + ripple(5 * g) - cy, 5 * g - cx));
+  });
+  pen.restore();
+}
 
 // Drops on the pond, in the scene's seconds: a fish rising, twice, and a drop from a leaf.
 var POND_RINGS = [[760, 905, 2.0], [1000, 960, 5.5], [640, 985, 7.8]];
@@ -329,7 +398,7 @@ function pondElephants(t) {
   pen.drawImage(FAR, 0, 0);
 }
 
-function scenePond(t) {                 // 31-40: the pond: lotus, fish, a maiden at the bank who wais; a dragon flies by; elephants far off
+function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maiden at the bank who wais; a Chinese dragon flies by with a flag; elephants far off
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t + POND_AT);
   pen.drawImage(POND, 0, 0);
   pondElephants(t);
@@ -342,19 +411,23 @@ function scenePond(t) {                 // 31-40: the pond: lotus, fish, a maide
   fish(pen, 900 - Math.sin(t * 0.5) * 24, 980, 0.9, 1, "#f6a24a");
   birds(t, 100 + t * 60, 180);
   var head = dragonFly(t + POND_AT);
-  dragon(head[0], head[1], {size: 0.34, depth: head[4], trail: dragonFly, fly: "glide", breath: 0.3 + 0.3 * Math.sin(t * 2), late: 0.5,
-                            corkscrew: [POND_AT + 4]});   // one corkscrew runs the whole body, from behind the head at the left of the sheet off the tip near the middle
+  var drake = dragon(head[0], head[1], {size: 0.34, depth: head[4], trail: dragonFly, fly: "glide", breath: 0.3 + 0.3 * Math.sin(t * 2), late: 0.5,
+                                        corkscrew: [POND_AT + 9], kind: "chinese", chase: t < FLAG[0] || t > FLAG[1]});   // a Chinese dragon, as the voice says; its pearl is gone while it waves the flag
+  pen.save();
+  pen.globalAlpha = 0.8 + 0.2 * head[4];                        // far off, a little faded, but not so much that the dragon shows through it
+  chinaFlag(drake.claw[0], drake.claw[1], drake.size, t);
+  pen.restore();
   siamese(130, 1012, 0.9, t);                                 // her Siamese cat sits beside her
-  var awe = tween(t, [[3, 0], [3.6, 1], [6, 1], [6.8, 0]], "smooth");             // the dragon passes over: eyes up, brows up
+  var awe = tween(t, [[8, 0], [8.6, 1], [11, 1], [11.8, 0]], "smooth");           // the dragon passes over: eyes up, brows up
   var sky = [head[0], head[1]];
-  person(300, 1000, cast("maiden", {floor: true, late: 0, spring: 0.4, smile: 1, wonder: awe, at: awe > 0.5 ? sky : [700, 800], wai: t > 4}));
+  person(300, 1000, cast("maiden", {floor: true, late: 0, spring: 0.4, smile: 1, wonder: awe, at: awe > 0.5 ? sky : [700, 800], wai: t > 1}));
   var fellow = stroll(t, 1600, 1330, 0, cast("fellow", {stride: 0.8, late: 0.25, spring: 0.4, smile: 1, wonder: awe, at: awe > 0.5 ? sky : [300, 800]}));   // he stops short of the water's edge
   person(fellow.x, 990, fellow.look);
   blossom(pen, 1300 + Math.sin(t) * 10, 700 + t * 20, 10, "#ee7f9c");
   pen.restore();
 }
 
-// 40-60: the rice fields in a rain storm that clears. Three women walk in
+// 50-70: the rice fields in a rain storm that clears. Three women walk in
 // under their parasols (the Thai borders, the yantra, the elephants round the
 // Buddha), dark cumulus over the hills and rain slanting down, one flash of
 // lightning; the clouds thin and blow away and the sun comes out; the women
@@ -440,7 +513,7 @@ function rainOff(brush, w, t, joints) {    // for a moment after the spin begins
   brush.restore();
 }
 
-function scenePaddy(t) {                // 40-60: the rice fields: a storm that clears, the parasols spun, closed and carried off
+function scenePaddy(t) {                // 50-70: the rice fields: a storm that clears, the parasols spun, closed and carried off
   var dark = storm(t), wet = rainfall(t), n, w, go, joints;
   pen.drawImage(backdrop("paddy"), 0, 0);
   if (dark > 0) {
@@ -558,7 +631,7 @@ function khomPoles(t) {
   });
 }
 
-function sceneDance(t) {                // 60-66: a night of dancing: a dancer, a drummer, a celestial
+function sceneDance(t) {                // 70-79: a night of dancing: a dancer, a drummer, a celestial
   skyOf(SKY_NIGHT, CLOUD_LOOKS.night, t + 60);
   pen.drawImage(NIGHT, 0, 0);
   khomString(t);
@@ -574,35 +647,51 @@ function sceneDance(t) {                // 60-66: a night of dancing: a dancer, 
   pen.save();
   pen.translate(SIDE, 0);                 // the three, at their places on the old sheet
   drumCart(pen, 110, 988, 0.75, 1);       // the temple's great drum on its cart (pieces.js), brought out for the night, beside the drummer
-  person(380, 990, cast("drummer", Object.assign({late: 0, spring: 0.6, smile: 1, sing: true, mouth: mouthAt(SUNG), at: [720, 700]}, LANNA_MAN)));   // he sings the last line
+  person(380, 990, cast("drummer", Object.assign({late: 0, spring: 0.6, smile: 1, at: [720, 700]}, LANNA_MAN)));
   person(720, 985, cast("dancer", {late: 0.25, spring: 0.7, smile: 1, dance: true, at: [900, 500],
                                   handA: [70 + Math.sin(t * 3) * 20, -130 - hop(t, 0.25) * 30], handB: [-60, -110 + Math.cos(t * 3) * 20]}));
   person(1060, 990, cast("celestial", {late: 0.5, spring: 0.6, smile: 1, face: -1, at: [720, 500], handA: [50, -120 - hop(t, 0.5) * 25]}));
   pen.restore();
 }
 
-function sceneEnd(t) {                  // 66-68: the card
-  card("วิถีล้านนา", "Lanna life, woven on a cloth");
-}
+var SCENES = [[0, 22, sceneCloth], [22, 35, sceneLane], [35, 50, scenePond], [50, 70, scenePaddy], [70, DURATION, sceneDance]];
 
-var SCENES = [[0, 22, sceneCloth], [22, 31, sceneLane], [31, 40, scenePond], [40, 60, scenePaddy], [60, 66, sceneDance], [66, 68, sceneEnd]];
-
-// The words, in one list: the seconds each line shows under the picture, its
-// syllables as they are sung, one to a beat from the line's first second, the
-// line as written, and its meaning. CUES is the kit's cue sheet made from it,
-// [beat, syllables, line, meaning]: sash_sing.py reads CUES out of this page
-// and sings the syllables over sash.wav, and the drummer's mouth is shaped by
-// SUNG, the flat list of its syllables, through the kit's mouthAt(). One list,
-// so the voice, the mouth and the words cannot drift apart.
-var WORDS = [[23, 30, "วิ ถี ชี วิต ใน หมู่ บ้าน", "วิถีชีวิตในหมู่บ้าน", "life in the village"],
-             [32, 39, "สะ บัว ปลา และ นก", "สระบัว ปลา และนก", "the lotus pond, the fish and the birds"],
-             [41, 48, "ร่ม บาน เมื่อ ฝน ซา แล้ว", "ร่มบานเมื่อฝนซาแล้ว", "the parasols open when the rain has passed"],
-             [61, 65.5, "ฟ้อน รำ กลาง คืน", "ฟ้อนรำกลางคืน", "a night of dancing"]];
-var CUES = WORDS.map(function (w) { return [Math.round(w[0] / BEAT), w[2], w[3], w[4]]; });
-var SUNG = sungBeats(CUES);
+// The words, in one list (owner, 2026-10-16: the song gave way to the story of
+// Lanna told in Kam Mueang, "like it was for little kids", about what is on
+// screen, "then go on explaining the special artifacts that are uniquely
+// Lanna", and a joke about the dragon). Each line: the seconds it shows under
+// the picture, what the voice is given (the written line with ๆ said out, for
+// the voice drops the mark), the line as written, and its English. The facts
+// come from a NotebookLM notebook of Lanna's history (Wikipedia on Mangrai,
+// Chiang Mai, the sabai, the tung, the kwian, Bo Sang, khom loi, Yi Peng and the
+// Chinese dragon); the Kam Mueang from a second notebook, with its words read
+// from pythainlp/lanna_dict, the Charatrit KamMuang-Thai-English pairs and a
+// guide to speaking Lanna. No native speaker has checked it yet.
+// sash_narrate.py reads WORDS out of this page, speaks each line at its second
+// over sash.wav and says whether each fits before the next. CUES is the kit's
+// cue sheet made from it, [beat, words, line, meaning, end], so that
+// kit_check.py can say whether a cut falls in the middle of a line.
+var WORDS = [[3.6, 6.4, "แต่ปางก่อน ชีวิตเดินไปจ๊า จ๊า เน้อ", "แต่ปางก่อน ชีวิตเดินไปจ๊าๆ เน้อ", "In ancient times, life moved more slowly."],
+             [6.6, 10.4, "คนตัวจ้อย จ้อย เดินไต่ตามผืนผ้าเจ้า", "คนตัวจ้อยๆ เดินไต่ตามผืนผ้าเจ้า", "Tiny people walk along a woven cloth."],
+             [10.8, 14.4, "นี่คือสไบ ผ้าพาดของแม่หญิงนา", "นี่คือสไบ ผ้าพาดของแม่หญิงนา", "It is a sabai, a long cloth women wear."],
+             [15.2, 19.6, "พญามังรายตั้งล้านนาแปลงเชียงใหม่", "พญามังรายตั้งล้านนาแปลงเชียงใหม่", "King Mangrai founded Lanna and built Chiang Mai."],
+             [23.2, 27.4, "ตี้ฮอมบ้านเงียบ เงียบ ปี้น้องปะกั๋นเลาะ", "ตี้ฮอมบ้านเงียบๆ ปี้น้องปะกั๋นเลาะ", "In a quiet village lane, neighbours meet and greet."],
+             [27.8, 30.3, "หันตุงสูงข้างเฮือนบ่ลูก", "หันตุงสูงข้างเฮือนบ่ลูก", "See the tall tung banner by the house?"],
+             [30.6, 34.4, "ตุงแขวนไว้ตี้งานปอยและวันศีลเจ้า", "ตุงแขวนไว้ตี้งานปอยและวันศีลเจ้า", "Tungs are hung for festivals and temple days."],
+             [36.0, 39.5, "ตี้หนองบัว มีแม่หญิงน้อยไหว้เฮา", "ตี้หนองบัว มีแม่หญิงน้อยไหว้เฮา", "By the lotus pond, a girl greets us."],
+             [39.8, 43.6, "ช้าก่อน ตัวหลงนี้มาจากเมืองจีนนา", "ช้าก่อน ตัวหลงนี้มาจากเมืองจีนนา", "Wait! This dragon came from China."],
+             [44.0, 47.1, "ตัวหลงเมืองจีนมักถือแก้ว บ่ใช่ธง", "ตัวหลงเมืองจีนมักถือแก้ว บ่ใช่ธง", "Chinese dragons usually hold a pearl, not a flag!"],
+             [47.4, 49.9, "พู้นแน่ะ หมู่จ้างเดินหลังต้นกล้วย", "พู้นแน่ะ หมู่จ้างเดินหลังต้นกล้วย", "Over there, elephants walk behind the banana trees."],
+             [52.0, 54.7, "ฝนซาแล้วเหนือทุ่งนาเน้อ", "ฝนซาแล้วเหนือทุ่งนาเน้อ", "The rain stops over the rice fields."],
+             [55.0, 58.0, "แม่หญิงควงจ้องกระดาษแบบบ่อสร้าง", "แม่หญิงควงจ้องกระดาษแบบบ่อสร้าง", "The women spin paper parasols, like those of Bo Sang."],
+             [58.4, 62.0, "ล้านนา หมายถึง นาเป็นล้านทุ่ง", "ล้านนา หมายถึง นาเป็นล้านทุ่ง", "Lanna means a million rice fields."],
+             [62.5, 65.4, "ละอ่อนจูงควายลากเกวียนไม้เจ้า", "ละอ่อนจูงควายลากเกวียนไม้เจ้า", "A boy leads a buffalo pulling a kwian, a wooden cart."],
+             [70.8, 74.1, "ยามคืน คนเฮาฟ้อนรำตามกลองหลวง", "ยามคืน คนเฮาฟ้อนรำตามกลองหลวง", "At night, we dance to the big drum."],
+             [74.4, 78.6, "โคมลอยลอยขึ้นก๋างหาว ในงานยี่เป็ง", "โคมลอยลอยขึ้นก๋างหาว ในงานยี่เป็ง", "Khom loi lanterns float into the sky for Yi Peng."]];
+var CUES = WORDS.map(function (w) { return [w[0] / BEAT, w[2], w[3], w[4], w[1]]; });
 
 function draw(t) {
-  STYLE.hop = t >= 60 && t < 66;          // only the dance hops on the beat
+  STYLE.hop = t >= 70;                    // only the dance hops on the beat
   film(t, SCENES);
   WORDS.forEach(function (w) { if (t >= w[0] && t < w[1]) { subtitle(w[3], w[4]); } });
 }

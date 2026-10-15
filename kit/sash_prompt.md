@@ -1,5 +1,9 @@
 # The prompt that makes the sash film
 
+(2026-10-16: the film's song gave way to the story of Lanna told in Kam Mueang by
+`sash_narrate.py`, the end card went, and the film is 79 seconds; see `docs/STYLE.md`,
+"The story told in Kam Mueang". This is the brief it was first made from.)
+
 `sash.html` is the film at the top of `lanna_cartoon.html`, 57 seconds on the
 Lanna cartoon kit, with its band from `sash_music.py` and its sung words from
 `sash_sing.py`. This is the prompt to give an agent that has the `lanna-cartoon`

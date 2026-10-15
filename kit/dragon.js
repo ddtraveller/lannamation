@@ -170,6 +170,7 @@ function dragonPearl(x, y, r, colour) {
 // whose joint points back; "skin" is the leg's colour.
 // A Chinese dragon's leg is longer in the bone, bent hard at the elbow, and
 // ends in an eagle's foot ("claws" of them); a tuft streams from the elbow.
+// It gives back where the foot is, in the dragon's own drawing.
 function dragonLeg(sx, sy, px, py, knee, skin, c, pearls, china, claws) {
   for (var lock = 0; lock < 3; lock++) {            // the tuft at the shoulder streams back
     pen.save();
@@ -189,7 +190,7 @@ function dragonLeg(sx, sy, px, py, knee, skin, c, pearls, china, claws) {
       pen.restore();
     }
     dragonTalons(leg[0], leg[1], Math.atan2(leg[1] - leg[3], leg[0] - leg[2]), claws, skin);
-    return;
+    return [leg[0], leg[1]];
   }
   pen.fillStyle = c.spots;                          // the dots, down both bones
   pen.beginPath();
@@ -221,6 +222,7 @@ function dragonLeg(sx, sy, px, py, knee, skin, c, pearls, china, claws) {
     oval(0, 10, 8.5, 14, skin);
     pen.restore();
   }
+  return [leg[0], leg[1]];
 }
 
 // A dragon's head in profile, looking along x, its neck joining at (0, 0):
@@ -703,9 +705,12 @@ function dragonFlight(line, air, when, seed) {
 }
 
 // A dragon, its head at (x, y). Everything about it is in "look" (see
-// DRAGON_KEYS above).
+// DRAGON_KEYS above). It gives back {claw, size}: where its near front foot
+// is, in the points of the frame it was drawn in, so a film can put something
+// in that claw; and how large it was drawn, depth and all.
 function dragon(x, y, look) {
   checkNames("The dragon's name", look, DRAGON_KEYS);
+  var scene = pen.getTransform(), claw = null;
   var size = (look.size || 1) * (look.depth === undefined ? 1 : 0.35 + 1.25 * look.depth), face = look.face || 1, n;
   var china = look.kind === "chinese";
   // The Chinese dragon's own colours when none are given: the emperor's gold
@@ -745,8 +750,9 @@ function dragon(x, y, look) {
     for (var k = 0; k < 2; k++) {
       var s = along(paws[k][0]), beat = clock * 2.4 * air.legs + paws[k][2] + (near ? 0 : Math.PI);
       var sx = s.x + (near ? 0 : -24), sy = s.y + s.w * 0.4 + (near ? 0 : -8);
-      dragonLeg(sx, sy, sx + 34 + 20 * Math.sin(beat), sy + 96 + 12 * Math.cos(beat), paws[k][1], near ? c.body : dark, c,
-                china ? look.pearls === true : look.pearls !== false, china, look.claws);
+      var foot = dragonLeg(sx, sy, sx + 34 + 20 * Math.sin(beat), sy + 96 + 12 * Math.cos(beat), paws[k][1], near ? c.body : dark, c,
+                           china ? look.pearls === true : look.pearls !== false, china, look.claws);
+      if (near && k === 0) { claw = scene.inverse().transformPoint(pen.getTransform().transformPoint(new DOMPoint(foot[0], foot[1]))); }
     }
   }
   legs(false);
@@ -788,4 +794,5 @@ function dragon(x, y, look) {
   FINE = 1;
   DRAGON_AIR = {wave: 1, turn: 1};
   LINE = STYLE.line;
+  return {claw: [claw.x, claw.y], size: size};
 }

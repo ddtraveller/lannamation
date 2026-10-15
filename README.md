@@ -6,9 +6,9 @@ the people, the creatures, the places and the old-film lens for it. No model dra
 film can be written by hand, made by a program or written by an AI agent, and it draws the same
 every time.
 
-![Six moments of the hero film, every one drawn by the kit: a row of the woven sabai close up, the sabai on the woman who wears it, a village lane, the lotus pond, three women spinning the rain off their parasols, and a night of dancing under hanging lanterns](docs/stills.jpg)
+![Six moments of the hero film, every one drawn by the kit, with its Kam Mueang words and their English underneath: a row of the woven sabai close up, the sabai as the camera pulls back, a village lane with its tung banner, a Chinese dragon waving a flag over the lotus pond, three women spinning the rain off their paper parasols, and a night of dancing as the khom loi rise](docs/stills.jpg)
 
-- The hero film, 68 seconds: [krueng.ai/video/lanna_sash.mp4](https://krueng.ai/video/lanna_sash.mp4)
+- The hero film: [krueng.ai/video/lanna_sash.mp4](https://krueng.ai/video/lanna_sash.mp4)
 - How the kit was built, and how to make your own: [krueng.ai/lanna_cartoon.html](https://krueng.ai/lanna_cartoon.html)
 - The method, `draw(t)` + Chrome + ffmpeg: [krueng.ai/js_animation.html](https://krueng.ai/js_animation.html)
 - The cartoon maker, in your browser: [krueng.ai/cartoon_maker.html](https://krueng.ai/cartoon_maker.html)
@@ -35,6 +35,9 @@ pip install -r requirements.txt
   groups are for the films' songs and for the dance track.
 - **Google Chrome.** The scripts start it by name (`channel="chrome"`), with no window.
 - **ffmpeg** on the path, for video.
+- **For the hero film's narration only:** Node.js, `npm install` in `kit/` (transformers.js, pinned in
+  `kit/package.json`), and the voice itself: the folder `model/` of the Kam Mueang Voice extension, in
+  [krueng.ai/downloads/kammuang_voice_chrome.zip](https://krueng.ai/downloads/kammuang_voice_chrome.zip).
 
 A film page plays when you open it in a browser. The cartoon maker wants to be served:
 `python -m http.server 8000` in the repository, then
@@ -121,6 +124,9 @@ python stills.py my_film.html sheet.jpg 1 4 5.5 8      # single frames on one sh
 python render.py my_film.html my_film.mp4              # the film, 1920 x 1080 at 30 frames a second
 python render.py my_film.html part.mp4 --from 4 --to 8 # a part of it
 python render.py lanna.html lanna.mp4 --audio lanna_song.wav
+python sash_music.py                                   # the hero film's music, sash.wav
+python sash_narrate.py <model folder> --takes 4        # its story in Kam Mueang over it, sash_voice.wav
+python render.py sash.html sash.mp4 --audio sash_voice.wav
 python checks/kit_check.py my_film.html --quick        # does the page draw, and draw right
 ```
 
@@ -360,6 +366,7 @@ kit/              the kit and everything that uses it, side by side
   checks/           kit_check.py, the one check after any change, and the tools it uses
   *_music.py        the films' music, every sound a sine wave
   *_sing.py         the films' Thai singing; singer.py sings a syllable on a note
+  sash_narrate.py   the hero film's story, told in Kam Mueang (say.mjs: the Kam Mueang Voice extension's voice)
   dance_track.py    a dancer's moves, read from a video, -> dance_track.js
 maker/            the cartoon maker, its film.py and its skill for agents
 docs/STYLE.md     the rules with their numbers, how each part was built, what is not done
@@ -401,7 +408,7 @@ takes), `walk.html`, `body.html`, `legs.html`, `build.html`, `children.html`, `e
 | `starter.html` | 8 | none; the smallest film, the one to copy |
 | `village.html` | 36 | `village_music.py`, then `village_sing.py` |
 | `lanna.html` | 60 | `lanna_music.py`, then `lanna_sing.py` |
-| `sash.html` | 68 | `sash_music.py`, then `sash_sing.py`; the brief it was made from is `sash_prompt.md` |
+| `sash.html` | 79 | `sash_music.py`, then `sash_narrate.py`: the story of Lanna for children, told in Kam Mueang; the brief it was first made from is `sash_prompt.md` |
 | `parasol_rain.html` | 35 | none |
 
 ## Not here
@@ -417,6 +424,13 @@ The style was read from paintings, murals, thangkas and photographs and written 
 nothing of them is copied, and no picture of them is in this repository. The photographs used for
 measurements are credited where they are used, in `docs/STYLE.md`. `dance_track.js` holds numbers
 read by MediaPipe Pose from a video of a Bharatanatyam dancer; the video is not here.
+
+The hero film's narration: its facts come from a NotebookLM notebook of Lanna's history (Wikipedia on
+Mangrai, Chiang Mai, the sabai, the tung, the kwian, Bo Sang, khom loi, Yi Peng and the Chinese dragon),
+its Kam Mueang from a second notebook whose word sources (`pythainlp/lanna_dict`, the Charatrit
+KamMuang-Thai-English pairs, a guide to speaking Lanna) are named in `sash.html`; no native speaker has
+checked it yet. Its voice is Meta's MMS Northern Thai (`facebook/mms-tts-nod`, CC BY-NC 4.0), as the Kam
+Mueang Voice extension carries it, so the narration is for non-commercial use.
 
 The code was written with Claude Code (Anthropic), directed by David Dockhorn.
 

@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "description": "say.mjs: the Kam Mueang voice, run by transformers.js as the Kam Mueang Voice extension runs it",
+  "dependencies": {
+    "@huggingface/transformers": "4.3.1"
+  }
+}
