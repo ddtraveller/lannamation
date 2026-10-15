@@ -10,3 +10,5 @@ out/
 spoken/
 sing_check_out/
 __pycache__/
+# but the README's picture
+!docs/stills.jpg

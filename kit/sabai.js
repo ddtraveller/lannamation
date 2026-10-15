@@ -311,6 +311,14 @@ function sabaiAt(where, along, across) {
   return [p[0] - Math.sin(ang) * across, p[1] + Math.cos(ang) * across, ang];
 }
 
+// A point of the cloth as sabaiAt() gives it, also beyond either end of the
+// middle line: there the line runs on straight along the end's heading, so a
+// row of figures goes on into a slanted cut or a rounded end, which clip it.
+function sabaiOn(where, along, across) {
+  var end = Math.max(0, Math.min(where.length, along)), q = sabaiAt(where, end, across), past = along - end;
+  return [q[0] + Math.cos(q[2]) * past, q[1] + Math.sin(q[2]) * past, q[2]];
+}
+
 function sabaiEdge(where, across, from, to, joined) {   // one edge of the cloth, or of a row, from one end to the other
   for (var n = 0; n <= 24; n++) {                         // "joined": continue the path that is open, instead of starting one
     var q = sabaiAt(where, mix(from, to, n / 24), across);
@@ -402,23 +410,34 @@ function sabai(t, where, cloth, part) {
       // evenly spaced, so at the wrap the pattern goes on unbroken and no
       // figure is laid on another (the loop had placed one or two past a
       // round, on top of the first: two temples, two fish, two lanterns).
-      var lo = where.start || 0, round = where.length - lo + step;
+      // The row runs on to both ends of the cloth (owner, 2026-10-16: "they
+      // don't go all the way to the end of the sash ... go all the way to the
+      // end of the sash on either side"): the slanted cut reaches further back
+      // on the lower rows than the ring begins, and the rounded end bows past
+      // the middle line's end. So the pattern is drawn once more a round before
+      // and a round after itself, past the ends along the end's heading, and
+      // the band's cut and rounded end clip it. A figure inside the ends is
+      // where it was.
+      var lo = where.start || 0, round = where.length - lo + step, reach = half + step;
       var count = cycles.length * Math.max(1, Math.round(round / (step * cycles.length))), gap = round / count;
       for (var k = 0; k < count; k++) {
-        var along = lo + ((k * gap + slide) % round + round) % round - gap / 2;
-        if (along < from - step || along > to + step) { continue; }   // a figure that is not on this band
+        var first = lo + ((k * gap + slide) % round + round) % round - gap / 2;
         var bob = dancing ? hop(t, row * 0.1 + k * 0.05) * size * 0.16 : 0;
         var rock = dancing ? Math.sin(t * 2 * Math.PI / BEAT / 2 + row + k) * 0.14 : 0;
-        var q = sabaiAt(where, along, across - bob);
         var cycle = cycles[((k % cycles.length) + cycles.length) % cycles.length];
         var frame = dancing ? (((Math.floor(t * 7.5) + k * 2) % cycle.length) + cycle.length) % cycle.length : 0;   // six frames in 0.8 s: a walking pace (k may be negative)
-        pen.save();
-        pen.translate(q[0], q[1]);
-        pen.rotate(q[2] + rock);
-        var gathered = where.squeeze(along);
-        pen.scale(toward * gathered, gathered);      // the figures face the way the row flows, and are smaller where the cloth gathers
-        pen.drawImage(cycle[frame], -size / 2, -size / 2, size, size);
-        pen.restore();
+        for (var copy = -1; copy <= 1; copy++) {
+          var along = first + copy * round;
+          if (along < from - reach || along > to + reach) { continue; }   // a figure that is not on this band
+          var q = sabaiOn(where, along, across - bob);
+          pen.save();
+          pen.translate(q[0], q[1]);
+          pen.rotate(q[2] + rock);
+          var gathered = where.squeeze(Math.max(0, Math.min(where.length, along)));
+          pen.scale(toward * gathered, gathered);    // the figures face the way the row flows, and are smaller where the cloth gathers
+          pen.drawImage(cycle[frame], -size / 2, -size / 2, size, size);
+          pen.restore();
+        }
       }
     }
     pen.restore();

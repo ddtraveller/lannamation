@@ -1238,6 +1238,17 @@ the row, which landed on the first ones: at one place in every row two figures l
 patterns, `cycles.length · max(1, round(round / (step · cycles.length)))` figures spaced `round / count`
 apart (within about 2 per cent of `step`), so at the wrap the pattern goes on unbroken.
 
+**The rows run to both ends (2026-10-16).** The owner, of the hero film: "the sash has rows of
+sprites but they don't go all the way to the end of the sash ... go all the way to the end of the sash
+on either side." Seen full size at 15 s: at the waist the slanted cut reaches 14 (`slant`) further back
+on the lower rows than the round begins (`where.start`), and at the shoulder the rounded end bows 26
+(`endCap.bulge`) past the middle line's end, where `sabaiAt()` stops; so the lower rows ended short of
+the cut, and every row short of the rounded hem. Each row's pattern is now drawn once more a round
+before and a round after itself (`copy` −1 to 1), within `half + step` of the band's ends, at the points
+`sabaiOn()` gives (the middle line run on straight along the end's heading), and the cut and the
+rounded end clip it. A figure inside the ends is where it was, so the opening's close-up is unchanged.
+The tail behind the arm stays plain, as the owner asked on 2026-10-15.
+
 `looks.html` shows the `worn` key as a plain band drawn under the arms. Measured (`kit_check.py
 sabai.html sash.html --quick`, 2026-10-15): `sabai.html` draws, same 12 / 0, 17.5 ms a frame;
 `sash.html` draws, same 0 / 0, 30.7 ms, its four sung lines each inside one scene. The whole kit's
@@ -1567,6 +1578,19 @@ flies off the rim**: person() now returns `joints.parasol` (the rim's middle) an
 (a point on the rim), in the film's pixels; for two seconds after the spin begins, 60 drops leave the
 rim along its turn (the spin angle at each drop's birth from `parasolAt(born, 0).spin`) and fall, each
 a short streak, blue with a white light. The first drops were pale blue and invisible on the sky.
+
+**More rain off the rims, and in the hero film at all (2026-10-16; owner: "when the parasols spin,
+make the rain that spins off more evident").** In `sash.html` (`pixels: 2`) no drop showed: the rim is
+given in the film's own pixels, and the drops were drawn under the scene's base scale, so twice as far
+out, off the picture. `rainOff()`, the same in both films, now draws with the transform reset and every
+length times `PIX`, as the boy's rope is drawn. The drops are also more and plainer: 150 a parasol (was
+60), born over 2.6 s (was 2.0) and living 0.9 s (was 0.6), thrown 450 to 750 px/s along the rim's turn
+and 60 to 140 outward (was 380, and none outward), falling at 1400 px/s² (was 1040); each is a teardrop,
+a head of radius 5 to 8 with a tail up to 60 behind it along its way, a dark blue edge (#1e468c), a
+light blue body and a white glint, so it reads on the cream parasol, the black one and the sky.
+Checked with the rows above (`kit_check.py sash.html sabai.html parasol_rain.html`, 2026-10-16): 3 pages,
+0 failures. `sash.html`'s known folded arms are four now: a wai at 20.0 s, added to the film after the
+allowance was written, has the same one-frame elbow blend as those at 28.3, 29.2 and 35.0 s.
 
 **The owner's three notes on the first cut (same day):** "parasols become translucent when they start
 to close" (a furled cone was its rings alone, thin ellipses stacked up the handle with the field showing

@@ -42,7 +42,7 @@ HERE = Path(__file__).resolve().parent.parent
 # Faults that are known, with why. A page may have these and no more.
 KNOWN = {
     "dance.html": {"flips": 7, "why": "the tracked wrist lies within 12 units of its shoulder in those frames"},
-    "sash.html": {"folded": 3, "why": "the first frame of each wai (28.3, 29.2 and 35.0 s): while the elbow swings across by way of the shoulder (bendOf), the blended elbow measures 154-155 degrees for that one frame; each candidate elbow is within ELBOW"},
+    "sash.html": {"folded": 4, "why": "the first frame of each wai (20.0, 28.3, 29.2 and 35.0 s): while the elbow swings across by way of the shoulder (bendOf), the blended elbow measures 154-155 degrees for that one frame; each candidate elbow is within ELBOW"},
 }
 
 PLACES = (0.4, 0.78)      # where in a page "same" is measured, as parts of its length

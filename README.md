@@ -6,6 +6,8 @@ the people, the creatures, the places and the old-film lens for it. No model dra
 film can be written by hand, made by a program or written by an AI agent, and it draws the same
 every time.
 
+![Six moments of the hero film, every one drawn by the kit: a row of the woven sabai close up, the sabai on the woman who wears it, a village lane, the lotus pond, three women spinning the rain off their parasols, and a night of dancing under hanging lanterns](docs/stills.jpg)
+
 - The hero film, 68 seconds: [krueng.ai/video/lanna_sash.mp4](https://krueng.ai/video/lanna_sash.mp4)
 - How the kit was built, and how to make your own: [krueng.ai/lanna_cartoon.html](https://krueng.ai/lanna_cartoon.html)
 - The method, `draw(t)` + Chrome + ffmpeg: [krueng.ai/js_animation.html](https://krueng.ai/js_animation.html)
@@ -106,7 +108,7 @@ and goes on; after five seconds a line of words sits under the picture.
 | `card(big, small)`, `subtitle(big, small)` | `oldcartoon.js` | a title card; words under the picture |
 | `hills`, `house`, `temple`, `tree`, `palm`, `pond`, `lotusClump` ... | `oldcartoon.js` | painters for a set, drawn once on a sheet of your own |
 
-A look is a plain object of names (`size`, `face`, `smile`, `wave`, `wai`, `parasol` ...): 86 of
+A look is a plain object of names (`size`, `face`, `smile`, `wave`, `wai`, `parasol` ...): 84 of
 them, each shown on `kit/looks.html`. A name the kit does not know is reported once in `WARNINGS`,
 with the nearest name it does know, and `render.py` and `stills.py` print it.
 

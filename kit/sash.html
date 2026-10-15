@@ -400,27 +400,44 @@ function rain(brush, t, amount, layer) {   // streaks that fall slanting, each o
 }
 
 function rainOff(brush, w, t, joints) {    // for a moment after the spin begins, drops leave the rim along its turn and fall away
+  // Made plainer (owner, 2026-10-16: "make the rain that spins off more
+  // evident"): 150 drops a parasol, not 60, living 0.9 s, thrown faster and a
+  // little outward so they leave the rim, each a teardrop with a dark edge and a
+  // glint, so they read on a pale parasol, a black one and the sky alike.
+  // The rim is given in the film's own pixels, so the drops are drawn there,
+  // PIX to a film pixel (with pixels: 2 they had been drawn twice as far out).
   var d = t - (PADDY_TWIRL + w.late), i;
-  if (d < 1.9 || d > 5.2 || !joints.parasol) { return; }
+  if (d < 1.8 || d > 5.4 || !joints.parasol) { return; }
   var cx = joints.parasol[0], cy = joints.parasol[1], R = Math.hypot(joints.parasolRim[0] - cx, joints.parasolRim[1] - cy);
+  brush.save();
+  brush.setTransform(1, 0, 0, 1, 0, 0);
   brush.lineCap = "round";
-  for (i = 0; i < 60; i++) {
-    var born = 1.9 + dice(i * 3 + 11) * 2.0, age = d - born;
-    if (age < 0 || age > 0.6) { continue; }
-    var angle = parasolAt(born, 0, undefined, undefined, "spin").spin + i * 0.9, px = cx + R * Math.cos(angle), py = cy + R * Math.sin(angle);
-    var vx = -Math.sin(angle) * 380, vy = Math.cos(angle) * 380 + 1040 * age;
-    var x = px - Math.sin(angle) * 380 * age, y = py + Math.cos(angle) * 380 * age + 520 * age * age;
-    var fade = (1 - age / 0.6).toFixed(2);
-    brush.beginPath();
-    brush.moveTo(x - vx * 0.035, y - vy * 0.035);
-    brush.lineTo(x, y);
-    brush.strokeStyle = "rgba(70, 120, 190, " + fade + ")";
-    brush.lineWidth = 6 * (1 - age / 0.9);
+  for (i = 0; i < 150; i++) {
+    var born = 1.8 + dice(i * 3 + 11) * 2.6, age = d - born;
+    if (age < 0 || age > 0.9) { continue; }
+    var angle = parasolAt(born, 0, undefined, undefined, "spin").spin + i * 0.9, ux = Math.cos(angle), uy = Math.sin(angle);
+    var turn = (450 + 300 * dice(i * 3 + 12)) * PIX, out = (60 + 80 * dice(i * 3 + 13)) * PIX, fall = 1400 * PIX;   // along the rim's turn, outward, and down
+    var vx = -uy * turn + ux * out, vy = ux * turn + uy * out + fall * age;
+    var x = cx + ux * R + (-uy * turn + ux * out) * age, y = cy + uy * R + (ux * turn + uy * out) * age + fall / 2 * age * age;
+    var fade = 1 - age / 0.9, r = (5 + 3 * dice(i * 3 + 14)) * PIX * (1 - age / 1.6);
+    var speed = Math.hypot(vx, vy) || 1, ex = vx / speed, ey = vy / speed, heading = Math.atan2(ey, ex);
+    var tail = Math.min(speed * 0.05, 60 * PIX) + r;
+    brush.beginPath();                             // a teardrop: a round head, and a tail that thins behind it along its way
+    brush.moveTo(x - ex * tail, y - ey * tail);
+    brush.lineTo(x - ey * r, y + ex * r);
+    brush.arc(x, y, r, heading + Math.PI / 2, heading - Math.PI / 2, true);
+    brush.closePath();
+    brush.fillStyle = "rgba(125, 180, 240, " + fade.toFixed(2) + ")";
+    brush.fill();
+    brush.strokeStyle = "rgba(30, 70, 140, " + (0.85 * fade).toFixed(2) + ")";
+    brush.lineWidth = 1.6 * PIX;
     brush.stroke();
-    brush.strokeStyle = "rgba(235, 245, 255, " + fade + ")";
-    brush.lineWidth = 2.4 * (1 - age / 0.9);
-    brush.stroke();
+    brush.beginPath();                             // a glint in the head
+    brush.arc(x - ex * r * 0.2 - ey * r * 0.35, y - ey * r * 0.2 + ex * r * 0.35, r * 0.32, 0, Math.PI * 2);
+    brush.fillStyle = "rgba(250, 252, 255, " + fade.toFixed(2) + ")";
+    brush.fill();
   }
+  brush.restore();
 }
 
 function scenePaddy(t) {                // 40-60: the rice fields: a storm that clears, the parasols spun, closed and carried off
