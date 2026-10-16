@@ -399,7 +399,7 @@ Each loads after `oldcartoon.js` and adds drawings of its own; none changes the 
 | `backdrops.js` | nineteen backgrounds: seven places of the north and twelve from thangka paintings, `backdrop(name)` | `backdrops.html` |
 | `flora.js` | the flowers and fruits of Thailand | `flora.html` |
 | `food.js` | a dozen Thai dishes, `food(name, x, y, look)` | `food.html` |
-| `khom.js` | the hanging paper lantern of Lanna, `khom(x, y, look)`; the spinning khom phat, whose cut figures' shadows go round its paper, the khom thue carried in parades, the star and the lotus lanterns | `khom.html`, `lanterns.html` |
+| `khom.js` | the hanging paper lantern of Lanna, `khom(x, y, look)`; the spinning khom phat, whose cut figures' shadows go round its paper, the khom thue carried in parades, the star and the lotus lanterns | `khom.html`, `khom_kinds.html` |
 | `pieces.js` | things of the north: hong, water jar, chedi sai, lamps, krathong, ox cart, drum cart; the rice granary (long khao) and its sawian baskets, the cluster tung and the web tung of Songkran, and Chiang Mai's red truck (rot daeng) with seats for riders | `pieces.html`, `farmstead.html` |
 | `band.js` | the band of the north: the salo, the sueng, the pi chum and the phin phia, and `musician(x, y, kind, look)`, who sits on the floor and plays one on the beat | `band.html` |
 | `sabai.js` | a sabai woven with figures that walk | `sabai.html` |

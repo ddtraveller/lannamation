@@ -103,7 +103,7 @@ of it, each a second behind the other.
 | `dragon_china.html` | the Chinese painters' dragon, `dragon()` with `kind: "chinese"`: scales, a long antlered head, eagle's feet and the flaming pearl it chases (see "The Chinese dragon") |
 | `myth.js`, `myth.html` | three creatures of the myths of Lanna, on the beasts' legs and the Naga's body (load it after `naga.js` and `beasts.js`): the Mom, the Luang and the Hatsadiling bird; and their sheet (see "Three creatures of the myths of Lanna") |
 | `band.js`, `band.html` | the band of the north, the salo, the sueng, the pi chum and the phin phia, each a painter of its own, and `musician(x, y, kind, look)`, a person who sits cross-legged and plays one on the beat; and its sheet (see "The band, more lanterns, the farmstead and the red truck") |
-| `lanterns.html` | the sheet for the four lanterns `khom.js` gained on 2026-10-16: the spinning `khomPhat`, the handheld `khomThue`, the star `khomDao` and the lotus `khomBua`, by day and lit at night |
+| `khom_kinds.html` | the sheet for the four lanterns `khom.js` gained on 2026-10-16 (not `lanterns.html`: krueng.ai keeps a lesson of that name beside the kit): the spinning `khomPhat`, the handheld `khomThue`, the star `khomDao` and the lotus `khomBua`, by day and lit at night |
 | `farmstead.html` | the sheet for what `pieces.js` gained on 2026-10-16: the granary `longKhao` (open, and with walls), the `sawian` basket, `tungSaiMu` planted on a sand pagoda, `tungYai` on its pole, and `rotDaeng` driving across with three riders |
 | `naga.js`, `naga.html` | a Naga, the many-headed serpent, as a creature in a file of its own on top of the kit, and its sheet (see "A Naga") |
 | `landscape.html` | the sheet for the painters of nature read from a thangka: peaks, fan plants, tassel trees, rocks, foam and clouds with a foot of another colour (see "Mountains and plants from a thangka") |
@@ -2506,8 +2506,8 @@ out.
   fiddle; the stroke is 24 wide.
 - Riders at 0.72 of the truck first put a bun through the roof.
 
-**The checks.** `kit_check.py band.html lanterns.html farmstead.html khom.html pieces.html sabai.html`:
-6 pages, 0 failures (band 20.7 ms a frame, lanterns 31.7, farmstead 13.2; arms 0, 0, 0 on all six; same
+**The checks.** `kit_check.py band.html khom_kinds.html farmstead.html khom.html pieces.html sabai.html`:
+6 pages, 0 failures (band 20.7 ms a frame, khom_kinds 31.7, farmstead 13.2; arms 0, 0, 0 on all six; same
 1 / 0 at worst); no top-level name in two script files; no warning. `kit_check.py sash.html --quick`:
 draws, same 0 / 0, the 17 lines each inside one scene. The cartoon maker, which loads `khom.js` and
 `pieces.js`, loads with every function there and no warning.
