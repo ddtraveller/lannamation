@@ -18,6 +18,14 @@ The music is lowered while the voice speaks and comes back between lines, and fa
 last two seconds. Then it says, line by line, how long the voice took and whether the line is over
 before its words leave the screen.
 
+The voice's treatment and the mix (2026-10-16; the owner asked for a better-quality sound for the film,
+and said "it's good" of this one). The voice speaks at 16 kHz, so it had nothing above 8 kHz, and the old
+mix was mono at -17.5 LUFS. Now each line is resampled to 44.1 kHz (soxr), goes through VOICE_CHAIN (ffmpeg:
+the mud at 260 Hz taken down, presence at 3.2 kHz lifted, harmonics above the voice's 8 kHz edge from
+aexciter, gentle compression) and a touch of sash_music.py's room; the voice stays in the middle of the
+stereo music; the whole is brought to -14 LUFS with true peaks under -1 dBTP (ffmpeg loudnorm, measured
+first, then applied linearly) and written 24-bit stereo. Needs soundfile, soxr and ffmpeg besides.
+
 The model folder is model/ in the extension (krueng.ai/downloads/kammuang_voice_chrome.zip,
 unzipped); say.mjs needs "npm install" in this folder first.
 """
@@ -27,12 +35,16 @@ import hashlib
 import json
 import re
 import subprocess
-import wave
+import tempfile
 from pathlib import Path
 
 import numpy
+import soundfile
+import soxr
 from playwright.sync_api import sync_playwright
-from scipy.signal import resample_poly
+from scipy.signal import fftconvolve
+
+from sash_music import room
 
 RATE = 44100
 HERE = Path(__file__).resolve().parent
@@ -55,11 +67,36 @@ def words_of(page_file):
     return words, seconds
 
 
-def read(name):
-    """a WAV as numbers from -1 to 1, and its rate"""
-    with wave.open(str(name), "rb") as file:
-        frames = numpy.frombuffer(file.readframes(file.getnframes()), dtype=numpy.int16)
-        return frames.astype(numpy.float64) / 32768, file.getframerate()
+VOICE_CHAIN = ("highpass=f=75,equalizer=f=260:t=q:w=1:g=-2.5,equalizer=f=3200:t=q:w=1.2:g=3,"
+               "aexciter=amount=2:drive=6:blend=0:freq=6000:ceil=16000,"
+               "acompressor=threshold=0.125:ratio=3:attack=5:release=80:makeup=1")
+
+
+def voice_line(path, scratch):
+    """One spoken line at 44.1 kHz, through VOICE_CHAIN, with a touch of the room, peaking at VOICE."""
+    sound, rate = soundfile.read(str(path), dtype="float64", always_2d=True)
+    sound = soxr.resample(sound[:, 0], rate, RATE, quality="VHQ")
+    raw, done = Path(scratch) / "line.wav", Path(scratch) / "line_chain.wav"
+    soundfile.write(str(raw), sound, RATE, subtype="FLOAT")
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(raw), "-af", VOICE_CHAIN, "-c:a", "pcm_f32le",
+                    str(done)], check=True)
+    sound, _ = soundfile.read(str(done), dtype="float64")
+    sound = sound + 0.08 * fftconvolve(sound, room(0.6, seed=9)[0])[:len(sound)]
+    return sound / numpy.abs(sound).max() * VOICE
+
+
+def master(track, out, scratch):
+    """-14 LUFS integrated, true peaks under -1 dBTP: ffmpeg loudnorm, measured first, then applied linearly."""
+    raw = Path(scratch) / "mix.wav"
+    soundfile.write(str(raw), track.T, RATE, subtype="FLOAT")
+    want = "I=-14:TP=-1.0:LRA=11"
+    probe = subprocess.run(["ffmpeg", "-hide_banner", "-i", str(raw), "-af", f"loudnorm={want}:print_format=json",
+                            "-f", "null", "-"], capture_output=True, text=True).stderr
+    m = json.loads(probe[probe.rindex("{"):probe.rindex("}") + 1])
+    applied = (f"loudnorm={want}:measured_I={m['input_i']}:measured_TP={m['input_tp']}:measured_LRA={m['input_lra']}"
+               f":measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true")
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(raw), "-af", applied, "-ar", str(RATE),
+                    "-c:a", "pcm_s24le", str(out)], check=True)
 
 
 def file_of(text):
@@ -110,16 +147,16 @@ def main():
     words, seconds = words_of(args.page)
     speak([w[2] for w in words], args.model, args.takes)
     length = int(seconds * RATE)
-    music, rate = read(args.music)
-    music = numpy.pad(music, (0, max(0, length - len(music))))[:length] * MUSIC
+    music, _ = soundfile.read(args.music, dtype="float64", always_2d=True)  # sash_music.py's two rows
+    music = music.T
+    music = numpy.pad(music, ((0, 0), (0, max(0, length - music.shape[1]))))[:, :length] * MUSIC
     voice = numpy.zeros(length)
     gain = numpy.ones(length)
     clock = numpy.arange(length) / RATE
+    scratch = tempfile.TemporaryDirectory()
     print("line   from    voice  ends   shown to")
     for n, (start, shown, said, written, meaning) in enumerate(words):
-        sound, rate = read(file_of(said))
-        sound = resample_poly(sound, RATE, rate)
-        sound = sound / numpy.abs(sound).max() * VOICE
+        sound = voice_line(file_of(said), scratch.name)
         at = int(start * RATE)
         voice[at:at + len(sound)] += sound[:max(0, length - at)]
         end = start + len(sound) / RATE
@@ -131,14 +168,10 @@ def main():
         print("%3d  %6.1f  %5.2f  %5.1f  %5.1f   %s" % (n + 1, start, len(sound) / RATE, end, shown,
                                                      "fits" if late <= 0 else "TOO LONG by %.2f s" % late))
     gain[-int(FADE * RATE):] *= numpy.linspace(1, 0, int(FADE * RATE))
-    track = music * gain + voice
-    track = track / max(1.0, numpy.abs(track).max() / 0.97)
-    with wave.open(args.out, "wb") as file:
-        file.setnchannels(1)
-        file.setsampwidth(2)
-        file.setframerate(RATE)
-        file.writeframes((track * 32767).astype(numpy.int16).tobytes())
-    print("%s: %.1f s, %d lines" % (Path(args.out).name, seconds, len(words)))
+    track = music * gain + voice  # the voice in the middle of both ears
+    master(track, args.out, scratch.name)
+    scratch.cleanup()
+    print("%s: %.1f s, %d lines, -14 LUFS, stereo" % (Path(args.out).name, seconds, len(words)))
 
 
 if __name__ == "__main__":

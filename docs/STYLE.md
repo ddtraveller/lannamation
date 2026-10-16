@@ -360,6 +360,39 @@ python render.py village.html village.mp4 --audio village_song.wav
   timestamps giving the second each line began. **It could not sing Thai:** three takes, and the
   recogniser found none of our words in any of them.
 
+## The hero film's sound (2026-10-16)
+
+The owner asked for a better-quality sound for the hero film (`sash.html`) and said "it's good" of this one;
+it went live the same day, muxed onto the film's picture unchanged. What was wrong, measured on the old
+`sash_voice.wav`: the music was sine waves added up (99% of its energy under 1 kHz, nothing above 3 kHz),
+the voice (Meta's MMS Northern Thai, as the Kam Mueang Voice extension speaks it) is made at 16 kHz and had
+nothing above 8 kHz, and the mix was mono at -17.5 LUFS. The tune, the spoken lines and their seconds did not
+change; how they sound did (`sash_music.py`, `sash_narrate.py`):
+
+| | Before | Now |
+|---|---|---|
+| The tune | a sine and its octave, dying away | a plucked string (Karplus-Strong: noise going round a delay line that averages as it goes), on two strings 6 cents apart, as a sueng's paired strings |
+| The chord | sine waves swelling | a soft bowed tone: eight overtones (1/n^1.6), a 4.8 Hz vibrato, left and right a little apart |
+| The drum | a sine falling in pitch | the same body with a second mode, and a skin (noise under 1.4 kHz) |
+| New | | a small ching on the strong beats of the dance (inharmonic partials from 3.15 to 11.2 kHz) |
+| Space | an echo | the echo bounced between the ears, and a room (noise dying over 1.4 s, darker as it dies) at 0.22; stereo |
+| The voice | resampled, peak-normalised | soxr to 44.1 kHz; `VOICE_CHAIN` (ffmpeg: highpass 75 Hz, -2.5 dB at 260 Hz, +3 dB at 3.2 kHz, `aexciter` from 6 kHz, compression 3:1); a touch of the same room |
+| The mix | mono, -17.5 LUFS, peaks at -0.5 dB | -14 LUFS, true peaks under -1 dBTP (`loudnorm`, measured, then applied linearly); stereo, 24-bit |
+
+Measured on the voice track, the level of each band against the whole: 3 to 6 kHz -28.6 dB before, -22.6 now;
+8 to 12 kHz -59.8, -43.4; 12 to 16 kHz -74.0, -56.9. The music now has 1.66% of its energy between 3 and 8 kHz
+(none before). The voice stays MMS's (CC BY-NC 4.0): treat it, never replace it here.
+
+```
+python sash_music.py                                        # sash.wav: stereo, 32-bit float
+python sash_narrate.py <the extension's model folder> --takes 4   # sash_voice.wav: -14 LUFS, stereo, 24-bit
+python scenes.py sash.html sash.mp4 --audio sash_voice.wav  # or mux it onto a film: ffmpeg -c:v copy -c:a aac -b:a 256k
+```
+
+Needs soundfile, soxr and scipy besides numpy, and an ffmpeg with `aexciter` and `loudnorm`. The live film's
+sound is these two scripts' output, sample for sample (the largest difference from the file that went live is
+1.2e-7, rounding). `music.py` and `village_music.py` are unchanged: still sine waves.
+
 ## What a round of matching looked like
 
 Each round was the same three steps, and each took minutes: cut close-ups from the reference
