@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>farmstead - the granary, the tung of Songkran, and the red truck</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false};</script>
+<script src="oldcartoon.js"></script>
+<script src="pieces.js"></script>
+<script>
+// The "farmstead" sheet: what pieces.js gained on 2026-10-16. Above: the
+// long khao, the granary of a farm, open with its sawian baskets on the
+// floor and again with walls of boards; a sawian on the ground; a sand
+// pagoda planted with three tung sai mu, their flags fluttering; the web
+// tung on its pole, swaying. Below: the red truck drives across, its wheels
+// turning with the ground it covers and its body riding on its springs,
+// three people on its far bench.
+var DURATION = 12;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "21px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+var RIDERS = [["girl", {}], ["fellow", {}], ["grandmother", {}]];
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 640);
+  pen.fillStyle = "#b9b07a";                       // the yard
+  pen.fillRect(0, 560, WIDE, 80);
+  longKhao(pen, 210, 580, 1.25);
+  caption("longKhao(brush, x, base, size)", 210, 625);
+  longKhao(pen, 540, 580, 1.0, true);
+  caption("..., walls: true", 540, 625);
+  sawian(pen, 735, 585, 1.25);
+  caption("sawian", 735, 625);
+  chediSai(pen, 930, 585, 1.6, t, 0);
+  [[-34, -40, 0.7, 1], [0, -92, 0.85, 2], [30, -46, 0.7, 3]].forEach(function (p) {   // planted in the sand
+    tungSaiMu(pen, 930 + p[0], 585 + p[1], p[2], t, p[3], p[3] === 2 ? 7 : 5);
+  });
+  caption("tungSaiMu on a chediSai", 930, 625);
+  tungYai(pen, 1180, 590, 1, t);
+  caption("tungYai(brush, x, base, size, t)", 1250, 625);
+  pen.fillStyle = "#c9b48a";                       // the verge, the road, the far verge
+  pen.fillRect(0, 640, WIDE, 440);
+  pen.fillStyle = "#6e6a62";
+  pen.fillRect(0, 900, WIDE, 120);
+  pen.fillStyle = "#e8e2c8";
+  for (var dash = 0; dash < WIDE; dash += 120) { pen.fillRect(dash, 958, 60, 5); }
+  var size = 0.95, from = 1800, to = -400;
+  var x = mix(from, to, t / DURATION), covered = (from - x);
+  rotDaeng(pen, x, 950, size, covered / (46 * size), -1, function (seats) {
+    RIDERS.forEach(function (r, i) {
+      var seat = seats[i + 1];
+      person(seat[0], seat[1], cast(r[0], {floor: "cross", size: 0.66 * size, twist: 1, face: -1, id: "rider" + i}));
+    });
+  });
+  caption("rotDaeng(brush, x, base, size, turn, facing, inside): seats for the riders", 720, 1060);
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

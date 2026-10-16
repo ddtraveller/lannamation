@@ -399,8 +399,9 @@ Each loads after `oldcartoon.js` and adds drawings of its own; none changes the 
 | `backdrops.js` | nineteen backgrounds: seven places of the north and twelve from thangka paintings, `backdrop(name)` | `backdrops.html` |
 | `flora.js` | the flowers and fruits of Thailand | `flora.html` |
 | `food.js` | a dozen Thai dishes, `food(name, x, y, look)` | `food.html` |
-| `khom.js` | the hanging paper lantern of Lanna, `khom(x, y, look)` | `khom.html` |
-| `pieces.js` | things of the north: hong, water jar, chedi sai, lamps, krathong, ox cart, drum cart | `pieces.html` |
+| `khom.js` | the hanging paper lantern of Lanna, `khom(x, y, look)`; the spinning khom phat, whose cut figures' shadows go round its paper, the khom thue carried in parades, the star and the lotus lanterns | `khom.html`, `lanterns.html` |
+| `pieces.js` | things of the north: hong, water jar, chedi sai, lamps, krathong, ox cart, drum cart; the rice granary (long khao) and its sawian baskets, the cluster tung and the web tung of Songkran, and Chiang Mai's red truck (rot daeng) with seats for riders | `pieces.html`, `farmstead.html` |
+| `band.js` | the band of the north: the salo, the sueng, the pi chum and the phin phia, and `musician(x, y, kind, look)`, who sits on the floor and plays one on the beat | `band.html` |
 | `sabai.js` | a sabai woven with figures that walk | `sabai.html` |
 | `naga.js` | a Naga, the many-headed serpent of the temple stairs | `naga.html` |
 | `dragon.js` | a dragon of the Himalayan paintings, and a Chinese one (`kind: "chinese"`); needs `naga.js` | `dragon.html`, `dragon_china.html` |
@@ -444,6 +445,15 @@ its Kam Mueang from a second notebook whose word sources (`pythainlp/lanna_dict`
 KamMuang-Thai-English pairs, a guide to speaking Lanna) are named in `sash.html`; no native speaker has
 checked it yet. Its voice is Meta's MMS Northern Thai (`facebook/mms-tts-nod`, CC BY-NC 4.0), as the Kam
 Mueang Voice extension carries it, so the narration is for non-commercial use.
+
+The band, the four new lanterns, the granary, the two tung and the red truck (2026-10-16): what each
+is, and how it is held or built, comes from a NotebookLM notebook of Lanna's material culture
+(Wikipedia on the salo, the sueng, Yi Peng and the songthaew; ThaiJO papers on the phin phia and on a
+Lanna music teacher; Chang Puak Magazine on the tung of Songkran; the Lanna Traditional House Museum
+of Chiang Mai University on its granary; Polyglot Petra and Bangkok Bank's Soodprod on the lanterns),
+and each shape from Wikimedia Commons photographs under free licences, credited at the head of the
+file that draws it. No free photograph was found of the pi chum, the khom phat, the star and lotus
+lanterns or the two tung: those are drawn from the written words, and say so where they are drawn.
 
 The code was written with Claude Code (Anthropic), directed by David Dockhorn.
 

@@ -523,3 +523,475 @@ function drumCart(brush, x, base, size, facing) { // the axle over (x, base); th
   wheel(0, -70, 70, false);                        // the near wheel
   brush.restore();
 }
+
+// ---------- The farmstead, two tung, and the red truck (2026-10-16) ----------
+// From the NotebookLM notebook "Lanna material culture" and the photographs
+// named with each (Wikimedia Commons, free licences; nothing copied):
+//   sawian     the great basket the north keeps its rice in: bamboo woven
+//              into a tall round basket and coated with cow dung and resin,
+//              so the rice keeps for a long time, dry and free of insects
+//              (the CMU Lanna Traditional House Museum, on its granary).
+//   longKhao   the granary of a Lanna farm (หลองข้าว): a small house of
+//              timber on six posts, its floor raised high off the damp and
+//              the animals, under a steep roof of its own. The museum's,
+//              built in 2009 on the Mae Kai model, has no wall: the rice is
+//              in sawian on its floor. With "walls", it has walls of boards,
+//              as a granary photographed by มะเดื่อ แสลงหลวง (CC BY 3.0,
+//              File:ยุ้งข้าว - panoramio.jpg) does. Its ladder is not in the
+//              sources: a ladder of bamboo stands against it, as one can be
+//              taken away from a granary.
+//   tungSaiMu  the cluster tung of Songkran, planted on the sand pagodas:
+//              tiers of small triangular flags on one stick, five or seven
+//              tiers, every colour (Chang Puak Magazine, "Lanna Tung", April
+//              2026). No free photograph was found.
+//   tungYai    the web tung: threads of cotton woven like a spider's web,
+//              tied over strips of bamboo that give it its shape, with
+//              frills and flowers (Tamarind Village, on Lanna tung). Hung
+//              from a pole as the kit's tung() is. No free photograph was
+//              found.
+//   rotDaeng   the rot daeng, Chiang Mai's red truck: a pickup with a roof
+//              over its bed, two benches along the sides facing each other,
+//              a step at the back that people stand on holding the rails,
+//              roll-down curtains (Wikipedia, "Songthaew"); the roof runs on
+//              over the cab and rises at the front in a peak, a rack on top,
+//              windows along the side over a red panel, as the red cars of
+//              Chiang Mai photographed by Patiparn.Nice2002bkk show (CC BY-SA
+//              4.0, File:Red Car Chiang Mai (1).jpg and (2).jpg). Its wheels
+//              turn with "turn" (radians: the ground covered divided by the
+//              wheel's radius, 46 x size), and its body rides on its springs
+//              as they turn. "inside", a function, is called after the inside
+//              is painted and before the near side, with the points where
+//              people sit on the far bench, so a film can seat people there
+//              (person() with floor "cross" and size 0.66 x the truck's,
+//              twist 1 to face us): the side hides their legs.
+PIECES_KIT.push("sawian", "longKhao", "tungSaiMu", "tungYai", "rotDaeng");
+
+function sawian(brush, x, base, size) {          // standing on (x, base): 64 wide, 76 tall at size 1
+  var s = size || 1;
+  function outline() {                             // a path is not kept by save(): made again for the line
+    brush.beginPath();
+    brush.moveTo(-30, -2);
+    brush.quadraticCurveTo(-34, -40, -30, -72);
+    brush.ellipse(0, -72, 30, 7, 0, Math.PI, 0);
+    brush.quadraticCurveTo(34, -40, 30, -2);
+    brush.ellipse(0, -2, 30, 6, 0, 0, Math.PI);
+    brush.closePath();
+  }
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(s, s);
+  outline();
+  brush.fillStyle = "#7a6a52";                    // the woven bamboo under its coat of dung and resin
+  brush.fill();
+  brush.save();
+  brush.clip();
+  brush.strokeStyle = "rgba(50, 38, 24, 0.35)";   // the weave, a slant each way
+  brush.lineWidth = 1.4;
+  brush.beginPath();
+  for (var k = -110; k < 60; k += 9) {
+    brush.moveTo(k, 0);
+    brush.lineTo(k + 60, -80);
+    brush.moveTo(k + 50, 0);
+    brush.lineTo(k - 10, -80);
+  }
+  brush.stroke();
+  brush.fillStyle = "rgba(255, 240, 210, 0.16)";  // a light down one side
+  brush.fillRect(-22, -76, 10, 76);
+  brush.restore();
+  outline();
+  brush.strokeStyle = "#3e3020";
+  brush.lineWidth = 1.8;
+  brush.stroke();
+  brush.beginPath();                               // the rim, bound
+  brush.ellipse(0, -72, 30, 7, 0, 0, 7);
+  brush.fillStyle = "#5a4a36";
+  brush.fill();
+  brush.stroke();
+  brush.restore();
+}
+
+function longKhao(brush, x, base, size, walls) { // standing on (x, base): 250 across its eaves, 270 to its ridge at size 1
+  var s = size || 1, n;
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(s, s);
+  brush.lineJoin = "round";
+  brush.fillStyle = "rgba(60, 40, 30, 0.22)";     // its shadow
+  brush.beginPath();
+  brush.ellipse(0, 0, 120, 10, 0, 0, 7);
+  brush.fill();
+  brush.fillStyle = "#4e3324";                    // the three posts at the back, set in and darker
+  [-74, 4, 82].forEach(function (px) { brush.fillRect(px, -108, 11, 104); });
+  var under = brush.createLinearGradient(0, -108, 0, 0);
+  under.addColorStop(0, "rgba(30, 20, 14, 0.5)");
+  under.addColorStop(1, "rgba(30, 20, 14, 0)");
+  brush.fillStyle = under;
+  brush.fillRect(-92, -108, 184, 108);
+  [-90, -7, 76].forEach(function (px) {           // the three at the front: heavy, a lit side, a stone under each
+    brush.fillStyle = "#7a5236";
+    brush.fillRect(px, -112, 16, 112);
+    brush.fillStyle = "#5a3a26";
+    brush.fillRect(px + 10, -112, 6, 112);
+    brush.fillStyle = "#8a8478";
+    brush.fillRect(px - 4, -7, 24, 7);
+  });
+  brush.fillStyle = "#6a4630";                    // the beam the floor lies on
+  brush.fillRect(-104, -122, 208, 14);
+  brush.strokeStyle = "#3e2a1c";
+  brush.lineWidth = 1.6;
+  brush.strokeRect(-104, -122, 208, 14);
+  if (walls) {                                     // walls of boards, leaning out a little toward the eaves
+    for (n = 0; n < 10; n++) {
+      var b0 = -96 + n * 19.2, b1 = b0 + 19.2;
+      brush.beginPath();
+      brush.moveTo(b0 * 1.0, -122);
+      brush.lineTo(b0 * 1.08, -206);
+      brush.lineTo(b1 * 1.08, -206);
+      brush.lineTo(b1 * 1.0, -122);
+      brush.closePath();
+      brush.fillStyle = ["#8e6444", "#86603f", "#93694a", "#8a6242"][n % 4];
+      brush.fill();
+      brush.strokeStyle = "rgba(60, 32, 18, 0.55)";
+      brush.lineWidth = 1.4;
+      brush.stroke();
+    }
+  } else {                                         // no wall: the frame, and the sawian on the floor between its posts
+    brush.fillStyle = "rgba(40, 26, 18, 0.55)";
+    brush.fillRect(-96, -206, 192, 84);
+    sawian(brush, -46, -122, 1.05);
+    sawian(brush, 44, -122, 1.0);
+    brush.fillStyle = "#6a4630";
+    [-100, -6, 88].forEach(function (px) { brush.fillRect(px, -206, 12, 86); });
+    brush.fillRect(-104, -170, 208, 6);            // a rail across the open side
+  }
+  brush.fillStyle = "#5a3c28";                    // the plate under the eaves
+  brush.fillRect(-112, -212, 224, 9);
+  brush.beginPath();                               // the gable, boarded
+  brush.moveTo(-96, -212);
+  brush.lineTo(0, -262);
+  brush.lineTo(96, -212);
+  brush.closePath();
+  brush.fillStyle = "#7e5638";
+  brush.fill();
+  brush.strokeStyle = "rgba(60, 32, 18, 0.5)";
+  brush.lineWidth = 1.2;
+  brush.beginPath();
+  for (n = -80; n <= 80; n += 16) { brush.moveTo(n, -212); brush.lineTo(n, -212 - 50 * (1 - Math.abs(n) / 96)); }
+  brush.stroke();
+  [-1, 1].forEach(function (side) {               // the two slopes of the roof, thick, of wooden shingles, past the walls
+    brush.beginPath();
+    brush.moveTo(side * 128, -196);
+    brush.lineTo(0, -272);
+    brush.lineTo(side * 4, -258);
+    brush.lineTo(side * 114, -190);
+    brush.closePath();
+    brush.fillStyle = "#4a3426";
+    brush.fill();
+    brush.strokeStyle = "#2e2018";
+    brush.lineWidth = 1.6;
+    brush.stroke();
+    brush.strokeStyle = "rgba(160, 120, 80, 0.35)";
+    brush.lineWidth = 1.2;
+    brush.beginPath();
+    for (var k = 1; k < 7; k++) {                  // rows of shingles down the slope
+      var u = k / 7;
+      brush.moveTo(side * mix(4, 121, u), mix(-264, -193, u));
+      brush.lineTo(side * mix(0, 128, u) + side * 2, mix(-272, -196, u) + 4);
+    }
+    brush.stroke();
+  });
+  brush.strokeStyle = "#9a7a4a";                  // a ladder of bamboo against it, to the floor
+  brush.lineWidth = 4;
+  brush.lineCap = "round";
+  brush.beginPath();
+  brush.moveTo(112, 0);
+  brush.lineTo(92, -128);
+  brush.moveTo(136, 0);
+  brush.lineTo(116, -128);
+  for (n = 1; n < 6; n++) {
+    var ry = -n * 22;
+    brush.moveTo(112 - n * 3.4, ry);
+    brush.lineTo(136 - n * 3.4, ry);
+  }
+  brush.stroke();
+  brush.restore();
+}
+
+// The cluster tung, planted at (x, base): a stick 170 tall at size 1, "tiers"
+// (5 or 7) of small triangular flags on its upper part, widest at the
+// bottom; every flag flutters with t.
+function tungSaiMu(brush, x, base, size, t, seed, tiers) {
+  var s = size || 1, rows = tiers || 7, colours = ["#d8423a", "#f4c542", "#3f8f7a", "#2d5da6", "#e98aa8", "#f08a2a", "#f2ead8"];
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(s, s);
+  brush.strokeStyle = "#a88a5a";
+  brush.lineWidth = 2.4;
+  brush.beginPath();
+  brush.moveTo(0, 0);
+  brush.lineTo(0, -172);
+  brush.stroke();
+  for (var r = 0; r < rows; r++) {
+    var y = -164 + r * (96 / (rows - 1)), wide = 10 + r * (34 / (rows - 1)), count = 3 + Math.round(r * 4 / (rows - 1));
+    brush.strokeStyle = "rgba(90, 70, 40, 0.6)";  // the thread the tier hangs on
+    brush.lineWidth = 0.8;
+    brush.beginPath();
+    brush.moveTo(-wide, y);
+    brush.lineTo(wide, y);
+    brush.stroke();
+    for (var k = 0; k < count; k++) {
+      var fx = -wide + (k + 0.5) * (2 * wide / count), half = wide / count * 0.95;
+      var flap = t === undefined ? 0 : 2.6 * Math.sin(t * 4 + r * 0.9 + k * 1.7 + (seed || 0) * 2.3);
+      brush.beginPath();
+      brush.moveTo(fx - half, y);
+      brush.lineTo(fx + half, y);
+      brush.lineTo(fx + flap, y + half * 1.9);
+      brush.closePath();
+      brush.fillStyle = colours[(r * 3 + k + (seed || 0)) % colours.length];
+      brush.fill();
+      brush.strokeStyle = "rgba(60, 40, 20, 0.45)";
+      brush.lineWidth = 0.7;
+      brush.stroke();
+    }
+  }
+  brush.restore();
+}
+
+// The web tung, on a pole planted at (x, base) as the kit's tung() is: the
+// pole 470 tall at size 1, the tung hanging from its top, five cells of
+// woven thread between six strips of bamboo, a frill and a flower at each
+// strip's ends; it sways in the breeze with t, more toward its foot.
+function tungYai(brush, x, base, size, t, colour) {   // "colour": the thread's (red unless given; white shows at night)
+  var s = size || 1, thread = colour || "#c8402e", cells = 5, CELL = 52, HALF = 26;
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(s, s);
+  brush.strokeStyle = "#8a6a4a";                  // the pole, bending over at the top
+  brush.lineWidth = 7;
+  brush.lineCap = "round";
+  brush.beginPath();
+  brush.moveTo(0, 0);
+  brush.quadraticCurveTo(10, -300, 70, -470);
+  brush.stroke();
+  function sway(v) { return t === undefined ? 0 : (6 * Math.sin(t * 1.6 - v * 1.2) + 2 * Math.sin(t * 3.1 + v)) * v; }
+  var strips = [];
+  for (var k = 0; k <= cells; k++) {
+    var v = k / cells;
+    strips.push([70 + sway(v), -462 + k * CELL]);
+  }
+  brush.strokeStyle = thread;                     // the threads of each cell, woven to its middle as a web
+  brush.lineWidth = 1.1;
+  for (k = 0; k < cells; k++) {
+    var a = strips[k], b = strips[k + 1], cx = (a[0] + b[0]) / 2, cy = (a[1] + b[1]) / 2;
+    var corners = [[a[0] - HALF, a[1]], [a[0] + HALF, a[1]], [b[0] + HALF, b[1]], [b[0] - HALF, b[1]]];
+    brush.beginPath();
+    corners.forEach(function (c) { brush.moveTo(c[0], c[1]); brush.lineTo(cx, cy); });   // the spokes, corner to middle
+    brush.moveTo(a[0], a[1]); brush.lineTo(b[0], b[1]);
+    brush.moveTo(a[0] - HALF, cy); brush.lineTo(a[0] + HALF, cy);
+    for (var ring = 1; ring <= 3; ring++) {        // the rings of the web, a diamond each, closer to the middle
+      var q = ring / 4;
+      brush.moveTo(mix(cx, a[0], q), mix(cy, a[1], q));
+      brush.lineTo(mix(cx, corners[1][0], q), mix(cy, cy, q) + 0 * q);
+      brush.lineTo(mix(cx, b[0], q), mix(cy, b[1], q));
+      brush.lineTo(mix(cx, corners[0][0], q), cy);
+      brush.closePath();
+    }
+    brush.stroke();
+  }
+  brush.strokeStyle = "#c8a060";                  // the strips of bamboo across it
+  brush.lineWidth = 3.4;
+  brush.beginPath();
+  strips.forEach(function (p) { brush.moveTo(p[0] - HALF - 4, p[1]); brush.lineTo(p[0] + HALF + 4, p[1]); });
+  brush.stroke();
+  strips.forEach(function (p, i) {                // a frill of paper at each end, and a flower
+    [-1, 1].forEach(function (side) {
+      var fx = p[0] + side * (HALF + 5);
+      brush.fillStyle = i % 2 ? "#d8423a" : "#f4c542";
+      brush.beginPath();
+      brush.moveTo(fx - 4, p[1]);
+      brush.lineTo(fx + 4, p[1]);
+      brush.lineTo(fx + side * 3, p[1] + 14);
+      brush.closePath();
+      brush.fill();
+      brush.fillStyle = "#e98aa8";
+      brush.beginPath();
+      brush.arc(fx, p[1] - 1, 3.4, 0, 7);
+      brush.fill();
+    });
+  });
+  var foot = strips[cells];                        // a tassel of thread from its foot
+  brush.strokeStyle = thread;
+  brush.lineWidth = 1.2;
+  brush.beginPath();
+  for (k = -3; k <= 3; k++) {
+    brush.moveTo(foot[0] + k * 3, foot[1]);
+    brush.lineTo(foot[0] + k * 4 + sway(1.2) - sway(1), foot[1] + 34);
+  }
+  brush.stroke();
+  brush.restore();
+}
+
+// The red truck, its middle over (x, base): 650 long, 344 to its peak at size
+// 1; facing 1 drives to the right. "turn" rolls the wheels; "inside" is
+// called with the far bench's seats (see above). Draw it on "pen" to seat
+// people: a set painted once has nobody in it.
+function rotDaeng(brush, x, base, size, turn, facing, inside) {
+  var s = size || 1, f = facing || 1, spin = turn || 0, R = 46;
+  var red = "#c8262a", dark = "#8e1a1e", trim = "#e8e2d6";
+  var ride = spin ? 2.2 * Math.sin(spin * 1.3) + 1.2 * Math.sin(spin * 2.9 + 1) : 0;   // the body on its springs, over the road
+  function wheel(cx) {
+    brush.save();
+    brush.translate(cx, -R);
+    brush.rotate(spin);
+    brush.fillStyle = "#262626";
+    brush.beginPath();
+    brush.arc(0, 0, R, 0, 7);
+    brush.fill();
+    brush.fillStyle = "#c8ccd0";                   // the hubcap, and its nuts
+    brush.beginPath();
+    brush.arc(0, 0, 25, 0, 7);
+    brush.fill();
+    brush.fillStyle = "#8a9096";
+    for (var k = 0; k < 5; k++) {
+      brush.beginPath();
+      brush.arc(13 * Math.cos(k * 1.2566), 13 * Math.sin(k * 1.2566), 3, 0, 7);
+      brush.fill();
+    }
+    brush.strokeStyle = "#e6e8ea";
+    brush.lineWidth = 2;
+    brush.beginPath();
+    brush.arc(0, 0, 21, 0.4, 1.6);
+    brush.stroke();
+    brush.restore();
+  }
+  function outline(path, fill, line) {
+    path();
+    brush.fillStyle = fill;
+    brush.fill();
+    brush.strokeStyle = line || "#4a1012";
+    brush.lineWidth = 2;
+    brush.lineJoin = "round";
+    brush.stroke();
+  }
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(s * f, s);
+  brush.fillStyle = "rgba(40, 30, 25, 0.25)";      // its shadow on the road
+  brush.beginPath();
+  brush.ellipse(0, 0, 330, 12, 0, 0, 7);
+  brush.fill();
+  brush.save();
+  brush.translate(0, ride);
+  outline(function () {                             // the inside, seen through the windows: the far wall and its bench
+    brush.beginPath();
+    brush.rect(-300, -304, 404, 144);
+  }, "#5a2420");
+  brush.fillStyle = "#7a3a2a";
+  brush.fillRect(-296, -128, 396, 14);              // the far bench
+  var seats = [];
+  for (var k = 0; k < 4; k++) {
+    var sx = -250 + k * 92;
+    seats.push([x + sx * s * f, base + (ride - 118) * s]);
+  }
+  brush.restore();
+  if (inside) {                                     // the people, drawn in the caller's own frame, as the seats are given
+    brush.restore();
+    inside(seats);
+    brush.save();
+    brush.translate(x, base);
+    brush.scale(s * f, s);
+  }
+  brush.save();
+  brush.translate(0, ride);
+  outline(function () {                             // the bed's side under the windows, and the cab, in one red
+    brush.beginPath();
+    brush.moveTo(-306, -70);
+    brush.lineTo(-306, -176);
+    brush.lineTo(110, -176);
+    brush.lineTo(116, -244);
+    brush.quadraticCurveTo(126, -256, 150, -256);
+    brush.lineTo(196, -256);
+    brush.quadraticCurveTo(214, -254, 228, -186);
+    brush.quadraticCurveTo(290, -180, 304, -158);
+    brush.lineTo(312, -104);
+    brush.lineTo(312, -70);
+    brush.lineTo(238, -70);
+    brush.arc(190, -70, 48, 0, Math.PI, true);      // the front wheel's arch
+    brush.lineTo(-122, -70);
+    brush.arc(-170, -70, 48, 0, Math.PI, true);     // the back wheel's arch
+    brush.closePath();
+  }, red);
+  brush.fillStyle = dark;                           // a shade along the bottom of the side
+  brush.fillRect(-306, -92, 92, 22);
+  brush.fillRect(-122, -92, 264, 22);
+  brush.fillStyle = trim;                           // a pale line along the side
+  brush.fillRect(-306, -150, 416, 5);
+  outline(function () {                             // the cab's window
+    brush.beginPath();
+    brush.moveTo(128, -176);
+    brush.lineTo(132, -236);
+    brush.quadraticCurveTo(136, -244, 150, -244);
+    brush.lineTo(192, -244);
+    brush.quadraticCurveTo(204, -242, 214, -190);
+    brush.lineTo(214, -176);
+    brush.closePath();
+  }, "#9ec4d4", "#3a2a2a");
+  brush.fillStyle = "rgba(255, 255, 255, 0.35)";    // a gleam on the glass
+  brush.beginPath();
+  brush.moveTo(150, -238);
+  brush.lineTo(166, -238);
+  brush.lineTo(150, -190);
+  brush.lineTo(138, -190);
+  brush.closePath();
+  brush.fill();
+  outline(function () { brush.beginPath(); brush.rect(170, -150, 22, 6); }, "#3a2a2a");   // the door's handle
+  outline(function () { brush.beginPath(); brush.arc(296, -134, 13, 0, 7); }, "#fff2c0", "#5a4a2a");   // the headlamp
+  outline(function () { brush.beginPath(); brush.rect(298, -98, 22, 18); }, "#c8ccd0", "#4a4a4a");    // the bumper
+  outline(function () { brush.beginPath(); brush.rect(-312, -104, 10, 34); }, "#f4c542", "#6a5a2a");  // the plate at the back
+  brush.strokeStyle = "#3a1012";                    // the posts that hold up the roof, and a rail along the windows
+  brush.lineWidth = 7;
+  brush.beginPath();
+  [-302, -206, -114, -22, 70, 106].forEach(function (px) { brush.moveTo(px, -176); brush.lineTo(px, -302); });
+  brush.stroke();
+  brush.strokeStyle = "#d8d4c8";
+  brush.lineWidth = 3;
+  brush.beginPath();
+  brush.moveTo(-300, -232);
+  brush.lineTo(106, -232);
+  brush.stroke();
+  outline(function () {                             // the roof over the bed, on over the cab down to its roof, its front raised in a peak
+    brush.beginPath();
+    brush.moveTo(-312, -300);
+    brush.lineTo(-312, -324);
+    brush.lineTo(150, -324);
+    brush.quadraticCurveTo(212, -326, 238, -344);
+    brush.lineTo(248, -328);
+    brush.quadraticCurveTo(240, -294, 220, -262);
+    brush.lineTo(112, -262);
+    brush.lineTo(106, -300);
+    brush.closePath();
+  }, red);
+  brush.fillStyle = dark;
+  brush.fillRect(-312, -306, 418, 6);
+  brush.fillStyle = "#3a2a2a";                      // a grille across the peak's face, as the red cars have
+  brush.fillRect(150, -318, 70, 7);
+  brush.strokeStyle = "#5a5a5a";                    // the rack on the roof
+  brush.lineWidth = 2.5;
+  brush.beginPath();
+  brush.moveTo(-290, -338);
+  brush.lineTo(120, -338);
+  for (k = 0; k < 7; k++) { brush.moveTo(-290 + k * 68, -338); brush.lineTo(-290 + k * 68, -324); }
+  brush.stroke();
+  brush.fillStyle = "#6a6a6a";                      // the step at the back, and its rail
+  brush.fillRect(-340, -74, 36, 6);
+  brush.strokeStyle = "#c8ccd0";
+  brush.lineWidth = 4;
+  brush.beginPath();
+  brush.moveTo(-318, -170);
+  brush.lineTo(-318, -296);
+  brush.stroke();
+  brush.restore();
+  wheel(-170);
+  wheel(190);
+  brush.restore();
+}

@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>band - the salo, the sueng, the pi chum and the phin phia, and their players</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false};</script>
+<script src="oldcartoon.js"></script>
+<script src="band.js"></script>
+<script>
+// The "band" sheet: band.js. Across the top, the four instruments laid out
+// large on a cloth, each with its name: the salo and its bow, the sueng and
+// its pick, the pi chum, the phin phia. Below, the band on a woven mat, each
+// player sitting cross-legged and playing on the beat: the salo bowed out
+// and in, the sueng plucked twice a beat, the pi chum nodding with a finger
+// lifting, the phin phia pressed to a bare chest and eased off.
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "21px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function mat(left, top, right, bottom) {           // a mat of woven reed, in squares of two colours
+  pen.fillStyle = "#d9c08a";
+  pen.fillRect(left, top, right - left, bottom - top);
+  pen.strokeStyle = "rgba(120, 80, 30, 0.35)";
+  pen.lineWidth = 2;
+  pen.beginPath();
+  for (var x = left; x <= right; x += 26) { pen.moveTo(x, top); pen.lineTo(x, bottom); }
+  for (var y = top; y <= bottom; y += 13) { pen.moveTo(left, y); pen.lineTo(right, y); }
+  pen.stroke();
+  pen.strokeStyle = "#8a2a3a";
+  pen.lineWidth = 6;
+  pen.strokeRect(left + 8, top + 6, right - left - 16, bottom - top - 12);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.fillStyle = "#e6d6b8";                       // the cloth the instruments lie on
+  pen.fillRect(30, 40, WIDE - 60, 300);
+  salo(60, 120, 1.6, 0);
+  saloBow(70, 200, 1.6, 0);
+  caption("salo(x, y, size, angle), saloBow()", 235, 310);
+  sueng(545, 160, 1.45, 0);
+  suengPick(690, 245, 1.8, -0.3);
+  caption("sueng(), suengPick()", 610, 310);
+  piChum(805, 150, 1.8, 0);
+  caption("piChum()", 915, 310);
+  phinPhia(1125, 135, 1.1, 0);
+  caption("phinPhia(x, y, size, angle, flip)", 1205, 310);
+  pen.fillStyle = "#b89a6a";                       // the floor of a house, and the mat
+  pen.fillRect(0, 560, WIDE, 520);
+  mat(70, 760, WIDE - 70, 990);
+  musician(250, 905, "salo", cast("fellow", {size: 1.25, id: "salo"}));
+  musician(580, 900, "sueng", cast("farmer", {size: 1.25, id: "sueng"}), 0.13);
+  musician(890, 905, "pichum", cast("elder", {size: 1.25, id: "pichum"}), 0.31);
+  musician(1200, 900, "phinphia", cast("fellow", {size: 1.25, id: "phinphia"}), 0.07);
+  caption("musician(x, y, \"salo\", look)", 250, 1030);
+  caption("\"sueng\"", 580, 1030);
+  caption("\"pichum\"", 890, 1030);
+  caption("\"phinphia\": no shirt", 1200, 1030);
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

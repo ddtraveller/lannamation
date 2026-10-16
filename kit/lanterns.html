@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>lanterns - the khom phat, the khom thue, the star and the lotus</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false};</script>
+<script src="oldcartoon.js"></script>
+<script src="khom.js"></script>
+<script>
+// The "lanterns" sheet: the four lanterns added to khom.js on 2026-10-16.
+// Above, by day, unlit, hung from a beam: the spinning khom phat (still, as
+// an unlit one is), the star khom dao and the lotus khom bua, and a girl
+// holding a khom thue up by its handle. Below, at night, the same lit: the
+// khom phat turns and the shadows of its cut figures go round its paper,
+// the candles flicker, and the girl walks across with her khom thue.
+var DURATION = 14;
+
+var BEAT = 0.5;
+
+function caption(text, x, y, colour) {
+  pen.fillStyle = colour || "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "21px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function beam(y) {                                  // the eave the lanterns hang from
+  pen.fillStyle = "#6e4b33";
+  pen.fillRect(0, y - 14, WIDE, 18);
+  pen.fillStyle = "#4a3222";
+  pen.fillRect(0, y + 2, WIDE, 4);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 540);
+  beam(40);
+  khomPhat(230, 40, {size: 1.2, spin: 0});
+  caption("khomPhat(x, y, look): unlit, spin 0", 230, 470);
+  khomDao(560, 40, {size: 1.25, colour: KHOM_RED});
+  caption("khomDao", 560, 470);
+  khomBua(860, 40, {size: 1.2});
+  caption("khomBua", 860, 470);
+  var day = person(1170, 500, cast("girl", {size: 1.05, reachA: [1240, 342], grip: true, id: "day"}));
+  khomThue(day.handA[0], day.handA[1], {size: 1.05});
+  caption("khomThue at the hand", 1170, 530);
+  pen.fillStyle = "#101a30";                       // the night
+  pen.fillRect(0, 540, WIDE, 540);
+  pen.fillStyle = "#1c2232";
+  pen.fillRect(0, 1000, WIDE, 80);
+  beam(580);
+  khomPhat(230, 580, {size: 1.2, lit: 1});
+  caption("lit: the frame turns, the shadows go round", 230, 1050, "#d8c8a0");
+  khomDao(560, 580, {size: 1.25, colour: KHOM_GREEN, lit: 1, late: 1.3});
+  khomBua(860, 580, {size: 1.2, colour: "#f4f0e6", lit: 1, late: 2.1});
+  var walk = stroll(t, 1560, 1170, 0, cast("girl", {size: 1.05, id: "night"}));
+  var hand = person(walk.x, 1000, Object.assign({}, walk.look, {reachA: [walk.x + 52 * walk.look.face * 1.05, 830], grip: true}));
+  khomThue(hand.handA[0], hand.handA[1], {size: 1.05, colour: KHOM_RED, lit: 1, lean: -0.06 * walk.look.face});   // its top trails the walk
+  caption("carried along: stroll() and khomThue", 1170, 1050, "#d8c8a0");
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

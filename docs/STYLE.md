@@ -102,6 +102,9 @@ of it, each a second behind the other.
 | `dragon_flight.html` | the dragon's three manners of flight, glide, hover and fast, on one sheet (see "A dragon") |
 | `dragon_china.html` | the Chinese painters' dragon, `dragon()` with `kind: "chinese"`: scales, a long antlered head, eagle's feet and the flaming pearl it chases (see "The Chinese dragon") |
 | `myth.js`, `myth.html` | three creatures of the myths of Lanna, on the beasts' legs and the Naga's body (load it after `naga.js` and `beasts.js`): the Mom, the Luang and the Hatsadiling bird; and their sheet (see "Three creatures of the myths of Lanna") |
+| `band.js`, `band.html` | the band of the north, the salo, the sueng, the pi chum and the phin phia, each a painter of its own, and `musician(x, y, kind, look)`, a person who sits cross-legged and plays one on the beat; and its sheet (see "The band, more lanterns, the farmstead and the red truck") |
+| `lanterns.html` | the sheet for the four lanterns `khom.js` gained on 2026-10-16: the spinning `khomPhat`, the handheld `khomThue`, the star `khomDao` and the lotus `khomBua`, by day and lit at night |
+| `farmstead.html` | the sheet for what `pieces.js` gained on 2026-10-16: the granary `longKhao` (open, and with walls), the `sawian` basket, `tungSaiMu` planted on a sand pagoda, `tungYai` on its pole, and `rotDaeng` driving across with three riders |
 | `naga.js`, `naga.html` | a Naga, the many-headed serpent, as a creature in a file of its own on top of the kit, and its sheet (see "A Naga") |
 | `landscape.html` | the sheet for the painters of nature read from a thangka: peaks, fan plants, tassel trees, rocks, foam and clouds with a foot of another colour (see "Mountains and plants from a thangka") |
 | `backdrops.js`, `backdrops.html` | nineteen backgrounds to start a film from: seven places of the north of Thailand in the kit's own manner, and twelve in the manner of the thangka painters; and the sheet that shows them (see "A dozen backdrops to start from" and "Seven places of the north, and the backdrops of the cartoon maker") |
@@ -2427,6 +2430,95 @@ just a joke about the dragon"; "You can give a fact about Chinese dragon's thoug
 | The flag | `dragon()` now gives back `{claw, size}`: its near front foot in the points of the frame it was drawn in, and its size. `chinaFlag()` in `sash.html` draws the flag of the People's Republic of China as its law sets it out (3:2, red, the large star at (5, 5) of a 30 by 20 grid, the four small ones each pointing a tip at it), on a pole in that claw, from 8.8 to 11.6 s of the pond scene: it grows out of the claw, rocks back and forth three times as the cloth ripples, and shrinks away. The pole leans 0.4 forward, so the cloth flies above the head (0.7 and 1.0, drawn side by side, made the flag read as falling); 2.6 times the dragon's size; nearly opaque even far off, or the body showed through it. The dragon's pearl was gone while it held the flag, the joke of line 10, "Chinese dragons usually hold a pearl, not a flag!"; since the owner's "change the dragon so the white thing isn't coming out of its mouth" (2026-10-16) it has no flaming pearl before its snout at all (`chase: false`), and the line still says what such dragons usually hold |
 | The tung by the house | Drawn live, not on the village set, by `villageTung(T)` in the cloth and lane scenes, on the film's clock so the sway goes on across the cut: the kit's `tung()` with the hong, its cloth in the shape it had on the set (the kit's wave at 0), leaning `TUNG_SWAY` either way about the pole's foot (owner, 2026-10-16: "the flag with the rooster on the top sways a little bit"). The kit's own wave was tried first: its six panels each wave on their own and came apart, and at its size it flapped rather than swayed | 1.2 degrees either way, `sin(T * 1.3)`: about 10 px at the hong, once in 4.8 s |
 | The checks | `kit_check.py sash.html dragon.html dragon_china.html dragon_flight.html`: 4 pages, 0 failures; the 17 lines each inside one scene; the wai whose first frame folds an arm is at 36.0 s now (the pond's maiden, a second into the scene), so the allowance names it there. `kit_check.py`'s cue check takes a cue's own end, as its fifth entry, for a spoken line. `dragon.html`, `dragon_china.html` and `dragon_flight.html` drawn with the old and the new `dragon.js`: 0, 2 and 3 frames of 12 differ, by 1 to 3 pixels, the kit's own spread from one load to the next. |
+
+## The band, more lanterns, the farmstead and the red truck (2026-10-16)
+
+The owner: "Do some research using notebooklm and add some items that are specific to Lanna culture to
+the framework." A NotebookLM notebook, "Lanna material culture: new items for the Lanna cartoon kit"
+(38 sources), was filled from eight Wikipedia pages and four fast web researches (everyday things and
+the granary; the decorations of Yi Peng and the kinds of lantern; the instruments of the north; the
+Tai Yai dances and the guardian lions), with the broken and the off-topic sources taken out. Its answer
+listed what the north has and the kit did not; asked which to build, the owner chose all four groups
+offered: the string band, lanterns that move, the farmstead, and the rot daeng. Each was then asked of
+the notebook as a drawing needs it (how the instrument is held, which hand does what, what the parts
+are), and its shape read from Wikimedia Commons photographs under free licences, kept in scratch with
+their credits; nothing copied. Two of the notebook's answers were checked against the source's own
+words: the tung sai mu as "multi-tiered clusters of small triangular flags attached to a single stick
+... five or seven layers" is Chang Puak Magazine's wording, kept; the khom thue "hanging from a stick"
+was not: the source says a handheld lantern has "a handle underneath, quite like a giant candle", and
+it is drawn so.
+
+| What | File and call | What it does, and what it was read from |
+|---|---|---|
+| The salo | `band.js`: `salo(x, y, size, angle)`, `saloBow()` | a coconut body with a wooden plate, a turned spike, a long dark neck, two great pegs, a cord binding the strings, a turned spire; 214 long at size 1. The bow is apart from the strings, its hair outside them. Jiranee119's photograph (CC BY-SA 4.0) and Purinee Donchai's drawing of its ten parts (CC0) |
+| The sueng | `sueng()`, `suengPick()` | a round body with a carved point under it, a flower of red and gold round the hole, a bridge, nine bamboo frets closer as they climb, four strings in two pairs, a flat carved head with four pegs; 190 long. The Chiang Mai artisan's sueng (Leopoldoghost, CC BY-SA 4.0), a wall of them (CC BY 2.0) |
+| The pi chum | `piChum()` | a straight pipe of bamboo, two nodes, the brass of the reed near the top, seven finger holes; 126 long, the middle of its five sizes. No photograph of one was found; the hold is the Laplae band's straight pipe (CC BY-SA 3.0): down and forward from the mouth, both hands on it |
+| The phin phia | `phinPhia(x, y, size, angle, flip)` | a long stick, a half coconut on a short post a quarter of the way from its two pegs, the far end bent into a curl capped in metal. The Metropolitan Museum's of the 19th century (CC0). `flip` hangs the coconut on the other side of the stick |
+| A player | `musician(x, y, kind, look, late)` | below |
+| The khom phat | `khom.js`: `khomPhat(x, y, look)` | a cylinder of white paper, a red band with gold flowers above, a band and a fringe of cut paper below, the posts of its frame through the paper, a wheel of six vanes on top; inside, six figures cut from black paper (an elephant, a horse and rider, a deer, a carrier with two baskets on a pole, a buffalo, a dancer) go round with the vanes, `0.45 * spin` radians a second, and their shadows show on the front half of the paper, squeezed toward its edges and fading there, black when it is lit and faint by day. Village figures, not the Jataka of the temple's lanterns. `spin` is given, not taken from `lit`: a turn worked out from a light that comes on during a film would jump |
+| The khom thue | `khomThue(x, y, look)` | a small lantern of six sides on a handle, standing in a gold cup with paper tassels round it; (x, y) is where a hand holds the handle, and it is drawn after the person so the handle goes up through the fist (`person()` gives back `joints.handA`). Carried along, `lean` lets its top trail the walk |
+| The star and the lotus | `khomDao(x, y, look)`, `khomBua(x, y, look)` | a star of five points, each point two faces lit apart, a thickness behind, a tail from each lower point; a lotus of seven petals in three rows, open, on three strings, a tail under it. Both swing, and glow when `lit`. No photograph found; drawn from Polyglot Petra's list of shapes |
+| The sawian | `pieces.js`: `sawian(brush, x, base, size)` | a tall round basket, its weave seen under a coat of dung and resin, a bound rim; the CMU Lanna Traditional House Museum's words |
+| The granary | `longKhao(brush, x, base, size, walls)` | a small house of timber on six heavy posts (three seen, three set in behind), its floor 122 up, a boarded gable and a steep roof of shingles past the walls, a ladder of bamboo against it. Open, as the museum's is, with two sawian on its floor; with `walls`, boards that lean out a little toward the eaves (a granary photographed by มะเดื่อ แสลงหลวง, CC BY 3.0). The house is the scale: its floor is at 110 |
+| The cluster tung | `tungSaiMu(brush, x, base, size, t, seed, tiers)` | a stick 170 tall, five or seven tiers of small flags of every colour, widest at the bottom, each flag fluttering on its own; planted in a `chediSai` on the sheet |
+| The web tung | `tungYai(brush, x, base, size, t, colour)` | the kit's tung pole, and hanging from it five cells of thread woven as a web (spokes from the corners, three diamonds closing on the middle) between six strips of bamboo, a frill and a flower at each strip's ends, a tassel of thread at its foot; it sways, more toward the foot. Red thread unless given (white shows only at night) |
+| The red truck | `rotDaeng(brush, x, base, size, turn, facing, inside)` | the Chiang Mai red cars photographed by Patiparn.Nice2002bkk (CC BY-SA 4.0): a pickup's cab, a roof over the bed that runs on over the cab and rises at the front in a peak with a grille, a rack on top, posts and windows over a red panel, a pale line along the side, a step and a rail at the back, a yellow plate. 650 long, 344 to the peak. The wheels turn with `turn` (the ground covered over 46 x size) and the body rides 2 to 3 on its springs as they turn |
+
+**A player: the instrument is worn, the hands reach.** `musician()` seats a person cross-legged
+(`floor: "cross"`) and plays on the beat: the salo's bow out on one beat and in on the next while the
+fiddle tilts to bring one string or the other to it; the sueng plucked twice a beat; the pi chum
+nodding as a finger lifts off a hole; the phin phia pressed to the chest and eased off. Three things
+make the hands land on the instrument:
+
+- The instrument is the look's `worn` painter, which the kit calls after the body and the head and
+  before the arms, with the pen set back to the scene's own frame (as `sabaiWorn()` does). The arms and
+  the hands are drawn over it.
+- Each wrist goes to a point on the instrument by `reachA` and `reachB`. The kit works out the wrists
+  after it calls `worn`, so the instrument cannot be placed where the hands came to; it is placed where
+  they will come to, which works because a reach within the arm's length is touched exactly.
+- Where they come to was measured, not guessed: `person()` with `floor: "cross"` at size 1 looking right
+  gives its shoulders at (35, -131) near and (-31, -131) far, its chin at (2, -150), its crown at
+  (3, -241), and an arm 98 from shoulder to wrist; the numbers scale with `size` and mirror with
+  `face`. Every hold in `bandHold()` keeps each wrist within 97 of its shoulder and further than 30 from
+  it (nearer than about 26 the forearm would fold past 150 degrees, which `arms_check.py` fails).
+
+The musician also takes a stick and a parasol out of the hands (the `elder` of the cast carries a
+stick, which first ran from the piper's hand to the floor), and the phin phia's player has no shirt and
+no cloth over the shoulder, as it is played on the bare chest.
+
+**The riders.** `pieces.js` draws on a brush and calls nothing of the people. `rotDaeng()` takes an
+`inside` function instead: it paints the inside (the far wall and its bench), gives `inside` the four
+seats of the far bench in the caller's own frame, then paints the near side, the posts, the roof and
+the wheels over them. People seated there with `floor: "cross"`, `twist: 1` and size 0.66 x the truck's
+show their heads and shoulders in the windows; the side hides their legs and the roof clears the
+tallest bun. The near bench's people would show their backs, which the kit cannot draw: they are left
+out.
+
+**Traps met on the way.**
+
+- A path is not part of what `save()` keeps. The sawian clipped its weave to its outline, restored,
+  and stroked "the outline": the pen still held the weave's lines, which were drawn again unclipped,
+  a hundred wide each side of every basket. The outline is a function now, made again for the line.
+- `inside()` was first called with the truck's own scale and translation still on the pen: the riders
+  were drawn far off the sheet. The truck's frame is taken off before it is called and put back after.
+- The salo's bow was first laid pointing away from the strings, and its bowing hand's widest stroke
+  went 105 from the shoulder, past the arm's reach. A bow held by the far hand points across the
+  fiddle; the stroke is 24 wide.
+- Riders at 0.72 of the truck first put a bun through the roof.
+
+**The checks.** `kit_check.py band.html lanterns.html farmstead.html khom.html pieces.html sabai.html`:
+6 pages, 0 failures (band 20.7 ms a frame, lanterns 31.7, farmstead 13.2; arms 0, 0, 0 on all six; same
+1 / 0 at worst); no top-level name in two script files; no warning. `kit_check.py sash.html --quick`:
+draws, same 0 / 0, the 17 lines each inside one scene. The cartoon maker, which loads `khom.js` and
+`pieces.js`, loads with every function there and no warning.
+
+**Not done.** None of it is in the cartoon maker's palette yet. The pi chum, the khom phat, the star
+and lotus lanterns and the two tung are drawn from words, with no photograph: each is to be checked
+against one. The players only sit; the salo's tilt and the phin phia's press are small, and the
+fingers lift on a beat, not on the notes of a tune; nobody plays the films' songs yet. The khom phat's
+figures are seen only on the front half of the paper (the back half's shadows would show through
+faintly); it cannot be raised and lowered on its pulley (khom lo). The truck has no curtains and no
+one on its back step; its riders sit only on the far bench. The granary's walls are plain boards.
 
 ## The kit's own checks
 
