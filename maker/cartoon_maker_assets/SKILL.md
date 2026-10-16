@@ -76,7 +76,20 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   tied (y 60 to 500 hangs it high), it swings and turns in the breeze with its
   tail swaying; its candle is off by day and on at dusk and night, or
   `"candle": "on"` / `"off"` says; carried along a course it leans back
-  against the way it goes.
+  against the way it goes. Three more lanterns hang the same way with the same
+  candle: `khomphat` (a spinning lantern: while its candle burns, the shadows
+  of paper-cut figures go round it), `khomdao` (a star) and `khombua` (a
+  lotus). `khomthue` is a girl carrying a lantern up on its handle: she walks
+  her course on the ground.
+- The band of the north: `salo`, `sueng`, `pichum` and `phinphia` are each a
+  player sitting cross-legged on the ground (y 880 to 1040), playing on the
+  beat. A player does not walk: one key. Two to four side by side make a band.
+- `tungsaimu` (little flags in seven tiers on a stick) and `tungyai` (a web of
+  thread on a tall pole) stand on the ground and flutter. `rotdaeng` is Chiang
+  Mai's red truck with three riders: it drives its course on the ground and
+  its wheels turn; it is about 700 pixels long. The set pieces `longkhao` (a
+  rice granary on posts, with its baskets) and `sawian` (one big rice basket)
+  stand on the ground.
 - The flowers and fruits of Thailand (the vocabulary lists them: mango,
   durian, longan, orchid, marigold ...) are things that stand on the ground;
   a name ending in `Tree` (`longanTree`, `ratchaphruekTree` ...) is that tree
@@ -86,7 +99,8 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   first time it is drawn, while its tiles are made.
 - Colours are optional: a person's `shirt`, `legs`, `skin`; the naga's `body`,
   `belly`, `crest`, `fire`; the dragon's `body`, `spots`, `belly`, `flame`,
-  `mane`, `pearl`; as `#rrggbb`.
+  `mane`, `pearl`; a player's `shirt`, `legs`, `skin`; a lantern's `colour`
+  and `gold`; the web tung's `colour` (its thread); as `#rrggbb`.
 - Thai in texts is welcome; keep each line under 40 characters.
 
 ## When a model should write the JSON for you

@@ -2512,7 +2512,25 @@ out.
 draws, same 0 / 0, the 17 lines each inside one scene. The cartoon maker, which loads `khom.js` and
 `pieces.js`, loads with every function there and no warning.
 
-**Not done.** None of it is in the cartoon maker's palette yet. The pi chum, the khom phat, the star
+**In the maker (owner, same day: "Add them to the palette").** Thirteen buttons: the things 🎻 สะล้อ,
+🪕 ซึง, 🎵 ปี่จุม, 🥥 พิณเปี๊ยะ (each a player of the cast sitting cross-legged: the fellow, the farmer,
+the elder, the fellow with no shirt; the colours are the player's), 🎠 โคมผัด, ⭐ โคมดาว, 🏵️ โคมบัว
+(they hang as the khom does, with its candle switch; the khom phat turns only while lit), 🚶‍♀️ โคมถือ
+(a girl who walks her course holding a khom thue up), 🎊 ตุงไส้หมู, 🕸️ ตุงใย (the thread's colour can
+be picked) and 🛻 รถแดง (1.1 times the kit's truck, so it stands taller than the people who ride it,
+with a girl, a fellow and a grandmother on its far bench); the set pieces 🛖 หลองข้าว and 🧺 เสวียน.
+The candle switch belongs to a list now, `CANDLES`, not to the name `khom`. Two things in the page
+were mended on the way: `thingCode()` made a thing's code by replacing every capital P with its
+place (`p3`), which would have turned `khomPhat` into `khomp3hat`; it replaces only `P[` now, and the
+code it writes for every thing that was there before is the same to the character (checked against
+the page at HEAD). And the exported page did not load `pieces.js`, which the water jar, the ox cart
+and the rest of the pieces of the north need: an exported film with one of them stopped with an
+error. It loads `pieces.js` and `band.js` now. Checked in Chrome with the real mouse: each of the
+thirteen buttons dragged onto the stage adds its item; the four lanterns show the candle switch; a
+film of all thirteen at night taken as a model's JSON draws at three seconds with no error and no
+warning; its exported page, put beside the kit, draws with neither: 26 checks, all held.
+
+**Not done.** The pi chum, the khom phat, the star
 and lotus lanterns and the two tung are drawn from words, with no photograph: each is to be checked
 against one. The players only sit; the salo's tilt and the phin phia's press are small, and the
 fingers lift on a beat, not on the notes of a tune; nobody plays the films' songs yet. The khom phat's
