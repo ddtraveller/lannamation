@@ -81,7 +81,8 @@ def join(clips, video, audio, folder):
     listing.write_text("".join("file '%s'\n" % clip.name for clip in clips), encoding="utf-8")
     command = ["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(listing)]
     if audio:
-        command += ["-i", audio, "-map", "0:v", "-map", "1:a", "-c:a", "aac", "-b:a", "192k", "-shortest"]
+        # 256k: the hero film's sound is mastered in stereo (sash_narrate.py), and its live file carries it at 256k
+        command += ["-i", audio, "-map", "0:v", "-map", "1:a", "-c:a", "aac", "-b:a", "256k", "-shortest"]
     command += ["-c:v", "copy", "-movflags", "+faststart", str(video)]
     if subprocess.run(command).returncode != 0:
         raise SystemExit("ffmpeg stopped with an error: the film was not joined")
