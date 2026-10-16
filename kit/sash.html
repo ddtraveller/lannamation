@@ -388,14 +388,28 @@ FAR.width = WIDE;
 FAR.height = 1080;
 var FAR_PEN = FAR.getContext("2d");
 
+// How far the ridge falls away ahead of a beast at x facing "face" (radians, as
+// the beasts' "slope" takes it), from a straight line fitted to the ridge under
+// its length (half to each side), so the grass on the ridge does not jog it
+// (owner, 2026-10-17: the elephant walking down the hill had its front feet in
+// the air: the kit's elephant pitches with a slope, and the film gave it none).
+function ridgeSlope(x, face, half) {
+  var n = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+  for (var dx = -half; dx <= half; dx += 2) {
+    var y = ridgeAt(x + dx);
+    n++; sx += dx; sy += y; sxx += dx * dx; sxy += dx * y;
+  }
+  return Math.atan(face * (n * sxy - sx * sy) / (n * sxx - sx * sx));
+}
+
 function pondElephants(t) {
   var cow = amble("elephant", t, 1180 + SIDE, 1000 + SIDE, 0, {size: 0.09, late: 0});
   var calf = amble("elephant", t, 1290 + SIDE, 1110 + SIDE, 0.7, {size: 0.052, late: 0.3, tusks: false});
   var film = pen;
   pen = FAR_PEN;                                  // the kit's painters draw on "pen": the far sheet for the length of this
   pen.clearRect(0, 0, WIDE, 1080);
-  elephant(cow.x, ridgeAt(cow.x) + 6, cow.look);
-  elephant(calf.x, ridgeAt(calf.x) + 6, calf.look);
+  elephant(cow.x, ridgeAt(cow.x) + 6, Object.assign({}, cow.look, {slope: ridgeSlope(cow.x, cow.look.face, 32)}));   // pitched with the hill, so all four feet are on it
+  elephant(calf.x, ridgeAt(calf.x) + 6, Object.assign({}, calf.look, {slope: ridgeSlope(calf.x, calf.look.face, 18)}));
   POND_GROVE.forEach(function (one) {
     pen.save();
     pen.translate(one[0] + SIDE, ridgeAt(one[0] + SIDE) + 14);
