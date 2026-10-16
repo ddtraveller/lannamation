@@ -6180,16 +6180,26 @@ function tung(brush, x, base, t, crowned) {
   brush.quadraticCurveTo(x + 10, base - 300, x + 70, base - 470);
   brush.stroke();
   var colours = ["#d8423a", "#f4c542", "#3f8f7a", "#f2ead8", "#d8423a", "#f4c542"];
+  // Given the second t, the cloth hangs from the top of the pole and sways in
+  // the breeze as one long strip, the pole standing still (owner, 2026-10-16:
+  // "the flag doesn't sway. I'd prefer the stick not to sway or barely at
+  // all"): it swings from where it is tied, more toward its foot, the foot a
+  // little behind the top in time, with a faint ripple down it. Every panel is
+  // a stretch of the one strip, so they never come apart.
+  function off(d) {                                 // how far the cloth is moved sideways at d: 0 its top, 1 its foot
+    var lag = t - 0.8 * d;
+    var breeze = Math.sin(lag * 1.1) + 0.5 * Math.sin(lag * 1.9 + 1.3) + 0.25 * Math.sin(lag * 3.1 + 0.6);   // comes and goes, never twice alike
+    return 14 * breeze * Math.pow(d, 1.3) + 2.5 * Math.sin(d * 7 - t * 2.4) * d;
+  }
   for (var part = 0; part < 6; part++) {
     brush.fillStyle = colours[part];
     if (t === undefined) { brush.fillRect(x + 56, base - 460 + part * 50, 30, 46); continue; }
-    var sway = Math.sin(t * 3 + part * 0.7) * 7 * (1 + part * 0.3);   // the cloth waves, more lower down
-    var top = base - 460 + part * 50;
+    var top = base - 460 + part * 50, above = off(part * 50 / 296), below = off((part * 50 + 46) / 296);
     brush.beginPath();
-    brush.moveTo(x + 56 + sway, top);
-    brush.lineTo(x + 86 + sway, top);
-    brush.lineTo(x + 86 + sway * 1.4, top + 46);
-    brush.lineTo(x + 56 + sway * 1.4, top + 46);
+    brush.moveTo(x + 56 + above, top);
+    brush.lineTo(x + 86 + above, top);
+    brush.lineTo(x + 86 + below, top + 46);
+    brush.lineTo(x + 56 + below, top + 46);
     brush.closePath();
     brush.fill();
   }

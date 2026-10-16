@@ -106,7 +106,7 @@ and goes on; after five seconds a line of words sits under the picture.
 | `cast(name, changes)` | `oldcartoon.js` | a look from `CAST`: `lady`, `fellow`, `child`, `boy`, `girl`, `farmer`, `noble`, `maiden`, `weaver`, `elder`, `grandmother`, `dancer` and seven more |
 | `stroll(t, from, to, start, look)` | `oldcartoon.js` | an even walk, feet planted: gives back `{x, look, arrives}` |
 | `where(keys, t)` | `motion.js` | a smooth course through `[second, x, y]` keys: `[x, y, moving, facing, depth, angle, distance, reached, speed]` |
-| `backdrop(name)` | `backdrops.js` | one of nineteen painted places (`paddy`, `river`, `doi`, `village`, `market`, `yipeng` ...), painted once |
+| `backdrop(name)` | `backdrops.js` | one of nineteen painted places (`paddy`, `river`, `doi`, `village`, `market`, `yipeng` ...), painted once; `backdrop(name, true)` leaves out what hangs in it (the market's lanterns, the monastery's flags), which `backdropSway(name, t)` then draws swaying |
 | `film(t, scenes)` | `oldcartoon.js` | finds the scene, closes and opens the iris at the cuts, puts the picture through the lens |
 | `card(big, small)`, `subtitle(big, small)` | `oldcartoon.js` | a title card; words under the picture |
 | `hills`, `house`, `temple`, `tree`, `palm`, `pond`, `lotusClump` ... | `oldcartoon.js` | painters for a set, drawn once on a sheet of your own |

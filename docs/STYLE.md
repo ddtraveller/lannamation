@@ -2538,6 +2538,43 @@ figures are seen only on the front half of the paper (the back half's shadows wo
 faintly); it cannot be raised and lowered on its pulley (khom lo). The truck has no curtains and no
 one on its back step; its riders sit only on the far bench. The granary's walls are plain boards.
 
+## What hangs, sways (2026-10-16)
+
+The owner: "Look at the flags and lanterns and if they are hanging give them a sway function. I notice
+the one with the yellow rooster at the top has a swaying stick but the flag doesn't sway. I'd prefer
+the stick not to sway or barely at all." (The "rooster" is the hong on the tung by the house.)
+
+| What hangs | Before | Now |
+|---|---|---|
+| The tung's cloth, `tung(brush, x, base, t, crowned)` | given t, its six panels each waved on its own, 7 to 15 px three times a second, so they came apart; the pole still | given t, the cloth hangs from the pole's tip and sways as one strip, the pole and the hong still (below); without t, drawn as before |
+| The tung by the house in `sash.html`, `villageTung()` | the whole tung leaned 1.2 degrees about its foot, pole and hong with it, the cloth frozen at the kit's wave of second 0 | no lean: `tung(pen, x, 905, T, true)` on the film's clock, so the cloth's sway goes on across the cut from the cloth to the lane |
+| The rope of nine khom over the `market` backdrop | painted into the picture: still | each swings from its tie, 0.07 and 0.025 radians of two slow sines, each in its own time |
+| The two lines of flags at the `monastery` backdrop | painted into the picture: still | the line breathes 3 px; the foot of each flag swings 4 and 1.5 px, each a little behind the one before |
+| The tung in the cartoon maker | a set piece, painted once on the scene's sheet: still | drawn every frame (`SWAYS`, `swayCode()`), among the movers by where it stands |
+| `khom()`, its string and poles in the hero film, `khomPhat`, `khomDao`, `khomBua`, `tungYai`, `tungSaiMu`, the sand pagodas' flags | already swayed | as they were |
+
+**The cloth of a tung.** At a depth d down the cloth (0 where it is tied, 1 its foot) it is moved
+sideways by `14 * breeze(t - 0.8 d) * d^1.3 + 2.5 * sin(7 d - 2.4 t) * d`, where `breeze` is three slow
+sines (1.1, 1.9 and 3.1 radians a second, at 1, 0.5 and 0.25: a gust comes and goes in about six
+seconds, never twice alike, as `khomBreeze()` does for the khom's tail). So the foot swings about 20
+px each way at the strongest, a little behind the top, with a faint ripple down the cloth. Each of the
+six panels is a stretch of that one strip, its top edge where the panel above it ends, so they move as
+one cloth.
+
+**A backdrop's hanging things.** `BACKDROP_HANGING` holds a painter for what hangs in a backdrop
+(market, monastery), given a brush and the second t; without t it draws them at rest. `backdrop(name)`
+paints them at rest into its picture, as it always did: all nineteen still pictures are the same to
+the byte as before (each painted by the old and the new `backdrops.js` and compared over every byte),
+so no film or page that uses them changes. `backdrop(name, true)` is the picture without them (kept
+apart, under its own key), and `backdropSway(name, t)` draws them swaying on the kit's sheet, over it;
+the cartoon maker does both for a picture that has anything hanging in it.
+
+**Left as they are.** The tung woven into the sabai's cloth (`sabai.js`, `tung(b, 0, 0, 0)`) is a
+picture in the weave, drawn once at second 0: it takes the new cloth's shape at that second (a gentle
+curve where it had a zigzag) and does not move. Two tung on the dusk set of `sash.html`
+(`paintTempleFront()`) are painted but drawn by no scene since the temple scene went. `backdrops.html`
+shows the still pictures.
+
 ## The kit's own checks
 
 **One command after any change to the kit**, from `kit/`:

@@ -242,19 +242,14 @@ function skyOf(sheet, look, T) {
   cumulus(pen, T, look);
 }
 
-// The tung by the house is drawn live, not on the village set, so that it
-// sways a little about its foot in the breeze, the hong and the cloth with it
-// (owner, 2026-10-16: "the flag with the rooster on the top sways a little
-// bit"). The cloth keeps the shape it had on the set (the kit's wave at 0).
-var TUNG_SWAY = 1.2 * Math.PI / 180;     // how far it leans either way
-
+// The tung by the house is drawn live, not on the village set, so that its
+// cloth sways in the breeze from the top of the pole, the kit's tung() given
+// the film's clock. The pole and the hong on it stand still (owner,
+// 2026-10-16: "the one with the yellow rooster at the top has a swaying stick
+// but the flag doesn't sway. I'd prefer the stick not to sway or barely at
+// all"; it had leaned the whole tung about its foot).
 function villageTung(T) {               // T: the film's clock, so the sway goes on across the cut
-  pen.save();
-  pen.translate(1570 + SIDE, 905);
-  pen.rotate(TUNG_SWAY * Math.sin(T * 1.3));
-  pen.translate(-1570 - SIDE, -905);
-  tung(pen, 1570 + SIDE, 905, 0, true);
-  pen.restore();
+  tung(pen, 1570 + SIDE, 905, T, true);
 }
 
 // ---------- the scenes ----------

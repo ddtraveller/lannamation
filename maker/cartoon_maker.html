@@ -558,7 +558,7 @@ function pieceCode(item) {
   var x = Math.round(item.keys[0][1]), base = Math.round(item.keys[0][2]), s = scaleOf(item);
   var calls = {house: "house(brush, X, Y, 1)", tree: "tree(brush, X, Y, 1.1)", palm: "palm(brush, X, Y, 400)",
                banana: "banana(brush, X, Y)", temple: "temple(brush, X, Y)", yak: "yak(brush, X, Y, 1)",
-               namton: "namton(brush, X, Y, 1)", tung: "tung(brush, X, Y, undefined, true)", drumcart: "drumCart(brush, X, Y, 0.7, 1)",
+               namton: "namton(brush, X, Y, 1)", drumcart: "drumCart(brush, X, Y, 0.7, 1)",
                longkhao: "longKhao(brush, X, Y, 1)", sawian: "sawian(brush, X, Y, 1.2)"};
   var call = calls[item.name] || "floraTree(brush, X, Y, 1, " + js(item.name.replace(/Tree$/, "")) + ", " + item.id + ")";   // a tree in flower or fruit, flora.js
   call = call.replace("X", x).replace("Y", base);
@@ -566,6 +566,17 @@ function pieceCode(item) {
     call = "brush.save(); brush.translate(" + x + ", " + base + "); brush.scale(" + num(s) + ", " + num(s) + "); brush.translate(" + (-x) + ", " + (-base) + "); " + call + "; brush.restore()";
   }
   return "  " + call + ";";
+}
+
+// The set pieces that sway: a tung's cloth hangs from its pole and sways in the breeze (owner, 2026-10-16: "if
+// they are hanging give them a sway function"). Each is drawn every frame at the film's second, among the movers
+// by where it stands, not painted once on the scene's sheet; it has one key all the same.
+var SWAYS = {tung: true};
+
+function swayCode(item) {
+  var x = Math.round(item.keys[0][1]), base = Math.round(item.keys[0][2]), s = scaleOf(item);
+  var call = {tung: "tung(pen, " + x + ", " + base + ", t, true)"}[item.name];   // the kit's tung, its cloth swaying from the top of the pole
+  return s === 1 ? call : "pen.save(); pen.translate(" + x + ", " + base + "); pen.scale(" + num(s) + ", " + num(s) + "); pen.translate(" + (-x) + ", " + (-base) + "); " + call + "; pen.restore()";
 }
 
 function grounded(item) {               // what stands on the ground: people, pieces, flowers and fruits (the rest may fly)
@@ -716,7 +727,7 @@ function sheetCode(name, sc, k) {         // the code that paints one scene's sk
   lines.push("var " + name + " = (function () {", "  var paper = document.createElement(\"canvas\");",
              "  paper.width = WIDE;", "  paper.height = 1080;", "  var brush = paper.getContext(\"2d\");");
   if (!picture) { lines = lines.concat(LAND_CODE[sc.backdrop]); }
-  movie.items.filter(function (i) { return i.kind === "piece" && i.keys[0][0] >= sc.start && i.keys[0][0] < sc.end; })
+  movie.items.filter(function (i) { return i.kind === "piece" && !SWAYS[i.name] && i.keys[0][0] >= sc.start && i.keys[0][0] < sc.end; })
       .sort(function (a, b) { return a.keys[0][2] - b.keys[0][2]; })
       .forEach(function (i) { lines.push(pieceCode(i)); });
   lines.push("  return paper;", "})();", "");
@@ -744,6 +755,8 @@ function filmCode() {
   var movers = movie.items.filter(function (i) { return i.kind !== "piece"; });
   scenes.forEach(function (sc, k) {
     var picture = !SKY_CODE[sc.backdrop], here = movers.filter(function (i) { return inScene(i, sc); });
+    var swaying = movie.items.filter(function (i) { return i.kind === "piece" && SWAYS[i.name] && i.keys[0][0] >= sc.start && i.keys[0][0] < sc.end; });
+    var hangs = picture && window.BACKDROP_HANGING && BACKDROP_HANGING[sc.backdrop];   // a picture with lanterns or flags hanging in it
     lines.push("function scene" + (k + 1) + "(tt) {", "  var t = tt + " + sc.start + ";   // the film's clock: a scene is given its own seconds");
     movie.texts.filter(function (x) { return x.kind === "card" && x.from < sc.end && x.to > sc.start; }).forEach(function (x) {
       lines.push("  if (t >= " + x.from + " && t < " + x.to + ") {", "    card(" + js(x.big) + ", " + js(x.small) + ");", "    return;", "  }");
@@ -752,13 +765,17 @@ function filmCode() {
       lines.push("  var cam = tween(t, CAMERA, \"smooth\");", "  if (CAMERA_ON) {", "    pen.save();", "    pen.translate(720, 540);",
                  "    pen.scale(cam[2], cam[2]);", "    pen.translate(-cam[0], -cam[1]);", "  }");
     }
-    if (picture) {
+    if (hangs) {
+      lines.push("  pen.drawImage(backdrop(" + js(sc.backdrop) + ", true), 0, 0);   // backdrops.js: the picture without what hangs in it, painted once and kept",
+                 "  backdropSway(" + js(sc.backdrop) + ", t);   // and what hangs in it, swaying in the breeze",
+                 "  pen.drawImage(SHEET" + k + ", 0, 0);");
+    } else if (picture) {
       lines.push("  pen.drawImage(backdrop(" + js(sc.backdrop) + "), 0, 0);   // backdrops.js: a whole picture, painted the first time it is asked for, and kept",
                  "  pen.drawImage(SHEET" + k + ", 0, 0);");
     } else {
       lines.push("  pen.drawImage(SKY" + k + ", 0, 0);", "  cumulus(pen, t, CLOUD_LOOKS." + sc.backdrop + ");   // cumulus.js: puffy clouds that drift by depth", "  pen.drawImage(SHEET" + k + ", 0, 0);");
     }
-    if (here.length) {
+    if (here.length || swaying.length) {
       lines.push("  // everyone on a course: where each is now, then drawn from the back of the picture to the front");
       if (here.some(function (i) { return i.name === "dragon"; })) {
         lines.push("  // (the dragon by its depth too: far, it is behind everyone; near, in front of them all)");
@@ -769,6 +786,9 @@ function filmCode() {
         lines.push("  var p" + n + " = where(" + keysCode(item) + ", t);");
         var call = item.kind === "person" ? personCode(item, n) : thingCode(item, n, sc), p = "p" + n;
         lines.push("  who.push([" + p + "[1]" + (item.name === "dragon" ? " + (" + p + "[4] - 0.5) * 2400" : "") + ", function () { " + call + "; }]);");
+      });
+      swaying.forEach(function (item) {     // a set piece that sways, by where it stands
+        lines.push("  who.push([" + Math.round(item.keys[0][2]) + ", function () { " + swayCode(item) + "; }]);");
       });
       lines.push("  who.sort(function (a, b) { return a[0] - b[0]; });",
                  "  who.forEach(function (w) { w[1](); });");

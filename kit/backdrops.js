@@ -566,22 +566,26 @@ function bdStupa(brush, x, base, size) {
 }
 
 // A line of flags from one point to another, sagging between them: blue,
-// white, red, green and yellow, over and over.
-function bdFlags(brush, x1, y1, x2, y2) {
+// white, red, green and yellow, over and over. Given the second t, the line
+// breathes a little in the breeze and each flag swings from it, its foot
+// moving, each a little behind the one before; without t it hangs still.
+function bdFlags(brush, x1, y1, x2, y2, t) {
   var colours = ["#3f6fb8", "#f6f1e6", "#c8382c", "#3f8f5a", "#f0c23a"], count = Math.round(Math.abs(x2 - x1) / 26);
-  function at(u) { return [mix(x1, x2, u), mix(y1, y2, u) + Math.sin(u * Math.PI) * 34]; }
+  var sag = t === undefined ? 34 : 34 + 3 * Math.sin(t * 0.8);
+  function at(u) { return [mix(x1, x2, u), mix(y1, y2, u) + Math.sin(u * Math.PI) * sag]; }
+  function flap(n) { return t === undefined ? 0 : 4 * Math.sin(t * 2.1 - n * 0.6) + 1.5 * Math.sin(t * 3.7 + n); }
   brush.strokeStyle = "rgba(60, 40, 30, 0.8)";
   brush.lineWidth = 1.3;
   brush.beginPath();
   for (var n = 0; n <= count; n++) { var p = at(n / count); brush.lineTo(p[0], p[1]); }
   brush.stroke();
   for (n = 0; n < count; n++) {
-    var a = at((n + 0.15) / count), b = at((n + 0.85) / count);
+    var a = at((n + 0.15) / count), b = at((n + 0.85) / count), f = flap(n);
     brush.beginPath();
     brush.moveTo(a[0], a[1]);
     brush.lineTo(b[0], b[1]);
-    brush.lineTo(b[0] - 1, b[1] + 20);
-    brush.lineTo(a[0] + 1, a[1] + 20);
+    brush.lineTo(b[0] - 1 + f, b[1] + 20);
+    brush.lineTo(a[0] + 1 + f, a[1] + 20);
     brush.closePath();
     brush.fillStyle = colours[n % 5];
     brush.fill();
@@ -1302,7 +1306,7 @@ var BACKDROP_PAINTERS = {
     lotus(brush, 1070, 990, 0.7, "#f28fa8");
     lotus(brush, 1200, 1000, 0.6, "#fff6ea");
   },
-  monastery: function (brush) {
+  monastery: function (brush, live) {
     bdSky(brush, 540, "#234f9a", "#d6e8f4");
     bdSunMoon(brush);
     bdSnow(brush, 420, 540, 900, 230, 6, 110);
@@ -1313,8 +1317,7 @@ var BACKDROP_PAINTERS = {
     bdHall(brush, 740, 660, 260, 120);
     hills(brush, WIDE, 780, 100, 1.2, "#4f8a44");
     bdStupa(brush, 1180, 800, 1.1);
-    bdFlags(brush, 880, 600, 1180, 530);
-    bdFlags(brush, 1180, 530, 1420, 640);
+    if (!live) { BACKDROP_HANGING.monastery(brush); }   // the lines of flags (see BACKDROP_HANGING)
     bdGround(brush, "#6aa350", 2.0);
   },
   valley: function (brush) {
@@ -1707,8 +1710,8 @@ var BACKDROP_PAINTERS = {
     pathside(brush, WIDE);
     wash(brush, WIDE);
   },
-  market: function (brush) {
-    var cloths = ["#d8423a", "#2f7d5c", "#e9a23a", "#4a6797"], papers = ["#e86f6f", "#f4c542", "#8fc47a", "#f28fa8", "#8fc0cf", "#f08a5c"], n;
+  market: function (brush, live) {
+    var cloths = ["#d8423a", "#2f7d5c", "#e9a23a", "#4a6797"], n;
     bdSky(brush, 760, "#8ccfc6", "#f4ecd2");
     clouds(brush, WIDE);
     hills(brush, WIDE, 760, 380, 1.9, "#a9cfc9");
@@ -1729,10 +1732,7 @@ var BACKDROP_PAINTERS = {
     brush.moveTo(22, 336);
     brush.quadraticCurveTo(720, 520, 1418, 336);
     brush.stroke();
-    for (n = 0; n < 9; n++) {
-      var u = (n + 0.5) / 9;
-      bdKhom(brush, 22 + 1396 * u, 336 + 184 * 2 * u * (1 - u), 1.15, papers[n % papers.length]);
-    }
+    if (!live) { BACKDROP_HANGING.market(brush); }      // the lanterns on the rope (see BACKDROP_HANGING)
     bdTufts(brush, 1030, 1070, 16, 9);
     wash(brush, WIDE);
   },
@@ -1855,18 +1855,55 @@ var BACKDROP_PAINTERS = {
 };
 
 // The set of that name, painted the first time it is asked for.
-function backdrop(name) {
+// What hangs in a backdrop, and sways (owner, 2026-10-16: "Look at the flags
+// and lanterns and if they are hanging give them a sway function"): the paper
+// lanterns on the rope over the market, and the two lines of flags at the
+// monastery. Each is a painter of its own, given a brush and the second t;
+// without t it draws what hangs at rest, as the backdrop always painted it.
+// backdrop(name) paints them at rest into its picture, as before. A film that
+// wants them to move asks for backdrop(name, true), the picture without them,
+// and draws them over it every frame with backdropSway(name, t).
+var MARKET_PAPERS = ["#e86f6f", "#f4c542", "#8fc47a", "#f28fa8", "#8fc0cf", "#f08a5c"];
+var BACKDROP_HANGING = {
+  market: function (brush, t) {                     // each lantern swings from where it is tied to the rope, each in its own time
+    for (var n = 0; n < 9; n++) {
+      var u = (n + 0.5) / 9, x = 22 + 1396 * u, y = 336 + 184 * 2 * u * (1 - u);
+      if (t === undefined) { bdKhom(brush, x, y, 1.15, MARKET_PAPERS[n % MARKET_PAPERS.length]); continue; }
+      brush.save();
+      brush.translate(x, y);
+      brush.rotate(0.07 * Math.sin(t * 1.1 + n * 0.9) + 0.025 * Math.sin(t * 2.6 + n * 1.7));
+      bdKhom(brush, 0, 0, 1.15, MARKET_PAPERS[n % MARKET_PAPERS.length]);
+      brush.restore();
+    }
+  },
+  monastery: function (brush, t) {
+    bdFlags(brush, 880, 600, 1180, 530, t);
+    bdFlags(brush, 1180, 530, 1420, 640, t);
+  }
+};
+
+// The backdrop called "name", painted the first time it is asked for and kept.
+// With "live" true, it leaves out what hangs in it (BACKDROP_HANGING), for a
+// film that draws that swaying with backdropSway().
+function backdrop(name, live) {
   if (!BACKDROP_PAINTERS[name]) {
     warn('backdrops.js: there is no backdrop called "' + name + '". They are: '
          + BACKDROPS.map(function (row) { return row[0]; }).join(", "));
     name = "meadow";
   }
-  if (!BACKDROP_SETS[name]) {
+  var key = live && BACKDROP_HANGING[name] ? name + "/live" : name;
+  if (!BACKDROP_SETS[key]) {
     var set = document.createElement("canvas");
     set.width = WIDE;
     set.height = 1080;
-    BACKDROP_PAINTERS[name](set.getContext("2d"));
-    BACKDROP_SETS[name] = set;
+    BACKDROP_PAINTERS[name](set.getContext("2d"), key !== name);
+    BACKDROP_SETS[key] = set;
   }
-  return BACKDROP_SETS[name];
+  return BACKDROP_SETS[key];
+}
+
+// What hangs in the backdrop "name", swaying at the second t, drawn on the
+// kit's sheet "pen"; nothing for a backdrop with nothing hanging in it.
+function backdropSway(name, t) {
+  if (BACKDROP_HANGING[name]) { BACKDROP_HANGING[name](pen, t); }
 }
