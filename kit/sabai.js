@@ -296,7 +296,8 @@ function sabaiOf(t, x, y, look) {
 // The look of a person wearing the cloth: the same look with "worn", a painter
 // the kit calls after the body and the head and before the arms, so the near
 // arm hangs over the cloth's lower end (owner, 2026-10-15: "put it behind the
-// right arm"). It draws the front of the cloth in the frame the pen has now,
+// right arm"); her left arm, on the side she faces, the cloth's shoulder, is
+// drawn before the cloth, so it stays under it when she wais (owner, 2026-10-16). It draws the front of the cloth in the frame the pen has now,
 // the scene's, so call it where the person is drawn, inside the camera.
 function sabaiWorn(look, t, where, cloth) {
   var frame = pen.getTransform();

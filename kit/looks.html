@@ -38,7 +38,7 @@ var PARTS = [
     ["skirt", "lady", function () { return {}; }, "skirt: true"],
     ["weave", "lady", function () { return {weave: 2}; }, "weave: 2"],
     ["sabai", "lady", function () { return {sabai: ["#3f8f5a", "#e0b23a"]}; }, 'sabai: ["#3f8f5a",|"#e0b23a"]'],
-    ["worn", "lady", function () { return {sabai: false, worn: function () {   // a painter the kit calls before the arms: a band under them
+    ["worn", "lady", function () { return {sabai: false, worn: function () {   // a painter the kit calls before the arms: a band under them (a raised arm A goes under it too)
       pen.strokeStyle = "#8a2a3a"; pen.lineWidth = 16; pen.lineCap = "round";
       pen.beginPath(); pen.moveTo(34, -118); pen.lineTo(-30, -10); pen.stroke();
     }}; }, "worn: a painter|under the arms"],

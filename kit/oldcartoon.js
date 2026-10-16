@@ -2740,7 +2740,9 @@ var LOOK_KEYS = {};
 //                   the shape of the sash film's cloth (sabai.js); a third name "check" bars it
 //   worn            a painter the kit calls after the body and the head and before the arms,
 //                   with the pen in the person's own frame: a cloth that goes under the arms,
-//                   as the kit's own sabai does (sabaiWorn() in sabai.js)
+//                   as the kit's own sabai does (sabaiWorn() in sabai.js); arm A, on the side
+//                   the figure faces, is drawn before it unless it hangs behind the body, so
+//                   that arm stays under the cloth (in a wai too) and only its hand shows
 //   flower, garland, pins, tail, nails
 //                   a lady's ornaments: a flower (its colour) at the bun, a loop of
 //                   jasmine, strands of gold flowers, a straight tail of hair, gold
@@ -4315,7 +4317,13 @@ function person(x, y, look) {
   // so an arm that crosses the chest, or a hand raised before the face, as a
   // dancer's is, is never hidden by them; a hanging far arm went behind the
   // chest already (behindA, owner 2026-10-15).
-  if (look.worn) {                                  // what is worn under the arms (a cloth of sabai.js)
+  // What is worn (a cloth of sabai.js) comes over the shoulder on the side the
+  // figure faces, so the arm on that side (A) stays under it wherever it goes,
+  // across the chest in a wai too, and only its hand comes out over the cloth
+  // (owner, 2026-10-16: "the left arm of the woman ... stays under the sash
+  // when she wais"); the other arm (B) goes over the cloth's lower end.
+  var underWorn = look.worn && !rig && !behindA;    // A, drawn before the cloth
+  if (look.worn && !underWorn) {                    // what is worn under the arms (a cloth of sabai.js)
     pen.save();
     look.worn();
     pen.restore();
@@ -4324,8 +4332,15 @@ function person(x, y, look) {
     wristB = rigArm(rig, ["armR_upper", "armR_lower", "handR"], rootB[0], rootB[1], handB, -1, -flex + (look.wristB || 0));
     wristA = rigArm(rig, ["armL_upper", "armL_lower", "handL"], rootA[0], rootA[1], handA, 1, flex + (look.wristA || 0));
   } else {
+  if (underWorn) {                                  // arm A, then the cloth over it
+    wristA = armOf(rootA, handA, 1, who + "/armA");
+    if (look.bare) { armBand(rootA, wristA); }
+    pen.save();
+    look.worn();
+    pen.restore();
+  }
   wristB = armOf(rootB, handB, -1, who + "/armB");  // the far arm
-  if (!behindA) { wristA = armOf(rootA, handA, 1, who + "/armA"); }   // the near arm (unless it hangs behind the body, drawn already)
+  if (!behindA && !underWorn) { wristA = armOf(rootA, handA, 1, who + "/armA"); }   // the near arm (unless it hangs behind the body, or under what is worn, drawn already)
   joints.shoulderA = spot(rootA[0], rootA[1]);
   joints.shoulderB = spot(rootB[0], rootB[1]);
   joints.elbowA = spot(wristA[2], wristA[3]);
@@ -4334,7 +4349,7 @@ function person(x, y, look) {
   joints.wristB = spot(wristB[0], wristB[1]);
   if (look.bare) {                                  // the band of cord round each upper arm; the far arm's went on with that arm if it hangs behind the body
     armBand(rootB, wristB);
-    if (!behindA) { armBand(rootA, wristA); }
+    if (!behindA && !underWorn) { armBand(rootA, wristA); }
   }
   poseB = handPose("B", wristB, handB);
   if (!poseA) { poseA = handPose("A", wristA, handA); }
