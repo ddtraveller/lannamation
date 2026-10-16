@@ -2575,6 +2575,29 @@ curve where it had a zigzag) and does not move. Two tung on the dusk set of `sas
 (`paintTempleFront()`) are painted but drawn by no scene since the temple scene went. `backdrops.html`
 shows the still pictures.
 
+## The band and an old couple at the night of dancing (2026-10-16)
+
+The owner: "Add the band members to the night scene", then "Add an old couple to the end scene too". Both
+are in `sceneDance()` of `sash.html`, at the right of the picture, clear of the words under it (which end
+at about x 1410) and of the khom phat and the children at the left.
+
+- **The band** (`band.js`): four players sitting cross-legged at y 1005, a step nearer than the dancers,
+  size 1.0, facing left toward them, each on the beat: the elder on the pi chum (x 1420), a fellow on the
+  salo (1570), the farmer on the sueng (1715), a fellow with no shirt on the phin phia (1850). In that
+  order each instrument reaches into room of its own: the salo's bow lies across the piper's empty lap,
+  the sueng's neck goes behind the next player. (In a first order, the salo's bow cut across the phin
+  phia's player, whose instrument could not be read.) It adds about a fifth to the time a frame of the
+  dance takes to draw.
+- **The old couple**: the cast's grandmother (x 1715, y 950, size 1.0) and elder (1575, 955, 1.1), a step
+  behind the band, so the players in front hide only their legs; side by side, turned to us
+  (`twist: 1`), their eyes on the dancer, holding hands: one point given to both as `reachA`, swinging
+  4 px. The elder leaves his stick (`holding: null`), whose hand it would take. Between the dancers and
+  the band, where they were first put, the elder hid half the celestial. **The hands, measured:** at
+  hanging height (y 795) the point was 117 to 121 from his shoulder and his arm is 108 long at size
+  1.1, so his wrist stopped 5 to 18 px short of hers; at y 772, and with no hop (`spring: 0`: the hop's
+  stretch would take his hand from hers), the widest gap between their wrists over every frame of the
+  scene is 3.4 px.
+
 ## The kit's own checks
 
 **One command after any change to the kit**, from `kit/`:

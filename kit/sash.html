@@ -663,6 +663,16 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
   person(720, 985, cast("dancer", {late: 0.25, spring: 0.7, smile: 1, dance: true, at: [900, 500],
                                   handA: [70 + Math.sin(t * 3) * 20, -130 - hop(t, 0.25) * 30], handB: [-60, -110 + Math.cos(t * 3) * 20]}));
   person(1060, 990, cast("celestial", {late: 0.5, spring: 0.6, smile: 1, face: -1, at: [720, 500], handA: [50, -120 - hop(t, 0.5) * 25]}));
+  // An old couple watches the dancing, side by side and turned to us, holding hands, their eyes on the dancer
+  // (owner, 2026-10-16: "Add an old couple to the end scene too"): the cast's grandmother, and its elder, who
+  // leaves his stick for the night. They stand a step behind the band, so the players sitting in front hide
+  // only their legs; their hands meet in the gap between the salo's and the sueng's players' heads. One point
+  // given to both is their two hands, swinging a little, high enough for his reach (his arm is 108 from shoulder
+  // to wrist; a point at hanging height was 117 off and his hand stopped short of hers). They do not hop on the
+  // beat, as the dancers do: the stretch of a hop would take his hand away from hers.
+  var hands = [1646, 772 + 4 * Math.sin(t * 1.4)];
+  person(1715, 950, cast("grandmother", {size: 1.0, twist: 1, face: -1, spring: 0, at: [720, 640], reachA: hands, id: "old-woman"}));
+  person(1575, 955, cast("elder", {size: 1.1, twist: 1, holding: null, spring: 0, at: [720, 640], reachA: hands, id: "old-man"}));
   // The band of the north (band.js), sitting cross-legged on the ground at the right, a step nearer than the
   // dancers, facing them, each on the beat (owner, 2026-10-16: "Add the band members to the night scene"): the
   // pi chum, the salo (its bow across the piper's empty lap), the sueng (its neck behind the next player) and the
