@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>chickens - a rooster and a hen, and what they do</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script>
+// The "chickens" sheet: the kit's rooster() and what its look can make it do
+// (see the comment above rooster()), and a hen. Above, each on its own:
+// crowing (no look), pecking about (roosterForage), a hen pecking, a fright
+// coming and going (alarm), a crouch (sink), and one facing left. In the
+// middle, in place: the run (step, its wings a little out), the hop (flap),
+// the scurry (step, its wings out) and the hen running. Below, the whole of
+// roosterBolt() from the second second and a half: a rooster takes fright
+// and is off, a feather coming loose at the top of its hop and drifting down
+// (fallingFeather), and a hen a moment after it, which only runs.
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var top = 280, mid = 610, low = 960, cycle = t % 2;
+  rooster(170, top, t);
+  caption("crowing: no look", 170, top + 50);
+  rooster(480, top, t, {peck: roosterForage(t, 1)});
+  caption("pecking about: roosterForage()", 480, top + 50);
+  rooster(790, top, t, {hen: true, peck: roosterForage(t, 2)});
+  caption("a hen: hen", 790, top + 50);
+  rooster(1100, top, t, {alarm: between(cycle, 0, 0.06) * (1 - between(cycle, 1.2, 1.7))});
+  caption("a fright: alarm", 1100, top + 50);
+  rooster(1410, top, t, {sink: 0.5 - 0.5 * Math.cos(Math.PI * t)});
+  caption("a crouch: sink", 1410, top + 50);
+  rooster(1720, top, t, {face: -1, peck: roosterForage(t, 4)});
+  caption("facing left: face -1", 1720, top + 50);
+  rooster(240, mid, t, {step: t * 6, wings: 0.3});
+  caption("running: step, wings a little out", 240, mid + 50);
+  var u = (t % 1.2) / 0.75;                          // a hop in place, once in 1.2 s
+  rooster(720, mid - (u < 1 ? BOLT.high * 0.6 * Math.sin(Math.PI * u) : 0), t,
+          {step: 0.3, flap: u < 1 ? 1 : 0, lean: u < 1 ? 0.2 - 0.35 * Math.sin(Math.PI * u) : 0.2});
+  caption("the hop: flap", 720, mid + 50);
+  rooster(1200, mid, t, {step: t * 8, wings: 0.55});
+  caption("the scurry: step, wings out", 1200, mid + 50);
+  rooster(1650, mid, t, {hen: true, step: t * 8, wings: 0.55});
+  caption("a hen running", 1650, mid + 50);
+  var fright = 1.5, hen = roosterBolt(t - fright - 0.08, {hop: false, hen: true, peck: roosterForage(fright + 0.08, 6)});
+  var cock = roosterBolt(t - fright, {peck: roosterForage(fright, 5)}), loose = roosterBolt(BOLT.top);
+  rooster(390 + hen.x, low - 12 + hen.y, t, t < fright + 0.08 ? {hen: true, peck: roosterForage(t, 6)} : hen.look);
+  rooster(200 + cock.x, low + cock.y, t, t < fright ? {peck: roosterForage(t, 5)} : cock.look);
+  fallingFeather(200 + loose.x - 8, low + loose.y - 40, low + 6, t - fright - BOLT.top, 3, ROOSTER_COAT.body, 40);
+  caption("roosterBolt(): a fright, a few steps, a hop, a feather coming loose (fallingFeather), and away; a hen, hop: false", 960, low + 70);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

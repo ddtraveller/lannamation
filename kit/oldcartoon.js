@@ -5435,53 +5435,15 @@ function dog(x, y, t) {
   pen.restore();
 }
 
-// A rooster. It crows once every two beats, in three parts, as an animator
-// would time it: it sinks first (the part that makes the crow read), then
-// stretches its neck up and throws its head back with its beak open and its
-// wings out, then settles. "stretch" is below 0 while it sinks and runs up to
-// 1 at the top of the crow.
-function rooster(x, y, t) {
-  var turn = (t / BEAT / 2) % 1;
-  var stretch = turn < 0.2 ? -0.35 * Math.sin(turn / 0.2 * Math.PI)
-              : turn < 0.75 ? Math.sin((turn - 0.2) / 0.55 * Math.PI) : 0;
-  var crowing = Math.max(0, stretch);
-  var n;
+// A rooster's wing, from its root at (x, y) of the pen, turned by "angle"
+// (0.35 folded; more lifts it up over the back, less lowers it): a few
+// feathered curves, as rooster() draws it. "open", 0 to 1, spreads it, longer
+// and broader, as a wing that beats or is held out is.
+function roosterWing(x, y, angle, colour, open) {
   pen.save();
-  pen.translate(x, y + 4 - stretch * 5);
-  pen.lineCap = "round";
-  for (n = 0; n < 2; n++) {                         // two legs, and three toes each
-    var footX = -8 + n * 18;
-    pen.strokeStyle = "#c8861e";
-    pen.lineWidth = 4;
-    pen.beginPath();
-    pen.moveTo(footX + 2, -16);
-    pen.lineTo(footX, -2 + stretch * 5);
-    pen.moveTo(footX - 9, 1 + stretch * 5);
-    pen.lineTo(footX, -2 + stretch * 5);
-    pen.lineTo(footX + 10, 1 + stretch * 5);
-    pen.moveTo(footX, -2 + stretch * 5);
-    pen.lineTo(footX + 2, 4 + stretch * 5);
-    pen.stroke();
-  }
-  // the tail: five feathers in a fan. Each swings a little after the one
-  // before it, and the whole fan lifts in the crow.
-  var feathers = ["#2f6b5a", "#c9452e", "#2f6b5a", "#e9c76b", "#c9452e"];
-  for (n = 0; n < 5; n++) {
-    var lean = 2.2 + n * 0.28 - crowing * 0.25 + Math.sin(t * 5 - n * 0.6) * 0.07;
-    var long = 50 - Math.abs(n - 2) * 5;
-    hose(-20, -34, -20 + Math.cos(lean) * long, -34 - Math.sin(lean) * long, 0.35, 8, feathers[n]);
-  }
-  pen.save();                                       // the body leans back as the neck goes up
-  pen.translate(0, -30);
-  pen.rotate(-0.12 - crowing * 0.22);
-  oval(0, 0, 31, 24 + crowing * 3, "#fff6e6");
-  pen.fillStyle = "rgba(120, 80, 60, 0.18)";        // the belly is in shadow
-  pen.beginPath();
-  pen.ellipse(-4, 12, 24, 9, 0, 0, 7);
-  pen.fill();
-  pen.save();                                       // a wing, which lifts and shakes in the crow
-  pen.translate(-6, -8);
-  pen.rotate(0.35 - crowing * 1.1 + Math.sin(t * 34) * 0.14 * crowing);
+  pen.translate(x, y);
+  pen.rotate(angle);
+  pen.scale(1 + 0.7 * (open || 0), 1 + 0.4 * (open || 0));
   pen.beginPath();
   pen.moveTo(8, 0);
   pen.quadraticCurveTo(-8, -14, -30, -2);
@@ -5489,23 +5451,131 @@ function rooster(x, y, t) {
   pen.quadraticCurveTo(-14, 8, -16, 14);
   pen.quadraticCurveTo(0, 14, 8, 0);
   pen.closePath();
-  shape("#f0dcc0");
+  shape(colour);
   pen.restore();
+}
+
+// The rooster's colours, and the hen's: a brown village hen, with a short
+// tail of three feathers and a small comb.
+var ROOSTER_COAT = {body: "#fff6e6", wing: "#f0dcc0", far: "#e6ceb0", ruff: "#e9c76b",
+                    tail: ["#2f6b5a", "#c9452e", "#2f6b5a", "#e9c76b", "#c9452e"], long: 50};
+var HEN_COAT = {body: "#c98b4e", wing: "#a96a33", far: "#94592a", ruff: "#dcae72",
+                tail: ["#6e3f1e", "#8a5228", "#6e3f1e"], long: 30};
+
+// The names a rooster's look may have (see rooster()), so that one it does
+// not know is warned of.
+var ROOSTER_KEYS = {};
+["step", "flap", "wings", "lean", "peck", "alarm", "sink", "face", "hen"].forEach(function (name) { ROOSTER_KEYS[name] = true; });
+
+// A rooster. It crows once every two beats, in three parts, as an animator
+// would time it: it sinks first (the part that makes the crow read), then
+// stretches its neck up and throws its head back with its beak open and its
+// wings out, then settles. "stretch" is below 0 while it sinks and runs up to
+// 1 at the top of the crow.
+// Its look, "bird", if given, makes it do something else, and it crows only
+// when nothing is asked of it (owner, 2026-10-17: a chicken that runs a few
+// steps, jumps up flapping and scurries off; "spend some time on the framework
+// and chicken behaviors"; a second chicken that takes fright with it):
+//   step   a number that grows a step at a time while it runs: its legs run,
+//          a foot lifting as it swings forward, the body leans forward and
+//          bobs, and the head reaches forward, pumping with the steps
+//   flap   0 to 1: both wings beat, up over the back and down, eight times a
+//          second (the far wing shows above the body as it rises), as in a jump
+//   wings  0 to 1: both wings held out and up a little, shivering, as a
+//          chicken holds them when it scurries
+//   lean   how far it leans forward running (radians; 0.2 unless told)
+//   peck   0 to 1: it tips forward from the hips and reaches down until its
+//          beak is at the ground (roosterForage() gives a forager's pecks)
+//   alarm  0 to 1: a fright: the head high and drawn back, the body upright,
+//          the comb shaking, the eye wide
+//   sink   0 to 1: it crouches, the body down on bent legs and the head drawn
+//          in, as before a spring and on landing
+//   face   1, facing right, or -1, left
+//   hen    true: a hen (HEN_COAT), smaller, which never crows
+// roosterBolt() puts them together into a whole fright and flight.
+function rooster(x, y, t, bird) {
+  bird = bird || {};
+  checkNames("The rooster's name", bird, ROOSTER_KEYS);
+  var coat = bird.hen ? HEN_COAT : ROOSTER_COAT;
+  var running = bird.step !== undefined, flap = clamp(bird.flap || 0), wings = clamp(bird.wings || 0);
+  var peck = clamp(bird.peck || 0), alarm = clamp(bird.alarm || 0), sink = clamp(bird.sink || 0);
+  var crows = !running && !bird.hen && bird.flap === undefined && bird.wings === undefined &&
+              bird.peck === undefined && bird.alarm === undefined && bird.sink === undefined;
+  var turn = (t / BEAT / 2) % 1;
+  var stretch = !crows ? -1.4 * sink : turn < 0.2 ? -0.35 * Math.sin(turn / 0.2 * Math.PI)
+              : turn < 0.75 ? Math.sin((turn - 0.2) / 0.55 * Math.PI) : 0;
+  var crowing = Math.max(0, stretch);
+  var beat = flap * (0.8 + 0.95 * Math.sin(t * Math.PI * 16)) + wings * (0.7 + 0.12 * Math.sin(t * 40));   // how far up the wings are: beating in a jump, held out in a scurry
+  var open = clamp(flap + 0.6 * wings);              // and how far spread
+  var tip = peck * 0.35 - alarm * 0.12;             // the body tips forward from the hips to peck, back in a fright
+  var size = bird.hen ? 0.85 : 1, n;
+  pen.save();
+  var bob = running ? 3 * Math.abs(Math.sin(bird.step * Math.PI * 2)) : 0;
+  pen.translate(x, y + 4 - stretch * 5 - bob);
+  pen.scale(size * (bird.face || 1), size);
+  if (running) { pen.rotate(bird.lean !== undefined ? bird.lean : 0.2); }   // leaning into the run
+  pen.lineCap = "round";
+  function hips() { pen.translate(0, -16); pen.rotate(tip); pen.translate(0, 16); }   // what is above the legs turns about the hips
+  if (flap > 0 || wings > 0) {                      // the far wing, behind the body: it shows when the wings are up
+    pen.save();
+    hips();
+    roosterWing(-2, -40, 0.35 + beat, coat.far, open);
+    pen.restore();
+  }
+  for (n = 0; n < 2; n++) {                         // two legs, and three toes each
+    var stride = running ? Math.sin(bird.step * Math.PI * 2 + n * Math.PI) : 0;   // running: each foot swings forward and back, the other half a step behind
+    var footX = -8 + n * 18 + stride * 12, lift = running ? Math.max(0, stride) * 7 : 0;
+    pen.strokeStyle = "#c8861e";
+    pen.lineWidth = 4;
+    pen.beginPath();
+    var hipX = -6 + n * 18;
+    pen.moveTo(hipX, -16);
+    pen.lineTo(footX, -2 + stretch * 5 - lift);
+    pen.moveTo(footX - 9, 1 + stretch * 5 - lift);
+    pen.lineTo(footX, -2 + stretch * 5 - lift);
+    pen.lineTo(footX + 10, 1 + stretch * 5 - lift);
+    pen.moveTo(footX, -2 + stretch * 5 - lift);
+    pen.lineTo(footX + 2, 4 + stretch * 5 - lift);
+    pen.stroke();
+  }
+  hips();
+  // the tail: five feathers in a fan (a hen's three, shorter and more
+  // upright). Each swings a little after the one before it, and the whole fan
+  // lifts in the crow and in a fright.
+  var middle = (coat.tail.length - 1) / 2;
+  for (n = 0; n < coat.tail.length; n++) {
+    var lean = (bird.hen ? 2 : 2.2) + n * (bird.hen ? 0.32 : 0.28) - crowing * 0.25 - alarm * 0.2 + Math.sin(t * 5 - n * 0.6) * 0.07;
+    var long = coat.long - Math.abs(n - middle) * 5;
+    hose(-20, -34, -20 + Math.cos(lean) * long, -34 - Math.sin(lean) * long, 0.35, 8, coat.tail[n]);
+  }
+  pen.save();                                       // the body leans back as the neck goes up
+  pen.translate(0, -30);
+  pen.rotate(-0.12 - crowing * 0.22);
+  oval(0, 0, 31, 24 + crowing * 3, coat.body);
+  pen.fillStyle = "rgba(120, 80, 60, 0.18)";        // the belly is in shadow
+  pen.beginPath();
+  pen.ellipse(-4, 12, 24, 9, 0, 0, 7);
+  pen.fill();
+  roosterWing(-6, -8, 0.35 - crowing * 1.1 + Math.sin(t * 34) * 0.14 * crowing + beat, coat.wing, open);   // a wing, which lifts and shakes in the crow, beats in a jump and is held out in a scurry
   pen.restore();
-  // the neck, and a head that tips back
-  var headX = 28 + crowing * 2, headY = -78 - stretch * 20;
-  hose(16, -42, headX - 2, headY + 8, 0.12 + crowing * 0.1, 15, "#fff6e6");
-  hose(10, -40, 20, -52, 0.3, 9, "#e9c76b");        // a ruff of gold feathers at its foot
+  // the neck, and a head that tips back in the crow, goes down to peck,
+  // reaches forward in a run and goes up in a fright
+  var headX = mix(28 + crowing * 2, 34, peck) - 5 * alarm, headY = mix(-78 - stretch * 20, -40, peck) - 14 * alarm;
+  if (running) { headX += 8 + 3 * Math.sin(bird.step * Math.PI * 4); headY += 10; }
+  hose(16, -42, headX - 2, headY + 8, 0.12 + crowing * 0.1, 15, coat.body);
+  hose(10, -40, 20, -52, 0.3, 9, coat.ruff);        // a ruff of gold feathers at its foot
   pen.save();
   pen.translate(headX, headY);
-  pen.rotate(-crowing * 0.55);
-  for (n = 0; n < 3; n++) {                         // the comb: three bumps that wobble
-    oval(-7 + n * 7, -13 - (n === 1 ? 3 : 0) + Math.sin(t * 9 + n) * 1.2, 5.5, 6.5, "#d63a2f");
+  pen.rotate(-crowing * 0.55 + peck * 1.0);
+  var comb = bird.hen ? 0.6 : 1;
+  for (n = 0; n < 3; n++) {                         // the comb: three bumps that wobble, and shake in a fright
+    oval((-7 + n * 7) * comb, -13 * (bird.hen ? 0.85 : 1) - (n === 1 ? 3 * comb : 0) + Math.sin(t * 9 + n) * 1.2 + alarm * Math.sin(t * 60 + n * 2) * 1.5,
+         5.5 * comb, 6.5 * comb, "#d63a2f");
   }
   pen.save();                                       // the wattle swings under the beak
   pen.translate(9, 9);
   pen.rotate(Math.sin(t * 8) * 0.25 + crowing * 0.4);
-  oval(0, 6, 4.5, 8, "#d63a2f");
+  oval(0, 6 * comb, 4.5 * comb, 8 * comb, "#d63a2f");
   pen.restore();
   var gape = 0.08 + crowing * 0.5;                  // the beak: two halves that open
   for (n = -1; n <= 1; n += 2) {
@@ -5520,8 +5590,8 @@ function rooster(x, y, t) {
     shape("#f0a030");
     pen.restore();
   }
-  oval(0, 0, 14, 13, "#fff6e6");
-  if ((t + 0.7) % 2.9 < 0.12) {                     // it blinks, too
+  oval(0, 0, 14, 13, coat.body);
+  if (alarm < 0.5 && (t + 0.7) % 2.9 < 0.12) {      // it blinks, too, but not in a fright
     pen.strokeStyle = INK;
     pen.lineWidth = 2;
     pen.beginPath();
@@ -5529,9 +5599,14 @@ function rooster(x, y, t) {
     pen.lineTo(8, -3);
     pen.stroke();
   } else {
+    if (alarm > 0) {                                // wide in a fright: the white shows all round it
+      pen.beginPath();
+      pen.arc(5, -3, 2.8 + 2.4 * alarm, 0, 7);
+      shape("#ffffff", 1.4);
+    }
     pen.fillStyle = INK;
     pen.beginPath();
-    pen.arc(5, -3, 2.8, 0, 7);
+    pen.arc(5, -3, 2.8 - 0.9 * alarm, 0, 7);
     pen.fill();
     pen.fillStyle = "#ffffff";
     pen.beginPath();
@@ -5548,6 +5623,132 @@ function rooster(x, y, t) {
     hose(x + 90 + fly * 70, y - 122 - fly * 80, x + 90 + fly * 70, y - 160 - fly * 80, 0, 2, INK);
     pen.globalAlpha = 1;
   }
+}
+
+// A forager's pecking, for rooster()'s peck at second t: its head low,
+// looking, now and then a peck or a few quick pecks at the ground, each down
+// in a tenth of a second and up in a fifth, and now and then its head up a
+// while, looking about. "seed" gives each bird its own.
+function roosterForage(t, seed) {
+  var cell = Math.floor(t / 0.3), u = t / 0.3 - cell;
+  var jab = dice(cell * 5 + (seed || 0) * 17 + 1) > 0.5 ? (u < 0.3 ? Math.sin(u / 0.3 * Math.PI / 2) : Math.cos((u - 0.3) / 0.7 * Math.PI / 2)) : 0;
+  var spell = Math.floor(t / 2), v = t / 2 - spell;
+  var up = dice(spell * 3 + (seed || 0) * 11 + 2) > 0.6 ? Math.sin(Math.PI * clamp((v - 0.2) / 0.6)) : 0;
+  return (0.3 + 0.7 * jab) * (1 - up);
+}
+
+// A fright and a flight, in seconds from the fright: when the run starts,
+// the hop starts, the hop is at its top, and it lands; and how high it hops.
+var BOLT = {run: 0.35, hop: 1.1, top: 1.475, land: 1.85, high: 130};
+
+// A rooster (or a hen) that something frightens, s seconds after the fright
+// (owner, 2026-10-17: "have the chicken run a few steps and then jump into the
+// air flapping its wings but then come down and scurry off until it is off
+// screen"). It starts up, its head high and its eye wide, jumping a little
+// where it stands, and crouches; runs a few steps, faster and faster, its
+// wings coming out; hops up with its wings beating, leaning back, and comes
+// down, crouching as it lands; and scurries off with its wings held out,
+// faster than it ran, until it is out of the picture. One that does not hop
+// runs straight off as fast as a scurry. Its legs go on from step to step all
+// through: in the hop they hold the stride they left the ground in.
+// plan: {face: -1 to run left; hop: false for one that only runs; peck: how
+// far down its head was when the fright came, so it comes up from there; hen:
+// true for a hen}. It gives back {x, y, look}: how far it has gone from where
+// it stood (x the way it runs; y up from the ground, so below 0) and the look
+// for rooster(). Before the fright (s below 0) it stands.
+function roosterBolt(s, plan) {
+  plan = plan || {};
+  var face = plan.face || 1, B = BOLT, bird = {face: face, alarm: 0};
+  if (plan.hen) { bird.hen = true; }
+  if (s < 0) { return {x: 0, y: 0, look: bird}; }
+  var r = s - B.run, d;
+  bird.alarm = between(s, 0, 0.06) * (1 - 0.6 * between(s, B.run, B.run + 0.4));   // the head shoots up, and stays high
+  if (s < B.run) {                                  // the fright: a start, and a crouch to spring from
+    bird.peck = (plan.peck || 0) * (1 - between(s, 0, 0.06));
+    bird.sink = between(s, 0.2, B.run);
+    return {x: 0, y: -10 * Math.sin(Math.PI * clamp(s / 0.2)), look: bird};
+  }
+  bird.sink = 1 - between(r, 0, 0.12);
+  if (plan.hop === false) {                         // straight off, faster and faster
+    bird.step = r < 0.4 ? 8 * r * r / 0.8 : 8 * (0.2 + r - 0.4);
+    bird.wings = 0.55 * between(r, 0, 0.3);
+    d = r < 0.4 ? 520 * r * r / 0.8 : 520 * (0.2 + r - 0.4);
+    return {x: face * d, y: 0, look: bird};
+  }
+  if (s < B.hop) {                                  // the run: a few steps, faster and faster
+    bird.step = r < 0.25 ? 6 * r * r / 0.5 : 6 * (0.125 + r - 0.25);
+    bird.wings = 0.3 * between(r, 0, 0.3);
+    d = r < 0.25 ? 380 * r * r / 0.5 : 380 * (0.125 + r - 0.25);
+    return {x: face * d, y: 0, look: bird};
+  }
+  var ran = B.hop - B.run - 0.125, steps = 6 * ran;
+  if (s < B.land) {                                 // the hop, its wings beating, leaning back
+    var u = (s - B.hop) / (B.land - B.hop);
+    bird.step = steps;
+    bird.flap = between(u, 0, 0.1);
+    bird.wings = 0.3 * (1 - between(u, 0, 0.1));
+    bird.lean = 0.2 - 0.35 * Math.sin(Math.PI * u);
+    return {x: face * (380 * ran + 340 * (s - B.hop)), y: -B.high * Math.sin(Math.PI * u), look: bird};
+  }
+  var l = s - B.land;                               // down: a crouch, and away, faster
+  bird.sink = 0.8 * Math.sin(Math.PI * clamp(l / 0.22));
+  bird.flap = 1 - between(l, 0, 0.15);
+  bird.wings = 0.55 * between(l, 0, 0.15);
+  bird.step = steps + (l < 0.2 ? 8 * l * l / 0.4 : 8 * (0.1 + l - 0.2));
+  d = 380 * ran + 340 * (B.land - B.hop) + (l < 0.3 ? 340 * l + 180 * l * l / 0.6 : 129 + 520 * (l - 0.3));
+  return {x: face * d, y: 0, look: bird};
+}
+
+// A feather: a quill and a soft vane, "long" from end to end, its middle at
+// (x, y), turned by "turn" (0: the root at the left, the tip at the right).
+function feather(x, y, turn, long, colour) {
+  var h = long / 2;
+  pen.save();
+  pen.translate(x, y);
+  pen.rotate(turn);
+  pen.beginPath();
+  pen.moveTo(-h, 0);                                // the vane: from the root over to the tip, and back under
+  pen.quadraticCurveTo(-h * 0.2, -long * 0.32, h, -long * 0.06);
+  pen.quadraticCurveTo(h * 0.1, long * 0.24, -h * 0.75, long * 0.05);
+  pen.closePath();
+  shape(colour, LINE * 0.6);
+  pen.strokeStyle = inkFor(colour);
+  pen.lineWidth = 1.1;
+  pen.beginPath();
+  pen.moveTo(-h * 1.2, long * 0.03);                // the quill, out past the root
+  pen.quadraticCurveTo(0, -long * 0.03, h * 0.9, -long * 0.06);
+  pen.moveTo(h * 0.1, -long * 0.18);                // a notch where the vane parts
+  pen.lineTo(h * 0.3, -long * 0.05);
+  pen.stroke();
+  pen.restore();
+}
+
+// A feather that came loose at (x, y) "age" seconds ago and falls to the
+// ground at "ground" (owner, 2026-10-17: "When the chicken jumps have a small
+// feather fall and descend to the ground and fade away"). It falls as a
+// feather does: slowly, swinging from side to side, quickest through the
+// middle of a swing and, at the ends, tipping up and rising a little before
+// it swings back; it carries on "drift" the way it was going before the air
+// stops it; it lands, lies flat a moment and fades. "seed" gives each its own
+// swing. Nothing is drawn before it comes loose or after it has gone.
+function fallingFeather(x, y, ground, age, seed, colour, drift) {
+  if (age < 0) { return; }
+  var swing = 1.1 + 0.3 * dice(seed * 3 + 1), wide = 20 + 12 * dice(seed * 3 + 2), sink = 50 + 15 * dice(seed * 3 + 3);
+  var w = Math.PI * 2 / swing;
+  function at(a) {
+    return [x + (drift || 0) * (1 - Math.exp(-a / 0.25)) + wide * Math.sin(w * a),
+            y + sink * a + 1.3 * sink / (2 * w) * Math.sin(2 * w * a)];
+  }
+  var land = 0;                                     // when it reaches the ground
+  while (at(land)[1] < ground && land < 20) { land += 0.02; }
+  var fade = 1 - between(age, land + 0.6, land + 1.6);
+  if (fade <= 0) { return; }
+  var a = Math.min(age, land), p = at(a);
+  var turn = mix(-0.5 * Math.sin(w * a), 0.1, between(age, land, land + 0.25));   // tipped up at the end of a swing; flat once it is down
+  pen.save();
+  pen.globalAlpha *= fade;
+  feather(p[0], Math.min(p[1], ground), turn, 22, colour || ROOSTER_COAT.body);
+  pen.restore();
 }
 
 // The sun. STYLE.sun is "flames" (a gold disc ringed with the flame scrolls

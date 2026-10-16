@@ -270,13 +270,58 @@ function sceneCloth(t) {                // 0-22: one row, still; the music and t
   pen.restore();
 }
 
+// The rooster and the hen in the lane (owner, 2026-10-17: "have the chicken
+// run a few steps and then jump into the air flapping its wings but then come
+// down and scurry off until it is off screen. The dog should increase speed as
+// soon as the chicken starts to run"; "When the chicken jumps have a small
+// feather fall and descend to the ground and fade away"; "Add a second chicken
+// a little to the right of the first that startles and scurries off screen").
+// The rooster crows, then pecks about the lane (roosterForage); the hen, a
+// little to its right and a step farther back, pecks all along. When the dog
+// comes near, the rooster takes fright (FRIGHT) and bolts (the kit's
+// roosterBolt(): a start, a few running steps, a hop with its wings beating,
+// and away), and a feather comes loose at the top of its hop and drifts down;
+// the hen takes fright a moment after it and runs straight off. The dog, from
+// the second the rooster starts to run, goes from its trot to a run more than
+// twice as fast, its legs quicker with it, and follows them out of the picture.
+// The rooster stood at 1060, under the words; it stands at 1300 now, so the
+// fright is not behind them.
+var FRIGHT = 6.2;                        // the second of the lane scene the rooster takes fright: the dog's nose is 250 from its tail
+var CROWED = 3;                          // when the rooster stops crowing and starts to peck (at the end of a crow)
+var COOP = [{x: 1300, y: 1000, late: 0, seed: 1}, {x: 1490, y: 988, late: 0.08, seed: 2, hen: true}];
+
+function chicken(t, c) {                 // one of COOP at second t of the lane scene: pecking, then off
+  var fright = FRIGHT + c.late, idle = c.hen ? {hen: true} : {};
+  function peckAt(T) { return roosterForage(T, c.seed) * (c.hen ? 1 : between(T, CROWED, CROWED + 0.3)); }
+  if (t < fright) {
+    if (c.hen || t >= CROWED) { idle.peck = peckAt(t); }
+    rooster(c.x, c.y, t, idle);
+    return;
+  }
+  var off = roosterBolt(t - fright, {hop: !c.hen, hen: c.hen, peck: peckAt(fright)});
+  if (c.x + off.x < WIDE + 80) { rooster(c.x + off.x, c.y + off.y, t, off.look); }
+}
+
+function looseFeather(t) {               // the feather the rooster loses at the top of its hop
+  var c = COOP[0], top = roosterBolt(BOLT.top);
+  fallingFeather(c.x + top.x - 8, c.y + top.y - 40, c.y + 6, t - FRIGHT - BOLT.top, 3, ROOSTER_COAT.body, 40);
+}
+
+function chase(t) {                      // how far past its steady trot the dog has gone, in seconds of trot: it runs 420 a second once the rooster runs, not 195
+  var s = t - FRIGHT - BOLT.run;
+  if (s <= 0) { return 0; }
+  var u = Math.min(1, s / 0.5);
+  return (225 / 195) * (s < 0.5 ? 0.5 * (u * u * u - u * u * u * u / 2) : 0.25 + (s - 0.5));   // the speed eases up over half a second
+}
+
 function sceneLane(t) {                 // 22-35: the lane: a man and a child come one way, a woman the other
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t + 22);
   pen.drawImage(VILLAGE, 0, 0);
   villageTung(t + 22);
   pen.save();
   pen.translate(SIDE, 0);                 // the figures, at their places on the old sheet
-  rooster(1060, 1000, t);
+  chicken(t, COOP[1]);                    // the hen, a step farther back, then the rooster
+  chicken(t, COOP[0]);
   // The man and the child walk in from the left and stop; the woman walks in
   // from the right, her hands down, and stops before them. She wais them; the
   // child wais her back; the man nods his head to her, twice.
@@ -291,7 +336,8 @@ function sceneLane(t) {                 // 22-35: the lane: a man and a child co
   person(man.x, 960, man.look);
   person(woman.x, 950, woman.look);
   person(kid.x, 985, kid.look);
-  dog(-300 + 195 * t, 1005, t);           // it trots on through the lane at one pace and out of the picture (owner, 2026-10-17: it stopped going forward with its legs still walking)
+  dog(-300 + 195 * (t + chase(t)), 1005, t + chase(t));   // it trots on through the lane and out of the picture (owner, 2026-10-17: it stopped going forward with its legs still walking), and runs once the rooster bolts, its legs quicker with it
+  looseFeather(t);
   birds(t, 300 + t * 40, 220);
   pen.restore();
 }
@@ -701,7 +747,17 @@ var PHAT_FIGURES = [
   phatFigure(function () { person(0, 0, cast("dancer", {size: 1, id: "phat-dancer", late: undefined, ground: false, handA: [60, -130], handB: [-60, -110]})); })
 ];
 
-function spinningLantern() {             // the khom phat on its arm, and the three children under it, drawn before the great drum
+// The boy's wrist on its way down, from pointing at the lantern to beside his
+// hip, as a course for motion.js's where(): [second of the scene, x, y]. His
+// face and the face of the girl in yellow stand about 55 apart on the sheet
+// (x 160 and 215), so the wrist goes up through that gap beside his face, out
+// under her chin at the height of his shoulder (150, 787 as person() draws it)
+// and down; it is never nearer his shoulder than 42 (the wrist is 68 from it
+// with the arm straight), so the elbow keeps its side. Swung round the shoulder
+// as the girls' arms are, his hand went over her mouth: she is within an arm of him.
+var BOY_DOWN = [[3, 165, 480], [3.25, 180, 715], [3.5, 192, 790], [3.75, 175, 870], [4, 150, 940]];
+
+function spinningLantern(t) {            // the khom phat on its arm, and the three children under it, drawn before the great drum
   pen.strokeStyle = "#6a4a2a";          // the arm, from the string's pole at x 60
   pen.lineCap = "round";
   pen.lineWidth = 7;
@@ -713,9 +769,33 @@ function spinningLantern() {             // the khom phat on its arm, and the th
   khomPhat(PHAT[0], PHAT[1], {size: PHAT[2], lit: 1, light: true, figures: PHAT_FIGURES});
   var look = [PHAT[0], PHAT[1] + 150];  // the lantern's middle
   var gaze = {late: 0.45, spring: 0.5, smile: 1, wonder: 0.7, tilt: -0.12, at: look};   // eyes on it, in wonder
-  person(235, 975, cast("girl", Object.assign({id: "phat-girl-2", face: -1, shirt: "#e9c45c", flower: "#f6c445", reachA: [175, 540]}, gaze, {late: 0.7})));   // she reaches up to it
-  person(55, 975, cast("girl", Object.assign({id: "phat-girl", reachA: [115, 540]}, gaze, {late: 0.2})));   // and so does she
-  person(140, 980, cast("boy", Object.assign({id: "phat-boy", reachA: [165, 480], fingersA: [0, 1, 1, 1, 0.8]}, gaze)));   // he points up at it, drawn last so his hand shows
+  // After a few seconds they put their arms down (owner, 2026-10-17): from
+  // 3 s to 4 s each arm comes down, from the lantern to
+  // beside the hip, the boy's pointing finger loosening as it goes. A girl's hand
+  // turns about the shoulder ("way": 1 by the right of it as we see it, the
+  // girl at the left; -1 by the left, the girl in yellow), its
+  // distance from the shoulder dipping, early in the way, to "bend" (on the
+  // sheet; an arm is about 80): 60. Sent straight from up to down, a hand came
+  // within a third of an arm of its own shoulder, where the elbow has no side
+  // to bend to, and it jumped (kit_check: one flip, at 73.63 s); it passed
+  // the boy's chin and the mouth of the girl in yellow too. Each girl's hand
+  // now goes behind the boy, who is drawn last; his own goes by BOY_DOWN.
+  var down = between(t, 3, 4);
+  function child(x, y, look, up, low, way, bend) {   // one child, its arm on the way down; the shoulder as person() first sets it (its about())
+    var size = (look.size || 1) * 0.82;
+    var S = [x + 40 * size * (look.face || 1), y - ((look.skirt ? 190 : 216) * leggyOf(look.build) + 126) * size];
+    var a0 = Math.atan2(up[1] - S[1], up[0] - S[0]), a1 = Math.atan2(low[1] - S[1], low[0] - S[0]);
+    while (way * (a1 - a0) < 0) { a1 += way * 2 * Math.PI; }
+    var far = mix(Math.hypot(up[0] - S[0], up[1] - S[1]), Math.hypot(low[0] - S[0], low[1] - S[1]), down);
+    var r = mix(far, bend, Math.sqrt(Math.sin(Math.PI * down))), a = mix(a0, a1, down);
+    look.reachA = [S[0] + r * Math.cos(a), S[1] + r * Math.sin(a)];
+    person(x, y, look);
+  }
+  var pointing = [0, 1, 1, 1, 0.8].map(function (c, i) { return mix(c, REST[i], down); });
+  child(235, 975, cast("girl", Object.assign({id: "phat-girl-2", face: -1, shirt: "#e9c45c", flower: "#f6c445"}, gaze, {late: 0.7})), [175, 540], [225, 935], -1, 60);   // she reaches up to it
+  child(55, 975, cast("girl", Object.assign({id: "phat-girl"}, gaze, {late: 0.2})), [115, 540], [70, 935], 1, 60);   // and so does she
+  var wrist = where(BOY_DOWN, t);
+  person(140, 980, cast("boy", Object.assign({id: "phat-boy", reachA: [wrist[0], wrist[1]], fingersA: pointing}, gaze)));   // he points up at it, drawn last so his hand shows
 }
 
 function sceneDance(t) {                // 70-79: a night of dancing: a dancer, a drummer, a celestial; the khom phat at the left
@@ -733,7 +813,7 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
   khomPoles(t);
   pen.save();
   pen.translate(SIDE, 0);                 // the three, at their places on the old sheet
-  spinningLantern();                      // the khom phat at the left, and the children behind the drum looking up at it
+  spinningLantern(t);                     // the khom phat at the left, and the children behind the drum looking up at it
   drumCart(pen, 110, 988, 0.75, 1);       // the temple's great drum on its cart (pieces.js), brought out for the night, beside the drummer
   person(380, 990, cast("drummer", Object.assign({late: 0, spring: 0.6, smile: 1, at: [720, 700]}, LANNA_MAN)));
   person(720, 985, cast("dancer", {late: 0.25, spring: 0.7, smile: 1, dance: true, at: [900, 500],
