@@ -31,6 +31,7 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6,
 <script src="sabai.js"></script>
 <script src="khom.js"></script>
 <script src="pieces.js"></script>
+<script src="band.js"></script>
 <script>
 // sash.html - a film of the kit. It opens on a cloth, close up: twelve rows
 // of the small things of Thai life, woven across it. Music begins, and the
@@ -667,6 +668,13 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
   person(720, 985, cast("dancer", {late: 0.25, spring: 0.7, smile: 1, dance: true, at: [900, 500],
                                   handA: [70 + Math.sin(t * 3) * 20, -130 - hop(t, 0.25) * 30], handB: [-60, -110 + Math.cos(t * 3) * 20]}));
   person(1060, 990, cast("celestial", {late: 0.5, spring: 0.6, smile: 1, face: -1, at: [720, 500], handA: [50, -120 - hop(t, 0.5) * 25]}));
+  // The band of the north (band.js), sitting cross-legged on the ground at the right, a step nearer than the
+  // dancers, facing them, each on the beat (owner, 2026-10-16: "Add the band members to the night scene"): the
+  // pi chum, the salo (its bow across the piper's empty lap), the sueng (its neck behind the next player) and the
+  // phin phia, as far right as the words under the picture allow.
+  [["pichum", "elder", 1420, 0.31], ["salo", "fellow", 1570, 0], ["sueng", "farmer", 1715, 0.13], ["phinphia", "fellow", 1850, 0.07]].forEach(function (b) {
+    musician(b[2], 1005, b[0], cast(b[1], {size: 1.0, face: -1, smile: 1, id: "band-" + b[0]}), b[3]);
+  });
   pen.restore();
 }
 
