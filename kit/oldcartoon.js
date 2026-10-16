@@ -2740,9 +2740,9 @@ var LOOK_KEYS = {};
 //                   the shape of the sash film's cloth (sabai.js); a third name "check" bars it
 //   worn            a painter the kit calls after the body and the head and before the arms,
 //                   with the pen in the person's own frame: a cloth that goes under the arms,
-//                   as the kit's own sabai does (sabaiWorn() in sabai.js); arm A, on the side
-//                   the figure faces, is drawn before it unless it hangs behind the body, so
-//                   that arm stays under the cloth (in a wai too) and only its hand shows
+//                   as the kit's own sabai does (sabaiWorn() in sabai.js); in a wai the kit
+//                   calls it again inside the upper arm on the side the figure faces, and
+//                   lays that forearm over it, as it does with its own sabai
 //   flower, garland, pins, tail, nails
 //                   a lady's ornaments: a flower (its colour) at the bun, a loop of
 //                   jasmine, strands of gold flowers, a straight tail of hair, gold
@@ -2889,6 +2889,9 @@ var LOOK_KEYS = {};
 // A sheet a person is drawn on when their parasol hangs behind them (see
 // person()), made once at the size of the sheet it goes onto.
 var PERSON_LAYER = null, PERSON_LAYERED = false;
+// A sheet for a forearm laid over a sabai in a wai (see person()), made once
+// at the size of the sheet it goes onto.
+var WAI_LAYER = null;
 
 function person(x, y, look) {
   checkNames("The look's name", look, LOOK_KEYS);
@@ -3609,6 +3612,7 @@ function person(x, y, look) {
     pen.setLineDash([]);
     pen.restore();
   }
+  var sabaiFront = null;                            // the kit's sabai, kept to be drawn again over an upper arm in a wai
   if ((look.skirt || look.sabai) && look.sabai !== false) {   // the sabai across the chest, over the body and under the arms; sabai: false for none (a cloth of sabai.js is worn instead)
     var sabaiOf = look.sabai || ["#f6e3a1", "#8a2a3a"], L = sabaiLine(), half = L.half;
     var sabaiCorner = function (a) { return L.side(L.start - L.slant * (a + half) / (2 * half), a); };   // where the slanted end meets the edge "a" across
@@ -3638,7 +3642,10 @@ function person(x, y, look) {
       for (n = 0; n <= 16; n++) { p = chest.apply(null, L.side(L.start + (L.length - L.start) * n / 16, edge)); pen.lineTo(p[0], p[1]); }
       pen.stroke();
     };
+    var sabaiFrame = pen.getTransform();
+    sabaiFront = function () {
     pen.save();
+    pen.setTransform(sabaiFrame);                   // the frame it was first drawn in, wherever the pen is now
     pen.beginPath();
     pen.rect(-1e4, -1e4, 2e4, 1e4 + 7);             // tucked into the skirt at the waist: nothing below it
     pen.clip();
@@ -3668,6 +3675,8 @@ function person(x, y, look) {
     sabaiEdgeLine(-half + 1);
     sabaiEdgeLine(half - 1);
     pen.restore();
+    };
+    sabaiFront();
   } else if (look.bare && look.tattoo) {            // a bare chest: the tattoo of a man of the north reaches the chest and the collarbones
     var star = chest(26, -94), bones = chest(2, -128);
     pen.save();
@@ -4317,13 +4326,7 @@ function person(x, y, look) {
   // so an arm that crosses the chest, or a hand raised before the face, as a
   // dancer's is, is never hidden by them; a hanging far arm went behind the
   // chest already (behindA, owner 2026-10-15).
-  // What is worn (a cloth of sabai.js) comes over the shoulder on the side the
-  // figure faces, so the arm on that side (A) stays under it wherever it goes,
-  // across the chest in a wai too, and only its hand comes out over the cloth
-  // (owner, 2026-10-16: "the left arm of the woman ... stays under the sash
-  // when she wais"); the other arm (B) goes over the cloth's lower end.
-  var underWorn = look.worn && !rig && !behindA;    // A, drawn before the cloth
-  if (look.worn && !underWorn) {                    // what is worn under the arms (a cloth of sabai.js)
+  if (look.worn) {                                  // what is worn under the arms (a cloth of sabai.js)
     pen.save();
     look.worn();
     pen.restore();
@@ -4332,15 +4335,55 @@ function person(x, y, look) {
     wristB = rigArm(rig, ["armR_upper", "armR_lower", "handR"], rootB[0], rootB[1], handB, -1, -flex + (look.wristB || 0));
     wristA = rigArm(rig, ["armL_upper", "armL_lower", "handL"], rootA[0], rootA[1], handA, 1, flex + (look.wristA || 0));
   } else {
-  if (underWorn) {                                  // arm A, then the cloth over it
-    wristA = armOf(rootA, handA, 1, who + "/armA");
-    if (look.bare) { armBand(rootA, wristA); }
+  wristB = armOf(rootB, handB, -1, who + "/armB");  // the far arm
+  if (!behindA) { wristA = armOf(rootA, handA, 1, who + "/armA"); }   // the near arm (unless it hangs behind the body, drawn already)
+  // In a wai the sabai comes over the upper arm on its shoulder's side (A)
+  // and the forearm lies over the sabai (owner, 2026-10-16: "when women wai
+  // their biceps are under the sabai and forearms show over it"). On a layer
+  // of its own: the cloth, worn or the kit's own, inside that upper arm's
+  // shape, its ink line too; then the forearm, ink and colour, only where
+  // that cloth is; then the layer onto the sheet. Where no cloth lies over
+  // the upper arm, the arm stays as arm() drew it, no line across the elbow.
+  if (look.wai && (look.worn || sabaiFront) && pen.canvas) {
+    var waiSheet = pen;
+    if (!WAI_LAYER || WAI_LAYER.canvas.width !== pen.canvas.width || WAI_LAYER.canvas.height !== pen.canvas.height) {
+      var waiCanvas = document.createElement("canvas");
+      waiCanvas.width = pen.canvas.width;
+      waiCanvas.height = pen.canvas.height;
+      WAI_LAYER = waiCanvas.getContext("2d", {willReadFrequently: true});   // on the CPU: a layer on the GPU drawn onto a sheet that is read back (a check, a still) changes how the sheet draws every frame after it
+    }
+    WAI_LAYER.setTransform(1, 0, 0, 1, 0, 0);
+    WAI_LAYER.clearRect(0, 0, WAI_LAYER.canvas.width, WAI_LAYER.canvas.height);
+    ["lineJoin", "lineCap", "miterLimit", "imageSmoothingEnabled", "imageSmoothingQuality"].forEach(function (name) { WAI_LAYER[name] = pen[name]; });
+    WAI_LAYER.setTransform(pen.getTransform());
+    pen = WAI_LAYER;
     pen.save();
-    look.worn();
+    bone(rootA[0], rootA[1], wristA[2], wristA[3], 12 * arms + LINE, 10 * arms + LINE, 3 * arms);   // arm(): half-widths 12 and 10, swell 3
+    pen.clip();
+    if (look.worn) { look.worn(); } else { sabaiFront(); }
+    pen.restore();
+    pen.save();
+    pen.globalCompositeOperation = "source-atop";   // the forearm, only over the cloth just drawn
+    pen.translate(rootA[0], rootA[1]);              // in the arm's own size, as armOf() draws it
+    pen.scale(arms, arms);
+    var waiLine = LINE, waiInk = inkFor(sleeve);
+    LINE = LINE / arms;
+    var elbowX = (wristA[2] - rootA[0]) / arms, elbowY = (wristA[3] - rootA[1]) / arms;
+    var handX = (wristA[0] - rootA[0]) / arms, handY = (wristA[1] - rootA[1]) / arms;
+    heavy(waiInk);
+    bone(elbowX, elbowY, handX, handY, 10 + LINE, 8.5 + LINE, 3);   // limb(): the forearm's ink, then its colour
+    pen.fillStyle = waiInk;
+    pen.fill();
+    light();
+    paintBone(elbowX, elbowY, handX, handY, 10, 8.5, sleeve);
+    LINE = waiLine;
+    pen.restore();
+    pen = waiSheet;
+    pen.save();
+    pen.setTransform(1, 0, 0, 1, 0, 0);
+    pen.drawImage(WAI_LAYER.canvas, 0, 0);
     pen.restore();
   }
-  wristB = armOf(rootB, handB, -1, who + "/armB");  // the far arm
-  if (!behindA && !underWorn) { wristA = armOf(rootA, handA, 1, who + "/armA"); }   // the near arm (unless it hangs behind the body, or under what is worn, drawn already)
   joints.shoulderA = spot(rootA[0], rootA[1]);
   joints.shoulderB = spot(rootB[0], rootB[1]);
   joints.elbowA = spot(wristA[2], wristA[3]);
@@ -4349,7 +4392,7 @@ function person(x, y, look) {
   joints.wristB = spot(wristB[0], wristB[1]);
   if (look.bare) {                                  // the band of cord round each upper arm; the far arm's went on with that arm if it hangs behind the body
     armBand(rootB, wristB);
-    if (!behindA && !underWorn) { armBand(rootA, wristA); }
+    if (!behindA) { armBand(rootA, wristA); }
   }
   poseB = handPose("B", wristB, handB);
   if (!poseA) { poseA = handPose("A", wristA, handA); }
