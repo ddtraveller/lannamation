@@ -103,6 +103,7 @@ of it, each a second behind the other.
 | `dragon_china.html` | the Chinese painters' dragon, `dragon()` with `kind: "chinese"`: scales, a long antlered head, eagle's feet and the flaming pearl it chases (see "The Chinese dragon") |
 | `myth.js`, `myth.html` | three creatures of the myths of Lanna, on the beasts' legs and the Naga's body (load it after `naga.js` and `beasts.js`): the Mom, the Luang and the Hatsadiling bird; and their sheet (see "Three creatures of the myths of Lanna") |
 | `band.js`, `band.html` | the band of the north, the salo, the sueng, the pi chum and the phin phia, each a painter of its own, and `musician(x, y, kind, look)`, a person who sits cross-legged and plays one on the beat; and its sheet (see "The band, more lanterns, the farmstead and the red truck") |
+| `finger_dance.js`, `finger_dance.html` | the fingernail dance of the north: its six poses read by eye from a performance, the 32-second phrase for `poseAt()`, three dresses, and `fingerDancer()`, the kit's dancer dancing it walking; and a troupe of fifteen dancing it (see "The fingernail dance, read from a performance") |
 | `khom_kinds.html` | the sheet for the four lanterns `khom.js` gained on 2026-10-16 (not `lanterns.html`: krueng.ai keeps a lesson of that name beside the kit): the spinning `khomPhat`, the handheld `khomThue`, the star `khomDao` and the lotus `khomBua`, by day and lit at night |
 | `farmstead.html` | the sheet for what `pieces.js` gained on 2026-10-16: the granary `longKhao` (open, and with walls), the `sawian` basket, `tungSaiMu` planted on a sand pagoda, `tungYai` on its pole, and `rotDaeng` driving across with three riders |
 | `naga.js`, `naga.html` | a Naga, the many-headed serpent, as a creature in a file of its own on top of the kit, and its sheet (see "A Naga") |
@@ -2620,6 +2621,75 @@ hangs at the left of the night of dancing; what the scene made for it stays in t
 | Tried for the children | the kit's `child` (as tall as the drummer); the two girls turned to profile toward the lantern (`turn: -0.8`; their faces met over the boy's); a head tilted back (`tilt`: a roll about the head's middle, which a three-quarter face hardly shows). Eyes alone (`at`) move at most 4 pixels; raised arms are what reads at this size, and a child's arm reaches its forehead | |
 | Tried for the scene that was removed | six figures, a sixth of a turn apart (three showed at once in the close-up); the figures faded with `globalAlpha` on one shared layer (a figure drawn at a part of its strength shows its own overlaps, and its insides showed through as a ghost); the layer on the GPU (it changed how the sheet drew every later frame, as `WAI_LAYER` had) | |
 | Words | the scene's two lines in Kam Mueang went with it: "ฮ้อนเทียน ยะหื้อรูปภาพหมุนวนๆ เจ้า" (the candle's heat turns it, and the pictures go round and round) and "นี่คือโคมพัด โคมหมุนงานยี่เป็งเจ้า" (this is a khom phat, a spinning lantern for Yi Peng), from the notebooks "Lanna material culture" and the Kam Mueang one; their voice stays in `spoken_km/` for a film that wants them. The dance keeps its two lines | |
+
+## The fingernail dance, read from a performance (2026-10-16)
+
+The owner gave a video of fon lep (ฟ้อนเล็บ), some hundreds of dancers at the Three Kings Monument,
+Chiang Mai, in 2015 (YouTube WGAjuI6bNhw, 55Secrets Travel): "Look at that video and see if you can
+animate some finger dancers to move like that." `finger_dance.js` is the answer: the dance's poses as
+numbers, the order they come in, and `fingerDancer(x, y, dress, more, late)`, the kit's own dancer
+(`dance: true`, `nails: "long"`) dancing them; `finger_dance.html` is a troupe of fifteen dancing it.
+The video is not in the repository, and nothing of it is copied.
+
+**The machine could not read it.** `dance_track.py` read the classical dancer of `dance.html`; here
+MediaPipe read the arms wrong, whatever was tried, on the steady shot from 18.9 to 51.9 s (a front row
+in full figure, before the close-ups):
+
+| Tried | What came back |
+|---|---|
+| `dance_track.py` (the full pose model), the frame with its left edge cut off | a dancer in 99% of the frames, but her wrists almost straight under her shoulders: the median of each wrist across from its shoulder 9 and -1 (kit units; arms held out as the video shows them would be 50 to 70), a hand at the shoulder at 3.2 s, a bow of 0.5 at 26 s. Its own check frames drew the arms down the body |
+| the full model on one dancer, cut out and scaled up twice | the arms again inside the body, the shoulders far too narrow |
+| the heavy model on that same cut | the arms right: out and down along the sleeves, a little short of the wrists |
+| the heavy model following one dancer with a moving cut, 30 to 51.5 s | three seconds true (checked by eye: the wrists some 108 below the shoulders, 17 to 30 across, the body square to us, `turn` 0.92); then the camera zooms (about 33 s), the cut no longer fits her, and it slides onto the dancers of the second row, half hidden, whose arms it reads wrong |
+| the heavy model on the whole frame, eight people asked for | two found; hers with one wrist above its shoulder where it is plainly below |
+
+The silk sashes over white sleeves, the arms held out stiff, and rows behind in the same colours are
+what defeat it. So the poses are read by eye from the video's frames, a half second apart through the
+walk and every two and a half seconds through the close-ups (1:00 to 2:30), and set against a sheet of
+the kit's dancer in each until they matched; the three true seconds are the check on the walk.
+
+**The poses** (`FINGER_POSES`, the kit's look keys; arm A is on the picture's right):
+
+| Pose | In the video | Numbers |
+|---|---|---|
+| `low` | the walk (0:19 to 0:33): arms low and out to the sides, the wrists bent back so the nails fan outward | hands (±62, 100); the wrists bent 0.9 each the other way (A -0.9, B +0.9: the same sign on both curled the left hand down); `twist` 0.8 |
+| `highA`, `highB` | one arm curved up above the head, the wrist bent back, the other out at the shoulder with the hand up; the head toward the low hand (1:02 to 1:10, 1:27) | the high hand (±22, -106), the low (∓100, -14); `tilt` ∓0.15; `twist` 0.6 |
+| `offer` | both arms forward at the chest, the hands up from the bent wrists, the body turned toward them (1:15 to 1:22) | (100, -22) and (80, 4); `twist` -0.3, the body nearly in profile. Both hands before the chest at `twist` 0.1 bunched there and read as nothing |
+| `wings` | both arms spread wide at the shoulders, the hands up and back (1:35 to 1:42) | (±104, -16) |
+| `sweep` | not a pose of its own: the way from the offering to the wings, the far arm down and round past the hip | (102, -18) and (-36, 72), a second after the offering |
+| `peak` | both hands over the head, the nails meeting above it (2:15 to 2:27) | (∓8, -116), the arms straight up beside the face. The wrists crossing over the head's middle ((∓30, -110) or (∓22, -114)) brought the arms up across her face: the kit picks which way an elbow bends, and the video's elbows open out to the sides |
+
+The kit's dancer gives every lifted hand the shape of Thai dance, the back of the hand toward us and
+the long nails curving back, so the poses only place the wrists.
+
+**The phrase** (`FINGER_DANCE`, for `poseAt(t, FINGER_DANCE, 0.35)`): the walk, the hands raised in
+turn twice, the offering, the wings, the peak, a hand raised each side, and the walk again: a pose
+every two seconds, each held a third of that and then moving to the next, 32 seconds round and round.
+The first phrase went straight from the offering to the wings, and the whole check failed it with 11
+arm flips: the far arm crossed from before the body to its own side, its wrist passed through its
+shoulder (at (-10, -31) from it, at 15.33 s), where an arm has no clean bend, and every dancer's elbow
+jumped across in one frame, 69 units. With `sweep` between them the arm goes down and round, and no
+elbow of a dancer moves more than 22 units in a frame over the whole phrase (measured on one dancer,
+every frame).
+Under it the dance is a procession: a step a second (`step` = seconds / 2, `stride` 0.45), a dip at
+each step (`sit` up 0.07 as `sin²` of the step), the chest swaying 0.035 with it, whatever the arms do.
+
+**The dresses** (`FINGER_DRESSES`): `blue` a white blouse and a pale blue sabai, `pink` a navy blouse
+and a pink one, `cream` a red blouse and a cream one, each with a pha sin and yellow flowers at the
+bun, as in the video. The kit has three sins: indigo (`pink`), brick red (`cream`), and green and black
+(`blue`, whose sin in the video is yellow and striped).
+
+**The troupe** (`finger_dance.html`, 1920 wide, on the `yipeng` backdrop): three rows, a dress to a
+row as the dancers there stood in blocks: six in cream at the back (size 0.82, y 865), five in pink
+(0.95, 930), four in blue in front (1.1, 1005), set wide enough apart that the wings of one do not
+cross the next (the first spacing, five in front at 1.2, tangled them), each a few hundredths of a
+second from her neighbour (`late` -0.05 a row, -0.025 a place). It renders in 952 s for its 32 s on
+the laptop: fifteen people at 1920.
+
+**Not done.** The yellow striped sin of the video's front rows is not one of the kit's. The peak's
+elbows do not open out round the head. The dancers walk in place; the video's advance, turn about, and
+go round in lines. The fingers are not moved: the hand model found hands in too few frames of the
+steady shot to read them, and the kit's dance hand stands for them.
 
 ## The kit's own checks
 

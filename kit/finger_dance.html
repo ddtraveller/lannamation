@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>finger dance - the fingernail dance of the north, a troupe on the night of Yi Peng</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script src="backdrops.js"></script>
+<script src="finger_dance.js"></script>
+<script>
+// The fingernail dance (finger_dance.js), danced by a troupe in three rows on the night of Yi Peng,
+// in the three dresses of the performance it was read from, a colour to a row as the dancers there
+// stood in blocks: red and cream at the back, navy and pink in the middle, white and pale blue in
+// front. They dance together, each a few hundredths of a second from her neighbour, round the whole
+// 32-second phrase: the walk, the hands raised in turn, the offering, the wings, the peak.
+var DURATION = 32;
+
+var BEAT = 0.5;
+
+var ROWS = [            // where each row stands, how large, which dress, and the dancers along it: wide enough
+  [865, 0.82, "cream", [185, 495, 805, 1115, 1425, 1735]],     // apart that the wings of one do not cross the next
+  [930, 0.95, "pink", [330, 645, 960, 1275, 1590]],
+  [1005, 1.1, "blue", [355, 755, 1165, 1565]]
+];
+
+function sceneTroupe(t) {
+  pen.drawImage(backdrop("yipeng"), 0, 0);
+  ROWS.forEach(function (row, r) {
+    row[3].forEach(function (x, i) {
+      fingerDancer(x, row[0], row[2], {size: row[1], id: "dancer-" + r + "-" + i}, -0.05 * r - 0.025 * ((i * 3) % 4));
+    });
+  });
+}
+
+var SCENES = [[0, DURATION, sceneTroupe]];
+
+function draw(t) {
+  film(t, SCENES);
+  if (t < 4) { subtitle("ฟ้อนเล็บ", "Fon lep, the fingernail dance"); }
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

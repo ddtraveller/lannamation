@@ -410,6 +410,7 @@ Each loads after `oldcartoon.js` and adds drawings of its own; none changes the 
 | `paperdoll.js` | paperdolls: one character each, with cloth that flows | |
 | `fonlep.js`, `apsara.js`, `puman.js` | three paperdolls: the fingernail dancer, the celestial dancer, the whisperer | `fonlep.html`, `apsara.html`, `puman.html` |
 | `dance_track.js` | a whole dance as the kit's poses, for `poseAt()` | `dance.html` |
+| `finger_dance.js` | the fingernail dance of the north (fon lep): its six poses read from a performance, the 32-second phrase for `poseAt()`, the dresses, and `fingerDancer(x, y, dress)`, who dances it walking | `finger_dance.html` |
 
 The kit's own sheets: `model.html` (one figure close up), `looks.html` (every look name a person
 takes), `walk.html`, `body.html`, `legs.html`, `build.html`, `children.html`, `elders.html`,
@@ -424,6 +425,7 @@ takes), `walk.html`, `body.html`, `legs.html`, `build.html`, `children.html`, `e
 | `lanna.html` | 60 | `lanna_music.py`, then `lanna_sing.py` |
 | `sash.html` | 79 | `sash_music.py`, then `sash_narrate.py`: the story of Lanna for children, told in Kam Mueang; the brief it was first made from is `sash_prompt.md` |
 | `parasol_rain.html` | 35 | none |
+| `finger_dance.html` | 32 | none; a troupe of fifteen dancing the fingernail dance on the night of Yi Peng |
 
 ## Not here
 
