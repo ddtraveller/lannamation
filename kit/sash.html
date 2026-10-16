@@ -291,7 +291,7 @@ function sceneLane(t) {                 // 22-35: the lane: a man and a child co
   person(man.x, 960, man.look);
   person(woman.x, 950, woman.look);
   person(kid.x, 985, kid.look);
-  dog(mix(-300, 1500, between(t, 0, 9)), 1005, t);
+  dog(-300 + 195 * t, 1005, t);           // it trots on through the lane at one pace and out of the picture (owner, 2026-10-17: it stopped going forward with its legs still walking)
   birds(t, 300 + t * 40, 220);
   pen.restore();
 }
