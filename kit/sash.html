@@ -137,7 +137,6 @@ function paintSet(kind) {
     house(brush, 1180 + SIDE, 905, 1);
     banana(brush, 1000 + SIDE, 915);
     namton(brush, 1425 + SIDE, 912, 1.1);          // the water jar at the gate, beside the house's ladder (pieces.js)
-    tung(brush, 1570 + SIDE, 905, 0, true);         // and a tung on its pole, a hong on top
   }
   if (kind === "pond") {                            // the water, the lotus and the fish are drawn live, in scenePond
     tree(brush, 160 + SIDE, 880, 1.0);
@@ -242,6 +241,21 @@ function skyOf(sheet, look, T) {
   cumulus(pen, T, look);
 }
 
+// The tung by the house is drawn live, not on the village set, so that it
+// sways a little about its foot in the breeze, the hong and the cloth with it
+// (owner, 2026-10-16: "the flag with the rooster on the top sways a little
+// bit"). The cloth keeps the shape it had on the set (the kit's wave at 0).
+var TUNG_SWAY = 1.2 * Math.PI / 180;     // how far it leans either way
+
+function villageTung(T) {               // T: the film's clock, so the sway goes on across the cut
+  pen.save();
+  pen.translate(1570 + SIDE, 905);
+  pen.rotate(TUNG_SWAY * Math.sin(T * 1.3));
+  pen.translate(-1570 - SIDE, -905);
+  tung(pen, 1570 + SIDE, 905, 0, true);
+  pen.restore();
+}
+
 // ---------- the scenes ----------
 function sceneCloth(t) {                // 0-22: one row, still; the music and the walk; one steady pull-back
   // She stands still while the cloth dances and the camera pulls back; once it
@@ -253,6 +267,7 @@ function sceneCloth(t) {                // 0-22: one row, still; the music and t
   sabaiCamera(t, where, CLOTH, 6, 20);
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t);
   pen.drawImage(VILLAGE, 0, 0);
+  villageTung(t);
   sabai(t, where, CLOTH, "back");         // the end of the cloth that hangs behind her shoulder
   person(720 + SIDE, 1010, sabaiWorn(look, t, where, CLOTH));   // the cloth across her chest, worn under her arm
   pen.restore();
@@ -261,6 +276,7 @@ function sceneCloth(t) {                // 0-22: one row, still; the music and t
 function sceneLane(t) {                 // 22-35: the lane: a man and a child come one way, a woman the other
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t + 22);
   pen.drawImage(VILLAGE, 0, 0);
+  villageTung(t + 22);
   pen.save();
   pen.translate(SIDE, 0);                 // the figures, at their places on the old sheet
   rooster(1060, 1000, t);
@@ -412,7 +428,7 @@ function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maide
   birds(t, 100 + t * 60, 180);
   var head = dragonFly(t + POND_AT);
   var drake = dragon(head[0], head[1], {size: 0.34, depth: head[4], trail: dragonFly, fly: "glide", breath: 0.3 + 0.3 * Math.sin(t * 2), late: 0.5,
-                                        corkscrew: [POND_AT + 9], kind: "chinese", chase: t < FLAG[0] || t > FLAG[1]});   // a Chinese dragon, as the voice says; its pearl is gone while it waves the flag
+                                        corkscrew: [POND_AT + 9], kind: "chinese", chase: false});   // a Chinese dragon, as the voice says, with no flaming pearl before its mouth (owner, 2026-10-16)
   pen.save();
   pen.globalAlpha = 0.8 + 0.2 * head[4];                        // far off, a little faded, but not so much that the dragon shows through it
   chinaFlag(drake.claw[0], drake.claw[1], drake.size, t);

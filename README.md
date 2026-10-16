@@ -127,12 +127,25 @@ python render.py lanna.html lanna.mp4 --audio lanna_song.wav
 python sash_music.py                                   # the hero film's music, sash.wav
 python sash_narrate.py <model folder> --takes 4        # its story in Kam Mueang over it, sash_voice.wav
 python render.py sash.html sash.mp4 --audio sash_voice.wav
+python scenes.py sash.html sash.mp4 --audio sash_voice.wav            # the same film, scene by scene, then joined
+python scenes.py sash.html sash.mp4 --audio sash_voice.wav --scene 3  # after a change to scene 3: only it again
 python checks/kit_check.py my_film.html --quick        # does the page draw, and draw right
 ```
 
 `render.py` opens the page in Chrome with no window, calls `draw(t)` for every frame, and hands the
-pictures to ffmpeg in a form phones play. To do something else with the frames, drive the page
-yourself:
+pictures to ffmpeg in a form phones play.
+
+`scenes.py` renders a film whose page lists its `SCENES` one scene at a time, each into a video
+of its own in a folder beside the page (`sash_scenes/` for `sash.html`), and joins them, with the
+sound laid over the whole film at once: the scenes are not encoded a second time, and the sound
+has no seam. A scene whose video is there is not rendered again, so after a change to one scene,
+`--scene N` renders that scene alone and the film is joined from it and the scenes made before:
+minutes, where the whole of `sash.html` takes about half an hour. Which scenes a change touches is
+for you to say: a change to the kit, or to a set that two scenes share, can touch several, and
+`--all` renders them all again. `--list` shows each scene's video, and which were made before the
+page or a script file it loads last changed.
+
+To do something else with the frames, drive the page yourself:
 
 ```python
 from pathlib import Path
