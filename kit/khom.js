@@ -309,6 +309,17 @@ function khom(x, y, look) {
 //   spin       khomPhat: how fast the inner frame turns (1, about a turn in
 //              fourteen seconds; 0 still, as an unlit one is). khomDao: how
 //              far it turns on its string, as for khom()
+//   turn       khomPhat: the inner frame's angle, for a film that turns it
+//              itself (a frame that starts still and gathers speed); it
+//              stands in for spin times the clock
+//   figures    khomPhat: the figures that go round, a list of functions, each
+//              drawing one figure on "pen", standing on (0, 0) and facing
+//              right, about 44 to 100 tall, given a step to walk by; the
+//              black-paper cut-outs of KHOM_CUTOUTS unless a film gives its own
+//   light      khomPhat: true for figures of light: the frame inside is a
+//              dark drum with the figures cut out of it, so the paper is dim
+//              and each figure glows on it in the candle's colour (drawn on a
+//              layer of its own, whatever the figure is made of)
 //   wind, tail khomDao and khomBua: as for khom()
 // khomThue's (x, y) is where a hand holds its handle: draw it after the one
 // who carries it, so the handle goes up through the fist (person() gives
@@ -319,7 +330,12 @@ function khomKeys(names) {
   return keys;
 }
 
-var KHOM_PHAT_KEYS = khomKeys(["size", "colour", "gold", "lit", "sway", "spin", "lean", "late"]);
+var KHOM_PHAT_KEYS = khomKeys(["size", "colour", "gold", "lit", "sway", "spin", "lean", "late", "turn", "figures", "light"]);
+// A sheet for the figures of light of a khom phat (see khomPhat()), made once
+// at the size of the sheet it goes onto, on the CPU: a layer on the GPU drawn
+// onto a sheet that is read back changes how the sheet draws (oldcartoon.js,
+// WAI_LAYER).
+var KHOM_LAYER = null;
 var KHOM_THUE_KEYS = khomKeys(["size", "colour", "gold", "lit", "lean", "late"]);
 var KHOM_DAO_KEYS = khomKeys(["size", "colour", "gold", "lit", "sway", "spin", "wind", "lean", "late", "tail"]);
 var KHOM_BUA_KEYS = khomKeys(["size", "colour", "gold", "lit", "sway", "wind", "lean", "late", "tail"]);
@@ -477,7 +493,8 @@ function khomPhat(x, y, look) {
   var colour = look.colour || KHOM_RED, gold = look.gold || KHOM_GOLD;
   var lit = look.lit === undefined ? 0 : look.lit, sway = look.sway === undefined ? 1 : look.sway;
   var spin = look.spin === undefined ? 1 : look.spin, t = clock + (look.late || 0);
-  var flicker = khomFlickerAt(t, x), turn = 0.45 * spin * t;
+  var flicker = khomFlickerAt(t, x), turn = look.turn !== undefined ? look.turn : 0.45 * spin * t;
+  var figures = look.figures || KHOM_CUTOUTS.map(function (kind) { return function (step) { khomCutout(kind, step); }; });
   var R = 72, TOP = 46, BAND = 64, FOOT = 202, HEM = 218;
   pen.save();
   pen.translate(x, y);
@@ -490,7 +507,8 @@ function khomPhat(x, y, look) {
   pen.moveTo(0, 0);
   pen.lineTo(0, TOP - 14);
   pen.stroke();
-  var paper = blend("#f1ebdc", "#ffe2a0", lit * flicker * 0.75);
+  var paper = look.light ? blend("#4a3524", "#8a5c34", lit * flicker * 0.6)   // the drum inside keeps most of the light from the paper
+                         : blend("#f1ebdc", "#ffe2a0", lit * flicker * 0.75);
   pen.beginPath();                                            // the cylinder of paper, its foot seen a little from below
   pen.moveTo(-R, BAND);
   pen.lineTo(-R, FOOT);
@@ -501,23 +519,60 @@ function khomPhat(x, y, look) {
   pen.fill();
   if (lit > 0) {                                              // brightest in the middle, where the candle is nearest
     var inside = pen.createRadialGradient(0, 140, 4, 0, 140, R * 1.2);
-    inside.addColorStop(0, "rgba(255, 245, 210, " + (0.6 * lit * flicker) + ")");
+    inside.addColorStop(0, "rgba(255, 245, 210, " + ((look.light ? 0.2 : 0.6) * lit * flicker) + ")");
     inside.addColorStop(1, "rgba(255, 245, 210, 0)");
     pen.fillStyle = inside;
     pen.fill();
   }
-  pen.save();                                                 // the shadows of the cut figures, going round
+  pen.save();                                                 // the figures, going round: shadows, or light
   pen.clip();
-  pen.fillStyle = pen.strokeStyle = "rgba(26, 18, 12, " + (0.22 + 0.68 * lit) + ")";
-  KHOM_CUTOUTS.forEach(function (kind, k) {
-    var a = turn + k * Math.PI / 3, front = Math.cos(a);
-    if (front < 0.05) { return; }
+  var sheet = pen, glowing = look.light && pen.canvas, frame = pen.getTransform(), box = null;
+  if (glowing) {                                              // each figure is drawn whole on a layer of its own, then lit, then faded
+    if (!KHOM_LAYER || KHOM_LAYER.canvas.width !== pen.canvas.width || KHOM_LAYER.canvas.height !== pen.canvas.height) {
+      var layerSheet = document.createElement("canvas");
+      layerSheet.width = pen.canvas.width;
+      layerSheet.height = pen.canvas.height;
+      KHOM_LAYER = layerSheet.getContext("2d", {willReadFrequently: true});
+    }
+    var corners = [[-R, BAND], [R, BAND], [-R, FOOT + 12], [R, FOOT + 12]].map(function (c) { return frame.transformPoint(new DOMPoint(c[0], c[1])); });
+    var left = Math.max(0, Math.floor(Math.min.apply(null, corners.map(function (p) { return p.x; }))));
+    var top = Math.max(0, Math.floor(Math.min.apply(null, corners.map(function (p) { return p.y; }))));
+    var right = Math.min(pen.canvas.width, Math.ceil(Math.max.apply(null, corners.map(function (p) { return p.x; }))));
+    var bottom = Math.min(pen.canvas.height, Math.ceil(Math.max.apply(null, corners.map(function (p) { return p.y; }))));
+    if (right > left && bottom > top) { box = [left, top, right - left, bottom - top]; }   // the paper on the sheet: all the layer's work is inside it
+  }
+  sheet.fillStyle = sheet.strokeStyle = "rgba(26, 18, 12, " + (0.22 + 0.68 * lit) + ")";
+  figures.forEach(function (figure, k) {
+    var a = turn + k * 2 * Math.PI / figures.length, front = Math.cos(a), fade = Math.min(1, front * 2.5);
+    if (front < 0.05 || (glowing && !box)) { return; }
+    if (glowing) {                                            // a figure drawn at a part of its strength shows its own overlaps: draw it whole
+      KHOM_LAYER.setTransform(1, 0, 0, 1, 0, 0);
+      KHOM_LAYER.clearRect(box[0], box[1], box[2], box[3]);
+      KHOM_LAYER.setTransform(frame);
+      pen = KHOM_LAYER;
+    }
     pen.save();
     pen.translate(R * 0.86 * Math.sin(a), 180);
     pen.scale(front * 0.85 + 0.15, 1);
-    pen.globalAlpha = Math.min(1, front * 2.5);
-    khomCutout(kind, t * 5 + k);
+    if (!glowing) { pen.globalAlpha = fade; }
+    figure(t * 5 + k);
     pen.restore();
+    if (glowing) {                                            // in the candle's colour, then onto the paper, faded at the side, with its glow
+      pen.save();
+      pen.setTransform(1, 0, 0, 1, 0, 0);
+      pen.globalCompositeOperation = "source-in";
+      pen.fillStyle = blend("#ffe6a8", "#fff8e4", lit * flicker);
+      pen.fillRect(box[0], box[1], box[2], box[3]);
+      pen.restore();
+      pen = sheet;
+      pen.save();
+      pen.setTransform(1, 0, 0, 1, 0, 0);
+      pen.globalAlpha = fade;
+      pen.shadowColor = "rgba(255, 214, 130, " + (0.9 * lit) + ")";
+      pen.shadowBlur = 6 * Math.hypot(frame.a, frame.b);    // the glow keeps its size against the figure's, near or far
+      pen.drawImage(KHOM_LAYER.canvas, box[0], box[1], box[2], box[3], box[0], box[1], box[2], box[3]);
+      pen.restore();
+    }
   });
   pen.restore();
   pen.strokeStyle = "rgba(110, 80, 40, 0.5)";                // the frame's posts of bamboo, through the paper

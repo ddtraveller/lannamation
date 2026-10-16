@@ -93,7 +93,7 @@ of it, each a second behind the other.
 | `build.html` | the build sheet: the lady and the fellow at four builds, with their height in heads |
 | `walk.html` | the sheet for the style with no hop and for the walk: people who stand still, people who walk from place to place and back with `stroll()`, and animals that do the same with `amble()` (see "Standing still, and a walk from place to place") |
 | `buildings.html` | the sheet for the buildings: the house, the temple, and the hall and the stupa of the backdrops, each large, and the first two at a film's sizes (see "Buildings with depth") |
-| `looks.html` | a picture for every name a look can have: 73 figures in six parts of five seconds (what is worn, the head, the face, the arms, the hands and what they hold, the body and how it moves), each with its name and the value it was given. It warns about a name the kit knows and it does not show, so `kit_check.py` fails until a new name is added to it |
+| `looks.html` | a picture for every name a look can have: 74 figures in six parts of five seconds (what is worn, the head, the face, the arms, the hands and what they hold, the body and how it moves), each with its name and the value it was given. It warns about a name the kit knows and it does not show, so `kit_check.py` fails until a new name is added to it |
 | `beasts.js`, `beasts.html`, `elephant.html`, `felines.html`, `pig.html` | an elephant and a water buffalo that walk, each with a place on its back where someone can ride; a Siamese cat and a tiger that walk and sit; a pig; and the four sheets (see "An elephant and a water buffalo", "A cat and a tiger" and "A pig") |
 | `food.js`, `food.html` | a dozen Thai dishes drawn small, in a file of their own on top of the kit, and their sheet (see "A dozen Thai dishes") |
 | `flora.js`, `flora.html` | eight flowers and twelve fruits of Thailand drawn small, in a file of their own on top of the kit, trees that bear them, and their sheet (see "The flowers and fruits of Thailand") |
@@ -2597,6 +2597,29 @@ at about x 1410) and of the khom phat and the children at the left.
   1.1, so his wrist stopped 5 to 18 px short of hers; at y 772, and with no hop (`spring: 0`: the hop's
   stretch would take his hand from hers), the widest gap between their wrists over every frame of the
   scene is 3.4 px.
+
+## The spinning lantern (2026-10-16)
+
+The owner asked first for a scene of its own: "make a scene like the opening scene but with the
+spinning lantern. Start out with a close up on a figure of light the same shape as one of the women
+as if it were being cast by the lantern. Then it should start to move as if the lantern were starting
+to spin and new shapes of light should appear. Then pull out to reveal it is a lantern and there are
+children and people celebrating." It was made (14 s before the dance, the film 93 s), and on seeing
+it the owner asked: "Take the spinning lantern and add it to the final scene and remove the scene
+with the close up of the lantern. Just add one and a few children looking at it so they are on the
+left side of the screen", and "Opposite the band". So `sash.html` is 79 s again, and the khom phat
+hangs at the left of the night of dancing; what the scene made for it stays in the kit.
+
+| What it is | In the code | Numbers |
+|---|---|---|
+| Figures of light | `khomPhat`'s `light: true` (`khom.js`): the frame inside is a dark drum with the figures cut out of it, so the paper is dim and each figure glows. Each figure is drawn whole on `KHOM_LAYER` (a canvas the size of the sheet, on the CPU, as `WAI_LAYER` is), coloured with `source-in` in the candle's colour, then drawn onto the paper, faded at the side of the drum, with a glow (`shadowBlur` in step with the figure's size on the sheet). Only the paper's box on the sheet is cleared, coloured and copied | paper `#4a3524` to `#8a5c34` with the flicker; light `#ffe6a8` to `#fff8e4`; glow 6 × the sheet's scale |
+| The film's own figures | `khomPhat`'s `figures`: a list of functions, each drawing one figure standing on (0, 0) and facing right; the black-paper cut-outs of `KHOM_CUTOUTS` unless a film gives its own. The film's `PHAT_FIGURES`: the woman of the cloth (`WOMAN`), an elephant, a child and a dancer, a quarter turn apart, scaled by `PHAT_FIGURE`, walking as the frame turns (`phatWalk`, set before the lantern is drawn) | 0.22 of their size; the frame turns 0.45 a second, khomPhat's own spin |
+| No shadow on the ground | the look key `ground: false`, read by `person()` (both its shadows on the ground) and by `elephant()` (`BEAST_KEYS`); `looks.html` has a figure for it. A cut-out is only its shape: the soft shadow, a fifth as dark as ink, came out as a faint oval of light under each figure | 85 look keys |
+| A frame the film turns | `khomPhat`'s `turn`: the frame's angle, set by the film, for one that starts still and gathers speed. The scene that was removed used it; the dance does not | |
+| At the night of dancing | `spinningLantern()`, called in `sceneDance` before the great drum: the khom phat lit, its figures of light, on an arm from the lantern string's left pole (x 60), opposite the band; three children behind the drum, a girl, a boy and a girl in yellow, their eyes on it in wonder (`at`, `wonder`), the girls reaching up to it (`reachA`), the boy pointing (`fingersA` [0, 1, 1, 1, 0.8]), drawn last so his hand shows | tied at (145, 360), size 1.1; the children at x 55, 140 and 235 |
+| Tried for the children | the kit's `child` (as tall as the drummer); the two girls turned to profile toward the lantern (`turn: -0.8`; their faces met over the boy's); a head tilted back (`tilt`: a roll about the head's middle, which a three-quarter face hardly shows). Eyes alone (`at`) move at most 4 pixels; raised arms are what reads at this size, and a child's arm reaches its forehead | |
+| Tried for the scene that was removed | six figures, a sixth of a turn apart (three showed at once in the close-up); the figures faded with `globalAlpha` on one shared layer (a figure drawn at a part of its strength shows its own overlaps, and its insides showed through as a ghost); the layer on the GPU (it changed how the sheet drew every later frame, as `WAI_LAYER` had) | |
+| Words | the scene's two lines in Kam Mueang went with it: "ฮ้อนเทียน ยะหื้อรูปภาพหมุนวนๆ เจ้า" (the candle's heat turns it, and the pictures go round and round) and "นี่คือโคมพัด โคมหมุนงานยี่เป็งเจ้า" (this is a khom phat, a spinning lantern for Yi Peng), from the notebooks "Lanna material culture" and the Kam Mueang one; their voice stays in `spoken_km/` for a film that wants them. The dance keeps its two lines | |
 
 ## The kit's own checks
 

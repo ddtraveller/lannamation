@@ -2720,7 +2720,7 @@ function stroll(t, from, to, start, look) {
 var LOOK_KEYS = {};
 
 ["age", "anger", "at", "bangles", "bare", "beard", "bend", "blink", "build", "bun", "buttons", "coat", "collar", "dance", "drum", "earplug", "eyes", "face",
- "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "garland", "glance", "gloves", "grip", "hair", "halo", "handA",
+ "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "garland", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
  "handB", "hat", "head", "holding", "id", "late", "legs", "lips", "mouth", "nails", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "reachA", "reachB",
  "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt",
  "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tilt", "turban", "turn", "twist", "up", "wai", "weave", "wonder", "worn", "wristA", "wristB"
@@ -2876,6 +2876,8 @@ var LOOK_KEYS = {};
 //                   skirt, both legs together, as one who rides side-saddle). The seat stays
 //                   on the ground: the beat only moves what is above it. One who sits does not
 //                   walk, half-sit or lift a foot: step, sit and raise are not read
+//   ground          false: no shadow on the ground, for a figure cut from paper (the figures
+//                   of light of a khom phat, khom.js), whose shape is all there is of it
 //   drum            true to carry a long drum
 //   sing            true to open the mouth on every beat
 //   mouth           the shape of the mouth from mouthAt(), for one who sings the words
@@ -3078,7 +3080,8 @@ function person(x, y, look) {
   var hipHalf = blend3(bodyTurn, 6, 20, 23), footHalf = blend3(bodyTurn, 8, 26, 30);   // each leg's root and foot, this far from the middle
   var sideOn = bodyTurn < -0.5;                     // nearer profile than three-quarter: the far side goes behind the body
 
-  // a soft shadow on the ground, smaller while they are in the air
+  // a soft shadow on the ground, smaller while they are in the air (none for ground: false)
+  if (look.ground !== false) {
   pen.fillStyle = "rgba(70, 45, 30, 0.22)";
   pen.beginPath();
   if (seat === "astride") { pen.rect(x, y, 0, 0); }   // one who rides is not on the ground, and has no shadow on it
@@ -3095,6 +3098,7 @@ function person(x, y, look) {
     pen.fill();
     pen.restore();
   }
+  }                                                 // end of the shadows on the ground
 
   // Dust at the feet for a moment either side of landing: three puffs that
   // spread and fade. They stay on the ground while the body springs up.

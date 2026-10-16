@@ -38,7 +38,8 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6,
 // things on the cloth begin to dance. The camera pulls back: the rows were a
 // sabai, the shoulder cloth of a Lanna woman, and she stands in a village.
 // Then four scenes of the life the cloth showed: the lane, the pond, the
-// rice fields in a rain that clears, a night of dancing. A grandmother's
+// rice fields in a rain that clears, a night of dancing by a spinning
+// lantern. A grandmother's
 // voice tells the story in Kam Mueang over the music (WORDS, at the end; the
 // voice is the Kam Mueang Voice extension's, made by sash_narrate.py), and the
 // film ends on the dance, with no card (owner, 2026-10-16).
@@ -643,7 +644,51 @@ function khomPoles(t) {
   });
 }
 
-function sceneDance(t) {                // 70-79: a night of dancing: a dancer, a drummer, a celestial
+// ---------- the spinning lantern ----------
+// A khom phat (khom.js), the spinning lantern of Yi Peng, hangs at the left of
+// the night of dancing, opposite the band, from an arm on the lantern string's
+// pole, and three children stand behind the great drum looking up at it (owner,
+// 2026-10-16: "Take the spinning lantern and add it to the final scene and
+// remove the scene with the close up of the lantern. Just add one and a few
+// children looking at it so they are on the left side of the screen", and
+// "Opposite the band"). Its figures are of light (khomPhat's "light": a dark
+// drum inside, the figures cut out of it), and they are the film's own: the
+// woman of the cloth, an elephant, a child and a dancer, a quarter turn apart,
+// each cut whole, with no shadow on the ground (ground: false), walking as the
+// frame turns.
+var PHAT = [145, 360, 1.1];              // where its string is tied, and its size
+var PHAT_FIGURE = 0.22;                  // the figures on the paper: the woman about 95 tall at size 1
+var phatWalk;                            // how far the figures have walked as the frame turns: set before it is drawn
+
+function phatFigure(draw) {              // one figure of the lantern, at its size on the paper
+  return function () { pen.scale(PHAT_FIGURE, PHAT_FIGURE); draw(); };
+}
+
+var PHAT_FIGURES = [
+  phatFigure(function () { person(0, 0, Object.assign({}, WOMAN, {size: 1, id: "phat-woman", at: undefined, late: undefined, ground: false, step: phatWalk})); }),
+  phatFigure(function () { elephant(0, 0, {size: 0.45, ground: false, step: phatWalk}); }),
+  phatFigure(function () { person(0, 0, cast("child", {size: 0.85, id: "phat-child", late: undefined, ground: false, step: phatWalk})); }),
+  phatFigure(function () { person(0, 0, cast("dancer", {size: 1, id: "phat-dancer", late: undefined, ground: false, handA: [60, -130], handB: [-60, -110]})); })
+];
+
+function spinningLantern() {             // the khom phat on its arm, and the three children under it, drawn before the great drum
+  pen.strokeStyle = "#6a4a2a";          // the arm, from the string's pole at x 60
+  pen.lineCap = "round";
+  pen.lineWidth = 7;
+  pen.beginPath();
+  pen.moveTo(60, PHAT[1] - 10);
+  pen.lineTo(PHAT[0] + 6, PHAT[1] - 4);
+  pen.stroke();
+  phatWalk = 0.45 * clock * 1.3;         // the frame turns 0.45 a second (khomPhat's own spin), and they walk with it
+  khomPhat(PHAT[0], PHAT[1], {size: PHAT[2], lit: 1, light: true, figures: PHAT_FIGURES});
+  var look = [PHAT[0], PHAT[1] + 150];  // the lantern's middle
+  var gaze = {late: 0.45, spring: 0.5, smile: 1, wonder: 0.7, tilt: -0.12, at: look};   // eyes on it, in wonder
+  person(235, 975, cast("girl", Object.assign({id: "phat-girl-2", face: -1, shirt: "#e9c45c", flower: "#f6c445", reachA: [175, 540]}, gaze, {late: 0.7})));   // she reaches up to it
+  person(55, 975, cast("girl", Object.assign({id: "phat-girl", reachA: [115, 540]}, gaze, {late: 0.2})));   // and so does she
+  person(140, 980, cast("boy", Object.assign({id: "phat-boy", reachA: [165, 480], fingersA: [0, 1, 1, 1, 0.8]}, gaze)));   // he points up at it, drawn last so his hand shows
+}
+
+function sceneDance(t) {                // 70-79: a night of dancing: a dancer, a drummer, a celestial; the khom phat at the left
   skyOf(SKY_NIGHT, CLOUD_LOOKS.night, t + 60);
   pen.drawImage(NIGHT, 0, 0);
   khomString(t);
@@ -658,6 +703,7 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
   khomPoles(t);
   pen.save();
   pen.translate(SIDE, 0);                 // the three, at their places on the old sheet
+  spinningLantern();                      // the khom phat at the left, and the children behind the drum looking up at it
   drumCart(pen, 110, 988, 0.75, 1);       // the temple's great drum on its cart (pieces.js), brought out for the night, beside the drummer
   person(380, 990, cast("drummer", Object.assign({late: 0, spring: 0.6, smile: 1, at: [720, 700]}, LANNA_MAN)));
   person(720, 985, cast("dancer", {late: 0.25, spring: 0.7, smile: 1, dance: true, at: [900, 500],

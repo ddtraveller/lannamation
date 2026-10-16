@@ -41,6 +41,8 @@
 //   size       how large it is drawn (1 is as large as it is beside the cast at their own
 //              sizes: an elephant about 750 high, a buffalo about 400 at the back)
 //   face       1 looks right, -1 looks left
+//   ground     false: no soft shadow on the ground (the elephant's), for a figure cut from
+//              paper, as on a khom phat (khom.js)
 //   step       a number that grows while walking; without it the animal stands
 //   colour     the colour of its hide
 //   late       the timing of the beat, as hop(t, late) takes it: the ears and
@@ -69,7 +71,7 @@
 //   tufts      the tiger's: false for one without the flame tufts at its joints
 var BEAST_KEYS = {};
 
-["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope"].forEach(function (name) { BEAST_KEYS[name] = true; });
+["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground"].forEach(function (name) { BEAST_KEYS[name] = true; });
 
 // Where a walking foot is in its stride: [how far forward of its joint, how
 // high off the ground]. "s" is how far through the stride it is; it is on
@@ -602,10 +604,12 @@ function elephant(x, y, look) {
   var rise = bob - (lying ? 196 : 0);               // how far all above the legs is lifted: a little in a walk, and a long way down for one that lies
   FINE = Math.min(1, Math.pow(size, -0.7));
   LINE = STYLE.line * FINE;
-  pen.fillStyle = "rgba(70, 45, 30, 0.2)";          // the soft shadow on the ground
-  pen.beginPath();
-  pen.ellipse(x + 40 * size * face, y + 6, (lying ? 390 : 340) * size, 26 * size, 0, 0, 7);
-  pen.fill();
+  if (look.ground !== false) {
+    pen.fillStyle = "rgba(70, 45, 30, 0.2)";        // the soft shadow on the ground
+    pen.beginPath();
+    pen.ellipse(x + 40 * size * face, y + 6, (lying ? 390 : 340) * size, 26 * size, 0, 0, 7);
+    pen.fill();
+  }
   pen.save();
   pen.translate(x, y);
   pen.scale(size * face, size);
