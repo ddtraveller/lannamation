@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>dance hands - wong, jeeb and the Khmer gestures</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script>
+// The "dance hands" sheet: the hands of classical dance the kit draws (owner,
+// 2026-10-16: "focus on these hand positions"). For the first five seconds,
+// the four forms of HAND_FORMS, large, each seen from the thumb's edge, the
+// side they read from (wong, jeeb, the fan, the pointing hand), and a dancer
+// whose lifted hands take wong and jeeb by themselves and change over
+// (danceHand). For the next five, every name of GESTURES on a lady with both
+// hands raised, as a look asks for them: gestureA and gestureB.
+var DURATION = 10;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "24px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function forms(t) {
+  ["wong", "jeeb", "fan", "point"].forEach(function (name, n) {
+    var form = HAND_FORMS[name], x = 190 + n * 330;
+    pen.save();
+    pen.translate(x, 640);
+    pen.scale(5, 5);
+    hand(0, 0, -Math.PI / 2 - 0.5, {curls: form.curls, spread: form.spread, arch: form.arch, pinch: form.pinch, thumb: 1, palm: GESTURES[name][2]});
+    pen.restore();
+    caption(name, x, 760);
+  });
+  person(1650, 1000, cast("dancer", {id: "hands-dancer", late: 0.2, spring: 0.4, smile: 1,
+                                    handA: [60, -120], handB: [-60, -112]}));
+  caption("a dancer: wong and jeeb, changing over", 1650, 1050);
+}
+
+function names(t) {
+  Object.keys(GESTURES).forEach(function (name, n) {
+    var x = 140 + (n % 7) * 273, y = n < 7 ? 490 : 1010;
+    person(x, y, cast("lady", {size: 0.95, id: "hands-" + name, gestureA: name, gestureB: name, handA: [40, -130], handB: [-40, -115]}));
+    caption(name, x, y + 36 > 1072 ? 1072 : y + 36);
+  });
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  if (t < 5) { forms(t); } else { names(t); }
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

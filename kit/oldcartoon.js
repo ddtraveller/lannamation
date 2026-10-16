@@ -1717,7 +1717,11 @@ function glove(x, y, angle, thumb, bare, open, nails, curls) {
 //   pose.curls     five numbers, 0 straight to 1 curled: the first finger to the
 //                  little one, then the thumb (REST is a hand at rest)
 //   pose.spread    0 to 1: how far the fingers fan apart (0.15 at rest)
-//   pose.arch      0 to 1: the fingers bent back at the knuckle, as the dance hand holds them
+//   pose.arch      0 to 1: the fingers bent back at the knuckle, as the dance hand holds them;
+//                  or four numbers, one for each finger, the first to the little one
+//   pose.still     true: no little life in the fingers (a hand of dance is held, not trembling)
+//   pose.pinch     [finger, amount]: the thumb's tip brought to the pad of the first finger
+//                  (0) or the middle one (1), amount 0 to 1 (pinchThumb()); the jeeb
 //   pose.thumb     1 or -1: which side the thumb is on, as glove() takes it (the two hands are mirrors)
 //   pose.palm      the turn of the hand about its own length: 0 the back toward us, 1 the palm,
 //                  0.5 the thumb's edge toward us, -0.5 the little finger's edge
@@ -1728,8 +1732,95 @@ var HAND = {palm: 9.5, wrist: 6.5, knuckle: 13, apart: 5.2, fat: 2.5, thick: 2.4
             lengths: [1.02, 1.16, 1.08, 0.84], thumb: 13};
 var REST = [0.2, 0.26, 0.32, 0.38, 0.45];           // a hand hanging at rest: the fingers gently curled, the little one most
 
+// The hands of classical dance, Thai and Khmer, as hand() takes them (owner,
+// 2026-10-16: "focus on these hand positions", with pictures of the Thai wong
+// and jeeb and the chart "The Meaning of Hands' Gestures in Khmer Dance").
+// Four forms of the hand:
+//   wong     the four fingers together, straight, bent far back at the knuckles, the thumb in
+//   jeeb     the thumb's tip pressed to the first finger's, the other three fanned and bent back
+//   fan      all the fingers spread and bent back (the kit's dance hand before 2026-10-16)
+//   point    the first finger out straight, the thumb pressed to the middle one, the rest curled
+var HAND_FORMS = {
+  wong: {curls: [0, 0, 0, 0, 0.55], spread: 0.03, arch: 1},
+  jeeb: {curls: [0.85, 0, 0, 0, 0.3], spread: 0.35, arch: [0, 0.8, 0.9, 1], pinch: [0, 1]},
+  fan: {curls: [0, 0, 0, 0, 0.1], spread: 0.6, arch: 0.6},
+  point: {curls: [0, 0.85, 0.9, 0.9, 0.5], spread: 0.05, arch: [0.15, 0, 0, 0], pinch: [1, 1]}
+};
+// The hands a look can ask for by name (gestureA, gestureB): [its form, how far
+// the wrist bends the hand back, away from the head (radians), its turn (palm,
+// as hand() takes it: 0.45 shows the thumb's edge, the side the forms read
+// from), and 1 for a hand turned down: its fingers point to the ground, a
+// little out, whichever way the forearm goes ("down toward the palm" turned a
+// lowered hand's fingers up, for its back faces in)].
+// The Khmer names are the chart's: planting is the pointing hand turned down, a
+// seed put in the ground; growing, turned up; young leaves the open fan; leaves
+// the wong; flowering and ripe fruit the jeeb turned up; fruit the jeeb with
+// its palm toward us; falling fruit the jeeb turned down.
+var GESTURES = {
+  wong: ["wong", 0.5, 0.45, 0], jeeb: ["jeeb", 0.4, 0.45, 0], jeebDown: ["jeeb", 0, 0.45, 1], fan: ["fan", 0.4, 0.3, 0], point: ["point", 0, 0.45, 0],
+  planting: ["point", 0, 0.45, 1], growing: ["point", 0.3, 0.45, 0], youngLeaves: ["fan", 0.4, 0.3, 0], leaves: ["wong", 0.5, 0.45, 0],
+  flowering: ["jeeb", 0.4, 0.45, 0], fruit: ["jeeb", 0.4, 0.75, 0], fallingFruit: ["jeeb", 0, 0.45, 1], ripeFruit: ["jeeb", 0.6, 0.45, 0]
+};
+
+// A hand of dance, whole: a name of GESTURES, or {from, to, u} for a hand
+// part of the way from one to the other; gives back the form, the wrist's
+// bend and the turn, mixed. A hand goes from one form to the next joint by
+// joint, and the thumb's pinch closes or opens with it.
+function gestureOf(gesture) {
+  function one(name) {
+    var g = GESTURES[name];
+    if (!g) { warn("no hand of dance is called " + name + "; GESTURES has " + Object.keys(GESTURES).join(", ")); g = GESTURES.wong; }
+    var form = HAND_FORMS[g[0]];
+    return {curls: form.curls, spread: form.spread, arch: [0, 1, 2, 3].map(function (f) { return Array.isArray(form.arch) ? form.arch[f] : form.arch; }),
+            pinch: form.pinch, wrist: g[1], palm: g[2], down: g[3]};
+  }
+  if (typeof gesture === "string") { return one(gesture); }
+  var a = one(gesture.from), b = one(gesture.to), u = clamp(gesture.u);
+  var finger = (u < 0.5 ? a.pinch || b.pinch : b.pinch || a.pinch);
+  return {curls: a.curls.map(function (c, i) { return mix(c, b.curls[i], u); }), spread: mix(a.spread, b.spread, u),
+          arch: a.arch.map(function (c, i) { return mix(c, b.arch[i], u); }),
+          pinch: finger ? [finger[0], mix(a.pinch ? a.pinch[1] : 0, b.pinch ? b.pinch[1] : 0, u)] : undefined,
+          wrist: mix(a.wrist, b.wrist, u), palm: mix(a.palm, b.palm, u), down: mix(a.down, b.down, u)};
+}
+
+// A dancer's lifted hands, unless a look names them: one in wong and one in
+// jeeb, as Thai dancers hold them, changing over every eight seconds, each
+// hand going from one form to the other in the first 1.2 s of the eight,
+// slowly, as a Lanna dancer's hands do (owner's reference, 2026-10-16).
+function danceHand(near, t) {
+  var period = Math.floor(t / 8), u = clamp((t - period * 8) / 1.2);
+  var now = (period + (near ? 0 : 1)) % 2 ? "jeeb" : "wong", before = now === "jeeb" ? "wong" : "jeeb";
+  return u >= 1 ? now : {from: before, to: now, u: u * u * (3 - 2 * u)};
+}
+
+// The thumb of a pinch: from its root t0 to the pad of a fingertip ("tip" as
+// hand() keeps it: [point, way, back of the joint, across]), the two bones of
+// the thumb bending out at their joint, toward the thumb's side and the back
+// of the hand, as a thumb does when it presses a fingertip; its root comes
+// forward too, as a thumb's does to meet a finger (a curled finger's tip is
+// well in front of the palm, out of reach of a root left at the wrist).
+// "amount" takes it there from where it was (t0, t1, t2), so a hand can
+// close into the pinch. It gives back the thumb's three points.
+function pinchThumb(t0, t1, t2, tip, amount) {
+  var root = [t0[0] + 2 * amount, t0[1], t0[2] - 5 * amount];
+  var goal = [0, 1, 2].map(function (i) { return tip[0][i] - tip[2][i] * HAND.fat * 0.9; });   // the pad, under the fingertip's back
+  var first = HAND.thumb, second = HAND.thumb * 0.7;
+  var to = [0, 1, 2].map(function (i) { return goal[i] - root[i]; });
+  var far = Math.sqrt(to[0] * to[0] + to[1] * to[1] + to[2] * to[2]) || 1;
+  var way = to.map(function (v) { return v / far; }), reach = Math.min(far, first + second - 0.01);
+  var along = (first * first - second * second + reach * reach) / (2 * reach);
+  var high = Math.sqrt(Math.max(0, first * first - along * along));
+  var out = [0, 1, 0.6], dot = out[0] * way[0] + out[1] * way[1] + out[2] * way[2];
+  var side = [0, 1, 2].map(function (i) { return out[i] - dot * way[i]; });
+  var sideLong = Math.sqrt(side[0] * side[0] + side[1] * side[1] + side[2] * side[2]) || 1;
+  var joint = [0, 1, 2].map(function (i) { return root[i] + way[i] * along + side[i] / sideLong * high; });
+  var end = [0, 1, 2].map(function (i) { return root[i] + way[i] * reach; });
+  return [root, t1.map(function (v, i) { return mix(v, joint[i], amount); }), t2.map(function (v, i) { return mix(v, end[i], amount); })];
+}
+
 function hand(x, y, angle, pose) {
-  var curls = pose.curls || REST, spread = pose.spread === undefined ? 0.15 : pose.spread, arch = pose.arch || 0;
+  var curls = pose.curls || REST, spread = pose.spread === undefined ? 0.15 : pose.spread;
+  var arches = [0, 1, 2, 3].map(function (f) { return Array.isArray(pose.arch) ? pose.arch[f] : pose.arch || 0; });   // each finger's bend back, or one for all
   var thumb = pose.thumb || 1, roll = (pose.palm || 0) * Math.PI, pitch = pose.pitch || 0;
   var colour = pose.colour || SKIN, ink = inkFor(colour), line = LINE, n, k;
   var cr = Math.cos(roll), sr = Math.sin(roll), cp = Math.cos(pitch), sp = Math.sin(pitch);
@@ -1773,10 +1864,10 @@ function hand(x, y, angle, pose) {
     var place = 1.5 - n;                            // 1.5 for the first finger, -1.5 for the little one
     var long = HAND.finger * HAND.lengths[n];
     var base = [HAND.knuckle - Math.abs(place) * 1.5, place * HAND.apart, 0];
-    var mine = 0.08 + 1.3 * curls[n] + 0.03 * Math.sin(clock * 7 + n * 1.7);   // its own curl, and a little life
+    var mine = 0.08 + 1.3 * curls[n] + (pose.still ? 0 : 0.03 * Math.sin(clock * 7 + n * 1.7));   // its own curl, and a little life (none in a held hand of dance)
     var fan = place * spread * (0.6 + 0.4 * Math.abs(place));
     var dirX = Math.cos(fan), dirY = Math.sin(fan); // the way it leaves the knuckle, in the palm's plane
-    var bends = [mine * 0.62 - arch * 0.6, mine * 0.7 - arch * 0.3, mine * 0.5 - arch * 0.1];   // a fist folds most at the knuckle, so from the back it shows knuckles, not fingers
+    var bends = [mine * 0.62 - arches[n] * 0.6, mine * 0.7 - arches[n] * 0.3, mine * 0.5 - arches[n] * 0.1];   // a fist folds most at the knuckle, so from the back it shows knuckles, not fingers
     var lens = [long * 0.8, long * 0.62, long * 0.5];
     var wides = [[HAND.fat * 1.04, HAND.fat * 0.94, 0.12], [HAND.fat * 0.94, HAND.fat * 0.8, 0.18], [HAND.fat * 0.8, HAND.fat * 0.6, 0.09]];
     var at = base, bent = 0, d;
@@ -1797,6 +1888,12 @@ function hand(x, y, angle, pose) {
   var t1 = [t0[0] + Math.cos(tt) * Math.cos(dip) * HAND.thumb, t0[1] + Math.sin(tt) * Math.cos(dip) * HAND.thumb, t0[2] - Math.sin(dip) * HAND.thumb];
   var tt2 = tt - 0.5, dip2 = dip + 0.3 * curls[4];
   var t2 = [t1[0] + Math.cos(tt2) * Math.cos(dip2) * HAND.thumb * 0.7, t1[1] + Math.sin(tt2) * Math.cos(dip2) * HAND.thumb * 0.7, t1[2] - Math.sin(dip2) * HAND.thumb * 0.7];
+  if (pose.pinch && pose.pinch[1] > 0) {            // a pinch, the jeeb of Thai and Khmer dance: the thumb's tip to a fingertip's pad
+    var pinched = pinchThumb(t0, t1, t2, tips[pose.pinch[0]], clamp(pose.pinch[1]));
+    t0 = pinched[0];
+    t1 = pinched[1];
+    t2 = pinched[2];
+  }
   unit++;
   part(t0, t1, HAND.fat * 1.2, HAND.fat * 1.05, 0.2, false, "thumb", [0, 0, 1]);
   part(t1, t2, HAND.fat * 1.05, HAND.fat * 0.85, 0.15, false, "thumbtip", [Math.sin(dip2) * Math.cos(tt2), Math.sin(dip2) * Math.sin(tt2), Math.cos(dip2)]);
@@ -2720,7 +2817,7 @@ function stroll(t, from, to, start, look) {
 var LOOK_KEYS = {};
 
 ["age", "anger", "at", "bangles", "bare", "beard", "bend", "blink", "build", "bun", "buttons", "coat", "collar", "dance", "drum", "earplug", "eyes", "face",
- "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "garland", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
+ "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
  "handB", "hat", "head", "holding", "id", "late", "legs", "lips", "mouth", "nails", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "reachA", "reachB",
  "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt",
  "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tilt", "turban", "turn", "twist", "up", "wai", "weave", "wonder", "worn", "wristA", "wristB"
@@ -2803,6 +2900,11 @@ var LOOK_KEYS = {};
 //   feel            a feeling by name: "calm", "joy", "surprise", "fear", "anger", "sad";
 //                   it also leans the body and tilts the head, unless bend or tilt is given
 //   dance           true: a lifted hand takes the pose of Thai dance
+//   gestureA, gestureB  a hand of classical dance by name (GESTURES): "wong", "jeeb", "jeebDown",
+//                   "fan", "point", or the Khmer dance's "planting", "growing", "youngLeaves",
+//                   "leaves", "flowering", "fruit", "fallingFruit", "ripeFruit"; or {from, to, u}
+//                   for a hand on its way between two. A dancer's lifted hands take wong and jeeb
+//                   by themselves (danceHand), changing over every eight seconds
 //   halo            true: a halo behind the head (a celestial). A crown is not the kit's:
 //                   a paperdoll draws its own (apsara.js)
 //   shaved, plain   no hair; no waist cloth, collar or pocket (a monk's robe)
@@ -3499,6 +3601,20 @@ function person(x, y, look) {
       curls = WAI;
       palm = 0.25;
     }
+    // A hand of classical dance (GESTURES): the one the look names, or, on a
+    // dancer's lifted hand that nothing else shapes, wong or jeeb (danceHand).
+    // The wrist bends the hand back or down, and the hand turns its thumb's edge
+    // to us; the two hands mirror each other (their thumbs are on opposite sides),
+    // so that both bend back away from the head, as the dancers' do.
+    var gesture = near ? look.gestureA : look.gestureB, form;
+    if (gesture === undefined && look.dance && given[1] < 0 && !fingers && !look.grip && !(near && look.parasol)) { gesture = danceHand(near, clock); }
+    if (gesture && !look.wai) {
+      form = gestureOf(gesture);
+      angle -= (near ? 1 : -1) * flex * (rest ? 0.3 : 1);   // held steady: no bend of the wrist on the beat (owner: "stop the hands from shaking")
+      var raised = angle - thumb * form.wrist, lowered = Math.PI / 2 + (near ? -0.35 : 0.35);   // bent back away from the head; or pointing down, a little out
+      angle = raised + Math.atan2(Math.sin(lowered - raised), Math.cos(lowered - raised)) * form.down;   // the shorter way round
+      palm = thumb * form.palm;
+    }
     if (look.parasol) {
       if (near) {                                   // the near hand closed round the parasol's handle, pointing up it (or down behind her, carried)
         var holdHang = parasolOf(look.parasol).hang || 0, holdAxis = -Math.PI / 2 + parasolSwing(parasolOf(look.parasol).tilt, holdHang);
@@ -3509,14 +3625,18 @@ function person(x, y, look) {
         if (parasolOf(look.parasol).busy > 0.5) { open = 0.12; curls = undefined; palm = 0; }
       }
     }
-    if (open <= 0.12) { palm = 0.3; }               // closed round a thing
+    if (open <= 0.12 && !form) { palm = 0.3; }      // closed round a thing
     if (turned !== undefined) { palm = turned; }
-    return {angle: angle, open: open, curls: curls, thumb: thumb, palm: palm, nails: nails};
+    return {angle: angle, open: open, curls: curls, thumb: thumb, palm: palm, nails: nails, form: form};
   }
   // The hand in the round takes curls; a hand given only how open it is
   // (as the flat hand is) gets them by the flat hand's own rule, and past 1
   // the dance hand: fingers straight, fanned, and bent back at the knuckle
   function roundPose(pose) {
+    if (pose.form) {                                // a hand of dance: its own form
+      return {curls: pose.form.curls, spread: pose.form.spread, arch: pose.form.arch, pinch: pose.form.pinch,
+              thumb: pose.thumb, palm: pose.palm, nails: pose.nails, still: true};
+    }
     var open = Math.min(1, pose.open), back = Math.max(0, pose.open - 1), curls = pose.curls;
     if (!curls) {
       var curl = back > 0 ? 0 : 0.12 + (1 - open);
@@ -3530,7 +3650,7 @@ function person(x, y, look) {
     var near = which === "A";
     pen.save();
     pen.translate(wrist[0], wrist[1]);
-    bangles(pose.angle, rings);
+    bangles(Math.atan2(wrist[1] - wrist[3], wrist[0] - wrist[2]), rings);   // on the forearm, from the elbow to the wrist, however the hand bends (owner, 2026-10-16: "the gold bangles on her wrists should stay pinned to the arm")
     pen.scale(handSize, handSize);
     if (near && look.parasol) { gripHand(0, 0, pose.angle); }   // a hand closed round the parasol's handle, from the photograph
     else if (look.gloves || STYLE.hands === "flat") { glove(0, 0, pose.angle, pose.thumb, !look.gloves, pose.open, pose.nails, pose.curls); }
