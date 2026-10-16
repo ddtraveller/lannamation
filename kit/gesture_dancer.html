@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>gesture dancer - a fingernail dancer through every hand of dance, ending in a wai</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script>
+// The "gesture dancer" sheet (owner, 2026-10-16: "Show me a finger dancer going through
+// each motion. Just that", then "finish with the wai"), at the pace of the owner's
+// reference (docs/STYLE.md, "The hands of classical dance").
+// One fingernail dancer going through every hand of GESTURES in turn, the
+// Thai forms first and then the Khmer dance's, a plant's life from planting
+// to ripe fruit: each held a while, then the hands and the arms move on to
+// the next together.
+var HOLD = 1.4, MOVE = 1.4;           // seconds a hand is held, and spent going to the next: slow and even, as the reference dancer moves
+var STEPS = [                          // [name, where hand A is, where hand B is]
+  ["wong", [62, -122], [-62, -114]],
+  ["jeeb", [56, -116], [-56, -108]],
+  ["jeebDown", [72, -62], [-72, -54]],
+  ["fan", [60, -120], [-60, -112]],
+  ["point", [48, -130], [-62, -46]],
+  ["planting", [64, 34], [-62, 26]],
+  ["growing", [44, -64], [-52, -44]],
+  ["youngLeaves", [52, -112], [-52, -104]],
+  ["leaves", [72, -122], [-72, -112]],
+  ["flowering", [50, -92], [-50, -84]],
+  ["fruit", [62, -72], [-62, -64]],
+  ["fallingFruit", [72, -24], [-60, -104]],
+  ["ripeFruit", [52, -102], [-44, -62]]
+];
+var WAI_HOLD = 3;                      // and last a wai, held, as the reference dancer ends
+var DURATION = STEPS.length * (HOLD + MOVE) + WAI_HOLD;
+// The wai: the kit's own (wai: true) puts the wrists side by side before the chest and
+// stands the hands upright. To come to it without a jump, the last move takes each wrist
+// to that place (handFor, as person() places them), bends it until the hand stands upright
+// (the forearms' angle in the wai is read once, from a wai drawn on a sheet nobody sees),
+// and flattens the hand to the wai's own (WAI); then the kit's wai holds.
+HAND_FORMS.flat = {curls: WAI, spread: 0.02, arch: 0};
+GESTURES.flat = ["flat", 0, 0.25, 0];
+var WAI_AT = [[-28, 28], [44, 28]];    // the wai's wrists from each shoulder, as person() works them out for a figure turned three-quarters
+var WAI_TURN = null;
+function waiTurn() {                   // how far each wrist must bend for the hand to stand upright (read on the first frame, once the clock runs)
+  if (!WAI_TURN) {
+    var keep = pen;
+    pen = document.createElement("canvas").getContext("2d");
+    var j = person(0, 0, cast("dancer", {size: 3.4, id: "wai-probe", wai: true}));
+    pen = keep;
+    var a = Math.atan2(j.wristA[1] - j.elbowA[1], j.wristA[0] - j.elbowA[0]), b = Math.atan2(j.wristB[1] - j.elbowB[1], j.wristB[0] - j.elbowB[0]);
+    WAI_TURN = [-Math.PI / 2 - 0.05 - a, -Math.PI / 2 + 0.05 - b];
+  }
+  return WAI_TURN;
+}
+function sweep(from, to, u, way) {     // a wrist going round its shoulder, the long way down the outside (way 1 or -1), so it never passes close to it
+  var a0 = Math.atan2(from[1], from[0]), a1 = Math.atan2(to[1], to[0]);
+  var turn = ((a1 - a0) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  if (way < 0) { turn -= 2 * Math.PI; }
+  var a = a0 + turn * u, r = mix(Math.hypot(from[0], from[1]), Math.hypot(to[0], to[1]), u);
+  return [Math.cos(a) * r, Math.sin(a) * r];
+}
+function wristOf(given) {              // where arm() puts the wrist for a hand given this far from the shoulder (a straight arm past 92)
+  var far = Math.hypot(given[0], given[1]) || 1, long = Math.max(Math.min(74, 30 + far * 2.2), Math.min(119, far * 1.3));
+  return [given[0] / far * long, given[1] / far * long];
+}
+var BEAT = 0.5;
+
+function at(t) {                       // which step, and how far into the move to the next
+  var span = HOLD + MOVE, n = Math.min(STEPS.length - 1, Math.floor(t / span));
+  var into = t - n * span, u = n < STEPS.length - 1 ? between(into, HOLD, span) : 0;
+  return {n: n, u: u};
+}
+
+function caption(text) {
+  pen.fillStyle = "rgba(90, 70, 48, 0.85)";
+  pen.textAlign = "center";
+  pen.font = "28px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, 960, 64);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var last = STEPS.length * (HOLD + MOVE) - MOVE, drift = [3 * Math.sin(t * 0.9), 3 * Math.cos(t * 0.7)];
+  var look = {size: 3.4, id: "solo", smile: 1, sway: 0.025 * Math.sin(t * 2 * Math.PI / (HOLD + MOVE)),
+              sit: 0.1 + 0.08 * Math.sin(t * 2 * Math.PI / (HOLD + MOVE))};   // a slow dip of the knees, once a step
+  if (t >= last) {                     // the last move, to the wai, and the wai
+    var u = between(t, last, last + MOVE), end = STEPS[STEPS.length - 1];
+    if (u >= 1) {
+      person(960, 1600, cast("dancer", Object.assign(look, {wai: true})));
+    } else {
+      var wristA = sweep(wristOf(end[1]), WAI_AT[0], u, 1), wristB = sweep(wristOf(end[2]), WAI_AT[1], u, -1);   // down outside the shoulders and in to the chest, not across the face
+      person(960, 1600, cast("dancer", Object.assign(look, {gestureA: {from: end[0], to: "flat", u: u}, gestureB: {from: end[0], to: "flat", u: u},
+        handA: handFor(wristA[0] + drift[0] * (1 - u), wristA[1] + drift[1] * (1 - u)),
+        handB: handFor(wristB[0] - drift[0] * (1 - u), wristB[1] + drift[1] * (1 - u)),
+        wristA: waiTurn()[0] * u, wristB: waiTurn()[1] * u})));
+    }
+    caption("wai");
+    return;
+  }
+  var s = at(t), now = STEPS[s.n], next = STEPS[Math.min(STEPS.length - 1, s.n + 1)];
+  var gesture = s.u > 0 ? {from: now[0], to: next[0], u: s.u} : now[0];
+  var handA = [mix(now[1][0], next[1][0], s.u) + drift[0], mix(now[1][1], next[1][1], s.u) + drift[1]];
+  var handB = [mix(now[2][0], next[2][0], s.u) - drift[0], mix(now[2][1], next[2][1], s.u) + drift[1]];
+  person(960, 1600, cast("dancer", {size: 3.4, id: "solo", smile: 1, sway: 0.025 * Math.sin(t * 2 * Math.PI / (HOLD + MOVE)),
+                                    sit: 0.1 + 0.08 * Math.sin(t * 2 * Math.PI / (HOLD + MOVE)),   // a slow dip of the knees, once a step
+                                    gestureA: gesture, gestureB: gesture, handA: handA, handB: handB}));
+  caption(s.u < 0.5 ? now[0] : next[0]);
+}
+
+function draw(t) {
+  settled(t, function (time) { clock = time; sheet(time); });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>
