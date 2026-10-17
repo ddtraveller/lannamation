@@ -1334,8 +1334,10 @@ northern garden and a temple's offering tray; the fruits the ones of the market 
 
 `FLORA` is the table: each name with its painter, its `kind` (flower or fruit), its Thai name
 (`thai`) and how that is said (`say`), so a page can write the name under the thing, as
-`flora.html` does. A look has two names (`FLORA_KEYS`): `size` and `colour` (the flower's, for
-the six marked above; the others have one colour). `size: 1` is as large as the thing is beside
+`flora.html` does. A look has three names (`FLORA_KEYS`): `size`, `colour` (the flower's, for
+the six marked above; the others have one colour) and `ground` (`false`: no shadow under it, for
+one that does not stand on the ground, such as the hero film's wild orchids on the trunks of its
+pond's trees, 2026-10-17; as `person()` reads the same name). `size: 1` is as large as the thing is beside
 the cast at their own sizes. A name `flora()` does not know draws nothing and the kit warns, with
 the nearest name. The shared pieces are `floraPaint` (the kit's `shape()` with a gradient as the
 paint), `floraLeaf`, `floraBall`, `floraPetals` (petals round a heart, pale at the rim if told)

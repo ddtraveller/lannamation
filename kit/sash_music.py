@@ -1,4 +1,4 @@
-"""sash_music.py - 79 seconds of music for sash.html, saved as sash.wav.
+"""sash_music.py - 82 seconds of music for sash.html, saved as sash.wav.
 
     python sash_music.py
 
@@ -27,7 +27,7 @@ from scipy.signal import butter, fftconvolve, sosfilt
 RATE = 44100
 BEAT = 0.5                   # sash.html uses the same number
 SILENCE = 3.0                # seconds before the first note
-BEATS = 152                  # 76 seconds of music: the film is 79 s
+BEATS = 158                  # 79 seconds of music: the film is 82 s
 TUNE_NOTES = [220.0, 261.63, 293.66, 329.63, 392.0, 440.0, 523.25]
 CHORDS = [[110.0, 164.81, 220.0, 261.63],
           [87.31, 174.61, 220.0, 261.63],

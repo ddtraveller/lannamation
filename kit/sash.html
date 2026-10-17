@@ -32,6 +32,7 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6,
 <script src="khom.js"></script>
 <script src="pieces.js"></script>
 <script src="band.js"></script>
+<script src="flora.js"></script>
 <script>
 // sash.html - a film of the kit. It opens on a cloth, close up: twelve rows
 // of the small things of Thai life, woven across it. Music begins, and the
@@ -42,8 +43,10 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6,
 // lantern. A grandmother's
 // voice tells the story in Kam Mueang over the music (WORDS, at the end; the
 // voice is the Kam Mueang Voice extension's, made by sash_narrate.py), and the
-// film ends on the dance, with no card (owner, 2026-10-16).
-var DURATION = 79;
+// film ends on the dance, with no card (owner, 2026-10-16). It is 82 s since
+// the owner's own story (2026-10-17): its last line takes 5.6 s, and the dance
+// ran three seconds longer so that it is said before the music's fade.
+var DURATION = 82;
 
 var BEAT = 0.5;                         // the same number as in sash_music.py
 
@@ -141,7 +144,13 @@ function paintSet(kind) {
     namton(brush, 1425 + SIDE, 912, 1.1);          // the water jar at the gate, beside the house's ladder (pieces.js)
   }
   if (kind === "pond") {                            // the water, the lotus and the fish are drawn live, in scenePond
-    tree(brush, 160 + SIDE, 880, 1.0);
+    // Special trees of the north (owner, 2026-10-17: "Change cats to some special plant the Lanna did
+    // have and add it to the scene", then "Add some other special plants or animals as well"): on the
+    // left bank, where a plain tree stood, a ratchaphruek in flower, the golden shower, the national tree;
+    // on the right bank a thong kwao, the flame of the forest, Chiang Mai's own tree, which the voice
+    // names (flora.js); wild orchids on both trunks (scenePond).
+    floraTree(brush, 160 + SIDE, 880, 1.0, "ratchaphruek", 3);
+    floraTree(brush, 1540 + SIDE, 884, 0.95, "thongkwao", 5);
   }
   return paper;
 }
@@ -515,6 +524,8 @@ function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maide
   chinaFlag(drake.claw[0], drake.claw[1], drake.size, t);
   pen.restore();
   siamese(130, 1012, 0.9, t);                                 // her Siamese cat sits beside her
+  flora("orchid", 172, 800, {size: 0.9, ground: false});     // wild orchids (dok ueang), as they grow, on the trunks of the trees
+  flora("orchid", 1552, 806, {size: 0.9, colour: "#f2f0f6", ground: false});
   var awe = tween(t, [[8, 0], [8.6, 1], [11, 1], [11.8, 0]], "smooth");           // the dragon passes over: eyes up, brows up
   var sky = [head[0], head[1]];
   person(300, 1000, cast("maiden", {floor: true, late: 0, spring: 0.4, smile: 1, wonder: awe, at: awe > 0.5 ? sky : [700, 800], wai: t > 1}));
@@ -869,35 +880,46 @@ var SCENES = [[0, 22, sceneCloth], [22, 35, sceneLane], [35, 50, scenePond], [50
 // The words, in one list (owner, 2026-10-16: the song gave way to the story of
 // Lanna told in Kam Mueang, "like it was for little kids", about what is on
 // screen, "then go on explaining the special artifacts that are uniquely
-// Lanna", and a joke about the dragon). Each line: the seconds it shows under
+// Lanna", and a joke about the dragon). On 2026-10-17 the owner wrote the story
+// anew, in English, scene by scene ("change the text of the video to be that"),
+// and it is told in Kam Mueang still: the English below is theirs, spelling
+// mended, with "cats" made a tree Lanna had (owner: "Change cats to some special
+// plant the Lanna did have"): the thong kwao, Chiang Mai's own tree, ต้นกว๋าว in
+// Kam Mueang, which stands by the pond. Ten lines kept their Kam Mueang, whose
+// meaning had not changed; eight are new. Each line: the seconds it shows under
 // the picture, what the voice is given (the written line with ๆ said out, for
 // the voice drops the mark), the line as written, and its English. The facts
 // come from a NotebookLM notebook of Lanna's history (Wikipedia on Mangrai,
 // Chiang Mai, the sabai, the tung, the kwian, Bo Sang, khom loi, Yi Peng and the
-// Chinese dragon); the Kam Mueang from a second notebook, with its words read
-// from pythainlp/lanna_dict, the Charatrit KamMuang-Thai-English pairs and a
-// guide to speaking Lanna. No native speaker has checked it yet.
+// Chinese dragon; for the new story also Siamese cats and the Tamra Maew, which
+// put those cats in Siam and not in Lanna); the Kam Mueang from a second
+// notebook, with its words read from pythainlp/lanna_dict, the Charatrit
+// KamMuang-Thai-English pairs and a guide to speaking Lanna, and each new line
+// put to that notebook as it stood and taken in its corrected form (it changed
+// เอิ้น, which is Isan, to ฮ้อง, and ใจดี to ใจ๋ดี, among others). No native
+// speaker has checked it yet.
 // sash_narrate.py reads WORDS out of this page, speaks each line at its second
 // over sash.wav and says whether each fits before the next. CUES is the kit's
 // cue sheet made from it, [beat, words, line, meaning, end], so that
 // kit_check.py can say whether a cut falls in the middle of a line.
-var WORDS = [[3.6, 6.4, "แต่ปางก่อน ชีวิตเดินไปจ๊า จ๊า เน้อ", "แต่ปางก่อน ชีวิตเดินไปจ๊าๆ เน้อ", "In ancient times, life moved more slowly."],
-             [6.6, 10.4, "คนตัวจ้อย จ้อย เดินไต่ตามผืนผ้าเจ้า", "คนตัวจ้อยๆ เดินไต่ตามผืนผ้าเจ้า", "Tiny people walk along a woven cloth."],
-             [10.8, 14.4, "นี่คือสไบ ผ้าพาดของแม่หญิงนา", "นี่คือสไบ ผ้าพาดของแม่หญิงนา", "It is a sabai, a long cloth women wear."],
-             [15.2, 19.6, "พญามังรายตั้งล้านนาแปลงเชียงใหม่", "พญามังรายตั้งล้านนาแปลงเชียงใหม่", "King Mangrai founded Lanna and built Chiang Mai."],
-             [23.2, 27.4, "ตี้ฮอมบ้านเงียบ เงียบ ปี้น้องปะกั๋นเลาะ", "ตี้ฮอมบ้านเงียบๆ ปี้น้องปะกั๋นเลาะ", "In a quiet village lane, neighbours meet and greet."],
-             [27.8, 30.3, "หันตุงสูงข้างเฮือนบ่ลูก", "หันตุงสูงข้างเฮือนบ่ลูก", "See the tall tung banner by the house?"],
-             [30.6, 34.4, "ตุงแขวนไว้ตี้งานปอยและวันศีลเจ้า", "ตุงแขวนไว้ตี้งานปอยและวันศีลเจ้า", "Tungs are hung for festivals and temple days."],
-             [36.0, 39.5, "ตี้หนองบัว มีแม่หญิงน้อยไหว้เฮา", "ตี้หนองบัว มีแม่หญิงน้อยไหว้เฮา", "By the lotus pond, a girl greets us."],
-             [39.8, 43.6, "ช้าก่อน ตัวหลงนี้มาจากเมืองจีนนา", "ช้าก่อน ตัวหลงนี้มาจากเมืองจีนนา", "Wait! This dragon came from China."],
-             [44.0, 47.1, "ตัวหลงเมืองจีนมักถือแก้ว บ่ใช่ธง", "ตัวหลงเมืองจีนมักถือแก้ว บ่ใช่ธง", "Chinese dragons usually hold a pearl, not a flag!"],
-             [47.4, 49.9, "พู้นแน่ะ หมู่จ้างเดินหลังต้นกล้วย", "พู้นแน่ะ หมู่จ้างเดินหลังต้นกล้วย", "Over there, elephants walk behind the banana trees."],
-             [52.0, 54.7, "ฝนซาแล้วเหนือทุ่งนาเน้อ", "ฝนซาแล้วเหนือทุ่งนาเน้อ", "The rain stops over the rice fields."],
-             [55.0, 58.0, "แม่หญิงควงจ้องกระดาษแบบบ่อสร้าง", "แม่หญิงควงจ้องกระดาษแบบบ่อสร้าง", "The women spin paper parasols, like those of Bo Sang."],
-             [58.4, 62.0, "ล้านนา หมายถึง นาเป็นล้านทุ่ง", "ล้านนา หมายถึง นาเป็นล้านทุ่ง", "Lanna means a million rice fields."],
-             [62.5, 65.4, "ละอ่อนจูงควายลากเกวียนไม้เจ้า", "ละอ่อนจูงควายลากเกวียนไม้เจ้า", "A boy leads a buffalo pulling a kwian, a wooden cart."],
-             [70.8, 74.1, "ยามคืน คนเฮาฟ้อนรำตามกลองหลวง", "ยามคืน คนเฮาฟ้อนรำตามกลองหลวง", "At night, we dance to the big drum."],
-             [74.4, 78.6, "โคมลอยลอยขึ้นก๋างหาว ในงานยี่เป็ง", "โคมลอยลอยขึ้นก๋างหาว ในงานยี่เป็ง", "Khom loi lanterns float into the sky for Yi Peng."]];
+var WORDS = [[3.6, 6.4, "แต่ปางก่อน ชีวิตเดินไปจ๊า จ๊า เน้อ", "แต่ปางก่อน ชีวิตเดินไปจ๊าๆ เน้อ", "In ancient times, things moved more slowly."],
+             [6.6, 10.6, "แม่หญิงพาดผ้าสะพาย ฮ้องว่าสไบเจ้า", "แม่หญิงพาดผ้าสะพาย ฮ้องว่าสไบเจ้า", "Women wore a long sash called a sabai."],
+             [10.9, 15.1, "ลายตี้ทอไว้ตี้ผืนผ้า มีความหมายกั๊บชีวิตคนเมืองเน้อเจ้า", "ลายตี้ทอไว้ตี้ผืนผ้า มีความหมายกั๊บชีวิตคนเมืองเน้อเจ้า", "The patterns and symbols woven into it were meaningful to the daily life of the people."],
+             [15.4, 19.8, "พญามังรายตั้งล้านนาแปลงเชียงใหม่", "พญามังรายตั้งล้านนาแปลงเชียงใหม่", "King Mangrai founded Lanna and built Chiang Mai."],
+             [23.0, 28.0, "ชีวิตตี้บ้านเฮาอยู่เงียบ เงียบ จ๊า จ๊า แต่คนบ้านเฮาใจ๋ดี นับถือกั๋นเน้อเจ้า", "ชีวิตตี้บ้านเฮาอยู่เงียบๆ จ๊าๆ แต่คนบ้านเฮาใจ๋ดี นับถือกั๋นเน้อเจ้า", "Village life was quiet and slow but people treated each other with kindness and respect."],
+             [28.3, 30.8, "หันตุงสูงข้างเฮือนบ่ลูก", "หันตุงสูงข้างเฮือนบ่ลูก", "See the tung banner by the house?"],
+             [31.0, 34.6, "ตุงแขวนไว้ตี้งานปอยและวันศีลเจ้า", "ตุงแขวนไว้ตี้งานปอยและวันศีลเจ้า", "Tungs are hung for temple and festival days."],
+             [35.15, 37.3, "คนเฮาอยู่กั๊บธรรมชาติ", "คนเฮาอยู่กั๊บธรรมชาติ", "People were more in harmony with nature."],
+             [37.35, 41.15, "มีต้นกว๋าว จ้าง ดอกบัว และของดีนักขนาดเน้อเจ้า", "มีต้นกว๋าว จ้าง ดอกบัว และของดีนักขนาดเน้อเจ้า", "They had flame-of-the-forest trees, elephants, lotus flowers and many special things."],
+             [41.2, 44.65, "ช้าก่อน ตัวหลงนี้มาจากเมืองจีนนา", "ช้าก่อน ตัวหลงนี้มาจากเมืองจีนนา", "Wait! This dragon came from China."],
+             [44.7, 47.6, "ตัวหลงเมืองจีนมักถือแก้ว บ่ใช่ธง", "ตัวหลงเมืองจีนมักถือแก้ว บ่ใช่ธง", "Chinese dragons usually hold a pearl, not a flag!"],
+             [47.65, 49.95, "พู้นแน่ะ หมู่จ้างเดินหลังต้นกล้วย", "พู้นแน่ะ หมู่จ้างเดินหลังต้นกล้วย", "Do you see the elephants walking behind the banana trees over there?"],
+             [52.0, 54.3, "ฝนซาแล้วเหนือทุ่งนาเน้อ", "ฝนซาแล้วเหนือทุ่งนาเน้อ", "The rain is stopping over the rice fields."],
+             [54.4, 58.6, "แม่หญิงควงจ้องสลัดหยาดฝน เหมือนจ้องตี้บ่อสร้างเน้อเจ้า", "แม่หญิงควงจ้องสลัดหยาดฝน เหมือนจ้องตี้บ่อสร้างเน้อเจ้า", "The women spin their umbrellas to shake off the rain, like those of Bo Sang."],
+             [58.8, 62.2, "ล้านนา หมายถึง นาเป็นล้านทุ่ง", "ล้านนา หมายถึง นาเป็นล้านทุ่ง", "Lanna means a million rice fields."],
+             [62.4, 66.5, "ละอ่อนจูงควายลากเกวียนไม้เจ้า", "ละอ่อนจูงควายลากเกวียนไม้เจ้า", "That boy is leading a water buffalo pulling a traditional wooden cart called a kwian."],
+             [70.4, 74.6, "หันโคมสามอย่าง ช่างดนตรี กั๊บช่างฟ้อนก่อเจ้า", "หันโคมสามอย่าง ช่างดนตรี กั๊บช่างฟ้อนก่อเจ้า", "Do you see the three different kinds of lanterns and the musicians and the dancers?"],
+             [74.8, 80.6, "แต่ปางก่อน งานปอยม่วนขนาด มีของดีตี้คนเฮาแปงเองเน้อเจ้า", "แต่ปางก่อน งานปอยม่วนขนาด มีของดีตี้คนเฮาแปงเองเน้อเจ้า", "In ancient times the celebrations were quite lively and full of special things the people created themselves."]];
 var CUES = WORDS.map(function (w) { return [w[0] / BEAT, w[2], w[3], w[4], w[1]]; });
 
 function draw(t) {

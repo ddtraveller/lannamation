@@ -31,7 +31,9 @@
 //              at their own sizes (a mango is about 68 long, a durian 130)
 //   colour     the flower's colour, for the ones that come in more than one:
 //              thongkwao, frangipani, orchid, hibiscus, bougainvillea, marigold
-var FLORA_KEYS = {size: true, colour: true};
+//   ground     false: it does not stand on the ground, so no shadow under it
+//              (an orchid on a tree's trunk), as person() reads the same name
+var FLORA_KEYS = {size: true, colour: true, ground: true};
 
 var FLORA_TWIG = "#6b4a2e", FLORA_STEM = "#6f9a52", FLORA_LEAF = "#3f7c4c", FLORA_PALE = "#8fc46a";
 var FLORA_LINE = "rgba(28, 58, 36, 0.85)", FLORA_WHITE = "#fbf7ea";
@@ -878,10 +880,12 @@ function flora(name, x, y, look) {
   var size = look.size || 1;
   LINE = STYLE.line * Math.max(0.5, Math.min(1, 0.4 + 0.4 * size)) / size;   // a small thing is not inked with a thick pen
   FINE = LINE / STYLE.line;
-  pen.fillStyle = "rgba(70, 45, 30, 0.18)";         // a soft shadow under it
-  pen.beginPath();
-  pen.ellipse(x, y + 2 * size, FLORA[name].wide * 1.06 * size, 8 * size, 0, 0, 7);
-  pen.fill();
+  if (look.ground !== false) {
+    pen.fillStyle = "rgba(70, 45, 30, 0.18)";       // a soft shadow under it
+    pen.beginPath();
+    pen.ellipse(x, y + 2 * size, FLORA[name].wide * 1.06 * size, 8 * size, 0, 0, 7);
+    pen.fill();
+  }
   pen.save();
   pen.translate(x, y);
   pen.scale(size, size);
