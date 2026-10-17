@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>bubbles - words a person says or thinks</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="backdrops.js"></script>
+<script>
+// The "bubbles" sheet: bubble(at, words, how), a speech or a thought bubble
+// over a person's head, as a film draws it (the hop, the lens, a camera that
+// comes closer). For six seconds four people stand in the village, each
+// bubble coming at its own second: a lady says hello, in Thai and in English;
+// a fellow thinks he is hungry; a girl says a long line, which breaks between
+// its Thai words; an elder at the right edge says his, and his bubble stays
+// in the picture. A voice from a house is a bubble pointing at a place, not a
+// person. Then two of them walk, their bubbles going with them, while the
+// camera comes in, and the bubbles stay inside what it shows.
+var DURATION = 12;
+
+var BEAT = 0.5;
+
+var SAID = [   // [who, from, to, words, kind]
+  ["lady", 0.4, 3, ["สวัสดีเจ้า", "Hello"], "say"],
+  ["fellow", 1.2, 4.4, ["หิวข้าวแล้ว…", "I'm hungry…"], "think"],
+  ["house", 1.6, 3.6, "ใครอยู่ข้างนอก", "say"],
+  ["girl", 3, 6, ["วันนี้ไปเล่นที่ริมน้ำกับพี่ชาย แล้วเจอปลาตัวใหญ่มาก", "Today I played by the river and saw a very big fish"], "say"],
+  ["elder", 4.4, 6, ["อู้กำเมืองได้ก่อ", "Can you speak Kam Mueang?"], "say"],
+  ["lady", 6.4, 12, ["ไปตลาดกัน", "Let's go to the market"], "say"],
+  ["fellow", 7.2, 12, "ไปด้วย ๆ", "think"]
+];
+
+function saying(who, t) {
+  return SAID.filter(function (row) { return row[0] === who && t >= row[1] && t < row[2]; })[0];
+}
+
+function sceneVillage(t) {
+  var walking = t >= 6, close = clamp((t - 8) / 2.5);
+  pen.save();
+  pen.translate(720, 540);                          // the camera: from 8 s it comes in, nearer the lady
+  pen.scale(1 + 0.6 * close, 1 + 0.6 * close);
+  pen.translate(-720 - 260 * close, -540 + 60 * close);
+  pen.drawImage(backdrop("village"), 0, 0);
+  var joints = {};
+  joints.elder = person(1330, 1000, cast("elder", {late: 0.75, face: 1}));
+  if (!walking) {
+    joints.girl = person(930, 1010, cast("girl", {late: 0.5, feel: "happy", face: -1}));
+    joints.lady = person(250, 1000, cast("lady", {late: 0, feel: "happy"}));
+    joints.fellow = person(620, 990, cast("fellow", {late: 0.25, feel: "sleepy"}));
+  } else {
+    var lady = stroll(t, 250, 760, 6, cast("lady", {late: 0, feel: "happy"}));
+    var fellow = stroll(t, 620, 1000, 6.4, cast("fellow", {late: 0.25, feel: "happy"}));
+    joints.lady = person(lady.x, 1000, lady.look);
+    joints.fellow = person(fellow.x, 990, fellow.look);
+  }
+  joints.house = [1190, 650];                       // a place, the window of a house: the bubble points at it
+  Object.keys(joints).forEach(function (who) {      // the bubbles last, over everyone
+    var row = saying(who, t);
+    if (row) { bubble(joints[who], row[3], {kind: row[4], age: t - row[1], side: who === "house" ? -1 : undefined}); }
+  });
+  pen.restore();
+}
+
+var SCENES = [[0, DURATION, sceneVillage]];
+
+function draw(t) {
+  film(t, SCENES);
+  if (t >= 4.5 && t < 6) { subtitle("ฟองคำพูด และฟองความคิด", "a speech bubble and a thought bubble"); }
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

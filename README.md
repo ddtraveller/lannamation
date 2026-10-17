@@ -109,10 +109,14 @@ and goes on; after five seconds a line of words sits under the picture.
 | `backdrop(name)` | `backdrops.js` | one of nineteen painted places (`paddy`, `river`, `doi`, `village`, `market`, `yipeng` ...), painted once; `backdrop(name, true)` leaves out what hangs in it (the market's lanterns, the monastery's flags), which `backdropSway(name, t)` then draws swaying |
 | `film(t, scenes)` | `oldcartoon.js` | finds the scene, closes and opens the iris at the cuts, puts the picture through the lens |
 | `card(big, small)`, `subtitle(big, small)` | `oldcartoon.js` | a title card; words under the picture |
+| `bubble(at, words, how)` | `oldcartoon.js` | words a person says (`kind: "say"`) or thinks (`"think"`) in a bubble over their head: `at` is what `person()` gave back in this frame, or an `[x, y]`; `words` a line or `[big, small]`; it leans the way they face, keeps inside the picture, pops in (`age`), and neither hops nor rocks with them |
 | `hills`, `house`, `temple`, `tree`, `palm`, `pond`, `lotusClump` ... | `oldcartoon.js` | painters for a set, drawn once on a sheet of your own |
 
-A look is a plain object of names (`size`, `face`, `smile`, `wave`, `wai`, `parasol` ...): 84 of
-them, each shown on `kit/looks.html`. A name the kit does not know is reported once in `WARNINGS`,
+A look is a plain object of names (`size`, `face`, `feel`, `wave`, `wai`, `parasol` ...): 94 of
+them, each shown on `kit/looks.html`. `feel` is how the person feels: `"neutral"`, `"happy"`, `"laughing"`, `"sad"`,
+`"concerned"`, `"angry"`, `"sleepy"`, `"satiated"` or `"surprised"`; it sets the face and how the body
+is carried; a laughing person laughs in bursts, and a sleepy one nods and yawns by themselves
+(`kit/feelings.html` shows all nine). A name the kit does not know is reported once in `WARNINGS`,
 with the nearest name it does know, and `render.py` and `stills.py` print it.
 
 ## In a script
@@ -177,13 +181,14 @@ a video: `python maker/cartoon_maker_assets/film.py render film.json film.mp4`.
 ### The cartoon maker
 
 `maker/cartoon_maker.html` is a cartoon maker for children, in Thai and English: drag people,
-creatures, things and places onto the stage, chart each one's course through time, add titles and
+creatures, things and places onto the stage, chart each one's course through time, give each person
+a feeling, put their words in speech and thought bubbles, add titles and
 words under the picture, cut between scenes, move a camera, let a model write a film from a story,
 look at the code, and record a video. Serve the repository (see [Set up](#set-up)) and open it, or
 use it at [krueng.ai/cartoon_maker.html](https://krueng.ai/cartoon_maker.html). Its 🧒 guide takes a
 child through a scene a step at a time (a background, then what stands in it, plants, animals and
-people, each placed with a tap anywhere in the picture; then each person's walk and words; then the
-scene plays), with skip and skip all at every step, and ends on a choice: change it, make the video,
+people, each placed with a tap anywhere in the picture; then each person's walk, how they feel at the
+start and when they get there, and their words; then the scene plays), with skip and skip all at every step, and ends on a choice: change it, make the video,
 or save it. 💾 saves the film as JSON at any time, the same data `film.py` renders.
 
 How it works, which is also how to build your own:
@@ -422,7 +427,10 @@ The kit's own sheets: `model.html` (one figure close up), `looks.html` (every lo
 takes), `walk.html`, `body.html`, `legs.html`, `build.html`, `children.html`, `elders.html`,
 `floor.html`, `together.html`, `nature.html`, `landscape.html`, `buildings.html`,
 `dance_hands.html` (the hands of classical dance, Thai and Khmer), `chickens.html` (the rooster and the hen),
-`hairdos.html` (the ways a Lanna lady wears her hair, and the ornaments she sets in it).
+`hairdos.html` (the ways a Lanna lady wears her hair, and the ornaments she sets in it),
+`feelings.html` (the nine feelings on a lady, a fellow, a girl and an elder, close up and whole),
+`bubbles.html` (speech and thought bubbles in Thai and English, over people who hop and walk, under a
+camera that comes closer).
 
 ### The films
 

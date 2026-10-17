@@ -191,7 +191,7 @@ Each rule is a function in `oldcartoon.js`. Change the number, not the idea.
 | **Mouths follow the words** | `sungBeats`, `vowelOf`, `mouthAt` | a film lists its syllables as `[beat, "syl la ble"]` lines; `mouthAt(sung)` returns the mouth at `clock`: open for `0.07 s`, held, shut `0.14 s` before the beat ends, `wide` for ิ ี ึ ื เ, `round` for โ อ ู ุ or no written vowel, open otherwise. A person given `mouth` sings the words; `sing: true` only opens on the beat |
 | **Squash and stretch** | `person` | given `late` (the hop's timing) the kit finds `up` and the speed itself; `land` is the time to the nearest beat. `squash = clamp(1 − land / 0.07)`, `stretch = clamp(|speed| / 10) · (1 − squash)`, height `× (1 + 0.07 · stretch − 0.09 · squash)`, width by the inverse square root. Dust puffs at the feet while `land < 0.1`; the drum rings while `land < 0.08` |
 | **The head turns** | `view`, `blend3`, `HEAD_*`, `HAIR_*`, `person`, `ladyFace`, `manFace` | `turn` runs from −1 (profile, the face pointing the way the figure faces) through 0 (the three-quarter view everything was drawn in) to 1 (full face). `view(turn)` blends every feature's place and width between three keyed views on a curve through the three (`blend3`: `q + t · (f − p) / 2 + t² · (f − 2q + p) / 2`): the head's outline (14 points: in profile the cheek curve bulges to 78 and becomes the nose), the hair's mass and hairline (12 points each for a lady and a fellow), the bun (back → top), the near eye (x 30 / 2 / −19, half-width 9 / 15 / 15), the far eye (40 / 37 / 19, width 0 / 12.5 / 15: behind the nose in profile), the nose's bridge and tip (52→58 / 24→30 / 0→0; its lines fade toward profile, where the outline is the nose, and a second nostril and the tip's straightening come in toward the front), the mouth's middle and read width (48 / 24 / 0; × 0.55 / 1 / 1.15), the cheeks, the ear (−24 / −52 / −50; toward profile it is drawn after the hair, standing before it) and the far ear, which shows from `turn` 0.2 on. Before this, `turn` slid the face `16 · turn` and scaled the far eye. (Owner's ranked list, 2026-10-11: turning was the first gap against the references) |
-| **Eyes look, faces feel** | `person`, `eye`, `ladyFace`, `manFace`, `FEELINGS`, `feelingOf` | `at: [x, y]` points both irises (`glance` is `[across, down]`). Five feelings, 0 to 1 each, or one by name (`feel: "surprise"`): `wonder` lifts the brows 7–8 and opens the lids 30%; `fear` lifts them 6–7, knits them a little and opens the lids 45%; `anger` lowers them 4–5, turns their inner ends down (`knit` 0.35–0.4 rad) and narrows the lids; `sad` turns the inner ends up (0.3), half-closes the lids (−30%) and drops the corners of a shut mouth (`frown` = sad + 0.6 · anger: 4 px on a lady's bow, 6 on a fellow's line); `smile` turns a shut mouth up. A named feeling also opens the mouth (surprise: round, 0.7; fear: wide, 0.6) when nothing else does, and leans the body and tilts the head (surprise back, anger forward, sad down) unless the scene sets `bend` or `tilt`. A lady's eye is rotated `0.13` rad so its outer corner lifts |
+| **Eyes look, faces feel** | `person`, `eye`, `ladyFace`, `manFace`, `FEELINGS`, `feelingOf` | `at: [x, y]` points both irises (`glance` is `[across, down]`). Eight numbers, 0 to 1 each, or a feeling by name (`feel: "surprised"`; the names are in "Nine feelings", below): `wonder` lifts the brows 7–8 and opens the lids 30%; `fear` lifts them 6–7, knits them a little and opens the lids 45%; `anger` lowers them 4–5, turns their inner ends down (`knit` 0.35–0.4 rad) and narrows the lids; `sad` turns the inner ends up (0.3), half-closes the lids (−30%) and drops the corners of a shut mouth (`frown` = sad + 0.6 · anger: 4 px on a lady's bow, 6 on a fellow's line); `smile` turns a shut mouth up; `worry` turns the inner ends up (0.38–0.4), draws the brows 3 toward the nose with a fold between them, and presses the mouth small; `sleepy` hangs the lids, nods and yawns; `full` makes the lids heavy and the cheeks pinker. A slanted lid (`slant` in `eye()`) carries anger, sadness and worry where a head-cloth hides the brows. A named feeling also opens the mouth (surprised: round, 0.7; fear: wide, 0.6) when nothing else does, and leans the body and tilts the head (surprised back, angry forward, sad down, satiated back) unless the scene sets `bend` or `tilt`. A lady's eye is rotated `0.13` rad so its outer corner lifts |
 | **A pose is hit with a snap** | `poseAt`, `snap` | a key written `[time, look, "snap"]` is reached the way the reference cartoons hit a pose: for the first 22% of the way a small move the other way (`−0.1 · sin`), then fast (`1 − (1 − v)³`) and `0.15 · sin(π v) · √(1 − v)` past the pose, settling by the end. Other keys ease as before (`u² (3 − 2u)`) |
 | **Dress from the paintings** | `person`, `tier`, `bangles` | a `tier` takes `stripes` `[down, colour, width, "zigzag"?]` that bend with the cloth; the foot band of a pha sin is dark red and blue with gold zigzags; the sabai is five strokes of one curve (20 dark red, 15 cream, 9, 6, 1.6 gold); ladies get a gold comb over the knot, three strands of gold flowers that swing `sin(late − 0.3 − 0.4n)`, a necklace, two bangles, an anklet; men a mo hom collar and pocket, a checked pha khao ma, one bangle, and `turban: colour` for a wrapped head-cloth. `dance: true` makes a lifted hand the Thai dance hand: `open = 1.6`, past 1 the fingers bend back `0.95 · (open − 1)` and the thumb comes round |
 | **Woven bands** | `tier` stripes | a stripe is `[down, colour, width, kind]`; `kind` is nothing (a line), `"zigzag"`, `"diamonds"` (12 rhombi 2.8 × 3.2 along the band) or `"dots"` (16 dots r 1.4); each is placed along the band's own curve (`along(u)`), so the pattern bends with the cloth. A pha sin tier: a dark line at 0.66, gold diamonds 0.73, dark line 0.8, cream dots 0.87, gold line 0.93; the foot band: dark red 14 wide at 0.76 with diamonds and dots on it, blue 5 at 0.86 with a gold zigzag, dark red 2.5 at 0.93, gold 1.2 at 0.97. The sabai gets 11 gold dots along each border, the necklace two strands and three drops, the bangles three rings 2.2 × 10, the comb three stones, the bun a loop of 15 jasmine dots |
@@ -2891,6 +2891,102 @@ the repository; nothing of them is copied.
 | No jumps | the largest change of any 10 x 10 block between frames over the sheet's 480: median 84, at most 139 inside a part, 182 at the cut between the parts. The beating wings and the shivering fan move a lot every frame; no single frame stands out | |
 | In the hero film | (owner, 2026-10-17: "Add some birds to the hero video"; the words unchanged) `sash.html` loads `northbirds.js`: `villageMagpies()`, three magpies across the village sky as the camera pulls back (15.5 to 22 s); `sunbirdVisit()`, a sunbird on a round of two flowers, at the bougainvillea in the lane and at the thong kwao at the pond while the voice names it (`SUNBIRD_LANE`, `SUNBIRD_POND`: [second, [x, y]], two keys at one place a stay where it sips; the flowers' places are floraTree()'s own spots); `paddyBirds()`, once the storm has cleared, a hornbill over the hills (size 0.6) and a peafowl walking into the far field (size 0.4) and raising its train as the women walk off. None at night | the peafowl first stopped at x 170, and the film's slow push toward the centre cut it in half at the frame's edge: it stops at 260 |
 | Tried first | the train as one feather in two, with only its eye at the end: a broom of sticks, lying as a single strip; the crest as five inked dots: a black box | |
+
+## Nine feelings (2026-10-18)
+
+The owner: "Work on adding emotions for each of the sprites. Sad, happy, concerned, angry, sleepy,
+satiated, neutral, surprised." Asked how, they chose people first (one face drawing serves the whole
+cast, the band's players and the paperdolls) and the creatures after they have looked; the face and how
+the body is carried, the hands left to the film; and a picker in the cartoon maker. The sheet is
+`feelings.html`: each face close up with all of them, then a lady and a fellow whole. Then, the same
+morning: "Add a laugh for each of the sprites, too": laughing is the ninth.
+
+| Name | The numbers | What shows |
+|---|---|---|
+| neutral | none | the face at rest (a fellow's shut mouth still turns up a little: it is drawn so) |
+| happy | smile 1, wonder 0.25; head up 0.04 | the kit's first `joy`, unchanged |
+| laughing | laugh 1, smile 1; lean back 0.04, head up 0.08 | the eyes shut and bowed up (`eye()`'s `bowed`: a laugh pushes the cheeks up under them); the mouth open wide, 0.9 wide, and opening again on each "ha", 4.5 a second (a lady's is a D, its top nearly flat and lifted at the corners, its bottom deep; a fellow's was a D already); the head (0.05) and the shoulders (0.03) shake with it; in bursts of 2 s with a breath of 0.6 s, the "ha" at a third; the brows up 3; the cheeks pinker (+0.15, a fellow's +0.12) |
+| sad | sad 1; lean 0.05, head down 0.12 | as before, and the lids come down at the outer corners (slant -0.7) |
+| concerned | worry 1; lean 0.03, head down 0.06 | the brows up at their inner ends (0.38 to 0.4 rad) and 3 in toward the nose, with a fold between them; the lids 10% wider and down at the outer corners (slant -0.45, a fellow's -0.6); a lady's mouth pressed to 0.82 of its width and 0.75 of its height; a fellow's line wavers, up and then down by 4.5 |
+| angry | anger 1; lean 0.1 forward | as before, with a straight lid down over the inner half of each eye (slant 0.9) and the fold between the brows |
+| sleepy | sleepy 1; lean 0.04, head down 0.08 | the lids 0.55 shut and the brows up 2.5 against them; every 7 s the head sinks for 4 s (0.22 more) as the eyes close, and comes up in a quarter of a second with the eyes wide; every 11 s a yawn of 2.4 s: the mouth open tall and round, the eyes shut, the brows up 7.5, the head back 0.16. A yawn stops a nod |
+| satiated | full 1, smile 0.8; lean back 0.07, head up 0.06 | the lids 0.62 shut over an easy smile, the cheeks pinker (blush 0.2 + 0.22 on a lady, 0.42 + 0.2 on a fellow); every 6 s the eyes close for 1.5 s and the head tips back 0.04 more |
+| surprised | wonder 1, the mouth round 0.7; lean back 0.05 | the kit's first `surprise`, unchanged |
+
+- **The first names still work.** `calm`, `joy`, `surprise` and `anger` are neutral, happy, surprised and
+  angry (`FEELING_WAS`) with the same numbers; `fear` stays, a tenth.
+- **The slanted lid** (`slant` in `eye()`, from -1 to 1; `slantedLid()` gives the part of the eye left open
+  under it). Since 2026-10-14 the kit's men wear a head-cloth over the brows, and on the first sheet a
+  fellow's angry and concerned faces had nothing to show them. A straight lid across the eye, low at the
+  inner corner for anger and at the outer corner for sadness and worry, reads on any face, and is ready
+  for the creatures' eyes. The eye is cut under it, and its line is inked twice as wide inside the eye,
+  so the half that shows has the lid's weight. The fold of the lid above fades with the slant.
+- **A time of their own.** The nod, the yawn and the savouring run on the clock plus `ownTime(who)`, a
+  number from the person's `id`, or else from their place in the frame's drawing order, as `follow()`
+  keys its springs: a crowd of sleepers do not nod as one. All of it is a function of the clock, so a
+  still matches the film.
+- **What changes on the pages.** With no feeling given, every number new here is 0, and a page draws as
+  before. A face given anger or sadness now has the slanted lid, and anger the fold: `model.html`'s angry
+  fellow, the anger and sad rows of `looks.html`. New look names: `sleepy`, `full`, `worry`, `laugh` (94 in all).
+- **The rouge stays on the face.** The owner, on the sheet: "clean up the rouge that is outside the
+  woman's face". A lady's two washes of pink are clipped to the face's outline (`V.skin`: the skull, and
+  the profile piece toward profile). The far cheek's lies by the edge and spilled past it, the more so
+  with a full face's stronger pink. Every lady's face changes so, on every page.
+- **The maker.** `item.feel`, one of `FEELS`: a row of eight buttons (😐 เฉย ๆ, 😊 ดีใจ, 😢 เศร้า,
+  😟 กังวล, 😠 โกรธ, 😪 ง่วง, 😌 อิ่ม, 😮 ประหลาดใจ) where the smile slider was. The owner then: "Add
+  the emotions to the cartoon maker and the kids walk through ... set the emotion from a drop down in
+  the resizer and then again at each point of movement". So a person's feeling is also a dropdown in
+  the bar over a sprite just put in (`#barFeel`), and a point of a person's course may change it from
+  there on: a key's sixth entry, `[second, x, y, pose or null, size or null, feeling]` (`feelsOf()`,
+  `setKeyFeel()`; the film's code is then `feel: [...][p[7]]`, the feeling of the key reached). Each
+  point's row has the dropdown on a second line beside the pose (a feeling of its own, or "〰 the
+  same"), and so has the box that opens when a point is placed by a drag (at the first point it is the
+  person's own feeling). In the 🧒 guide, each person's turn asks how they feel after where they start
+  (a tap shows it on the picture), and, if they walk, how they feel when they get there. A dropdown
+  holding the keys no longer lets Delete remove the sprite or the arrows nudge it. The film's JSON has
+  `"feel"` and the keys' sixth entries, and the model's prompt lists the eight. A film kept with a smile loads as happy (a smile of 0.5
+  or more) or neutral, and the kit's first names are read too (`feelOf()`). `film.py stills` and `render`
+  draw with the kit on krueng.ai, so they show the feelings once the site has this kit.
+- **Tried first.** Concerned as sad 0.7 and fear 0.5 together: on the lady, at film size, it read as
+  neutral. The first sheet had all eight across and four people down at size 1.5: the faces were too
+  small to judge.
+- **Not done.** The creatures (the next round). Hands for a feeling (the owner chose the face and the
+  posture). `paperdoll.js` reads a feeling's lean without the person's own time, so a sleepy doll's skirt
+  follows the nod on the clock alone.
+
+## Speech and thought bubbles (2026-10-18)
+
+The owner: "Add a way in the maker to add text that the character will see in a speech or thought
+bubble and a way to add subtitles as well. Make sure the kids walk through includes help with this
+too." The kit had title cards and subtitles, and nothing over a head. `bubble(at, words, how)` is drawn
+in the scene after everyone, so the camera and the lens take it as they take the people. The sheet is
+`bubbles.html`.
+
+| What | The rule | In the code |
+|---|---|---|
+| A speech bubble | a box of paper (#fffaf0) with round corners (34, or half its height), the kit's ink round it; a tail from its foot, over the head, curving down to a point a third of a head over the crown | `body.roundRect`, `tail` |
+| A thought bubble | the same box with puffs all round it (one every 1.5 puffs of its edge, every other one 0.8 the size), and three puffs (13, 9, 6) from its foot down to the head; it stands 20 higher | `think`, `many` |
+| One outline | every shape inked twice as wide (2.6 lines), then all of them filled: only the outer half of the ink shows, so the tail and the puffs join the box with no line between | `parts` |
+| The words | Thai bold 40 (Leelawadee UI, Noto Sans Thai), English italic 26 under it; lines no wider than 420, broken between words: Thai has no spaces, so the browser's word segmenter (`Intl.Segmenter("th")`) finds them | `bubbleLines()` |
+| Where | leaning the way the person faces, its foot 50 over the tip; inside what the camera shows (the canvas's corners taken back through the pen's transform), 16 from its edge | `view0`, `view1` |
+| It does not hop | the box keeps over where the person stands (`joints.stand`) and at the height of their head with the hop taken out (`joints.rest`: in the figure's own frame, the hips' dip and the head sunk into the shoulders taken off, and none of the lift or the squash); only the tail follows the head. Over a beat of a hopping lady the crown moves 116 pixels and the rest point 1 | `joints.rest` in `person()` |
+| It pops in | over a fifth of a second, from 0.55 of its size, a little past, from the head | `how.age` |
+
+- **The first box rocked** with the lady from side to side, 62 pixels in 0.4 s, and dropped 90 with
+  each hop. Keeping its height to the head in steps of half a head made it jump instead. The first
+  `joints.rest` put the dip back the wrong way (a dip is downward in the figure's frame): the rest point
+  moved 81 pixels over a beat; with the sign mended, 1.
+- **The maker.** Texts of two more kinds, `say` and `think`, each with `who`, the id of its person:
+  💬 คำพูด and 💭 ความคิด beside 🎞️ the card and 🔤 the subtitle (which was 💬 before); 💬 พูด / 💭 คิด in a
+  person's own panel make one for them from the second being looked at; a bubble's panel picks its
+  person and turns it from said to thought. In the film's code each person who speaks in a scene keeps
+  what `person()` gave back (`heads[n]`), and the bubbles are drawn after everyone. A person taken away
+  takes their bubbles. In the JSON, `"who"` is the person's place in `items` (or their name); a film
+  this page saved keeps its ids, and they are read first. In the 🧒 guide, each person's turn asks if
+  they say or think something, and how it shows: 💬 a speech bubble, 💭 a thought bubble, or 🔤 words
+  under the picture, with a line for a child on what each one is.
+- **Not done.** Bubbles for the creatures (they have no joints to point at yet; an `[x, y]` works
+  meanwhile); two bubbles at once can overlap: the kit does not move one out of another's way.
 
 ## The kit's own checks
 

@@ -661,29 +661,89 @@ function pieEye(x, y, shut) {
 // ---------- feelings ----------
 // A feeling is numbers on the face: wonder (brows up, eyes wide), smile,
 // fear (brows up and drawn in, eyes wide, mouth open wide), anger (brows
-// down at the inner ends, eyes narrowed, corners down) and sad (inner ends
-// of the brows up, lids half down, corners down). A scene gives them as
-// numbers (wonder: 0.5) or by name (feel: "surprise"), and a name also
+// down at the inner ends, eyes narrowed, corners down), sad (inner ends
+// of the brows up, lids half down, corners down), sleepy (lids that hang,
+// brows lifted against them, a nod and a yawn), full (heavy lids over
+// an easy smile, the cheeks pink, leaning back) and worry (the brows drawn
+// up and together with a fold between them, the outer lids down, the mouth
+// pressed small, the eyes open on what it fears) and laugh (the eyes
+// squeezed shut and bowed up, the mouth open wide and opening again on
+// each "ha", the head back and shaking with it). A scene gives them as
+// numbers (wonder: 0.5) or by name (feel: "surprised"), and a name also
 // gives the body a lean and the head a tilt, unless the scene sets its own.
+// The names: neutral, happy, laughing, sad, concerned, angry, sleepy,
+// satiated, surprised; and fear. A slanted lid (see eye()) carries anger, sadness
+// and worry where no brow can be seen, as under a head-cloth.
 var FEELINGS = {
-  calm: {},
-  joy: {smile: 1, wonder: 0.25, tilt: -0.04},
-  surprise: {wonder: 1, open: [0.7, 0, 1], bend: -0.05, tilt: -0.05},
-  fear: {fear: 1, wonder: 0.4, open: [0.6, 1, 0], bend: -0.08, tilt: 0.1},
-  anger: {anger: 1, bend: 0.1, tilt: 0.03},
-  sad: {sad: 1, bend: 0.05, tilt: 0.12}
+  neutral: {},
+  happy: {smile: 1, wonder: 0.25, tilt: -0.04},
+  laughing: {laugh: 1, smile: 1, bend: -0.04, tilt: -0.08},
+  sad: {sad: 1, bend: 0.05, tilt: 0.12},
+  concerned: {worry: 1, bend: 0.03, tilt: 0.06},
+  angry: {anger: 1, bend: 0.1, tilt: 0.03},
+  sleepy: {sleepy: 1, bend: 0.04, tilt: 0.08},
+  satiated: {full: 1, smile: 0.8, bend: -0.07, tilt: -0.06},
+  surprised: {wonder: 1, open: [0.7, 0, 1], bend: -0.05, tilt: -0.05},
+  fear: {fear: 1, wonder: 0.4, open: [0.6, 1, 0], bend: -0.08, tilt: 0.1}
 };
+var FEELING_WAS = {calm: "neutral", joy: "happy", surprise: "surprised", anger: "angry"};   // the names the kit had first, which still work
 
-function feelingOf(look) {
-  if (look.feel !== undefined) { checkName("The feeling", look.feel, FEELINGS); }
-  var named = FEELINGS[look.feel] || {};
-  return {wonder: clamp(look.wonder !== undefined ? look.wonder : named.wonder || 0),
-          smile: clamp(look.smile !== undefined ? look.smile : named.smile || 0),
-          fear: clamp(look.fear !== undefined ? look.fear : named.fear || 0),
-          anger: clamp(look.anger !== undefined ? look.anger : named.anger || 0),
-          sad: clamp(look.sad !== undefined ? look.sad : named.sad || 0),
+// A time of its own for each person, from their name (see "id" above
+// person()), so that a crowd of sleepers do not nod and yawn as one.
+function ownTime(who) {
+  var sum = 0;
+  for (var n = 0; n < who.length; n++) { sum = (sum * 31 + who.charCodeAt(n)) % 9973; }
+  return sum * 0.618 % 13;
+}
+
+// What sleepy and full do over time, at a person's own time "at". Sleepy:
+// the lids hang half down; every seven seconds the head sinks for four
+// seconds as the eyes close, and comes up with a start in a quarter of a
+// second, eyes open; every eleven seconds a yawn of 2.4 seconds: the mouth
+// opens tall and round, the eyes squeeze shut, the brows go up and the head
+// goes back (a yawn stops a nod). Full: the lids are heavy, and every six
+// seconds they close for a second and a half, savouring it. Laughing: the
+// eyes shut, the mouth opens on each "ha", four and a half a second, and
+// the head and the shoulders shake with it, in bursts of two seconds with a
+// breath of half a second between.
+function feelingOverTime(f, at) {
+  var nod = (at % 7 + 7) % 7, gape = ((at + 4.5) % 11 + 11) % 11, rest = (at % 6 + 6) % 6;
+  var yawn = gape < 0.7 ? Math.sin(gape / 0.7 * Math.PI / 2) : gape < 1.5 ? 1 : gape < 2.4 ? 0.5 + 0.5 * Math.cos((gape - 1.5) / 0.9 * Math.PI) : 0;
+  var sink = (nod < 1 ? 0 : nod < 5 ? Math.pow((nod - 1) / 4, 2) : nod < 5.25 ? 1 - (nod - 5) / 0.25 : 0) * (1 - yawn);
+  var start = nod > 5.05 && nod < 5.7 ? Math.sin((nod - 5.05) / 0.65 * Math.PI) : 0;
+  var savour = rest < 2 || rest > 3.9 ? 0 : rest < 2.35 ? (rest - 2) / 0.35 : rest < 3.5 ? 1 : 1 - (rest - 3.5) / 0.4;
+  var s = f.sleepy, full = f.full;
+  f.lids = Math.max(s * Math.max((0.55 + 0.45 * sink) * (1 - 0.7 * start), yawn), full * (0.62 + 0.38 * savour));
+  f.browUp = s * (2.5 + 5 * yawn);                   // the brows: up against the lids, and higher in a yawn
+  f.bend += s * 0.05 * sink;
+  f.tilt += s * (0.22 * sink - 0.16 * yawn) - full * 0.04 * savour;
+  if (s * yawn > 0.02) { f.open = [s * yawn, 0.1, 0.5]; }
+  var l = f.laugh, burst = (at % 2.6 + 2.6) % 2.6;
+  if (l > 0) {
+    var loud = burst < 0.15 ? 0.35 + 0.65 * burst / 0.15 : burst < 2 ? 1 : burst < 2.15 ? 1 - 0.65 * (burst - 2) / 0.15 : 0.35;   // a burst, then a breath
+    var ha = loud * Math.sin(at * Math.PI * 9);     // each "ha": 4.5 a second
+    f.lids = Math.max(f.lids, l);
+    f.browUp += 3 * l;
+    f.bend += l * 0.03 * ha;
+    f.tilt += l * 0.05 * ha;
+    if (s * yawn <= 0.02) { f.open = [l * (0.45 + 0.2 * loud + 0.2 * ha), 0.9, 0]; }
+  }
+  return f;
+}
+
+// The feeling a look asks for, as the numbers the face and the body read.
+// "at" is the person's own time (ownTime() added to the clock).
+function feelingOf(look, at) {
+  var name = FEELING_WAS[look.feel] || look.feel;
+  if (look.feel !== undefined) { checkName("The feeling", name, FEELINGS); }
+  var named = FEELINGS[name] || {};
+  function amount(given, key) { return clamp(given !== undefined ? given : named[key] || 0); }
+  return feelingOverTime({wonder: amount(look.wonder, "wonder"), smile: amount(look.smile, "smile"),
+          fear: amount(look.fear, "fear"), anger: amount(look.anger, "anger"), sad: amount(look.sad, "sad"),
+          sleepy: amount(look.sleepy, "sleepy"), full: amount(look.full, "full"), worry: amount(look.worry, "worry"),
+          laugh: amount(look.laugh, "laugh"),
           open: named.open, bend: named.bend || 0, tilt: named.tilt || 0,
-          eyes: look.eyes || 1, lips: look.lips || 1};   // and the face's own measure: how large its eyes and its mouth are
+          eyes: look.eyes || 1, lips: look.lips || 1}, at === undefined ? clock : at);   // and the face's own measure: how large its eyes and its mouth are
 }
 
 // A pose reached with a snap: first a small move the other way (the
@@ -907,11 +967,17 @@ function beard(colour, V, drop) {
 //                1 for an eye as the paintings draw it: a fine lid line with a flick at
 //                the outer corner, a large dark iris that touches the lid, no lashes
 //   glance       where the iris sits: across, or [across, down]
-function eye(x, y, wide, tall, shut, glance, outer, lashes) {
+//   slant        -1 to 1: a feeling's lid. Above 0 a straight lid comes down over the inner
+//                half of the eye, lowest at the inner corner (anger); below 0 it comes down
+//                at the outer corner (sadness, worry). It reads where no brow can be seen,
+//                as under a head-cloth, and on a creature's eye
+//   bowed        true: shut, the eye bows up (^), as a laugh pushes the cheeks up under it
+function eye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed) {
   var gx = glance.length ? glance[0] : glance, gy = glance.length ? glance[1] : 0;
   // "shut" may be 0 to 1: the upper lid comes down that far, and past 0.9 the eye is shut
   var closed = shut === true ? 1 : shut ? shut : 0, lid = 1 - 0.85 * closed;
   shut = closed > 0.9;
+  var below = slant && !shut ? slantedLid(x, y, wide, tall * 0.95 * lid, outer, slant) : null;
   pen.save();                                       // an eye with lashes is a lady's: its outer corner lifts
   pen.translate(x, y);
   pen.rotate(lashes ? -0.17 * outer : 0);
@@ -919,11 +985,11 @@ function eye(x, y, wide, tall, shut, glance, outer, lashes) {
   var n, angle, painted = lashes === 1;
   pen.lineCap = "round";
   pen.strokeStyle = INK;
-  if (shut) {                                       // a shut eye is the lower lid alone
+  if (shut) {                                       // a shut eye is the lower lid alone; a laughing one bows up
     pen.lineWidth = (painted ? 2.4 : 4) * FINE;
     pen.beginPath();
     pen.moveTo(x - wide, y);
-    pen.quadraticCurveTo(x, y + tall * 0.9, x + wide, y);
+    pen.quadraticCurveTo(x, y + tall * (bowed ? -1.2 : 0.9), x + wide, y);
     pen.stroke();
   } else {
     pen.fillStyle = "rgba(150, 110, 150, " + (painted ? 0.07 : 0.22) + ")";    // the hollow under the brow
@@ -935,6 +1001,10 @@ function eye(x, y, wide, tall, shut, glance, outer, lashes) {
     pen.quadraticCurveTo(x - wide * 0.15, y - tall * 1.9 * lid, x + wide, y - 1);
     pen.quadraticCurveTo(x, y + tall * 0.95, x - wide, y);
     pen.closePath();
+    if (below) {                                    // a slanted lid: nothing of the eye shows above its line
+      pen.save();
+      pen.clip(below.open);
+    }
     pen.fillStyle = "#ffffff";
     pen.fill();
     pen.save();
@@ -970,12 +1040,32 @@ function eye(x, y, wide, tall, shut, glance, outer, lashes) {
     pen.moveTo(x - wide, y);
     pen.quadraticCurveTo(x - wide * 0.15, y - tall * 1.9 * lid, x + wide, y - 1);
     pen.stroke();
+    if (below) {                                    // the slanted lid's own line, inside the eye: its shadow, then the ink,
+      var almond = new Path2D(), cut = below.line;  // each twice as wide, since only the half under the line is seen
+      almond.moveTo(x - wide, y);
+      almond.quadraticCurveTo(x - wide * 0.15, y - tall * 1.9 * lid, x + wide, y - 1);
+      almond.quadraticCurveTo(x, y + tall * 0.95, x - wide, y);
+      almond.closePath();
+      pen.save();
+      pen.clip(almond);
+      pen.beginPath();
+      pen.moveTo(cut[0], cut[1]);
+      pen.lineTo(cut[2], cut[3]);
+      pen.strokeStyle = "rgba(90, 50, 50, 0.22)";
+      pen.lineWidth = tall * 1.1;
+      pen.stroke();
+      pen.strokeStyle = INK;
+      pen.lineWidth = 2 * (painted ? LINE * 0.95 : LINE + 0.8 * FINE);
+      pen.stroke();
+      pen.restore();
+      pen.restore();
+    }
     pen.lineWidth = (painted ? 0.9 : 1.6) * FINE;          // the lower lid, light
     pen.beginPath();
     pen.moveTo(x + wide, y - 1);
     pen.quadraticCurveTo(x, y + tall * 0.95, x - wide, y);
     pen.stroke();
-    pen.strokeStyle = "rgba(58, 36, 24, " + (painted ? 0.28 : 0.4) + ")";      // the fold of the lid above it
+    pen.strokeStyle = "rgba(58, 36, 24, " + (painted ? 0.28 : 0.4) * (below ? 1 - Math.min(1, Math.abs(slant)) : 1) + ")";   // the fold of the lid above it, gone under a slanted lid
     pen.lineWidth = (painted ? 1.1 : 2) * FINE;
     pen.beginPath();
     pen.moveTo(x - wide * 0.8, y - tall * 0.95 * lid);
@@ -1010,6 +1100,41 @@ function eye(x, y, wide, tall, shut, glance, outer, lashes) {
   pen.restore();
 }
 
+// The part of an eye left open under a slanted lid (see eye()): a Path2D
+// below a straight line from the outer corner to the inner, each end as high
+// as the slant leaves it ("peak": how high the lid's arch stands), and the line.
+function slantedLid(x, y, wide, peak, outer, slant) {
+  var a = Math.max(0, slant), s = Math.max(0, -slant);
+  var ox = x + outer * wide, oy = y - peak * (1.25 - 0.35 * a - s);
+  var ix = x - outer * wide, iy = y - peak * (1.25 - 1.3 * a - 0.35 * s);
+  var dx = 0.6 * (ix - ox), dy = 0.6 * (iy - oy), open = new Path2D();
+  open.moveTo(ox - dx, oy - dy);
+  open.lineTo(ix + dx, iy + dy);
+  open.lineTo(ix + dx, y + 4 * peak + 20);
+  open.lineTo(ox - dx, y + 4 * peak + 20);
+  open.closePath();
+  return {open: open, line: [ox - dx, oy - dy, ix + dx, iy + dy]};
+}
+
+// The fold or two that brows drawn together leave between them, in worry
+// and in anger: two short lines from the brows' height "y" down toward the
+// nose, either side of "x". Gone toward profile.
+function frownFold(x, y, feel, V) {
+  var fold = clamp(1.25 * Math.max(feel.worry, feel.anger) - 0.25) * (1 - V.toProfile);
+  if (fold <= 0) { return; }
+  pen.save();
+  pen.lineCap = "round";
+  pen.strokeStyle = "rgba(58, 36, 24, " + 0.5 * fold + ")";
+  pen.lineWidth = 1.2 * FINE;
+  pen.beginPath();
+  for (var side = -1; side <= 1; side += 2) {
+    pen.moveTo(x + 2.5 * side, y);
+    pen.quadraticCurveTo(x + 3.8 * side, y + 4, x + 2 * side, y + 8);
+  }
+  pen.stroke();
+  pen.restore();
+}
+
 // a brow: thick where it starts, by the nose, and thin at its far end
 // "tilt" turns it about its middle: the inner end down for anger, up for sadness
 function brow(x, y, wide, arch, heavy, tilt) {
@@ -1041,10 +1166,11 @@ function blush(x, y, r, strength) {
 //   V      the view of the head for its turn (see view()): where each feature sits
 //   feel   {wonder, smile}, each 0 to 1
 function ladyFace(shut, mouth, glance, V, feel) {
-  var lift = (mouth ? 5 * mouth.open : 0) + 7 * feel.wonder + 6 * feel.fear - 4 * feel.anger
+  var lift = (mouth ? 5 * mouth.open : 0) + 7 * feel.wonder + 6 * feel.fear - 4 * feel.anger + feel.browUp + 2 * feel.worry
            - 2 * (shut === true ? 1 : shut || 0);                 // the brows drop a little in a blink
-  var wide = 1 + 0.3 * feel.wonder - 0.12 * feel.smile + 0.45 * feel.fear - 0.15 * feel.anger - 0.3 * feel.sad;   // the lids
-  var knit = 0.35 * feel.anger - 0.3 * feel.sad + 0.15 * feel.fear;   // the brows' inner ends: down in anger, up in sadness
+  var wide = 1 + 0.3 * feel.wonder - 0.12 * feel.smile + 0.45 * feel.fear - 0.15 * feel.anger - 0.3 * feel.sad + 0.1 * feel.worry;   // the lids
+  var knit = 0.35 * feel.anger - 0.3 * feel.sad + 0.15 * feel.fear - 0.38 * feel.worry;   // the brows' inner ends: down in anger, up in sadness and worry
+  var slant = 0.9 * feel.anger - 0.7 * feel.sad - 0.45 * feel.worry, close = 3 * feel.worry;   // the lids' slant (see eye()); worry draws the brows together
   // The face of the paintings (the hairline is at -316 and the chin at -229).
   // The eyes are at the middle of it, small and long and half-lidded: each a
   // third of the face across, the far one 0.85 of the near, and nearer the
@@ -1055,16 +1181,17 @@ function ladyFace(shut, mouth, glance, V, feel) {
   var side = V.side || 0;                           // how far her painted profile has taken over (see view())
   var look = [(glance.length ? glance[0] : glance) * 0.7 + 2.2 * side,   // a small eye's iris has less room to move; in profile it sits in the front half
               (glance.length ? glance[1] : 0) * 0.6];
-  if (V.nearW > 2) { eye(nearX, -277, nearW, 4.6 * wide * feel.eyes, shut, look, -1, 1); }
-  if (V.nearW > 2) { brow(nearX, -292 - lift + 3 * side, nearW * 1.3, 9, 1.1, knit); }   // in profile the brow lies nearer the eye
+  if (V.nearW > 2) { eye(nearX, -277, nearW, 4.6 * wide * feel.eyes, shut, look, -1, 1, slant, feel.laugh > 0.5); }
+  if (V.nearW > 2) { brow(nearX + close, -292 - lift + 3 * side, nearW * 1.3, 9, 1.1, knit); }   // in profile the brow lies nearer the eye
   if (V.farW > 2) {                                 // the far eye and its brow: toward profile they go round the edge of the face, and it cuts them
     pen.save();
     if (V.face) { pen.clip(V.face); }
-    eye(farX, -277.5, farW, 4.4 * wide * feel.eyes, shut, look, 1, 1);
-    brow(farX, -292.5 - lift, farW * 1.3, 8.5, 1.05, -knit);
+    eye(farX, -277.5, farW, 4.4 * wide * feel.eyes, shut, look, 1, 1, slant, feel.laugh > 0.5);
+    brow(farX - close, -292.5 - lift, farW * 1.3, 8.5, 1.05, -knit);
     pen.restore();
   }
-  var frown = clamp(feel.sad + 0.6 * feel.anger);  // the corners of a shut mouth go down
+  frownFold(V.nose + (V.tip - V.nose) * 0.1, -293 - lift, feel, V);
+  var frown = clamp(feel.sad + 0.6 * feel.anger + 0.45 * feel.worry);  // the corners of a shut mouth go down
   // A nose as the paintings draw one: a single fine line down from the inner
   // end of the brow to the tip, three quarters of the way down the face, and
   // a small curve under it for the nostril. No shading. Turned to the front
@@ -1104,19 +1231,29 @@ function ladyFace(shut, mouth, glance, V, feel) {
     pen.stroke();
   }
   pen.restore();
-  blush(V.cheek + 6, -250, 15, 0.2);                // a faint wash of pink, low on the cheek: not a disc
-  if (V.farCheekR > 1) { blush(V.farCheek - 2, -252, V.farCheekR, 0.2); }
+  pen.save();                                       // the rouge stays on the face: the far cheek's lies by its edge, and spilled past it (owner, 2026-10-18)
+  if (V.skin) { pen.clip(V.skin); }
+  blush(V.cheek + 6, -250, 15, 0.2 + 0.22 * feel.full + 0.15 * feel.laugh);   // a faint wash of pink, low on the cheek: not a disc; pinker when full, or laughing
+  if (V.farCheekR > 1) { blush(V.farCheek - 2, -252, V.farCheekR, 0.2 + 0.22 * feel.full + 0.15 * feel.laugh); }
+  pen.restore();
   pen.save();                                       // the mouth is drawn about (24, -244), then put where the turn has it,
   if (V.face) { pen.clip(V.face); }                 // (toward profile its middle is on the face's edge, and only the near half of it is on the face)
   pen.translate(V.mouth, -244);                     // three quarters the size: a small bow, 0.3 of the face across
-  pen.scale(V.mouthW * feel.lips * 0.76, 0.82);
+  pen.scale(V.mouthW * feel.lips * 0.76 * (1 - 0.18 * feel.worry), 0.82 * (1 - 0.25 * feel.worry));   // worry presses it small
   pen.translate(-24, 244);
   if (mouth) {                                      // red lips round an open mouth
     // an open "ah" is wider than it is tall; "ee" is wider and flatter; "oo" is small and round
     var tall = (1.5 + 7.5 * mouth.open * (1 - 0.3 * mouth.wide)) * (1 - 0.25 * mouth.round);
     var across = 7 + 5 * mouth.wide - 2.5 * mouth.round + 3 * mouth.open * (1 - mouth.round);
     pen.beginPath();
-    pen.ellipse(24, -241 - tall * 0.15, across, tall, 0, 0, 7);
+    if (feel.laugh > 0.5) {                         // a laugh: a wide D, its top nearly flat and lifted at the corners, its bottom deep
+      pen.moveTo(24 - across, -243.5);
+      pen.quadraticCurveTo(24, -245, 24 + across, -243.5);
+      pen.quadraticCurveTo(24, -241 + tall * 2.2, 24 - across, -243.5);
+      pen.closePath();
+    } else {
+      pen.ellipse(24, -241 - tall * 0.15, across, tall, 0, 0, 7);
+    }
     pen.fillStyle = "#6a1522";
     pen.fill();
     pen.save();
@@ -1183,23 +1320,25 @@ function ladyFace(shut, mouth, glance, V, feel) {
 }
 
 function manFace(shut, mouth, glance, V, feel) {
-  var lift = (mouth ? 6 * mouth.open : 0) + 8 * feel.wonder + 7 * feel.fear - 5 * feel.anger
+  var lift = (mouth ? 6 * mouth.open : 0) + 8 * feel.wonder + 7 * feel.fear - 5 * feel.anger + feel.browUp + 2 * feel.worry
            - 2 * (shut === true ? 1 : shut || 0);                 // the brows drop a little in a blink
-  var wide = 1 + 0.3 * feel.wonder - 0.15 * feel.smile + 0.45 * feel.fear - 0.2 * feel.anger - 0.3 * feel.sad;
-  var knit = 0.4 * feel.anger - 0.3 * feel.sad + 0.15 * feel.fear;   // the brows' inner ends: down in anger, up in sadness
+  var wide = 1 + 0.3 * feel.wonder - 0.15 * feel.smile + 0.45 * feel.fear - 0.2 * feel.anger - 0.3 * feel.sad + 0.1 * feel.worry;
+  var knit = 0.4 * feel.anger - 0.3 * feel.sad + 0.15 * feel.fear - 0.4 * feel.worry;   // the brows' inner ends: down in anger, up in sadness and worry
+  var slant = 0.9 * feel.anger - 0.7 * feel.sad - 0.6 * feel.worry, close = 3 * feel.worry;   // as the lady's, worry more: his brows are often under a head-cloth
   var side = V.side || 0;                           // how far his profile has taken over (see view())
   var look = glance.length ? [glance[0] + 2.5 * side, glance[1]] : glance + 2.5 * side;   // in profile the iris sits in the front half
-  if (V.nearW > 2) { eye(V.near + 1, -282, V.nearW * 0.93 * feel.eyes, 8.5 * wide * feel.eyes, shut, look, -1, 0); }   // long, narrow eyes
-  if (V.nearW > 2) { brow(V.near + 1, -312 - lift, V.nearW * 0.93, 10, 2.8, knit); }
+  if (V.nearW > 2) { eye(V.near + 1, -282, V.nearW * 0.93 * feel.eyes, 8.5 * wide * feel.eyes, shut, look, -1, 0, slant, feel.laugh > 0.5); }   // long, narrow eyes
+  if (V.nearW > 2) { brow(V.near + 1 + close, -312 - lift, V.nearW * 0.93, 10, 2.8, knit); }
   if (V.farW > 2) {                                 // the far eye and its brow: toward profile they go round the edge of the face, and it cuts them
     pen.save();
     if (V.face) { pen.clip(V.face); }
-    eye(V.far + 1, -283, V.farW * 0.96 * feel.eyes, 8 * wide * feel.eyes, shut, look, 1, 0);
-    brow(V.far + 1, -313 - lift, V.farW * 0.96, 9, 2.5, -knit);
+    eye(V.far + 1, -283, V.farW * 0.96 * feel.eyes, 8 * wide * feel.eyes, shut, look, 1, 0, slant, feel.laugh > 0.5);
+    brow(V.far + 1 - close, -313 - lift, V.farW * 0.96, 9, 2.5, -knit);
     pen.restore();
   }
-  var frown = clamp(feel.sad + 0.6 * feel.anger);  // the corners of a shut mouth go down
-  blush(V.cheek, -254, 16);
+  frownFold(V.nose + (V.tip - V.nose) * 0.1, -313 - lift, feel, V);
+  var frown = clamp(feel.sad + 0.6 * feel.anger + 0.45 * feel.worry);  // the corners of a shut mouth go down
+  blush(V.cheek, -254, 16, 0.42 + 0.2 * feel.full + 0.12 * feel.laugh);
   // A fellow's mouth. Shut, it is a smile: one line that turns up at the
   // corners, and a short line under it for the lower lip. Singing, it opens
   // downward from the upper lip, as wide or as round as the vowel asks:
@@ -1210,7 +1349,7 @@ function manFace(shut, mouth, glance, V, feel) {
   pen.save();
   if (V.face) { pen.clip(V.face); }                 // (toward profile its middle is on the face's edge, and only the near half of it is on the face)
   pen.translate(V.mouth + 1, 0);
-  pen.scale(V.mouthW * feel.lips, 1);
+  pen.scale(V.mouthW * feel.lips * (1 - 0.18 * feel.worry), 1);   // worry presses it small
   pen.translate(-25, 0);
   pen.lineCap = "round";
   pen.lineJoin = "round";
@@ -1241,7 +1380,11 @@ function manFace(shut, mouth, glance, V, feel) {
     var grin = 4 * feel.smile - 6 * frown;          // a bigger smile: the corners go higher; a frown: down
     pen.moveTo(11, -249 - grin);
     pen.quadraticCurveTo(13, -246 - grin * 0.3, 17, -245 - grin * 0.2);   // a corner that turns up
-    pen.quadraticCurveTo(26, -242 + grin * 0.5, 35, -246 - grin * 0.2);
+    if (feel.worry > 0) {                           // worry: the middle of the line wavers, up and then down
+      pen.bezierCurveTo(23, -243 + grin * 0.27 - 4.5 * feel.worry, 29, -243.3 + grin * 0.27 + 4.5 * feel.worry, 35, -246 - grin * 0.2);
+    } else {
+      pen.quadraticCurveTo(26, -242 + grin * 0.5, 35, -246 - grin * 0.2);
+    }
     pen.quadraticCurveTo(38, -248 - grin * 0.3, 39, -251 - grin);
     pen.stroke();
   }
@@ -2842,10 +2985,10 @@ var COMBED = {
 var LOOK_KEYS = {};
 
 ["age", "anger", "at", "bangles", "bare", "beard", "bend", "blink", "build", "bun", "buttons", "coat", "collar", "dance", "drum", "earplug", "eyes", "face",
- "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
- "handB", "hat", "head", "holding", "id", "late", "legs", "lips", "maiwai", "malai", "mouth", "nails", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "reachA", "reachB",
- "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt",
- "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wonder", "worn", "wristA", "wristB"
+ "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
+ "handB", "hat", "head", "holding", "id", "late", "laugh", "legs", "lips", "maiwai", "malai", "mouth", "nails", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "reachA", "reachB",
+ "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt", "sleepy",
+ "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wonder", "worn", "worry", "wristA", "wristB"
 ].forEach(function (name) { LOOK_KEYS[name] = true; });
 
 // One villager, standing on (x, y). Everything about them is in "look".
@@ -2927,10 +3070,14 @@ var LOOK_KEYS = {};
 //                   about 8 degrees each way. At every turn a hanging far arm (A) is drawn behind
 //                   the body (see behindA in person())
 //   at              [x, y] in the scene: the eyes look at it
-//   wonder, smile, fear, anger, sad
-//                   0 to 1 each: what the face feels (see FEELINGS)
-//   feel            a feeling by name: "calm", "joy", "surprise", "fear", "anger", "sad";
-//                   it also leans the body and tilts the head, unless bend or tilt is given
+//   wonder, smile, fear, anger, sad, sleepy, full, worry, laugh
+//                   0 to 1 each: what the face feels (see FEELINGS); sleepy also nods and
+//                   yawns, full shuts its eyes now and then, and laugh laughs, each at the
+//                   person's own time
+//   feel            a feeling by name: "neutral", "happy", "laughing", "sad", "concerned", "angry",
+//                   "sleepy", "satiated", "surprised", or "fear" ("calm", "joy", "surprise"
+//                   and "anger" still work); it also leans the body and tilts the head,
+//                   unless bend or tilt is given
 //   dance           true: a lifted hand takes the pose of Thai dance
 //   gestureA, gestureB  a hand of classical dance by name (GESTURES): "wong", "jeeb", "jeebDown",
 //                   "fan", "point", or the Khmer dance's "planting", "growing", "youngLeaves",
@@ -3079,6 +3226,8 @@ function person(x, y, look) {
     var p = pen.getTransform().transformPoint(new DOMPoint(lx, ly));
     return [p.x, p.y];
   }
+  joints.stand = spot(x, y);                        // where the person stands, which neither the hop nor the rock moves (a bubble keeps to it)
+  var sceneFrame = pen.getTransform(), figureFrame = null;   // the scene's frame, and (below) the figure's own: for joints.rest
   // The film's style says whether people hop (STYLE.hop). Where they do,
   // everyone given "late" hops on the beat, rocks from side to side,
   // squashes on landing and stands with the knees bent, and cloth swings
@@ -3105,7 +3254,7 @@ function person(x, y, look) {
   if (seat) { tallness = 1 + (tallness - 1) * 0.4; }   // one who sits is squashed and stretched less
   var walk = (look.step || 0) * Math.PI * 2;
   var gait = look.step ? (look.stride === undefined ? 1 : look.stride) : 0;   // how long the steps are; 0 for one who stands
-  var feel = feelingOf(look);                       // the feeling on the face, and what it does to the body
+  var feel = feelingOf(look, clock + ownTime(who)); // the feeling on the face, and what it does to the body
   // Arms hang unless a scene places them: almost straight, a little out from
   // the body, the hand at rest. A walker swings each with the leg on the
   // other side, from the shoulder: the arm going forward bends a little more
@@ -3249,6 +3398,7 @@ function person(x, y, look) {
   pen.save();
   pen.translate(x, y - (seat ? 0 : up * 26 * size));
   pen.scale(size * (look.face || 1) / Math.sqrt(tallness), size * tallness);
+  figureFrame = pen.getTransform();
 
   // Legs: a thigh and a shin each. The feet stay where they are, so the
   // lower the hips drop on the beat, the more the knees have to bend.
@@ -4062,6 +4212,12 @@ function person(x, y, look) {
   LINE = LINE / small;                              // on a smaller head the pen keeps the weight it has on the body
   pen.translate(0, 286);
   joints.crown = spot(0, -348);                     // the top of the skull, and the point of the chin
+  // The crown as it would be with the hop taken out: in the figure's own frame
+  // the hips' dip and the head sunk into the shoulders put back, and none of
+  // the lift or the squash. A bubble's box keeps to it, so it does not hop.
+  var crownIn = figureFrame.inverse().transformPoint(new DOMPoint(joints.crown[0], joints.crown[1]));
+  var restY = y + (crownIn.y - (still ? 0 : dip + 8 * (1 - up))) * size, rest = sceneFrame.transformPoint(new DOMPoint(x, restY));   // (a dip is downward: put back, it is taken off)
+  joints.rest = [rest.x, rest.y];
   joints.chin = spot(0, -227);
   // What hangs from a head hangs straight down, however far a pose tilts
   // the head: a tail of hair, strands of flowers, a garland, an earring.
@@ -4489,6 +4645,7 @@ function person(x, y, look) {
   } else {
     pen.stroke(skull);
   }
+  V.skin = piece ? V.face : skull;                               // the face's outline at every turn: the rouge stays inside it
   light();
   pen.save();                                                    // the back of the head is in shadow;
   pen.clip(skull);                                               // the chin has none (owner, 2026-10-12)
@@ -4715,6 +4872,7 @@ function person(x, y, look) {
   var blinkAt = (clock + x * 0.013) % 3.3;
   var shut = look.blink !== undefined ? clamp((look.blink - 0.15) / 0.55)
            : blinkAt < 0.08 ? blinkAt / 0.08 : blinkAt < 0.24 ? 1 - (blinkAt - 0.08) / 0.16 : 0;
+  shut = Math.max(shut, feel.lids);                 // a sleepy or a full face's lids hang that far
   var glance = saccade(clock + x * 0.013);
   if (look.glance) { glance = [look.glance[0], look.glance[1]]; }   // read from a face, by a track
   else if (look.at) {                                    // the eyes turn toward a thing in the scene
@@ -8093,6 +8251,125 @@ function subtitle(big, small) {
     screen.fillText(small, 960, 1012);
   }
   screen.restore();
+}
+
+// ---------- speech and thought bubbles ----------
+// Words a person says or thinks, in a bubble over their head (owner,
+// 2026-10-18: "add text that the character will see in a speech or thought
+// bubble"). It is drawn on the scene after everyone, so the camera and the
+// lens take it as they take the people. A speech bubble is a box of paper
+// with round corners and a tail that points at the top of the head; a
+// thought bubble is a cloud, with three puffs that get smaller toward the
+// head. It leans the way the person faces, stays inside what the camera
+// shows, and pops in over a fifth of a second. Over a person, the box keeps
+// over where they stand and the height of their head at rest (joints.stand,
+// joints.rest), so it neither rocks nor hops with them; only its tail follows
+// the head.
+//   at     what person() gave back, drawn in this frame (the bubble points at
+//          the top of that head), or [x, y] in the scene
+//   words  the words, or [big, small]: the words and, smaller under them,
+//          what they mean
+//   how    {kind: "say" (the default) or "think", side: 1 or -1 (which way it
+//          leans; unless given, the way the person faces), age: the seconds
+//          since it came (it pops in), size: 1}
+function bubble(at, words, how) {
+  how = how || {};
+  var back = pen.getTransform().inverse(), tip = at, side = how.side, still = at;
+  if (at.crown) {                                   // a person's joints are in the film's own pixels: back to the scene's
+    var crown = back.transformPoint(new DOMPoint(at.crown[0], at.crown[1]));
+    var chin = back.transformPoint(new DOMPoint(at.chin[0], at.chin[1]));
+    var stand = back.transformPoint(new DOMPoint(at.stand[0], at.stand[1])), rest = back.transformPoint(new DOMPoint(at.rest[0], at.rest[1]));
+    var head = Math.abs(chin.y - crown.y);
+    tip = [crown.x, crown.y - 0.3 * head];          // the tail: a little over the top of the head, wherever it is
+    still = [stand.x, rest.y - 0.3 * head];         // the box: over the feet and the head at rest, so neither the rock nor the hop moves it
+    if (side === undefined) { side = at.face || 1; }
+  }
+  side = side || 1;
+  var think = how.kind === "think", s = how.size || 1;
+  var big = typeof words === "string" ? words : words[0] || "", small = typeof words === "string" ? "" : words[1] || "";
+  var BIG = "bold 40px 'Leelawadee UI', 'Noto Sans Thai', Tahoma, sans-serif", SMALL = "italic 26px Georgia, 'Times New Roman', serif";
+  var rows = bubbleLines(big, BIG, 420).map(function (r) { return [r, BIG, 48, "#3a2418"]; });
+  if (small) { rows = rows.concat(bubbleLines(small, SMALL, 420).map(function (r) { return [r, SMALL, 34, "#7a4a2a"]; })); }
+  var wide = 0, tall = 0;
+  rows.forEach(function (r) { pen.font = r[1]; wide = Math.max(wide, pen.measureText(r[0]).width); tall += r[2]; });
+  var pad = 24, w = (wide + 2 * pad) * s, h = (tall + 2 * pad - 8) * s, puff = think ? 24 * s : 0;
+  // Where it stands: leaning to its side, its foot 50 over the tip, and
+  // inside what is shown (the camera may have come closer).
+  var view0 = back.transformPoint(new DOMPoint(0, 0)), view1 = back.transformPoint(new DOMPoint(pen.canvas.width, pen.canvas.height));
+  var edge = 16 + puff, cx = still[0] + side * (w / 2 - 40 * s), foot = still[1] - (think ? 70 : 50) * s;
+  cx = Math.max(view0.x + w / 2 + edge, Math.min(view1.x - w / 2 - edge, cx));
+  foot = Math.max(view0.y + h + edge, foot);
+  var top = foot - h, left = cx - w / 2;
+  var u = how.age === undefined ? 1 : clamp(how.age / 0.2), pop = 0.55 + 0.45 * u + 0.1 * Math.sin(Math.PI * u);
+  pen.save();
+  pen.globalAlpha *= 0.3 + 0.7 * u;
+  pen.translate(tip[0], tip[1]);                    // it pops in, out of the head
+  pen.scale(pop, pop);
+  pen.translate(-tip[0], -tip[1]);
+  var parts = [], body = new Path2D();
+  body.roundRect(left, top, w, h, Math.min(h / 2, 34 * s));
+  parts.push(body);
+  if (think) {                                      // a cloud: puffs all round the box, and three little ones down to the head
+    var round = 2 * (w + h), many = Math.max(10, Math.round(round / (1.5 * puff)));
+    for (var k = 0; k < many; k++) {
+      var d = k * round / many, px, py;
+      if (d < w) { px = left + d; py = top; } else if (d < w + h) { px = left + w; py = top + d - w; }
+      else if (d < 2 * w + h) { px = left + w - (d - w - h); py = top + h; } else { px = left; py = top + h - (d - 2 * w - h); }
+      var one = new Path2D();
+      one.arc(px, py, puff * (k % 2 ? 0.8 : 1), 0, Math.PI * 2);
+      parts.push(one);
+    }
+    var from = [Math.max(left + puff, Math.min(left + w - puff, tip[0] + side * 20 * s)), foot + puff * 0.6];
+    [[0.3, 13], [0.58, 9], [0.84, 6]].forEach(function (b) {
+      var little = new Path2D();
+      little.arc(from[0] + (tip[0] - from[0]) * b[0], from[1] + (tip[1] - from[1]) * b[0], b[1] * s, 0, Math.PI * 2);
+      parts.push(little);
+    });
+  } else {                                          // a tail, from the box's foot over the head, curving down to the tip
+    var root = Math.max(left + 30 * s, Math.min(left + w - 30 * s, tip[0] + side * 16 * s));
+    var tail = new Path2D();
+    tail.moveTo(root - 16 * s, foot - 6);
+    tail.quadraticCurveTo(root - 4 * s, foot + (tip[1] - foot) * 0.45, tip[0], tip[1]);
+    tail.quadraticCurveTo(root + 6 * s, foot + (tip[1] - foot) * 0.35, root + 16 * s, foot - 6);
+    tail.closePath();
+    parts.push(tail);
+  }
+  // Every shape inked twice as wide, then all filled: only the outer half of
+  // the ink shows, so the tail and the puffs join the box with no line between.
+  pen.lineJoin = "round";
+  pen.strokeStyle = INK;
+  pen.lineWidth = 2.6 * LINE;
+  parts.forEach(function (q) { pen.stroke(q); });
+  pen.fillStyle = "#fffaf0";
+  parts.forEach(function (q) { pen.fill(q); });
+  pen.translate(cx, top);                           // the words, in the middle, line by line
+  pen.scale(s, s);
+  pen.textAlign = "center";
+  var y = pad - 6;
+  rows.forEach(function (r) {
+    y += r[2];
+    pen.font = r[1];
+    pen.fillStyle = r[3];
+    pen.fillText(r[0], 0, y - r[2] * 0.24);
+  });
+  pen.restore();
+}
+
+// A bubble's words in lines no wider than "most": broken between words (Thai
+// has no spaces: the browser's word segmenter finds its words); a word wider
+// than a line is left whole.
+function bubbleLines(text, font, most) {
+  pen.font = font;
+  var pieces = typeof Intl !== "undefined" && Intl.Segmenter
+             ? Array.from(new Intl.Segmenter("th", {granularity: "word"}).segment(text), function (part) { return part.segment; })
+             : text.split(/(?= )/);
+  var lines = [], line = "";
+  pieces.forEach(function (piece) {
+    if (line.trim() && pen.measureText(line + piece).width > most) { lines.push(line.trim()); line = piece.replace(/^\s+/, ""); }
+    else { line += piece; }
+  });
+  if (line.trim()) { lines.push(line.trim()); }
+  return lines.length ? lines : [""];
 }
 
 // a red stage curtain. "open" runs from 0, shut, to 1, gone to the sides.

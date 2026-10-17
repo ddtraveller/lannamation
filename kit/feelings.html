@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>feelings - nine feelings on every face</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false};   // the faces held still, so that the feelings can be read</script>
+<script src="oldcartoon.js"></script>
+<script>
+// The "feelings" sheet: the nine feelings a person takes by name
+// (feel: "happy" ...), in the order the cartoon maker offers them. Seven
+// parts of twelve seconds each. Six are one face close up, five feelings to
+// a row: a lady, a fellow, a girl and an elder in the three-quarter view the
+// kit is drawn in, then the lady and the fellow turned to full face. The
+// last is the lady and the fellow whole, all nine feelings in a row, to see
+// what a feeling does to the body (the lean, the tilt of the head, the
+// laugh's shake, the sleepy nod and yawn, the full one leaning back). A part
+// is twelve seconds so that every sleepy face nods and yawns in it, each at
+// its own time.
+var DURATION = 84;
+
+var BEAT = 0.5;
+
+var NAMES = [["neutral", "เฉย ๆ"], ["happy", "ดีใจ"], ["laughing", "หัวเราะ"], ["sad", "เศร้า"], ["concerned", "กังวล"],
+             ["angry", "โกรธ"], ["sleepy", "ง่วง"], ["satiated", "อิ่ม"], ["surprised", "ประหลาดใจ"]];
+
+// Each part: its title, who ([cast member, changes to the look], one for a close-up and two for the whole), how large.
+var PARTS = [
+  ["a lady", [["lady", {}]], 2.4],
+  ["a fellow, his brows under his head-cloth", [["fellow", {}]], 2.4],
+  ["a girl", [["girl", {}]], 1.9],
+  ["an elder", [["elder", {}]], 2.4],
+  ["the lady, turned to full face", [["lady", {turn: 1, twist: 1}]], 2.4],
+  ["the fellow, turned to full face", [["fellow", {turn: 1, twist: 1}]], 2.4],
+  ["whole: what a feeling does to the body", [["lady", {}], ["fellow", {}]], 0.9]
+];
+
+var TOP = 50, ROW = 515;
+
+function caption(text, x, y, size, colour) {
+  pen.fillStyle = colour || "#5a4630";
+  pen.textAlign = "center";
+  pen.font = size + "px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function lookFor(who, size, feel, id) {
+  var changes = {size: size, feel: feel, id: id};
+  for (var key in who[1]) { changes[key] = who[1][key]; }
+  return cast(who[0], changes);
+}
+
+// How far above its feet a close-up figure's crown is: drawn once, before the
+// sheet is painted over it, so that every head sits at the top of its cell.
+var CROWNS = {};
+function crownOf(who, size) {
+  var key = who[0] + " " + size;
+  if (CROWNS[key] === undefined) {
+    CROWNS[key] = person(0, 1000, lookFor(who, size, "neutral", "measure " + key)).crown[1] - 1000;
+  }
+  return CROWNS[key];
+}
+
+// one figure in a cell of the sheet, clipped to it, its feeling's names under it
+function cell(left, top, wide, who, size, n, part, close) {
+  var x = left + wide / 2, name = NAMES[n], look = lookFor(who, size, name[0], who[0] + " " + name[0] + " " + part);
+  pen.save();
+  pen.beginPath();
+  pen.rect(left + 4, top, wide - 8, ROW - 62);
+  pen.clip();
+  person(x, close ? top + 96 - crownOf(who, size) : top + ROW - 80, look);
+  pen.restore();
+  caption(name[0], x, top + ROW - 36, 22, "#3a2418");
+  caption(name[1], x, top + ROW - 13, 18);
+}
+
+function sheet(t) {
+  var p = Math.min(PARTS.length - 1, Math.floor(t / 12)), part = PARTS[p], who = part[1];
+  var close = who.length === 1;
+  if (close) { crownOf(who[0], part[2]); }
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  caption("feelings: " + part[0] + " (part " + (p + 1) + " of " + PARTS.length + ")", WIDE / 2, 32, 24);
+  for (var n = 0; n < NAMES.length; n++) {
+    if (close) {
+      cell((n % 5) * WIDE / 5, TOP + Math.floor(n / 5) * ROW, WIDE / 5, who[0], part[2], n, p, true);
+    } else {
+      for (var r = 0; r < who.length; r++) { cell(n * WIDE / NAMES.length, TOP + r * ROW, WIDE / NAMES.length, who[r], part[2], n, p, false); }
+    }
+  }
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

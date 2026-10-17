@@ -17,7 +17,9 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
    and is the only authority. Names not in it are dropped.
 2. Write `film.json` in that shape: `duration`, `backdrop`, `items` (people,
    things, set pieces, each with `keys` as `[[second, x, y], ...]`), `texts`
-   (a `card` fills the screen; a `subtitle` sits under the picture).
+   (a `card` fills the screen; a `subtitle` sits under the picture; a `say`
+   or a `think` is a person's words in a speech or a thought bubble over
+   their head, `"who"` their place in `items`, 0 for the first).
 3. `python film.py stills film.json 0 3 6 9` writes one picture per second
    named into `stills/`. Look at them. Pick the seconds of your course points
    and the middle of each walk.
@@ -37,7 +39,9 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   a later second. Walking looks right at about 150 px per second; faster reads
   as running, slower as drifting.
 - A `card` hides everything while it shows: put it at the start or the end.
-  A `subtitle` is one short line; keep it 2 to 4 seconds.
+  A `subtitle` is one short line; keep it 2 to 4 seconds. So is a `say` or a
+  `think`; its bubble keeps over its person as they walk, so give two people
+  who talk at once some room between them.
 - A second may be a word instead of a number. `"+2"` is two seconds after the
   previous thing: for a text's `from`, after the previous text ends; for its
   `to`, after its own `from`; for a key, after the item's key before. `"<"` is
@@ -53,6 +57,13 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   keeps the pose and changes the size. A person's steps are counted from the
   ground covered, so the feet keep to the ground however fast a leg of the course
   is; so are the Mom's.
+- A person has a `feel` from the start: neutral, happy, laughing, sad, concerned,
+  angry, sleepy, satiated or surprised. It sets the face and how the body is
+  carried; a laughing person laughs in bursts, a sleepy one nods and yawns by
+  themselves, and a satiated one shuts their eyes now and then. Left out, a person is happy. A key's sixth
+  entry changes it from that key on, `[second, x, y, null, null, "surprised"]`
+  (she is surprised when the dragon comes); write null for the pose and the
+  size to keep them.
 - Scenes: the film begins on `backdrop`; `"cuts": [{"at": 8, "backdrop": "river"}]`
   begins a new scene at that second, and the kit closes and opens its iris at the
   cut. A set piece's one key says which scene it stands in by its second (0 for
@@ -62,7 +73,7 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
 - Camera: `"camera": [[second, x, y, zoom], ...]` is what the viewer sees at that
   second: the centre of the view on the stage and how close (1 is the whole stage,
   2 twice as close, up to 3). It glides between points. Leave it out for the whole
-  stage. Cards and subtitles are not zoomed.
+  stage. Cards and subtitles are not zoomed; a bubble is, with its person.
 - Any item may take `"size"`, 0.5 to 2: a person's height (1.2 is usual), and
   for a thing or a set piece the kit's own size is 1.2, so 0.6 is half of it.
   In the maker the same size is the corner handle on the stage.
