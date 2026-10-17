@@ -769,6 +769,7 @@ function spinningLantern(t) {            // the khom phat on its arm, and the th
   khomPhat(PHAT[0], PHAT[1], {size: PHAT[2], lit: 1, light: true, figures: PHAT_FIGURES});
   var look = [PHAT[0], PHAT[1] + 150];  // the lantern's middle
   var gaze = {late: 0.45, spring: 0.5, smile: 1, wonder: 0.7, tilt: -0.12, at: look};   // eyes on it, in wonder
+  var girlGaze = Object.assign({}, gaze, {tilt: -0.24});   // the girls' heads further back, looking up at it (owner, 2026-10-17: "tilt the girls heads back just a bit")
   // After a few seconds they put their arms down (owner, 2026-10-17): from
   // 3 s to 4 s each arm comes down, from the lantern to
   // beside the hip, the boy's pointing finger loosening as it goes. A girl's hand
@@ -792,8 +793,8 @@ function spinningLantern(t) {            // the khom phat on its arm, and the th
     person(x, y, look);
   }
   var pointing = [0, 1, 1, 1, 0.8].map(function (c, i) { return mix(c, REST[i], down); });
-  child(235, 975, cast("girl", Object.assign({id: "phat-girl-2", face: -1, shirt: "#e9c45c", flower: "#f6c445"}, gaze, {late: 0.7})), [175, 540], [225, 935], -1, 60);   // she reaches up to it
-  child(55, 975, cast("girl", Object.assign({id: "phat-girl"}, gaze, {late: 0.2})), [115, 540], [70, 935], 1, 60);   // and so does she
+  child(235, 975, cast("girl", Object.assign({id: "phat-girl-2", face: -1, shirt: "#e9c45c", flower: "#f6c445"}, girlGaze, {late: 0.7})), [175, 540], [225, 935], -1, 60);   // she reaches up to it
+  child(55, 975, cast("girl", Object.assign({id: "phat-girl"}, girlGaze, {late: 0.2})), [115, 540], [70, 935], 1, 60);   // and so does she
   var wrist = where(BOY_DOWN, t);
   person(140, 980, cast("boy", Object.assign({id: "phat-boy", reachA: [wrist[0], wrist[1]], fingersA: pointing}, gaze)));   // he points up at it, drawn last so his hand shows
 }

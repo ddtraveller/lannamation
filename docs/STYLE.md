@@ -1794,6 +1794,26 @@ fades out, at `1 − smoothstep((hang − 0.25) / 0.5)`, so at the start of the 
 was and by the end the parasol is wholly behind her (a faint copy shows over the chest for about half a
 second). Every carried parasol in the kit behaves this way.
 
+**Down first, then back (2026-10-17).** The owner: "when the women close the parasols the parasols then
+pass through their torsos. Change it so the parasol swings straight down first and then back." In `fold`
+the furled parasol went from tipped toward the viewer to carried in one movement: `tilt` from 1 to 0
+while `parasolSwing` turned it `−(π − 0.9)` about the fist, so it rose, went back over her and came down;
+half way it lay level across her chest, and the fading copy showed it there (the hero film at 64.0 s).
+Now it swings in two halves, each eased, so it stops at the bottom: from 4.6 s to 5.1 s `tilt` goes on
+from 1 to 2, which tips it on past the viewer until it points at the ground (the painter needs nothing
+new: `cos(tilt · π/2)` turns negative and the crown is drawn below the rim, as a mirror of tilt 0), while
+`parasolHand` lowers the fist from before the chest, `[32, 30]`, to her side, `[18, 72]`, which is where
+its own formula already put tilt 2; then from 5.1 s to 5.6 s `hang` goes to 1 and `parasolSwing` turns
+it back only `+0.9`, for a parasol at tilt above 1. That ends where the old way ended: the same carried
+parasol at `[16, 64]`, leaning back by the same angle, except that the small furled canopy's pattern is
+mirrored about its own shaft (at 66.5 s, 373 of the frame's 8.3 million pixels differ, all at the
+furled tips; before the swing, at 60.0 and 63.35 s, none do). The handle's end below the fist comes
+round above it as the parasol points down (`end` = `cos((tilt − 1) · π)` past tilt 1, 1 otherwise, so
+no other show changes). The copy in front now fades over the first fifth of the swing back
+(`1 − smoothstep(hang / 0.2)`, about 0.14 s), while the parasol still hangs beside her skirt and
+crosses only the edge of its hem; it then swings back behind her, never across her. The show is still
+5.6 s. The maker's carried pose, `{open: 0, hang: 1}`, is unchanged.
+
 ## A beast's feet on a slope (2026-10-15)
 
 The owner: "work on the elephant's feet in the model so when it goes up and down a movement curve
@@ -2655,6 +2675,7 @@ hangs at the left of the night of dancing; what the scene made for it stays in t
 | A frame the film turns | `khomPhat`'s `turn`: the frame's angle, set by the film, for one that starts still and gathers speed. The scene that was removed used it; the dance does not | |
 | At the night of dancing | `spinningLantern()`, called in `sceneDance` before the great drum: the khom phat lit, its figures of light, on an arm from the lantern string's left pole (x 60), opposite the band; three children behind the drum, a girl, a boy and a girl in yellow, their eyes on it in wonder (`at`, `wonder`), the girls reaching up to it (`reachA`), the boy pointing (`fingersA` [0, 1, 1, 1, 0.8]), drawn last so his hand shows | tied at (145, 360), size 1.1; the children at x 55, 140 and 235 |
 | Their arms come down | (owner, 2026-10-17: "In the end scene have the kids put their arms down after a few seconds") `spinningLantern(t)` takes the scene's second: from 3 s to 4 s each arm comes down from the lantern to beside the hip, and the boy's pointing finger loosens to the kit's `REST`. Sent straight from up to down (`reachA` mixed), a hand passed over the boy's chin and the mouth of the girl in yellow, and came within a third of an arm of its own shoulder, where the elbow has no side to bend to: one flip at 73.63 s. A sideways bow on that path still flipped. So each girl's hand turns round her shoulder (`child()`: by her right, the girl at the left; by her left, the girl in yellow), the distance dipping to 60 on the sheet, and goes behind the boy, who is drawn last. Swung so, his hand went over the mouth of the girl in yellow, who stands within an arm of him; his wrist goes by a course instead (`BOY_DOWN`, through motion.js's `where()`): up through the gap beside his face, out under her chin at his shoulder's height, and down | no flips (arms_check, 72 to 76 s); in the film's pixels, a hand is never nearer its own face's middle than 90 (the boy's, at 3.1 s, where his pointing pose already held it), nor nearer than 111 to its shoulder; the boy's hand never nearer her face than 123 (74 when swung) |
+| Their heads further back | (owner, 2026-10-17: "tilt the girls heads back just a bit so they are looking at the lantern above them more clearly") the girls take `girlGaze`, the children's `gaze` with `tilt: -0.24`; the boy keeps `-0.12`. `tilt` is a roll about the head's middle, so on their three-quarter faces it lifts each face toward the lantern, which hangs between them, more than it nods the head back | `tilt` −0.12 → −0.24 rad (about 7° → 14°) |
 | Tried for the children | the kit's `child` (as tall as the drummer); the two girls turned to profile toward the lantern (`turn: -0.8`; their faces met over the boy's); a head tilted back (`tilt`: a roll about the head's middle, which a three-quarter face hardly shows). Eyes alone (`at`) move at most 4 pixels; raised arms are what reads at this size, and a child's arm reaches its forehead | |
 | Tried for the scene that was removed | six figures, a sixth of a turn apart (three showed at once in the close-up); the figures faded with `globalAlpha` on one shared layer (a figure drawn at a part of its strength shows its own overlaps, and its insides showed through as a ghost); the layer on the GPU (it changed how the sheet drew every later frame, as `WAI_LAYER` had) | |
 | Words | the scene's two lines in Kam Mueang went with it: "ฮ้อนเทียน ยะหื้อรูปภาพหมุนวนๆ เจ้า" (the candle's heat turns it, and the pictures go round and round) and "นี่คือโคมพัด โคมหมุนงานยี่เป็งเจ้า" (this is a khom phat, a spinning lantern for Yi Peng), from the notebooks "Lanna material culture" and the Kam Mueang one; their voice stays in `spoken_km/` for a film that wants them. The dance keeps its two lines | |

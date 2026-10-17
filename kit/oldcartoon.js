@@ -3005,8 +3005,8 @@ function person(x, y, look) {
   // A parasol on its way down to her side, or carried there, hangs behind her
   // (owner, 2026-10-15: "when the women put the parasols down they are behind
   // the body not in front"). She is drawn on a layer of her own, the parasol
-  // goes onto the sheet first, and her layer over it; over the middle of the
-  // swing down a copy in front fades out, so it goes behind without a jump.
+  // goes onto the sheet first, and her layer over it; at the start of the
+  // swing back a copy in front fades out, so it goes behind without a jump.
   var hangs = !rig && look.parasol && typeof look.parasol === "object" ? look.parasol.hang || 0 : 0;
   var sheetPen = pen, layered = hangs > 0 && !PERSON_LAYERED && !!pen.canvas, umbrellaAt = null, inFront = 1;
   if (layered) {
@@ -3022,7 +3022,7 @@ function person(x, y, look) {
     PERSON_LAYER.setTransform(pen.getTransform());
     PERSON_LAYERED = true;
     pen = PERSON_LAYER;
-    inFront = 1 - clamp((hangs - 0.25) / 0.5) * clamp((hangs - 0.25) / 0.5) * (3 - 2 * clamp((hangs - 0.25) / 0.5));
+    inFront = 1 - clamp(hangs / 0.2) * clamp(hangs / 0.2) * (3 - 2 * clamp(hangs / 0.2));   // as it starts back from straight down, beside her skirt, before it can cross her
   }
   // One who sits on the floor: "side" or "cross" (see seated()), or nothing.
   var seat = rig || !look.floor ? null : look.floor === true ? (look.bun ? "side" : "cross") : look.floor;
@@ -4541,6 +4541,7 @@ function person(x, y, look) {
   }
   if (look.parasol) {                               // a parasol: the handle through the fist, the canopy above, drawn over everything
     var umbrella = parasolOf(look.parasol), swung = parasolSwing(umbrella.tilt, umbrella.hang), tipped = Math.cos((umbrella.tilt || 0) * Math.PI / 2);
+    var end = umbrella.tilt > 1 ? Math.cos((umbrella.tilt - 1) * Math.PI) : 1;   // the handle's end below the fist; tipped on to point down (tilt 2), it comes round above
     var gripX = wristA[0] + Math.cos(angleA) * GRIP_AT, gripY = wristA[1] + Math.sin(angleA) * GRIP_AT;   // where the handle crosses the fist
     var canopyY = gripY - (PARASOL.handle + PARASOL.dome) * tipped + PARASOL.radius * parasolShape(umbrella.open).dome * tipped;   // the crown stays at the top of the handle; furled, the rim rises to it
     var drawUmbrella = function () {
@@ -4552,9 +4553,9 @@ function person(x, y, look) {
     pen.lineWidth = 5;
     pen.lineCap = "round";
     pen.beginPath();
-    pen.moveTo(gripX, gripY + 26);                  // the handle's end below the fist, and the handle above it: at the fist the fingers hide it
-    pen.lineTo(gripX, gripY + 14);
-    pen.moveTo(gripX, gripY - 14);
+    pen.moveTo(gripX, gripY + 26 * end);            // the handle's end below the fist, and the handle above it: at the fist the fingers hide it
+    pen.lineTo(gripX, gripY + 14 * end);
+    pen.moveTo(gripX, gripY - 14 * end);
     pen.lineTo(gripX, canopyY);
     pen.stroke();
     parasol(pen, gripX, canopyY, PARASOL.radius, umbrella.tilt || 0, umbrella.spin || 0, umbrella.colour, umbrella.kind, umbrella.open);
@@ -6612,7 +6613,8 @@ function gripHand(x, y, angle) {
 //             aureole stay still.
 // The parasol is held upright (tilt 0: seen from the side, a low dome with the
 // rings as bands across it), or tipped down toward the viewer (tilt 1: a full
-// circle), and spun (spin, in radians). parasolAt() times a show of it.
+// circle), or on past that until it points at the ground (tilt 2: the crown
+// below), and spun (spin, in radians). parasolAt() times a show of it.
 var PARASOL = {radius: 120, dome: 38, handle: 150, gold: "#e0b23a",
                kinds: {lai: {ground: "#f3e3bf", ink: "#c8452f", line: "#7a3a24"},
                        yantra: {ground: "#1e1b18", ink: "#efe3c6", line: "#0d0c0b"},
@@ -6645,9 +6647,10 @@ function parasolShape(open) {
 //   "fold"   tipped down and open before the start (after "spin"), the other
 //            hand on it: it closes (1.4 s), snaps open (0.35 s, as if shaking
 //            the rain off) and closes again (1.4 s); the hand drops (0.5 s);
-//            and furled it swings from the down position to hang at her side,
-//            tip to the ground behind her (1 s), never lifted: 5.6 seconds,
-//            ending carried
+//            and furled it swings on down until it points straight at the
+//            ground (0.5 s, tilt 1 to 2), then back, to hang at her side, tip
+//            to the ground behind her (0.5 s), never lifted and never across
+//            her: 5.6 seconds, ending carried
 // "busy" (0 to 1, in "fold") brings the other hand to the handle, as the hand
 // that opens and closes it. A parasol with hang 1 is carried: {open: 0, hang: 1}. "kind" is "lai" (or
 // left out), "yantra" or "buddha"; "colour" its paper, if not the kind's own.
@@ -6668,8 +6671,8 @@ function parasolAt(t, start, kind, colour, show) {
     if (d >= 0) {
       open = d < 1.4 ? 1 - smooth(d / 1.4) : d < 1.8 ? 0 : d < 2.15 ? smooth((d - 1.8) / 0.35) : d < 2.6 ? 1 : 1 - smooth((d - 2.6) / 1.4);
       busy = 1 - smooth((d - 4.0) / 0.5);          // the hand that worked it drops
-      hang = smooth((d - 4.6) / 1.0);              // and furled, it swings from the down position to her side
-      tilt = 1 - hang;
+      tilt = 1 + smooth((d - 4.6) / 0.5);          // and furled, it swings straight down (owner, 2026-10-17: it had swung up and over, through her)
+      hang = smooth((d - 5.1) / 0.5);              // and then back, to her side
     }
   } else if (show === "open") {
     open = d < 0 ? 0 : smooth(d / 1.4);
@@ -6694,12 +6697,13 @@ function parasolAt(t, start, kind, colour, show) {
 // the top of the fist and out at the bottom. (The picture's hold, the handle
 // over the shoulder and the canopy behind the head, was tried the same day
 // and taken out: "modify how the hand is, not the positions".)
-function parasolHand(tilt, hang) {                 // where the near hand holds the handle: forward at shoulder height when upright (the forearm rises at a shallow angle to the fist), before the chest when tipped, at the side when carried
+function parasolHand(tilt, hang) {                 // where the near hand holds the handle: forward at shoulder height when upright (the forearm rises at a shallow angle to the fist), before the chest when tipped, lowered to her side when it points down (tilt 2), at the side when carried
   var up = [46 - 14 * (tilt || 0), -12 + 42 * (tilt || 0)], h = hang || 0;
   return [up[0] + (16 - up[0]) * h, up[1] + (64 - up[1]) * h];
 }
 
 function parasolSwing(tilt, hang) {                // the turn of the parasol about the fist: upright held, down behind her carried, leaning back so the hanging forearm meets the fist without a sharp wrist
+  if (tilt > 1) { return 0.9 * (hang || 0); }      // pointing at the ground (tilt 2), it swings back only that far: the same carried parasol, reached without passing through her
   return -(Math.PI - 0.9) * (hang || 0);
 }
 
