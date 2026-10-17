@@ -180,7 +180,11 @@ a video: `python maker/cartoon_maker_assets/film.py render film.json film.mp4`.
 creatures, things and places onto the stage, chart each one's course through time, add titles and
 words under the picture, cut between scenes, move a camera, let a model write a film from a story,
 look at the code, and record a video. Serve the repository (see [Set up](#set-up)) and open it, or
-use it at [krueng.ai/cartoon_maker.html](https://krueng.ai/cartoon_maker.html).
+use it at [krueng.ai/cartoon_maker.html](https://krueng.ai/cartoon_maker.html). Its 🧒 guide takes a
+child through a scene a step at a time (a background, then what stands in it, plants, animals and
+people, each placed with a tap anywhere in the picture; then each person's walk and words; then the
+scene plays), with skip and skip all at every step, and ends on a choice: change it, make the video,
+or save it. 💾 saves the film as JSON at any time, the same data `film.py` renders.
 
 How it works, which is also how to build your own:
 

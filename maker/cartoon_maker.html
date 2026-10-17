@@ -116,6 +116,30 @@
   .ai .status { min-height: 22px; font-size: 14px; color: var(--red); }
   @media (max-width: 700px) { .ai .three { grid-template-columns: 1fr; } }
   .help kbd { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 0 5px; font: inherit; }
+  /* The guide: a card over the panel, so the stage stays in sight and can be tapped. */
+  #guideBtn { border-color: var(--gold); background: #fff3cf; font-weight: bold; }
+  .guide { position: fixed; top: 70px; right: 12px; width: 272px; max-height: calc(100vh - 86px); overflow: auto;   /* over the panel's column, not the stage */
+    background: var(--sheet); border: 3px solid var(--gold); border-radius: 18px; padding: 14px; z-index: 15; display: none;
+    box-shadow: 0 6px 24px rgba(58, 36, 24, 0.25); }
+  .guide.open { display: block; }
+  .guide h2 { margin: 2px 0 4px; font-size: 22px; }
+  .guide h2 small { display: block; font-size: 14px; font-weight: normal; }
+  .guide .step { font-size: 13px; color: var(--soft); display: flex; justify-content: space-between; align-items: center; }
+  .guide .step button { padding: 2px 10px; }
+  .guide .choices { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .guide .choices button { font-size: 17px; padding: 7px 10px; position: relative; }
+  .guide .choices button canvas { display: block; width: 100px; height: 75px; border-radius: 8px; margin-bottom: 2px; }
+  .guide .choices button b { position: absolute; top: -8px; right: -6px; background: var(--red); color: #fff; border-radius: 10px; padding: 0 6px; font-size: 12px; }
+  .guide .go { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .guide .go button { font-size: 16px; }
+  .guide .go button.next { background: var(--green); border-color: var(--green); color: #fff; font-size: 18px; }
+  .guide .go button.next small { color: #e8f3e6; }
+  .guide .tap { font-size: 19px; color: var(--red); margin: 10px 0; }
+  .guide label { display: block; margin: 8px 0 3px; font-size: 15px; }
+  .guide input[type=text] { width: 100%; font: inherit; font-size: 19px; padding: 8px; border: 2px solid var(--line); border-radius: 10px; }
+  .guide .big { display: block; width: 100%; font-size: 19px; padding: 12px; margin: 6px 0; text-align: left; }
+  .stage-box.tapping { cursor: crosshair; outline: 4px dashed var(--red); outline-offset: -4px; }
+  @media (max-width: 900px) { .guide { top: auto; bottom: 0; left: 0; right: 0; width: auto; max-height: 55vh; border-radius: 18px 18px 0 0; } }
   @media (max-width: 900px) {
     .maker { grid-template-columns: 1fr; }
     .palette .row { flex-wrap: nowrap; overflow-x: auto; }
@@ -126,6 +150,7 @@
 <body>
 <header>
   <h1>โรงหนังการ์ตูน <span class="en">Cartoon maker · drawn by the <a href="https://krueng.ai/lanna_cartoon.html">Lanna cartoon kit</a></span></h1>
+  <button id="guideBtn">🧒 ทำทีละขั้น <small>guide · step by step</small></button>
   <button id="playBtn">▶ เล่น <small>play</small></button>
   <button id="rewindBtn">⏮ ไปต้นเรื่อง</button>
   <button id="exampleBtn">✨ ตัวอย่าง <small>example</small></button>
@@ -133,6 +158,7 @@
   <button id="aiBtn">🤖 ให้ AI สร้าง <small>a model writes it</small></button>
   <button id="codeBtn">📜 ดูโค้ด <small>code</small></button>
   <button id="videoBtn">🎥 บันทึกวิดีโอ <small>video</small></button>
+  <button id="jsonBtn">💾 บันทึก JSON <small>save as JSON</small></button>
   <button id="clearBtn" class="danger">🔄 เริ่มใหม่ <small>reset · start over</small></button>
 </header>
 
@@ -187,6 +213,8 @@
 
 <div class="ghost" id="ghost"></div>
 
+<div class="guide" id="guide"></div>
+
 <div class="sheet" id="aiSheet">
   <div>
     <div class="help ai">
@@ -213,9 +241,12 @@
   <div>
     <div class="help">
       <h2 style="margin:0">❓ วิธีใช้โรงหนังการ์ตูน <small>How to use the cartoon maker</small></h2>
+      <h3>🧒 ทำทีละขั้น <small>The guide: a scene, a step at a time</small></h3>
+      <p>กด 🧒 ทำทีละขั้น แล้วทำตามทีละขั้น: เลือกฉากหลัง ใส่ของในฉาก ต้นไม้ดอกไม้ สัตว์ และคน แตะสิ่งที่อยากได้ แล้วแตะที่ภาพตรงที่อยากวาง ตรงไหนก็ได้ จากนั้นทีละคน: แตะที่ภาพว่าเริ่มยืนตรงไหน เดินไปไหน แล้วพิมพ์ว่าพูดอะไร ทุกขั้นมีปุ่ม ⏭ ข้าม และ ⏩ ข้ามทั้งหมด จบแล้วฉากจะเล่นให้ดู แล้วเลือกได้ว่าจะแก้ไขต่อ ทำเป็นวิดีโอ หรือบันทึกเป็น JSON</p>
+      <span class="en">Press 🧒 guide and follow it a step at a time: pick a background, then put in what stands in the scene, plants, animals and people: tap what you want, then tap the picture where it goes, anywhere at all. Then, one person at a time, tap where they start and where they walk to, and type what they say. Every step has ⏭ skip and ⏩ skip all. At the end the scene plays, and you choose: make changes, make it a video, or save it as a JSON file. 💾 saves the JSON at any time: paste it into 🤖 to open it again, or give it to film.py to render.</span>
       <h3>1. จอและจานสี <small>The stage and the palette</small></h3>
-      <p>ทางซ้ายคือจานสี ลากตัวละคร สัตว์ ของ ดอกไม้ ผลไม้ หรือชิ้นฉากไปปล่อยบนจอ มันจะยืนตรงที่ปล่อย คนกับชิ้นฉาก และดอกไม้ผลไม้ ยืนบนพื้น ตะวันกับฝูงนกอยู่บนฟ้า พญานาคและมังกรปล่อยได้ทุกที่: จุดที่ปล่อยคืออกของพญานาคหรือหัวของมังกร ลำตัวทอดตามหลัง สัตว์ในตำนานล้านนามีสองตัว: มอมเดินบนพื้น และพญาลวงบินไปตามเส้นทาง ลำตัวทอดตามหัว</p>
-      <span class="en">The palette is on the left. Drag a character, an animal, a thing, a flower or fruit, or a set piece onto the stage; it stands where you drop it. People, set pieces, flowers and fruits stand on the ground, the sun and the birds in the sky. The Naga and the dragon can go anywhere: the point you drop is the Naga's chest or the dragon's head, and the body trails behind. Two are creatures of the myths of Lanna: the Mom walks on the ground, and the Luang flies along its course, its body behind its head.</span>
+      <p>ทางซ้ายคือจานสี ลากตัวละคร สัตว์ ของ ดอกไม้ ผลไม้ หรือชิ้นฉากไปปล่อยบนจอ มันจะยืนตรงที่ปล่อย ของทุกอย่างวางตรงไหนก็ได้ บนพื้นหรือบนฟ้า พญานาคและมังกรปล่อยได้ทุกที่: จุดที่ปล่อยคืออกของพญานาคหรือหัวของมังกร ลำตัวทอดตามหลัง สัตว์ในตำนานล้านนามีสองตัว: มอมเดินบนพื้น และพญาลวงบินไปตามเส้นทาง ลำตัวทอดตามหัว</p>
+      <span class="en">The palette is on the left. Drag a character, an animal, a thing, a flower or fruit, or a set piece onto the stage; it stands where you drop it. Anything can go anywhere in the picture, on the ground or up in the sky. The Naga and the dragon can go anywhere: the point you drop is the Naga's chest or the dragon's head, and the body trails behind. Two are creatures of the myths of Lanna: the Mom walks on the ground, and the Luang flies along its course, its body behind its head.</span>
       <p>โคมลอยไม่ลอยเอง: ให้เส้นทางขึ้นฟ้ามัน (ข้อ 2) แล้วมันจะลอยขึ้น และสว่างที่สุดบนท้องฟ้ากลางคืน</p>
       <span class="en">A lantern does not rise by itself: give it a course up into the sky (part 2) and it climbs, brightest on the night backdrop.</span>
       <p>โคมล้านนาแขวนจากจุดที่ปล่อย: มันแกว่งและหมุนตามลม หางแกว่งเบาๆ เทียนข้างในดับตอนกลางวันและติดตอนเย็นกับกลางคืน หรือเลือกเองในแผง ให้เส้นทางมันแล้วมันจะเอนตามทาง เหมือนโคมที่ถือไป</p>
@@ -1127,17 +1158,18 @@ function labelOf(item) {
 }
 
 // ---------- changing the film ----------
-function addItem(kind, name, x, y) {
+function addItem(kind, name, x, y, quiet) {   // quiet: the guide adds it, and nothing is selected or opened
   var small = name === "boy" || name === "girl";
   var key = [kind === "piece" ? sceneAt(time).start : round2(time), x, y];   // a set piece stands in the scene the time bar is in
   if (name === "dragon") { key.push(0.5); }                     // a dragon's point has a depth: it starts halfway
   var item = {id: movie.next++, kind: kind, name: name, keys: [key], size: small ? 0.95 : 1.2, smile: 1, pose: "walk"};
   movie.items.push(item);
-  selected = item;
+  if (!quiet) { selected = item; }
   rebuild();
   show();
   panel();
-  if (kind !== "piece") { openTimePop(item, 0, "start"); }
+  if (kind !== "piece" && !quiet) { openTimePop(item, 0, "start"); }
+  return item;
 }
 
 // ---------- points ----------
@@ -1607,8 +1639,7 @@ function fillRow(rowId, list, kind) {
       var box = marks.getBoundingClientRect();
       if (event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom) {
         var s = pointerOnStage(event), p = toSheet(s[0], s[1]);
-        var y = grounded(dragging) ? Math.max(700, Math.min(1040, p[1])) : Math.max(60, Math.min(1040, p[1]));
-        if ((dragging.name === "sun" || dragging.name === "birds") && y > 600) { y = 300; }
+        var y = Math.max(40, Math.min(1040, p[1]));   // anywhere in the picture (owner, 2026-10-17: "Allow placement of any item anywhere for children")
         addItem(dragging.kind, dragging.name, Math.round(p[0]), Math.round(y));
       }
       dragging = null;
@@ -1776,9 +1807,9 @@ byId("stageBox").addEventListener("wheel", function (event) {
 window.addEventListener("resize", applyZoom);
 
 // Carry a sprite by (dx, dy): every point of its course moves together, and the move
-// is held back so that no point leaves the band the sprite may stand in.
+// is held back so that no point leaves the picture (anything may stand anywhere in it).
 function shiftItem(item, dx, dy) {
-  var low = grounded(item) ? 700 : 60, high = 1040;
+  var low = 40, high = 1040;
   item.keys.forEach(function (k) { dy = Math.max(low - k[2], Math.min(high - k[2], dy)); });
   item.keys.forEach(function (k) { k[1] = Math.round(k[1] + dx); k[2] = Math.round(k[2] + dy); });
 }
@@ -1787,6 +1818,11 @@ function shiftItem(item, dx, dy) {
 var held = null, heldIndex = -1, heldNew = false, heldFrom = null, heldCamera = -1;   // heldCamera: the camera point being aimed by a drag
 
 marks.onpointerdown = function (event) {
+  if (guideTap) {                                   // the guide is asking where: the tap is its answer
+    var at = pointerOnStage(event), spot = toSheet(at[0], at[1]);
+    guideTap([Math.round(spot[0]), Math.round(spot[1])]);
+    return;
+  }
   var s = pointerOnStage(event), item = hit(s[0], s[1]);
   if (popItem) { closeTimePop(true); }
   if (selected && selected.keys && !pathing) {     // on the size handle: this drag scales
@@ -1801,7 +1837,7 @@ marks.onpointerdown = function (event) {
   }
   if (pathing && item !== pathing) {              // path mode: this tap is the next point of the course
     var p = toSheet(s[0], s[1]);
-    addPoint(pathing, Math.round(p[0]), Math.round(grounded(pathing) ? Math.max(700, Math.min(1040, p[1])) : p[1]), nextPathTime());
+    addPoint(pathing, Math.round(p[0]), Math.round(Math.max(40, Math.min(1040, p[1]))), nextPathTime());
     time = pathing.keys[pathing.keys.length - 1][0];
     rebuild();
     show();
@@ -1857,7 +1893,7 @@ marks.onpointermove = function (event) {
     show();
     return;
   }
-  var x = Math.round(p[0]), y = Math.round(grounded(held) ? Math.max(700, Math.min(1040, p[1])) : p[1]);
+  var x = Math.round(p[0]), y = Math.round(Math.max(40, Math.min(1040, p[1])));
   if (held.kind === "piece") {
     held.keys = [[held.keys[0][0], x, y]];          // it keeps its second, and so its scene
   } else {
@@ -1956,6 +1992,7 @@ var AI_STORY_FIRST = byId("aiStory").value;   // the model's story as the page f
 function resetAll() {
   setPlaying(false);
   if (recorder) { stopRecording(); }
+  if (guideAt >= 0) { guideClose(); }
   recorded = [];
   movie = freshFilm();
   selected = null; pathing = null; picked = []; time = 0;
@@ -2130,7 +2167,7 @@ function adoptFilm(data) {
       var t = round2(clean(secondOf(k[0], Math.max(last, 0), Math.max(last, 0), marks, dropped), 0, film.duration, 0));
       if (t <= last) { t = round2(last + 0.5); }          // the seconds only go up
       if (t > film.duration) { return; }
-      var key = [t, Math.round(clean(k[1], -400, 1840, 720)), Math.round(clean(k[2], grounded ? 700 : 40, 1040, grounded ? 920 : 400))];
+      var key = [t, Math.round(clean(k[1], -400, 1840, 720)), Math.round(clean(k[2], 40, 1040, grounded ? 920 : 400))];   // anywhere in the picture, as a child may put it
       if (name === "dragon") { key.push(clean(k[3], 0, 1, 0.5)); }
       if (kind === "person") {                                                                         // a pose from this key on, and a size reached by it
         var posed = POSES.some(function (p) { return p[0] === k[3]; }), sized = typeof k[4] === "number" && !isNaN(k[4]);
@@ -2240,6 +2277,241 @@ byId("aiGo").onclick = function () {
     .catch(function (error) { byId("aiStatus").textContent = "ไม่สำเร็จ · failed: " + error.message; })
     .then(function () { byId("aiGo").disabled = false; });
 };
+
+// ---------- the guide: a scene a step at a time ----------
+// For a child (owner, 2026-10-17: "Build a guide for children into the cartoon maker"): the backdrop
+// first, then what stands in the scene, the plants, the animals and other things, and the people;
+// then each person in turn: where they start, where they walk to and what they say; then the scene
+// plays, and the child chooses to change it, to make it a video, or to keep it as a JSON file. Every
+// step until the playing has "skip" (this step, or this one person) and "skip all" (straight to the
+// playing). The guide works on the page's own film, so all it makes can be changed afterwards as
+// anything else is.
+var guideAt = -1;                       // the step the guide is on, or -1 when it is closed
+var guideMade = [];                     // what the guide added in this step, in order: "take away" removes the last
+var guideWho = [], guideTurn = 0;       // the people of the scene, and whose turn it is
+var guideFrom = null, guideTo = null;   // where this person starts and where they walk to (null: not asked yet)
+var guideTap = null;                    // while the guide waits for a tap on the stage: what to do with the spot
+var TURN = 4;                           // the seconds of one person's turn: a walk, and their words
+
+function withKind(list, kind) { return list.map(function (entry) { return [entry[0], entry[1], kind]; }); }
+
+var GUIDE = [
+  {big: "เลือกฉากหลัง", small: "Pick a background", backs: true},
+  {big: "ของในฉาก", small: "Things that stand in the scene", list: function () { return withKind(PIECES, "piece"); }},
+  {big: "ต้นไม้ ดอกไม้ ผลไม้", small: "Plants: trees, flowers and fruits", list: function () { return withKind(TREES, "piece").concat(withKind(FLORAS, "thing")); }},
+  {big: "สัตว์และของอื่นๆ", small: "Animals and other things", list: function () { return withKind(THINGS, "thing"); }},
+  {big: "ใครอยู่ในเรื่องบ้าง", small: "Who is in the story?", list: function () { return withKind(CASTS.filter(function (e) { return CAST[e[0]]; }), "person"); }},
+  {big: "ทีละคน", small: "Each person, one at a time", each: true},
+  {big: "ดูฉากของเรา", small: "Watch your scene", play: true},
+  {big: "เสร็จแล้ว!", small: "All done! What next?", done: true}
+];
+var GUIDE_PLAY = 6;                     // the step "skip all" goes to
+
+// Where "put it in for me" stands a new thing, when the child does not tap a place: along the ground,
+// left to right, no two in one place; up in the sky what is there (the sun, birds, a lantern rising),
+// high what hangs (the hanging lanterns), and in the air what flies (the dragon, the Luang).
+var GUIDE_SKY = {sun: true, birds: true, lantern: true}, GUIDE_HANGS = {khom: true, khomphat: true, khomdao: true, khombua: true},
+    GUIDE_FLIES = {dragon: true, luang: true};
+function guideSpot(kind, name) {
+  var n = movie.items.length, x = 180 + (n * 263) % 1080;
+  if (GUIDE_SKY[name]) { return [x, 260]; }
+  if (GUIDE_HANGS[name]) { return [x, 300]; }
+  if (GUIDE_FLIES[name]) { return [x, 420]; }
+  if (kind === "piece") { return [x, 880]; }
+  return [x, 960 + (n % 3) * 30];
+}
+
+function onStage(y) { return Math.max(40, Math.min(1040, y)); }     // anywhere in the picture (owner, 2026-10-17: "Allow placement of any item anywhere for children")
+var guidePlacing = null;                // the choice the child picked, waiting for a tap on the picture to say where
+function turnStart() { return 1 + guideTurn * TURN; }
+function guideRoom() {                  // the film long enough for this person's turn, walked or not
+  var need = Math.min(90, Math.ceil(turnStart() + TURN + 1));
+  if (movie.duration < need) { movie.duration = need; byId("durationBox").value = need; }
+}
+
+function guideOpen() {
+  setPlaying(false);
+  if (popItem) { closeTimePop(true); }
+  pathing = null;
+  selected = null;
+  time = 0;
+  guideGo(0);
+  show();
+  panel();
+}
+
+function guideClose() {
+  guideAt = -1;
+  guideTap = null;
+  guidePlacing = null;
+  selected = null;
+  byId("guide").className = "guide";
+  byId("stageBox").classList.remove("tapping");
+  show();
+  panel();
+}
+
+function guideGo(at) {                  // to step "at"
+  guideTap = null;
+  guidePlacing = null;
+  guideMade = [];
+  guideAt = at;
+  if (GUIDE[at].each) {
+    guideWho = movie.items.filter(function (item) { return item.kind === "person"; });
+    guideTurn = 0;
+    guideFrom = guideTo = null;
+  }
+  if (GUIDE[at].play) { selected = null; time = 0; setPlaying(true); }
+  guideShow();
+}
+
+function guideNextPerson() {            // this person's turn is over: the next one, or the next step
+  selected = null;
+  guideTurn += 1;
+  guideFrom = guideTo = null;
+  if (guideTurn >= guideWho.length) { guideGo(guideAt + 1); } else { guideShow(); }
+}
+
+function guideSay() {                   // the words this person says, at their turn, under the picture
+  var big = byId("guideBig").value.trim(), small = byId("guideSmall").value.trim(), t0 = turnStart();
+  guideRoom();
+  if (big || small) {
+    var said = addText("subtitle", t0, TURN - 0.5, (big || small).slice(0, 80));
+    if (said) { said.small = big ? small.slice(0, 80) : ""; }   // only what the child typed: addText would put a "hello" under it
+  }
+  rebuild();
+  guideNextPerson();
+}
+
+function guidePut(x, y) {               // one of the picked thing, standing at (x, y)
+  guideMade.push(addItem(guidePlacing[2], guidePlacing[0], Math.round(x), Math.round(y), true));
+  guideShow();
+}
+
+function guideShow() {
+  var box = byId("guide"), step = GUIDE[guideAt], html = [], go = [];
+  guideTap = null;                      // each step below says if it waits for a tap
+  box.className = "guide open";
+  html.push("<div class='step'><span>ขั้นที่ " + (guideAt + 1) + " จาก " + GUIDE.length + " <small>step " + (guideAt + 1) + " of " + GUIDE.length + "</small></span>" +
+            "<button data-g='close' title='ปิด · close'>✕</button></div>");
+  html.push("<h2>" + step.big + " <small>" + step.small + "</small></h2>");
+  if (step.backs) {                     // the backdrops, each with its small picture when the palette has painted it
+    html.push("<div class='choices'>");
+    BACKS.forEach(function (entry, n) {
+      html.push("<button data-g='back' data-n='" + n + "'" + (movie.backdrop === entry[0] ? " class='on'" : "") + ">" +
+                (entry.length > 2 ? "<canvas data-small='" + entry[0] + "' width='116' height='87'></canvas>" : "") + entry[1] + "</button>");
+    });
+    html.push("</div>");
+    go.push("<button class='next' data-g='next'>ถัดไป ➜ <small>next</small></button>");
+  } else if (step.list) {               // things to put in: pick one, then tap the picture where it goes, anywhere
+    html.push("<div class='choices'>");
+    step.list().forEach(function (entry, n) {
+      var count = guideMade.filter(function (item) { return item.name === entry[0]; }).length;
+      html.push("<button data-g='add' data-n='" + n + "'" + (guidePlacing && guidePlacing[0] === entry[0] ? " class='on'" : "") + ">" +
+                entry[1] + (count ? "<b>" + count + "</b>" : "") + "</button>");
+    });
+    html.push("</div>");
+    if (guidePlacing) {
+      html.push("<p class='tap'>👆 แตะที่ภาพ: วาง " + guidePlacing[1] + " ตรงไหนก็ได้ <small>Tap the picture where it goes, anywhere you like; tap again for one more</small></p>");
+      go.push("<button data-g='auto'>✨ ใส่ให้เลย <small>put it in for me</small></button>");
+      guideTap = function (spot) { guidePut(spot[0], onStage(spot[1])); };
+    } else {
+      html.push("<p class='hint'>แตะสิ่งที่อยากใส่ แล้วแตะที่ภาพ <small>tap what you want, then tap the picture where it goes</small></p>");
+    }
+    if (guideMade.length) { go.push("<button data-g='undo'>↩ เอาออก <small>take away the last</small></button>"); }
+    go.push("<button class='next' data-g='next'>ถัดไป ➜ <small>next</small></button>");
+  } else if (step.each && !guideWho.length) {
+    html.push("<p>ยังไม่มีใครในฉาก <small>Nobody is in the scene yet: go back a step to put people in, or carry on.</small></p>");
+    go.push("<button data-g='back1'>⬅ ย้อนกลับ <small>back</small></button><button class='next' data-g='next'>ถัดไป ➜ <small>next</small></button>");
+  } else if (step.each) {               // one person's turn: where they start, where they walk to, what they say
+    var who = guideWho[guideTurn], name = attr(labelOf(who));
+    selected = who;
+    html.push("<p>คนที่ " + (guideTurn + 1) + " จาก " + guideWho.length + ": <b>" + name + "</b> <small>person " + (guideTurn + 1) + " of " + guideWho.length + "</small></p>");
+    if (!guideFrom) {
+      html.push("<p class='tap'>👆 แตะที่ภาพ: " + name + " ยืนอยู่ตรงไหนตอนเริ่ม? <small>Tap the picture: where does " + attr(who.name) + " start?</small></p>");
+      guideTap = function (spot) {
+        guideFrom = [spot[0], onStage(spot[1])];
+        who.keys = [[0, guideFrom[0], guideFrom[1]]];
+        guideRoom();
+        rebuild(); show(); guideShow();
+      };
+    } else if (!guideTo) {
+      html.push("<p class='tap'>👆 แตะที่ภาพ: แล้วเดินไปที่ไหน? <small>Tap the picture: where does " + attr(who.name) + " walk to?</small></p>");
+      go.push("<button data-g='stay'>⏹ ยืนอยู่ที่เดิม <small>stay here</small></button>");
+      guideTap = function (spot) {
+        var t0 = turnStart();
+        guideTo = [spot[0], onStage(spot[1])];
+        who.keys = [[0, guideFrom[0], guideFrom[1]], [t0, guideFrom[0], guideFrom[1]], [t0 + TURN - 1.5, guideTo[0], guideTo[1]]];
+        guideRoom();
+        rebuild(); show(); guideShow();
+      };
+    } else {
+      guideTap = null;
+      html.push("<label>💬 " + name + " พูดว่าอะไร? <small>What does " + attr(who.name) + " say?</small></label><input type='text' id='guideBig' maxlength='80' placeholder='สวัสดีเจ้า!'>");
+      html.push("<label>ภาษาอังกฤษ ถ้าอยากใส่ <small>in English too, if you like</small></label><input type='text' id='guideSmall' maxlength='80' placeholder='Hello!'>");
+      go.push("<button class='next' data-g='say'>ถัดไป ➜ <small>next</small></button>");
+    }
+  } else if (step.play) {
+    html.push("<p>▶ ฉากของเรากำลังเล่นอยู่บนจอ <small>Your scene is playing on the screen.</small></p>");
+    go.push("<button data-g='again'>▶ ดูอีกครั้ง <small>play again</small></button><button class='next' data-g='next'>ถัดไป ➜ <small>next</small></button>");
+  } else if (step.done) {
+    html.push("<button class='big' data-g='edit'>✏️ แก้ไขต่อ <small>Make changes: everything can still be moved and changed</small></button>");
+    html.push("<button class='big' data-g='publish'>🎥 เผยแพร่: ทำเป็นวิดีโอ <small>Publish: the scene plays once and is saved as a video file to share</small></button>");
+    html.push("<button class='big' data-g='json'>💾 บันทึกเป็น JSON <small>Save the scene's information as a JSON file</small></button>");
+    html.push("<button class='big' data-g='again'>▶ ดูอีกครั้ง <small>Watch it again</small></button>");
+  }
+  if (guideAt < GUIDE_PLAY) {           // skip and skip all, on every step before the playing
+    go.push("<button data-g='skip'>⏭ ข้าม <small>" + (step.each && guideWho.length ? "skip this person" : "skip") + "</small></button>");
+    go.push("<button data-g='skipall'>⏩ ข้ามทั้งหมด <small>skip all</small></button>");
+  }
+  if (go.length) { html.push("<div class='go'>" + go.join("") + "</div>"); }
+  box.innerHTML = html.join("");
+  box.querySelectorAll("canvas[data-small]").forEach(function (c) {   // the palette's own small picture, copied
+    var from = document.querySelector(".palette [data-pic='" + c.getAttribute("data-small") + "'] canvas");
+    if (from) { c.getContext("2d").drawImage(from, 0, 0, c.width, c.height); }
+  });
+  byId("stageBox").classList.toggle("tapping", !!guideTap);
+  if (byId("guideBig")) {
+    byId("guideBig").focus();
+    ["guideBig", "guideSmall"].forEach(function (id) { byId(id).onkeydown = function (event) { if (event.key === "Enter") { guideSay(); } }; });
+  }
+  show();
+}
+
+byId("guide").onclick = function (event) {
+  var b = event.target.closest("button");
+  if (!b) { return; }
+  var what = b.getAttribute("data-g"), n = Number(b.getAttribute("data-n")), step = GUIDE[guideAt];
+  if (what === "close") { guideClose(); }
+  else if (what === "back") { movie.backdrop = BACKS[n][0]; markBackdrop(); rebuild(); show(); guideShow(); }
+  else if (what === "add") { guidePlacing = step.list()[n]; guideShow(); }
+  else if (what === "auto") { var spot = guideSpot(guidePlacing[2], guidePlacing[0]); guidePut(spot[0], spot[1]); }
+  else if (what === "undo") { remove(guideMade.pop()); guideShow(); }
+  else if (what === "next") { guideGo(guideAt + 1); }
+  else if (what === "back1") { guideGo(guideAt - 1); }
+  else if (what === "stay") { guideTo = guideFrom; guideTap = null; guideShow(); }
+  else if (what === "say") { guideSay(); }
+  else if (what === "skip") { if (step.each && guideWho.length) { guideNextPerson(); } else { guideGo(guideAt + 1); } }
+  else if (what === "skipall") { guideGo(GUIDE_PLAY); }
+  else if (what === "again") { selected = null; time = 0; setPlaying(true); }
+  else if (what === "edit") { guideClose(); }
+  else if (what === "publish") { guideClose(); byId("videoBtn").click(); }
+  else if (what === "json") { saveJson(); }
+};
+
+// The film as a file: the page's own data, as film.py reads it ("python film.py render my_cartoon.json
+// out.mp4") and as "a model writes it" takes it back when it is pasted there (owner, 2026-10-17: "give a
+// button to save the information for the video into json").
+function saveJson() {
+  var blob = new Blob([JSON.stringify(movie, null, 1)], {type: "application/json"}), a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "my_cartoon.json";
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+}
+
+byId("jsonBtn").onclick = saveJson;
+byId("guideBtn").onclick = function () { if (guideAt >= 0) { guideClose(); } else { guideOpen(); } };
 
 // ---------- start ----------
 load();
