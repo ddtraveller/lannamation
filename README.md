@@ -373,7 +373,7 @@ kit/              the kit and everything that uses it, side by side
   oldcartoon.js     the kit: the style sheet (STYLE), the cast (CAST), person(x, y, look),
                     painted sets, the lens, cuts, subtitles, film()
   *.js              modules on top of the kit (below)
-  *.html            model sheets (one subject each) and five films
+  *.html            model sheets (one subject each) and seven films
   render.py         a page -> an mp4
   stills.py         a page -> one sheet of single frames
   checks/           kit_check.py, the one check after any change, and the tools it uses
@@ -404,7 +404,7 @@ Each loads after `oldcartoon.js` and adds drawings of its own; none changes the 
 | `band.js` | the band of the north: the salo, the sueng, the pi chum and the phin phia, and `musician(x, y, kind, look)`, who sits on the floor and plays one on the beat | `band.html` |
 | `sabai.js` | a sabai woven with figures that walk | `sabai.html` |
 | `naga.js` | a Naga, the many-headed serpent of the temple stairs | `naga.html` |
-| `dragon.js` | a dragon of the Himalayan paintings, and a Chinese one (`kind: "chinese"`); needs `naga.js` | `dragon.html`, `dragon_china.html` |
+| `dragon.js` | a dragon of the Himalayan paintings, and a Chinese one (`kind: "chinese"`); needs `naga.js` | `dragon.html`, `dragon_china.html`, `dragon_flight.html` |
 | `beasts.js` | an elephant, a water buffalo, a cat, a tiger and a pig | `beasts.html`, `elephant.html`, `felines.html`, `pig.html` |
 | `myth.js` | three creatures of the myths of Lanna | `myth.html` |
 | `paperdoll.js` | paperdolls: one character each, with cloth that flows | |
@@ -414,7 +414,8 @@ Each loads after `oldcartoon.js` and adds drawings of its own; none changes the 
 
 The kit's own sheets: `model.html` (one figure close up), `looks.html` (every look name a person
 takes), `walk.html`, `body.html`, `legs.html`, `build.html`, `children.html`, `elders.html`,
-`floor.html`, `together.html`, `nature.html`, `landscape.html`, `buildings.html`.
+`floor.html`, `together.html`, `nature.html`, `landscape.html`, `buildings.html`,
+`dance_hands.html` (the hands of classical dance, Thai and Khmer), `chickens.html` (the rooster and the hen).
 
 ### The films
 
@@ -426,6 +427,7 @@ takes), `walk.html`, `body.html`, `legs.html`, `build.html`, `children.html`, `e
 | `sash.html` | 79 | `sash_music.py`, then `sash_narrate.py`: the story of Lanna for children, told in Kam Mueang; the brief it was first made from is `sash_prompt.md` |
 | `parasol_rain.html` | 35 | none |
 | `finger_dance.html` | 32 | none; a troupe of fifteen dancing the fingernail dance on the night of Yi Peng |
+| `gesture_dancer.html` | 39 | none; one fingernail dancer through every hand of dance, ending in a wai |
 
 ## Not here
 
