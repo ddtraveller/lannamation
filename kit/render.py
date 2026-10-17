@@ -51,7 +51,8 @@ def render(page_file, video, audio, start=0.0, end=None, fast=False):
         browser = playwright.chromium.launch(channel="chrome")
         page = browser.new_page(viewport={"width": WIDTH, "height": HEIGHT})
         page.on("pageerror", lambda error: errors.append(str(error)))
-        page.goto(Path(page_file).resolve().as_uri(), timeout=180000)   # the hero film paints five forested sets as it loads: 42 s on a laptop on battery, past Playwright's 30
+        # the hero film paints its forests as it loads: 42 s on a laptop on battery
+        page.goto(Path(page_file).resolve().as_uri(), timeout=180000)
         page.evaluate("rendering = true")
         seconds = page.evaluate("DURATION")
         end = seconds if end is None else min(end, seconds)

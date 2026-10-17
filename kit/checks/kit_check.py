@@ -173,7 +173,8 @@ def check(browser, page_file, quick, settle=None):
     own, found, failed = [], {}, []
     page.on("pageerror", lambda error: own.append(str(error)))
     try:
-        page.goto(page_file.as_uri(), timeout=180000)   # the hero film paints five forested sets as it loads: 42 s on a laptop on battery, past Playwright's 30
+        # the hero film paints its forests as it loads: 42 s on a laptop on battery
+        page.goto(page_file.as_uri(), timeout=180000)
         page.evaluate("rendering = true")
         if settle is not None:
             page.evaluate("SETTLE = %d" % settle)

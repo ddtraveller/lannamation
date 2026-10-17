@@ -41,7 +41,8 @@ def scenes_of(page_file):
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome")
         page = browser.new_page()
-        page.goto(page_file.resolve().as_uri(), timeout=180000)   # the hero film paints five forested sets as it loads: 42 s on a laptop on battery, past Playwright's 30
+        # the hero film paints its forests as it loads: 42 s on a laptop on battery
+        page.goto(page_file.resolve().as_uri(), timeout=180000)
         listed = page.evaluate("typeof SCENES !== 'undefined'")
         scenes = page.evaluate(SCENES_OF) if listed else None
         browser.close()

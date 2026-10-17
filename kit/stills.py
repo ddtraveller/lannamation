@@ -24,7 +24,8 @@ def frames(page_file, seconds):
         browser = playwright.chromium.launch(channel="chrome")
         page = browser.new_page(viewport={"width": 1920, "height": 1080})
         page.on("pageerror", lambda error: errors.append(str(error)))
-        page.goto(Path(page_file).resolve().as_uri(), timeout=180000)   # the hero film paints five forested sets as it loads: 42 s on a laptop on battery, past Playwright's 30
+        # the hero film paints its forests as it loads: 42 s on a laptop on battery
+        page.goto(Path(page_file).resolve().as_uri(), timeout=180000)
         page.evaluate("rendering = true")
         for second in seconds:
             page.evaluate("draw(%f)" % second)
