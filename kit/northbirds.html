@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>northbirds - five birds of the north of Thailand</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script src="flora.js"></script>
+<script src="highlands.js"></script>
+<script src="northbirds.js"></script>
+<script>
+// The "northbirds" sheet: what northbirds.js draws. From 0 s, the five
+// birds large on paper, each with its Thai name and how it is called: the
+// peafowl raises its train into a fan and shivers it, the pheasant and his
+// hen walk and peck, the magpie flicks its tail, the hornbill flies, and the
+// sunbird hovers at a thong kwao flower and perches. From 8 s, all of them
+// at their own sizes on a mountain in the north, with a girl come to see.
+var DURATION = 16;
+
+var BEAT = 0.5;
+
+function caption(text, x, y, thai) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = thai ? "bold 26px 'Leelawadee UI', Tahoma, sans-serif" : "20px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function named(thai, english, call, x, y) {
+  caption(thai, x, y, true);
+  caption(english, x, y + 28);
+  caption(call, x, y + 54);
+}
+
+function sheetOf(paint) {                          // a set painted once, on a sheet of its own
+  var sheet = document.createElement("canvas");
+  sheet.width = WIDE;
+  sheet.height = 1080;
+  paint(sheet.getContext("2d"));
+  return sheet;
+}
+
+function ease(s) { s = clamp(s); return s * s * (3 - 2 * s); }
+
+function walker(t, from, to, start, speed, stride) {   // a bird walking from "from" to "to": where it is, its step, which way it faces
+  var far = Math.abs(to - from), gone = Math.min(far, Math.max(0, t - start) * speed), way = to < from ? -1 : 1;
+  return {x: from + way * gone, step: gone < far && t > start ? gone / stride : undefined, face: way};
+}
+
+function bough(x0, y0, x1, y1, thick) {            // a branch for a bird to sit on
+  pen.lineCap = "round";
+  pen.strokeStyle = "#3a2a1a";
+  pen.lineWidth = thick + 4;
+  pen.beginPath();
+  pen.moveTo(x0, y0);
+  pen.quadraticCurveTo((x0 + x1) / 2, (y0 + y1) / 2 + 8, x1, y1);
+  pen.stroke();
+  pen.strokeStyle = "#7a5a3a";
+  pen.lineWidth = thick;
+  pen.stroke();
+}
+
+// ---------- 0 to 8 s: on paper ----------
+
+function sheetNames(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var display = ease((t - 0.8) / 1.6) * (1 - ease((t - 6.4) / 1.2)), shiver = ease((t - 2.6) / 0.4) * (1 - ease((t - 5.8) / 0.4));
+  peafowl(420, 600, t, {display: display, shiver: shiver, call: t > 6.9 ? ease((t - 6.9) / 0.3) * (1 - ease((t - 7.6) / 0.3)) : 0});
+  named("นกยูงไทย", "green peafowl", "peafowl(x, y, t, {display, shiver})", 360, 660);
+
+  var cock = walker(t, 300, 640, 0.3, 70, 48);
+  pheasant(cock.x, 972, t, {size: 1.5, step: cock.step, peck: t > 6 ? ease((t - 6) / 0.3) * (1 - ease((t - 7) / 0.3)) : 0});
+  pheasant(880, 972, t, {size: 1.5, face: -1, hen: true, peck: Math.max(0, Math.sin(t * 2.4)) ** 4});
+  named("ไก่ฟ้าหางลายขวาง", "Mrs Hume's pheasant", "pheasant(x, y, t, {step, peck, hen})", 640, 1010);
+
+  bough(780, 452, 1180, 432, 12);
+  blueMagpie(1000, 444, t, {size: 1.7});
+  named("นกขุนแผน", "red-billed blue magpie", "blueMagpie(x, y, t, {fly, bob})", 1110, 520);
+
+  hornbill(1500, 250 + 12 * Math.sin(t * 0.8), t, {fly: true, size: 0.95});
+  named("นกกก", "great hornbill", "hornbill(x, y, t, {fly, turn})", 1500, 470);
+  hornbill(1750, 760, t, {size: 0.8, face: -1, turn: Math.sin(t * 0.7)});
+  bough(1640, 762, 1900, 752, 12);
+
+  bough(1180, 860, 1440, 820, 8);                   // a twig of thong kwao, and the sunbird at it
+  flora("thongkwao", 1450, 820, {size: 1.6, ground: false});
+  var hover = t < 2 ? 0 : t < 2.4 ? ease((t - 2) / 0.4) : t < 5.6 ? 1 : 1 - ease((t - 5.6) / 0.4);
+  var bx = mix(1300, 1352, hover), by = mix(842, 692, hover) + hover * 3 * Math.sin(t * 5);   // up from the twig to the lowest flower
+  sunbird(bx, by, t, {size: 3, hover: hover, sip: hover > 0.9 ? 1 : 0});
+  named("นกกินปลีหางยาวเขียว", "green-tailed sunbird", "sunbird(x, y, t, {hover, sip})", 1320, 920);
+}
+
+// ---------- 8 to 16 s: at their own sizes ----------
+
+function hillTop(x) { return 520 + 46 * Math.sin(x / 260 + 2) + 18 * Math.sin(x / 90); }
+function nearRidge(x) { return 700 + 30 * Math.sin(x / 300 + 5); }
+var GROUND_Y = 1000;
+
+var MOUNTAIN = null;
+function mountainSet() {
+  return sheetOf(function (b) {
+    var sky = b.createLinearGradient(0, 0, 0, 700);
+    sky.addColorStop(0, "#7fb2d8");
+    sky.addColorStop(1, "#e8f0e0");
+    b.fillStyle = sky;
+    b.fillRect(0, 0, WIDE, 1080);
+    forestSlope(b, hillTop, 0, WIDE, 900, {far: 0.8, small: 4, large: 7, seed: 11, haze: "#b9c8d6"});
+    forestSlope(b, nearRidge, 0, WIDE, 1080, {far: 0.4, small: 6, large: 12, seed: 12});
+    b.fillStyle = "#8aa860";                        // the clearing
+    b.beginPath();
+    b.moveTo(0, 880);
+    b.quadraticCurveTo(960, 840, WIDE, 880);
+    b.lineTo(WIDE, 1080);
+    b.lineTo(0, 1080);
+    b.closePath();
+    b.fill();
+    var keep = pen;
+    pen = b;
+    floraTree(b, 1650, 930, 0.95, "thongkwao", 3);
+    pen = keep;
+    tallTree(b, 140, 950, 1.1, FOREST_GREENS[1], 13);
+  });
+}
+
+function sceneMountain(t) {
+  if (!MOUNTAIN) { MOUNTAIN = mountainSet(); }
+  pen.drawImage(MOUNTAIN, 0, 0);
+  mistDrift(pen, t, {left: 0, right: WIDE, top: 560, bottom: 720, count: 5, drift: 10, seed: 41, alpha: 0.5});
+  hornbill(mix(2200, -300, t / 8), 200 + 20 * Math.sin(t * 0.9), t, {fly: true, face: -1});   // over the forest, slowly
+  for (var m = 0; m < 3; m++) {                     // a little flock of magpies, one after another
+    var mt = t - 1.5 - m * 0.45;
+    if (mt > 0) { blueMagpie(mix(-200, 2100, mt / 5.5), 380 + m * 22 + 10 * Math.sin(mt * 2), mt + m, {fly: true}); }
+  }
+  var hen = walker(t, 300, 470, 0.5, 30, 48);
+  pheasant(hen.x, 940, t, {hen: true, step: hen.step, peck: t > 6 ? Math.max(0, Math.sin(t * 2.6)) ** 4 : 0});
+  pheasant(230, 960, t, {peck: Math.max(0, Math.sin(t * 1.9 + 1)) ** 4});
+  var cock = walker(t, 1500, 1060, 0, 120, 88);     // the peafowl walks in, stops, and raises his train
+  var up = ease((t - 4.4) / 1.4);
+  peafowl(cock.x, 990, t, {face: -1, step: cock.step, display: up, shiver: ease((t - 6) / 0.3)});
+  person(640, 1010, cast("girl", {face: 1, at: [cock.x, 820], smile: ease((t - 4.6) / 0.6), wonder: ease((t - 5) / 0.5)}));
+  var spot = [1650 + 0.95 * Math.cos(dice(21) * Math.PI * 2) * Math.sqrt(dice(36)) * 160, 930 + 0.95 * (-300 + Math.sin(dice(21) * Math.PI * 2) * Math.sqrt(dice(36)) * 90)];
+  sunbird(spot[0] - 22, spot[1] + 2 + 2 * Math.sin(t * 6), t, {hover: 1, sip: 1});   // at a thong kwao flower in the tree
+  caption("at their own sizes, on a mountain of the north", 960, 1066);
+}
+
+function sheet(t) {
+  if (t < 8) { sheetNames(t); } else { sceneMountain(t - 8); }
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>
