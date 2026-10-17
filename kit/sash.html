@@ -180,6 +180,24 @@ var RIDGE = (function () {
 
 function ridgeAt(x) { return RIDGE[Math.max(0, Math.min(WIDE - 1, Math.round(x)))]; }
 
+// The ridge with its tufts of grass taken off, for what walks along it. A tuft
+// stands up to 13 pixels above the ridge and is at most 15 wide, so each column
+// is first lowered to the lowest of the ridge within 9 columns each side, and
+// then raised to the highest of that within 9 columns each side (a closing):
+// what is narrower than 19 columns goes, and a straight or gently curved ridge
+// comes back as it was.
+var GROUND = (function () {
+  function pass(from, pick) {
+    return from.map(function (y, x) {
+      for (var d = -9; d <= 9; d++) { y = pick(y, from[Math.max(0, Math.min(from.length - 1, x + d))]); }
+      return y;
+    });
+  }
+  return pass(pass(RIDGE, Math.max), Math.min);
+})();
+
+function groundAt(x) { return GROUND[Math.max(0, Math.min(WIDE - 1, Math.round(x)))]; }
+
 // A Siamese cat sitting, facing right: cream coat, seal-brown points on the face,
 // the ears, the legs and the tail, blue eyes. "t" sways the tail and blinks.
 function siamese(x, base, size, t) {
@@ -434,18 +452,23 @@ FAR.width = WIDE;
 FAR.height = 1080;
 var FAR_PEN = FAR.getContext("2d");
 
-// How far the ridge falls away ahead of a beast at x facing "face" (radians, as
-// the beasts' "slope" takes it), from a straight line fitted to the ridge under
-// its length (half to each side), so the grass on the ridge does not jog it
-// (owner, 2026-10-17: the elephant walking down the hill had its front feet in
-// the air: the kit's elephant pitches with a slope, and the film gave it none).
-function ridgeSlope(x, face, half) {
+// The line of the hill under a beast at x facing "face": a straight line fitted
+// to the ground (the ridge without its tufts, GROUND) under its length (half to
+// each side). It gives where the beast stands, y, and how far the hill falls
+// away ahead of it, slope (radians, as the beasts' "slope" takes it). Owner,
+// 2026-10-17: the elephant walking down the hill had its front feet in the air
+// (the kit's elephant pitches with a slope, and the film gave it none); then,
+// "it pops up into the air a couple of times while walking down the hill. It
+// should maintain course along a line": it stood on the ridge's first painted
+// pixel, which a tuft lifts by up to 13 pixels.
+function ridgeLine(x, face, half) {
   var n = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
   for (var dx = -half; dx <= half; dx += 2) {
-    var y = ridgeAt(x + dx);
-    n++; sx += dx; sy += y; sxx += dx * dx; sxy += dx * y;
+    var at = Math.round(x + dx) - x, y = groundAt(x + dx);   // each at its own column, so the fit does not jump as x passes a half pixel
+    n++; sx += at; sy += y; sxx += at * at; sxy += at * y;
   }
-  return Math.atan(face * (n * sxy - sx * sy) / (n * sxx - sx * sx));
+  var b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+  return {y: (sy - b * sx) / n, slope: Math.atan(face * b)};
 }
 
 function pondElephants(t) {
@@ -454,8 +477,9 @@ function pondElephants(t) {
   var film = pen;
   pen = FAR_PEN;                                  // the kit's painters draw on "pen": the far sheet for the length of this
   pen.clearRect(0, 0, WIDE, 1080);
-  elephant(cow.x, ridgeAt(cow.x) + 6, Object.assign({}, cow.look, {slope: ridgeSlope(cow.x, cow.look.face, 32)}));   // pitched with the hill, so all four feet are on it
-  elephant(calf.x, ridgeAt(calf.x) + 6, Object.assign({}, calf.look, {slope: ridgeSlope(calf.x, calf.look.face, 18)}));
+  var cowOn = ridgeLine(cow.x, cow.look.face, 32), calfOn = ridgeLine(calf.x, calf.look.face, 18);
+  elephant(cow.x, cowOn.y + 6, Object.assign({}, cow.look, {slope: cowOn.slope}));   // on the hill's line, pitched with it, so all four feet are on it
+  elephant(calf.x, calfOn.y + 6, Object.assign({}, calf.look, {slope: calfOn.slope}));
   POND_GROVE.forEach(function (one) {
     pen.save();
     pen.translate(one[0] + SIDE, ridgeAt(one[0] + SIDE) + 14);

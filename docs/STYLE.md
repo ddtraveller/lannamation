@@ -1864,6 +1864,24 @@ a veil painted on the film in a rectangle doubled the set's own haze and showed 
 the group first stood at 1290–1540, right behind the fellow's head. The fellow now strolls from
 1600 to 1330, short of the water's right edge at 1280, instead of into it.
 
+**On the hill's line, not on its grass (2026-10-17).** First the owner: "When the elephant is walking
+down the hill its front feet are in air": the kit's elephant pitches with `slope`, and the film gave it
+none, so the film fitted a straight line to the ridge under each beast's length and gave it that line's
+angle. Then: "it pops up into the air a couple of times while walking down the hill. It should maintain
+course along a line." Each beast still stood on `ridgeAt(x)`, the ridge's first painted pixel, and the
+tufts of grass `hills()` draws along the ridge (7 to 13 pixels tall, up to 15 wide) lifted that pixel:
+as the cow walked over a tuft she rose by 6 to 13 pixels in one frame, rode along its top for half a
+second and dropped. Now `GROUND` is the ridge with its tufts taken off (a closing: each column lowered
+to the lowest of the ridge within 9 columns, then raised to the highest of that within 9, so what is
+narrower than 19 columns goes and a straight or gently curved ridge comes back as it was), and
+`ridgeLine(x, face, half)` fits one straight line to `GROUND` under the beast, each sample at its own
+column, and gives both where the beast stands and its slope. Over the scene's 450 frames the cow's
+largest change of height in a frame went from 13 px to 0.69 (the walk down the hill) and the calf's from
+10 to 0.33; the largest change of pitch in a frame from 0.036 to 0.017 radians for the cow and from 0.086
+to 0.035 for the calf. Leaving out the samples above the line instead (fit, drop, fit again) was tried
+first: at the end of the window a tuft tilted the first fit toward itself and stayed in, and the pitch
+still jumped as it left.
+
 ## Pieces of the north (2026-10-15)
 
 The owner asked for research on "new items specific to Lanna Thai to add to the kit as sprites",
