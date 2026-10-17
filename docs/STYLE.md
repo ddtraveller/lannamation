@@ -107,6 +107,7 @@ of it, each a second behind the other.
 | `khom_kinds.html` | the sheet for the four lanterns `khom.js` gained on 2026-10-16 (not `lanterns.html`: krueng.ai keeps a lesson of that name beside the kit): the spinning `khomPhat`, the handheld `khomThue`, the star `khomDao` and the lotus `khomBua`, by day and lit at night |
 | `dance_hands.html` | the hands of classical dance (2026-10-16): the four forms of `HAND_FORMS` large and a dancer whose lifted hands change over from wong to jeeb, then every name of `GESTURES` (Thai and Khmer) on a lady with both hands raised (see "The hands of classical dance") |
 | `chickens.html` | the rooster and the hen (2026-10-17): every name of a rooster's look on its own (crowing, pecking about, a hen, a fright, a crouch, facing left), the run, the hop, the scurry and a hen running in place, and the whole of `roosterBolt()` with its falling feather (see "The rooster and the hen") |
+| `hairdos.html` | a lady's hair (2026-10-17): from 0 s the four ways of `BUN_STYLES` large, each head turning slowly from profile to full face, with its Thai name and how it is called (the high bun with `maiwai`, the knot on the crown with its loop under a Tai Lue maiden's pink head-cloth, the low bun with `ueang`, Dara Rasami's raised frame with `malai`); from 8 s at the film's size, three women walk across and a dancer wears all three ornaments (see "A lady's hair") |
 | `gesture_dancer.html` | one fingernail dancer through every name of `GESTURES` in turn at the pace of the owner's reference (1.4 s held, 1.4 s to the next, the arms drifting a little, the knees dipping once a step), ending in a wai held 3 s: her wrists go round her shoulders down the outside to where the kit's wai puts them (a straight path passed so close to a shoulder that an elbow flipped), bending until the hands stand upright and flattening to `WAI`, and then the kit's wai holds (owner, 2026-10-16: "Show me a finger dancer going through each motion. Just that", "finish with the wai") |
 | `highlands.html` | the uplands of the north (2026-10-17): from 0 s a valley at sunrise made of `highlands.js`'s parts (far ranges in forest with a sea of mist between them, a mountain with rice terraces and a hut, bands of mist drifting across it, the forest near), and from 8 s the parts on paper with how each is called (see "The highlands") |
 | `northbirds.html` | five birds of the north (2026-10-17): from 0 s each large on paper with its Thai name and how it is called (the peafowl raising its train into a fan, shivering it and calling; the pheasant walking and pecking beside his hen; the magpie on a branch; the hornbill flying and perched; the sunbird leaving a twig to hover at a thong kwao flower), and from 8 s all of them at their own sizes on a mountain, with a girl come to see the peafowl display (see "Five birds of the north") |
@@ -2815,6 +2816,38 @@ does is in the kit, for any film, and the lane only says when.
 | The sheet | `chickens.html`: each behaviour on its own above, the run, hop, scurry and a hen running in place in the middle, and the whole of `roosterBolt()` below, with its feather and a hen that only runs | |
 | In the lane | `sash.html`'s `COOP`, `chicken()` and `looseFeather()`: the rooster crows, then pecks about (from 3 s); the hen, a little to its right and a step farther back, pecks all along. At `FRIGHT` the rooster bolts, a feather coming loose at the top of its hop; the hen takes fright 0.08 s after it and runs straight off. The dog (`chase()`), from the second the rooster starts to run, eases in half a second from its trot to more than twice that, its legs quicker with it, and follows them out. The rooster stood at 1060, under the words; it stands at 1300 now, so the fright shows | the fright at 6.2 s of the scene (the dog's nose 250 from the rooster's tail); the hen at 1490; the dog 195 to 420 a second |
 | Tried | the hen 140 to the rooster's right and 0.25 s later: the running rooster caught up with her tail; folded-size wings beating, which read as two small fins | |
+
+## A lady's hair: four ways and three ornaments (2026-10-17)
+
+The owner: "use notebooklm to research lanna culture and hair styles and create 2-3 more women's hair
+styles with animation and decorations that can be applied to the hair." A NotebookLM notebook was made
+of nine sources: Chiang Mai News on the fashion of Lanna women through their hair and on Lanna dress;
+Silpa-Mag on Princess Dara Rasami's Japanese bun and on garlands bound round the bun; Matichon Weekly on
+how the old Lanna kept their hair; Kalm Village on dok mai wai; the Chiang Rai database of Mae Fah Luang
+University and Chiang Mai University's Lanna pages on the dress of the Tai Lue; and Thai Style Studio
+1984 on the dress of Lanna's era. The shapes were read from photographs on Wikimedia Commons (Dara
+Rasami in Chiang Mai in 1909 and in Bangkok, public domain; the murals of Wat Phumin, CC0, of Wat Phra
+Singh's Viharn Lai Kham and of Wat Nong Bua, CC BY-SA 3.0), kept with their credits outside the
+repository; nothing of them is copied. What the sources say, in short: Lanna women never cut their hair,
+for the soul (khwan) is on the head, and wore it coiled in a knot held with a comb or a pin, with
+scented flowers in it as an offering.
+
+| The way (`bun`) | What the sources say | In the code |
+|---|---|---|
+| `true` ("high") | the kit's own: one high bun at the back of the head | unchanged; its comb and stones as before, and every page that had it draws the same pixels |
+| `"wong"`, klao wit wong (เกล้าผมวิดว้อง) | "a high knot in the middle of the head, a lock of hair drawn into a ring (wong) in the middle of the knot, as the temple murals show"; the Tai Lue wear their knot on the crown and wind a head-cloth round the head, pink for a maiden, white or red when married | `view()`'s `crown`; `ladyKnot()`: an arch of hair standing up out of the knot with the sky through it, the line where the hair gathers, a long gold pin through it with a bud at its end (Wat Nong Bua). With `turban` (pink, "#f2b8c6") it is the Tai Lue maiden |
+| `"low"`, kao phom (เก้าผม) | the everyday knot: "the long hair twisted into a knot toward the nape, held with a comb (wi sap) or a pin" | `view()`'s `nape`; drawn before the head, so the head and the hair cover its front and from the front it is not seen; a comb of ivory across its top; what is set in it is drawn with it |
+| `"ipun"`, klao i-pun (เกล้าผมอี่ปุ่น) | Dara Rasami took it from the wives of Japanese diplomats in Bangkok and brought it home in 1914: "the hair at the front raised on a cushion into a high frame (krabang), the knot behind" | `ipunFrame()`: a smooth raised frame over the brow, round over its top, lit there, and a jewelled pin standing at its top whose stones glint; the knot a little higher than the high bun's |
+| The comb lines | | `COMBED`: each way's fine lines run to its own knot, and the new ways' are kept inside the hair's outline (`ladyMass()`) |
+
+| Ornament | What the sources say | In the code |
+|---|---|---|
+| `maiwai`, dok mai wai (ดอกไม้ไหว) | "flowers of brass, silver or gold sheet... the spring is attached to the hairpin to induce movement when the wearer moves" | three metal flowers (gold, or the colour given) on fine coiled springs set in the top of the knot; a stiff `follow()` spring (320) shakes them as the head moves, and they shiver a little more for a moment after |
+| `malai`, malai rat klao (มาลัยรัดเกล้า) | jasmine threaded into a garland bound round the knot, a small tassel hanging that "sways as she moves" | the front of a ring of jasmine buds round the knot, and a tassel (uba) of three strings of buds ending in rose buds, swinging after the head on a softer spring (90) |
+| `ueang`, dok ueang phueng (ดอกเอื้องผึ้ง) | the scented flowers of the offerings are pale (jasmine, ylang-ylang, gardenia, champak); for beauty "dok ueang phueng" is worn, the golden orchid | an arching stem of seven small yellow flowers with orange lips, from the knot's side, that hangs and nods after the head (a slow spring, 60) |
+| A fine line | | the ornaments' small pieces are drawn by `bead()`, with a line 0.9 of the fine pen: with `oval()`'s body line a flower 6 pixels across at the film's size was all ink |
+| In the hero film | (owner: "Give women some different hair styles in the hero video") `sash.html`'s `HAIR_OF`: the weaver of the lane and of the fields wears `low` with `ueang`; the maiden at the pond `wong` with `maiwai` in silver (gold was lost against the golden shower behind her); in the fields the lady `ipun` with `malai`, and the maiden `wong` under a pink `turban`, a Tai Lue maiden; at night the dancer `maiwai` and `malai`, the grandmother `low`. The woman of the cloth keeps the high bun she is woven with | |
+| Tried first | the loop of the wit wong as a small ring on top of the knot: a cartoon bomb; the i-pun frame peaked at its top: a bishop's mitre; the crown knot at y -396: it floated above the hair; the ornaments inked with the body's line: dark at the film's size | |
 
 ## The highlands: terraces, forest and mist (2026-10-17)
 

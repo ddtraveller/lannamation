@@ -421,7 +421,8 @@ Each loads after `oldcartoon.js` and adds drawings of its own; none changes the 
 The kit's own sheets: `model.html` (one figure close up), `looks.html` (every look name a person
 takes), `walk.html`, `body.html`, `legs.html`, `build.html`, `children.html`, `elders.html`,
 `floor.html`, `together.html`, `nature.html`, `landscape.html`, `buildings.html`,
-`dance_hands.html` (the hands of classical dance, Thai and Khmer), `chickens.html` (the rooster and the hen).
+`dance_hands.html` (the hands of classical dance, Thai and Khmer), `chickens.html` (the rooster and the hen),
+`hairdos.html` (the ways a Lanna lady wears her hair, and the ornaments she sets in it).
 
 ### The films
 

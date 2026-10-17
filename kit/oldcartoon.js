@@ -824,6 +824,8 @@ function view(turn, lady) {
     ear: b(-24, -52, -50, -17, -20), farEar: clamp((t - 0.2) / 0.8),   // the near ear's x; how much of the far ear shows
     hairShift: b(10, 0, -8),                        // the comb lines and the temple strand go with the hairline
     bun: [b(-44, -28, 0), b(-350, -354, -372)],     // at the back; on top, seen from the front
+    crown: [b(-14, -8, 0), b(-386, -383, -389)],    // a knot on the top of the head (bun "wong"), sitting into the hair
+    nape: [b(-98, -94, -40), b(-292, -294, -296)],  // a low knot at the nape (bun "low"): behind the head, hidden from the front
     head: points(HEAD_P, HEAD_Q, HEAD_F, HEAD_SIDE),
     hairLady: points(HAIR_LADY_P, HAIR_LADY_Q, HAIR_LADY_F, HAIR_LADY_SIDE),
     hairMan: points(HAIR_MAN_P, HAIR_MAN_Q, HAIR_MAN_F, HAIR_MAN_SIDE)
@@ -2814,13 +2816,36 @@ function stroll(t, from, to, start, look) {
           arrives: start + strides * 2 * BEAT};
 }
 
+// The ways a lady wears her hair, by their names in "bun" (true is "high"),
+// each with its knot's half width and half height. Read from the hair notebook
+// (2026-10-17): the sources' own words in docs/STYLE.md, "A lady's hair".
+//   high   the kit's own: one high bun at the back of the head, a gold comb across it
+//   wong   klao wit wong: a round knot on the crown with a lock looped up in its
+//          middle and a long pin through it (the murals of Wat Phumin and Wat Phra
+//          Singh; the Tai Lue wear it, under a head-cloth: turban, pink for a maiden)
+//   low    kao phom, the everyday bun: coiled low at the back of the head, at the
+//          nape, held by a comb of ivory (wi sap)
+//   ipun   klao i-pun, Princess Dara Rasami's from 1914: the hair over the brow
+//          raised on a cushion into a high frame, the knot behind it, a jewelled pin
+var BUN_STYLES = {high: [25, 21], wong: [20, 15], low: [23, 18], ipun: [22, 18]};
+var COMBED = {
+  high: [[-44, -300, -30, -340, -4, -356], [-32, -306, -14, -338, 10, -357], [-20, -312, 0, -344, 20, -358],
+         [-6, -315, 14, -345, 32, -355], [8, -318, 28, -346, 44, -350]],
+  wong: [[-44, -300, -40, -344, -16, -384], [-30, -306, -22, -348, -6, -386], [-16, -312, -6, -352, 2, -388],
+         [0, -316, 10, -352, 10, -386], [14, -318, 26, -352, 18, -382]],
+  low: [[20, -372, -40, -372, -78, -318], [28, -360, -30, -356, -74, -306], [34, -346, -20, -340, -68, -296],
+        [38, -332, -10, -322, -60, -288]],
+  ipun: [[48, -334, 40, -384, 0, -394], [36, -328, 24, -380, -12, -386], [20, -322, 6, -370, -24, -374],
+         [2, -318, -14, -358, -34, -364]]
+};
+
 var LOOK_KEYS = {};
 
 ["age", "anger", "at", "bangles", "bare", "beard", "bend", "blink", "build", "bun", "buttons", "coat", "collar", "dance", "drum", "earplug", "eyes", "face",
  "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
- "handB", "hat", "head", "holding", "id", "late", "legs", "lips", "mouth", "nails", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "reachA", "reachB",
+ "handB", "hat", "head", "holding", "id", "late", "legs", "lips", "maiwai", "malai", "mouth", "nails", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "reachA", "reachB",
  "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt",
- "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tilt", "turban", "turn", "twist", "up", "wai", "weave", "wonder", "worn", "wristA", "wristB"
+ "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wonder", "worn", "wristA", "wristB"
 ].forEach(function (name) { LOOK_KEYS[name] = true; });
 
 // One villager, standing on (x, y). Everything about them is in "look".
@@ -2845,6 +2870,12 @@ var LOOK_KEYS = {};
 //                   jasmine, strands of gold flowers, a straight tail of hair, gold
 //                   nail tips on a lifted hand (nails: "long" for the long curved nails
 //                   of fon lep, worn all the time)
+//   maiwai, malai, ueang
+//                   more of a lady's ornaments, from the hair notebook: dok mai wai (true, or the
+//                   colour of its metal: flowers on fine springs set in the knot, that tremble as
+//                   she moves), a malai rat klao (jasmine bound round the knot, a tassel of it
+//                   swinging below), and a spray of dok ueang phueng, the golden orchid, that
+//                   hangs from the knot's side and nods after the head
 //   earplug         a colour: a lan hu, the rolled palm-leaf or gold ear plug of old Lanna, in
 //                   the lobe of each ear in place of a lady's earring (gold "#d9b24a"; a leaf
 //                   "#b8a060"); worn by the women and the men of the murals
@@ -2880,7 +2911,8 @@ var LOOK_KEYS = {};
 //                   waist cloth's ends hanging bright to the knee (the owner's reference picture, 2026-10-14)
 //   regalia         true, with bare: a noble's gold: a broad collar, armbands and a sash of gold across the chest,
 //                   a jewelled belt, earrings, and gold flowers at the knot of the hair; the head-cloth is patterned
-//   hat, bun        a woven hat, or hair tied up with a flower
+//   hat, bun        a woven hat, or a lady's hair tied up: true, or the name of a way of
+//                   wearing it, "wong", "low" or "ipun" (see BUN_STYLES)
 //   turban          a colour: a Lanna head-cloth, a band tied round the head with the hair above it
 //   face            1 looks right, -1 looks left
 //   turn            -1 to 1: the head turned to profile, or round to full face (0 is three-quarter).
@@ -4042,6 +4074,255 @@ function person(x, y, look) {
   function hung(x0, y0, across, along) {            // a point of a thing that hangs from (x0, y0): so far across, so far down
     return [x0 + downY * across + downX * along, y0 - downX * across + downY * along];
   }
+  // A lady's knots and ornaments by the ways of the hair notebook (BUN_STYLES).
+  // The high bun's fan, flower and garland are drawn here for every knot.
+  function knotFan(kx, ky) {
+      if (look.fan) {                                              // a fan of gold leaves behind the bun, as the paintings' dancers wear
+        var fanLeans = [-1.8, -1.4, -1.0, -0.6, -0.2, 0.2, 0.6];
+        for (var spoke = 0; spoke < fanLeans.length; spoke++) {
+          pen.save();
+          pen.translate(kx - 4, ky + 3);
+          pen.rotate(fanLeans[spoke] + sway * 0.012);
+          pen.translate(0, -15);
+          paintLeaf(pen, 42 - 5 * Math.abs(spoke - 3), 6.5, 0, "#b8862a", "#f8e08a", "rgba(110, 70, 20, 0.9)", "rgba(255, 250, 220, 0.7)");
+          pen.restore();
+        }
+      }
+  }
+  function knotFlowers(kx, ky) {
+      if (look.flower) {
+        for (var petal = 0; petal < 5; petal++) {                  // a flower at the bun's side
+          var pa = petal / 5 * Math.PI * 2 + sway * 0.05;
+          oval(kx + 26 + Math.cos(pa) * 7, ky - 6 + Math.sin(pa) * 7, 6, 4.5, look.flower, pa);
+        }
+        oval(kx + 26, ky - 6, 4, 4, "#f4c542");
+      }
+      if (look.garland) {
+        pen.fillStyle = "#fffaf0";                                 // a loop of jasmine from the bun
+        pen.beginPath();
+        var lagG = follow(who + "/garland", kx - 4, ky + 14, 150, 9, 8);   // the loop swings after the head
+        for (var bud = 0; bud <= 14; bud++) {
+          var gu = bud / 14, sag = Math.sin(gu * Math.PI) * (22 + 4 * Math.sin(late) + lagG[1] * 0.5);   // the loop sags straight down
+          var gx = kx - 22 + gu * 36 + sway * (1 - gu) * 0.8 + lagG[0] * Math.sin(gu * Math.PI) + downX * sag;
+          var gy = ky + 14 + downY * sag;
+          pen.moveTo(gx + 2.2, gy);
+          pen.arc(gx, gy, 2.2, 0, 7);
+        }
+        pen.fill();
+      }
+  }
+  function ladyKnot(kx, ky, style) {                // a knot that is not the high bun: wong, low or ipun
+    var r = BUN_STYLES[style];
+    if (style === "wong") {
+      // klao wit wong: a lock drawn out of the knot into a loop (wong) that
+      // stands in its middle, as the murals of Wat Phumin and Wat Phra Singh paint it
+      var loopX = kx - 1 + sway * 0.3, loopY = ky - r[1] + 3;
+      pen.beginPath();                                            // an arch of hair standing up out of the knot, the sky through it
+      pen.ellipse(loopX, loopY, 12, 18, -0.12, Math.PI, Math.PI * 2);
+      pen.ellipse(loopX, loopY + 1, 6.5, 12, -0.12, Math.PI * 2, Math.PI, true);
+      pen.closePath();
+      pen.fillStyle = HAIR;
+      pen.fill();
+      pen.strokeStyle = HAIR_LINE;
+      pen.lineWidth = 2.4 * FINE;
+      pen.stroke();
+    }
+    oval(kx, ky, r[0], r[1], HAIR);                               // the knot
+    pen.strokeStyle = HAIR_LINE;                                  // the hair wound round in it
+    pen.lineWidth = 2 * FINE;
+    pen.beginPath();
+    pen.ellipse(kx, ky, r[0] * 0.62, r[1] * 0.55, 0.4, Math.PI * 0.15, Math.PI * 1.7);
+    pen.stroke();
+    if (style === "wong") {
+      pen.beginPath();                                            // the neck of the knot, where the hair gathers on the crown
+      pen.moveTo(kx - 15, ky + r[1] - 2);
+      pen.quadraticCurveTo(kx, ky + r[1] - 8, kx + 15, ky + r[1] - 2);
+      pen.stroke();
+      pen.lineCap = "round";                                      // a long gold pin through it, a bud at its end (Wat Nong Bua's painting)
+      pen.strokeStyle = inkFor(STYLE.gold);
+      pen.lineWidth = 4.6;
+      pen.beginPath();
+      pen.moveTo(kx - r[0] - 10, ky + 7);
+      pen.lineTo(kx + r[0] + 8, ky - 5);
+      pen.stroke();
+      pen.strokeStyle = STYLE.gold;
+      pen.lineWidth = 3;
+      pen.stroke();
+      oval(kx + r[0] + 10, ky - 6, 3.6, 3, STYLE.gold);
+    } else if (style === "low") {
+      pen.lineCap = "round";                                      // a comb (wi sap) of ivory set in across its top
+      pen.strokeStyle = "#7a6a50";
+      pen.lineWidth = 5.6;
+      pen.beginPath();
+      pen.arc(kx, ky + 4, r[0] + 1, Math.PI * 1.12, Math.PI * 1.88);
+      pen.stroke();
+      pen.strokeStyle = "#efe3c4";
+      pen.lineWidth = 4;
+      pen.stroke();
+    }
+  }
+  function ladyMass(HL) {                           // the outline of a lady's hair, as the mass is drawn
+    var mass = new Path2D();
+    mass.moveTo(HL[0][0], HL[0][1]);
+    mass.bezierCurveTo(HL[1][0], HL[1][1], HL[2][0], HL[2][1], HL[3][0] + sway * 0.4, HL[3][1]);
+    mass.bezierCurveTo(HL[4][0] + sway * 0.4, HL[4][1], HL[5][0], HL[5][1], HL[6][0], HL[6][1]);
+    mass.quadraticCurveTo(HL[7][0], HL[7][1], HL[8][0], HL[8][1]);
+    mass.quadraticCurveTo(HL[9][0], HL[9][1], HL[10][0], HL[10][1]);
+    mass.quadraticCurveTo(HL[11][0], HL[11][1], HL[0][0], HL[0][1]);
+    mass.closePath();
+    if (hairdo === "ipun") { mass.addPath(ipunOutline(HL)); }
+    return mass;
+  }
+  function ipunOutline(HL) {                        // the raised frame's outline (see ipunFrame)
+    var lift = 9, top = HL[4], brow = HL[6], peak = [top[0] + 16, top[1] - lift - 4], frame = new Path2D();
+    frame.moveTo(HL[10][0] + 4, HL[10][1] - 6);
+    frame.bezierCurveTo(HL[10][0] - 6, HL[10][1] - 40, top[0] - 8, top[1] - lift - 6, peak[0], peak[1]);
+    frame.bezierCurveTo(peak[0] + 24, peak[1] + 2, brow[0] + 12, brow[1] - 30, brow[0] + 4, brow[1] - 2);
+    frame.quadraticCurveTo(HL[7][0], HL[7][1] - 4, HL[8][0], HL[8][1] - 2);
+    frame.quadraticCurveTo(HL[9][0], HL[9][1] - 4, HL[10][0] + 4, HL[10][1] - 6);
+    frame.closePath();
+    return frame;
+  }
+  function ipunFrame(HL) {
+    // klao i-pun, as Princess Dara Rasami wore it from the Japanese ladies she
+    // saw in Bangkok: the hair over the brow raised on a cushion (mon rong)
+    // into a high smooth frame (krabang), swept up and back to the knot; and
+    // a jewelled pin at its top, its stones catching the light
+    var lift = 9, top = HL[4], front = HL[5], brow = HL[6], peak = [top[0] + 16, top[1] - lift - 4];
+    pen.beginPath();
+    pen.moveTo(HL[10][0] + 4, HL[10][1] - 6);                     // from the temple, up and round over the top
+    pen.bezierCurveTo(HL[10][0] - 6, HL[10][1] - 40, top[0] - 8, top[1] - lift - 6, peak[0], peak[1]);
+    pen.bezierCurveTo(peak[0] + 24, peak[1] + 2, brow[0] + 12, brow[1] - 30, brow[0] + 4, brow[1] - 2);   // and full over the brow
+    pen.quadraticCurveTo(HL[7][0], HL[7][1] - 4, HL[8][0], HL[8][1] - 2);   // the hairline
+    pen.quadraticCurveTo(HL[9][0], HL[9][1] - 4, HL[10][0] + 4, HL[10][1] - 6);
+    pen.closePath();
+    pen.fillStyle = HAIR;
+    pen.fill();
+    pen.strokeStyle = HAIR_LINE;
+    pen.lineWidth = 3 * FINE;
+    pen.stroke();
+    pen.save();                                                   // the light on its round top
+    pen.clip();
+    var shine = pen.createRadialGradient(top[0] + 22, top[1] - lift, 3, top[0] + 22, top[1] - lift, 40);
+    shine.addColorStop(0, "rgba(255, 235, 210, 0.32)");
+    shine.addColorStop(1, "rgba(255, 235, 210, 0)");
+    pen.fillStyle = shine;
+    pen.fillRect(-100, -440, 200, 160);
+    pen.restore();
+    var jx = top[0] + 6, jy = top[1] - lift - 8;                  // the jewelled pin
+    pen.strokeStyle = STYLE.gold;
+    pen.lineWidth = 2.4;
+    pen.lineCap = "round";
+    pen.beginPath();
+    pen.moveTo(jx - 3, jy + 12);
+    pen.lineTo(jx + 1, jy - 6);
+    pen.stroke();
+    for (var stone = 0; stone < 7; stone++) {
+      var sa = stone / 7 * Math.PI * 2, glint = 0.55 + 0.45 * Math.sin(clock * 3.1 + stone * 1.7);
+      oval(jx + 1 + Math.cos(sa) * 5.5, jy - 8 + Math.sin(sa) * 4.5, 2.2, 2.2, blend("#cfd8e0", "#ffffff", glint));
+    }
+    oval(jx + 1, jy - 8, 2.6, 2.6, "#d9533a");
+  }
+  function knotDress(kx, ky, r) {                   // the ornaments of the hair notebook: malai, ueang, maiwai
+    var k, u, at;
+    function bead(x0, y0, rx, ry, colour, turn) {   // a small piece with a fine line: the body's line would swallow it
+      pen.beginPath();
+      pen.ellipse(x0, y0, rx, ry, turn || 0, 0, 7);
+      pen.fillStyle = colour;
+      pen.fill();
+      pen.strokeStyle = inkFor(colour);
+      pen.lineWidth = 0.9 * FINE;
+      pen.stroke();
+    }
+    if (look.malai) {
+      // a malai rat klao: jasmine bound round the knot, and from its lowest
+      // point a tassel (uba) of three strings of buds, each ending in a rose
+      // bud, that swings after the head
+      var ringY = ky + r[1] * 0.3, ringX = r[0] + 2, ringH = r[1] * 0.5;
+      pen.fillStyle = "#fffaf0";
+      pen.strokeStyle = "rgba(150, 130, 100, 0.7)";
+      pen.lineWidth = 0.8 * FINE;
+      for (k = 0; k <= 14; k++) {                                // the front of the ring: its back is behind the knot
+        var ra = Math.PI * (0.02 + 0.96 * k / 14);
+        pen.beginPath();
+        pen.ellipse(kx + Math.cos(ra) * ringX, ringY + Math.sin(ra) * ringH, 2.8, 2.2, ra, 0, 7);
+        pen.fill();
+        pen.stroke();
+      }
+      var footX = kx - 4, footY = ringY + ringH;
+      var lagU = follow(who + "/malai", footX, footY, 90, 6, 14), acrossU = lagU[0] * downY - lagU[1] * downX;
+      for (var string = 0; string < 3; string++) {
+        var ux = footX - 5 + string * 5, longU = 24 + string * 5 + (string === 1 ? 5 : 0);
+        var swingU = Math.sin(late - 0.5 - string * 0.45) * (3 + string * 1.5) + acrossU * (0.8 + string * 0.1);
+        pen.strokeStyle = "#8aa860";
+        pen.lineWidth = 1 * FINE;
+        pen.beginPath();
+        pen.moveTo(ux, footY);
+        for (k = 1; k <= 6; k++) { u = k / 6; at = hung(ux, footY, swingU * u * u, longU * u); pen.lineTo(at[0], at[1]); }
+        pen.stroke();
+        for (k = 1; k <= 5; k++) {
+          u = k / 6;
+          at = hung(ux, footY, swingU * u * u, longU * u);
+          bead(at[0], at[1], 2.4, 2, "#fffaf0");
+        }
+        at = hung(ux, footY, swingU, longU + 3);
+        bead(at[0], at[1], 3.4, 4, "#c9384a");                   // the rose bud at its end
+      }
+    }
+    if (look.ueang) {
+      // a spray of dok ueang phueng, the golden orchid, tucked in at the knot's
+      // side: an arching stem of small yellow flowers, each with a deeper
+      // orange lip, that hangs and nods after the head
+      var ox = kx + r[0] * 0.75, oy = ky - r[1] * 0.35;
+      var lagO = follow(who + "/ueang", ox, oy, 60, 5, 18), nod = Math.sin(late - 0.6) * 3 + (lagO[0] * downY - lagO[1] * downX) * 0.9;
+      function sprayAt(v) { return hung(ox, oy, 16 * Math.sin(v * Math.PI * 0.9) + nod * v * v, 44 * v - 12 * Math.sin(v * Math.PI)); }
+      pen.strokeStyle = "#7a8a3a";
+      pen.lineWidth = 1.4 * FINE;
+      pen.beginPath();
+      pen.moveTo(ox, oy);
+      for (k = 1; k <= 12; k++) { at = sprayAt(k / 12); pen.lineTo(at[0], at[1]); }
+      pen.stroke();
+      for (k = 0; k < 7; k++) {
+        u = 0.25 + k * 0.12;
+        at = sprayAt(u);
+        var big = 1 - 0.35 * u;
+        bead(at[0] - 3.2 * big, at[1] - 1, 3.8 * big, 2.4 * big, "#f4c834", -0.6);
+        bead(at[0] + 3.2 * big, at[1] - 1, 3.8 * big, 2.4 * big, "#f4c834", 0.6);
+        bead(at[0], at[1] + 2 * big, 3 * big, 2.6 * big, "#e9902a");
+      }
+    }
+    if (look.maiwai) {
+      // dok mai wai: flowers beaten from thin sheet metal, each on a fine coiled
+      // spring set in the top of the knot, that tremble as she moves
+      var metal = look.maiwai === true ? STYLE.gold : look.maiwai;
+      var lagW = follow(who + "/maiwai", kx, ky - r[1], 320, 7, 9), stir = Math.min(1, Math.hypot(lagW[0], lagW[1]) / 3);
+      var acrossW = lagW[0] * downY - lagW[1] * downX;
+      [[-0.55, 30, 6.2], [-0.12, 38, 7], [0.32, 27, 5.6]].forEach(function (w, n) {   // [lean from upright, the stalk's length, the flower's size]
+        var bx = kx - 6 + n * 6, by = ky - r[1] * 0.6;
+        var a = w[0] + sway * 0.006 + acrossW / w[1] * 1.4 + (0.02 + 0.06 * stir) * Math.sin(clock * 19 + n * 2.3);
+        var tx = bx + Math.sin(a) * w[1], ty = by - Math.cos(a) * w[1];
+        pen.strokeStyle = inkFor(metal);
+        pen.lineWidth = 1.2 * FINE;
+        pen.beginPath();
+        pen.moveTo(bx, by);
+        for (var c = 1; c <= 8; c++) {                            // the coil of the spring, near the knot, then the wire
+          var cu = c / 8 * 0.35, wob = (c % 2 ? 2 : -2) * (1 - cu);
+          pen.lineTo(bx + Math.sin(a) * w[1] * cu + Math.cos(a) * wob, by - Math.cos(a) * w[1] * cu + Math.sin(a) * wob);
+        }
+        pen.lineTo(tx, ty);
+        pen.stroke();
+        for (var petal = 0; petal < 5; petal++) {
+          var pa = petal * Math.PI * 0.4 + a;
+          bead(tx + Math.cos(pa) * w[2] * 0.62, ty + Math.sin(pa) * w[2] * 0.62, w[2] * 0.55, w[2] * 0.36, metal, pa);
+        }
+        bead(tx, ty, w[2] * 0.3, w[2] * 0.3, n === 1 ? "#d9533a" : "#3f8f7a");
+        pen.fillStyle = "rgba(255, 255, 240, " + (0.45 + 0.4 * Math.sin(clock * 5 + n * 2)).toFixed(2) + ")";   // a glint on the metal
+        pen.beginPath();
+        pen.arc(tx - w[2] * 0.5, ty - w[2] * 0.45, 1.2, 0, 7);
+        pen.fill();
+      });
+    }
+  }
   if (look.halo) {                                               // a halo behind the head, as a thangka paints one
     pen.fillStyle = "rgba(90, 150, 100, 0.35)";
     pen.beginPath();
@@ -4072,28 +4353,48 @@ function person(x, y, look) {
   var late = phase - 0.9;
   var toss = 9 + 9 * up;
   var afloat = 1 - 0.1 * up;
+  var sway = Math.sin(late) * toss * 0.4;                        // the top of the hair leans
   if (look.bun) {
+    // Which way she wears her hair (BUN_STYLES), and where its knot sits as
+    // the head turns. The knot sinks a little on the beat and leans after the
+    // head, the high one most and the one at the nape least.
+    var hairdo = typeof look.bun === "string" ? look.bun : "high";
+    if (!BUN_STYLES[hairdo]) { checkName("A lady's hair", hairdo, BUN_STYLES); hairdo = "high"; }
+    var sink = still ? 0 : 5 * (1 - up);
+    var knot = hairdo === "wong" ? [V.crown[0] + sway * 0.9, V.crown[1] + sink * 0.6]
+             : hairdo === "low" ? [V.nape[0] + sway * 0.3, V.nape[1] + sink * 0.4]
+             : [V.bun[0] + sway, V.bun[1] + sink - (hairdo === "ipun" ? 6 : 0)];
+    var knotR = BUN_STYLES[hairdo];                              // [half its width, half its height]
+    // What hangs from it is set where it hangs from the high bun, moved with the
+    // knot: the high bun's own stays where it always was.
+    var hangX = hairdo === "high" ? 0 : knot[0] + 28, hangY = hairdo === "high" ? 0 : knot[1] + 354;
     // What hangs from a lady's bun hangs straight, as the murals paint hair:
     // a tail of hair (tail), and strands of small gold flowers (pins).
     if (look.tail) {
-      if (upright) { pen.translate(-40, -338); pen.rotate(upright); pen.translate(40, 338); }     // the tail's own frame, upright
-      lock(-40, -338, 150 * afloat, 11, toss * 1.1, late - 0.4, true, follow(who + "/tail", -40, -338, 50, 6, 40));
-      if (upright) { pen.translate(-40, -338); pen.rotate(-upright); pen.translate(40, 338); }    // and back to the head's
+      if (upright) { pen.translate(-40 + hangX, -338 + hangY); pen.rotate(upright); pen.translate(40 - hangX, 338 - hangY); }     // the tail's own frame, upright
+      lock(-40 + hangX, -338 + hangY, 150 * afloat, 11, toss * 1.1, late - 0.4, true, follow(who + "/tail", -40 + hangX, -338 + hangY, 50, 6, 40));
+      if (upright) { pen.translate(-40 + hangX, -338 + hangY); pen.rotate(-upright); pen.translate(40 - hangX, 338 - hangY); }    // and back to the head's
     }
-    var lagP = look.pins ? follow(who + "/pins", -36, -340, 120, 7, 10) : [0, 0];
+    if (hairdo === "low") {                                      // a knot at the nape is behind the head: the head and the hair are drawn over its front
+      knotFan(knot[0], knot[1]);
+      ladyKnot(knot[0], knot[1], hairdo);
+      knotFlowers(knot[0], knot[1]);
+      knotDress(knot[0], knot[1], knotR);
+    }
+    var lagP = look.pins ? follow(who + "/pins", -36 + hangX, -340 + hangY, 120, 7, 10) : [0, 0];
     var lagAcross = lagP[0] * downY - lagP[1] * downX;           // the lag, across the way they hang
     for (var strand = 0; look.pins && strand < 3; strand++) {
-      var sx = -30 - strand * 6, swingS = Math.sin(late - 0.3 - strand * 0.4) * (6 + strand * 3) + lagAcross * (0.7 + strand * 0.15);
-      var longS = 48 + strand * 8, middleS = hung(sx, -340, -4, longS * 0.5), endS = hung(sx, -340, -8 + swingS, longS);
+      var sx = -30 - strand * 6 + hangX, sy = -340 + hangY, swingS = Math.sin(late - 0.3 - strand * 0.4) * (6 + strand * 3) + lagAcross * (0.7 + strand * 0.15);
+      var longS = 48 + strand * 8, middleS = hung(sx, sy, -4, longS * 0.5), endS = hung(sx, sy, -8 + swingS, longS);
       pen.strokeStyle = "#b8862a";
       pen.lineWidth = 1.6;
       pen.beginPath();
-      pen.moveTo(sx, -340);
+      pen.moveTo(sx, sy);
       pen.quadraticCurveTo(middleS[0], middleS[1], endS[0], endS[1]);
       pen.stroke();
       pen.fillStyle = STYLE.gold;
       for (var bud = 1; bud <= 4; bud++) {
-        var u = bud / 4, budAt = hung(sx, -340, -6 * u + swingS * u * u, longS * u);
+        var u = bud / 4, budAt = hung(sx, sy, -6 * u + swingS * u * u, longS * u);
         pen.beginPath();
         pen.ellipse(budAt[0], budAt[1], 3.4, 2.2, 0.5, 0, 7);
         pen.fill();
@@ -4197,15 +4498,15 @@ function person(x, y, look) {
   pen.fillStyle = shade;
   pen.fillRect(-60, -350, 120, 130);
   pen.restore();
-  var sway = Math.sin(late) * toss * 0.4;                        // the top of the hair leans
   if (look.bun) {
-    // Lanna hair: pulled back smooth from the brow into one high bun at the
-    // back of the head, with a comb across it and stones on the comb. Nothing
-    // curls. A flower sits at the bun's side (flower), and a loop of jasmine
-    // hangs from it (garland). The bun leans after the head and sinks a
-    // little on the beat. The mass, the hairline and the bun take their
-    // places from the turn.
-    var knotY = still ? 0 : 5 * (1 - up), HL = V.hairLady, bunX = V.bun[0] + sway, bunY = V.bun[1] + knotY;
+    // Lanna hair: pulled back smooth from the brow into one knot, and nothing
+    // curls. The high bun at the back of the head (bun: true) has a comb
+    // across it and stones on the comb; the other ways (BUN_STYLES) are drawn
+    // by ladyKnot(), the one at the nape before the head (see above). A flower
+    // sits at the knot's side (flower), and a loop of jasmine hangs from it
+    // (garland). The knot leans after the head and sinks a little on the beat.
+    // The mass, the hairline and the knot take their places from the turn.
+    var HL = V.hairLady, bunX = knot[0], bunY = knot[1];
     pen.beginPath();                                             // the mass, swept back
     pen.moveTo(HL[0][0], HL[0][1]);
     pen.bezierCurveTo(HL[1][0], HL[1][1], HL[2][0], HL[2][1], HL[3][0] + sway * 0.4, HL[3][1]);
@@ -4228,10 +4529,17 @@ function person(x, y, look) {
     pen.fillStyle = sheen;
     pen.fillRect(-90, -400, 180, 140);
     pen.restore();
+    if (hairdo === "ipun") { ipunFrame(HL); }                     // the hair over the brow raised on its cushion
     pen.save();
     pen.translate(V.hairShift, 0);                               // the comb lines go with the hairline
-    combed([[-44, -300, -30, -340, -4, -356], [-32, -306, -14, -338, 10, -357], [-20, -312, 0, -344, 20, -358],
-            [-6, -315, 14, -345, 32, -355], [8, -318, 28, -346, 44, -350]]);   // fine lines, swept back to the bun
+    if (hairdo !== "high") {                                     // the new ways' lines stay inside the hair (the outline is not shifted)
+      pen.save();
+      pen.translate(-V.hairShift, 0);
+      pen.clip(ladyMass(HL));
+      pen.translate(V.hairShift, 0);
+    }
+    combed(COMBED[hairdo]);                                      // fine lines, swept to the knot
+    if (hairdo !== "high") { pen.restore(); }
     pen.strokeStyle = HAIR;                                // a fine strand at the temple, before the ear
     pen.globalAlpha = 1 - V.side;                                // (not in her profile: there the ear stands where it would hang)
     pen.lineWidth = 1.6 * FINE;
@@ -4242,51 +4550,29 @@ function person(x, y, look) {
     pen.stroke();
     pen.restore();
     joints.bun = spot(bunX, bunY);
-    if (look.fan) {                                              // a fan of gold leaves behind the bun, as the paintings' dancers wear
-      var fanLeans = [-1.8, -1.4, -1.0, -0.6, -0.2, 0.2, 0.6];
-      for (var spoke = 0; spoke < fanLeans.length; spoke++) {
-        pen.save();
-        pen.translate(bunX - 4, bunY + 3);
-        pen.rotate(fanLeans[spoke] + sway * 0.012);
-        pen.translate(0, -15);
-        paintLeaf(pen, 42 - 5 * Math.abs(spoke - 3), 6.5, 0, "#b8862a", "#f8e08a", "rgba(110, 70, 20, 0.9)", "rgba(255, 250, 220, 0.7)");
-        pen.restore();
-      }
-    }
-    oval(bunX, bunY, 25, 21, HAIR);                        // the bun, at the back of the head
-    pen.strokeStyle = HAIR_LINE;                                 // the wrap of the bun
-    pen.lineWidth = 2 * FINE;
-    pen.beginPath();
-    pen.ellipse(bunX, bunY, 16, 12, 0.4, 0, 7);
-    pen.stroke();
-    pen.strokeStyle = STYLE.gold;                                // a gold comb across the bun
-    pen.lineWidth = 3.5;
-    pen.lineCap = "round";
-    pen.beginPath();
-    pen.arc(bunX, bunY + 2, 27, Math.PI * 1.05, Math.PI * 1.75);
-    pen.stroke();
-    oval(bunX - 2, bunY - 25, 4, 4, "#d9533a");                  // its stones
-    oval(bunX - 19, bunY - 17, 3, 3, "#3f8f7a");
-    oval(bunX + 15, bunY - 20, 3, 3, "#3f8f7a");
-    if (look.flower) {
-      for (var petal = 0; petal < 5; petal++) {                  // a flower at the bun's side
-        var pa = petal / 5 * Math.PI * 2 + sway * 0.05;
-        oval(bunX + 26 + Math.cos(pa) * 7, bunY - 6 + Math.sin(pa) * 7, 6, 4.5, look.flower, pa);
-      }
-      oval(bunX + 26, bunY - 6, 4, 4, "#f4c542");
-    }
-    if (look.garland) {
-      pen.fillStyle = "#fffaf0";                                 // a loop of jasmine from the bun
+    if (hairdo !== "low") { knotFan(bunX, bunY); }
+    if (hairdo === "high") {
+      oval(bunX, bunY, 25, 21, HAIR);                        // the bun, at the back of the head
+      pen.strokeStyle = HAIR_LINE;                                 // the wrap of the bun
+      pen.lineWidth = 2 * FINE;
       pen.beginPath();
-      var lagG = follow(who + "/garland", bunX - 4, bunY + 14, 150, 9, 8);   // the loop swings after the head
-      for (var bud = 0; bud <= 14; bud++) {
-        var gu = bud / 14, sag = Math.sin(gu * Math.PI) * (22 + 4 * Math.sin(late) + lagG[1] * 0.5);   // the loop sags straight down
-        var gx = bunX - 22 + gu * 36 + sway * (1 - gu) * 0.8 + lagG[0] * Math.sin(gu * Math.PI) + downX * sag;
-        var gy = bunY + 14 + downY * sag;
-        pen.moveTo(gx + 2.2, gy);
-        pen.arc(gx, gy, 2.2, 0, 7);
-      }
-      pen.fill();
+      pen.ellipse(bunX, bunY, 16, 12, 0.4, 0, 7);
+      pen.stroke();
+      pen.strokeStyle = STYLE.gold;                                // a gold comb across the bun
+      pen.lineWidth = 3.5;
+      pen.lineCap = "round";
+      pen.beginPath();
+      pen.arc(bunX, bunY + 2, 27, Math.PI * 1.05, Math.PI * 1.75);
+      pen.stroke();
+      oval(bunX - 2, bunY - 25, 4, 4, "#d9533a");                  // its stones
+      oval(bunX - 19, bunY - 17, 3, 3, "#3f8f7a");
+      oval(bunX + 15, bunY - 20, 3, 3, "#3f8f7a");
+    } else if (hairdo !== "low") {
+      ladyKnot(bunX, bunY, hairdo);
+    }
+    if (hairdo !== "low") {
+      knotFlowers(bunX, bunY);
+      knotDress(bunX, bunY, knotR);
     }
   } else if (!look.hat && !look.shaved) {
     // A man's hair gathered up into a knot on the top of the head (the

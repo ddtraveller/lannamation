@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>hairdos - the ways a Lanna lady wears her hair, and what she sets in it</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script src="motion.js"></script>
+<script>
+// The "hairdos" sheet: the kit's ways of a lady's hair (BUN_STYLES) and the
+// ornaments of the hair notebook. From 0 s, the four ways large, their heads
+// turning slowly from profile to full face and back, each with its name and how
+// it is called: the high bun with dok mai wai that tremble; the knot on the
+// crown with its loop, under a Tai Lue maiden's pink head-cloth; the low bun at
+// the nape with a spray of golden orchid; Dara Rasami's raised frame with a
+// garland bound round the knot. From 8 s, at the film's size, three women walk
+// across and a dancer dances, the flowers trembling, the tassel swinging and
+// the orchids nodding as they go.
+var DURATION = 16;
+
+var BEAT = 0.5;
+
+function caption(text, x, y, thai) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = thai ? "bold 26px 'Leelawadee UI', Tahoma, sans-serif" : "20px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+var WAYS = [
+  {x: 260, bun: true, thai: "มวยผมสูง", say: "the kit's high bun", call: 'bun: true, maiwai: true, flower', more: {maiwai: true, flower: "#f2f0f6"}},
+  {x: 740, bun: "wong", thai: "เกล้าผมวิดว้อง", say: "klao wit wong, under a Tai Lue head-cloth", call: 'bun: "wong", turban: "#f2b8c6"', more: {turban: "#f2b8c6"}},
+  {x: 1220, bun: "low", thai: "เก้าผม", say: "kao phom, with dok ueang", call: 'bun: "low", ueang: true', more: {ueang: true}},
+  {x: 1700, bun: "ipun", thai: "เกล้าผมอี่ปุ่น", say: "klao i-pun, with a malai", call: 'bun: "ipun", malai: true', more: {malai: true}}
+];
+
+function sheetWays(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  WAYS.forEach(function (way, n) {
+    var turn = Math.sin(t * 0.7 + n * 0.5) * 0.95;                // round from profile to full face, slowly
+    person(way.x, 1500, cast("maiden", Object.assign({size: 2.7, id: "way-" + n, bun: way.bun, turn: turn, twist: turn * 0.4, smile: 0.6, late: n * 0.3,
+                                                       sabai: undefined, earplug: undefined}, way.more)));
+    pen.fillStyle = "rgba(243, 234, 216, 0.92)";                  // a band for the words, over the body
+    pen.fillRect(way.x - 230, 860, 460, 120);
+    caption(way.thai, way.x, 900, true);
+    caption(way.say, way.x, 930);
+    caption(way.call, way.x, 958);
+  });
+}
+
+function sceneWalk(t) {
+  var sky = pen.createLinearGradient(0, 0, 0, 860);
+  sky.addColorStop(0, "#8ccfc6");
+  sky.addColorStop(1, "#f4ecd2");
+  pen.fillStyle = sky;
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.fillStyle = "#c9b48a";
+  pen.fillRect(0, 860, WIDE, 220);
+  var walkers = [
+    {name: "maiden", from: -200, to: 2200, start: 0, y: 1000, look: {bun: "wong", turban: "#f2b8c6", maiwai: "#dfe4ea"}},
+    {name: "lady", from: -500, to: 2100, start: 0.6, y: 1010, look: {bun: "low", ueang: true}},
+    {name: "weaver", from: 2300, to: -300, start: 0.3, y: 980, look: {bun: "ipun", malai: true}}
+  ];
+  walkers.forEach(function (w, n) {
+    var go = stroll(t, w.from, w.to, w.start, cast(w.name, Object.assign({id: "walker-" + n, spring: 0.5, late: n * 0.3}, w.look)));
+    person(go.x, w.y, go.look);
+  });
+  person(960, 1040, cast("dancer", {id: "hair-dancer", bun: true, maiwai: true, malai: true, ueang: true, late: 0.2, spring: 0.6, sit: 0.4 + 0.3 * Math.sin(t * 2.4)}));
+  caption("at the film's size: they walk and dance, and what is in their hair moves with them", 960, 1066);
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    if (at < 8) { sheetWays(at); } else { sceneWalk(at - 8); }
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>
