@@ -398,6 +398,7 @@ Each loads after `oldcartoon.js` and adds drawings of its own; none changes the 
 | `cumulus.js` | puffy clouds that drift, by depth | |
 | `backdrops.js` | nineteen backgrounds: seven places of the north and twelve from thangka paintings, `backdrop(name)` | `backdrops.html` |
 | `flora.js` | the flowers and fruits of Thailand | `flora.html` |
+| `highlands.js` | the uplands of the north: rice terraces cut into a slope, in four seasons; the forest (crowns, tall trees, bamboo, areca palms, and a mountain clothed in it); and mist, a sea of it lying in the valleys and bands drifting across the slopes | `highlands.html` |
 | `food.js` | a dozen Thai dishes, `food(name, x, y, look)` | `food.html` |
 | `khom.js` | the hanging paper lantern of Lanna, `khom(x, y, look)`; the spinning khom phat, whose cut figures' shadows go round its paper, the khom thue carried in parades, the star and the lotus lanterns | `khom.html`, `khom_kinds.html` |
 | `pieces.js` | things of the north: hong, water jar, chedi sai, lamps, krathong, ox cart, drum cart; the rice granary (long khao) and its sawian baskets, the cluster tung and the web tung of Songkran, and Chiang Mai's red truck (rot daeng) with seats for riders | `pieces.html`, `farmstead.html` |
