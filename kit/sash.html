@@ -33,6 +33,7 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6,
 <script src="pieces.js"></script>
 <script src="band.js"></script>
 <script src="flora.js"></script>
+<script src="highlands.js"></script>
 <script>
 // sash.html - a film of the kit. It opens on a cloth, close up: twelve rows
 // of the small things of Thai life, woven across it. Music begins, and the
@@ -112,15 +113,43 @@ function paintSky(kind) {
   return paper;
 }
 
-// The land of a set on a clear sheet: the hills, the ground and what stands on it.
+// The land of a set, on two clear sheets: "back", the far and the middle ranges
+// under the air between them, and "front", the near range, the ground and what
+// stands on it. A scene lays the back, then what is between them (the mist, the
+// pond's elephants), then the front. Every range is clothed in forest, fainter
+// the further it is, and by day the middle one has a patch of rice terraces cut
+// into it where it stands highest in the part of the picture its set leaves
+// open, from highlands.js (owner, 2026-10-17: "decorate all the mountains like
+// that", of the rice fields' mountains).
+var TERRACES_AT = {village: [420, 880], pond: [380, 1000]};   // where a set's own trees, house, banana and grove leave the middle range open
+
 function paintSet(kind) {
-  var paper = document.createElement("canvas");
-  paper.width = WIDE;
-  paper.height = 1080;
-  var brush = paper.getContext("2d"), n;
+  function sheet() {
+    var paper = document.createElement("canvas");
+    paper.width = WIDE;
+    paper.height = 1080;
+    return paper;
+  }
+  function line(tops) { return function (x) { return tops[Math.max(0, Math.min(WIDE - 1, Math.round(x)))]; }; }
+  var back = sheet(), front = sheet(), brush = back.getContext("2d"), n;
   var far = kind === "night" ? ["#223a4a", "#1a2e3c", "#142430", "#2a4a3a"] : kind === "dusk" ? ["#7a8a9a", "#5f7a6a", "#4f6a52", "#6f8a4a"] : ["#a9cfc9", "#8dbfa9", "#79ad84", "#8fc47a"];
+  function wooded(b, tops, foot, look) {           // a range's forest; at night only its shape, laid faint on the dark hill, for its crowns are lit by day
+    if (kind !== "night") { forestSlope(b, line(tops), 0, WIDE, foot, look); return; }
+    var shade = sheet();
+    forestSlope(shade.getContext("2d"), line(tops), 0, WIDE, foot, look);
+    b.globalAlpha = 0.3;
+    b.drawImage(shade, 0, 0);
+    b.globalAlpha = 1;
+  }
   hills(brush, WIDE, 720, 400, 1.0, far[0]);
+  wooded(brush, withoutTufts(ridgeOf(720, 400, 1.0)), 800, {far: 0.8, small: 3, large: 6, haze: far[0], seed: 21});
   hills(brush, WIDE, 790, 280, 2.6, far[1]);
+  wooded(brush, GROUND, 870, {far: 0.5, small: 4, large: 9, haze: far[1], seed: 22});
+  if (TERRACES_AT[kind]) {
+    var top = Infinity, at = 0, x;
+    for (x = TERRACES_AT[kind][0] + SIDE; x < TERRACES_AT[kind][1] + SIDE; x++) { if (GROUND[x] < top) { top = GROUND[x]; at = x; } }
+    terraces(brush, at, top + 24, 360, Math.min(170, 790 - top), {season: "green", hut: true, seed: kind === "pond" ? 6 : 5, count: 7});
+  }
   if (kind === "dusk") {                           // trees on the middle range, where its ridge is
     [[130, 0.3], [215, 0.26], [600, 0.3], [690, 0.27], [1250, 0.3], [1440, 0.28]].forEach(function (one) {
       tree(brush, one[0] + SIDE, ridgeAt(one[0] + SIDE) + 6, one[1]);
@@ -134,15 +163,30 @@ function paintSet(kind) {
   haze.addColorStop(1, "rgba(" + veil + ", 0)");
   brush.fillStyle = haze;
   brush.fillRect(0, 640, WIDE, 240);
+  brush = front.getContext("2d");
   hills(brush, WIDE, 860, 170, 4.4, far[2]);
+  wooded(brush, withoutTufts(ridgeOf(860, 170, 4.4)), 885, {far: 0.25, small: 6, large: 12, haze: far[2], seed: 23});
   brush.fillStyle = far[3];
   brush.fillRect(0, 880, WIDE, 200);
+  // What grows in each place (owner, 2026-10-17: "Also add plants and flowers that are special to the
+  // different scenes as appropriate", from flora.js); a flower is drawn on "pen", so the pen is this sheet
+  // for the length of it.
+  var keep = pen;
+  pen = brush;
   if (kind === "village" || kind === "day") {
-    tree(brush, 200 + SIDE, 900, 1.1);
+    floraTree(brush, 200 + SIDE, 900, 1.1, "longan", 7);   // a longan in fruit, the fruit of Lamphun and Chiang Mai, where a plain tree stood
     house(brush, 1180 + SIDE, 905, 1);
     banana(brush, 1000 + SIDE, 915);
     namton(brush, 1425 + SIDE, 912, 1.1);          // the water jar at the gate, beside the house's ladder (pieces.js)
+    flora("marigold", 1080 + SIDE, 922, {size: 0.9});   // marigolds for the offerings at the house's foot, jasmine for the garlands by the jar
+    flora("marigold", 1128 + SIDE, 928, {size: 0.75});
+    flora("jasmine", 1490 + SIDE, 924, {size: 0.9});
+    floraTree(brush, 1830 + SIDE, 905, 0.75, "bougainvillea", 8);   // and a bougainvillea at the edge of the yard
   }
+  if (kind === "night") {                          // a frangipani, the temple's tree, its white flowers pale in the lantern light
+    floraTree(brush, 1790 + SIDE, 885, 0.95, "frangipani", 9);
+  }
+  pen = keep;
   if (kind === "pond") {                            // the water, the lotus and the fish are drawn live, in scenePond
     // Special trees of the north (owner, 2026-10-17: "Change cats to some special plant the Lanna did
     // have and add it to the scene", then "Add some other special plants or animals as well"): on the
@@ -152,7 +196,17 @@ function paintSet(kind) {
     floraTree(brush, 160 + SIDE, 880, 1.0, "ratchaphruek", 3);
     floraTree(brush, 1540 + SIDE, 884, 0.95, "thongkwao", 5);
   }
-  return paper;
+  return {back: back, front: front};
+}
+
+// The mist between the ranges, laid between a set's back and its front: bands
+// along the middle range's slopes, and wider ones in patches at its foot (the
+// rice fields' scene has its own). T is the film's clock, so the mist drifts on
+// across a cut between two scenes of one set. At night it is moonlit, and faint.
+function hillMist(T, night) {
+  var look = night ? {colour: "#c4cee4", shade: "#4a5a7a"} : {};
+  mistDrift(pen, T, Object.assign({left: 0, right: WIDE, top: 560, bottom: 700, count: 6, drift: 8, seed: 31, alpha: night ? 0.3 : 0.6}, look));
+  mistDrift(pen, T, Object.assign({left: 0, right: WIDE, top: 768, bottom: 800, count: 5, wide: 560, drift: 5, seed: 32, alpha: night ? 0.25 : 0.55}, look));
 }
 
 // The front of the dusk set on a clear sheet: the temple, the yak and the tung.
@@ -169,15 +223,15 @@ function paintTempleFront() {
   return paper;
 }
 
-// The ridge of the middle range of hills, column by column: the range is
-// painted alone on a scratch sheet and the first painted pixel of each column
-// is the ridge. Trees and the elephant stand on it.
-var RIDGE = (function () {
+// The ridge of a range of hills, column by column: the range is painted alone
+// on a scratch sheet, as hills(brush, WIDE, base, tall, shape) paints it, and
+// the first painted pixel of each column is the ridge.
+function ridgeOf(base, tall, shape) {
   var paper = document.createElement("canvas");
   paper.width = WIDE;
   paper.height = 1080;
   var brush = paper.getContext("2d");
-  hills(brush, WIDE, 790, 280, 2.6, "#000000");
+  hills(brush, WIDE, base, tall, shape, "#000000");
   var data = brush.getImageData(0, 0, WIDE, 1080).data, tops = [];
   for (var x = 0; x < WIDE; x++) {
     var y = 0;
@@ -185,7 +239,10 @@ var RIDGE = (function () {
     tops.push(y);
   }
   return tops;
-})();
+}
+
+// The middle range's ridge: trees and the elephant stand on it.
+var RIDGE = ridgeOf(790, 280, 2.6);
 
 function ridgeAt(x) { return RIDGE[Math.max(0, Math.min(WIDE - 1, Math.round(x)))]; }
 
@@ -195,15 +252,17 @@ function ridgeAt(x) { return RIDGE[Math.max(0, Math.min(WIDE - 1, Math.round(x))
 // then raised to the highest of that within 9 columns each side (a closing):
 // what is narrower than 19 columns goes, and a straight or gently curved ridge
 // comes back as it was.
-var GROUND = (function () {
+function withoutTufts(tops) {
   function pass(from, pick) {
     return from.map(function (y, x) {
       for (var d = -9; d <= 9; d++) { y = pick(y, from[Math.max(0, Math.min(from.length - 1, x + d))]); }
       return y;
     });
   }
-  return pass(pass(RIDGE, Math.max), Math.min);
-})();
+  return pass(pass(tops, Math.max), Math.min);
+}
+
+var GROUND = withoutTufts(RIDGE);
 
 function groundAt(x) { return GROUND[Math.max(0, Math.min(WIDE - 1, Math.round(x)))]; }
 
@@ -290,7 +349,9 @@ function sceneCloth(t) {                // 0-22: one row, still; the music and t
   pen.save();
   sabaiCamera(t, where, CLOTH, 6, 20);
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t);
-  pen.drawImage(VILLAGE, 0, 0);
+  pen.drawImage(VILLAGE.back, 0, 0);
+  hillMist(t);
+  pen.drawImage(VILLAGE.front, 0, 0);
   villageTung(t);
   sabai(t, where, CLOTH, "back");         // the end of the cloth that hangs behind her shoulder
   person(720 + SIDE, 1010, sabaiWorn(look, t, where, CLOTH));   // the cloth across her chest, worn under her arm
@@ -343,7 +404,9 @@ function chase(t) {                      // how far past its steady trot the dog
 
 function sceneLane(t) {                 // 22-35: the lane: a man and a child come one way, a woman the other
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t + 22);
-  pen.drawImage(VILLAGE, 0, 0);
+  pen.drawImage(VILLAGE.back, 0, 0);
+  hillMist(t + 22);
+  pen.drawImage(VILLAGE.front, 0, 0);
   villageTung(t + 22);
   pen.save();
   pen.translate(SIDE, 0);                 // the figures, at their places on the old sheet
@@ -506,8 +569,10 @@ function pondElephants(t) {
 
 function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maiden at the bank who wais; a Chinese dragon flies by with a flag; elephants far off
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t + POND_AT);
-  pen.drawImage(POND, 0, 0);
-  pondElephants(t);
+  pen.drawImage(POND.back, 0, 0);
+  pondElephants(t);                       // on the middle range's ridge, and the mist may lie over them
+  hillMist(t + POND_AT);
+  pen.drawImage(POND.front, 0, 0);
   pen.save();
   pen.translate(SIDE, 0);                 // the figures, the water and the dragon, at their places on the old sheet
   pond(pen, 380, 700, 900, 340, {t: t, rings: POND_RINGS});          // the water moves, and the drops ring it
@@ -637,9 +702,42 @@ function rainOff(brush, w, t, joints) {    // drops leave the rim: many as it sp
   brush.restore();
 }
 
+// The rice fields' mountains, from highlands.js (owner, 2026-10-17: "use the new background decorator
+// and see if you can add some items to the background of the hero video mountains. Try one scene
+// first"): the backdrop's two ranges clothed in forest, the far one faint and blue with distance, and
+// a patch of rice terraces with a hut cut into the near one where it stands highest; then the
+// backdrop's palms laid again over them, as they stand in front. Painted once, above the fields, which
+// are the backdrop's own. As the storm clears, mist rises along the slopes and lies low at their foot.
+var PADDY_SET = null, PADDY_FIELDS = 652;   // where the backdrop's fields begin: nothing of the mountains goes below it
+
+function paddySet() {
+  var sheet = document.createElement("canvas");
+  sheet.width = WIDE;
+  sheet.height = 1080;
+  var b = sheet.getContext("2d"), far = withoutTufts(ridgeOf(656, 300, 0.6)), near = withoutTufts(ridgeOf(664, 180, 2.2));
+  function line(tops) { return function (x) { return tops[Math.max(0, Math.min(WIDE - 1, Math.round(x)))]; }; }
+  b.drawImage(backdrop("paddy"), 0, 0);
+  b.save();
+  b.beginPath();
+  b.rect(0, 0, WIDE, PADDY_FIELDS);
+  b.clip();
+  forestSlope(b, line(far), 0, WIDE, PADDY_FIELDS + 8, {far: 0.8, small: 3, large: 5, haze: "#a9c8d8", seed: 11});
+  forestSlope(b, line(near), 0, WIDE, PADDY_FIELDS + 8, {far: 0.4, small: 4, large: 8, haze: "#8fbfae", seed: 12});
+  var top = Infinity, at = 0;
+  for (var x = 300; x < WIDE - 300; x++) { if (near[x] < top) { top = near[x]; at = x; } }   // where the near range stands highest
+  terraces(b, at, top + 26, 380, PADDY_FIELDS - top - 34, {season: "green", hut: true, seed: 4, count: 6});
+  b.restore();
+  [[250, 748, 0.5, 380], [330, 716, 0.34, 360], [1330, 800, 0.8, 400]].forEach(function (p) {   // the backdrop's palms, in front again
+    bdSized(b, p[0], p[1], p[2], function () { palm(b, 0, 0, p[3]); });
+  });
+  floraTree(b, 1650, 832, 0.6, "mango", 10);       // a mango on a bund, as one stands at the edge of the fields (owner: "plants and flowers that are special to the different scenes")
+  return sheet;
+}
+
 function scenePaddy(t) {                // 50-70: the rice fields: a storm that clears, the parasols spun, closed and carried off
   var dark = storm(t), wet = rainfall(t), n, w, go, joints;
-  pen.drawImage(backdrop("paddy"), 0, 0);
+  if (!PADDY_SET) { PADDY_SET = paddySet(); }
+  pen.drawImage(PADDY_SET, 0, 0);
   if (dark > 0) {
     STORM_PEN.clearRect(0, 0, WIDE, 1080);
     cumulus(STORM_PEN, (t + 40) * (1 + 2 * (1 - dark)), STORM_LOOK);
@@ -652,6 +750,10 @@ function scenePaddy(t) {                // 50-70: the rice fields: a storm that 
   if (dark < 1) {
     pen.fillStyle = "rgba(255, 222, 140, " + (0.1 * (1 - dark)).toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);
+    // the mist the rain leaves, as the storm clears: bands along the slopes, and wider, lower ones in
+    // patches at their foot (a sea of mist there, the whole width, read as a ruled white stripe)
+    mistDrift(pen, t, {left: 0, right: WIDE, top: 470, bottom: 620, count: 6, drift: 9, seed: 5, alpha: 0.75 * (1 - dark)});
+    mistDrift(pen, t, {left: 0, right: WIDE, top: 630, bottom: 652, count: 5, wide: 560, drift: 6, seed: 6, alpha: 0.65 * (1 - dark)});
   }
   rain(pen, t, wet, 0);
   if (t > 1.0 && t < 1.12) {
@@ -836,7 +938,9 @@ function spinningLantern(t) {            // the khom phat on its arm, and the th
 
 function sceneDance(t) {                // 70-79: a night of dancing: a dancer, a drummer, a celestial; the khom phat at the left
   skyOf(SKY_NIGHT, CLOUD_LOOKS.night, t + 60);
-  pen.drawImage(NIGHT, 0, 0);
+  pen.drawImage(NIGHT.back, 0, 0);
+  hillMist(t + 70, true);
+  pen.drawImage(NIGHT.front, 0, 0);
   khomString(t);
   // Six khom loi leave the ground behind the crowd one after another, from the
   // scene's first second, and climb through the night, smaller as they go;
