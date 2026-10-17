@@ -7,6 +7,11 @@
 //     <script src="dragon.js"></script>
 //     <script src="beasts.js"></script>
 //     <script src="khom.js"></script>
+//     <script src="myth.js"></script>
+//     <script src="flora.js"></script>
+//     <script src="pieces.js"></script>
+//     <script src="band.js"></script>
+//     <script src="northbirds.js"></script>
 //     <script src="sabai.js"></script>
 //
 // and in a scene, draw the back of the cloth, then the person wearing it:
@@ -18,9 +23,9 @@
 //     person(720, 1010, sabaiWorn(look, t, where, {from: 3}));   // the woven band across the chest, under the arm; its rows flow from second 3
 //
 // The cloth is twelve rows of woven tiles, each tile one picture of the kit
-// drawn by the kit's own painter at the size of a woven figure (a house, a
-// lotus, a fish, a lantern, a tung, the temple, a yak, a naga, a dragon, the
-// sun, a cloud, a blossom), and in every row the people and animals that live
+// drawn by the kit's own painter at the size of a woven figure (a house and a
+// rice granary, lotus, a sunbird at a flower, khom, a tung, the temple, a yak,
+// a naga, the luang and the mom, a hong, a sand pagoda, a krathong), and in every row the people and animals that live
 // among those things, each a six-frame walk cycle, so that on the cloth they
 // walk. The rows flow along the cloth, each the other way from its neighbour,
 // and the figures face the way their row flows. The cloth lies on the person
@@ -102,25 +107,58 @@ function sabaiTile(painter) {
 // drummer and one villager fewer, one khom loi fewer; the temple guardian (yak,
 // as the statue at Wat Phra Kaeo) stands between the two naga as well as by
 // the temple; the water buffalo, the kit's draught animal (it pulls the cart
-// in the rain), walks among the fish and the lotus leaves; a sow walks with
-// her piglet behind her among the houses (a tile is fitted to its picture,
-// so a piglet alone would be drawn as large as a sow); and three khom, the
-// hanging lanterns, red, blue and green, hang by the temple and among the
-// lanterns. A khom is tied 400 above the tile's middle so it hangs inside it.
+// in the rain), walks among the lotus leaves; a sow walks with her piglet
+// behind her among the houses (a tile is fitted to its picture, so a piglet
+// alone would be drawn as large as a sow); and three khom, the hanging
+// lanterns, red, blue and green, hang by the temple and among the lanterns. A
+// khom is tied 400 above the tile's middle so it hangs inside it.
+// Then (owner, 2026-10-17): "Replace the fish on the sash with the humingbird
+// type bird and review the items on the sash and replace generic items with
+// special Lanna specific items". The two fish are the green-tailed sunbird of
+// northbirds.js, one sipping at a thong kwao flower and one hovering; and what
+// any land might weave is now Lanna's own: the second house is the long khao,
+// the rice granary of a farmstead of the north; the plain tree, the coconut
+// palm and the banana are a kwian, the wooden ox cart (its wheels turn), a
+// bunch of longan (the fruit of Lamphun and Chiang Mai) and the nam ton, the
+// water jar at the gate (a thong kwao tree and a longan tree in fruit were
+// tried first: at a tile's size both read as the same green tree); a dog is an elephant, and the other a green peafowl in
+// display (Phayao's); the plain paper lantern is the khom dao, the star lantern
+// of Yi Peng; a yellow blossom is the dok ueang, the orchid of the north; the
+// two dragons of the Himalayan paintings are Lanna's own creatures, the luang
+// and the mom, and the scientist in his white coat is a player of the sueng;
+// the sun and the cloud of the thangka are the hong, the golden swan on its
+// pole, and a chedi sai, the sand pagoda of Songkran with its flags; and the
+// two plain blossoms are a thong kwao flower and a krathong of Yi Peng. A film
+// made before this that loads no northbirds.js weaves the fish and the dog.
+function sabaiBird(painter, before) {    // a tile of northbirds.js, or what was woven there before it
+  return function (b, u) { if (typeof sunbird === "function") { painter(b, u); } else { before(b, u); } };
+}
+
 var SABAI_ROWS = [
-  [function (b) { house(b, 0, 0, 0.7); }, function (b, u) { person(0, 0, cast("villager", {size: 1.1, step: u})); }, function (b) { house(b, 0, 0, 0.55); },
+  [function (b) { house(b, 0, 0, 0.7); }, function (b, u) { person(0, 0, cast("villager", {size: 1.1, step: u})); }, function (b) { longKhao(b, 0, 0, 0.6); },
    function (b, u) { pig(60, 0, {size: 0.8, step: u}); pig(-150, 0, {size: 0.42, step: u + 0.3}); }],
-  [function (b) { tree(b, 0, 0, 0.5); }, function (b, u) { person(0, 0, cast("child", {size: 1.2, step: u, smile: 1})); }, function (b) { palm(b, 0, 0, 240); }, function (b, u) { rooster(0, 0, u * 2); }, function (b) { banana(b, 0, 0); }],
-  [function (b) { lotus(b, 0, 0, 1.3, "#f28fa8", 1); }, function (b, u) { person(0, 0, cast("maiden", {size: 1.1, step: u})); }, function (b) { lotus(b, 0, 0, 1.1, "#e9627f", 0.4); }, function (b) { fish(b, 0, 0, 1.6, 1, "#f0803a"); }],
-  [function (b) { fish(b, 0, 0, 1.6, 1, "#f6a24a"); }, function (b, u) { person(0, 0, cast("fellow", {size: 1.1, step: u})); }, function (b, u) { buffalo(0, 0, {size: 0.55, step: u}); }, function (b) { lotusLeaf(b, 0, 10, 1.0, 0.2, "#3f8f5a"); }],
-  [function (b, u) { rooster(0, 0, u * 2); }, function (b, u) { person(0, 0, cast("weaver", {size: 1.1, step: u})); }, function (b, u) { dog(0, 0, u); }, function (b, u) { person(0, 0, cast("lady", {size: 1.1, step: u})); }],
-  [function () { khom(0, -400, {colour: KHOM_RED, lit: 0, sway: 0}); }, function (b, u) { person(0, 0, cast("celestial", {size: 1.1, step: u})); }, function () { khom(0, -400, {colour: KHOM_BLUE, lit: 0, sway: 0}); }, function () { lantern(0, -30, 64); }],
-  [function (b) { tung(b, 0, 0, 0); }, function (b, u) { person(0, 0, cast("child", {size: 1.2, step: u})); }, function (b) { blossom(b, 0, -20, 26, "#f4c542"); }, function (b, u) { person(0, 0, cast("dancer", {size: 1.1, step: u, handA: [60, -120], handB: [-50, -100]})); }],
+  [function (b, u) { oxcart(b, 0, 0, 1, u * Math.PI, 1); }, function (b, u) { person(0, 0, cast("child", {size: 1.2, step: u, smile: 1})); },
+   function () { flora("longan", 0, 0, {size: 2, ground: false}); }, function (b, u) { rooster(0, 0, u * 2); }, function (b) { namton(b, 0, 0, 1.2); }],
+  [function (b) { lotus(b, 0, 0, 1.3, "#f28fa8", 1); }, function (b, u) { person(0, 0, cast("maiden", {size: 1.1, step: u})); }, function (b) { lotus(b, 0, 0, 1.1, "#e9627f", 0.4); },
+   sabaiBird(function (b, u) { flora("thongkwao", 26, 64, {size: 0.6, ground: false}); sunbird(-36, -14, u / 13, {size: 3.4, hover: 1, sip: 1}); },
+             function (b) { fish(b, 0, 0, 1.6, 1, "#f0803a"); })],
+  [sabaiBird(function (b, u) { sunbird(0, 0, u / 13, {size: 2.4, hover: 1}); }, function (b) { fish(b, 0, 0, 1.6, 1, "#f6a24a"); }),
+   function (b, u) { person(0, 0, cast("fellow", {size: 1.1, step: u})); }, function (b, u) { buffalo(0, 0, {size: 0.55, step: u}); },
+   function (b) { lotusLeaf(b, 0, 10, 1.0, 0.2, "#3f8f5a"); }],
+  [function (b, u) { rooster(0, 0, u * 2); }, function (b, u) { person(0, 0, cast("weaver", {size: 1.1, step: u})); }, function (b, u) { elephant(0, 0, {size: 0.35, step: u}); },
+   function (b, u) { person(0, 0, cast("lady", {size: 1.1, step: u})); }],
+  [function () { khom(0, -400, {colour: KHOM_RED, lit: 0, sway: 0}); }, function (b, u) { person(0, 0, cast("celestial", {size: 1.1, step: u})); },
+   function () { khom(0, -400, {colour: KHOM_BLUE, lit: 0, sway: 0}); }, function () { khomDao(0, -300, {colour: KHOM_GOLD, lit: 0, sway: 0}); }],
+  [function (b) { tung(b, 0, 0, 0); }, function (b, u) { person(0, 0, cast("child", {size: 1.2, step: u})); }, function () { flora("orchid", 0, 0, {size: 1.6, ground: false}); },
+   function (b, u) { person(0, 0, cast("dancer", {size: 1.1, step: u, handA: [60, -120], handB: [-50, -100]})); }],
   [function (b) { temple(b, 0, 0); }, function (b) { yak(b, 0, 0, 1); }, function () { khom(0, -400, {colour: KHOM_GREEN, lit: 0, sway: 0}); }, function (b, u) { person(0, 0, cast("drummer", {size: 1.1, step: u})); }],
   [function (b, u) { naga(0, -60, {size: 0.5, heads: 3}); }, function (b) { yak(b, 0, 0, -1); }, function (b, u) { naga(0, -60, {size: 0.5, heads: 5, body: "#d9a441", crest: "#3a2418"}); }, function (b, u) { person(0, 0, cast("maiden", {size: 1.1, step: u})); }],
-  [function (b, u) { dragon(80, -40, {size: 0.3}); }, function (b, u) { person(0, 0, cast("scientist", {size: 1.1, step: u})); }, function (b, u) { dragon(80, -40, {size: 0.3, body: "#8fb7a6", spots: "#2f5a4a"}); }, function (b, u) { person(0, 0, cast("lady", {size: 1.1, floor: true})); }],
-  [function (b, u) { sun(0, 0, u); }, function (b) { scrollCloud(b, 0, 0, 0.9, "#f6f1e6", "#7a2f25"); }, function (b, u) { person(0, 0, cast("dancer", {size: 1.1, step: u, handA: [70, -130]})); }],
-  [function (b) { blossom(b, 0, 0, 30, "#ee7f9c"); }, function (b, u) { person(0, 0, cast("child", {size: 1.2, floor: true})); }, function (b) { blossom(b, 0, 0, 26, "#7f9fd8"); }, function (b, u) { dog(0, 0, u); }]
+  [function () { luang(0, 0, {size: 0.4}); }, function (b, u) { musician(0, 0, "sueng", cast("fellow", {size: 1.1}), u * 2); },
+   function (b, u) { mom(0, 0, {size: 0.6, step: u}); }, function (b, u) { person(0, 0, cast("lady", {size: 1.1, floor: true})); }],
+  [function (b) { hong(b, 0, 0, 1); }, function (b, u) { chediSai(b, 0, 0, 1, u * 2, 2); }, function (b, u) { person(0, 0, cast("dancer", {size: 1.1, step: u, handA: [70, -130]})); }],
+  [function () { flora("thongkwao", 0, 0, {size: 1.4, ground: false}); }, function (b, u) { person(0, 0, cast("child", {size: 1.2, floor: true})); },
+   function (b, u) { krathong(b, 0, 0, 1, u * 2, false); },
+   sabaiBird(function (b, u) { peafowl(0, 0, u, {size: 0.6, display: 1, shiver: 0.5}); }, function (b, u) { dog(0, 0, u); })]
 ];
 
 var SABAI_SCRATCH = null;               // a sheet the person is drawn on to ask where their joints are
