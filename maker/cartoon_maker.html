@@ -65,6 +65,11 @@
   .time-pop { position: absolute; z-index: 4; display: none; background: var(--sheet); border: 3px solid var(--red); border-radius: 12px;
     padding: 8px 10px; font-size: 14px; box-shadow: 0 4px 14px rgba(58, 36, 24, 0.35); transform: translate(-50%, 12px); white-space: nowrap; }
   .time-pop.open { display: block; }
+  /* The bar over what was just added: move it, make it smaller or bigger, done. */
+  .item-bar { position: absolute; z-index: 5; display: none; gap: 6px; background: var(--sheet); border: 3px solid var(--gold); border-radius: 14px;
+    padding: 6px; box-shadow: 0 4px 14px rgba(58, 36, 24, 0.35); transform: translate(-50%, calc(-100% - 10px)); white-space: nowrap; }
+  .item-bar.open { display: flex; }
+  .item-bar button { font-size: 17px; padding: 6px 10px; }
   .time-pop input { width: 64px; font: inherit; font-weight: bold; padding: 4px; border: 2px solid var(--line); border-radius: 8px; margin: 0 6px; }
   .time-pop button { padding: 4px 10px; border-radius: 10px; }
   .time-pop .en { display: block; }
@@ -195,6 +200,7 @@
       <canvas id="marks" width="1920" height="1080"></canvas>
       <div class="path-banner" id="pathBanner"><span id="pathText"></span><button id="pathDone">✓ เสร็จ <small>done</small></button></div>
       <div class="time-pop" id="timePop"><span id="timePopLabel"></span><input type="number" id="timePopBox" step="0.5" min="0"><span>วินาที</span><button id="timePopOk">ตกลง</button><span class="en" id="timePopEn"></span></div>
+      <div class="item-bar" id="itemBar"><button data-i="move">✋ ย้าย <small>move</small></button><button data-i="smaller">➖ <small>smaller</small></button><button data-i="bigger">➕ <small>bigger</small></button><button data-i="done">✔ เสร็จ <small>done</small></button></div>
       <div class="grip left" id="gripLeft" title="ดึงเพื่อขยายจอ · pull to widen the stage"></div>
       <div class="grip right" id="gripRight" title="ดึงเพื่อขยายจอ · pull to widen the stage"></div>
     </div>
@@ -245,8 +251,8 @@
       <p>กด 🧒 ทำทีละขั้น แล้วทำตามทีละขั้น: เลือกฉากหลัง ใส่ของในฉาก ต้นไม้ดอกไม้ สัตว์ และคน แตะสิ่งที่อยากได้ แล้วแตะที่ภาพตรงที่อยากวาง ตรงไหนก็ได้ จากนั้นทีละคน: แตะที่ภาพว่าเริ่มยืนตรงไหน เดินไปไหน แล้วพิมพ์ว่าพูดอะไร ทุกขั้นมีปุ่ม ⏭ ข้าม และ ⏩ ข้ามทั้งหมด จบแล้วฉากจะเล่นให้ดู แล้วเลือกได้ว่าจะแก้ไขต่อ ทำเป็นวิดีโอ หรือบันทึกเป็น JSON</p>
       <span class="en">Press 🧒 guide and follow it a step at a time: pick a background, then put in what stands in the scene, plants, animals and people: tap what you want, then tap the picture where it goes, anywhere at all. Then, one person at a time, tap where they start and where they walk to, and type what they say. Every step has ⏭ skip and ⏩ skip all. At the end the scene plays, and you choose: make changes, make it a video, or save it as a JSON file. 💾 saves the JSON at any time: paste it into 🤖 to open it again, or give it to film.py to render.</span>
       <h3>1. จอและจานสี <small>The stage and the palette</small></h3>
-      <p>ทางซ้ายคือจานสี ลากตัวละคร สัตว์ ของ ดอกไม้ ผลไม้ หรือชิ้นฉากไปปล่อยบนจอ มันจะยืนตรงที่ปล่อย ของทุกอย่างวางตรงไหนก็ได้ บนพื้นหรือบนฟ้า พญานาคและมังกรปล่อยได้ทุกที่: จุดที่ปล่อยคืออกของพญานาคหรือหัวของมังกร ลำตัวทอดตามหลัง สัตว์ในตำนานล้านนามีสองตัว: มอมเดินบนพื้น และพญาลวงบินไปตามเส้นทาง ลำตัวทอดตามหัว</p>
-      <span class="en">The palette is on the left. Drag a character, an animal, a thing, a flower or fruit, or a set piece onto the stage; it stands where you drop it. Anything can go anywhere in the picture, on the ground or up in the sky. The Naga and the dragon can go anywhere: the point you drop is the Naga's chest or the dragon's head, and the body trails behind. Two are creatures of the myths of Lanna: the Mom walks on the ground, and the Luang flies along its course, its body behind its head.</span>
+      <p>ทางซ้ายคือจานสี ลากตัวละคร สัตว์ ของ ดอกไม้ ผลไม้ หรือชิ้นฉากไปปล่อยบนจอ มันจะยืนตรงที่ปล่อย ของทุกอย่างวางตรงไหนก็ได้ บนพื้นหรือบนฟ้า ของที่เพิ่งใส่จะมีแถบอยู่ข้างบน: ✋ ย้าย (ลากไปที่ใหม่) ➖ ➕ เล็กลงหรือใหญ่ขึ้น และ ✔ เสร็จ พญานาคและมังกรปล่อยได้ทุกที่: จุดที่ปล่อยคืออกของพญานาคหรือหัวของมังกร ลำตัวทอดตามหลัง สัตว์ในตำนานล้านนามีสองตัว: มอมเดินบนพื้น และพญาลวงบินไปตามเส้นทาง ลำตัวทอดตามหัว</p>
+      <span class="en">The palette is on the left. Drag a character, an animal, a thing, a flower or fruit, or a set piece onto the stage; it stands where you drop it. Anything can go anywhere in the picture, on the ground or up in the sky. What you have just put in has a bar over it: ✋ move (drag it somewhere else), ➖ and ➕ to make it smaller or bigger, and ✔ done. The Naga and the dragon can go anywhere: the point you drop is the Naga's chest or the dragon's head, and the body trails behind. Two are creatures of the myths of Lanna: the Mom walks on the ground, and the Luang flies along its course, its body behind its head.</span>
       <p>โคมลอยไม่ลอยเอง: ให้เส้นทางขึ้นฟ้ามัน (ข้อ 2) แล้วมันจะลอยขึ้น และสว่างที่สุดบนท้องฟ้ากลางคืน</p>
       <span class="en">A lantern does not rise by itself: give it a course up into the sky (part 2) and it climbs, brightest on the night backdrop.</span>
       <p>โคมล้านนาแขวนจากจุดที่ปล่อย: มันแกว่งและหมุนตามลม หางแกว่งเบาๆ เทียนข้างในดับตอนกลางวันและติดตอนเย็นกับกลางคืน หรือเลือกเองในแผง ให้เส้นทางมันแล้วมันจะเอนตามทาง เหมือนโคมที่ถือไป</p>
@@ -884,7 +890,9 @@ function show() {
   paintMarks();
   paintRuler();
   byId("timeLabel").textContent = time.toFixed(1) + " วินาที";
-  byId("stageBox").className = pathing ? "stage-box pathing" : tool === "move" ? "stage-box moving" + (held ? " held" : "") : "stage-box";
+  byId("stageBox").className = (pathing ? "stage-box pathing" : tool === "move" ? "stage-box moving" + (held ? " held" : "") : "stage-box") +
+                               (guideTap ? " tapping" : "");   // the guide waits for a tap on the picture
+  placeBar();
   if (pathing) {
     var last = pathing.keys[pathing.keys.length - 1][0];
     byId("pathText").textContent = "✏️ กำลังวาดเส้นทางของ " + labelOf(pathing) + ": แตะบนจอเพื่อเพิ่มจุดถัดไป ที่วินาที " +
@@ -1166,11 +1174,62 @@ function addItem(kind, name, x, y, quiet) {   // quiet: the guide adds it, and n
   movie.items.push(item);
   if (!quiet) { selected = item; }
   rebuild();
+  if (!quiet) { openBar(item); }                 // just added: move it, size it
   show();
   panel();
   if (kind !== "piece" && !quiet) { openTimePop(item, 0, "start"); }
   return item;
 }
+
+// ---------- what was just added: move it, size it ----------
+// Something put on the stage, from the palette or by the guide, is selected, and a bar over it offers
+// what a child wants next (owner, 2026-10-17: "When things get added to the canvas give the option to
+// move and resize the items"): ✋ move turns the move tool on, so a drag carries it, course and all
+// (the course tool is back after); ➖ and ➕ make it smaller and bigger, as the corner handle does (0.5
+// to 2); ✔ puts the bar away. The bar follows its sprite as it is moved or sized, hides while the
+// film plays, and goes when something else is picked.
+var barItem = null, barToolWas = null;
+
+function openBar(item) {
+  barItem = item;
+  selected = item;
+  if (barToolWas === null) { barToolWas = tool; }
+  if (tool !== "move") { setTool("move"); }      // a drag now carries it
+}
+
+function closeBar() {
+  if (!barItem) { return; }
+  barItem = null;
+  byId("itemBar").className = "item-bar";
+  var was = barToolWas;
+  barToolWas = null;
+  if (was && was !== tool) { setTool(was); }
+}
+
+function placeBar() {                            // called by show(): the bar over its sprite, or away
+  var bar = byId("itemBar");
+  if (barItem && selected && selected !== barItem && selected.keys && movie.items.indexOf(selected) >= 0) { barItem = selected; }   // another sprite picked: the bar goes to it
+  if (barItem && (selected !== barItem || movie.items.indexOf(barItem) < 0)) { closeBar(); return; }   // nothing picked, or it was taken away
+  if (!barItem || playing) { bar.className = "item-bar"; return; }
+  var at = whereNow(barItem), r = reach(barItem), where = onBox(toScreen(at[0], at[1] - r.up));
+  bar.style.left = Math.max(16, Math.min(84, where[0])) + "%";
+  bar.style.top = Math.max(16, Math.min(98, where[1])) + "%";
+  bar.querySelector("[data-i=move]").className = tool === "move" ? "on" : "";
+  bar.className = "item-bar open";
+}
+
+byId("itemBar").onclick = function (event) {
+  var b = event.target.closest("button");
+  if (!b || !barItem) { return; }
+  var what = b.getAttribute("data-i"), item = barItem;
+  if (what === "move") { setTool(tool === "move" ? "course" : "move"); }
+  else if (what === "smaller" || what === "bigger") {
+    var keySizes = item.kind === "person" ? item.keys.map(function (k) { return k[4]; }) : null;
+    setSize(item, (item.size || SIZE_AS_DRAWN) * (what === "bigger" ? 1.15 : 1 / 1.15), keySizes);
+    rebuild(); show(); panel();
+  }
+  else if (what === "done") { closeBar(); selected = null; show(); panel(); }
+};
 
 // ---------- points ----------
 // A course is points in time order, and the order never changes: a point's time
@@ -1993,6 +2052,7 @@ function resetAll() {
   setPlaying(false);
   if (recorder) { stopRecording(); }
   if (guideAt >= 0) { guideClose(); }
+  closeBar();
   recorded = [];
   movie = freshFilm();
   selected = null; pathing = null; picked = []; time = 0;
@@ -2344,6 +2404,7 @@ function guideClose() {
   guideAt = -1;
   guideTap = null;
   guidePlacing = null;
+  closeBar();
   selected = null;
   byId("guide").className = "guide";
   byId("stageBox").classList.remove("tapping");
@@ -2354,6 +2415,7 @@ function guideClose() {
 function guideGo(at) {                  // to step "at"
   guideTap = null;
   guidePlacing = null;
+  closeBar();
   guideMade = [];
   guideAt = at;
   if (GUIDE[at].each) {
@@ -2383,8 +2445,11 @@ function guideSay() {                   // the words this person says, at their 
   guideNextPerson();
 }
 
-function guidePut(x, y) {               // one of the picked thing, standing at (x, y)
-  guideMade.push(addItem(guidePlacing[2], guidePlacing[0], Math.round(x), Math.round(y), true));
+function guidePut(x, y) {               // one of the picked thing, standing at (x, y), then picked up, to move and size
+  var item = addItem(guidePlacing[2], guidePlacing[0], Math.round(x), Math.round(y), true);
+  guideMade.push(item);
+  guidePlacing = null;                  // a tap on the picture now moves it; the choice again puts in another
+  openBar(item);
   guideShow();
 }
 
@@ -2412,9 +2477,12 @@ function guideShow() {
     });
     html.push("</div>");
     if (guidePlacing) {
-      html.push("<p class='tap'>👆 แตะที่ภาพ: วาง " + guidePlacing[1] + " ตรงไหนก็ได้ <small>Tap the picture where it goes, anywhere you like; tap again for one more</small></p>");
+      html.push("<p class='tap'>👆 แตะที่ภาพ: วาง " + guidePlacing[1] + " ตรงไหนก็ได้ <small>Tap the picture where it goes, anywhere you like</small></p>");
       go.push("<button data-g='auto'>✨ ใส่ให้เลย <small>put it in for me</small></button>");
       guideTap = function (spot) { guidePut(spot[0], onStage(spot[1])); };
+    } else if (barItem) {
+      html.push("<p class='tap'>✋ ลากเพื่อย้าย แล้วกด ➖ ➕ บนแถบเพื่อเปลี่ยนขนาด <small>Drag it to move it; ➖ and ➕ on its bar make it smaller or bigger. " +
+                "Tap a choice to put in another.</small></p>");
     } else {
       html.push("<p class='hint'>แตะสิ่งที่อยากใส่ แล้วแตะที่ภาพ <small>tap what you want, then tap the picture where it goes</small></p>");
     }
