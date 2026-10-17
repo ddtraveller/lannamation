@@ -54,7 +54,8 @@
 //   belly      the colour of the belly's plates
 //   flame      the colour of the flames, on the back and from the mouth
 //   mane       the colour of the mane, the whiskers, the tufts and the tail's hair
-//   pearl      the colour of the pearls; pearls: false and it holds none
+//   pearl      the colour of the pearls; pearls: false and it holds none (a
+//              Chinese dragon holds none unless pearls: true)
 //   trail      a function of the time that gives [x, y], where the head is at
 //              that time (the function the film itself moves it with): the
 //              body then follows the head as a chain
@@ -69,7 +70,8 @@
 //   kind       "chinese": the dragon of the Chinese painters and the glazed walls
 //              (below), instead of the thangka's. Its skin is scales, its back a
 //              ridge of spines, its head long, its paws an eagle's, and it chases
-//              a flaming pearl instead of holding pearls
+//              a flaming pearl instead of holding pearls (pearls: true, and its
+//              talons close over a pearl as well)
 //   claws      how many claws on each paw of a Chinese dragon: 4 (as most are),
 //              5 (the emperor's), or 3
 //   chase      false, and a Chinese dragon has no pearl before its mouth
@@ -189,7 +191,9 @@ function dragonLeg(sx, sy, px, py, knee, skin, c, pearls, china, claws) {
       dragonLock(54 - lock * 8, 12, 8, clock * 3 + lock + sx * 0.01, c.mane);
       pen.restore();
     }
-    dragonTalons(leg[0], leg[1], Math.atan2(leg[1] - leg[3], leg[0] - leg[2]), claws, skin);
+    var down = Math.atan2(leg[1] - leg[3], leg[0] - leg[2]);
+    if (pearls) { dragonPearl(leg[0] + Math.cos(down) * 22, leg[1] + Math.sin(down) * 22, 24, c.pearl); }   // a pearl just past the palm, for the talons to close over
+    dragonTalons(leg[0], leg[1], down, claws, skin);
     return [leg[0], leg[1]];
   }
   pen.fillStyle = c.spots;                          // the dots, down both bones
