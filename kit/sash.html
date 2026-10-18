@@ -45,7 +45,8 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6,
 // rice fields in a rain that clears, a night of dancing by a spinning
 // lantern. A grandmother's
 // voice tells the story in Kam Mueang over the music (WORDS, at the end; the
-// voice is the Kam Mueang Voice extension's, made by sash_narrate.py), and the
+// voice is the Kam Mueang assistant's since 2026-10-18, before that the Kam
+// Mueang Voice extension's, made by sash_narrate.py --voice assistant), and the
 // film ends on the dance, with no card (owner, 2026-10-16). It is 82 s since
 // the owner's own story (2026-10-17): its last line takes 5.6 s, and the dance
 // ran three seconds longer so that it is said before the music's fade.
@@ -628,6 +629,16 @@ function pondElephants(t) {
   pen.drawImage(FAR, 0, 0);
 }
 
+// The two at the pond, as the dragon goes by (owner, 2026-10-18: "the man should look surprised when the
+// dragon appears and then angry when it shows a Chinese flag for a moment and then go back to being happy.
+// The woman should laugh when the flag comes out and put her hands in her lap"). Seconds of the scene: the
+// dragon's head comes into the picture at 7.2 (DRAGON_COURSE), the flag is out from FLAG[0] to FLAG[1].
+var POND_SEEN = 7.4;                    // he sees it, a beat after it comes in
+var POND_FLAG = FLAG[0] + 0.2;          // the flag is out of the claw: he is angry, she laughs and puts her hands in her lap
+var POND_CALM = FLAG[1] + 0.3;          // it is gone: he is glad again
+var POND_LAUGHED = FLAG[1] + 0.6;       // and her laugh dies away a moment after
+var POND_LAP = [[-20, 100], [60, 96]];  // her hands in her lap, one over the other (handA, the far one; handB, the near one), as she sits
+
 function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maiden at the bank who wais; a Chinese dragon flies by with a flag; elephants far off
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t + POND_AT);
   pen.drawImage(POND.back, 0, 0);
@@ -655,8 +666,12 @@ function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maide
   flora("orchid", 1552, 806, {size: 0.9, colour: "#f2f0f6", ground: false});
   var awe = tween(t, [[8, 0], [8.6, 1], [11, 1], [11.8, 0]], "smooth");           // the dragon passes over: eyes up, brows up
   var sky = [head[0], head[1]];
-  person(300, 1000, cast("maiden", Object.assign({floor: true, late: 0, spring: 0.4, smile: 1, wonder: awe, at: awe > 0.5 ? sky : [700, 800], wai: t > 1}, HAIR_OF.maiden)));
-  var fellow = stroll(t, 1600, 1330, 0, cast("fellow", {stride: 0.8, late: 0.25, spring: 0.4, smile: 1, wonder: awe, at: awe > 0.5 ? sky : [300, 800]}));   // he stops short of the water's edge
+  var her = t >= POND_FLAG && t < POND_LAUGHED ? {feel: "laughing", at: sky} : {smile: 1, wonder: t < POND_FLAG ? awe : 0, at: awe > 0.5 ? sky : [700, 800]};
+  var hands = t >= POND_FLAG ? {handA: POND_LAP[0], handB: POND_LAP[1]} : {wai: t > 1};   // the wai until the flag; then her hands in her lap
+  person(300, 1000, cast("maiden", Object.assign({floor: true, late: 0, spring: 0.4}, her, hands, HAIR_OF.maiden)));
+  var his = t < POND_SEEN || t >= POND_CALM ? "happy" : t < POND_FLAG ? "surprised" : "angry";
+  var fellow = stroll(t, 1600, 1330, 0, cast("fellow", {stride: 0.8, late: 0.25, spring: 0.4, feel: his,
+                                                        at: t >= POND_SEEN && t < POND_CALM ? sky : [300, 800]}));   // he stops short of the water's edge
   person(fellow.x, 990, fellow.look);
   blossom(pen, 1300 + Math.sin(t) * 10, 700 + t * 20, 10, "#ee7f9c");
   pen.restore();
@@ -1073,13 +1088,13 @@ var WORDS = [[3.6, 6.4, "แต่ปางก่อน ชีวิตเดิ
              [6.6, 10.6, "แม่หญิงพาดผ้าสะพาย ฮ้องว่าสไบเจ้า", "แม่หญิงพาดผ้าสะพาย ฮ้องว่าสไบเจ้า", "Women wore a long sash called a sabai."],
              [10.9, 15.1, "ลายตี้ทอไว้ตี้ผืนผ้า มีความหมายกั๊บชีวิตคนเมืองเน้อเจ้า", "ลายตี้ทอไว้ตี้ผืนผ้า มีความหมายกั๊บชีวิตคนเมืองเน้อเจ้า", "The patterns and symbols woven into it were meaningful to the daily life of the people."],
              [15.4, 19.8, "พญามังรายตั้งล้านนาแปลงเชียงใหม่", "พญามังรายตั้งล้านนาแปลงเชียงใหม่", "King Mangrai founded Lanna and built Chiang Mai."],
-             [23.0, 28.0, "ชีวิตตี้บ้านเฮาอยู่เงียบ เงียบ จ๊า จ๊า แต่คนบ้านเฮาใจ๋ดี นับถือกั๋นเน้อเจ้า", "ชีวิตตี้บ้านเฮาอยู่เงียบๆ จ๊าๆ แต่คนบ้านเฮาใจ๋ดี นับถือกั๋นเน้อเจ้า", "Village life was quiet and slow but people treated each other with kindness and respect."],
-             [28.3, 30.8, "หันตุงสูงข้างเฮือนบ่ลูก", "หันตุงสูงข้างเฮือนบ่ลูก", "See the tung banner by the house?"],
-             [31.0, 34.6, "ตุงแขวนไว้ตี้งานปอยและวันศีลเจ้า", "ตุงแขวนไว้ตี้งานปอยและวันศีลเจ้า", "Tungs are hung for temple and festival days."],
+             [23.0, 28.0, "ชีวิตตี้เฮือนเฮาอยู่เงียบ เงียบ จ๊า จ๊า แต่คนเฮือนเฮาใจ๋ดี นับถือกั๋นเน้อเจ้า", "ชีวิตตี้เฮือนเฮาอยู่เงียบๆ จ๊าๆ แต่คนเฮือนเฮาใจ๋ดี นับถือกั๋นเน้อเจ้า", "Village life was quiet and slow but people treated each other with kindness and respect."],
+             [28.3, 30.8, "หันตุงสูงข้างเฮือนบะลูก", "หันตุงสูงข้างเฮือนบะลูก", "See the tung banner by the house?"],
+             [31.0, 34.6, "ตุงแขวนไว้ตี้งานปอยละก่อวันศีลเจ้า", "ตุงแขวนไว้ตี้งานปอยละก่อวันศีลเจ้า", "Tungs are hung for temple and festival days."],
              [35.15, 37.3, "คนเฮาอยู่กั๊บธรรมชาติ", "คนเฮาอยู่กั๊บธรรมชาติ", "People were more in harmony with nature."],
-             [37.35, 41.15, "มีต้นกว๋าว จ้าง ดอกบัว และของดีนักขนาดเน้อเจ้า", "มีต้นกว๋าว จ้าง ดอกบัว และของดีนักขนาดเน้อเจ้า", "They had flame-of-the-forest trees, elephants, lotus flowers and many special things."],
+             [37.35, 41.15, "มีต้นกว๋าว จ้าง ดอกบัว ละก่อของดีนักขนาดเน้อเจ้า", "มีต้นกว๋าว จ้าง ดอกบัว ละก่อของดีนักขนาดเน้อเจ้า", "They had flame-of-the-forest trees, elephants, lotus flowers and many special things."],
              [41.2, 44.65, "ช้าก่อน ตัวหลงนี้มาจากเมืองจีนนา", "ช้าก่อน ตัวหลงนี้มาจากเมืองจีนนา", "Wait! This dragon came from China."],
-             [44.7, 47.6, "ตัวหลงเมืองจีนมักถือแก้ว บ่ใช่ธง", "ตัวหลงเมืองจีนมักถือแก้ว บ่ใช่ธง", "Chinese dragons usually hold a pearl, not a flag!"],
+             [44.7, 47.6, "ตัวหลงเมืองจีนมักถือแก้ว บะใช่ธง", "ตัวหลงเมืองจีนมักถือแก้ว บะใช่ธง", "Chinese dragons usually hold a pearl, not a flag!"],
              [47.65, 49.95, "พู้นแน่ะ หมู่จ้างเดินหลังต้นกล้วย", "พู้นแน่ะ หมู่จ้างเดินหลังต้นกล้วย", "Do you see the elephants walking behind the banana trees over there?"],
              [52.0, 54.3, "ฝนซาแล้วเหนือทุ่งนาเน้อ", "ฝนซาแล้วเหนือทุ่งนาเน้อ", "The rain is stopping over the rice fields."],
              [54.4, 58.6, "แม่หญิงควงจ้องสลัดหยาดฝน เหมือนจ้องตี้บ่อสร้างเน้อเจ้า", "แม่หญิงควงจ้องสลัดหยาดฝน เหมือนจ้องตี้บ่อสร้างเน้อเจ้า", "The women spin their umbrellas to shake off the rain, like those of Bo Sang."],

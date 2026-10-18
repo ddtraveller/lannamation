@@ -35,8 +35,10 @@ pip install -r requirements.txt
   groups are for the films' songs and for the dance track.
 - **Google Chrome.** The scripts start it by name (`channel="chrome"`), with no window.
 - **ffmpeg** on the path, for video.
-- **For the hero film's narration only:** Node.js, `npm install` in `kit/` (transformers.js, pinned in
-  `kit/package.json`), and the voice itself: the folder `model/` of the Kam Mueang Voice extension, in
+- **For the hero film's narration only:** PyTorch and transformers for its voice (`sash_narrate.py --voice
+  assistant`: Meta's MMS Northern Thai as the Kam Mueang assistant speaks it; the model comes from Hugging
+  Face the first time). Or, for the Kam Mueang Voice extension's voice: Node.js, `npm install` in `kit/`
+  (transformers.js, pinned in `kit/package.json`), and the folder `model/` of the extension, in
   [krueng.ai/downloads/kammuang_voice_chrome.zip](https://krueng.ai/downloads/kammuang_voice_chrome.zip).
 
 A film page plays when you open it in a browser. The cartoon maker wants to be served:
@@ -131,7 +133,7 @@ python render.py my_film.html my_film.mp4              # the film, 1920 x 1080 a
 python render.py my_film.html part.mp4 --from 4 --to 8 # a part of it
 python render.py lanna.html lanna.mp4 --audio lanna_song.wav
 python sash_music.py                                   # the hero film's music, sash.wav
-python sash_narrate.py <model folder> --takes 4        # its story in Kam Mueang over it, sash_voice.wav
+python sash_narrate.py --voice assistant --takes 4 --fit   # its story in Kam Mueang over it, sash_voice.wav
 python render.py sash.html sash.mp4 --audio sash_voice.wav
 python scenes.py sash.html sash.mp4 --audio sash_voice.wav            # the same film, scene by scene, then joined
 python scenes.py sash.html sash.mp4 --audio sash_voice.wav --scene 3  # after a change to scene 3: only it again
@@ -390,7 +392,7 @@ kit/              the kit and everything that uses it, side by side
   checks/           kit_check.py, the one check after any change, and the tools it uses
   *_music.py        the films' music, every sound a sine wave
   *_sing.py         the films' Thai singing; singer.py sings a syllable on a note
-  sash_narrate.py   the hero film's story, told in Kam Mueang (say.mjs: the Kam Mueang Voice extension's voice)
+  sash_narrate.py   the hero film's story, told in Kam Mueang (the Kam Mueang assistant's voice; or say.mjs, the extension's)
   dance_track.py    a dancer's moves, read from a video, -> dance_track.js
 maker/            the cartoon maker, its film.py and its skill for agents
 docs/STYLE.md     the rules with their numbers, how each part was built, what is not done
@@ -466,7 +468,8 @@ Mangrai, Chiang Mai, the sabai, the tung, the kwian, Bo Sang, khom loi, Yi Peng 
 its Kam Mueang from a second notebook whose word sources (`pythainlp/lanna_dict`, the Charatrit
 KamMuang-Thai-English pairs, a guide to speaking Lanna) are named in `sash.html`; no native speaker has
 checked it yet. Its voice is Meta's MMS Northern Thai (`facebook/mms-tts-nod`, CC BY-NC 4.0), as the Kam
-Mueang Voice extension carries it, so the narration is for non-commercial use.
+Mueang assistant speaks it (since 2026-10-18; before, as the Kam Mueang Voice extension carries it), so the
+narration is for non-commercial use.
 
 The band, the four new lanterns, the granary, the two tung and the red truck (2026-10-16): what each
 is, and how it is held or built, comes from a NotebookLM notebook of Lanna's material culture

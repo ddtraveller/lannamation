@@ -2954,6 +2954,22 @@ morning: "Add a laugh for each of the sprites, too": laughing is the ninth.
   posture). `paperdoll.js` reads a feeling's lean without the person's own time, so a sleepy doll's skirt
   follows the nod on the clock alone.
 
+## The pond's feelings, and the assistant's voice (2026-10-18)
+
+The owner: "redo the hero video for lanna_cartoon? In the pond scene the man should look surprised when
+the dragon appears and then angry when it shows a Chinese flag for a moment and then go back to being
+happy. The woman should laugh when the flag comes out and put her hands in her lap. Also, use the new
+assistant voice." Asked which voice, they chose the Kam Mueang assistant's: the same MMS model, as the
+assistant speaks it, with the assistant's spelling rules.
+
+| What | How |
+|---|---|
+| The fellow | `feel` by the scene's seconds (`POND_SEEN`, `POND_FLAG`, `POND_CALM` in `sash.html`): happy, then surprised from 7.4 (the dragon's head comes into the picture at 7.2, by `DRAGON_COURSE`), angry from `FLAG[0] + 0.2` (the flag out of the claw), happy again from `FLAG[1] + 0.3`; his eyes on the dragon from the first to the last |
+| The woman | her wonder at the dragon as before, then laughing from `FLAG[0] + 0.2` to `FLAG[1] + 0.6`, and happy after; from the flag on her hands lie in her lap, one over the other (`POND_LAP`: handA [-20, 100], the far arm's, and handB [60, 96], the near one's, measured from each shoulder), in place of the wai. Picked from four placements drawn side by side, after eight that left the hands at her sides (A is the far arm, the one toward where she faces) |
+| The voice | `sash_narrate.py --voice assistant`: MMS Northern Thai in PyTorch (transformers' `VitsModel`, `facebook/mms-tts-nod`, its own settings) as the assistant's `speak()` runs it, a line in pieces of up to 150 letters with a quarter of a second between them. The assistant also put one after the last piece; in the film that made each line 0.25 s longer for nothing, so the film's lines have none (the takes already made were trimmed of it) |
+| The words | the assistant's spelling rules (its speaker's corrections, kept with the assistant, not here) changed five lines, said and written: บ้าน → เฮือน (23.0 s), บ่ → บะ (28.3 and 44.7 s), และ → ละก่อ (31.0 and 37.4 s). Still unchecked by a native speaker |
+| The takes | four of each line, the clearest kept (heard back 0.62 to 0.96 of their letters). With the new voice four lines ran past their words or into the next line (by up to 0.23 s), and the pond scene leaves no room to move them (its last line must end before the cut at 50 s); `--fit` keeps the clearest take that ends in its room, and speaks as many takes again when none does: all 18 lines fit (line 9 needed eight takes) |
+
 ## Feelings on the creatures (2026-10-18)
 
 The owner: "start the creatures", after the people's nine feelings. The first round is the six a child

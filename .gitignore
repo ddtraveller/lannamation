@@ -15,6 +15,7 @@ __pycache__/
 node_modules/
 package-lock.json
 spoken_km/
+spoken_km_assistant/
 # the videos and the concat list of scenes.py
 *_scenes/
 *_scenes_fast/

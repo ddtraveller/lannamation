@@ -1,14 +1,20 @@
 """sash_narrate.py - tell the story of sash.html in Kam Mueang over sash.wav, saved as sash_voice.wav.
 
     python sash_music.py
-    python sash_narrate.py <the Kam Mueang Voice extension's model folder> --takes 4
+    python sash_narrate.py --voice assistant --takes 4      # the Kam Mueang assistant's voice (since 2026-10-18)
+    python sash_narrate.py <the Kam Mueang Voice extension's model folder> --takes 4    # or the extension's
     python render.py sash.html sash.mp4 --audio sash_voice.wav
 
 The words are the film's own: the page is opened in Chrome with no window, as render.py opens it,
 and asked for its WORDS: for each line, the seconds it shows, what the voice says and what is
 written. Each line is spoken by the voice of the Kam Mueang Voice extension (say.mjs: Meta's MMS
 Northern Thai, run by transformers.js as the extension runs it) once, and kept in spoken_km/ under a
-name made from its words, so a line is spoken again only when its words change; the voice draws its
+name made from its words, so a line is spoken again only when its words change. With --voice assistant
+the same model speaks as the Kam Mueang assistant speaks it (owner, 2026-10-18: "use the new assistant
+voice"): in PyTorch (transformers' VitsModel, facebook/mms-tts-nod, its own settings), the line in pieces
+of up to 150 letters with a quarter of a second between them; its takes are kept in spoken_km_assistant/.
+The assistant also respells its answers by its speaker's rules: those are in the film's words themselves
+(WORDS in sash.html), not here. Either voice draws its
 timing from noise, and the same line is never quite the same twice. With --takes N each new line is
 spoken N times and the take a speech recogniser (faster-whisper, medium, Thai) hears closest to the
 words is kept: the takes differ, and one can be much clearer than another (four takes of one line
@@ -48,7 +54,8 @@ from sash_music import room
 
 RATE = 44100
 HERE = Path(__file__).resolve().parent
-SPOKEN = HERE / "spoken_km"
+SPOKEN = HERE / "spoken_km"           # the extension's takes; the assistant's go to spoken_km_assistant (main())
+ASSISTANT_VOICE = "facebook/mms-tts-nod"
 MUSIC = 0.7          # the music between lines, of the level sash_music.py made it
 UNDER = 0.3          # the music while the voice speaks, of that
 RAMP = 0.35          # seconds the music takes to go down before a line and to come back after it
@@ -109,43 +116,105 @@ def heard(text, sound_file, listener):
     return difflib.SequenceMatcher(None, re.sub(r"[\sๆ]", "", text), re.sub(r"[\sๆ]", "", said)).ratio()
 
 
-def speak(texts, model, takes):
-    """Every line not spoken yet goes to say.mjs, in one run, "takes" times; the clearest take is kept."""
-    missing = [text for text in texts if not file_of(text).exists()]
+def say_as_assistant(jobs):
+    """Each [name, text] spoken as the Kam Mueang assistant speaks (its server.py, speak()): MMS Northern Thai in
+    PyTorch, the text in pieces of up to 150 letters, a quarter of a second of silence between them; to SPOKEN/name.wav."""
+    import torch
+    from transformers import AutoTokenizer, VitsModel
+    tokenizer, voice = AutoTokenizer.from_pretrained(ASSISTANT_VOICE), VitsModel.from_pretrained(ASSISTANT_VOICE).eval()
+    rate = voice.config.sampling_rate
+    for name, text in jobs:
+        pieces, piece = [], ""
+        for word in re.split(r"(?<=[\s.!?])", text):
+            if len(piece) + len(word) > 150 and piece.strip():
+                pieces.append(piece.strip())
+                piece = ""
+            piece += word
+        if piece.strip():
+            pieces.append(piece.strip())
+        out = []
+        for p in pieces:
+            ids = tokenizer(p, return_tensors="pt")
+            if ids["input_ids"].shape[1] < 2:
+                continue
+            if out:                                 # a quarter of a second between pieces (none after the last: the film times its lines)
+                out.append(numpy.zeros(int(0.25 * rate), dtype=numpy.float32))
+            with torch.no_grad():
+                out.append(voice(**ids).waveform[0].float().numpy())
+        soundfile.write(str(SPOKEN / (name + ".wav")), numpy.concatenate(out), rate, subtype="PCM_16")
+
+
+def say(jobs, model):
+    """[name, text] jobs, each spoken to SPOKEN/name.wav: by say.mjs in one run, or the assistant's way."""
+    if model == "assistant":
+        say_as_assistant(jobs)
+    else:
+        listing = SPOKEN / "to_say.json"
+        listing.write_text(json.dumps(jobs, ensure_ascii=False), encoding="utf-8")
+        subprocess.run(["node", str(HERE / "say.mjs"), model, str(listing), str(SPOKEN)], check=True)
+        listing.unlink()
+
+
+def seconds_of(sound_file):
+    info = soundfile.info(str(sound_file))
+    return info.frames / info.samplerate
+
+
+def speak(lines, model, takes, fit=False):
+    """Every line not spoken yet, "takes" times; the clearest take is kept. lines: [text, room], room the seconds
+    from its start until its words leave the screen or the next line begins. With fit, the clearest take that
+    ends inside its room is kept; if none of them does, as many takes again are spoken, once, and the choice
+    made again (the voice's timing is drawn from noise: one take can be half a second shorter than another)."""
+    room = dict(lines)
+    missing = [text for text, _ in lines if not file_of(text).exists()]
     if not missing:
         return
     SPOKEN.mkdir(exist_ok=True)
-    listing = SPOKEN / "to_say.json"
-    listing.write_text(json.dumps([[file_of(text).stem + "_%d" % k, text] for text in missing for k in range(takes)],
-                                  ensure_ascii=False), encoding="utf-8")
-    subprocess.run(["node", str(HERE / "say.mjs"), model, str(listing), str(SPOKEN)], check=True)
-    listing.unlink()
+    say([[file_of(text).stem + "_%d" % k, text] for text in missing for k in range(takes)], model)
     listener = None
     if takes > 1:
         from faster_whisper import WhisperModel
         listener = WhisperModel("medium", device="cpu", compute_type="int8")
     for text in missing:
-        files = [SPOKEN / (file_of(text).stem + "_%d.wav" % k) for k in range(takes)]
-        scores = [heard(text, one, listener) for one in files] if listener else [0]
-        best = scores.index(max(scores))
+        count = takes
+        files = [SPOKEN / (file_of(text).stem + "_%d.wav" % k) for k in range(count)]
+        if fit and not any(seconds_of(one) <= room[text] for one in files):
+            say([[file_of(text).stem + "_%d" % k, text] for k in range(count, 2 * count)], model)
+            files += [SPOKEN / (file_of(text).stem + "_%d.wav" % k) for k in range(count, 2 * count)]
+        scores = [heard(text, one, listener) for one in files] if listener else [0] * len(files)
+        fitting = [k for k, one in enumerate(files) if seconds_of(one) <= room[text]] if fit else []
+        best = max(fitting or range(len(files)), key=lambda k: scores[k])
         files[best].rename(file_of(text))
         for one in files:
             one.unlink(missing_ok=True)
         if listener:
-            print("%s  takes heard %s: kept %.2f" % (text, " ".join("%.2f" % s for s in scores), scores[best]))
+            print("%s  takes heard %s: kept %.2f, %.2f s%s" % (text, " ".join("%.2f" % s for s in scores), scores[best],
+                                                        seconds_of(file_of(text)),
+                                                        "" if not fit else " (fits %.2f)" % room[text] if fitting else " (NONE fits %.2f)" % room[text]))
 
 
 def main():
+    global SPOKEN
     parser = argparse.ArgumentParser()
-    parser.add_argument("model", help="the extension's model folder")
+    parser.add_argument("model", nargs="?", help="the extension's model folder (or --voice assistant)")
+    parser.add_argument("--voice", choices=["extension", "assistant"], default="extension",
+                        help="assistant: the Kam Mueang assistant's voice, which needs no model folder")
     parser.add_argument("--page", default=str(HERE / "sash.html"))
     parser.add_argument("--music", default=str(HERE / "sash.wav"))
     parser.add_argument("--out", default=str(HERE / "sash_voice.wav"))
     parser.add_argument("--takes", type=int, default=1, help="takes of each new line; the clearest is kept")
+    parser.add_argument("--fit", action="store_true",
+                        help="keep the clearest take that ends before its words leave the screen and the next line begins")
     args = parser.parse_args()
+    if args.voice == "assistant":
+        SPOKEN = HERE / "spoken_km_assistant"
+    elif not args.model:
+        parser.error("give the extension's model folder, or --voice assistant")
 
     words, seconds = words_of(args.page)
-    speak([w[2] for w in words], args.model, args.takes)
+    rooms = [min(w[1], words[n + 1][0] if n + 1 < len(words) else seconds) - w[0] - 0.05 for n, w in enumerate(words)]
+    speak([[w[2], room] for w, room in zip(words, rooms)], "assistant" if args.voice == "assistant" else args.model,
+          args.takes, args.fit)
     length = int(seconds * RATE)
     music, _ = soundfile.read(args.music, dtype="float64", always_2d=True)  # sash_music.py's two rows
     music = music.T
