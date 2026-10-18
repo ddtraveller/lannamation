@@ -799,7 +799,9 @@ function creatureFeel(look, at) {
 // (how.iris, with a pupil in it if how.pupil is a colour), and the lid a
 // feeling brings down (e, from creatureFeel()), in the colour of the skin
 // (how.skin), its edge inked (how.ink). how.pie: a 1930s pie eye instead,
-// black with a slice of light (how.light, the kit's skin unless told) cut out. Shut (a blink, how.shut,
+// black with a slice of light (how.light, the kit's skin unless told) cut out.
+// how.ball: an eye coloured all through (a cat's, a pig's) in place of the
+// white and the iris, with only a pupil (how.pupil; how.slit, a slit) and a light. Shut (a blink, how.shut,
 // or a lid down past 0.9) it is a line bowed down; laughing, bowed up.
 function creatureEye(x, y, rx, ry, e, how) {
   var ink = how.ink || INK, closed = Math.max(e.lid, how.shut ? 1 : 0);
@@ -830,12 +832,16 @@ function creatureEye(x, y, rx, ry, e, how) {
     pen.lineTo(rx * 1.43, -ry * 0.15);
     pen.fill();
   } else {
-    pen.fillStyle = "#fff6ea";
+    pen.fillStyle = how.ball || "#fff6ea";
     pen.fill(ball);
   }
   pen.save();
   pen.clip(ball);
-  if (!how.pie) {
+  if (how.ball) {                                   // coloured all through: a pupil, a slit or round, and a light
+    if (how.slit) { oval(rx * 0.14, 0, rx * 0.2, ry * 0.84, how.pupil || "#1f1a1a"); }
+    else if (how.pupil) { oval(rx * 0.14, 0, ry * 0.6, ry * 0.62, how.pupil); }
+    oval(rx * 0.32, -ry * 0.34, Math.min(rx, ry) * 0.2, Math.min(rx, ry) * 0.2, "#fff6ea");
+  } else if (!how.pie) {
     oval(rx * 0.28, ry * 0.08, Math.min(rx, ry) * 0.62, ry * 0.72, how.iris || "#1f1a1a");
     if (how.pupil) { oval(rx * 0.33, ry * 0.08, Math.min(rx, ry) * 0.27, ry * 0.31, how.pupil); }
     oval(rx * 0.1, -ry * 0.25, Math.min(rx, ry) * 0.18, Math.min(rx, ry) * 0.18, "#ffffff");
@@ -6364,8 +6370,9 @@ function fallingFeather(x, y, ground, age, seed, colour, drift) {
 
 // The sun. STYLE.sun is "flames" (a gold disc ringed with the flame scrolls
 // of a thangka, which turn and swell on the beat) or "face" (the smiling sun
-// of a 1930s cartoon).
-function sun(x, y, t) {
+// of a 1930s cartoon). how: {feel: a feeling (creatureFeel())}, for the face:
+// its pie eyes under their lids, a brow over each, the smile turned or opened.
+function sun(x, y, t, how) {
   var big = 74 + hop(t, 0) * 7;
   if (STYLE.sun === "face") {
     pen.strokeStyle = "#f4b740";
@@ -6380,12 +6387,45 @@ function sun(x, y, t) {
       pen.stroke();
     }
     oval(x, y, big, big, "#ffd75e");
-    pieEye(x - 24, y - 12);
-    pieEye(x + 18, y - 12);
+    if (!how || how.feel === undefined) {
+      pieEye(x - 24, y - 12);
+      pieEye(x + 18, y - 12);
+      pen.strokeStyle = INK;
+      pen.lineWidth = 5;
+      pen.beginPath();
+      pen.arc(x, y + 6, 34, 0.3, Math.PI - 0.3);
+      pen.stroke();
+      return;
+    }
+    checkNames("The sun's name", how, {feel: true});
+    var e = creatureFeel(how, t);
+    [[x - 24, 1], [x + 18, -1]].forEach(function (one) {   // each eye looking toward the middle, its lid and a brow
+      pen.save();
+      pen.translate(one[0], y - 12);
+      pen.scale(one[1], 1);
+      creatureEye(0, 0, 7, 13, e, {pie: true, skin: "#ffd75e"});
+      pen.translate(0, -20 - 6 * e.brow[0] + 4 * e.brow[1]);
+      pen.rotate(1.1 * e.brow[1]);
+      pen.strokeStyle = INK;
+      pen.lineWidth = 4;
+      pen.beginPath();
+      pen.moveTo(-9, 1);
+      pen.quadraticCurveTo(0, -3, 9, 1);
+      pen.stroke();
+      pen.restore();
+    });
     pen.strokeStyle = INK;
     pen.lineWidth = 5;
     pen.beginPath();
-    pen.arc(x, y + 6, 34, 0.3, Math.PI - 0.3);
+    if (e.open > 0.05) {                            // open: a laugh, a yawn, a fright
+      pen.ellipse(x, y + 28, 22, 6 + 18 * e.open, 0, 0, Math.PI * 2);
+      pen.fillStyle = "#7a1f22";
+      pen.fill();
+    } else if (e.grin < -0.2) {                     // a frown
+      pen.arc(x, y + 52, 30, Math.PI + 0.5, 2 * Math.PI - 0.5);
+    } else {                                        // a smile, as wide as it is glad
+      pen.arc(x, y + 6 - 8 * e.grin, 34 - 6 * (1 - e.grin), 0.3 + 0.3 * (1 - e.grin), Math.PI - 0.3 - 0.3 * (1 - e.grin));
+    }
     pen.stroke();
     return;
   }

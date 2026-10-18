@@ -64,8 +64,8 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   person is happy. A key's sixth entry changes it from that key on,
   `[second, x, y, null, null, "surprised"]` (she is surprised when the dragon
   comes); write null for the pose and the size to keep them. The dog, the
-  rooster, the naga, the dragon, the mom and the luang take `feel`, and a key's
-  feeling, too.
+  rooster, the naga, the dragon, the mom, the luang and the oxcart (its
+  buffalo) take `feel`, and a key's feeling, too.
 - Scenes: the film begins on `backdrop`; `"cuts": [{"at": 8, "backdrop": "river"}]`
   begins a new scene at that second, and the kit closes and opens its iris at the
   cut. A set piece's one key says which scene it stands in by its second (0 for

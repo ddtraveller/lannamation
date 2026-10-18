@@ -10,12 +10,13 @@
 </head>
 <body>
 <canvas id="stage" width="1920" height="1080"></canvas>
-<script>window.FILM_STYLE = {hop: false};</script>
+<script>window.FILM_STYLE = {hop: false, sun: "face"};   // the sun with its 1930s face, the one with feelings</script>
 <script src="oldcartoon.js"></script>
 <script src="naga.js"></script>
 <script src="dragon.js"></script>
 <script src="beasts.js"></script>
 <script src="myth.js"></script>
+<script src="northbirds.js"></script>
 <script>
 // The "creatures" sheet: the nine feelings a person takes by name (see
 // feelings.html), on the creatures, each creature a part of twelve seconds,
@@ -23,7 +24,7 @@
 // person's does; creatureFeel() turns it into eyes, brows and a mouth, and
 // into how it carries its head, its ears and its tail. Twelve seconds, so
 // that every sleepy one nods and yawns, and every laughing one laughs.
-var DURATION = 84;
+var DURATION = 228;
 
 var BEAT = 0.5;
 
@@ -53,6 +54,50 @@ var PARTS = [
   }],
   ["the Luang, the dragon of the north", function (x, y, feel, t, ex, ey) {
     luang(ex - 54 * 1.1 * 0.9, ey + 36 * 1.1 * 0.9, {size: 0.9, face: 1, feel: feel});
+  }],
+  // the beasts, the same way: the eye from the head's place in the body (beasts.js) and the beast's own scale
+  ["an elephant", function (x, y, feel, t, ex, ey) {
+    var S = 0.5 * GAITS.elephant[0];
+    elephant(ex - 318 * S, ey + 496 * S, {size: 0.5, feel: feel});
+  }],
+  ["a water buffalo", function (x, y, feel, t, ex, ey) {
+    var S = 0.8 * GAITS.buffalo[0];
+    buffalo(ex - 286 * S, ey + 284 * S, {size: 0.8, feel: feel});
+  }],
+  ["a Siamese cat", function (x, y, feel, t, ex, ey) {
+    var S = 3 * FELINES.cat.scale;
+    cat(ex - 283 * S, ey + 319 * S, {size: 3, feel: feel});
+  }],
+  ["a tiger", function (x, y, feel, t, ex, ey) {
+    var S = 1 * FELINES.tiger.scale;
+    tiger(ex - 322 * S, ey + 331 * S, {size: 1, feel: feel});
+  }],
+  ["a pig", function (x, y, feel, t, ex, ey) {
+    var S = 1.2 * GAITS.pig[0];
+    pig(ex - 214 * S, ey + 190 * S, {size: 1.2, feel: feel});
+  }],
+  ["the Hatsadiling", function (x, y, feel, t, ex, ey) {
+    var S = 0.6 * GAITS.hatsadiling[0];
+    hatsadiling(ex - 176 * S, ey + 448 * S, {size: 0.6, feel: feel});
+  }],
+  // the birds of the north (northbirds.js): small eyes, so drawn large here
+  ["a green peafowl", function (x, y, feel, t, ex, ey) {
+    peafowl(ex - 48.5 * 1.6, ey + 247 * 1.6, t, {size: 1.6, feel: feel});
+  }],
+  ["Mrs Hume's pheasant", function (x, y, feel, t, ex, ey) {
+    pheasant(ex - 45 * 2.6, ey + 104 * 2.6, t, {size: 2.6, feel: feel});
+  }],
+  ["a green-tailed sunbird", function (x, y, feel, t, ex, ey) {
+    sunbird(ex - 11 * 6, ey + 23 * 6, t, {size: 6, feel: feel});
+  }],
+  ["a red-billed blue magpie", function (x, y, feel, t, ex, ey) {
+    blueMagpie(ex - 17 * 3.6, ey + 45 * 3.6, t, {size: 3.6, feel: feel});
+  }],
+  ["a great hornbill", function (x, y, feel, t, ex, ey) {
+    hornbill(ex - 35 * 1.8, ey + 123 * 1.8, t, {size: 1.8, feel: feel});
+  }],
+  ["the sun, with its 1930s face", function (x, y, feel, t, ex, ey) {
+    sun(ex + 30, ey + 40, t, {feel: feel});
   }]
 ];
 

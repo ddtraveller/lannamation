@@ -70,7 +70,8 @@
 //   late       the timing of the beat, as hop(t, late) takes it: the head keeps it
 //   mouth      0 to 1: how far the mouth is open, if the scene says (the Mom's and the Luang's)
 //   feel       a feeling, as a person's (creatureFeel() in the kit): the eye, the brow, the
-//              jaw and the head's carriage (the Mom's and the Luang's)
+//              jaw and the head's carriage (the Mom's and the Luang's); the Hatsadiling's eye,
+//              its head, and its trunk raised in wonder and gladness
 //   colour     the colour of the scales, or of the bird's feathers
 //   gold       the colour of the flames, the frills, the brows and the borders
 //   belly      the colour of the underside
@@ -734,6 +735,8 @@ function hatsadiling(x, y, look) {
   var walk = look.step !== undefined && !fly, bob = walk ? 5 * Math.abs(Math.sin(look.step * Math.PI * 2)) : fly ? 10 * Math.sin(clock * 6) : 0;
   var beat = look.late !== undefined && STYLE.hop ? hop(clock, look.late) : 0, lift = clamp(look.trunk || 0);
   var flap = fly ? Math.sin(clock * 6) : 0;
+  var e = look.feel !== undefined ? creatureFeel(look, clock + x * 0.013) : null;   // a feeling: the eye, the trunk, the head
+  if (e && look.trunk === undefined) { lift = clamp(0.7 * e.f.wonder + 0.4 * e.f.smile + 0.5 * e.f.laugh); }   // the trunk raised in wonder and gladness
   FINE = Math.min(1, Math.pow(Math.max(0.5, size), -0.7));
   LINE = STYLE.line * FINE;
   if (!fly) {
@@ -872,7 +875,7 @@ function hatsadiling(x, y, look) {
   if (!fly) { wing(true); }
   pen.save();                                       // the head: an elephant's, dark, with a flame of gold on its crown
   pen.translate(146, -424);
-  pen.rotate(nodding - 0.12 * lift);
+  pen.rotate(nodding - 0.12 * lift + (e ? 0.5 * e.nod - 0.1 * e.raise + 0.04 * e.shake : 0));
   var dusk = inkFor(c.head), blink = Math.sin(clock * 0.8 + seed * 3) > 0.985, flop = 0.1 * Math.sin(clock * 1.9 + seed) + 0.2 * beat;
   function dome() {
     pen.beginPath();
@@ -921,7 +924,7 @@ function hatsadiling(x, y, look) {
   tusk(0, 0, 0);
   pen.save();
   pen.translate(30, -24);
-  elephantEye(dusk === INK ? "#f6dc8a" : blend(c.head, "#ffffff", 0.55), blink);
+  elephantEye(dusk === INK ? "#f6dc8a" : blend(c.head, "#ffffff", 0.55), blink, e, c.head);
   pen.restore();
   var crown = pen.getTransform().transformPoint(new DOMPoint(0, -84));
   pen.restore();

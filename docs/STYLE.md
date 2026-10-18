@@ -2976,12 +2976,14 @@ The owner: "start the creatures", after the people's nine feelings. The first ro
 can put in the cartoon maker: the dog, the rooster, the Naga, the dragon (both kinds), the Mom and the
 Luang. Each takes `feel` (and the same numbers) in its look, as a person does; with none, it draws as it
 did before. The sheet is `creatures.html`: each creature a part, its nine feelings close up, the big ones
-placed by where their own drawing puts the eye.
+placed by where their own drawing puts the eye. The second round ("begin") is the rest of the kit's
+creatures with a face: the beasts, the birds of the north, the Hatsadiling and the sun's 1930s face.
+The sheet now has 19 parts, 12 seconds each (228 s).
 
 | The kit's part | What it does |
 |---|---|
 | `creatureFeel(look, at)` | the person's numbers (`feelingOf()`, over time at the creature's own time) as what any face and body can show: `lid`, `bowed`, `slant`, `wide`, `brow` [lift, turn], `open`, `grin`, `raise` (the head high or low), `ears`, `wag`, `tail`, `shake` (each "ha"), `nod`, `startle`, and `jaw(usual)`: a jaw shut for sadness, worry, fullness and sleep, a snarl in anger, the feeling's own opening for a laugh, a yawn or a fright, and as it was otherwise |
-| `creatureEye(x, y, rx, ry, e, how)` | a creature's eye looking along +x: the white, an iris toward the front (and a pupil), or a 1930s pie eye; a lid in the colour of the skin, down by `lid`, low at the front in anger and at the back in sadness; shut, a line bowed down, and laughing, bowed up |
+| `creatureEye(x, y, rx, ry, e, how)` | a creature's eye looking along +x: the white, an iris toward the front (and a pupil), or a 1930s pie eye; a lid in the colour of the skin, down by `lid`, low at the front in anger and at the back in sadness; shut, a line bowed down, and laughing, bowed up. `how.ball`: an eye that is all one colour (a bird's, a cat's, a pig's), with a round pupil, or with `how.slit` a cat's slit, and a light |
 
 | Creature | Where the feeling shows |
 |---|---|
@@ -2991,12 +2993,27 @@ placed by where their own drawing puts the eye.
 | dragon, both kinds | the eye (its yellow iris and dark middle), the bushy brow lock raised or turned (its root down in anger), the jaw, the head lifted or hung |
 | Mom | the great eye, its lid the gold of its ring; the heavy gold brow; the jaw; the head |
 | Luang | the eye under its gold brow, the brow, the jaw, the head |
+| elephant, side and front (`beasts.js`) | `elephantEye(ink, shut, e, skin)`: the eye under a lid of its hide, the fold of the brow raised or turned with the brow, the folds under the eye; the trunk raised in wonder and gladness (unless the look sets `trunk`), and the mouth open under it; the head lifted or hung; the ears flare in anger, lie close in sadness and flap faster with a wag; the tail swings harder |
+| water buffalo, side and front | the eye (both eyes, each looking toward the middle, from the front); the ear down when it is sad, up in wonder; the head's nod; the tail swings faster and wider with a wag |
+| Siamese cat, tiger | `felineHead(kind, open, c, m, seed, e)`: the almond eye in its own colour under a lid of the face's colour (the cat's pupil a slit, the tiger's round); the ears laid back in anger, fear and sadness or pricked; the tiger's heavy brow raised or turned; the corner of the mouth up in a smile, down in a frown; the jaw; the head; the tail up when glad, down when sad, lashing in anger |
+| pig | the small dark eye under its lid, and a brow over it raised or turned (its front end down in anger, up in worry); the corner of the mouth up in a smile, down in a frown; the ears flop down when it is sad; the tail wags harder; the head and the jaw; the cheek pinker when it is full or laughing. The owner: "Make sure to include the pig". Its first round had no brow and no corner, and happy and concerned looked neutral. The brow sits close over the eye (12 units above its middle): 21 units up it lay on the edge of the forehead and could not be seen |
+| peafowl, pheasant (`northbirds.js`) | the eye (`nbEye()`: the dot it always was, or with a feeling a small eye under a lid of the head's colour); the head and neck carried high or low; the peafowl's bill opens in a laugh, a yawn or a fright |
+| sunbird, magpie, hornbill | the eye only. A bird's eye is a few pixels at a film's size: on these three a feeling shows on the sheet, close up, and hardly in a film |
+| Hatsadiling (`myth.js`) | the elephant's eye and brow; its trunk raised in wonder and gladness; its head lifted or hung, shaking a little in a laugh |
+| sun, `sun(x, y, t, how)` with `STYLE.sun = "face"` | `how.feel`: its pie eyes, each looking toward the middle, under lids of its gold; a brow over each; the smile turned (as wide as it is glad) or a frown, or opened in a laugh, a yawn or a fright. The flame sun (`"flames"`, the kit's own) has no face and takes no feeling |
 
 - **The maker.** Its six creatures have the feeling buttons in their panel, the dropdown in the bar over a
   new one, a feeling at any point of a course (a key's sixth entry; the dragon's depth stays its fourth),
-  and the box that opens at a new point. The model's prompt says which things take `"feel"`.
-- **Not done yet.** The beasts (elephant, buffalo, cat, tiger, pig), the birds of the north, the
-  Hatsadiling, the yak and the sun; bubbles over creatures.
+  and the box that opens at a new point. The model's prompt says which things take `"feel"`. In the
+  second round the ox cart joined them: the feeling is its buffalo's.
+- **A name used twice.** The peafowl already had an `e`: how far its train is raised, eased
+  (`d * d * (3 - 2 * d)`). A second `var e` for its feeling took that number, so with the train up its bill
+  was drawn at `NaN` and did not show (a canvas skips a point that is not a number), and nothing said
+  so. The HEAD-against-new pixel comparison found it: 97 pixels in 3 frames of 6 on `northbirds.html`.
+  The peafowl's feeling is `mood`.
+- **Not done.** The yak (a painted set piece with no face to move); bubbles over creatures. In the
+  maker: the beasts and the birds are not in its palette (the ox cart's buffalo is the one beast there),
+  the Hatsadiling is kept out of it, and its sun is the flame sun, so none of them has the picker.
 
 ## Speech and thought bubbles (2026-10-18)
 

@@ -118,8 +118,9 @@ A look is a plain object of names (`size`, `face`, `feel`, `wave`, `wai`, `paras
 them, each shown on `kit/looks.html`. `feel` is how the person feels: `"neutral"`, `"happy"`, `"laughing"`, `"sad"`,
 `"concerned"`, `"angry"`, `"sleepy"`, `"satiated"` or `"surprised"`; it sets the face and how the body
 is carried; a laughing person laughs in bursts, and a sleepy one nods and yawns by themselves
-(`kit/feelings.html` shows all nine). The dog, the rooster, the Naga, the dragons, the Mom and the Luang take
-`feel` too: eyes, brows, a mouth or a jaw, and how they carry the head, the ears and the tail
+(`kit/feelings.html` shows all nine). The dog, the rooster, the Naga, the dragons, the Mom, the Luang,
+the beasts, the birds of the north, the Hatsadiling and the 1930s sun take `feel` too: eyes, brows, a
+mouth, a jaw or a bill, and how they carry the head, the ears, the trunk and the tail
 (`kit/creatures.html`). A name the kit does not know is reported once in `WARNINGS`,
 with the nearest name it does know, and `render.py` and `stills.py` print it.
 
@@ -435,7 +436,8 @@ takes), `walk.html`, `body.html`, `legs.html`, `build.html`, `children.html`, `e
 `feelings.html` (the nine feelings on a lady, a fellow, a girl and an elder, close up and whole),
 `bubbles.html` (speech and thought bubbles in Thai and English, over people who hop and walk, under a
 camera that comes closer), `creatures.html` (the nine feelings on the dog, the rooster, the Naga, both
-dragons, the Mom and the Luang).
+dragons, the Mom, the Luang, the elephant, the buffalo, the cat, the tiger, the pig, the Hatsadiling,
+the five birds of the north and the sun).
 
 ### The films
 

@@ -32,11 +32,25 @@
 // than what it holds, and colour that changes inside a shape and nowhere else.
 
 var PEAFOWL_KEYS = {}, PHEASANT_KEYS = {}, SUNBIRD_KEYS = {}, MAGPIE_KEYS = {}, HORNBILL_KEYS = {};
-["size", "face", "step", "peck", "display", "shiver", "call"].forEach(function (n) { PEAFOWL_KEYS[n] = true; });
-["size", "face", "step", "peck", "hen"].forEach(function (n) { PHEASANT_KEYS[n] = true; });
-["size", "face", "hover", "sip"].forEach(function (n) { SUNBIRD_KEYS[n] = true; });
-["size", "face", "fly", "bob"].forEach(function (n) { MAGPIE_KEYS[n] = true; });
-["size", "face", "fly", "turn"].forEach(function (n) { HORNBILL_KEYS[n] = true; });
+["size", "face", "step", "peck", "display", "shiver", "call", "feel"].forEach(function (n) { PEAFOWL_KEYS[n] = true; });
+["size", "face", "step", "peck", "hen", "feel"].forEach(function (n) { PHEASANT_KEYS[n] = true; });
+["size", "face", "hover", "sip", "feel"].forEach(function (n) { SUNBIRD_KEYS[n] = true; });
+["size", "face", "fly", "bob", "feel"].forEach(function (n) { MAGPIE_KEYS[n] = true; });
+["size", "face", "fly", "turn", "feel"].forEach(function (n) { HORNBILL_KEYS[n] = true; });
+// Every bird also takes feel, a feeling as a person's (creatureFeel() in the kit): its eye shuts, bows or
+// slants under a lid of its head's colour; the peafowl's and the pheasant's heads are carried high or low
+// and the peafowl's bill opens. A bird's eye is small: at a film's sizes it shows most in the head and the bill.
+
+// A bird's eye at (x, y), r across: the dot it always was, or with a feeling (e), a small eye of that colour
+// under a lid of the head's colour ("skin").
+function nbEye(x, y, r, colour, e, skin) {
+  if (!e) {
+    nbOval(x, y, r, r);
+    nbFill(colour);
+    return;
+  }
+  creatureEye(x, y, r * 1.35, r * 1.35, e, {ball: colour, skin: skin, ink: inkFor(skin)});
+}
 
 // ---------- shared ----------
 
@@ -186,6 +200,7 @@ function peafowlFeather(base, mid, tip, eye, gleam, colour) {
 
 function peafowl(x, y, t, look) {
   look = look || {};
+  var mood = look.feel !== undefined ? creatureFeel(look, t) : null;   // a feeling: the eye, and where it has them the head and the bill
   checkNames("The peafowl's name", look, PEAFOWL_KEYS);
   var keep = nbBegin(x, y, look);
   var walking = look.step !== undefined, step = look.step || 0, d = clamp(look.display || 0), e = d * d * (3 - 2 * d);
@@ -237,7 +252,7 @@ function peafowl(x, y, t, look) {
   pen.restore();
   pen.save();                                        // the neck and head turn down to peck, up to call, about the neck's foot
   pen.translate(14, -150);
-  pen.rotate(peck * 1.05 - call * 0.18);
+  pen.rotate(peck * 1.05 - call * 0.18 + (mood ? 0.5 * mood.nod - 0.2 * mood.raise : 0));   // and a feeling carries it high or low
   pen.translate(-14, 150);
   if (walking) { pen.translate(5 * Math.sin(step * Math.PI * 4), 0); }   // the head bobs forward and back with the steps
   pen.beginPath();                                   // rules 1 and 2: the neck, slender, green, scaled
@@ -269,9 +284,8 @@ function peafowl(x, y, t, look) {
   nbFill(PEAFOWL.cheek);
   nbOval(48, -247, 5, 3.8);
   nbFill(PEAFOWL.eyeskin);
-  nbOval(48.5, -247, 1.9, 1.9);
-  nbFill("#141414");
-  var open = call * 6;                               // the bill, open as it calls
+  nbEye(48.5, -247, 1.9, "#141414", mood, PEAFOWL.eyeskin);
+  var open = call * 6 + (mood ? 8 * mood.open : 0);        // the bill, open as it calls (and in a laugh, a yawn, a fright)
   pen.beginPath();
   pen.moveTo(53, -249);
   pen.lineTo(68, -244 - open * 0.3);
@@ -312,6 +326,7 @@ var PHEASANT = {body: "#8a2e24", deep: "#5a1e22", scale: "#3a1418", bar: "#f4f0e
 
 function pheasant(x, y, t, look) {
   look = look || {};
+  var e = look.feel !== undefined ? creatureFeel(look, t) : null;   // a feeling: the eye, and where it has them the head and the bill
   checkNames("The pheasant's name", look, PHEASANT_KEYS);
   var keep = nbBegin(x, y, look);
   var walking = look.step !== undefined, step = look.step || 0, peck = clamp(look.peck || 0), hen = !!look.hen, i;
@@ -370,7 +385,7 @@ function pheasant(x, y, t, look) {
   }
   pen.save();                                        // the neck bends down to bring the bill to the ground
   pen.translate(12, -76);
-  pen.rotate(peck * 1.4);
+  pen.rotate(peck * 1.4 + (e ? 0.5 * e.nod - 0.2 * e.raise : 0));   // and a feeling carries the head high or low
   pen.translate(-12, 76);
   pen.beginPath();                                   // rule 2: the neck
   pen.moveTo(18, -74);
@@ -385,8 +400,7 @@ function pheasant(x, y, t, look) {
     nbOval(44, -103, 6.5, 5.5, 0.1);
     nbFill(PHEASANT.face);
   }
-  nbOval(45, -104, 1.6, 1.6);
-  nbFill("#141414");
+  nbEye(45, -104, 1.6, "#141414", e, hen ? PHEASANT.hen : PHEASANT.face);
   pen.beginPath();
   pen.moveTo(49, -106);
   pen.quadraticCurveTo(57, -104, 58, -99);
@@ -439,6 +453,7 @@ function sunbirdWing(lift, alpha) {                  // one wing, pointed, olive
 
 function sunbird(x, y, t, look) {
   look = look || {};
+  var e = look.feel !== undefined ? creatureFeel(look, t) : null;   // a feeling: the eye, and where it has them the head and the bill
   checkNames("The sunbird's name", look, SUNBIRD_KEYS);
   var keep = nbBegin(x, y, look, 0.45);
   pen.scale(0.6, 0.6);                               // it is drawn 60 long: at size 1, as small as it is beside the cast
@@ -475,8 +490,7 @@ function sunbird(x, y, t, look) {
   if (hover > 0) { sunbirdWing(0.15 + 0.85 * beat, 0.6 * hover); }
   nbOval(9, -22, 6.5, 6);                            // rule 2: the head, glossed
   nbPaint(SUNBIRD.head, nbGrad(4, -28, 14, -16, SUNBIRD.gloss, SUNBIRD.head));
-  nbOval(11, -23, 1.2, 1.2);
-  nbFill("#101010");
+  nbEye(11, -23, 1.2, "#101010", e, SUNBIRD.head);
   pen.strokeStyle = SUNBIRD.bill;                    // rule 1: the bill, long, thin, curved down
   pen.lineWidth = 2.2;
   pen.beginPath();
@@ -521,13 +535,12 @@ function magpieTail(root, angle, long, t) {          // rule 4: the graduated ta
   }
 }
 
-function magpieHead(x, y) {                         // rules 1 and 2
+function magpieHead(x, y, e) {                      // rules 1 and 2
   nbOval(x, y, 10, 9.5);
   nbPaint(MAGPIE.black);
   nbOval(x - 6, y - 4, 7, 5, -0.3);
   nbFill(MAGPIE.nape);
-  nbOval(x + 3, y - 1, 1.8, 1.8);
-  nbFill("#ffcc66");
+  nbEye(x + 3, y - 1, 1.8, "#ffcc66", e, MAGPIE.black);
   pen.beginPath();
   pen.moveTo(x + 8, y - 3);
   pen.lineTo(x + 19, y + 1);
@@ -538,6 +551,7 @@ function magpieHead(x, y) {                         // rules 1 and 2
 
 function blueMagpie(x, y, t, look) {
   look = look || {};
+  var e = look.feel !== undefined ? creatureFeel(look, t) : null;   // a feeling: the eye, and where it has them the head and the bill
   checkNames("The magpie's name", look, MAGPIE_KEYS);
   var keep = nbBegin(x, y, look);
   if (!look.fly) {                                   // perched on a branch at (x, y)
@@ -559,7 +573,7 @@ function blueMagpie(x, y, t, look) {
     pen.quadraticCurveTo(6, -30, 2, -36);
     pen.closePath();
     nbPaint(MAGPIE.black);
-    magpieHead(14, -44);
+    magpieHead(14, -44, e);
   } else {                                           // in flight: rule 5, beating three times and gliding, rising and sinking with it
     var cycle = (t % 1.4) / 1.4, flapping = cycle < 0.5;
     var lift = flapping ? 0.2 + 0.8 * Math.cos(cycle / 0.5 * Math.PI * 2 * 3) : 0.12;   // gliding, the wings held out level, seen edge on
@@ -592,7 +606,7 @@ function blueMagpie(x, y, t, look) {
     magpieTail([-20, 2], Math.PI + 0.08, 118, t);
     nbOval(0, 0, 23, 11);
     nbPaint(MAGPIE.blue, nbGrad(0, -11, 0, 11, MAGPIE.light, MAGPIE.white));
-    magpieHead(25, -5);
+    magpieHead(25, -5, e);
     wingAt(MAGPIE.blue);
   }
   nbEnd(keep);
@@ -619,7 +633,7 @@ function blueMagpie(x, y, t, look) {
 var HORNBILL = {black: "#1c1c1e", blackLight: "#34343c", cream: "#efe2a8", creamDeep: "#d8c070", bill: "#f2c230", billPale: "#f8e6a0",
                 band: "#f0e6b8", white: "#f6f4ee", eye: "#d8302a", leg: "#3a3a3a"};
 
-function hornbillHead(x, y) {                        // rules 2 and 3: the head, the bill and the casque, about (x, y)
+function hornbillHead(x, y, e) {                        // rules 2 and 3: the head, the bill and the casque, about (x, y)
   pen.beginPath();                                   // the bill, curved down
   pen.moveTo(x + 10, y - 8);
   pen.quadraticCurveTo(x + 58, y - 4, x + 96, y + 30);
@@ -646,8 +660,7 @@ function hornbillHead(x, y) {                        // rules 2 and 3: the head,
   nbPaint(HORNBILL.cream);
   nbOval(x + 4, y + 1, 10, 9);
   nbFill(HORNBILL.black);
-  nbOval(x + 5, y - 1, 3.5, 3.5);
-  nbFill(HORNBILL.eye);
+  nbEye(x + 5, y - 1, 3.5, HORNBILL.eye, e, HORNBILL.black);
   nbOval(x + 5.5, y - 1, 1.5, 1.5);
   nbFill("#101010");
 }
@@ -687,6 +700,7 @@ function hornbillWing(lift, colour) {               // rules 4 and 6: one broad 
 
 function hornbill(x, y, t, look) {
   look = look || {};
+  var e = look.feel !== undefined ? creatureFeel(look, t) : null;   // a feeling: the eye, and where it has them the head and the bill
   checkNames("The hornbill's name", look, HORNBILL_KEYS);
   var keep = nbBegin(x, y, look);
   if (!look.fly) {                                   // perched on a branch at (x, y)
@@ -733,7 +747,7 @@ function hornbill(x, y, t, look) {
     pen.save();                                      // the head turns, as it looks about
     pen.translate(30, -122);
     pen.rotate((look.turn || 0) * 0.35 + 0.06 * Math.sin(t * 0.9));
-    hornbillHead(0, 0);
+    hornbillHead(0, 0, e);
     pen.restore();
   } else {                                           // rule 6: in flight, slow beats, the neck stretched forward
     var phase = t * Math.PI * 2 / 1.1, lift = 0.15 + 0.85 * Math.cos(phase);   // up, and down, and up: about once a second
@@ -765,7 +779,7 @@ function hornbill(x, y, t, look) {
     pen.quadraticCurveTo(52, 6, 36, 10);
     pen.closePath();
     nbPaint(HORNBILL.cream);
-    hornbillHead(70, -4);
+    hornbillHead(70, -4, e);
     hornbillWing(lift, HORNBILL.black);
   }
   nbEnd(keep);

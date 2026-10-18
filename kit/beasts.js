@@ -64,6 +64,9 @@
 //   mouth      0 to 1: how far the mouth is open (a mew, a roar; the pig's too, and
 //              the elephant's, whose mouth also opens as its trunk lifts)
 //   eyes       the colour of the eyes (the pig's too)
+//   feel       a feeling, as a person's (creatureFeel() in the kit): the eyes, the head's carriage, the
+//              ears, the tail; the elephant's trunk rises in wonder and gladness and its ears flare in
+//              anger; a jaw opens in a laugh, a yawn or a fright
 //   points     the cat's: the colour of its face, ears, legs and tail. A cat given a
 //              colour and no points is that colour all over. The pig's: the colour
 //              of patches on its back and its head
@@ -71,7 +74,7 @@
 //   tufts      the tiger's: false for one without the flame tufts at its joints
 var BEAST_KEYS = {};
 
-["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground"].forEach(function (name) { BEAST_KEYS[name] = true; });
+["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground", "feel"].forEach(function (name) { BEAST_KEYS[name] = true; });
 
 // Where a walking foot is in its stride: [how far forward of its joint, how
 // high off the ground]. "s" is how far through the stride it is; it is on
@@ -178,8 +181,30 @@ function elephantTrunk(points, wide, thin, colour, open) {
 
 // An elephant's eye, about (0, 0), looking along x: small and dark under a
 // heavy lid, with lashes and the folds of old skin round it. "shut" is true
-// in a blink.
-function elephantEye(ink, shut) {
+// in a blink. "e", a feeling (creatureFeel()), in the colour "skin": its lid,
+// and the fold of the brow raised or turned.
+function elephantEye(ink, shut, e, skin) {
+  if (e) {
+    creatureEye(0, 0, 11, 7.5, e, {turn: -0.12, skin: skin, iris: "#3a2418", ink: ink, shut: shut});
+    pen.strokeStyle = ink;
+    pen.lineCap = "round";
+    pen.lineWidth = 1.4 * FINE;
+    pen.save();                                     // the brow's fold, raised or turned with the brow
+    pen.translate(0, -15 - 5 * e.brow[0] + 4 * e.brow[1]);
+    pen.rotate(0.8 * e.brow[1]);
+    pen.beginPath();
+    pen.moveTo(-18, 1);
+    pen.quadraticCurveTo(0, -9, 18, 3);
+    pen.stroke();
+    pen.restore();
+    pen.beginPath();                                // and the folds under the eye
+    pen.moveTo(-12, 9);
+    pen.quadraticCurveTo(0, 14, 13, 8);
+    pen.moveTo(-8, 15);
+    pen.quadraticCurveTo(2, 19, 12, 14);
+    pen.stroke();
+    return;
+  }
   if (!shut) {
     pen.beginPath();
     pen.ellipse(0, 0, 11, 7.5, -0.12, 0, 7);
@@ -237,6 +262,11 @@ function elephantFront(look, colour) {
   var bob = walk ? 5 * Math.abs(Math.cos(turn)) : 0, dark = blend(colour, "#1c1c22", 0.25), chest = blend(colour, "#1c1c22", 0.1);
   var beat = look.late !== undefined && STYLE.hop ? hop(clock, look.late) : 0;
   var lift = clamp(look.trunk || 0), open = Math.max(clamp(look.mouth || 0), 0.7 * lift), pink = blend(colour, "#d99aa0", 0.6);
+  var e = look.feel !== undefined ? creatureFeel(look, clock + 2) : null;   // a feeling: the trunk raised in wonder and gladness, a jaw, the eyes
+  if (e) {
+    if (look.trunk === undefined) { lift = clamp(0.7 * e.f.wonder + 0.4 * e.f.smile + 0.5 * e.f.laugh); }
+    open = Math.max(e.jaw(clamp(look.mouth || 0)), 0.7 * lift);
+  }
   var down = lying ? 196 : 0, shut = Math.sin(clock * 0.7 + 2) > 0.985;
   // A leg from the front: a column a little narrower above the foot, where it
   // spreads to a round pad with nails across it. One that is lifted is
@@ -475,7 +505,7 @@ function elephantFront(look, colour) {
     pen.save();
     pen.translate(side * 62, -470);
     pen.scale(-side, 1);                            // each looks toward the middle
-    elephantEye(ink, shut);
+    elephantEye(ink, shut, e, colour);
     pen.restore();
   }
   pen.restore();
@@ -489,6 +519,7 @@ function buffaloFront(look, colour) {
   var liftL = walk ? Math.max(0, Math.sin(turn)) : 0, liftR = walk ? Math.max(0, -Math.sin(turn)) : 0;
   var bob = walk ? 4 * Math.abs(Math.cos(turn)) : 0, dark = blend(colour, "#1c1c22", 0.25);
   var beat = look.late !== undefined && STYLE.hop ? hop(clock, look.late) : 0;
+  var e = look.feel !== undefined ? creatureFeel(look, clock) : null;   // a feeling: the eyes and the ears
   function leg(lx, top, lift, skin) {               // a leg from the front, and its cloven hoof
     var foot = -16 - lift * 36;
     pen.beginPath();
@@ -542,7 +573,7 @@ function buffaloFront(look, colour) {
     pen.save();                                     // the ear, under the horn
     pen.translate(side * 56, -312);
     pen.scale(side, 1);
-    pen.rotate(0.3 + 0.12 * Math.sin(clock * 2.8) - 0.3 * beat);
+    pen.rotate(0.3 + 0.12 * Math.sin(clock * 2.8) - 0.3 * beat - (e ? 0.4 * e.ears : 0));   // down when it is sad, up in wonder
     pen.beginPath();
     pen.moveTo(0, -8);
     pen.quadraticCurveTo(40, -22, 70, 4);
@@ -565,8 +596,16 @@ function buffaloFront(look, colour) {
   oval(-16, -198, 5, 3.5, "#1f1a1a");
   oval(16, -198, 5, 3.5, "#1f1a1a");
   for (side = -1; side <= 1; side += 2) {
-    oval(side * 46, -296, 8, 7, "#fff6ea");
-    oval(side * 45, -295, 4.5, 5, "#1f1a1a");
+    if (e) {                                        // a feeling's eyes, each looking toward the middle
+      pen.save();
+      pen.translate(side * 46, -296);
+      pen.scale(-side, 1);
+      creatureEye(0, 0, 8, 7, e, {skin: colour, iris: "#1f1a1a", ink: ink});
+      pen.restore();
+    } else {
+      oval(side * 46, -296, 8, 7, "#fff6ea");
+      oval(side * 45, -295, 4.5, 5, "#1f1a1a");
+    }
   }
   if (look.rope) {
     pen.strokeStyle = "#c9a878";
@@ -600,6 +639,11 @@ function elephant(x, y, look) {
   var lying = !!look.sit, walk = look.step !== undefined && !lying, bob = walk ? 4 * Math.abs(Math.sin(look.step * Math.PI * 2)) : 0;
   var beat = look.late !== undefined && STYLE.hop ? hop(clock, look.late) : 0;
   var lift = clamp(look.trunk || 0), open = Math.max(clamp(look.mouth || 0), 0.7 * lift), seed = x * 0.01;
+  var e = look.feel !== undefined ? creatureFeel(look, clock + seed) : null;   // a feeling: the trunk, the head, the ears, the tail, the eye
+  if (e) {
+    if (look.trunk === undefined) { lift = clamp(0.7 * e.f.wonder + 0.4 * e.f.smile + 0.5 * e.f.laugh); }
+    open = Math.max(e.jaw(clamp(look.mouth || 0)), 0.7 * lift);
+  }
   var fold = "rgba(50, 50, 60, 0.38)", pink = blend(colour, "#d99aa0", 0.6), wood = "#8a4a2a";
   var rise = bob - (lying ? 196 : 0);               // how far all above the legs is lifted: a little in a walk, and a long way down for one that lies
   FINE = Math.min(1, Math.pow(size, -0.7));
@@ -709,7 +753,7 @@ function elephant(x, y, look) {
   else { beastLegs(legsNow, true, look, bones, thick, colour, GAITS.elephant[1], 26, foot); }
   pen.translate(0, -rise);                          // all above the legs: it rises and falls a little in a walk
   pitched(true);
-  var swing = Math.sin(clock * 2.1 + seed) * 16 + (walk ? 10 * Math.sin(look.step * Math.PI * 2) : 0);
+  var swing = Math.sin(clock * 2.1 + seed) * 16 * (e ? 1 + e.wag : 1) + (walk ? 10 * Math.sin(look.step * Math.PI * 2) : 0);
   hose(-246, -424, -280 + swing, -238, 0.12, 11, colour);     // the tail, and the brush of hair at its end
   pen.save();
   pen.translate(-280 + swing, -238);
@@ -823,11 +867,13 @@ function elephant(x, y, look) {
     hose(-118, -604, 94, -598, -0.04, 6, wood);
   }
   var nod = 0.03 * Math.sin(clock * 1.4 + seed) - 0.04 * beat - 0.14 * lift   // the head tips back as the trunk lifts,
-            + (walk ? 0.025 * Math.sin(look.step * Math.PI * 4) : 0);        // and nods twice in a stride
+            + (walk ? 0.025 * Math.sin(look.step * Math.PI * 4) : 0)         // and nods twice in a stride,
+            + (e ? 0.5 * e.nod - 0.1 * e.raise + 0.04 * e.shake : 0);       // and a feeling lifts it or hangs it
   pen.save();                                       // the head, turning a little about the neck
   pen.translate(206, -456);
   pen.rotate(nod);
-  var flap = 0.1 * Math.sin(clock * 2.6 + seed * 2) + 0.22 * beat + (walk ? 0.06 * Math.sin(look.step * Math.PI * 4 + 1) : 0);
+  var flap = 0.1 * (e ? 1 + e.wag : 1) * Math.sin(clock * 2.6 + seed * 2) + 0.22 * beat + (walk ? 0.06 * Math.sin(look.step * Math.PI * 4 + 1) : 0)
+           + (e ? 0.22 * e.f.anger + 0.12 * e.f.wonder - 0.08 * e.f.sad : 0);   // the ears flare in anger, lie close in sadness
   var shut = Math.sin(clock * 0.7 + seed * 5) > 0.985;
   function tusk(dx, dy, ivory, rings) {             // a tusk: forward and down, and up again at its point
     pen.beginPath();
@@ -919,7 +965,7 @@ function elephant(x, y, look) {
   if (look.tusks !== false) { tusk(0, 0, "#fff6ea", look.cloth); }      // the near tusk
   pen.save();                                       // the eye
   pen.translate(112, -40);
-  elephantEye(ink, shut);
+  elephantEye(ink, shut, e, colour);
   pen.restore();
   pen.save();                                       // the ear: its top folds over, it narrows to a lobe that hangs, and it flaps
   pen.translate(8, -78);
@@ -969,6 +1015,7 @@ function buffalo(x, y, look) {
   var size = (look.size || 1) * GAITS.buffalo[0], face = look.face || 1, colour = look.colour || "#55565f", ink = inkFor(colour), n;
   var walk = look.step !== undefined, bob = walk ? 4 * Math.abs(Math.sin(look.step * Math.PI * 2)) : 0;
   var beat = look.late !== undefined && STYLE.hop ? hop(clock, look.late) : 0;
+  var e = look.feel !== undefined ? creatureFeel(look, clock + x * 0.01) : null;   // a feeling: the eye, the head, the ear, the tail
   FINE = Math.min(1, Math.pow(size, -0.7));
   LINE = STYLE.line * FINE;
   pen.fillStyle = "rgba(70, 45, 30, 0.2)";
@@ -1003,7 +1050,7 @@ function buffalo(x, y, look) {
   }
   beastLegs(legs, true, look, [92, 86, 14], [27, 18, 15], colour, GAITS.buffalo[1], 24, foot);
   pen.translate(0, -bob);
-  var swing = Math.sin(clock * 2.4 + x * 0.01) * 14 + 16 * beat;
+  var swing = Math.sin(clock * 2.4 * (e ? 1 + e.wag : 1) + x * 0.01) * 14 * (e ? 1 + e.wag : 1) + 16 * beat;
   hose(-204, -246, -232 + swing, -120, 0.1, 8, colour);       // the tail, and its tuft
   hose(-232 + swing, -120, -236 + swing * 1.3, -84, 0.05, 13, "#2a2a30");
   pen.beginPath();                                  // the body: a barrel, the withers higher than the hips
@@ -1026,7 +1073,8 @@ function buffalo(x, y, look) {
   pen.translate(0, bob);
   beastLegs(legs, false, look, [92, 86, 14], [27, 18, 15], colour, GAITS.buffalo[1], 24, foot);
   pen.translate(0, -bob);
-  var nod = 0.04 * Math.sin(clock * 1.5 + x * 0.01) + 0.06 * beat + (walk ? 0.03 * Math.sin(look.step * Math.PI * 4) : 0);
+  var nod = 0.04 * Math.sin(clock * 1.5 + x * 0.01) + 0.06 * beat + (walk ? 0.03 * Math.sin(look.step * Math.PI * 4) : 0)
+          + (e ? 0.5 * e.nod - 0.12 * e.raise + 0.04 * e.shake : 0);
   pen.save();                                       // the neck and the head, carried forward and low
   pen.translate(150, -262);
   pen.rotate(nod);
@@ -1091,11 +1139,14 @@ function buffalo(x, y, look) {
   pen.moveTo(176, 54);
   pen.quadraticCurveTo(196, 62, 214, 50);
   pen.stroke();
-  oval(136, -22, 8, 7, "#fff6ea");                  // the eye
-  oval(138, -21, 4.5, 5, "#1f1a1a");
+  if (e) { creatureEye(136, -22, 8, 7, e, {skin: colour, iris: "#1f1a1a", ink: ink}); }   // a feeling's eye
+  else {
+    oval(136, -22, 8, 7, "#fff6ea");                // the eye
+    oval(138, -21, 4.5, 5, "#1f1a1a");
+  }
   pen.save();                                       // the ear, behind the horn, held out to the side
   pen.translate(84, -34);
-  pen.rotate(-0.5 + 0.12 * Math.sin(clock * 2.8 + x * 0.02) + 0.3 * beat);
+  pen.rotate(-0.5 + 0.12 * Math.sin(clock * 2.8 + x * 0.02) + 0.3 * beat + (e ? 0.4 * e.ears : 0));   // a feeling droops it, or lifts it
   pen.beginPath();
   pen.moveTo(0, 0);
   pen.quadraticCurveTo(-34, -20, -62, 6);
@@ -1177,8 +1228,9 @@ function beastTuft(x, y, turn, size, colour) {
 
 // A feline's head in profile, looking along x, about its middle. "open" is
 // how far the mouth is open; "c" the colours; "m" the measures (FELINES).
-function felineHead(kind, open, c, m, seed) {
+function felineHead(kind, open, c, m, seed, e) {
   var blink = Math.sin(clock * 0.9 + seed) > 0.985, twitch = 0.08 * Math.sin(clock * 3.1 + seed), n;
+  if (e) { twitch += 0.6 * Math.min(0, e.ears) + 0.12 * Math.max(0, e.ears); }   // a feeling lays the ears back (anger, fear, sadness) or pricks them
   function ear(dx, dy, skin) {                      // one ear: a tall point for the cat, a low round one for the tiger
     pen.save();
     pen.translate(dx, dy);
@@ -1283,18 +1335,30 @@ function felineHead(kind, open, c, m, seed) {
     beastTuft(-34, 30, 2.5, 46, c.pale);
   }
   ear(-14, -60, kind === "cat" ? c.points : c.body);   // the near ear
-  pen.beginPath();                                  // the eye: an almond, blue for the cat, yellow for the tiger
-  pen.ellipse(40, -18, 15, blink ? 1.5 : kind === "cat" ? 9.5 : 8, -0.18, 0, 7);
-  shape(c.eye, 1.6 * FINE);
-  if (!blink) { oval(42, -18, kind === "cat" ? 3 : 4.5, kind === "cat" ? 7.5 : 5.5, "#1f1a1a"); }
+  if (e) {                                          // a feeling's eye: the almond in its own colour, under the lid of the face's colour
+    creatureEye(40, -18, 15, kind === "cat" ? 9.5 : 8, e, {turn: -0.18, skin: kind === "cat" ? c.points : c.body, ball: c.eye,
+                                                         pupil: "#1f1a1a", slit: kind === "cat", ink: inkFor(kind === "cat" ? c.points : c.body), shut: blink});
+  } else {
+    pen.beginPath();                                // the eye: an almond, blue for the cat, yellow for the tiger
+    pen.ellipse(40, -18, 15, blink ? 1.5 : kind === "cat" ? 9.5 : 8, -0.18, 0, 7);
+    shape(c.eye, 1.6 * FINE);
+    if (!blink) { oval(42, -18, kind === "cat" ? 3 : 4.5, kind === "cat" ? 7.5 : 5.5, "#1f1a1a"); }
+  }
   pen.strokeStyle = kind === "cat" ? inkFor(c.points) : c.stripes;
   pen.lineCap = "round";
-  if (kind === "tiger") {                           // a heavy brow, drawn down toward the nose
+  if (kind === "tiger") {                           // a heavy brow, drawn down toward the nose (raised or turned by a feeling)
+    pen.save();
+    if (e) {
+      pen.translate(41, -30 - 5 * e.brow[0] + 5 * e.brow[1]);
+      pen.rotate(0.8 * e.brow[1]);
+      pen.translate(-41, 30);
+    }
     pen.lineWidth = 4 * FINE;
     pen.beginPath();
     pen.moveTo(22, -32);
     pen.quadraticCurveTo(42, -34, 60, -22);
     pen.stroke();
+    pen.restore();
   }
   pen.beginPath();                                  // the nose, and the line of the mouth
   pen.moveTo(84, -8);
@@ -1307,7 +1371,7 @@ function felineHead(kind, open, c, m, seed) {
   pen.beginPath();
   pen.moveTo(88, 6);
   pen.quadraticCurveTo(84, 18, 68, 18);
-  pen.quadraticCurveTo(56, 18, 48, 10);
+  pen.quadraticCurveTo(56, 18, 48, 10 - (e ? 7 * e.grin : 0));   // its corner up in a smile, down in a frown
   pen.stroke();
   pen.strokeStyle = "rgba(255, 250, 240, 0.95)";    // the whiskers
   pen.lineWidth = 1.5 * FINE;
@@ -1326,6 +1390,8 @@ function feline(kind, x, y, look, c) {
   var walk = look.step !== undefined && !look.sit, bob = walk ? 5 * Math.abs(Math.sin(look.step * Math.PI * 2)) : 0;
   var beat = look.late !== undefined && STYLE.hop ? hop(clock, look.late) : 0, open = clamp(look.mouth || 0);
   var legSkin = kind === "cat" ? c.points : c.body, ink = inkFor(c.body), seed = x * 0.013;
+  var e = look.feel !== undefined ? creatureFeel(look, clock + seed) : null;   // a feeling: the head, the ears, the eye, the mouth, the tail
+  if (e) { open = e.jaw(open); }
   FINE = Math.min(1, Math.pow(Math.max(0.5, size), -0.7));
   LINE = STYLE.line * FINE / Math.max(0.35, Math.min(1, size * 1.6));   // a small animal is not inked with a thick pen
   pen.fillStyle = "rgba(70, 45, 30, 0.2)";
@@ -1501,7 +1567,7 @@ function feline(kind, x, y, look, c) {
     var bonesOf = [116 * shorter, 110 * shorter, 12];
     beastLegs(legs, true, look, bonesOf, m.legs, legSkin, m.reach, m.lift, paw);
     pen.translate(0, m.low - bob);
-    tail(-208 * L, -262, m.tail[3], m.tail[4], m.tail[5], 1);
+    tail(-208 * L, -262, m.tail[3] + (e ? 0.5 * e.tail : 0), m.tail[4], m.tail[5], e ? 1 + 1.5 * e.f.anger + 0.6 * e.wag : 1);   // up when glad, down when sad, lashing in anger
     standShape();
     shape(c.body);
     pen.save();
@@ -1557,9 +1623,9 @@ function feline(kind, x, y, look, c) {
   }
   pen.save();                                       // the head
   pen.translate(headAt[0], headAt[1]);
-  pen.rotate(0.04 * Math.sin(clock * 1.5 + seed) - 0.05 * beat - 0.2 * open);
+  pen.rotate(0.04 * Math.sin(clock * 1.5 + seed) - 0.05 * beat - 0.2 * open + (e ? 0.5 * e.nod - 0.1 * e.raise + 0.04 * e.shake : 0));
   pen.scale(m.head, m.head);
-  felineHead(kind, open, c, m, seed);
+  felineHead(kind, open, c, m, seed, e);
   var crown = pen.getTransform().transformPoint(new DOMPoint(0, -70));
   pen.restore();
   pen.restore();
@@ -1596,6 +1662,8 @@ function pig(x, y, look) {
   var size = (look.size || 1) * GAITS.pig[0], face = look.face || 1, colour = look.colour || "#eeb2a6", ink = inkFor(colour), n;
   var walk = look.step !== undefined, bob = walk ? 3 * Math.abs(Math.sin(look.step * Math.PI * 2)) : 0;
   var beat = look.late !== undefined && STYLE.hop ? hop(clock, look.late) : 0, open = clamp(look.mouth || 0), seed = x * 0.013;
+  var e = look.feel !== undefined ? creatureFeel(look, clock + seed) : null;   // a feeling: the head, the ears, the eye, the jaw, the tail, the cheek
+  if (e) { open = e.jaw(open); }
   var deep = blend(colour, "#5a2a2a", 0.3), far = blend(colour, "#1c1c22", 0.25);
   FINE = Math.min(1, Math.pow(Math.max(0.5, size), -0.7));
   LINE = STYLE.line * FINE / Math.max(0.45, Math.min(1, size * 1.3));   // a piglet is not inked with a thick pen
@@ -1647,7 +1715,7 @@ function pig(x, y, look) {
   pen.translate(0, -bob);
   // The tail: a curl, one turn and a half, that winds tighter toward its end
   // and wags. It is drawn twice, as a hose is: fat in ink, then in colour.
-  var wag = 0.25 * Math.sin(clock * 5 + seed) + 0.3 * beat;
+  var wag = 0.25 * (e ? 1 + 1.5 * e.wag : 1) * Math.sin(clock * 5 * (e ? 1 + e.wag : 1) + seed) + 0.3 * beat;
   function curl() {
     pen.beginPath();
     for (var a = 0; a <= 30; a++) {
@@ -1681,8 +1749,9 @@ function pig(x, y, look) {
   pen.translate(0, -bob);
   pen.save();                                       // the head, carried low before the shoulders
   pen.translate(150, -168);
-  pen.rotate(0.04 * Math.sin(clock * 1.6 + seed) + 0.05 * beat + (walk ? 0.03 * Math.sin(look.step * Math.PI * 4) : 0) - 0.12 * open);
-  var blink = Math.sin(clock * 0.8 + seed * 3) > 0.985, flop = 0.1 * Math.sin(clock * 2.3 + seed) + 0.25 * beat;
+  pen.rotate(0.04 * Math.sin(clock * 1.6 + seed) + 0.05 * beat + (walk ? 0.03 * Math.sin(look.step * Math.PI * 4) : 0) - 0.12 * open
+             + (e ? 0.5 * e.nod - 0.1 * e.raise + 0.04 * e.shake : 0));
+  var blink = Math.sin(clock * 0.8 + seed * 3) > 0.985, flop = 0.1 * Math.sin(clock * 2.3 + seed) + 0.25 * beat - (e ? 0.3 * e.ears : 0);
   function ear(dx, dy, skin) {                      // an ear that flops forward over the eye
     pen.save();
     pen.translate(4 + dx, -66 + dy);
@@ -1757,14 +1826,34 @@ function pig(x, y, look) {
   pen.moveTo(84, -26);
   pen.quadraticCurveTo(80, -6, 84, 20);
   pen.stroke();
-  pen.beginPath();                                  // the eye: small and dark
-  pen.ellipse(64, -22, 7.5, blink ? 1.2 : 8.5, -0.1, 0, 7);
-  pen.fillStyle = look.eyes || "#2a1a1a";
-  pen.fill();
-  if (!blink) { pen.fillStyle = "#fff6ea"; pen.beginPath(); pen.arc(66.5, -25, 2.2, 0, 7); pen.fill(); }
+  if (e) {
+    creatureEye(64, -22, 7.5, 8.5, e, {turn: -0.1, skin: colour, ball: look.eyes || "#2a1a1a", ink: ink, shut: blink});   // a feeling's eye
+    pen.strokeStyle = ink;
+    pen.lineCap = "round";
+    pen.lineWidth = 1.2 * LINE;
+    pen.save();                                     // a brow over it, raised, or turned: its front end down in anger, up in worry
+    pen.translate(63, -34 - 6 * e.brow[0] + 2 * e.brow[1]);   // close over the eye: the forehead's edge is not far above it
+    pen.rotate(1.1 * e.brow[1]);
+    pen.beginPath();
+    pen.moveTo(-11, 2);
+    pen.quadraticCurveTo(0, -4, 11, 0);
+    pen.stroke();
+    pen.restore();
+    pen.lineWidth = LINE;
+    pen.beginPath();                                // and the corner of the mouth, up in a smile, down in a frown
+    pen.moveTo(44, 29);
+    pen.quadraticCurveTo(34, 30 - 2 * e.grin, 24, 29 - 11 * e.grin);
+    pen.stroke();
+  } else {
+    pen.beginPath();                                // the eye: small and dark
+    pen.ellipse(64, -22, 7.5, blink ? 1.2 : 8.5, -0.1, 0, 7);
+    pen.fillStyle = look.eyes || "#2a1a1a";
+    pen.fill();
+    if (!blink) { pen.fillStyle = "#fff6ea"; pen.beginPath(); pen.arc(66.5, -25, 2.2, 0, 7); pen.fill(); }
+  }
   pen.beginPath();                                  // a cheek
   pen.ellipse(8, 6, 22, 14, 0, 0, 7);
-  pen.fillStyle = "rgba(214, 90, 90, 0.22)";
+  pen.fillStyle = "rgba(214, 90, 90, " + (0.22 + (e ? 0.2 * e.f.full + 0.15 * e.f.laugh : 0)) + ")";   // pinker when it is full, or laughing
   pen.fill();
   ear(0, 0, colour);
   var crown = pen.getTransform().transformPoint(new DOMPoint(0, -84));
