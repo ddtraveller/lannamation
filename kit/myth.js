@@ -69,6 +69,8 @@
 //   face       1 looks right, -1 looks left
 //   late       the timing of the beat, as hop(t, late) takes it: the head keeps it
 //   mouth      0 to 1: how far the mouth is open, if the scene says (the Mom's and the Luang's)
+//   feel       a feeling, as a person's (creatureFeel() in the kit): the eye, the brow, the
+//              jaw and the head's carriage (the Mom's and the Luang's)
 //   colour     the colour of the scales, or of the bird's feathers
 //   gold       the colour of the flames, the frills, the brows and the borders
 //   belly      the colour of the underside
@@ -89,7 +91,7 @@
 //   trunk      0 to 1: how high the trunk is lifted
 var MYTH_KEYS = {};
 
-["size", "face", "late", "mouth", "colour", "gold", "belly", "step", "eyes", "trail", "depth", "sing", "horns", "wings", "fly", "head", "trunk"
+["size", "face", "late", "mouth", "colour", "gold", "belly", "step", "eyes", "trail", "depth", "sing", "horns", "wings", "fly", "head", "trunk", "feel"
 ].forEach(function (name) { MYTH_KEYS[name] = true; });
 
 // How the two that walk do it, for amble() of beasts.js: [how large it is
@@ -170,6 +172,8 @@ function mom(x, y, look) {
   var walk = look.step !== undefined, bob = walk ? 3 * Math.abs(Math.sin(look.step * Math.PI * 2)) : 0;
   var beat = look.late !== undefined && STYLE.hop ? hop(clock, look.late) : 0;
   var open = clamp(look.mouth === undefined ? 0.14 + 0.1 * Math.sin(clock * 1.4 + seed) : look.mouth);
+  var e = look.feel !== undefined ? creatureFeel(look, clock + seed) : null;
+  if (e) { open = e.jaw(open); }
   var hind = [[-100, -112, 0, -1, false], [-80, -116, 0.5, -1, true]], fore = [[92, -128, 0.25, 1, false], [112, -132, 0.75, 1, true]];
   FINE = Math.min(1, Math.pow(Math.max(0.5, size), -0.7));
   LINE = STYLE.line * FINE / Math.max(0.45, Math.min(1, size * 1.3));
@@ -265,7 +269,8 @@ function mom(x, y, look) {
   pen.translate(0, -bob);
   pen.save();                                       // the head, big and broad, before the shoulders
   pen.translate(140, -198);
-  pen.rotate(0.04 * Math.sin(clock * 1.6 + seed) + 0.07 * beat + (walk ? 0.03 * Math.sin(look.step * Math.PI * 4) : 0) - 0.1 * open);
+  pen.rotate(0.04 * Math.sin(clock * 1.6 + seed) + 0.07 * beat + (walk ? 0.03 * Math.sin(look.step * Math.PI * 4) : 0) - 0.1 * open +
+             (e ? 0.6 * e.nod - 0.1 * e.raise + 0.05 * e.shake : 0));
   var blink = Math.sin(clock * 0.9 + seed * 3) > 0.985, flop = 0.08 * Math.sin(clock * 2.1 + seed) + 0.2 * beat;
   function ear(dx, dy, skin) {                      // a small round ear
     pen.save();
@@ -402,7 +407,9 @@ function mom(x, y, look) {
   pen.arc(120, -16, 6, 0.6, 5.2);
   pen.stroke();
   oval(54, -44, 20, 20, c.crest);                   // the eye: great and round, in a ring of gold
-  if (blink) {
+  if (e) {                                          // a feeling's eye, its lid the gold of the ring
+    creatureEye(54, -44, 13, 13, e, {skin: c.crest, iris: look.eyes || "#1f1a1a", ink: ink, shut: blink});
+  } else if (blink) {
     pen.strokeStyle = ink;
     pen.lineWidth = 2.4 * FINE;
     pen.beginPath();
@@ -423,13 +430,20 @@ function mom(x, y, look) {
     pen.arc(60.5, -47, 2.2, 0, 7);
     pen.fill();
   }
-  pen.beginPath();                                  // the brow: heavy, and curled at its end
+  pen.save();                                       // the brow: heavy, and curled at its end (a feeling raises it, or turns it)
+  if (e) {
+    pen.translate(58, -64 - 7 * e.brow[0] + 7 * e.brow[1]);
+    pen.rotate(0.8 * e.brow[1]);
+    pen.translate(-58, 64);
+  }
+  pen.beginPath();
   pen.moveTo(26, -60);
   pen.quadraticCurveTo(54, -90, 88, -62);
   pen.quadraticCurveTo(94, -52, 84, -50);
   pen.quadraticCurveTo(56, -72, 32, -52);
   pen.closePath();
   shape(c.crest);
+  pen.restore();
   ear(0, 0, c.body);
   var crown = pen.getTransform().transformPoint(new DOMPoint(0, -92));
   pen.restore();
@@ -465,7 +479,7 @@ function luangLeg(sx, sy, px, py, knee, skin, c) {
 
 // A Luang's head in profile, looking along x, its neck joining at (0, 0).
 // "open" is how far the mouth is open, 0 to 1.
-function luangHead(open, c) {
+function luangHead(open, c, e) {
   var ink = inkFor(c.body), n, k;
   function skull() {                                // the skull, and a snout whose tip turns up as a trunk's does. No chin: the jaw is its own piece
     pen.beginPath();
@@ -601,20 +615,31 @@ function luangHead(open, c) {
       pen.stroke();
     }
   }
-  pen.beginPath();                                  // the eye, under a brow of gold
-  pen.ellipse(54, -36, 13, 12, -0.1, 0, 7);
-  shape("#fff6ea", 1.4 * FINE);
-  oval(57, -36, 7, 8, c.crest);
-  pen.fillStyle = "#1f1a1a";
-  pen.beginPath();
-  pen.arc(58, -36, 3.6, 0, 7);
-  pen.fill();
+  if (e) {                                          // a feeling's eye, under a brow of gold raised or turned by it
+    creatureEye(54, -36, 13, 12, e, {turn: -0.1, skin: c.body, iris: c.crest, pupil: "#1f1a1a", ink: inkFor(c.body)});
+  } else {
+    pen.beginPath();                                // the eye, under a brow of gold
+    pen.ellipse(54, -36, 13, 12, -0.1, 0, 7);
+    shape("#fff6ea", 1.4 * FINE);
+    oval(57, -36, 7, 8, c.crest);
+    pen.fillStyle = "#1f1a1a";
+    pen.beginPath();
+    pen.arc(58, -36, 3.6, 0, 7);
+    pen.fill();
+  }
+  pen.save();
+  if (e) {
+    pen.translate(57, -54 - 7 * e.brow[0] + 7 * e.brow[1]);
+    pen.rotate(0.8 * e.brow[1]);
+    pen.translate(-57, 54);
+  }
   pen.beginPath();
   pen.moveTo(32, -50);
   pen.quadraticCurveTo(56, -68, 82, -48);
   pen.quadraticCurveTo(58, -58, 36, -44);
   pen.closePath();
   shape(c.crest);
+  pen.restore();
   antler(0, 0, c.horn);
 }
 
@@ -683,11 +708,13 @@ function luang(x, y, look) {
   var neck = along(0.03), nod = Math.max(-0.5, Math.min(0.5, Math.atan2(-neck.ty, -neck.tx)));
   var up = look.late !== undefined ? hop(clock, look.late) : 0;
   var open = look.mouth !== undefined ? look.mouth : look.sing ? 1 - up : 0.3 + 0.14 * Math.sin(clock * 1.3);
+  var e = look.feel !== undefined ? creatureFeel(look, clock) : null;
+  if (e) { open = e.jaw(open); }
   pen.save();
   pen.translate(line[0][0], line[0][1]);
-  pen.rotate(0.3 * nod);                            // the head keeps nearly level, whatever the neck does
+  pen.rotate(0.3 * nod + (e ? 0.6 * e.nod - 0.12 * e.raise + 0.06 * e.shake : 0));   // the head keeps nearly level, whatever the neck does; a feeling lifts it or hangs it
   pen.scale(1.1, 1.1);
-  luangHead(clamp(open), c);
+  luangHead(clamp(open), c, e);
   pen.restore();
   pen.restore();
   FINE = 1;

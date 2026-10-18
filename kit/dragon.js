@@ -63,6 +63,8 @@
 //   late       the timing of the beat, as hop(t, late) takes it
 //   sing       true to open the mouth on every beat
 //   mouth      0 to 1: how far the mouth is open, if the scene says
+//   feel       a feeling, as a person's (creatureFeel() in the kit): the eye, the
+//              brow, the jaw and the head's carriage
 //   fly        "glide" (the default), "hover" or "fast": the manner of its flight, above
 //   corkscrew  in a glide, when the body corkscrews: the seconds from one to the
 //              next (8 if unsaid), or a list of the clock's seconds at which one
@@ -102,7 +104,7 @@
 //      purple and green on the walls.
 var DRAGON_KEYS = {};
 
-["size", "depth", "face", "body", "spots", "belly", "flame", "mane", "pearl", "pearls", "trail", "breath", "late", "sing", "mouth", "fly", "corkscrew",
+["size", "depth", "face", "body", "spots", "belly", "flame", "mane", "pearl", "pearls", "trail", "breath", "late", "sing", "mouth", "feel", "fly", "corkscrew",
  "kind", "claws", "chase"
 ].forEach(function (name) { DRAGON_KEYS[name] = true; });
 
@@ -234,7 +236,7 @@ function dragonLeg(sx, sy, px, py, knee, skin, c, pearls, china, claws) {
 // that steps down from the brow, a pink nose, an ear, and two horns. "open"
 // is how far the mouth is open and "breath" how much flame it breathes,
 // both 0 to 1.
-function dragonHead(open, breath, c) {
+function dragonHead(open, breath, c, e) {
   var blink = Math.sin(clock * 0.8 + 1.3) > 0.985, n, horn = "#f1e3c0";
   function antler(x, y) {                           // one horn: a beam that sweeps back, and a tine that stands on it
     hose(x, y, x - 48, y - 62, -0.2, 9, horn);
@@ -371,16 +373,20 @@ function dragonHead(open, breath, c) {
   oval(91, -20, 12, 9, c.belly);                    // the nose, and its nostrils
   oval(95, -19, 2.4, 3, "#7a3a3a");
   oval(87, -17, 2, 2.6, "#7a3a3a");
-  pen.beginPath();                                  // the eye: white, a yellow iris, a dark middle
-  pen.ellipse(30, -34, 16, blink ? 1.5 : 15.5, 0, 0, 7);
-  shape("#fff6ea");
-  if (!blink) {
-    oval(33, -34, 9.5, 9.5, "#e9b53a");
-    oval(34, -34, 4, 4.4, "#1f1a1a");
+  if (e) {                                          // a feeling's eye: shut, slanted or wide
+    creatureEye(30, -34, 16, 15.5, e, {skin: c.body, iris: "#e9b53a", pupil: "#1f1a1a", ink: inkFor(c.body), shut: blink});
+  } else {
+    pen.beginPath();                                // the eye: white, a yellow iris, a dark middle
+    pen.ellipse(30, -34, 16, blink ? 1.5 : 15.5, 0, 0, 7);
+    shape("#fff6ea");
+    if (!blink) {
+      oval(33, -34, 9.5, 9.5, "#e9b53a");
+      oval(34, -34, 4, 4.4, "#1f1a1a");
+    }
   }
-  pen.save();                                       // the brow: a bushy lock that sweeps back over the eye
-  pen.translate(52, -50);
-  pen.rotate(Math.PI + 0.28);
+  pen.save();                                       // the brow: a bushy lock that sweeps back over the eye (a feeling raises it, or turns it: its root down in anger)
+  pen.translate(52, -50 - (e ? 9 * e.brow[0] - 10 * e.brow[1] : 0));
+  pen.rotate(Math.PI + 0.28 + (e ? 0.7 * e.brow[1] : 0));
   dragonLock(64, 18, 6, clock * 3 + 1, c.mane);
   pen.restore();
   pen.save();                                       // the ear, behind the eye
@@ -479,7 +485,7 @@ function dragonChasedPearl(x, y, r, c) {
 // bulbous nose, the mouth open on a row of teeth, round bulging eyes under
 // bushy brows, the lump on the crown, a cow's ear, branched antlers, long
 // curling whiskers, a beard, and the mane streaming back.
-function dragonHeadChina(open, breath, c) {
+function dragonHeadChina(open, breath, c, e) {
   var blink = Math.sin(clock * 0.8 + 1.3) > 0.985, n, horn = "#f1e3c0";
   function antler(x, y) {                           // a stag's: a beam that sweeps back, with two tines that stand up from it
     hose(x, y, x - 96, y - 44, -0.3, 9, horn);
@@ -612,16 +618,20 @@ function dragonHeadChina(open, breath, c) {
   oval(119, -28, 11, 9, c.belly);                   // the bulbous nose, and its nostrils, flared
   oval(123, -27, 2.6, 3.4, "#7a3a3a");
   oval(114, -24, 2.2, 2.8, "#7a3a3a");
-  pen.beginPath();                                  // the eye: round and bulging, a yellow iris
-  pen.ellipse(38, -40, 15, blink ? 1.5 : 15, 0, 0, 7);
-  shape("#fff6ea");
-  if (!blink) {
-    oval(41, -40, 9.5, 9.5, "#e9b53a");
-    oval(42, -40, 4, 4.4, "#1f1a1a");
+  if (e) {                                          // a feeling's eye: shut, slanted or wide
+    creatureEye(38, -40, 15, 15, e, {skin: c.body, iris: "#e9b53a", pupil: "#1f1a1a", ink: inkFor(c.body), shut: blink});
+  } else {
+    pen.beginPath();                                // the eye: round and bulging, a yellow iris
+    pen.ellipse(38, -40, 15, blink ? 1.5 : 15, 0, 0, 7);
+    shape("#fff6ea");
+    if (!blink) {
+      oval(41, -40, 9.5, 9.5, "#e9b53a");
+      oval(42, -40, 4, 4.4, "#1f1a1a");
+    }
   }
-  pen.save();                                       // the brow: a bushy lock over the eye
-  pen.translate(58, -58);
-  pen.rotate(Math.PI + 0.34);
+  pen.save();                                       // the brow: a bushy lock over the eye (raised, or turned, by a feeling)
+  pen.translate(58, -58 - (e ? 9 * e.brow[0] - 10 * e.brow[1] : 0));
+  pen.rotate(Math.PI + 0.34 + (e ? 0.7 * e.brow[1] : 0));
   dragonLock(68, 20, 6, clock * 3 + 1, c.mane);
   pen.restore();
   pen.save();                                       // a cow's ear, behind the eye, leaf-shaped, pointing back and up
@@ -783,15 +793,17 @@ function dragon(x, y, look) {
   var neck = along(0.03), nod = Math.max(-0.5, Math.min(0.5, Math.atan2(-neck.ty, -neck.tx)));
   var up = look.late !== undefined ? hop(clock, look.late) : 0, breath = clamp(look.breath || 0);
   var open = look.mouth !== undefined ? look.mouth : look.sing ? 1 - up : 0.22 + 0.12 * Math.sin(clock * 1.3);
+  var e = look.feel !== undefined ? creatureFeel(look, clock) : null;
+  if (e) { open = e.jaw(open); }
   pen.save();
   pen.translate(line[0][0], line[0][1]);
-  pen.rotate(0.3 * nod);                            // the head keeps nearly level, whatever the neck does
+  pen.rotate(0.3 * nod + (e ? 0.6 * e.nod - 0.12 * e.raise + 0.06 * e.shake : 0));   // the head keeps nearly level, whatever the neck does; a feeling lifts it or hangs it
   pen.scale(1.22, 1.22);
   if (china) {
-    dragonHeadChina(clamp(Math.max(open, 0.75 * breath)), breath, c);
+    dragonHeadChina(clamp(Math.max(open, 0.75 * breath)), breath, c, e);
     if (look.chase !== false) { dragonChasedPearl(168, -40 + 6 * Math.sin(clock * 1.7), 30, c); }   // the flaming pearl, just off the snout
   } else {
-    dragonHead(clamp(Math.max(open, 0.75 * breath)), breath, c);
+    dragonHead(clamp(Math.max(open, 0.75 * breath)), breath, c, e);
   }
   pen.restore();
   pen.restore();

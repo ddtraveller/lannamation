@@ -56,9 +56,11 @@
 //              nod on it, one after the other
 //   sing       true to open the mouths on every beat
 //   mouth      0 to 1: how far the mouths are open, if the scene says
+//   feel       a feeling, as a person's (creatureFeel() in the kit): the eyes,
+//              the brows, the jaws and how high each head is held
 var NAGA_KEYS = {};
 
-["size", "face", "heads", "body", "belly", "bars", "crest", "fire", "path", "trail", "late", "sing", "mouth"
+["size", "face", "heads", "body", "belly", "bars", "crest", "fire", "path", "trail", "late", "sing", "mouth", "feel"
 ].forEach(function (name) { NAGA_KEYS[name] = true; });
 
 // The body as the drawing lays it: down from the chest, back along the
@@ -320,8 +322,8 @@ function nagaFlame(long, wide, tongues, seed, c) {
 }
 
 // A Naga's head in profile, looking along x, its neck joining at (0, 0).
-// "open" is how far the mouth is open, 0 to 1.
-function nagaHead(open, seed, c) {
+// "open" is how far the mouth is open, 0 to 1; "e" a feeling (creatureFeel()), or none.
+function nagaHead(open, seed, c, e) {
   var blink = Math.sin(clock * 0.9 + seed * 2.3) > 0.985;
   pen.save();                                       // the crest: a tall flame that leans back, with smaller tongues behind it
   pen.translate(2, -20);
@@ -399,19 +401,30 @@ function nagaHead(open, seed, c) {
   pen.lineWidth = 5;
   pen.lineCap = "round";
   pen.stroke();
-  pen.beginPath();                                  // the eye
-  pen.ellipse(22, -11, 7, blink ? 0.8 : 5.4, -0.15, 0, 7);
-  pen.fillStyle = "#fff6ea";
-  pen.fill();
-  pen.strokeStyle = inkFor(c.body);
-  pen.lineWidth = 1.6 * FINE;
-  pen.stroke();
-  if (!blink) { oval(24, -11, 2.8, 3.4, "#1f1a1a"); }
+  if (e) {                                          // a feeling: its eye (shut, slanted, wide) and its brow (raised, turned)
+    creatureEye(22, -11, 7, 5.4, e, {turn: -0.15, skin: c.body, ink: inkFor(c.body), shut: blink});
+    pen.save();
+    pen.translate(23, -19 - 4 * e.brow[0] + 4 * e.brow[1]);
+    pen.rotate(e.brow[1]);
+    pen.translate(-23, 19);
+  } else {
+    pen.beginPath();                                // the eye
+    pen.ellipse(22, -11, 7, blink ? 0.8 : 5.4, -0.15, 0, 7);
+    pen.fillStyle = "#fff6ea";
+    pen.fill();
+    pen.strokeStyle = inkFor(c.body);
+    pen.lineWidth = 1.6 * FINE;
+    pen.stroke();
+    if (!blink) { oval(24, -11, 2.8, 3.4, "#1f1a1a"); }
+  }
   pen.strokeStyle = inkFor(c.body);                 // the brow, drawn down toward the nose
   pen.lineWidth = 2.4 * FINE;
   pen.beginPath();
   pen.moveTo(10, -20);
   pen.quadraticCurveTo(24, -24, 36, -14);
+  pen.stroke();
+  if (e) { pen.restore(); }
+  pen.beginPath();
   pen.moveTo(60, -12);                              // the nostril
   pen.lineTo(64, -14);
   pen.stroke();
@@ -477,11 +490,13 @@ function naga(x, y, look) {
     }
     nagaStrip(nagaWalk(dense, 9), function (u) { return mix(13, 21, u); }, c, [0.14]);
     var open = look.mouth !== undefined ? look.mouth : look.sing ? 1 - up : 0.3 + 0.14 * Math.sin(clock * 1.1 + head * 1.9);
+    var e = look.feel !== undefined ? creatureFeel(look, clock + head * 0.4) : null;   // each head a moment after the one before
+    if (e) { open = e.jaw(open); }
     pen.save();
-    pen.translate(top[0], top[1]);
-    pen.rotate(-0.1 + 0.05 * sway - 0.12 * up);
+    pen.translate(top[0], top[1] - (e ? 14 * e.raise : 0));
+    pen.rotate(-0.1 + 0.05 * sway - 0.12 * up + (e ? 0.7 * e.nod + 0.06 * e.shake : 0));
     pen.scale(0.74, 0.74);
-    nagaHead(clamp(open), head, c);
+    nagaHead(clamp(open), head, c, e);
     pen.restore();
   }
   pen.restore();

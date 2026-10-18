@@ -2954,6 +2954,34 @@ morning: "Add a laugh for each of the sprites, too": laughing is the ninth.
   posture). `paperdoll.js` reads a feeling's lean without the person's own time, so a sleepy doll's skirt
   follows the nod on the clock alone.
 
+## Feelings on the creatures (2026-10-18)
+
+The owner: "start the creatures", after the people's nine feelings. The first round is the six a child
+can put in the cartoon maker: the dog, the rooster, the Naga, the dragon (both kinds), the Mom and the
+Luang. Each takes `feel` (and the same numbers) in its look, as a person does; with none, it draws as it
+did before. The sheet is `creatures.html`: each creature a part, its nine feelings close up, the big ones
+placed by where their own drawing puts the eye.
+
+| The kit's part | What it does |
+|---|---|
+| `creatureFeel(look, at)` | the person's numbers (`feelingOf()`, over time at the creature's own time) as what any face and body can show: `lid`, `bowed`, `slant`, `wide`, `brow` [lift, turn], `open`, `grin`, `raise` (the head high or low), `ears`, `wag`, `tail`, `shake` (each "ha"), `nod`, `startle`, and `jaw(usual)`: a jaw shut for sadness, worry, fullness and sleep, a snarl in anger, the feeling's own opening for a laugh, a yawn or a fright, and as it was otherwise |
+| `creatureEye(x, y, rx, ry, e, how)` | a creature's eye looking along +x: the white, an iris toward the front (and a pupil), or a 1930s pie eye; a lid in the colour of the skin, down by `lid`, low at the front in anger and at the back in sadness; shut, a line bowed down, and laughing, bowed up |
+
+| Creature | Where the feeling shows |
+|---|---|
+| dog | `dog(x, y, t, how)`, `how.feel`: the pie eye under its lid, a brow, the smile turned to a frown or opened (a tongue in a laugh), the head carried high or low and nodding, the ear up or back, the tail wagging harder or drooping, a laugh's bounce |
+| rooster | surprise is its own fright (`alarm`), sleep and fullness its crouch (`sink`); its head sinks when sad, its tail rises or drops, its beak gapes on each "ha" or in a yawn; a brow over the dot of its eye; a lid when it is sleepy, full or laughing; only a happy, a neutral or an angry rooster crows |
+| Naga | each head: its eye and its brow, its jaw, and how high it is held (one head a moment after another) |
+| dragon, both kinds | the eye (its yellow iris and dark middle), the bushy brow lock raised or turned (its root down in anger), the jaw, the head lifted or hung |
+| Mom | the great eye, its lid the gold of its ring; the heavy gold brow; the jaw; the head |
+| Luang | the eye under its gold brow, the brow, the jaw, the head |
+
+- **The maker.** Its six creatures have the feeling buttons in their panel, the dropdown in the bar over a
+  new one, a feeling at any point of a course (a key's sixth entry; the dragon's depth stays its fourth),
+  and the box that opens at a new point. The model's prompt says which things take `"feel"`.
+- **Not done yet.** The beasts (elephant, buffalo, cat, tiger, pig), the birds of the north, the
+  Hatsadiling, the yak and the sun; bubbles over creatures.
+
 ## Speech and thought bubbles (2026-10-18)
 
 The owner: "Add a way in the maker to add text that the character will see in a speech or thought

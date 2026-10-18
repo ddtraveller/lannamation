@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>creatures - the nine feelings on the creatures</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false};</script>
+<script src="oldcartoon.js"></script>
+<script src="naga.js"></script>
+<script src="dragon.js"></script>
+<script src="beasts.js"></script>
+<script src="myth.js"></script>
+<script>
+// The "creatures" sheet: the nine feelings a person takes by name (see
+// feelings.html), on the creatures, each creature a part of twelve seconds,
+// five feelings to a row. A creature's look takes feel: "happy" as a
+// person's does; creatureFeel() turns it into eyes, brows and a mouth, and
+// into how it carries its head, its ears and its tail. Twelve seconds, so
+// that every sleepy one nods and yawns, and every laughing one laughs.
+var DURATION = 84;
+
+var BEAT = 0.5;
+
+var NAMES = [["neutral", "เฉย ๆ"], ["happy", "ดีใจ"], ["laughing", "หัวเราะ"], ["sad", "เศร้า"], ["concerned", "กังวล"],
+             ["angry", "โกรธ"], ["sleepy", "ง่วง"], ["satiated", "อิ่ม"], ["surprised", "ประหลาดใจ"]];
+
+// Each part: its title, and how to draw the creature with a feeling, standing on (x, y) in a cell.
+var PARTS = [
+  ["a dog", function (x, y, feel, t) {
+    pen.save(); pen.translate(x - 8, y); pen.scale(1.5, 1.5); dog(0, 0, t, {feel: feel}); pen.restore();
+  }],
+  ["a rooster", function (x, y, feel, t) {
+    pen.save(); pen.translate(x + 40, y); pen.scale(2.1, 2.1); rooster(0, 0, t, {feel: feel}); pen.restore();
+  }],
+  // the big ones close up: each placed by where its own drawing puts its eye, so the eye is at (ex, ey) of the cell
+  ["a naga, one head", function (x, y, feel, t, ex, ey) {
+    naga(ex - 117 * 2.2, ey + 365 * 2.2, {size: 2.2, heads: 1, feel: feel});
+  }],
+  ["a dragon of the Himalayan paintings", function (x, y, feel, t, ex, ey) {
+    dragon(ex - 30 * 1.22, ey + 34 * 1.22, {size: 1, face: 1, feel: feel});
+  }],
+  ["a Chinese dragon", function (x, y, feel, t, ex, ey) {
+    dragon(ex - 38 * 1.22 * 0.9, ey + 40 * 1.22 * 0.9, {kind: "chinese", size: 0.9, face: 1, chase: false, feel: feel});
+  }],
+  ["the Mom, a guardian of temple stairs", function (x, y, feel, t, ex, ey) {
+    mom(ex - 194 * 0.9, ey + 242 * 0.9, {size: 1, feel: feel});
+  }],
+  ["the Luang, the dragon of the north", function (x, y, feel, t, ex, ey) {
+    luang(ex - 54 * 1.1 * 0.9, ey + 36 * 1.1 * 0.9, {size: 0.9, face: 1, feel: feel});
+  }]
+];
+
+var TOP = 50, ROW = 515;
+
+function caption(text, x, y, size, colour) {
+  pen.fillStyle = colour || "#5a4630";
+  pen.textAlign = "center";
+  pen.font = size + "px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  var p = Math.min(PARTS.length - 1, Math.floor(t / 12)), part = PARTS[p];
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  caption("feelings on the creatures: " + part[0] + " (part " + (p + 1) + " of " + PARTS.length + ")", WIDE / 2, 32, 24);
+  NAMES.forEach(function (name, n) {
+    var left = (n % 5) * WIDE / 5, top = TOP + Math.floor(n / 5) * ROW, wide = WIDE / 5;
+    pen.save();
+    pen.beginPath();
+    pen.rect(left + 4, top, wide - 8, ROW - 62);
+    pen.clip();
+    part[1](left + wide / 2, top + ROW - 110, name[0], t + n * 0.37, left + wide / 2 - 30, top + 190);
+    pen.restore();
+    caption(name[0], left + wide / 2, top + ROW - 36, 22, "#3a2418");
+    caption(name[1], left + wide / 2, top + ROW - 13, 18);
+  });
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

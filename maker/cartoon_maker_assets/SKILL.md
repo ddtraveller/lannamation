@@ -60,10 +60,12 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
 - A person has a `feel` from the start: neutral, happy, laughing, sad, concerned,
   angry, sleepy, satiated or surprised. It sets the face and how the body is
   carried; a laughing person laughs in bursts, a sleepy one nods and yawns by
-  themselves, and a satiated one shuts their eyes now and then. Left out, a person is happy. A key's sixth
-  entry changes it from that key on, `[second, x, y, null, null, "surprised"]`
-  (she is surprised when the dragon comes); write null for the pose and the
-  size to keep them.
+  themselves, and a satiated one shuts their eyes now and then. Left out, a
+  person is happy. A key's sixth entry changes it from that key on,
+  `[second, x, y, null, null, "surprised"]` (she is surprised when the dragon
+  comes); write null for the pose and the size to keep them. The dog, the
+  rooster, the naga, the dragon, the mom and the luang take `feel`, and a key's
+  feeling, too.
 - Scenes: the film begins on `backdrop`; `"cuts": [{"at": 8, "backdrop": "river"}]`
   begins a new scene at that second, and the kit closes and opens its iris at the
   cut. A set piece's one key says which scene it stands in by its second (0 for

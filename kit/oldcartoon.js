@@ -719,9 +719,11 @@ function feelingOverTime(f, at) {
   f.tilt += s * (0.22 * sink - 0.16 * yawn) - full * 0.04 * savour;
   if (s * yawn > 0.02) { f.open = [s * yawn, 0.1, 0.5]; }
   var l = f.laugh, burst = (at % 2.6 + 2.6) % 2.6;
+  f.ha = 0;
   if (l > 0) {
     var loud = burst < 0.15 ? 0.35 + 0.65 * burst / 0.15 : burst < 2 ? 1 : burst < 2.15 ? 1 - 0.65 * (burst - 2) / 0.15 : 0.35;   // a burst, then a breath
     var ha = loud * Math.sin(at * Math.PI * 9);     // each "ha": 4.5 a second
+    f.ha = l * ha;                                  // (kept, for a creature's body: creatureFeel())
     f.lids = Math.max(f.lids, l);
     f.browUp += 3 * l;
     f.bend += l * 0.03 * ha;
@@ -744,6 +746,120 @@ function feelingOf(look, at) {
           laugh: amount(look.laugh, "laugh"),
           open: named.open, bend: named.bend || 0, tilt: named.tilt || 0,
           eyes: look.eyes || 1, lips: look.lips || 1}, at === undefined ? clock : at);   // and the face's own measure: how large its eyes and its mouth are
+}
+
+// ---------- a creature's feeling ----------
+// The feelings people have, on a creature (owner, 2026-10-18: "start the
+// creatures"). A creature's look takes the same names (feel: "angry") and
+// numbers, and creatureFeel() turns them into what any face and body can
+// show; each creature draws what it has. With no feeling all of it is 0
+// (wide 1), and a creature draws as it did before.
+//   f      what feelingOf() gives, over time at the creature's own time "at"
+//   lid    0 to 1: how far the upper lid is down (sleepy, full, laughing)
+//   bowed  true: a laughing eye, shut and bowed up
+//   slant  -1 to 1, as eye()'s: a lid low at the front corner (anger), or at
+//          the back (sadness, worry)
+//   wide   how wide the eye opens: 1 as it is, more in wonder and fear
+//   brow   [lift, turn]: a brow raised (in eye-heights) and turned, its front
+//          end down (anger) or up (sadness, worry), in radians
+//   open   0 to 1: how far the mouth opens (wonder, fear, a laugh, a yawn)
+//   grin   -1 to 1: the corners of a mouth up in a smile, down in a frown
+//   raise  -1 to 1: the head carried high (wonder, joy) or low (sad, sleepy)
+//   ears   -1 to 1: up and forward (wonder, joy) or down and back (sad,
+//          afraid, angry, sleepy)
+//   wag    0 to 1: how hard a tail wags (happy, laughing)
+//   tail   -1 to 1: a tail carried up (happy, angry) or down (sad, afraid)
+//   shake  -1 to 1: a laugh's shake, on each "ha"
+//   nod    the head's tilt, down positive: the person's (a sleepy nod, a
+//          yawn back, a laugh's toss)
+//   startle  0 to 1: a fright, for a creature that has one of its own
+//   jaw(usual)  how far a jaw opens, given how far it would otherwise
+function creatureFeel(look, at) {
+  var f = feelingOf(look, at);
+  var frown = clamp(f.sad + 0.6 * f.anger + 0.45 * f.worry);
+  return {f: f, lid: f.lids, bowed: f.laugh > 0.5,
+          slant: Math.max(-1, Math.min(1, 0.9 * f.anger - 0.7 * f.sad - 0.45 * f.worry)),
+          wide: 1 + 0.3 * f.wonder + 0.45 * f.fear - 0.15 * f.anger - 0.3 * f.sad + 0.1 * f.worry,
+          brow: [(7 * f.wonder + 6 * f.fear - 4 * f.anger + f.browUp + 2 * f.worry) / 9, 0.35 * f.anger - 0.3 * f.sad + 0.15 * f.fear - 0.38 * f.worry],
+          open: f.open ? f.open[0] : 0,
+          grin: Math.max(-1, Math.min(1, f.smile - frown)),
+          raise: Math.max(-1, Math.min(1, 0.7 * f.wonder + 0.3 * f.smile + 0.2 * f.laugh - 0.7 * f.sad - 0.4 * f.worry - 0.5 * f.sleepy - 0.3 * f.fear)),
+          ears: Math.max(-1, Math.min(1, 0.7 * f.wonder + 0.4 * f.smile - 0.7 * f.sad - 0.7 * f.fear - 0.8 * f.anger - 0.5 * f.sleepy - 0.3 * f.worry)),
+          wag: clamp(0.8 * f.smile + 0.6 * f.laugh - 0.5 * f.full),
+          tail: Math.max(-1, Math.min(1, 0.6 * f.smile + 0.4 * f.wonder + 0.5 * f.anger - 0.8 * f.sad - 0.7 * f.fear - 0.4 * f.sleepy - 0.3 * f.worry)),
+          shake: f.ha, nod: f.tilt, startle: clamp(0.9 * f.wonder + f.fear),
+          jaw: function (usual) {                    // how far a jaw opens: the feeling's own (a laugh, a yawn, a fright), or else shut for
+            if (f.open) { return f.open[0]; }       // sadness, worry, fullness and sleep, a snarl in anger, and as it was otherwise
+            return clamp(mix(usual, 0.03, clamp(f.sad + f.worry + f.full + f.sleepy)) + 0.3 * f.anger);
+          }};
+}
+
+// A creature's eye: an ellipse about (x, y), rx by ry, turned by how.turn,
+// looking along +x (its front). The white, an iris toward the front
+// (how.iris, with a pupil in it if how.pupil is a colour), and the lid a
+// feeling brings down (e, from creatureFeel()), in the colour of the skin
+// (how.skin), its edge inked (how.ink). how.pie: a 1930s pie eye instead,
+// black with a slice of light (how.light, the kit's skin unless told) cut out. Shut (a blink, how.shut,
+// or a lid down past 0.9) it is a line bowed down; laughing, bowed up.
+function creatureEye(x, y, rx, ry, e, how) {
+  var ink = how.ink || INK, closed = Math.max(e.lid, how.shut ? 1 : 0);
+  ry *= e.wide;
+  pen.save();
+  pen.translate(x, y);
+  pen.rotate(how.turn || 0);
+  pen.strokeStyle = ink;
+  pen.lineCap = "round";
+  if (closed > 0.9 || (e.bowed && closed > 0.5)) {
+    pen.lineWidth = Math.max(1.6, ry * 0.32) * FINE;
+    pen.beginPath();
+    pen.moveTo(-rx, 0);
+    pen.quadraticCurveTo(0, (e.bowed ? -1.2 : 0.9) * ry, rx, 0);
+    pen.stroke();
+    pen.restore();
+    return;
+  }
+  var ball = new Path2D();
+  ball.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+  if (how.pie) {                                    // black, with a slice of light cut from it
+    pen.fillStyle = ink;
+    pen.fill(ball);
+    pen.fillStyle = how.light || SKIN;
+    pen.beginPath();
+    pen.moveTo(0, 0);
+    pen.lineTo(rx * 1.3, -ry * 0.92);
+    pen.lineTo(rx * 1.43, -ry * 0.15);
+    pen.fill();
+  } else {
+    pen.fillStyle = "#fff6ea";
+    pen.fill(ball);
+  }
+  pen.save();
+  pen.clip(ball);
+  if (!how.pie) {
+    oval(rx * 0.28, ry * 0.08, Math.min(rx, ry) * 0.62, ry * 0.72, how.iris || "#1f1a1a");
+    if (how.pupil) { oval(rx * 0.33, ry * 0.08, Math.min(rx, ry) * 0.27, ry * 0.31, how.pupil); }
+    oval(rx * 0.1, -ry * 0.25, Math.min(rx, ry) * 0.18, Math.min(rx, ry) * 0.18, "#ffffff");
+  }
+  var a = Math.max(0, e.slant), sad = Math.max(0, -e.slant), base = -ry + 2 * ry * 0.9 * closed;
+  var back = base + ry * (1.1 * sad + 0.2 * a), front = base + ry * (1.3 * a + 0.3 * sad);
+  if (closed > 0.02 || a > 0.02 || sad > 0.02) {    // the lid: down from the top to a line, low at the front in anger, at the back in sadness
+    pen.beginPath();
+    pen.moveTo(-rx * 1.2, -ry * 1.3);
+    pen.lineTo(rx * 1.2, -ry * 1.3);
+    pen.lineTo(rx * 1.2, front + 0.2 * (front - back));
+    pen.lineTo(-rx * 1.2, back - 0.2 * (front - back));
+    pen.closePath();
+    pen.fillStyle = how.skin;
+    pen.fill();
+    pen.lineWidth = Math.max(1.4, ry * 0.28) * FINE;
+    pen.stroke();
+  }
+  pen.restore();
+  if (!how.pie) {
+    pen.lineWidth = Math.max(1.2, ry * 0.16) * FINE;
+    pen.stroke(ball);
+  }
+  pen.restore();
 }
 
 // A pose reached with a snap: first a small move the other way (the
@@ -5806,15 +5922,22 @@ function crowd(t, y, slide, lanterns) {
 // hand is: all of them first in ink, a little fat, then all of them in
 // colour. So one line goes round the whole dog, and no line cuts a leg off
 // from the body. A leg is two bones, and its knee bends as it steps.
-function dog(x, y, t) {
+// how: {feel: a feeling, as a person's (creatureFeel())}: its head is carried
+// high or low, its ears go up or back, its tail wags or droops, its brows
+// and its mouth show it, and its eyes close, slant or go wide.
+function dog(x, y, t, how) {
+  how = how || {};
+  checkNames("The dog's name", how, {feel: true});
+  var e = creatureFeel(how, t), wagging = 1 + 1.6 * e.wag, carried = 14 * e.tail;
   var trot = t / BEAT * Math.PI;
-  var bob = hop(t, 0.5) * 7;
+  var bob = hop(t, 0.5) * 7 + 3 * e.shake;
   var coat = "#d9a86c", ink = inkFor(coat);
   var parts = [], n;
   parts.push([-34, -56, 30, -58, 24, 23, 2]);                    // the body
   parts.push([34, -62, 56, -82, 17, 15, 1]);                     // the neck
-  parts.push([-52, -62, -74, -88 + Math.sin(trot * 2) * 10, 6, 4.5, 1]);       // the tail wags
-  parts.push([-74, -88 + Math.sin(trot * 2) * 10, -84, -104 + Math.sin(trot * 2 - 0.8) * 14, 4.5, 3, 0.5]);
+  var wag = Math.sin(trot * 2 * (1 + e.wag)) * 10 * wagging, wag2 = Math.sin(trot * 2 * (1 + e.wag) - 0.8) * 14 * wagging;
+  parts.push([-52, -62, -74, -88 - carried + wag, 6, 4.5, 1]);       // the tail wags (harder when it is glad), carried up or down
+  parts.push([-74, -88 - carried + wag, -84 - Math.max(0, -carried), -104 - 2 * carried + wag2, 4.5, 3, 0.5]);
   for (n = 0; n < 4; n++) {
     var front = n > 1;
     var hipX = front ? 24 + (n - 2) * 12 : -40 + n * 12, hipY = -44;
@@ -5849,26 +5972,48 @@ function dog(x, y, t) {
   pen.beginPath();
   pen.ellipse(34, -52, 10, 14, 0.4, 0, 7);
   pen.fill();
-  pen.save();                                       // the head nods against the trot
-  pen.translate(60, -86);
-  pen.rotate(Math.sin(trot) * 0.08);
+  pen.save();                                       // the head nods against the trot, carried high or low by a feeling
+  pen.translate(60, -86 - 7 * e.raise);
+  pen.rotate(Math.sin(trot) * 0.08 + 0.9 * e.nod);
   oval(0, 0, 26, 23, coat);
   oval(22, 8, 13, 10, "#eccb9a");                   // the muzzle
   oval(31, 3, 6, 5, INK);                           // the nose
   pen.strokeStyle = INK;
   pen.lineWidth = LINE;
   pen.lineCap = "round";
-  pen.beginPath();
-  pen.moveTo(14, 13);
-  pen.quadraticCurveTo(22, 19, 31, 12);             // a smile
-  pen.stroke();
-  if (Math.sin(trot) > 0.2) {                       // and a tongue, on every other step
-    oval(22, 19, 4, 5 + Math.sin(trot) * 2, "#f0808a");
+  if (e.open > 0.05) {                              // the mouth open (a laugh, a yawn, a fright), a tongue in it
+    pen.beginPath();
+    pen.moveTo(13, 12);
+    pen.quadraticCurveTo(22, 14 + 2 * e.grin, 31, 11);
+    pen.quadraticCurveTo(23, 13 + 16 * e.open, 13, 12);
+    pen.closePath();
+    shape("#5a1420");
+    oval(22, 13 + 10 * e.open, 5, 3 + 3 * e.open, "#f0808a");
+  } else {
+    pen.beginPath();
+    pen.moveTo(14, 13);
+    pen.quadraticCurveTo(22, 19 + 6 * e.grin, 31, 12);   // a smile; a frown when it is sad or cross
+    pen.stroke();
+    if (Math.sin(trot) > 0.2 && e.grin >= 0) {      // and a tongue, on every other step, when it is not sad
+      oval(22, 19, 4, 5 + Math.sin(trot) * 2, "#f0808a");
+    }
   }
-  pieEye(9, -6);
-  pen.save();                                       // an ear that flaps a moment after the head
+  if (how.feel === undefined) { pieEye(9, -6); } else {
+    creatureEye(9, -6, 7, 13, e, {pie: true, skin: coat});
+    pen.save();                                     // a brow, raised or turned: its front end down when it is cross
+    pen.translate(9, -24 - 6 * e.brow[0]);
+    pen.rotate(e.brow[1] * 1.2);
+    pen.beginPath();
+    pen.moveTo(-8, 1);
+    pen.quadraticCurveTo(0, -3, 8, 1);
+    pen.strokeStyle = INK;
+    pen.lineWidth = 3 * FINE;
+    pen.stroke();
+    pen.restore();
+  }
+  pen.save();                                       // an ear that flaps a moment after the head; up when it is glad, back when it is not
   pen.translate(-16, -14);
-  pen.rotate(0.5 + Math.sin(trot - 1) * 0.3);
+  pen.rotate(0.5 + Math.sin(trot - 1) * 0.3 - 0.45 * e.ears);
   pen.beginPath();
   pen.moveTo(-7, 0);
   pen.quadraticCurveTo(-12, 26, 0, 32);
@@ -5910,7 +6055,7 @@ var HEN_COAT = {body: "#c98b4e", wing: "#a96a33", far: "#94592a", ruff: "#dcae72
 // The names a rooster's look may have (see rooster()), so that one it does
 // not know is warned of.
 var ROOSTER_KEYS = {};
-["step", "flap", "wings", "lean", "peck", "alarm", "sink", "face", "hen"].forEach(function (name) { ROOSTER_KEYS[name] = true; });
+["step", "flap", "wings", "lean", "peck", "alarm", "sink", "face", "hen", "feel"].forEach(function (name) { ROOSTER_KEYS[name] = true; });
 
 // A rooster. It crows once every two beats, in three parts, as an animator
 // would time it: it sinks first (the part that makes the crow read), then
@@ -5937,15 +6082,21 @@ var ROOSTER_KEYS = {};
 //          in, as before a spring and on landing
 //   face   1, facing right, or -1, left
 //   hen    true: a hen (HEN_COAT), smaller, which never crows
+//   feel   a feeling, as a person's (creatureFeel()): surprise is its fright,
+//          sleep and fullness settle it down, sadness drops its head and
+//          tail; a brow shows anger, sadness and worry, a laugh gapes the
+//          beak on each "ha"; only a happy, a neutral or an angry rooster crows
 // roosterBolt() puts them together into a whole fright and flight.
 function rooster(x, y, t, bird) {
   bird = bird || {};
   checkNames("The rooster's name", bird, ROOSTER_KEYS);
   var coat = bird.hen ? HEN_COAT : ROOSTER_COAT;
   var running = bird.step !== undefined, flap = clamp(bird.flap || 0), wings = clamp(bird.wings || 0);
-  var peck = clamp(bird.peck || 0), alarm = clamp(bird.alarm || 0), sink = clamp(bird.sink || 0);
+  var e = creatureFeel(bird, t), f = e.f;
+  var peck = clamp(bird.peck || 0), alarm = Math.max(clamp(bird.alarm || 0), e.startle), sink = Math.max(clamp(bird.sink || 0), 0.5 * f.sleepy + 0.3 * f.full);
   var crows = !running && !bird.hen && bird.flap === undefined && bird.wings === undefined &&
-              bird.peck === undefined && bird.alarm === undefined && bird.sink === undefined;
+              bird.peck === undefined && bird.alarm === undefined && bird.sink === undefined &&
+              f.sad + f.worry + f.sleepy + f.full + f.laugh + f.wonder + f.fear < 0.3;   // a feeling that is not glad or cross keeps it quiet
   var turn = (t / BEAT / 2) % 1;
   var stretch = !crows ? -1.4 * sink : turn < 0.2 ? -0.35 * Math.sin(turn / 0.2 * Math.PI)
               : turn < 0.75 ? Math.sin((turn - 0.2) / 0.55 * Math.PI) : 0;
@@ -5956,7 +6107,7 @@ function rooster(x, y, t, bird) {
   var size = bird.hen ? 0.85 : 1, n;
   pen.save();
   var bob = running ? 3 * Math.abs(Math.sin(bird.step * Math.PI * 2)) : 0;
-  pen.translate(x, y + 4 - stretch * 5 - bob);
+  pen.translate(x, y + 4 - stretch * 5 - bob + 2 * e.shake);
   pen.scale(size * (bird.face || 1), size);
   if (running) { pen.rotate(bird.lean !== undefined ? bird.lean : 0.2); }   // leaning into the run
   pen.lineCap = "round";
@@ -5989,7 +6140,7 @@ function rooster(x, y, t, bird) {
   // lifts in the crow and in a fright.
   var middle = (coat.tail.length - 1) / 2;
   for (n = 0; n < coat.tail.length; n++) {
-    var lean = (bird.hen ? 2 : 2.2) + n * (bird.hen ? 0.32 : 0.28) - crowing * 0.25 - alarm * 0.2 + Math.sin(t * 5 - n * 0.6) * 0.07;
+    var lean = (bird.hen ? 2 : 2.2) + n * (bird.hen ? 0.32 : 0.28) - crowing * 0.25 - alarm * 0.2 - 0.3 * e.tail + Math.sin(t * 5 - n * 0.6) * 0.07;
     var long = coat.long - Math.abs(n - middle) * 5;
     hose(-20, -34, -20 + Math.cos(lean) * long, -34 - Math.sin(lean) * long, 0.35, 8, coat.tail[n]);
   }
@@ -6005,13 +6156,13 @@ function rooster(x, y, t, bird) {
   pen.restore();
   // the neck, and a head that tips back in the crow, goes down to peck,
   // reaches forward in a run and goes up in a fright
-  var headX = mix(28 + crowing * 2, 34, peck) - 5 * alarm, headY = mix(-78 - stretch * 20, -40, peck) - 14 * alarm;
+  var headX = mix(28 + crowing * 2, 34, peck) - 5 * alarm, headY = mix(-78 - stretch * 20, -40, peck) - 14 * alarm - 18 * Math.min(0, e.raise);   // a sad or sleepy one's head sinks
   if (running) { headX += 8 + 3 * Math.sin(bird.step * Math.PI * 4); headY += 10; }
   hose(16, -42, headX - 2, headY + 8, 0.12 + crowing * 0.1, 15, coat.body);
   hose(10, -40, 20, -52, 0.3, 9, coat.ruff);        // a ruff of gold feathers at its foot
   pen.save();
   pen.translate(headX, headY);
-  pen.rotate(-crowing * 0.55 + peck * 1.0);
+  pen.rotate(-crowing * 0.55 + peck * 1.0 + 0.9 * e.nod);
   var comb = bird.hen ? 0.6 : 1;
   for (n = 0; n < 3; n++) {                         // the comb: three bumps that wobble, and shake in a fright
     oval((-7 + n * 7) * comb, -13 * (bird.hen ? 0.85 : 1) - (n === 1 ? 3 * comb : 0) + Math.sin(t * 9 + n) * 1.2 + alarm * Math.sin(t * 60 + n * 2) * 1.5,
@@ -6022,7 +6173,7 @@ function rooster(x, y, t, bird) {
   pen.rotate(Math.sin(t * 8) * 0.25 + crowing * 0.4);
   oval(0, 6 * comb, 4.5 * comb, 8 * comb, "#d63a2f");
   pen.restore();
-  var gape = 0.08 + crowing * 0.5;                  // the beak: two halves that open
+  var gape = 0.08 + crowing * 0.5 + 0.35 * e.open;  // the beak: two halves that open (a laugh's "ha", a yawn, a fright)
   for (n = -1; n <= 1; n += 2) {
     pen.save();
     pen.translate(10, 1);
@@ -6036,7 +6187,9 @@ function rooster(x, y, t, bird) {
     pen.restore();
   }
   oval(0, 0, 14, 13, coat.body);
-  if (alarm < 0.5 && (t + 0.7) % 2.9 < 0.12) {      // it blinks, too, but not in a fright
+  if (bird.feel !== undefined && e.lid > 0.3 && alarm < 0.5) {   // a sleepy, full or laughing eye: shut, or half shut under its lid
+    creatureEye(5, -3, 3.4, 3.4, e, {skin: coat.body, iris: INK});
+  } else if (alarm < 0.5 && (t + 0.7) % 2.9 < 0.12) {      // it blinks, too, but not in a fright
     pen.strokeStyle = INK;
     pen.lineWidth = 2;
     pen.beginPath();
@@ -6057,6 +6210,19 @@ function rooster(x, y, t, bird) {
     pen.beginPath();
     pen.arc(4, -4, 1, 0, 7);
     pen.fill();
+  }
+  if (bird.feel !== undefined && (Math.abs(e.brow[1]) > 0.05 || e.brow[0] < -0.1)) {   // a brow over the eye: its front end down when it is cross, up when it is sad or worried
+    pen.save();
+    pen.translate(5, -10 - 3 * e.brow[0]);
+    pen.rotate(e.brow[1] * 1.3);
+    pen.strokeStyle = INK;
+    pen.lineWidth = 2.4 * FINE;
+    pen.lineCap = "round";
+    pen.beginPath();
+    pen.moveTo(-5, 0.5);
+    pen.lineTo(5, -0.5);
+    pen.stroke();
+    pen.restore();
   }
   pen.restore();
   pen.restore();
