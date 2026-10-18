@@ -637,7 +637,10 @@ var POND_SEEN = 7.4;                    // he sees it, a beat after it comes in
 var POND_FLAG = FLAG[0] + 0.2;          // the flag is out of the claw: he is angry, she laughs and puts her hands in her lap
 var POND_CALM = FLAG[1] + 0.3;          // it is gone: he is glad again
 var POND_LAUGHED = FLAG[1] + 0.6;       // and her laugh dies away a moment after
-var POND_LAP = [[-20, 100], [60, 96]];  // her hands in her lap, one over the other (handA, the far one; handB, the near one), as she sits
+// Her hands in her lap are the kit's own for one who sits (person(), "Hands that a scene does not place"):
+// turned in toward each other, the far arm (A, her left, the cloth's shoulder) under the sabai with only its
+// hand showing, and nothing crossed (owner, 2026-10-18: "the woman crosses her arms but she should look like
+// she is sitting naturally and her left arm should be below the sash").
 
 function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maiden at the bank who wais; a Chinese dragon flies by with a flag; elephants far off
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t + POND_AT);
@@ -667,7 +670,7 @@ function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maide
   var awe = tween(t, [[8, 0], [8.6, 1], [11, 1], [11.8, 0]], "smooth");           // the dragon passes over: eyes up, brows up
   var sky = [head[0], head[1]];
   var her = t >= POND_FLAG && t < POND_LAUGHED ? {feel: "laughing", at: sky} : {smile: 1, wonder: t < POND_FLAG ? awe : 0, at: awe > 0.5 ? sky : [700, 800]};
-  var hands = t >= POND_FLAG ? {handA: POND_LAP[0], handB: POND_LAP[1]} : {wai: t > 1};   // the wai until the flag; then her hands in her lap
+  var hands = t >= POND_FLAG ? {} : {wai: t > 1};   // the wai until the flag; then her hands in her lap
   person(300, 1000, cast("maiden", Object.assign({floor: true, late: 0, spring: 0.4}, her, hands, HAIR_OF.maiden)));
   var his = t < POND_SEEN || t >= POND_CALM ? "happy" : t < POND_FLAG ? "surprised" : "angry";
   var fellow = stroll(t, 1600, 1330, 0, cast("fellow", {stride: 0.8, late: 0.25, spring: 0.4, feel: his,
