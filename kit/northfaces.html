@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>northfaces - six people with faces of the north</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>
+window.FILM_STYLE = {hop: false};                    // they stand still, so the faces can be looked at
+</script>
+<script src="oldcartoon.js"></script>
+<script>
+// The "northfaces" sheet: the six people of the cast with faces of the north
+// (look.north, from a photograph of Northern Thai women and children of about
+// 1909): In-ta, Kham-mun, Bua-kham, Si-nuan, the boy Bun-ma and the girl
+// Dok-kham. Top, each face large; below, all six at their own size beside the
+// kit's lady and fellow. The sheet turns them: three-quarter (0 to 4 s), full
+// face (4 to 8), from profile round to full face (8 to 12), and four feelings
+// (12 to 16).
+var DURATION = 16;
+var BEAT = 0.5;
+var SIX = [["inta", "อินตา"], ["khammun", "คำมูล"], ["buakham", "บัวคำ"], ["sinuan", "ศรีนวล"], ["bunma", "บุญมา"], ["dokkham", "ดอกคำ"]];
+var FEELS = ["happy", "surprised", "sad", "laughing"];
+var BIG = {grown: 1.95, child: 1.5};                 // the size of a face in the top row
+
+function caption(text, x, y, size) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = (size || 20) + "px Georgia, 'Leelawadee UI', 'Noto Sans Thai', serif";
+  pen.fillText(text, x, y);
+}
+
+// how the sheet turns them, and what they feel, at t
+function acting(t) {
+  if (t < 4) { return {turn: 0, smile: 1}; }
+  if (t < 8) { return {turn: 1, smile: 1}; }
+  if (t < 12) { return {turn: -1 + 2 * (t - 8) / 4, smile: 1}; }
+  return {turn: 0.4, feel: FEELS[Math.floor(t - 12) % FEELS.length]};
+}
+
+function bigOf(name) { return CAST[name].build < 0 ? BIG.child : BIG.grown; }
+
+// Where a face's feet must stand for its chin to be at a given height: measured once, at its size, by drawing it.
+var CHIN = {};
+SIX.forEach(function (row) {
+  var joints = person(0, 0, cast(row[0], {size: bigOf(row[0]), id: "measure-" + row[0], turn: 0}));
+  CHIN[row[0]] = -joints.chin[1];
+});
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var act = acting(t), wide = WIDE / SIX.length;
+  SIX.forEach(function (row, n) {                    // the six faces, large
+    var name = row[0], left = n * wide, middle = left + wide / 2;
+    pen.save();
+    pen.beginPath();
+    pen.rect(left + 4, 10, wide - 8, 372);
+    pen.clip();
+    person(middle + 12, 360 + CHIN[name], cast(name, Object.assign({size: bigOf(name), id: "big-" + name, late: 0}, act)));
+    pen.restore();
+    caption(name + "  " + row[1], middle, 404);
+    caption(CAST[name].north, middle, 426, 16);
+  });
+  var ground = 1000, step = (WIDE - 120) / 8;        // all of them at their own size, with the kit's lady and fellow
+  ["lady"].concat(SIX.map(function (row) { return row[0]; }), ["fellow"]).forEach(function (name, n) {
+    person(60 + step * (n + 0.5), ground, cast(name, Object.assign({id: "small-" + name, late: n * 0.13}, act)));
+  });
+  caption(t < 4 ? "three-quarter" : t < 8 ? "full face" : t < 12 ? "from profile round to full face" : act.feel,
+          WIDE / 2, ground + 50, 22);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

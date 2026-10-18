@@ -119,6 +119,7 @@ of it, each a second behind the other.
 | `motion.js`, `motion.html` | timing and travel, in a file of its own on top of the kit, every function a plain function of the time: `ease(name, u)` and `ramp(t, a, b, name)` with linear, smooth, in, out, back, bounce, elastic, wobble, anticipate (a pull back, then the rush) and spring, and the form of any as `"back in"`, `"bounce out"`, `"elastic inout"`; `tween(t, [[second, value], ...], name)` for a value through points in time (a number, a colour `#rrggbb` by the kit's `blend()`, or a list of numbers), held before the first and after the last, one ease or one a step; `springTween(t, points, look)` for a number pulled to each new value at its second on one spring (a spring is linear, so the answer is the first value plus one `springAt` swing per change, nothing kept between frames; checked against a frame-integrated spring: the gap is the integrator's, 17.7 px at 10 substeps a frame, 0.18 at 1000); `cycle(t, seconds, look)` for a repeat, 0 to 1 again and again, going back by `kind: "reverse"` (the ease traced backwards) or `"mirror"` (the same ease forwards), with a `rest` between; eases made from numbers, `"spring 0.8 0.5"` (seconds, bounce), `"steps 4"`, `"bezier .4 0 .2 1"`; `span(v, from, to, name)` reads a value of one range as a value of another (a lean that grows with the speed; to may be numbers, colours or lists); `glide(t, from, speed, look)` is a thing thrown or let go, slowing in proportion to its speed and stopping on its own (`seconds`) or at a bound (`min`, `max`), in closed form; `held(t, frames)` for a motion drawn on twos; `springAt(t, look)` and `springTime(look)`, a damped spring in closed form (stiffness 80, damping 10, mass 1, a starting push), or asked for in a film's words, `{seconds: 0.8, bounce: 0.5}` (bounce 0 just stops, below 0 creeps in); `stagger(n, count, look)` for how late the n-th of a crowd starts, from the first, last, centre or an index; and a course, `where(keys, t)` → `[x, y, moving, facing, depth, angle, distance, reached]` (the distance along the curve so far, so a walker's `step` is counted from the ground covered, `p[6] / (112 × size)`, and the feet do not slide; and which key it has reached, for what happens on arriving; `p[8]` its speed in pixels a second, for a lean into a run), one centripetal Catmull-Rom curve through `[[second, x, y, depth?], ...]` that passes the points between without stopping, eases at a walk's ends, waits where two points share a place, and faces by the curve's tangent. The ideas are the ones every animation library offers; the sheet shows each in a row |
 | `elders.html` | the sheet for the four old people of the cast: an elder with a beard and a stick, an old farmer, a grandmother, and an old woman in white |
 | `children.html` | the sheet for the little boy and the little girl of the cast: large, at their own size beside the grown-ups, and what they do |
+| `northfaces.html` | the six people with faces of the north (2026-10-18): each face large, then all six at their own size beside the kit's lady and fellow; three-quarter from 0 s, full face from 4 s, from profile round to full face from 8 s, four feelings from 12 s (see "Faces of the north, from a photograph") |
 | `floor.html`, `checks/floor_check.py` | the sheet for sitting on the floor (legs to one side, cross-legged, in trousers and in cloth), and the check that draws every frame of it and measures how far each seat, knee and neck travels |
 | `together.html`, `checks/reach_check.py` | the sheet for hands that go to a place (two children holding hands, a wai, a wrist that follows a lotus), and the check that draws every frame of it and measures how far each wrist is from its point |
 | `lanna_music.py`, `lanna_sing.py` | the pattern for a song: `TUNE` one letter a beat in the band's file, and the lines of the song in the film's own page, as `CUES`; the singer's file reads them from the page (see "One list for the song"). Copy these two for a new film |
@@ -128,7 +129,7 @@ of it, each a second behind the other.
 
 **The style sheet.** Before the kit loads, a film may set `window.FILM_STYLE = {ink: "#1a1a2a", line: 2.8, lens: "blur(0.4px)"}`; every key of `STYLE` can be overridden (`ink`, `skin`, `line`, `hold`, `sway`, `hop`, `gold`, `hair`, `clouds`, `sun`, `lens`). `hop: false` is the other way to move: nobody hops (see "Standing still, and a walk from place to place").
 
-**The cast.** `CAST` holds `lady`, `fellow`, `child`, `scientist`, `drummer`, `celestial`, `dancer`, `villager`, `monk`, `maiden`, `weaver`, a little `boy` and a little `girl` (see "A little boy and a little girl"), and four old people, `elder`, `oldfarmer`, `grandmother` and `devotee` (see "Two old men and two old women"); `person(x, y, cast("lady", {late: 0.5, mouth: mouthAt(SUNG)}))` takes one with changes; `CAST.monk = {shirt: "#e07a1f", legs: "#c8641a"}` adds one. `kit/starter.html` is a separate eight-second film made this way, with a monk and a darker ink, to prove it: `python stills.py starter.html sheet.jpg 1.2` shows it.
+**The cast.** `CAST` holds `lady`, `fellow`, `child`, `scientist`, `drummer`, `celestial`, `dancer`, `villager`, `monk`, `maiden`, `weaver`, a little `boy` and a little `girl` (see "A little boy and a little girl"), four old people, `elder`, `oldfarmer`, `grandmother` and `devotee` (see "Two old men and two old women"), and six with faces of the north, `inta`, `khammun`, `buakham`, `sinuan`, `bunma` and `dokkham` (see "Faces of the north, from a photograph"); `person(x, y, cast("lady", {late: 0.5, mouth: mouthAt(SUNG)}))` takes one with changes; `CAST.monk = {shirt: "#e07a1f", legs: "#c8641a"}` adds one. `kit/starter.html` is a separate eight-second film made this way, with a monk and a darker ink, to prove it: `python stills.py starter.html sheet.jpg 1.2` shows it.
 
 ## Make a new film
 
@@ -3048,6 +3049,63 @@ in the scene after everyone, so the camera and the lens take it as they take the
   under the picture, with a line for a child on what each one is.
 - **Not done.** Bubbles for the creatures (they have no joints to point at yet; an `[x, y]` works
   meanwhile); two bubbles at once can overlap: the kit does not move one out of another's way.
+
+## Faces of the north, from a photograph (2026-10-18)
+
+The owner: "Look at the animation framework in lannamation and see if you can add Northern Thai/Lanna
+face shapes. Add 2 men and women and 1 child of each gender with a Northern style face shape." First,
+a NotebookLM notebook on the question ("Face shapes of Lanna (Northern Thai) people", 17 sources).
+It found **no measured Northern face**: studies of Thai skulls from Chiang Mai, Khon Kaen and
+Naresuan find no difference in cranial shape between the regions (Freas 2011, 429 skeletons;
+Techataweewan et al. 2021), the Chiang Mai collections do not record who was Khon Mueang, and the
+studies of living faces sample Bangkok or the whole country. So the face had to come from pictures,
+and two disagreed. The Lai Kham mural of Wat Phra Singh (1863, the Chiang Mai school) paints oval
+faces with long eyes lifted at the corners, thin high brows, a long nose and a small mouth: the
+conventions of the paintings the kit's lady already follows. A photograph of Princess Dara Rasmi's
+ladies of the north, with children, about 1909 (public domain, Commons "Dara Rasami + Entourage @
+Bang Pa-In"), shows broader faces. The owner chose the photograph, a face of its own for each of
+the six, and the six in the maker too. Then ("Show me face change candidates before implementing")
+three candidates were drawn beside the photograph over the kit, unchanged, by a scratch script: A
+the outline only, B the outline and the features, C stronger. The owner chose B. Nothing of the
+pictures is in the repo, only the rules below.
+
+| What the photograph shows | In the kit |
+|---|---|
+| The face is widest at the cheekbones, just below the eyes, and nearly as wide there as it is tall from the brows to the chin | `view(turn, lady, north)` moves the far cheekbone out (`cheek`), and the near one more as the face comes round; the head is drawn as wide as the shape says (`wide`, 0.98 to 1.12), a lady's too (the kit's lady is 0.9) |
+| The jaw's sides drop nearly straight and turn at a soft corner level with the mouth; the chin is broad and round | the jaw's corners go out and a little down (`jaw`), the chin broadens (`chin`); none of it in profile, where the face is the painted profile piece |
+| The eyes are small, about an eye's width apart, under a heavy upper lid with little or no crease | `eye()` reads `NORTH_FACE`: the upper lid hangs 0.2 (a fellow's 0.12) whenever the eye is open, its line a little heavier and its shadow deeper, the light lower; the crease and the hollow show 0.15 of the kit's; the outer corner lifts 0.06 (the lady's painted eye lifts 0.17) and has no flick; each eye moves 2.5 out from the nose; a fellow's eye is 0.8 of the comic eye's height, its middle where his was |
+| The brows are straight or gently arched, low over the eye | lower by 3 (a fellow's, set high under a head-cloth, by 8), the arch 0.65 of the kit's, the weight 1.4 |
+| The nose is short with a low bridge; its base is broad, the wings flare | `northNose()`: a bridge line only from below the eyes, a broad round tip, a wing and a nostril each side (the far one fuller as the face comes round), a soft shadow under the base, fainter for a lady |
+| The mouth is about as wide as the pupils are apart, the lips full | the mouth 1.1 as wide, a lady's lips 1.25 as full; a fellow's line keeps its smile, with a little colour above and below it and the lower lip's line lower |
+| The cheeks are full and high; a child's face is rounder still | the blush a little larger and higher; `northFace()` gives a child (`build` below 0) half of every change, a jaw corner 0.3 as square and a chin fuller by 2 |
+
+**The look name** `north` (95 names) takes a shape from `NORTH_FACES`, which lie either side of the
+chosen candidate (cheek 5, jaw 4, chin 2): `round` (4, 1, 4; head 1.06), `square` (5, 8, 1; 1.06),
+`broad` (8, 4, 2; 1.12), `soft` (5, -1, 0; 0.98) and `full` (3, 3, 5; 1.04). `true` is `round`; a
+name the kit does not know is warned about. What every face of the north shares is `NORTH`.
+`person()` sets `NORTH_FACE` as it sets `SKIN`, and puts it back to `null` when it is done, so a
+figure without `north` draws as it did: `checks/same_kit.py` against the kit before, on fifteen pages, found
+0 to 2 pixels in twelve of them; `feelings.html` and `sash.html` differ as much or more between two loads
+of one and the same kit (feelings 139,000 to 162,000 pixels in the same four frames, sash 23).
+
+**The six** (`CAST`), each named as the north names people, each in the dress of the record:
+`inta` (อินตา, `square`): a Chiang Mai man as the travellers saw him, the head uncovered, a
+round-necked indigo shirt, the cloth hitched to the knee over the tattoo; `khammun` (คำมูล, `broad`):
+bare and tattooed under a white head-cloth, a red and indigo check over the shoulder; `buakham`
+(บัวคำ, `soft`): the everyday knot at the nape (`bun: "low"`), a white blouse, a pink shoulder cloth,
+a green and black sin; `sinuan` (ศรีนวล, `round`): the knot on the crown (`"wong"`), a dark blouse, a
+brick-red sin; the boy `bunma` (บุญมา, `full`): bare in a hitched cloth with a turmeric check over
+his shoulder; the girl `dokkham` (ดอกคำ, `round`): a pale yellow blouse, an indigo sin, a flower in
+her hair. In the maker they are six more people of the palette (👨 อินตา, 👨 คำมูล, 👩 บัวคำ,
+👩 ศรีนวล, 👦 บุญมา, 👧 ดอกคำ). Sheet: `northfaces.html`.
+
+- **Found, not changed.** A `bare` figure with neither `tattoo` nor a `sabai` falls through to the
+  shirt's branch and is drawn with a shirt's buttons and breast pocket on the skin (the first
+  Bun-ma showed it). Every bare figure of the cast has one or the other, so nothing drew it before.
+  Bun-ma wears a check over his shoulder, as the kit's other boys do.
+- **Not done.** In profile a face of the north keeps the painted profile piece (its nose, lips and
+  chin), and the nostril line that the lady's profile keeps is gone; the brow, the eye and the
+  outline there are the kit's. The six are not yet in any film.
 
 ## The kit's own checks
 

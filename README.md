@@ -105,7 +105,7 @@ and goes on; after five seconds a line of words sits under the picture.
 | Call | From | What it does |
 |---|---|---|
 | `person(x, y, look)` | `oldcartoon.js` | draws a person standing at (x, y); gives back where the joints were drawn |
-| `cast(name, changes)` | `oldcartoon.js` | a look from `CAST`: `lady`, `fellow`, `child`, `boy`, `girl`, `farmer`, `noble`, `maiden`, `weaver`, `elder`, `grandmother`, `dancer` and seven more |
+| `cast(name, changes)` | `oldcartoon.js` | a look from `CAST`: `lady`, `fellow`, `child`, `boy`, `girl`, `farmer`, `noble`, `maiden`, `weaver`, `elder`, `grandmother`, `dancer`, six with faces of the north (`inta`, `khammun`, `buakham`, `sinuan`, `bunma`, `dokkham`) and seven more |
 | `stroll(t, from, to, start, look)` | `oldcartoon.js` | an even walk, feet planted: gives back `{x, look, arrives}` |
 | `where(keys, t)` | `motion.js` | a smooth course through `[second, x, y]` keys: `[x, y, moving, facing, depth, angle, distance, reached, speed]` |
 | `backdrop(name)` | `backdrops.js` | one of nineteen painted places (`paddy`, `river`, `doi`, `village`, `market`, `yipeng` ...), painted once; `backdrop(name, true)` leaves out what hangs in it (the market's lanterns, the monastery's flags), which `backdropSway(name, t)` then draws swaying |
