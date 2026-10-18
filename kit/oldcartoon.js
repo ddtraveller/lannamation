@@ -2143,7 +2143,8 @@ function glove(x, y, angle, thumb, bare, open, nails, curls) {
 //   pose.spread    0 to 1: how far the fingers fan apart (0.15 at rest)
 //   pose.arch      0 to 1: the fingers bent back at the knuckle, as the dance hand holds them;
 //                  or four numbers, one for each finger, the first to the little one
-//   pose.still     true: no little life in the fingers (a hand of dance is held, not trembling)
+//   pose.still     true: no little life in the fingers (a hand of dance is held, not trembling;
+//                  so is a hand at rest in a film where nobody hops)
 //   pose.pinch     [finger, amount]: the thumb's tip brought to the pad of the first finger
 //                  (0) or the middle one (1), amount 0 to 1 (pinchThumb()); the jeeb
 //   pose.thumb     1 or -1: which side the thumb is on, as glove() takes it (the two hands are mirrors)
@@ -4069,13 +4070,16 @@ function person(x, y, look) {
   // hand is half closed. A bare hand below its shoulder, holding nothing
   // and with no reading of its fingers, is at rest: its wrist is nearly
   // still, its fingers lie gently curled (REST), and it shows its back and
-  // a little of the thumb's edge, so the fingers stack. A hand closed round
+  // a little of the thumb's edge, so the fingers stack; in a film where nobody
+  // hops it is still, with no flex and no life in its fingers. A hand closed round
   // a thing shows its thumb's edge, where a fist reads as one. palmA and
   // palmB turn a hand as a scene wants it.
   function handPose(which, wrist, given) {
     var near = which === "A", bend = near ? look.wristA : look.wristB, fingers = near ? look.fingersA : look.fingersB, turned = near ? look.palmA : look.palmB;
     var rest = given[1] >= 0 && !look.grip && !look.gloves && !fingers;
-    var angle = Math.atan2(wrist[1] - wrist[3], wrist[0] - wrist[2]) + (near ? 1 : -1) * flex * (rest ? 0.3 : 1)
+    var calm = rest && still;                       // a hand at rest where nobody hops is still: no bend on the beat, no life in its fingers (owner, 2026-10-19: "the woman's hands are shaking. Can you make them still?")
+    var beat = calm ? 0 : flex * (rest ? 0.3 : 1);
+    var angle = Math.atan2(wrist[1] - wrist[3], wrist[0] - wrist[2]) + (near ? 1 : -1) * beat
               + (bend !== undefined ? bend : near && look.holding === "stick" ? 0.9 : 0);   // a hand on a stick lies over its top
     var lifted = look.dance ? 1.6 : 0.7 + 0.3 * up;
     var open = look.grip || (near && look.holding === "stick") ? 0.12 : given[1] < 0 ? lifted : rest ? 0.1 : 0.35;   // a grip is a fist round a thing
@@ -4099,7 +4103,7 @@ function person(x, y, look) {
     if (gesture === undefined && look.dance && given[1] < 0 && !fingers && !look.grip && !(near && look.parasol)) { gesture = danceHand(near, clock); }
     if (gesture && !look.wai) {
       form = gestureOf(gesture);
-      angle -= (near ? 1 : -1) * flex * (rest ? 0.3 : 1);   // held steady: no bend of the wrist on the beat (owner: "stop the hands from shaking")
+      angle -= (near ? 1 : -1) * beat;              // held steady: no bend of the wrist on the beat (owner: "stop the hands from shaking")
       var raised = angle - thumb * form.wrist, lowered = Math.PI / 2 + (near ? -0.35 : 0.35);   // bent back away from the head; or pointing down, a little out
       angle = raised + Math.atan2(Math.sin(lowered - raised), Math.cos(lowered - raised)) * form.down;   // the shorter way round
       palm = thumb * form.palm;
@@ -4116,7 +4120,7 @@ function person(x, y, look) {
     }
     if (open <= 0.12 && !form) { palm = 0.3; }      // closed round a thing
     if (turned !== undefined) { palm = turned; }
-    return {angle: angle, open: open, curls: curls, thumb: thumb, palm: palm, nails: nails, form: form};
+    return {angle: angle, open: open, curls: curls, thumb: thumb, palm: palm, nails: nails, form: form, still: calm};
   }
   // The hand in the round takes curls; a hand given only how open it is
   // (as the flat hand is) gets them by the flat hand's own rule, and past 1
@@ -4133,7 +4137,7 @@ function person(x, y, look) {
       curls.push(clamp((0.75 * (1 - open) + 1.3 * back) / 1.1));
     }
     return {curls: curls, spread: pose.curls ? 0.15 : 0.04 + 0.2 * open + 0.22 * back, arch: 0.5 * back,
-            thumb: pose.thumb, palm: pose.palm, nails: pose.nails};
+            thumb: pose.thumb, palm: pose.palm, nails: pose.nails, still: pose.still};
   }
   function drawHand(which, wrist, pose) {
     var near = which === "A";
