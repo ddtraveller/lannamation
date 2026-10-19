@@ -708,3 +708,86 @@ function mistDrift(brush, t, look) {
                                                        shade: look.shade, glow: look.glow, alpha: (look.alpha === undefined ? 0.8 : look.alpha) * (0.45 + 0.55 * k) * come});
   }
 }
+
+// ---------- a cave's mouth ----------
+// The cave of a tale on a mountain's side (the film of the creature with four ears and five eyes: its cave on
+// Doi Khao Khwai). Drawn live, with the forest's own crowns before and over it, so the forest grows round it.
+// The mouth of a cave in a mountain's side, its foot's middle on (x, y): a dark arched opening among
+// boulders lit from the upper left, a ledge of stone before it, moss on the stones and ferns over the top
+// that stir (look.t, the second). 250 wide and 135 high at size 1, the opening 120 by 92.
+// look: t; rock (the stone's colour); dark (the inside's); tint, [colour, amount]: every colour of it
+// blended that far toward one light (a dawn's blue, a dusk's red), as a set painted by day and tinted is.
+function caveMouth(brush, x, y, size, look) {
+  look = look || {};
+  function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
+  var t = look.t || 0, rock = tone(look.rock || "#7d7266"), dark = look.dark || "#0f0b0a", n;
+  var lit = blend(rock, "#f2e6cf", 0.16), deep = blend(rock, "#1c1612", 0.38), moss = tone("#5f7d3c");
+  brush.save();
+  brush.translate(x, y);
+  brush.scale(size, size);
+  function stone(points, colour) {                  // a boulder: a closed curve through the points, filled, lit and inked
+    brush.beginPath();
+    brush.moveTo((points[0][0] + points[1][0]) / 2, (points[0][1] + points[1][1]) / 2);
+    for (var k = 1; k <= points.length; k++) {
+      var p = points[k % points.length], q = points[(k + 1) % points.length];
+      brush.quadraticCurveTo(p[0], p[1], (p[0] + q[0]) / 2, (p[1] + q[1]) / 2);
+    }
+    brush.closePath();
+    var shade = brush.createLinearGradient(-110, -150, 60, 20);
+    shade.addColorStop(0, blend(colour, "#f2e6cf", 0.3));
+    shade.addColorStop(1, blend(colour, "#1c1612", 0.3));
+    brush.fillStyle = shade;
+    brush.fill();
+    brush.strokeStyle = inkFor(colour);
+    brush.lineWidth = 2.2 / Math.max(0.6, size);
+    brush.lineJoin = "round";
+    brush.stroke();
+  }
+  stone([[-118, 4], [-128, -60], [-96, -118], [-48, -128], [-56, -40], [-70, 6]], rock);   // the left jamb
+  stone([[66, 6], [52, -50], [60, -112], [104, -116], [124, -54], [118, 6]], deep);        // the right jamb, in its own shade
+  brush.beginPath();                                // the opening: an arch, dark, darkest deep in
+  brush.moveTo(-62, 4);
+  brush.bezierCurveTo(-70, -54, -40, -96, 4, -96);
+  brush.bezierCurveTo(48, -96, 66, -52, 60, 4);
+  brush.closePath();
+  var inside = brush.createRadialGradient(4, -26, 6, 0, -40, 92);
+  inside.addColorStop(0, dark);
+  inside.addColorStop(0.7, blend(dark, deep, 0.25));
+  inside.addColorStop(1, blend(dark, deep, 0.6));
+  brush.fillStyle = inside;
+  brush.fill();
+  brush.strokeStyle = inkFor(deep);
+  brush.lineWidth = 2.2 / Math.max(0.6, size);
+  brush.stroke();
+  stone([[-92, -100], [-70, -126], [0, -132], [72, -124], [98, -100], [40, -90], [-36, -90]], lit);   // the lintel over it: low, a face of rock
+  stone([[-110, 2], [-80, -14], [40, -16], [112, -6], [96, 16], [-96, 16]], blend(rock, "#b8a890", 0.25));   // the ledge before it
+  brush.fillStyle = moss;                           // moss along the tops of the stones
+  [[-104, -112, 20], [-30, -128, 26], [50, -124, 22], [96, -104, 16], [-20, -12, 30]].forEach(function (m) {
+    brush.beginPath();
+    brush.ellipse(m[0], m[1], m[2], 5, -0.15, Math.PI, 0);
+    brush.fill();
+  });
+  for (n = 0; n < 7; n++) {                         // ferns over the lintel, hanging, stirring a little
+    var fx = -80 + n * 26, sway = 0.08 * Math.sin(t * 1.3 + n * 1.7), long = 30 + 10 * Math.sin(n * 2.1);
+    brush.save();
+    brush.translate(fx, -124 + 5 * Math.sin(n));
+    brush.rotate(0.5 + 0.18 * (n - 3) / 3 + sway);
+    brush.strokeStyle = tone("#41602c");
+    brush.lineWidth = 2;
+    brush.beginPath();
+    brush.moveTo(0, 0);
+    brush.quadraticCurveTo(long * 0.5, -6, long, 6);
+    brush.stroke();
+    brush.fillStyle = tone("#4f7a36");
+    for (var leaf = 1; leaf <= 5; leaf++) {
+      var u = leaf / 6, lx = long * u, ly = -6 * 4 * u * (1 - u) + 12 * u * u;
+      [-1, 1].forEach(function (side) {
+        brush.beginPath();
+        brush.ellipse(lx, ly + side * 4, 6 * (1 - u * 0.5), 2.2, side * 0.6, 0, 7);
+        brush.fill();
+      });
+    }
+    brush.restore();
+  }
+  brush.restore();
+}

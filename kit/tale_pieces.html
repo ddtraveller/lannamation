@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>tale_pieces - pieces for a tale of the north: a cave's mouth, a poor family's hut</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="highlands.js"></script>
+<script src="pieces.js"></script>
+<script>
+// The "tale_pieces" sheet: the pieces the film of the creature with four ears
+// and five eyes needed that the kit did not draw. Above: the tub, a poor
+// family's hut (pieces.js), by day and at night with a lamp in its door
+// (glow). Below: a cave's mouth (highlands.js), close up by day, and at a
+// film's size in the light before dawn (tint) among the forest's own crowns.
+// Between them: a bundle of firewood (pieces.js), bound, and loose on the
+// ground as it is gathered.
+var DURATION = 8;
+var BEAT = 0.5;
+function caption(text, x, y, colour) {
+  pen.fillStyle = colour || "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.fillStyle = "#8fbf6a";
+  pen.fillRect(0, 430, 720, 70);
+  tub(pen, 360, 430, 1.4, {});
+  caption("tub(brush, x, base, size)", 360, 535);
+  pen.fillStyle = "#1b2350";                         // a night for the lamp
+  pen.fillRect(720, 0, 720, 500);
+  pen.fillStyle = "#2f4a3a";
+  pen.fillRect(720, 430, 720, 70);
+  tub(pen, 1080, 430, 1.4, {glow: 0.85 + 0.15 * Math.sin(t * 7), tint: ["#1b2350", 0.45]});
+  caption("..., {glow, tint}: a lamp in the door at night", 1080, 535);
+  pen.fillStyle = "#4f7a52";
+  pen.fillRect(0, 600, WIDE, 480);
+  caveMouth(pen, 360, 960, 1.5, {t: t});
+  caption("caveMouth(brush, x, y, size, {t}): the ferns stir", 360, 1010, "#f3ead8");
+  pen.fillStyle = "#3a4a5a";
+  pen.fillRect(720, 600, 720, 480);
+  [[-86, -58, 13], [-64, -82, 14], [-36, -92, 13], [-6, -96, 14], [24, -94, 13], [52, -88, 14], [80, -70, 13]].forEach(function (c, n) {
+    crown(pen, 1080 + c[0], 900 + c[1], c[2], blend(FOREST_GREENS[n % FOREST_GREENS.length], "#28285a", 0.35), 60 + n);
+  });
+  caveMouth(pen, 1080, 900, 0.62, {t: t, rock: "#5f574f", tint: ["#28285a", 0.35]});
+  [[-62, 8, 11], [-40, 12, 13], [-16, 14, 12], [8, 13, 13], [32, 12, 12], [56, 9, 13], [80, 6, 11]].forEach(function (c, n) {
+    crown(pen, 1080 + c[0], 900 + c[1], c[2], blend(FOREST_GREENS[(n + 2) % FOREST_GREENS.length], "#28285a", 0.35), 70 + n);
+  });
+  caption("..., 0.62, {rock, tint}: at a film's size before dawn, in the forest", 1080, 1010, "#f3ead8");
+  firewood(pen, 300, 575, 0.9, {turn: -0.15});        // the firewood, bound and loose, on the strip between
+  firewood(pen, 560, 580, 0.6, {loose: true, count: 5});
+  caption("firewood(brush, x, y, size, {turn, loose, count})", 980, 585);
+}
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+var rendering = false;
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

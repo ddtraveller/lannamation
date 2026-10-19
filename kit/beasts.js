@@ -1,11 +1,12 @@
-// beasts.js - an elephant, a water buffalo, a cat, a tiger and a pig, for films
+// beasts.js - an elephant, a water buffalo, a cat, a tiger, a pig, a pack horse, two mice and a tokay gecko, for films
 // made with oldcartoon.js. Load it after the kit:
 //
 //     <script src="oldcartoon.js"></script>
 //     <script src="beasts.js"></script>
 //
 // and call elephant(x, y, look), buffalo(x, y, look), cat(x, y, look),
-// tiger(x, y, look) or pig(x, y, look) from a scene. (x, y) is the ground
+// tiger(x, y, look), pig(x, y, look) or horse(x, y, look) from a scene; the mice and the gecko, at the end of
+// this file, are drawn by mouse(x, y, look) and gecko(route, along, look), each with its own look. (x, y) is the ground
 // under the middle of the animal. (The cat, the tiger and the pig are toward
 // the end of this file.) Each
 // gives back where its back is, in the scene, so that someone can ride:
@@ -72,9 +73,12 @@
 //              of patches on its back and its head
 //   stripes    the tiger's: the colour of its stripes
 //   tufts      the tiger's: false for one without the flame tufts at its joints
+// and for the horse (a pack horse of the Haw caravans; see horse() toward the end):
+//   pack       a pack saddle with a load lashed on each side: true, or the colour of the load's cloth
+//   mane       the colour of its mane, its tail and its lower legs
 var BEAST_KEYS = {};
 
-["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground", "feel"].forEach(function (name) { BEAST_KEYS[name] = true; });
+["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground", "feel", "pack", "mane"].forEach(function (name) { BEAST_KEYS[name] = true; });
 
 // Where a walking foot is in its stride: [how far forward of its joint, how
 // high off the ground]. "s" is how far through the stride it is; it is on
@@ -1869,13 +1873,13 @@ function pig(x, y, look) {
 // along the ground in one stride, how many beats a stride takes].
 var GAITS = {elephant: [1.35, 120, 4], buffalo: [1.25, 84, 3],
              cat: [FELINES.cat.scale, FELINES.cat.reach, 1], tiger: [FELINES.tiger.scale, FELINES.tiger.reach, 2],
-             pig: [0.8, 66, 2]};
+             pig: [0.8, 66, 2], horse: [1.0, 76, 2]};
 
 // amble() takes an animal along the ground at an even pace, as the kit's
 // stroll() takes a person. The feet do not slide: a foot is on the ground
 // for 0.62 of a stride (see beastFoot), and in that time the body goes
 // forward as far as the foot goes back.
-//   kind       "elephant", "buffalo", "cat", "tiger" or "pig"
+//   kind       "elephant", "buffalo", "cat", "tiger", "pig" or "horse"
 //   t          the scene's clock
 //   from, to   where the walk begins and where it ends (x)
 //   start      the second the animal sets off
@@ -1891,4 +1895,507 @@ function amble(kind, t, from, to, start, look) {
   delete given.step;                                // one that has not set off, or has arrived, stands
   if (done > 0 && done < strides) { given.step = done; }
   return {x: from + way * pace * done, look: given, arrives: start + strides * gait[2] * BEAT};
+}
+
+// ---------- a pack horse ----------
+// The small horse of the Yunnan caravans (ม้าต่าง, ma tang), as the Haw traders led them over the hills into the north:
+// short and sturdy, a deep chest, a thick neck carried up, a big head, a short dark mane that stands up and a long
+// dark tail, slim legs on single hooves, darker below the knee. It walks as the other beasts do (step), and
+// GAITS.horse is its gait. A bay unless told (colour; mane, the colour of its mane, tail and lower legs).
+// look.pack: a pack saddle of wood on its back, with a load lashed on each side: true, or the colour of the load's
+// cloth. About 330 high at the withers at size 1. It gives back {seat, head, nose, load}: the top of the load; the
+// head and the nose (where the halter's rope ties) in the film's own pixels, as the buffalo's head.
+function horse(x, y, look) {
+  checkNames("The horse's name", look, BEAST_KEYS);
+  var size = (look.size || 1) * GAITS.horse[0], face = look.face || 1, colour = look.colour || "#8a5a3a";
+  var dark = look.mane || "#2a1f1a", ink = inkFor(colour);
+  var walk = look.step !== undefined, bob = walk ? 5 * Math.abs(Math.sin(look.step * Math.PI * 2)) : 0;
+  var e = look.feel !== undefined ? creatureFeel(look, clock + x * 0.01) : null;
+  FINE = Math.min(1, Math.pow(size, -0.7));
+  LINE = STYLE.line * FINE;
+  pen.fillStyle = "rgba(70, 45, 30, 0.2)";
+  pen.beginPath();
+  pen.ellipse(x + 20 * size * face, y + 5, 220 * size, 18 * size, 0, 0, 7);
+  pen.fill();
+  pen.save();
+  pen.translate(x, y);
+  pen.scale(size * face, size);
+  var legs = [[-128, -212, 0, -1, false], [128, -214, 0.25, 1, false], [-106, -216, 0.5, -1, true], [150, -216, 0.75, 1, true]];
+  function foot(ax, ay, skin, lifted) {             // a single hoof, dark, a little wider at the ground
+    pen.save();
+    pen.translate(ax, ay);
+    pen.rotate(lifted ? 0.45 : 0);
+    pen.beginPath();
+    pen.moveTo(-11, -4);
+    pen.lineTo(-14, 14);
+    pen.lineTo(15, 14);
+    pen.lineTo(11, -4);
+    pen.closePath();
+    shape("#2a2420");
+    pen.restore();
+  }
+  function lower(c) { return blend(c, dark, 0.55); }
+  beastLegs(legs, true, look, [104, 98, 14], [21, 14, 11], lower(colour), GAITS.horse[1], 30, foot);
+  pen.translate(0, -bob);
+  var swing = Math.sin(clock * 2.2 * (e ? 1 + e.wag : 1) + x * 0.01) * 10 * (e ? 1 + e.wag : 1);
+  var lift = e ? 30 * e.tail : 0;
+  pen.beginPath();                                  // the tail: long dark hair from the croup, swinging
+  pen.moveTo(-180, -300);
+  pen.quadraticCurveTo(-232, -270 - lift, -222 + swing, -150 - lift);
+  pen.quadraticCurveTo(-214 + swing * 1.4, -112 - lift, -196 + swing * 1.2, -104 - lift);
+  pen.quadraticCurveTo(-200 + swing, -190 - lift, -168, -284);
+  pen.closePath();
+  shape(dark);
+  pen.beginPath();                                  // the body: a deep chest, a short back, round hindquarters
+  pen.moveTo(-186, -296);
+  pen.bezierCurveTo(-160, -336, -70, -322, 10, -310);
+  pen.bezierCurveTo(70, -304, 110, -326, 146, -336);
+  pen.bezierCurveTo(206, -322, 218, -244, 182, -204);
+  pen.bezierCurveTo(100, -180, -60, -184, -132, -202);
+  pen.bezierCurveTo(-188, -222, -204, -262, -186, -296);
+  pen.closePath();
+  shape(colour);
+  pen.save();
+  pen.clip();
+  var shade = pen.createLinearGradient(0, -300, 0, -190);
+  shade.addColorStop(0, "rgba(20, 20, 30, 0)");
+  shade.addColorStop(1, "rgba(20, 20, 30, 0.3)");
+  pen.fillStyle = shade;
+  pen.fillRect(-220, -350, 460, 180);
+  pen.restore();
+  pen.translate(0, bob);
+  beastLegs(legs, false, look, [104, 98, 14], [21, 14, 11], lower(colour), GAITS.horse[1], 30, foot);
+  pen.translate(0, -bob);
+  var nod = 0.035 * Math.sin(clock * 1.4 + x * 0.01) + (walk ? 0.05 * Math.sin(look.step * Math.PI * 4) : 0)
+          + (e ? 0.5 * e.nod - 0.14 * e.raise + 0.04 * e.shake : 0);
+  pen.save();                                       // the neck and the head, from the withers, nodding as it walks
+  pen.translate(150, -300);
+  pen.rotate(nod + 0.22);                           // a pack horse carries its head low
+  pen.beginPath();                                  // the neck: thick, carried up and forward
+  pen.moveTo(-50, -26);
+  pen.bezierCurveTo(-10, -90, 30, -140, 66, -160);
+  pen.lineTo(104, -128);
+  pen.bezierCurveTo(90, -70, 70, -10, 50, 60);
+  pen.quadraticCurveTo(0, 50, -40, 40);
+  pen.closePath();
+  pen.fillStyle = colour;
+  pen.fill();
+  pen.strokeStyle = ink;
+  pen.lineWidth = LINE;
+  pen.lineCap = "round";
+  heavy(ink);
+  pen.beginPath();
+  pen.moveTo(-46, -30);
+  pen.bezierCurveTo(-10, -90, 30, -140, 66, -160);
+  pen.moveTo(104, -128);
+  pen.bezierCurveTo(90, -70, 70, -10, 50, 56);
+  pen.stroke();
+  light();
+  var crest = [], n;                                // the mane: short and standing up along the crest, its top ragged
+  for (n = 0; n <= 12; n++) {
+    var u = n / 12, w = 1 - u;
+    crest.push([w * w * w * -46 + 3 * w * w * u * -10 + 3 * w * u * u * 30 + u * u * u * 66,
+                w * w * w * -30 + 3 * w * w * u * -90 + 3 * w * u * u * -140 + u * u * u * -160]);
+  }
+  pen.beginPath();
+  crest.forEach(function (c, k) { if (k) { pen.lineTo(c[0], c[1]); } else { pen.moveTo(c[0], c[1]); } });
+  for (n = 12; n >= 0; n--) {
+    var out = n % 2 ? 18 : 10;
+    pen.lineTo(crest[n][0] - 0.75 * out, crest[n][1] - 0.66 * out);
+  }
+  pen.closePath();
+  shape(dark);
+  pen.beginPath();                                  // the head: big, long, the face straight, the muzzle soft
+  pen.moveTo(58, -170);
+  pen.bezierCurveTo(96, -188, 146, -134, 176, -86);
+  pen.bezierCurveTo(186, -70, 176, -52, 158, -52);
+  pen.bezierCurveTo(134, -52, 108, -62, 96, -86);
+  pen.quadraticCurveTo(70, -120, 58, -170);
+  pen.closePath();
+  shape(colour);
+  pen.beginPath();                                  // the muzzle, darker, a nostril and the line of the mouth
+  pen.ellipse(164, -70, 18, 16, 0.6, 0, 7);
+  shape(blend(colour, "#2a2420", 0.45));
+  oval(172, -76, 4, 3, "#1f1a1a");
+  pen.strokeStyle = ink;
+  pen.lineWidth = 2 * FINE;
+  pen.beginPath();
+  pen.moveTo(140, -56);
+  pen.quadraticCurveTo(152, -50, 164, -56);
+  pen.stroke();
+  if (e) { creatureEye(104, -136, 8, 7, e, {skin: colour, iris: "#1f1a1a", ink: ink, turn: 0.6}); }
+  else {
+    oval(104, -136, 8, 7, "#fff6ea", 0.6);
+    oval(106, -135, 5, 5.5, "#1f1a1a");
+  }
+  pen.save();                                       // the ears: small and pointed, pricked, or laid back as it feels
+  pen.translate(66, -166);
+  pen.rotate(-0.2 + 0.08 * Math.sin(clock * 2.6 + x * 0.02) - (e ? 0.5 * e.ears : 0));
+  [[10, 0], [0, 1]].forEach(function (ear) {
+    pen.beginPath();
+    pen.moveTo(-8 + ear[0], 0);
+    pen.quadraticCurveTo(-6 + ear[0], -30, ear[0], -40);
+    pen.quadraticCurveTo(10 + ear[0], -26, 8 + ear[0], 0);
+    pen.closePath();
+    shape(ear[1] ? colour : blend(colour, "#1c1c22", 0.25));
+  });
+  pen.restore();
+  pen.fillStyle = dark;                             // the forelock between the ears
+  pen.beginPath();
+  pen.moveTo(60, -168);
+  pen.quadraticCurveTo(84, -160, 92, -140);
+  pen.quadraticCurveTo(74, -150, 62, -156);
+  pen.closePath();
+  pen.fill();
+  pen.strokeStyle = "#6a4a2a";                      // a halter of rope
+  pen.lineWidth = 3.5 * FINE;
+  pen.beginPath();
+  pen.moveTo(74, -168); pen.lineTo(112, -76);
+  pen.moveTo(98, -100); pen.quadraticCurveTo(130, -96, 170, -88);
+  pen.stroke();
+  var poll = pen.getTransform().transformPoint(new DOMPoint(66, -170)), nose = pen.getTransform().transformPoint(new DOMPoint(150, -82));
+  pen.restore();
+  var load = null;
+  if (look.pack) {                                  // the pack saddle: a frame of wood, and a load lashed on each side
+    var cloth = typeof look.pack === "string" ? look.pack : "#c9b48a";
+    pen.beginPath();                                // the pad under the saddle
+    pen.moveTo(-90, -320); pen.quadraticCurveTo(10, -336, 120, -334); pen.lineTo(126, -296); pen.quadraticCurveTo(10, -290, -96, -282);
+    pen.closePath();
+    shape("#6a3a2a");
+    pen.beginPath();                                // the load on the near side: a bundle wrapped in cloth, roped round
+    pen.moveTo(-84, -350);
+    pen.quadraticCurveTo(10, -370, 112, -358);
+    pen.quadraticCurveTo(128, -300, 110, -236);
+    pen.quadraticCurveTo(10, -222, -82, -240);
+    pen.quadraticCurveTo(-100, -300, -84, -350);
+    pen.closePath();
+    shape(cloth);
+    pen.strokeStyle = blend(cloth, "#2a1f1a", 0.45);
+    pen.lineWidth = 2 * FINE;
+    pen.beginPath();
+    for (n = 0; n < 4; n++) { pen.moveTo(-70 + n * 6, -334 + n * 30); pen.quadraticCurveTo(10, -346 + n * 30, 104, -338 + n * 30); }
+    pen.stroke();
+    pen.strokeStyle = "#8a6a3a";                    // the ropes
+    pen.lineWidth = 4 * FINE;
+    pen.beginPath();
+    pen.moveTo(-30, -362); pen.lineTo(-24, -230);
+    pen.moveTo(60, -366); pen.lineTo(66, -228);
+    pen.stroke();
+    [-30, 64].forEach(function (bx) {               // the saddle's two frames of wood, each two sticks crossed over the load
+      pen.beginPath();
+      pen.moveTo(bx - 20, -342); pen.lineTo(bx + 14, -400);
+      pen.moveTo(bx + 20, -342); pen.lineTo(bx - 14, -400);
+      pen.strokeStyle = inkFor("#6a4426");
+      pen.lineWidth = 11 * FINE;
+      pen.stroke();
+      pen.strokeStyle = "#6a4426";
+      pen.lineWidth = 7 * FINE;
+      pen.stroke();
+    });
+    load = pen.getTransform().transformPoint(new DOMPoint(20, -372));
+  }
+  pen.restore();
+  FINE = 1;
+  LINE = STYLE.line;
+  return {seat: [x - 10 * size * face, y - (330 + bob) * size], head: [poll.x, poll.y], nose: [nose.x, nose.y], load: load ? [load.x, load.y] : null};
+}
+
+// ---------- two mice ----------
+// Two mice of the north, drawn from life in the kit's manner (flat colour inside a fine line; no cartoon's mouse):
+//   "house"  the house mouse that lives in thatch and walls: grey above, paler grey below, big round ears lined
+//            pink, a pink nose and pink feet, a long thin tail, scaly and nearly bare
+//   "field"  the fawn-coloured paddy mouse (Mus cervicolor) that comes in from the rice fields: sandy brown above
+//            with a darker line down its back, a white belly sharply set off, smaller ears, a larger eye, and a
+//            tail dark above and pale below
+// mouse(x, y, look) stands one on (x, y), facing right unless look.face is -1. look:
+//   kind     "house" or "field"
+//   size     1 is about 60 long from nose to rump (the tail as long again), a mouse beside the kit's people
+//   step     a number that grows while it runs, as a beast's does (one whole stride for every 1); without it
+//            it stands
+//   sniff    0 to 1: its nose up, its whiskers twitching: a mouse that stops to smell the air
+//   up       0 to 1: it sits up on its hind legs, its fore paws held up before its chest
+//   tint     [colour, amount], as a set's pieces take it
+// Its ears, its whiskers and its tail move by themselves, with clock. Gives back {nose}: a point of the scene.
+var MICE = {house: {fur: "#8c8892", belly: "#bdb6bc", ear: 8.5, inner: "#e8a8b0", eye: 2.3, tail: "#c9a6a6", tailTop: "#c9a6a6",
+                    stripe: null, long: 1.05},
+            field: {fur: "#b08a5a", belly: "#f1e9da", ear: 6, inner: "#d89a8a", eye: 2.8, tail: "#efe4d2", tailTop: "#6a4a2e",
+                    stripe: "#7a5a36", long: 1.2}};
+
+function mouse(x, y, look) {
+  look = look || {};
+  var kind = MICE[look.kind || "house"], size = look.size || 1, face = look.face || 1;
+  function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
+  var running = look.step !== undefined, phase = running ? look.step * Math.PI * 2 : 0;
+  var bob = running ? 1.6 * Math.abs(Math.sin(phase)) : 0, sniff = clamp(look.sniff || 0), up = clamp(look.up || 0);
+  var seed = x * 0.017, twitch = Math.sin(clock * 31 + seed) * (0.3 + sniff);
+  var ink = inkFor(tone(kind.fur));
+  pen.fillStyle = "rgba(60, 40, 30, 0.18)";         // its shadow
+  pen.beginPath();
+  pen.ellipse(x - 4 * size * face, y + 1, 26 * size, 3.5 * size, 0, 0, 7);
+  pen.fill();
+  pen.save();
+  pen.translate(x, y);
+  pen.scale(size * face, size);
+  var LINE0 = LINE;
+  LINE = 1.4;
+  pen.lineJoin = "round";
+  // the tail: from the rump, along the ground and up at its end, swaying
+  var sway = Math.sin(clock * 3.1 + seed) * 5, tip = 60 * kind.long;
+  pen.lineCap = "round";
+  pen.strokeStyle = tone(ink);
+  pen.lineWidth = 4.2;
+  pen.beginPath();
+  pen.moveTo(-24 + 6 * up, -7 - 10 * up);
+  pen.quadraticCurveTo(-24 - tip * 0.5, 2 - 6 * up, -24 - tip + sway, -6 + sway * 0.6);
+  pen.stroke();
+  pen.strokeStyle = tone(kind.tail);
+  pen.lineWidth = 2.4;
+  pen.stroke();
+  if (kind.tailTop !== kind.tail) {                 // a field mouse's tail is dark above
+    pen.strokeStyle = tone(kind.tailTop);
+    pen.lineWidth = 1.1;
+    pen.beginPath();
+    pen.moveTo(-24 + 6 * up, -8 - 10 * up);
+    pen.quadraticCurveTo(-24 - tip * 0.5, 1 - 6 * up, -24 - tip + sway, -7 + sway * 0.6);
+    pen.stroke();
+  }
+  // the legs: four small ones, scurrying; sitting up, the hind feet flat under it and the fore paws up
+  function leg(lx, ly, swing, far) {
+    var fx = lx + (running ? 7 * Math.sin(phase + swing) : 0), lift = running ? Math.max(0, 3 * Math.cos(phase + swing)) : 0;
+    pen.strokeStyle = tone(far ? blend(kind.inner, "#5a4040", 0.3) : kind.inner);
+    pen.lineWidth = 2.6;
+    pen.beginPath();
+    pen.moveTo(lx, ly);
+    pen.lineTo(fx, -lift);
+    pen.lineTo(fx + 4, -lift);
+    pen.stroke();
+  }
+  pen.translate(0, -bob);
+  if (!up) { leg(10, -8, Math.PI, true); leg(-14, -8, 0, true); }
+  pen.save();
+  pen.translate(-12, 0);                            // sitting up turns the body about its hips
+  pen.rotate(-1.05 * up);
+  pen.translate(12, 0);
+  pen.beginPath();                                  // the body: a bean, higher at the rump
+  pen.moveTo(-26, -6);
+  pen.bezierCurveTo(-30, -22, -16, -28, -2, -26);
+  pen.bezierCurveTo(10, -25, 18, -20, 18, -11);
+  pen.bezierCurveTo(16, -2, 6, 0, -6, 0);
+  pen.bezierCurveTo(-18, 0, -25, -1, -26, -6);
+  pen.closePath();
+  shape(tone(kind.fur));
+  pen.save();
+  pen.clip();
+  pen.fillStyle = tone(kind.belly);                 // the belly, paler; the field mouse's set off sharply
+  pen.beginPath();
+  pen.ellipse(-2, 2, 22, kind.stripe ? 8 : 10, 0, 0, 7);
+  pen.fill();
+  if (kind.stripe) {                                // and its darker line down the back
+    pen.strokeStyle = tone(kind.stripe);
+    pen.lineWidth = 3;
+    pen.beginPath();
+    pen.moveTo(-26, -16);
+    pen.bezierCurveTo(-18, -27, 2, -28, 14, -19);
+    pen.stroke();
+  }
+  pen.restore();
+  pen.save();                                       // the head, its nose lifting as it sniffs
+  pen.translate(14, -15);
+  pen.rotate(-0.35 * sniff + 0.8 * up + 0.04 * twitch);   // sitting up, it turns its head back to look ahead
+  pen.save();                                       // the far ear, then the near one, round and thin
+  pen.translate(-2, -9);
+  pen.rotate(-0.2 + 0.05 * Math.sin(clock * 2 + seed));
+  pen.beginPath();
+  pen.ellipse(0, -kind.ear * 0.6, kind.ear * 0.9, kind.ear, -0.3, 0, 7);
+  shape(tone(blend(kind.fur, "#2a2226", 0.15)));
+  pen.restore();
+  pen.beginPath();
+  pen.moveTo(-6, -8);
+  pen.bezierCurveTo(2, -12, 14, -8, 21, 1);         // the head: a cone to the nose
+  pen.bezierCurveTo(18, 5, 8, 7, -2, 6);
+  pen.bezierCurveTo(-8, 4, -9, -4, -6, -8);
+  pen.closePath();
+  shape(tone(kind.fur));
+  pen.save();
+  pen.translate(-6, -11);
+  pen.rotate(0.15 + 0.06 * Math.sin(clock * 2.3 + seed + 1));
+  pen.beginPath();
+  pen.ellipse(0, -kind.ear * 0.6, kind.ear * 0.9, kind.ear, 0.2, 0, 7);
+  shape(tone(kind.fur));
+  pen.beginPath();
+  pen.ellipse(0, -kind.ear * 0.6, kind.ear * 0.55, kind.ear * 0.65, 0.2, 0, 7);
+  pen.fillStyle = tone(kind.inner);
+  pen.fill();
+  pen.restore();
+  oval(8, -3, kind.eye, kind.eye * 1.05, "#141014");  // the eye: a bead, with a light
+  oval(8.8, -3.8, kind.eye * 0.35, kind.eye * 0.35, "#ffffff");
+  oval(21, 1, 2, 1.8, tone("#e08a96"));             // the nose
+  pen.strokeStyle = "rgba(40, 30, 30, 0.55)";       // the whiskers, twitching
+  pen.lineWidth = 0.7;
+  pen.beginPath();
+  for (var w = -1; w <= 1; w++) {
+    pen.moveTo(18, 2);
+    pen.lineTo(31, 2 + w * 4 + twitch * 2);
+    pen.moveTo(17, 3);
+    pen.lineTo(28, 5 + w * 5 - twitch * 2);
+  }
+  pen.stroke();
+  var nose = pen.getTransform().transformPoint(new DOMPoint(21, 1));
+  pen.restore();
+  if (up) {                                         // sitting up: the fore paws held before its chest
+    pen.strokeStyle = tone(kind.inner);
+    pen.lineWidth = 2.4;
+    pen.beginPath();
+    pen.moveTo(12, -12); pen.lineTo(18, -16);
+    pen.moveTo(10, -9); pen.lineTo(17, -12);
+    pen.stroke();
+  }
+  pen.restore();
+  if (!up) { leg(10, -6, 0, false); leg(-14, -6, Math.PI, false); }
+  else { leg(-12, -4, 0, false); }
+  LINE = LINE0;
+  pen.restore();
+  return {nose: [nose.x, nose.y]};
+}
+
+// ---------- a gecko ----------
+// The tokay (ตุ๊กแก), the big gecko of the walls of Thai houses, seen from above as it crawls on a wall: blue-grey,
+// spotted orange, a broad head with great gold eyes, a long tail ringed pale, toes splayed wide on round pads.
+// It is built as the gecko of the procedural animation lesson (procedural_animation.html, steps 6 and 7) is: a
+// spine of joints, each a fixed way behind the one before, an oval of skin round each, and four legs that reach
+// for the wall and step when they fall behind. There the spine is pulled along frame by frame; here every frame
+// is worked out from the second alone, as the kit's things are (a still is the film's own frame): the head is
+// "along" pixels of the way along its route, a row of points of the scene, and each joint is the spine's gap
+// behind it along the same route, which is where a pulled chain settles. Each foot is planted on the wall a
+// step at a time, the front of one side with the back of the other.
+//   gecko(route, along, look): route [[x, y], ...]; along, how far along it the head is (0 at its first point)
+//   look.size   1 is about 150 from snout to tail tip
+//   look.colour, look.spots: its skin and its spots; look.tint as a set's pieces take it
+//   look.t      the second, for its breathing and its tail
+// Gives back {head, angle}: where its head is in the scene, and which way it faces (radians).
+var GECKO_WIDTHS = [11, 13, 10, 12, 14, 15, 14, 11, 8, 6.5, 5.5, 4.5, 3.8, 3.2, 2.6, 2.1, 1.6];   // the lesson's lizard, its tail longer
+var GECKO_GAP = 9, GECKO_STEP = 30, GECKO_REACH = 27;   // a tokay's legs splay wide
+
+function geckoRoute(route) {                        // the distance along a route at each of its points, kept with it
+  if (!route.marks) {
+    route.marks = [0];
+    for (var n = 1; n < route.length; n++) {
+      route.marks.push(route.marks[n - 1] + Math.hypot(route[n][0] - route[n - 1][0], route[n][1] - route[n - 1][1]));
+    }
+  }
+  return route.marks;
+}
+
+function geckoAt(route, d) {                        // the point a distance along a route, and the way it runs there
+  var marks = geckoRoute(route), last = route.length - 1, k;
+  if (d <= 0 || last < 1) {                         // before its start: on back along its first stretch
+    var a0 = Math.atan2(route[1][1] - route[0][1], route[1][0] - route[0][0]);
+    return [route[0][0] + Math.cos(a0) * d, route[0][1] + Math.sin(a0) * d, a0];
+  }
+  for (k = 1; k < last && marks[k] < d; k++) { }
+  var u = (d - marks[k - 1]) / ((marks[k] - marks[k - 1]) || 1), a = Math.atan2(route[k][1] - route[k - 1][1], route[k][0] - route[k - 1][0]);
+  return [mix(route[k - 1][0], route[k][0], u), mix(route[k - 1][1], route[k][1], u), a];
+}
+
+function gecko(route, along, look) {
+  look = look || {};
+  function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
+  var size = look.size || 1, t = look.t || clock, skin = tone(look.colour || "#7f93a8"), spot = tone(look.spots || "#e07a3a");
+  var gap = GECKO_GAP * size, n, spine = [];
+  for (n = 0; n < GECKO_WIDTHS.length; n++) {        // the spine: each joint the gap behind the one before, along the route
+    var p = geckoAt(route, along - n * gap);
+    var sway = n > 8 ? Math.sin(t * 2.2 - n * 0.5) * (n - 8) * 0.25 * size : 0;   // the tail's tip wavers
+    spine.push([p[0] - Math.sin(p[2]) * sway, p[1] + Math.cos(p[2]) * sway, p[2]]);
+  }
+  var breathe = 1 + 0.04 * Math.sin(t * 3.1);
+  function edge(side) {                             // one side of the skin, joint by joint
+    return spine.map(function (j, k) {
+      var w = GECKO_WIDTHS[k] * size * (k > 2 && k < 8 ? breathe : 1);
+      return [j[0] - Math.sin(j[2]) * w * side, j[1] + Math.cos(j[2]) * w * side];
+    });
+  }
+  // The legs: hips at joints 3 (the front) and 7 (the back); each foot planted on the wall a step at a time.
+  [[3, 1, 0], [3, -1, 0.5], [7, 1, 0.5], [7, -1, 0]].forEach(function (leg) {
+    var hipAlong = along - leg[0] * gap, step = GECKO_STEP * size, cycle = hipAlong / step + leg[2];
+    var planted = Math.floor(cycle), swing = cycle - planted, moving = swing > 0.75;   // the last quarter of each step it swings
+    function footOn(at) {
+      var q = geckoAt(route, (at - leg[2]) * step + step * 0.55);
+      var out = leg[1] * GECKO_REACH * size, back = leg[0] === 7 ? -0.5 : 0.5;
+      return [q[0] - Math.sin(q[2]) * out + Math.cos(q[2]) * out * back * 0.4 * leg[1],
+              q[1] + Math.cos(q[2]) * out + Math.sin(q[2]) * out * back * 0.4 * leg[1], q[2]];
+    }
+    var foot = footOn(planted);
+    if (moving) {
+      var next = footOn(planted + 1), u = (swing - 0.75) / 0.25;
+      foot = [mix(foot[0], next[0], u), mix(foot[1], next[1], u), next[2]];
+    }
+    var hip = spine[leg[0]], knee = [mix(hip[0], foot[0], 0.5) - Math.sin(hip[2]) * leg[1] * 4 * size + Math.cos(hip[2]) * (leg[0] === 7 ? -5 : 5) * size,
+                                     mix(hip[1], foot[1], 0.5) + Math.cos(hip[2]) * leg[1] * 4 * size + Math.sin(hip[2]) * (leg[0] === 7 ? -5 : 5) * size];
+    pen.strokeStyle = inkFor(skin);
+    pen.lineCap = "round";
+    pen.lineJoin = "round";
+    pen.lineWidth = 5.2 * size + 1.6;
+    pen.beginPath(); pen.moveTo(hip[0], hip[1]); pen.lineTo(knee[0], knee[1]); pen.lineTo(foot[0], foot[1]); pen.stroke();
+    pen.strokeStyle = skin;
+    pen.lineWidth = 5.2 * size;
+    pen.stroke();
+    for (var toe = -2; toe <= 2; toe++) {             // five toes splayed wide, a round pad at each tip
+      var ta = foot[2] + leg[1] * Math.PI / 2 * 0.55 + toe * 0.42 + (leg[0] === 7 ? -0.6 * leg[1] : 0.3 * leg[1]);
+      var tip = [foot[0] + Math.cos(ta) * 7 * size, foot[1] + Math.sin(ta) * 7 * size];
+      pen.strokeStyle = skin;
+      pen.lineWidth = 2.2 * size;
+      pen.beginPath(); pen.moveTo(foot[0], foot[1]); pen.lineTo(tip[0], tip[1]); pen.stroke();
+      oval(tip[0], tip[1], 1.8 * size, 1.8 * size, tone("#9fb0c2"));
+    }
+  });
+  var left = edge(1), right = edge(-1);              // the skin: one outline down one side and back up the other
+  pen.beginPath();
+  pen.moveTo(left[0][0], left[0][1]);
+  for (n = 1; n < left.length; n++) { pen.lineTo(left[n][0], left[n][1]); }
+  var tail = spine[spine.length - 1];
+  pen.lineTo(tail[0] - Math.cos(tail[2]) * 4 * size, tail[1] - Math.sin(tail[2]) * 4 * size);
+  for (n = right.length - 1; n >= 0; n--) { pen.lineTo(right[n][0], right[n][1]); }
+  pen.closePath();
+  shape(skin);
+  pen.save();
+  pen.clip();
+  for (n = 2; n < spine.length - 1; n++) {           // the spots on its back, and pale rings round the tail
+    var j = spine[n], w = GECKO_WIDTHS[n] * size;
+    if (n < 9) {
+      [-0.45, 0.45].forEach(function (side, k) {
+        if ((n + k) % 2) { oval(j[0] - Math.sin(j[2]) * w * side, j[1] + Math.cos(j[2]) * w * side, 2.6 * size, 2.6 * size, spot); }
+      });
+    } else if (n % 2) {
+      pen.strokeStyle = tone("#c8d2dc");
+      pen.lineWidth = 3 * size;
+      pen.beginPath();
+      pen.moveTo(j[0] - Math.sin(j[2]) * w * 1.3, j[1] + Math.cos(j[2]) * w * 1.3);
+      pen.lineTo(j[0] + Math.sin(j[2]) * w * 1.3, j[1] - Math.cos(j[2]) * w * 1.3);
+      pen.stroke();
+    }
+  }
+  pen.restore();
+  var head = spine[0], a = head[2];                  // the head: broad, a blunt snout, the great eyes at its sides
+  pen.save();
+  pen.translate(head[0], head[1]);
+  pen.rotate(a);
+  pen.scale(size, size);
+  pen.beginPath();                                  // round at the back where it meets the neck, blunt at the snout
+  pen.moveTo(-9, 0);
+  pen.bezierCurveTo(-9, -11, 2, -15, 12, -12);
+  pen.bezierCurveTo(20, -9, 24, -4, 23, 0);
+  pen.bezierCurveTo(24, 4, 20, 9, 12, 12);
+  pen.bezierCurveTo(2, 15, -9, 11, -9, 0);
+  pen.closePath();
+  shape(skin);
+  [-1, 1].forEach(function (side) {
+    oval(6, side * 9.5, 4.6, 4.2, tone("#d8b84a"));     // gold, with a slit of a pupil
+    pen.fillStyle = "#1a1612";
+    pen.fillRect(5.4, side * 9.5 - 3.2, 1.2, 6.4);
+    oval(17, side * 4, 0.9, 0.9, "#2a2226");           // a nostril
+  });
+  oval(-1, -5, 2.2, 2.2, spot);
+  oval(-1, 5, 2.2, 2.2, spot);
+  pen.restore();
+  return {head: [head[0], head[1]], angle: a};
 }

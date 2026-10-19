@@ -138,7 +138,13 @@ python sash_narrate.py --voice assistant --takes 4 --fit   # its story in Kam Mu
 python render.py sash.html sash.mp4 --audio sash_voice.wav
 python scenes.py sash.html sash.mp4 --audio sash_voice.wav            # the same film, scene by scene, then joined
 python scenes.py sash.html sash.mp4 --audio sash_voice.wav --scene 3  # after a change to scene 3: only it again
+python sounds.py                                       # the creatures' voices, made from outlines (out/sounds/); sounds.html plays them
+python maeng/feelings.py                               # music that turns with each line's feeling (score.py), scene by scene
+python checks/score_check.py                           # is each line's music in its feeling's notes; plot.html
 python checks/kit_check.py my_film.html --quick        # does the page draw, and draw right
+python checks/seek_check.py                            # no clock read, and every scene come back to the same
+python checks/snapshot.py save                         # key stills of every film scene, before a kit change; compare after
+python checks/ghost.py maeng/s04.html g.png --from 2 --to 33   # how things move: ghosts, and each animal's course
 ```
 
 `render.py` opens the page in Chrome with no window, calls `draw(t)` for every frame, and hands the

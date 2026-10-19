@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>sounds</title>
+<style>
+  html, body { margin: 0; background: #f3ead8; color: #3a2e22; font: 18px Georgia, "Times New Roman", serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-weight: normal; font-size: 30px; margin: 0 0 6px; }
+  p { line-height: 1.5; }
+  code { font-size: 15px; background: #e6dbc4; padding: 1px 5px; border-radius: 3px; }
+  .sound { border-top: 1px solid #cdbf9e; padding: 14px 0; }
+  .sound b { font-size: 20px; }
+  .sound span { color: #6a5a44; }
+  .sound small { display: block; color: #7a6a54; font-size: 14px; margin-top: 4px; }
+  audio { display: block; width: 100%; margin-top: 8px; }
+  #missing { display: none; background: #f7d9c4; padding: 10px 14px; border-radius: 6px; }
+</style>
+</head>
+<body>
+<main>
+<h1>The kit's sounds</h1>
+<p>Voices for the kit's creatures. Most are made by <code>howl.py</code> from an outline of numbers in
+<code>sounds.py</code>: how its pitch, its loudness and its mouth go over time; nothing in them was recorded. A few
+are recordings their makers gave to everyone, fetched by <code>sounds.py</code>; each says where it is from. Make
+and fetch them first, then open this page again:</p>
+<p><code>python sounds.py</code> &nbsp;(every sound into <code>out/sounds/</code>; <code>python checks/sound_check.py</code> checks them)</p>
+<p id="missing">No sounds made yet: run <code>python sounds.py</code> in the kit's folder.</p>
+<div id="sounds"></div>
+</main>
+<script src="out/sounds/list.js"></script>
+<script>
+// One row a sound: its name, what it is for, how long, and a player. The list is the one sounds.py wrote.
+if (typeof SOUND_LIST === "undefined") {
+  document.getElementById("missing").style.display = "block";
+} else {
+  var all = {name: "all", what: "every sound, one after another", seconds: null};
+  SOUND_LIST.concat([all]).forEach(function (sound) {
+    var row = document.createElement("div"), title = document.createElement("b"), what = document.createElement("span");
+    var player = document.createElement("audio"), from = document.createElement("small");
+    row.className = "sound";
+    title.textContent = sound.name;
+    what.textContent = " - " + sound.what + (sound.seconds ? " (" + sound.seconds + " s)" : "");
+    player.controls = true;
+    player.preload = "none";
+    player.src = "out/sounds/" + sound.name + ".wav";
+    row.appendChild(title);
+    row.appendChild(what);
+    if (sound.from) { from.textContent = "From: " + sound.from; row.appendChild(from); }
+    row.appendChild(player);
+    document.getElementById("sounds").appendChild(row);
+  });
+}
+</script>
+</body>
+</html>

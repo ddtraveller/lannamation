@@ -21,6 +21,13 @@
 //              dish of terracotta, a small flame above its rim that leans and
 //              flickers, and a warm glow on the ground round it. Rows of them
 //              line the walls and paths at night: pratheepRow().
+//   tub        the tub (ตูบ), the small hut of a poor family of the north, as
+//              the tales have it: short stilts, walls of woven bamboo (fa khat
+//              tae), a doorway with a short bamboo ladder, a steep roof of
+//              grass thatch ragged at the eaves; a lamp's glow in the door.
+//   firewood   a bundle of firewood (หลัว), as a child carries it home: sticks of
+//              a length, their cut ends pale, bound round in two places with
+//              a vine; or loose on the ground, gathered but not yet bound.
 //   krathong   a krathong to float at Yi Peng: a slice of banana trunk, a ring
 //              of folded banana-leaf points round it, marigolds and an orchid,
 //              a candle with a flame and three incense sticks; on water it
@@ -994,4 +1001,692 @@ function rotDaeng(brush, x, base, size, turn, facing, inside) {
   wheel(-170);
   wheel(190);
   brush.restore();
+}
+
+// A tub (ตูบ): the small hut of a poor family of the north, standing on (x, base). Four short stilts and a
+// floor of beams; walls of woven bamboo (fa khat tae), a plain weave of pale and darker strips across; a
+// doorway at the right, dark inside, with a short ladder of bamboo down from it; a steep roof of grass
+// thatch, its eaves ragged with straw. 250 wide and 225 high at size 1.
+// look: glow, 0 to 1: a lamp's light in the doorway and on the ground before it, at night; tint, [colour,
+// amount]: every colour blended toward one light, as caveMouth()'s.
+function tub(brush, x, base, size, look) {
+  look = look || {};
+  function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
+  var wood = tone("#7a5234"), bamboo = tone("#d2b67c"), strip = tone("#a98a52"), straw = tone("#c9a75e"), dry = tone("#8f6c35");
+  var line = 2.2 / Math.max(0.6, size), glow = look.glow || 0, n, k;
+  function fillInk(colour) {
+    brush.fillStyle = colour;
+    brush.fill();
+    brush.strokeStyle = inkFor(/^#[0-9a-f]{6}$/i.test(colour) ? colour : "#7a5234");
+    brush.lineWidth = line;
+    brush.lineJoin = "round";
+    brush.stroke();
+  }
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(size, size);
+  brush.fillStyle = "rgba(60, 40, 30, 0.2)";        // its shadow
+  brush.beginPath();
+  brush.ellipse(4, 2, 135, 12, 0, 0, 7);
+  brush.fill();
+  [-96, -46, 46, 96].forEach(function (px) {        // the stilts
+    brush.beginPath();
+    brush.rect(px - 5, -46, 10, 46);
+    fillInk(wood);
+  });
+  brush.beginPath();                                // the floor's beam
+  brush.rect(-108, -54, 216, 10);
+  fillInk(wood);
+  brush.beginPath();                                // the walls of woven bamboo
+  brush.rect(-100, -138, 200, 84);
+  fillInk(bamboo);
+  brush.save();
+  brush.beginPath();
+  brush.rect(-100, -138, 200, 84);
+  brush.clip();
+  brush.strokeStyle = strip;
+  brush.lineWidth = 3.2;
+  for (k = -300; k < 300; k += 14) {                // the weave: strips one way, and the other, over and under
+    brush.beginPath();
+    brush.moveTo(k, -138);
+    brush.lineTo(k + 84, -54);
+    brush.stroke();
+  }
+  brush.strokeStyle = blend(strip, bamboo, 0.45);
+  for (k = -300; k < 300; k += 14) {
+    brush.beginPath();
+    brush.moveTo(k + 84, -138);
+    brush.lineTo(k, -54);
+    brush.stroke();
+  }
+  brush.restore();
+  brush.beginPath();                                // the doorway
+  brush.rect(22, -126, 44, 72);
+  if (glow > 0.01) {
+    var lit = brush.createRadialGradient(44, -66, 4, 44, -80, 60);
+    lit.addColorStop(0, "rgba(255, 196, 110, " + (0.95 * glow).toFixed(3) + ")");
+    lit.addColorStop(1, "rgba(120, 60, 20, " + (0.6 * glow).toFixed(3) + ")");
+    brush.fillStyle = "#24170f";
+    brush.fill();
+    brush.fillStyle = lit;
+  } else {
+    brush.fillStyle = "#24170f";
+  }
+  brush.fill();
+  brush.strokeStyle = inkFor(wood);
+  brush.lineWidth = line;
+  brush.stroke();
+  brush.strokeStyle = tone("#9a8150");              // the ladder: two poles and three rungs
+  brush.lineWidth = 4;
+  brush.lineCap = "round";
+  brush.beginPath();
+  brush.moveTo(30, -54); brush.lineTo(38, 0);
+  brush.moveTo(58, -54); brush.lineTo(66, 0);
+  for (n = 1; n <= 3; n++) { brush.moveTo(30 + 2 * n, -54 + 14 * n); brush.lineTo(58 + 2 * n, -54 + 14 * n); }
+  brush.stroke();
+  brush.beginPath();                                // the roof of thatch: steep, the eaves wide
+  brush.moveTo(-132, -126);
+  brush.lineTo(-30, -222);
+  brush.lineTo(30, -222);
+  brush.lineTo(132, -126);
+  brush.closePath();
+  fillInk(straw);
+  brush.save();
+  brush.clip();
+  brush.strokeStyle = dry;                          // rows of straw, one over another
+  brush.lineWidth = 1.6;
+  for (k = 0; k < 6; k++) {
+    var rowY = -214 + k * 16;
+    for (n = -140; n < 140; n += 7) {
+      brush.beginPath();
+      brush.moveTo(n, rowY);
+      brush.lineTo(n + 2, rowY + 13);
+      brush.stroke();
+    }
+  }
+  brush.restore();
+  brush.fillStyle = straw;                          // the ragged eaves: straw hanging below the roof's edge
+  brush.strokeStyle = inkFor(straw);
+  brush.lineWidth = line * 0.7;
+  brush.beginPath();
+  brush.moveTo(-132, -126);
+  for (n = 0; n <= 24; n++) {
+    var ex = -132 + n * 11;
+    brush.lineTo(ex + 4, -126 + 6 + 4 * dice(n + 7));
+    brush.lineTo(ex + 11, -126);
+  }
+  brush.closePath();
+  brush.fill();
+  brush.stroke();
+  brush.restore();
+  if (glow > 0.01) {                                // the lamp's light on the ground before the door
+    var pool = brush.createRadialGradient(x + 48 * size, base, 4, x + 48 * size, base, 120 * size);
+    pool.addColorStop(0, "rgba(255, 190, 100, " + (0.35 * glow).toFixed(3) + ")");
+    pool.addColorStop(1, "rgba(255, 190, 100, 0)");
+    brush.fillStyle = pool;
+    brush.fillRect(x - 80 * size, base - 120 * size, 260 * size, 160 * size);
+  }
+}
+
+// A bundle of firewood, its middle at (x, y): "count" sticks (7 unless told) 120 long at size 1, their cut ends
+// pale, bound round in two places with a vine; look.turn turns it (radians, 0 lying along x); look.loose: the
+// sticks lie apart on the ground, not yet bound; look.tint as the hut's.
+function firewood(brush, x, y, size, look) {
+  look = look || {};
+  function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
+  var count = look.count || 7, bark = tone("#7d5a3a"), cut = tone("#dcbf8e"), vine = tone("#5d6a2e"), n;
+  brush.save();
+  brush.translate(x, y);
+  brush.scale(size, size);
+  brush.rotate(look.turn || 0);
+  for (n = 0; n < count; n++) {                     // the sticks: one a little longer, one a little bent, as wood is
+    var lift = look.loose ? 0 : (n - (count - 1) / 2) * 5.5, slide = look.loose ? (n - (count - 1) / 2) * 16 : 0;
+    var long = 112 + 16 * dice(n * 3 + 1), turn = look.loose ? (dice(n * 5 + 2) - 0.5) * 0.9 : (dice(n * 5 + 2) - 0.5) * 0.06;
+    brush.save();
+    brush.translate(slide, lift + (look.loose ? 6 * dice(n + 9) : 0));
+    brush.rotate(turn);
+    brush.beginPath();
+    brush.moveTo(-long / 2, -2.6);
+    brush.quadraticCurveTo(0, -3.6 + 2 * dice(n + 4), long / 2, -2.4);
+    brush.lineTo(long / 2, 2.4);
+    brush.quadraticCurveTo(0, 3.2, -long / 2, 2.6);
+    brush.closePath();
+    brush.fillStyle = blend(bark, "#3a2a1a", 0.25 * dice(n + 6));
+    brush.fill();
+    brush.strokeStyle = inkFor(bark);
+    brush.lineWidth = 1.2;
+    brush.stroke();
+    brush.beginPath();                              // the cut ends
+    brush.ellipse(long / 2, 0, 1.6, 2.6, 0, 0, 7);
+    brush.ellipse(-long / 2, 0, 1.6, 2.6, 0, 0, 7);
+    brush.fillStyle = cut;
+    brush.fill();
+    brush.restore();
+  }
+  if (!look.loose) {                                // the vine bound round it in two places
+    var half = (count - 1) / 2 * 5.5 + 4;
+    [-28, 30].forEach(function (bx) {
+      brush.beginPath();
+      brush.rect(bx - 3, -half, 6, half * 2);
+      brush.fillStyle = vine;
+      brush.fill();
+      brush.strokeStyle = inkFor(vine);
+      brush.lineWidth = 1;
+      brush.stroke();
+    });
+  }
+  brush.restore();
+}
+
+// ---------- pieces for a tale: the creature with four ears and five eyes ----------
+// Things of the tale of Maeng Si Hu Ha Ta (the film in maeng/), each a painter on a brush as the others are: kok, a
+// pen of bamboo for an animal, in two parts so that what is kept in it stands inside; snare, a noose of rope on a
+// bent sapling, set or sprung; campfire, a yard's fire in a ring of stones, its flames moving with t, and ember and
+// emberFlight, a coal and a coal flying on an arc (thrown to a creature that eats them); goldNugget, a nugget of
+// gold that glints; hoKham, a hall of a Lanna palace (ho kham), open at the front, in two parts so that whoever
+// sits in it is inside; gong, a gong on its stand that swings and rings when struck; linKham, a trough of gold on
+// forked posts along a row of points on the ground, drawn as far as it is built.
+PIECES_KIT.push("tub", "firewood", "kok", "snare", "campfire", "ember", "emberFlight", "goldNugget", "hoKham", "gong", "linKham");
+
+// A pen (คอก) of bamboo for an animal, its front's middle on (x, base), "wide" across and two-thirds as deep:
+// posts at its corners and along its sides, two rails of split bamboo round it, bound at each post. A pen is
+// drawn in two parts, so that what is kept in it stands inside: look.part "back" (the far fence, before the
+// animal) and "front" (the near fence, after it). 110 high at size 1. look.tint as the hut's.
+function kok(brush, x, base, wide, size, look) {
+  look = look || {};
+  function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
+  var cane = tone("#b49a5e"), dark = tone("#7e6a3e"), tie = tone("#5d6a2e"), front = look.part === "front";
+  var deep = wide * 0.22, rise = 110 * size, half = wide / 2, n;
+  var yBack = base - deep, posts = Math.max(3, Math.round(wide / (70 * size)));
+  function fence(y, slant) {                        // one side: its posts, then two rails across them, bound
+    for (n = 0; n <= posts; n++) {
+      var px = x - half + n * wide / posts + slant * n / posts;
+      brush.fillStyle = n % 2 ? cane : dark;
+      brush.fillRect(px - 4 * size, y - rise, 8 * size, rise);
+      brush.strokeStyle = inkFor(cane);
+      brush.lineWidth = 1.4;
+      brush.strokeRect(px - 4 * size, y - rise, 8 * size, rise);
+    }
+    [0.32, 0.72].forEach(function (u) {
+      brush.fillStyle = cane;
+      brush.fillRect(x - half - 6, y - rise * u - 4 * size, wide + 12, 8 * size);
+      brush.strokeStyle = inkFor(cane);
+      brush.strokeRect(x - half - 6, y - rise * u - 4 * size, wide + 12, 8 * size);
+      for (n = 0; n <= posts; n++) {
+        brush.fillStyle = tie;
+        brush.fillRect(x - half + n * wide / posts - 5 * size, y - rise * u - 5 * size, 10 * size, 10 * size);
+      }
+    });
+  }
+  if (!front) {
+    fence(yBack, 0);                                // the far side
+    brush.fillStyle = "rgba(90, 70, 40, 0.25)";     // the trodden ground inside
+    brush.beginPath();
+    brush.ellipse(x, base - deep / 2, half, deep / 2 + 6, 0, 0, 7);
+    brush.fill();
+  } else {
+    fence(base, 0);                                 // the near side
+  }
+}
+
+// A snare (แร้ว) as the north set one for a small animal, its foot's middle on (x, base): a pole of bamboo
+// pushed into the ground and bent over, held down by a cord to a trigger peg; from the pole's tip a noose of
+// rattan lies open on the ground under it. look.sprung (0 to 1): the trigger let go, the pole flies up
+// straight and the noose with it, closed; look.caught: a point of the scene (a foot, a paw) the noose holds,
+// so that it closes round it there instead of in the air; look.t stirs the cord; look.tint as the hut's.
+// 160 wide and 200 high at size 1.
+function snare(brush, x, base, size, look) {
+  look = look || {};
+  function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
+  var sprung = clamp(look.sprung || 0), cane = tone("#a8883e"), rattan = tone("#7a5a2e"), peg = tone("#6a4a2a");
+  var ease = sprung * sprung * (3 - 2 * sprung), n;
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(size, size);
+  var root = [-70, 0];
+  // The pole: from its root at the left, bent over to the right and down (set), or straight up and swaying (sprung).
+  var tipSet = [62, -36], tipSprung = [-48, -196 - 6 * Math.sin((look.t || 0) * 9) * (1 - ease) * ease * 4];
+  var tip = [mix(tipSet[0], tipSprung[0], ease), mix(tipSet[1], tipSprung[1], ease)];
+  var bow = [mix(-40, -76, ease), mix(-150, -110, ease)];
+  brush.strokeStyle = inkFor(cane);
+  brush.lineWidth = 8.5;
+  brush.lineCap = "round";
+  brush.beginPath();
+  brush.moveTo(root[0], root[1]);
+  brush.quadraticCurveTo(bow[0], bow[1], tip[0], tip[1]);
+  brush.stroke();
+  brush.strokeStyle = cane;
+  brush.lineWidth = 6;
+  brush.stroke();
+  brush.strokeStyle = blend(cane, "#3a2a1a", 0.3);   // its joints
+  brush.lineWidth = 7;
+  [0.35, 0.68].forEach(function (u) {
+    var v = 1 - u, jx = v * v * root[0] + 2 * v * u * bow[0] + u * u * tip[0], jy = v * v * root[1] + 2 * v * u * bow[1] + u * u * tip[1];
+    brush.beginPath();
+    brush.arc(jx, jy, 1.2, 0, 7);
+    brush.stroke();
+  });
+  if (sprung < 0.05) {                              // set: the trigger peg in the ground, the cord from the tip down to it
+    brush.fillStyle = peg;
+    brush.fillRect(58, -16, 6, 18);
+    brush.strokeStyle = rattan;
+    brush.lineWidth = 2;
+    brush.beginPath();
+    brush.moveTo(tip[0], tip[1]);
+    brush.lineTo(61, -14);
+    brush.stroke();
+  }
+  var loop, hold = look.caught ? [(look.caught[0] - x) / size, (look.caught[1] - base) / size] : null;
+  if (sprung < 0.05) { loop = {x: 34, y: -2, rx: 30, ry: 7}; }              // the noose open on the ground under the tip
+  else if (hold) { loop = {x: hold[0], y: hold[1], rx: 9, ry: 5}; }        // closed round what it caught
+  else { loop = {x: tip[0] + 4, y: tip[1] + 40, rx: 6, ry: 10}; }          // closed on nothing, hanging from the tip
+  brush.strokeStyle = rattan;                       // the line from the tip to the noose, and the noose
+  brush.lineWidth = 2.4;
+  brush.beginPath();
+  brush.moveTo(tip[0], tip[1]);
+  brush.quadraticCurveTo(mix(tip[0], loop.x, 0.5) + 6, mix(tip[1], loop.y, 0.5) - 4 * (1 - ease), loop.x, loop.y - loop.ry);
+  brush.stroke();
+  brush.lineWidth = 3;
+  brush.beginPath();
+  brush.ellipse(loop.x, loop.y, loop.rx, loop.ry, 0, 0, 7);
+  brush.stroke();
+  for (n = 0; n < 3; n++) {                         // a few leaves laid over the noose, to hide it
+    if (sprung > 0.05) { break; }
+    brush.fillStyle = tone(["#6f8f3a", "#8a7a3a", "#5f7f34"][n]);
+    brush.beginPath();
+    brush.ellipse(18 + n * 16, -3 + (n % 2) * 3, 9, 3.4, 0.3 * (n - 1), 0, 7);
+    brush.fill();
+  }
+  brush.restore();
+}
+
+// A campfire on the ground of a yard, its middle on (x, base): a ring of stones, sticks laid crossed and
+// charred at their ends, flames that leap and flicker with t (the second), coals glowing red under them, and
+// a warm light round it. look.low (0 to 1) burns it down to coals; look.light (0 to 1, 1 unless told) is how
+// strong the light round it is. 150 wide and, with its flames, 170 high at size 1.
+function campfire(brush, x, base, size, t, look) {
+  look = look || {};
+  var low = clamp(look.low || 0), light = look.light === undefined ? 1 : look.light, n;
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(size, size);
+  if (light > 0.01) {                               // the light it throws, flickering
+    var flick = 0.9 + 0.1 * Math.sin(t * 13) * Math.sin(t * 7.3);
+    var warm = brush.createRadialGradient(0, -40, 10, 0, -40, 380 * (1 - 0.5 * low) * flick);
+    warm.addColorStop(0, "rgba(255, 170, 80, " + (0.42 * light).toFixed(3) + ")");
+    warm.addColorStop(1, "rgba(255, 150, 60, 0)");
+    brush.fillStyle = warm;
+    brush.fillRect(-420, -440, 840, 560);
+  }
+  [[-62, -2], [-38, 8], [0, 12], [40, 8], [64, -2]].forEach(function (s, k) {   // the stones round it
+    brush.beginPath();
+    brush.ellipse(s[0], s[1], 17, 10, 0, 0, 7);
+    brush.fillStyle = ["#7a7268", "#8a8276", "#6e665c", "#857d71", "#766e63"][k];
+    brush.fill();
+    brush.strokeStyle = inkFor("#7a7268");
+    brush.lineWidth = 1.6;
+    brush.stroke();
+  });
+  [[-46, -4, 40, -22], [44, -6, -38, -24], [-10, 2, 6, -30]].forEach(function (s) {   // the sticks, crossed, charred
+    brush.strokeStyle = "#5a3e26";
+    brush.lineWidth = 9;
+    brush.lineCap = "round";
+    brush.beginPath();
+    brush.moveTo(s[0], s[1]);
+    brush.lineTo(s[2], s[3]);
+    brush.stroke();
+    brush.strokeStyle = "#2a1c14";
+    brush.lineWidth = 9;
+    brush.beginPath();
+    brush.moveTo(mix(s[0], s[2], 0.6), mix(s[1], s[3], 0.6));
+    brush.lineTo(s[2], s[3]);
+    brush.stroke();
+  });
+  for (n = 0; n < 9; n++) {                         // the coals, glowing and dimming
+    var cx = -34 + n * 8.5, cy = -10 + 5 * Math.sin(n * 2.7), glow = 0.6 + 0.4 * Math.sin(t * (3 + n % 3) + n);
+    brush.fillStyle = "rgba(255, " + Math.round(90 + 90 * glow) + ", 40, 0.95)";
+    brush.beginPath();
+    brush.ellipse(cx, cy, 5, 3.4, 0, 0, 7);
+    brush.fill();
+  }
+  var tall = (1 - low) * (1 - low);                 // the flames: tongues that leap, flicker and lean
+  for (n = 0; n < 5; n++) {
+    var h = (90 + 50 * Math.sin(t * (5.1 + n * 0.7) + n * 1.9) * Math.sin(t * 2.3 + n)) * tall * (n === 2 ? 1.25 : 0.8 + 0.06 * n);
+    if (h < 4) { continue; }
+    var fx = -36 + n * 18, lean = 10 * Math.sin(t * 3.1 + n * 1.3), wide = 15 + 4 * Math.sin(n * 2.2);
+    [["#e8502a", 1], ["#f7a43a", 0.68], ["#ffe08a", 0.36]].forEach(function (layer) {
+      var hh = h * layer[1], ww = wide * (0.5 + 0.5 * layer[1]);
+      brush.beginPath();
+      brush.moveTo(fx - ww, -14);
+      brush.quadraticCurveTo(fx - ww * 0.9, -14 - hh * 0.55, fx + lean * layer[1], -14 - hh);
+      brush.quadraticCurveTo(fx + ww * 0.9, -14 - hh * 0.55, fx + ww, -14);
+      brush.closePath();
+      brush.fillStyle = layer[0];
+      brush.fill();
+    });
+  }
+  brush.restore();
+}
+
+// An ember, a coal red-hot, its middle on (x, y): dark red with a bright core and a glow about it, sparks
+// leaving it. "t" flickers it. 10 across at size 1.
+function ember(brush, x, y, size, t) {
+  brush.save();
+  brush.translate(x, y);
+  brush.scale(size, size);
+  var halo = brush.createRadialGradient(0, 0, 2, 0, 0, 24);
+  halo.addColorStop(0, "rgba(255, 170, 60, 0.6)");
+  halo.addColorStop(1, "rgba(255, 140, 40, 0)");
+  brush.fillStyle = halo;
+  brush.fillRect(-24, -24, 48, 48);
+  brush.beginPath();
+  brush.ellipse(0, 0, 6, 5, 0.4, 0, 7);
+  brush.fillStyle = "#a8261a";
+  brush.fill();
+  brush.beginPath();
+  brush.ellipse(-0.6, -0.6, 3.6, 2.8, 0.4, 0, 7);
+  brush.fillStyle = "rgba(255, " + Math.round(170 + 60 * Math.sin(t * 17)) + ", 70, 1)";
+  brush.fill();
+  brush.restore();
+}
+
+// An ember flying from "from" to "to" (points of the scene) on an arc "high" above the straight line, u of
+// the way (0 to 1), with a few sparks trailing behind it.
+function emberFlight(brush, from, to, u, size, high, t) {
+  if (u <= 0 || u >= 1) { return; }
+  function at(v) { return [mix(from[0], to[0], v), mix(from[1], to[1], v) - high * 4 * v * (1 - v)]; }
+  for (var k = 1; k <= 4; k++) {
+    var back = at(Math.max(0, u - k * 0.035));
+    brush.fillStyle = "rgba(255, 200, 90, " + (0.6 - k * 0.13).toFixed(2) + ")";
+    brush.beginPath();
+    brush.arc(back[0], back[1], (3.2 - k * 0.6) * size, 0, 7);
+    brush.fill();
+  }
+  var here = at(u);
+  ember(brush, here[0], here[1], size, t);
+}
+
+// A nugget of gold, its middle on (x, y): a lump of no shape, gold lit from the upper left with a bright edge,
+// and now and then a star of light that twinkles on it (t, the second; look.shine 0 to 1, 1 unless told).
+// 16 across at size 1.
+function goldNugget(brush, x, y, size, t, look) {
+  look = look || {};
+  var shine = look.shine === undefined ? 1 : look.shine, seed = (look.seed || 1) * 1.7;
+  brush.save();
+  brush.translate(x, y);
+  brush.scale(size, size);
+  brush.beginPath();                                // the lump: a ring of points pushed in and out
+  for (var n = 0; n <= 9; n++) {
+    var a = n / 9 * Math.PI * 2, r = 8 * (0.75 + 0.3 * Math.sin(a * 3 + seed) + 0.12 * Math.sin(a * 5 + seed * 2));
+    var px = Math.cos(a) * r * 1.15, py = Math.sin(a) * r * 0.8;
+    if (n) { brush.lineTo(px, py); } else { brush.moveTo(px, py); }
+  }
+  brush.closePath();
+  var lit = brush.createLinearGradient(-8, -7, 8, 7);
+  lit.addColorStop(0, "#fff2a8");
+  lit.addColorStop(0.45, "#f0c23a");
+  lit.addColorStop(1, "#a8761a");
+  brush.fillStyle = lit;
+  brush.fill();
+  brush.strokeStyle = "#7a5410";
+  brush.lineWidth = 1.2;
+  brush.stroke();
+  var twinkle = shine * Math.max(0, Math.sin(t * 2.6 + seed * 3));   // the star of light, on and off
+  if (twinkle > 0.05) {
+    brush.translate(-3, -4);
+    brush.rotate(t * 0.8);
+    brush.fillStyle = "rgba(255, 255, 230, " + twinkle.toFixed(3) + ")";
+    brush.beginPath();
+    for (var k = 0; k < 8; k++) {
+      var rr = k % 2 ? 2 : 11 * twinkle, ang = k / 8 * Math.PI * 2;
+      brush.lineTo(Math.cos(ang) * rr, Math.sin(ang) * rr);
+    }
+    brush.closePath();
+    brush.fill();
+  }
+  brush.restore();
+}
+
+// A hall of a Lanna palace (หอคำ, ho kham), open at the front, its plinth's foot's middle on (x, base): a white
+// plinth with a stair up its middle; a floor of teak; posts of dark red teak banded with gold; behind, a wall of
+// red with gold patterns (lai kham) and a gilded dais against it where a king sits; a roof in two tiers of dark
+// wooden shingles, their eaves trimmed with gold, a golden gable with rays, and a golden finial (cho fa) curling
+// up at each end of the ridge. Drawn in two parts, so that who sits in it is inside: look.part "back" (the wall,
+// the floor, the dais) and "front" (the posts and the roof). 800 wide and 700 high at size 1; the floor is 150 up,
+// the dais's top 190 (hoKhamFloor() and hoKhamDais() give where). look.tint as the hut's.
+function hoKhamFloor(base, size) { return base - 150 * size; }
+function hoKhamDais(base, size) { return base - 190 * size; }
+
+function hoKham(brush, x, base, size, look) {
+  look = look || {};
+  function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
+  var teak = tone("#6a2e1e"), red = tone("#9a2a22"), gold = tone("#e0b23a"), shingle = tone("#4a3226"), white = tone("#efe6d4");
+  var line = 2.2 / Math.max(0.6, size), n, k;
+  function fillInk(colour) {
+    brush.fillStyle = colour;
+    brush.fill();
+    brush.strokeStyle = inkFor(/^#[0-9a-f]{6}$/i.test(colour) ? colour : "#6a2e1e");
+    brush.lineWidth = line;
+    brush.lineJoin = "round";
+    brush.stroke();
+  }
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(size, size);
+  if (look.part !== "front") {
+    brush.beginPath();                              // the plinth, and the stair up its middle
+    brush.rect(-380, -150, 760, 150);
+    fillInk(white);
+    brush.fillStyle = tone("#d8cdb8");
+    for (n = 0; n < 6; n++) { brush.fillRect(-90 + n * 4, -150 + n * 25, 180 - n * 8, 25); }
+    brush.strokeStyle = inkFor(white);
+    brush.lineWidth = 1.2;
+    for (n = 0; n < 6; n++) { brush.strokeRect(-90 + n * 4, -150 + n * 25, 180 - n * 8, 25); }
+    brush.beginPath();                              // the back wall: red, with gold patterns, under the roof
+    brush.rect(-330, -520, 660, 370);
+    fillInk(red);
+    brush.save();
+    brush.clip();
+    brush.fillStyle = gold;
+    for (k = 0; k < 7; k++) {                       // rows of gold flowers and diamonds, stencilled
+      for (n = 0; n < 12; n++) {
+        var px = -310 + n * 56 + (k % 2) * 28, py = -500 + k * 52;
+        brush.beginPath();
+        brush.moveTo(px, py - 10); brush.lineTo(px + 8, py); brush.lineTo(px, py + 10); brush.lineTo(px - 8, py);
+        brush.closePath();
+        brush.fill();
+        brush.beginPath();
+        brush.arc(px, py, 3, 0, 7);
+        brush.fillStyle = tone("#fff2b0");
+        brush.fill();
+        brush.fillStyle = gold;
+      }
+    }
+    brush.restore();
+    brush.beginPath();                              // the floor of teak
+    brush.rect(-370, -160, 740, 12);
+    fillInk(tone("#7a4a2a"));
+    brush.beginPath();                              // the dais, gilded, against the wall
+    brush.rect(-150, -190, 300, 32);
+    fillInk(gold);
+    brush.fillStyle = tone("#b8862a");
+    for (n = 0; n < 10; n++) { brush.fillRect(-140 + n * 30, -180, 14, 14); }
+  } else {
+    [-300, -170, 170, 300].forEach(function (px) {  // the posts, banded with gold
+      brush.beginPath();
+      brush.rect(px - 13, -560, 26, 410);
+      fillInk(teak);
+      brush.fillStyle = gold;
+      brush.fillRect(px - 15, -190, 30, 12);
+      brush.fillRect(px - 15, -548, 30, 12);
+    });
+    function tier(wide, low, high, overhang) {      // one tier of the roof: a slope of shingles, gold along its eave
+      brush.beginPath();
+      brush.moveTo(-wide / 2 - overhang, low);
+      brush.lineTo(-wide / 2 + 60, high);
+      brush.lineTo(wide / 2 - 60, high);
+      brush.lineTo(wide / 2 + overhang, low);
+      brush.closePath();
+      fillInk(shingle);
+      brush.save();
+      brush.clip();
+      brush.strokeStyle = tone("#6a4a3a");
+      brush.lineWidth = 2;
+      for (var r = high + 12; r < low; r += 14) {    // rows of shingles
+        brush.beginPath();
+        for (var s = -wide; s < wide; s += 16) { brush.moveTo(s, r); brush.arc(s + 8, r, 8, Math.PI, 0); }
+        brush.stroke();
+      }
+      brush.restore();
+      brush.fillStyle = gold;                       // the eave's gold trim, and the little flames along it
+      brush.fillRect(-wide / 2 - overhang, low - 4, wide + 2 * overhang, 9);
+      for (var f = -wide / 2 - overhang + 12; f < wide / 2 + overhang; f += 26) {
+        brush.beginPath();
+        brush.moveTo(f - 5, low + 5); brush.lineTo(f, low + 18); brush.lineTo(f + 5, low + 5);
+        brush.fill();
+      }
+    }
+    tier(780, -540, -640, 40);
+    tier(560, -630, -720, 24);
+    brush.beginPath();                              // the gable over the upper tier, gold with rays
+    brush.moveTo(-170, -712); brush.lineTo(0, -800); brush.lineTo(170, -712);
+    brush.closePath();
+    fillInk(gold);
+    brush.strokeStyle = tone("#b8862a");
+    brush.lineWidth = 2.4;
+    for (n = -4; n <= 4; n++) { brush.beginPath(); brush.moveTo(0, -722); brush.lineTo(n * 34, -712); brush.stroke(); }
+    [-1, 1].forEach(function (side) {               // the cho fa: a golden finial curling up at each end of the ridge, and one at the top
+      brush.save();
+      brush.scale(side, 1);
+      brush.beginPath();
+      brush.moveTo(150, -718);
+      brush.quadraticCurveTo(196, -730, 204, -790);
+      brush.quadraticCurveTo(206, -810, 190, -812);
+      brush.quadraticCurveTo(200, -770, 150, -730);
+      brush.closePath();
+      fillInk(gold);
+      brush.restore();
+    });
+    brush.beginPath();
+    brush.moveTo(-8, -798); brush.quadraticCurveTo(0, -850, 14, -862); brush.quadraticCurveTo(4, -830, 8, -798);
+    brush.closePath();
+    fillInk(gold);
+  }
+  brush.restore();
+}
+
+// A gong (ฆ้อง) on its stand, the stand's foot's middle on (x, base): two posts and a beam of wood, the gong of
+// bronze hanging from the beam by a cord, a raised boss in its middle. look.struck: the seconds since it was struck
+// (it swings a little and rings: rings of sound go out from it for a second and a half). 110 wide, 170 high at
+// size 1; gongAt() gives the boss's middle, where a mallet strikes.
+function gongAt(x, base, size) { return [x, base - 96 * size]; }
+
+function gong(brush, x, base, size, look) {
+  look = look || {};
+  var since = look.struck === undefined ? 99 : look.struck, swing = since < 2 ? 0.08 * Math.sin(since * 9) * (1 - since / 2) : 0;
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(size, size);
+  brush.strokeStyle = "#5a3a22";
+  brush.lineWidth = 7;
+  brush.lineCap = "round";
+  brush.beginPath();
+  brush.moveTo(-52, 0); brush.lineTo(-48, -168);
+  brush.moveTo(52, 0); brush.lineTo(48, -168);
+  brush.moveTo(-60, -166); brush.lineTo(60, -166);
+  brush.stroke();
+  brush.save();
+  brush.translate(0, -166);
+  brush.rotate(swing);
+  brush.strokeStyle = "#8a6a3a";
+  brush.lineWidth = 2;
+  brush.beginPath();
+  brush.moveTo(-14, 0); brush.lineTo(-8, 30); brush.moveTo(14, 0); brush.lineTo(8, 30);
+  brush.stroke();
+  var disc = brush.createRadialGradient(-10, 60, 6, 0, 70, 44);   // the gong: bronze, its boss lit
+  disc.addColorStop(0, "#f2cf6a");
+  disc.addColorStop(0.6, "#c08a2a");
+  disc.addColorStop(1, "#7a5418");
+  brush.fillStyle = disc;
+  brush.beginPath();
+  brush.arc(0, 70, 42, 0, 7);
+  brush.fill();
+  brush.strokeStyle = "#5a3e10";
+  brush.lineWidth = 2;
+  brush.stroke();
+  brush.beginPath();
+  brush.arc(0, 70, 14, 0, 7);
+  brush.fillStyle = "#e8b84a";
+  brush.fill();
+  brush.stroke();
+  brush.restore();
+  if (since < 1.5) {                                // its ringing, in rings that go out and fade
+    for (var r = 0; r < 3; r++) {
+      var u = since / 1.5 + r * 0.18;
+      if (u > 1) { continue; }
+      brush.strokeStyle = "rgba(240, 200, 110, " + ((1 - u) * 0.6).toFixed(3) + ")";
+      brush.lineWidth = 3;
+      brush.beginPath();
+      brush.arc(0, -96, 50 + u * 110, -0.9, 0.9);
+      brush.stroke();
+      brush.beginPath();
+      brush.arc(0, -96, 50 + u * 110, Math.PI - 0.9, Math.PI + 0.9);
+      brush.stroke();
+    }
+  }
+  brush.restore();
+}
+
+// A trough of gold (ลินคำ, lin kham) on posts, as a house's rainwater runs along one to a jar: a half-pipe of
+// gold, lit along its upper lip, raised "high" (46 unless told) above the ground on forked posts of wood, one
+// every "gap" (80). It runs along "ground", a row of points of the scene on the ground (the first at its start),
+// and is drawn only "built" of the way along it (0 to 1): a trough as it grows. look.sag: [where (0 to 1 of
+// the way), how far (px)] for a trough that bends down in its middle; look.size scales its width and its posts;
+// look.tint as the hut's.
+function linKham(brush, ground, built, look) {
+  look = look || {};
+  function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
+  var size = look.size || 1, high = (look.high || 46) * size, gap = (look.gap || 80) * size, n, k;
+  var marks = [0];                                  // the distance along at each point
+  for (n = 1; n < ground.length; n++) { marks.push(marks[n - 1] + Math.hypot(ground[n][0] - ground[n - 1][0], ground[n][1] - ground[n - 1][1])); }
+  var total = marks[marks.length - 1], upTo = total * clamp(built);
+  if (upTo < 1) { return; }
+  function groundAt(d) {                            // the point of the ground a distance along
+    for (k = 1; k < ground.length && marks[k] < d; k++) { }
+    k = Math.min(k, ground.length - 1);
+    var u = (d - marks[k - 1]) / ((marks[k] - marks[k - 1]) || 1);
+    return [mix(ground[k - 1][0], ground[k][0], u), mix(ground[k - 1][1], ground[k][1], u)];
+  }
+  function at(d) {                                  // the trough's point a distance along: on its posts, bent where it sags
+    var p = groundAt(d), sag = look.sag ? look.sag[1] * Math.max(0, 1 - Math.abs(d / total - look.sag[0]) / 0.25) : 0;
+    return [p[0], p[1] - high + sag];
+  }
+  for (var d = 0; d <= upTo; d += gap) {            // the posts, from the ground up to the trough, forked at the top
+    var top = at(d), foot = groundAt(d);
+    brush.strokeStyle = tone("#6a4a2a");
+    brush.lineWidth = 6 * size;
+    brush.lineCap = "round";
+    brush.beginPath();
+    brush.moveTo(foot[0], foot[1]);
+    brush.lineTo(top[0], top[1] + 4 * size);
+    brush.moveTo(top[0], top[1] + 4 * size); brush.lineTo(top[0] - 7 * size, top[1] - 4 * size);
+    brush.moveTo(top[0], top[1] + 4 * size); brush.lineTo(top[0] + 7 * size, top[1] - 4 * size);
+    brush.stroke();
+  }
+  var pts = [];
+  for (d = 0; d <= upTo; d += 6) { pts.push(at(d)); }
+  pts.push(at(upTo));
+  [[19, "#9a6e1a"], [14, "#e0b23a"], [4.5, "#fff0a0"]].forEach(function (band, i) {   // the half-pipe: its body, its gold, the light on its lip
+    brush.strokeStyle = tone(band[1]);
+    brush.lineWidth = band[0] * size;
+    brush.lineCap = i === 0 ? "butt" : "round";
+    brush.beginPath();
+    pts.forEach(function (p, j) { var y = p[1] - (i === 2 ? 5 * size : 0); if (j) { brush.lineTo(p[0], y); } else { brush.moveTo(p[0], y); } });
+    brush.stroke();
+  });
+  var end = at(upTo);                               // its open end, where it is still being built
+  brush.fillStyle = tone("#7a5414");
+  brush.beginPath();
+  brush.ellipse(end[0], end[1], 5 * size, 9 * size, 0, 0, 7);
+  brush.fill();
 }

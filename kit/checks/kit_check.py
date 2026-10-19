@@ -7,7 +7,8 @@
 
 Run it after any change to oldcartoon.js. First the kit's own list: every key of a "look" that the kit reads must be
 written down in the comment above person(), and every key written there must be read. Then the names: no top-level
-name may be defined in two script files beside the kit, since the one loaded last silently replaces the other. Then
+name may be defined in two script files beside the kit, or in the folder of a film's scenes beside it (maeng/), since
+the one loaded last silently replaces the other. Then
 for each page, in Chrome with no window:
   draws     the page loads, and draws 24 frames spread over its length, with no error
   same      a still shows what the film shows. A frame come to by a jump of the clock, as a still comes to it, is
@@ -152,9 +153,10 @@ def shared_names():
     last silently replaces the other's: paperdoll.js's ribbon() replaced the kit's on 2026-10-14 and three sheets
     stopped drawing; puman.js's tattoo() replaced the kit's and nothing said so."""
     owners = {}
-    for script in sorted(HERE.glob("*.js")):
+    films = sorted(p for p in HERE.glob("*/*.js") if p.parent.name != "node_modules")   # a film made of scene files keeps them in a folder beside the kit
+    for script in sorted(HERE.glob("*.js")) + films:
         for name in set(re.findall(r"^(?:function|var|let|const) ([A-Za-z_]\w*)", script.read_text(encoding="utf-8"), re.M)):
-            owners.setdefault(name, []).append(script.name)
+            owners.setdefault(name, []).append(str(script.relative_to(HERE)).replace("\\", "/"))
     return {name: files for name, files in owners.items() if len(files) > 1}
 
 

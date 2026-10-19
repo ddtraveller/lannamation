@@ -1,0 +1,125 @@
+// decorate.js - the life of a scene: animals and birds on courses, for films made with oldcartoon.js.
+// Load it after the kit and after the files of the animals a scene uses (beasts.js, northbirds.js, ...):
+//
+//     <script src="oldcartoon.js"></script>
+//     <script src="decorate.js"></script>
+//
+// A scene that is built is decorated in three passes (docs/STYLE.md, "Decorating a scene"): its place (flora
+// and mist, painted on its sheets or drawn live), its life (what lives there, at that hour, each on a course,
+// listed here), and a check of it (checks/life_check.py plots every course against the scene's lines and
+// people). This file is the second pass.
+//
+// A course is a row of stops, [[second, x, y, what], ...]: where the animal is at each second, and what it does
+// there ("sniff", "up", "rest", "peck", "hide", or nothing). From the first stop's second to the last stop's it
+// is drawn; between two stops it goes from one to the other at an even pace, facing the way it goes, its feet
+// or wings going as far as it goes; at a stop whose "what" is "hide" it is not drawn until the next stop (gone
+// into a hole, into the thatch, behind the trees). Every frame is worked out from the second alone, as the kit's
+// things are, so a still is the film's own frame.
+//
+// A scene's life is a list: [{name, kind, look, course, layer}, ...]. kind is one of LIFE_KINDS (below), look
+// the animal's own look, layer "back" (drawn before the people, as a scene calls decorate(t, life, "back")) or
+// "front" (after them), and calls its sounds: [[second, sound, loudness], ...], a sound of sounds.py's by name
+// (the film's sound is mixed from them when its scenes are joined). decorate(t, life, layer) draws every one of that layer at second t.
+var LIFE_KEYS = {};
+["name", "kind", "look", "course", "layer", "calls"].forEach(function (name) { LIFE_KEYS[name] = true; });
+
+function courseAt(t, course) {
+  // where an animal is at t along its course: {on, x, y, face, moving, along, what, points, speed}
+  var n = course.length, k, along = 0, face = 1;
+  if (t < course[0][0] || t > course[n - 1][0]) { return {on: false}; }
+  for (k = 1; k < n && course[k][0] <= t; k++) {
+    var dx = course[k][1] - course[k - 1][1], dy = course[k][2] - course[k - 1][2];
+    along += Math.hypot(dx, dy);
+    if (Math.abs(dx) > 0.5) { face = dx > 0 ? 1 : -1; }
+  }
+  var from = course[k - 1], to = course[Math.min(k, n - 1)];
+  var u = k < n ? clamp((t - from[0]) / ((to[0] - from[0]) || 1)) : 0;
+  var x = mix(from[1], to[1], u), y = mix(from[2], to[2], u), stretch = Math.hypot(to[1] - from[1], to[2] - from[2]);
+  var moving = k < n && stretch > 0.5;
+  if (moving && Math.abs(to[1] - from[1]) > 0.5) { face = to[1] > from[1] ? 1 : -1; }
+  along += moving ? stretch * u : 0;
+  var points = [];
+  course.forEach(function (stop) {                   // the route its stops make (for a gecko's spine)
+    var last = points[points.length - 1];
+    if (!last || Math.hypot(stop[1] - last[0], stop[2] - last[1]) > 0.5) { points.push([stop[1], stop[2]]); }
+  });
+  return {on: from[3] !== "hide" || moving, x: x, y: y, face: face, moving: moving, along: along, what: moving ? null : from[3],
+          points: points, speed: moving ? stretch / ((to[0] - from[0]) || 1) : 0};
+}
+
+// The kinds of life, each a function (where, look, t) that draws one where courseAt() has it and gives back the
+// box it was drawn in [left, top, right, bottom], in the scene. Every kind's own look goes through as it is.
+var LIFE_KINDS = {
+  mouse: function (at, look, t) {
+    var size = look.size || 1, stride = 22 * size;  // a mouse's stride: its feet go as far as it goes
+    mouse(at.x, at.y, Object.assign({}, look, {face: at.face, step: at.moving ? at.along / stride : undefined,
+                                               sniff: at.what === "sniff" ? 1 : look.sniff, up: at.what === "up" ? 1 : look.up}));
+    return [at.x - 70 * size, at.y - 34 * size, at.x + 40 * size, at.y + 4];
+  },
+  gecko: function (at, look, t) {                    // its spine keeps to the course's route; its head is at the course's point
+    var size = look.size || 1, head = gecko(at.points, at.along, Object.assign({}, look, {t: t}));
+    return [head.head[0] - 160 * size, head.head[1] - 160 * size, head.head[0] + 160 * size, head.head[1] + 160 * size];
+  },
+  flock: function (at, look, t) {                    // the kit's flock of small birds in flight (birds()), its leader at the point
+    birds(t, at.x, at.y);
+    return [at.x - 260, at.y - 40, at.x + 20, at.y + 40];
+  },
+  // the fowl of a yard and the birds of the north: walking (step, as far as they go), pecking at a stop marked "peck"
+  // (a dip and a rise, twice a second), flying while they move (fly), the sunbird hovering ("hover") and sipping ("sip")
+  rooster: function (at, look, t) { return lifeFowl(at, look, t, false); },
+  hen: function (at, look, t) { return lifeFowl(at, look, t, true); },
+  pheasant: function (at, look, t) {
+    var size = look.size || 1;
+    pheasant(at.x, at.y, t, Object.assign({}, look, {face: at.face, step: at.moving ? at.along / (60 * size) : undefined, peck: lifePeck(at, t)}));
+    return [at.x - 120 * size, at.y - 110 * size, at.x + 60 * size, at.y];
+  },
+  peafowl: function (at, look, t) {
+    var size = look.size || 1;
+    peafowl(at.x, at.y, t, Object.assign({}, look, {face: at.face, step: at.moving ? at.along / (80 * size) : undefined, peck: lifePeck(at, t)}));
+    return [at.x - 200 * size, at.y - 260 * size, at.x + 80 * size, at.y];
+  },
+  hornbill: function (at, look, t) {
+    var size = look.size || 1;
+    hornbill(at.x, at.y, t, Object.assign({}, look, {face: at.face, fly: at.moving}));
+    return [at.x - 160 * size, at.y - 120 * size, at.x + 160 * size, at.y + 120 * size];
+  },
+  magpie: function (at, look, t) {
+    var size = look.size || 1;
+    blueMagpie(at.x, at.y, t, Object.assign({}, look, {face: at.face, fly: at.moving}));
+    return [at.x - 140 * size, at.y - 60 * size, at.x + 60 * size, at.y + 40 * size];
+  },
+  sunbird: function (at, look, t) {
+    var size = look.size || 1;
+    sunbird(at.x, at.y, t, Object.assign({}, look, {face: at.face, hover: at.moving || at.what === "hover" || at.what === "sip",
+                                                    sip: at.what === "sip"}));
+    return [at.x - 30 * size, at.y - 20 * size, at.x + 30 * size, at.y + 20 * size];
+  }
+};
+
+function lifePeck(at, t) {                           // a peck: down and up again, twice a second, at a stop marked "peck"
+  return at.what === "peck" ? Math.max(0, Math.sin(t * Math.PI * 4)) : undefined;
+}
+
+function lifeFowl(at, look, t, hen) {
+  var size = look.size || 1;
+  var own = Object.assign({}, look);
+  delete own.size;                                   // the kit's rooster has one size (a hen is drawn smaller of itself)
+  rooster(at.x, at.y, t, Object.assign(own, {hen: hen, face: at.face, step: at.moving ? at.along / (70 * size) : undefined,
+                                             peck: lifePeck(at, t)}));
+  return [at.x - 90 * size, at.y - 150 * size, at.x + 90 * size, at.y];
+}
+
+function decorate(t, life, layer) {
+  life.forEach(function (one) {
+    checkNames("A scene's life", one, LIFE_KEYS);
+    if ((one.layer || "front") !== layer) { return; }
+    var at = courseAt(t, one.course);
+    if (!at.on) { return; }
+    checkName("A kind of life", one.kind, LIFE_KINDS);
+    var box = LIFE_KINDS[one.kind](at, one.look || {}, t);
+    if (window.LIFE_SEEN) {                          // a check is watching: where it was, and in what measure
+      var m = pen.getTransform(), a = m.transformPoint(new DOMPoint(box[0], box[1])), b = m.transformPoint(new DOMPoint(box[2], box[3]));
+      window.LIFE_SEEN.push({name: one.name, kind: one.kind, t: t, box: [a.x / PIX, a.y / PIX, b.x / PIX, b.y / PIX]});
+    }
+  });
+}

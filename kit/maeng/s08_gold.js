@@ -1,0 +1,52 @@
+// s08_gold.js - scene 8 of the film of the creature with four ears and five eyes: gold (40 s).
+// Morning by the pen: something glints on its floor. Thukkhata picks it up, and it is gold: the creature's
+// droppings have turned to gold, and it looks very pleased with itself. He buries the gold in his garden, and
+// day after day there is another mound, until the garden is full. And he still leads the headman's buffalo
+// out, as he always did.
+var S08_LONG = 40;
+var S08_LINES = [[2.0, 5.6, "M045"], [6.2, 9.6, "M046"], [10.4, 15.0, "M047"], [22.0, 26.0, "M048"], [28.0, 33.0, "M049"]];
+var S08_CAMERA = [1234, 690, 1.4];                  // close on the pen and the garden (the view stays on the sheet)
+var S08_DAYS = [15, 22];                            // the days going by: the sky turns, a mound each day
+
+function sceneGold(t) {
+  var turning = between(t, S08_DAYS[0], S08_DAYS[1]), days = turning * 7;
+  var night = turning > 0 && turning < 1 ? 0.5 - 0.5 * Math.cos(days * Math.PI * 2) : 0;   // the days and nights going by, fast
+  var mounds = t < 12 ? 0 : t < S08_DAYS[0] ? between(t, 12, 14) : 1 + days * 1.6 + (turning >= 1 ? 6 : 0);
+  pen.save();
+  pen.translate(WIDE / 2, 540);
+  pen.scale(S08_CAMERA[2], S08_CAMERA[2]);
+  pen.translate(-S08_CAMERA[0], -S08_CAMERA[1]);
+  maengYardAt(t, night, 0);
+  var tint = night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null;
+  maengGarden(t, Math.min(MAENG_MOUNDS.length, mounds), 0, tint);
+  kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {part: "back", tint: tint});
+  var pleased = t > 6.2 && t < 12;
+  maengSiHuHaTa(MAENG_PEN[0] - 60, MAENG_PEN[1] - 22, {size: 0.45, face: 1, feel: pleased ? "satiated" : t < 6 ? "sleepy" : "happy"});
+  if (t < 6.4) { goldNugget(pen, MAENG_PEN[0] + 70, MAENG_PEN[1] - 30, 0.9, t, {seed: 3}); }   // on the pen's floor
+  kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {part: "front", tint: tint});
+  var lad = maengPerson("boy", MAENG_LAD, {id: "lad"}), x, y = 948;
+  if (t < 10.4) {                                   // at the pen: the gold picked up, held up, a wonder
+    x = MAENG_PEN[0] + 240;
+    var held = t > 6.2;
+    lad = Object.assign(lad, {face: -1, feel: held ? "surprised" : "concerned", reachA: held ? [x - 70, y - 175] : [x - 70, y - 130],
+                              fingersA: held ? [0.5, 0.55, 0.6, 0.65, 0.4] : undefined});
+    var joints = person(x, y, lad);
+    if (held) { var hand = maengAt(joints.handA); goldNugget(pen, hand[0] - 4, hand[1] - 10, 2.1, t, {seed: 3}); }   // in his hand, held up
+  } else if (t < S08_DAYS[1]) {                     // in the garden: down on his knees, heaping a mound over it
+    x = MAENG_MOUNDS[Math.min(MAENG_MOUNDS.length - 1, Math.floor(Math.max(0, mounds - 1)))][0] - 50;
+    lad = Object.assign(lad, {face: 1, sit: 1, bend: 0.75, feel: "concerned",
+                              reachA: [x + 46, MAENG_GARDEN[1] + 10 + 6 * Math.sin(t * 9)]});
+    person(x, y - 10, lad);
+  } else if (t < 27) {                              // the garden full: he stands back and looks at it
+    x = MAENG_GARDEN[0] - 40;
+    person(x, y, Object.assign(lad, {face: 1, feel: "happy"}));
+  } else {                                          // and he leads the buffalo out again, as he always did
+    var ox = amble("buffalo", t, 2300, 900, 27, {size: 0.55, rope: true});
+    maengLead(ox, 2300, 975, lad, 0.55);
+  }
+  pen.restore();
+  if (t < 1.5 || t > 38) {
+    pen.fillStyle = "rgba(0, 0, 0, " + Math.max(1 - t / 1.5, between(t, 38, 40)).toFixed(3) + ")";
+    pen.fillRect(0, 0, WIDE, 1080);
+  }
+}

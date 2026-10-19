@@ -114,10 +114,12 @@
 // for the creature with four ears and five eyes (maengSiHuHaTa), with size, face, step, mouth, colour,
 // eyes and feel:
 //   glow       0 to 1: how far its five eyes light up, as they do when it has eaten an ember
+//   wake       0 to 5: how many of its five eyes are open (5 unless told), so that they open one by one: the two
+//              low ones first, then the two at the sides, then the one at the top; a part is an eye opening
 var MYTH_KEYS = {};
 
 ["size", "face", "late", "mouth", "colour", "gold", "belly", "step", "eyes", "trail", "depth", "sing", "horns", "wings", "fly", "head", "trunk", "feel",
- "glow"
+ "glow", "wake"
 ].forEach(function (name) { MYTH_KEYS[name] = true; });
 
 // How the two that walk do it, for amble() of beasts.js: [how large it is
@@ -1084,7 +1086,7 @@ function maengEye(x, y, r, e, c, shut, glow) {
 
 // The face, turned to the viewer, about its middle: 172 across the cheeks. "open" is how far the jaw has dropped;
 // e the feeling (creatureFeel()).
-function maengFace(c, e, open, shut, glow, seed) {
+function maengFace(c, e, open, shut, glow, seed, wake) {
   var ears = e.ears, low = Math.max(0, -ears) * 14, up = Math.max(0, ears) * 6, flat = 1 - 0.3 * Math.max(0, -ears);
   [[-50, -70, 23], [50, -70, 23], [-80, -34, 20], [80, -34, 20]].forEach(function (one) {   // the four round ears, behind the head
     pen.save();
@@ -1116,8 +1118,9 @@ function maengFace(c, e, open, shut, glow, seed) {
   pen.fillStyle = blend(c.lit, "#9a8f86", 0.45);
   pen.fill();
   pen.restore();
-  [[0, -54], [-41, -31], [41, -31], [-21, -6], [21, -6]].forEach(function (one) {   // the five eyes, as the points of a star
-    maengEye(one[0], one[1], 14.4, e, c, shut, glow);
+  [[0, -54, 4], [-41, -31, 2], [41, -31, 3], [-21, -6, 0], [21, -6, 1]].forEach(function (one) {   // the five eyes, as the points of a star; the order they open in
+    var lid = 1 - clamp(wake - one[2]);             // shut until its turn, then opening
+    maengEye(one[0], one[1], 14.4, lid > 0 ? Object.assign({}, e, {lid: Math.max(e.lid, lid)}) : e, c, shut || lid >= 1, glow);
   });
   pen.beginPath();                                  // the nose: a small rounded triangle
   pen.moveTo(-11, 13);
@@ -1165,8 +1168,9 @@ function maengFace(c, e, open, shut, glow, seed) {
 
 // The creature with four ears and five eyes, standing on (x, y), its body side on and its face turned to the
 // viewer: see the top of this file. 470 long and 290 high at size 1. It walks (step, as amble() gives it), blinks,
-// feels (feel), opens its jaw (mouth, 0 to 1) and lights its eyes (glow). Gives back {head, mouth}, points of the
-// scene: the middle of its face, and of its mouth, where an ember goes in.
+// feels (feel), opens its jaw (mouth, 0 to 1), lights its eyes (glow) and opens them one by one (wake). Gives
+// back {head, mouth, paw, neck}, points of the scene: the middle of its face; of its mouth, where an ember goes
+// in; its near fore paw on the ground; and its neck under the head, where a vine is tied.
 function maengSiHuHaTa(x, y, look) {
   checkNames("The name of the creature with four ears and five eyes", look, MYTH_KEYS);
   var size = (look.size || 1) * GAITS.maengSiHuHaTa[0], face = look.face || 1, seed = x * 0.013;
@@ -1231,12 +1235,14 @@ function maengSiHuHaTa(x, y, look) {
   pen.save();                                       // the head on the shoulders, turned to the viewer
   pen.translate(headAt[0], headAt[1]);
   pen.scale(1.24, 1.24);
-  maengFace(c, e, open, blink, glow, seed);
+  maengFace(c, e, open, blink, glow, seed, look.wake === undefined ? 5 : look.wake);
   pen.restore();
   pen.restore();
   FINE = 1;
   LINE = STYLE.line;
   var lift = bob + 10 * e.startle;
   return {head: [x + headAt[0] * size * face, y + (headAt[1] - lift) * size],
-          mouth: [x + headAt[0] * size * face, y + (headAt[1] + 1.24 * (44 + 40 * open) - lift) * size]};
+          mouth: [x + headAt[0] * size * face, y + (headAt[1] + 1.24 * (44 + 40 * open) - lift) * size],
+          paw: [x + 92 * size * face, y - 6 * size],                    // the near fore paw, on the ground
+          neck: [x + 110 * size * face, y + (-110 - lift) * size]};      // under its head, where a vine is tied
 }

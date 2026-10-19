@@ -112,6 +112,7 @@ of it, each a second behind the other.
 | `highlands.html` | the uplands of the north (2026-10-17): from 0 s a valley at sunrise made of `highlands.js`'s parts (far ranges in forest with a sea of mist between them, a mountain with rice terraces and a hut, bands of mist drifting across it, the forest near), and from 8 s the parts on paper with how each is called (see "The highlands") |
 | `northbirds.html` | five birds of the north (2026-10-17): from 0 s each large on paper with its Thai name and how it is called (the peafowl raising its train into a fan, shivering it and calling; the pheasant walking and pecking beside his hen; the magpie on a branch; the hornbill flying and perched; the sunbird leaving a twig to hover at a thong kwao flower), and from 8 s all of them at their own sizes on a mountain, with a girl come to see the peafowl display (see "Five birds of the north") |
 | `farmstead.html` | the sheet for what `pieces.js` gained on 2026-10-16: the granary `longKhao` (open, and with walls), the `sawian` basket, `tungSaiMu` planted on a sand pagoda, `tungYai` on its pole, and `rotDaeng` driving across with three riders |
+| `tale_pieces.html` | the sheet for the pieces the film of the creature with four ears and five eyes needed (2026-10-19): the poor family's hut `tub` (`pieces.js`) by day and with a lamp in its door at night, and a cave's mouth `caveMouth` (`highlands.js`) close up and at a film's size before dawn, among the forest's crowns (see "Pieces for a tale") |
 | `naga.js`, `naga.html` | a Naga, the many-headed serpent, as a creature in a file of its own on top of the kit, and its sheet (see "A Naga") |
 | `landscape.html` | the sheet for the painters of nature read from a thangka: peaks, fan plants, tassel trees, rocks, foam and clouds with a foot of another colour (see "Mountains and plants from a thangka") |
 | `backdrops.js`, `backdrops.html` | nineteen backgrounds to start a film from: seven places of the north of Thailand in the kit's own manner, and twelve in the manner of the thangka painters; and the sheet that shows them (see "A dozen backdrops to start from" and "Seven places of the north, and the backdrops of the cartoon maker") |
@@ -2299,6 +2300,172 @@ its own: `glow`.
 
 `kit_check.py fiveeyes.html myth.html creatures.html sabai.html sash.html` (every page that loads `myth.js`):
 5 pages, 0 failures; `fiveeyes.html` draws, same 0 / 0, 45.9 ms a frame.
+
+## Pieces for a tale: a cave's mouth, a poor family's hut
+
+What the film of the creature with four ears and five eyes needed and the kit did not draw (2026-10-19).
+Its sheet is `tale_pieces.html`.
+
+| Piece | What it is | Rules |
+|---|---|---|
+| `caveMouth(brush, x, y, size, look)`, `highlands.js` | the cave of a tale in a mountain's side, (x, y) its foot's middle; 250 wide and 135 high at size 1 | a dark arched opening, darkest deep in; boulders round it lit from the upper left, the right jamb in its own shade; a low lintel of rock over it, a ledge of stone before it; moss on the stones; ferns hanging over the top that stir with `look.t`. `look.rock`, `look.dark`; `look.tint` [colour, amount] blends every colour of it toward one light, as a set painted by day and tinted is |
+| `firewood(brush, x, y, size, look)`, `pieces.js` | a bundle of firewood (หลัว), as a child carries it home; (x, y) its middle, 120 long at size 1 | `look.count` sticks (7) of a length, one a little longer, their cut ends pale, bound round in two places with a vine; `look.turn` turns it; `look.loose` lays the sticks apart on the ground, gathered but not bound. Carried on the shoulder it is drawn before the person, behind the head, its ends out before and behind, the near hand closed on its front end (the film measures the shoulder first: `maengMeasure()` in `maeng/sets.js`) |
+| `tub(brush, x, base, size, look)`, `pieces.js` | the tub (ตูบ), the small hut of a poor family of the north, as the tales have it; 250 wide and 225 high at size 1 | four short stilts and a floor beam; walls of woven bamboo (fa khat tae), a plain weave of strips across, one way and the other; a dark doorway at the right with a short bamboo ladder; a steep roof of grass thatch in rows of straw, ragged at the eaves. `look.glow` (0 to 1) lights the doorway and the ground before it, a lamp at night; `look.tint` as the cave's |
+| `kok(brush, x, base, wide, size, look)`, `pieces.js` | a pen (คอก) of bamboo for an animal, its front's middle on (x, base), `wide` across, two-thirds as deep; 110 high at size 1 | posts at the corners and along the sides, two rails of split bamboo round it, bound at each post. In two parts so that what is kept in it stands inside: `look.part` "back" (before the animal) and "front" (after it); `look.tint` |
+| `snare(brush, x, base, size, look)`, `pieces.js` | a snare: a noose of rope on a bent sapling | set (the sapling bent, the noose open on the ground) or `look.sprung` (the sapling up, the noose drawn tight); `look.caught`: a point of the scene the noose holds (a paw), the rope running to it; it shivers with `look.t` while something pulls |
+| `campfire(brush, x, base, size, t, look)`, `ember(brush, x, y, size, t)`, `emberFlight(brush, from, to, u, size, high, t)`, `pieces.js` | a yard's fire, and its coals | a ring of stones, sticks crossed and charred at their ends, flames that leap and flicker with `t`, coals red under them, a warm light round it (`look.light`; `look.low` burns it down to coals); 150 wide, 170 high with its flames. An ember glows and sparks; `emberFlight` carries one from `from` to `to` on an arc `high` above them, `u` of the way (0 to 1) |
+| `goldNugget(brush, x, y, size, t, look)`, `pieces.js` | a nugget of gold | lumpy, lit from above, a glint that comes and goes with `t` (`look.shine`, `look.seed` so that two do not glint as one) |
+| `hoKham(brush, x, base, size, look)`, `hoKhamFloor()`, `hoKhamDais()`, `pieces.js` | a hall of a Lanna palace (หอคำ), open at the front; 800 wide, 700 high at size 1 | a white plinth with a stair up its middle; a floor of teak; posts of dark red teak banded with gold; behind, a red wall stencilled with gold (lai kham) and a gilded dais; a roof in two tiers of dark shingles, their eaves trimmed with gold flames, a golden gable with rays, and a golden finial (cho fa) curling up at each end of the ridge. In two parts, `look.part` "back" and "front", so that whoever sits on the dais is inside; `hoKhamFloor(base, size)` and `hoKhamDais(base, size)` give where the floor and the dais's top are |
+| `gong(brush, x, base, size, look)`, `gongAt()`, `pieces.js` | a gong (ฆ้อง) on its stand; 110 wide, 170 high at size 1 | two posts and a beam of wood, the bronze gong hanging from it by a cord, a raised boss in its middle; `look.struck` (seconds since) swings it a little and sends out rings of sound for a second and a half; `gongAt()` is the boss, where a mallet strikes |
+| `linKham(brush, ground, built, look)`, `pieces.js` | a trough of gold (ลินคำ) on forked posts, as a house's rainwater runs along one to a jar | a half-pipe of gold, lit along its upper lip, `look.high` (46) above the ground on forked posts, one every `look.gap` (80); it runs along `ground`, a row of points of the scene, and is drawn only `built` of the way along it (0 to 1), so a film grows it; `look.sag` [where, how far] bends it down in the middle (up, below 0); `look.size`, `look.tint` |
+| `horse(x, y, look)`, `beasts.js` | the small pack horse of the Yunnan caravans (ม้าต่าง), as the Haw traders led them into the north; about 330 high at the withers at size 1 | short and sturdy, a deep chest, a thick neck, a big head carried low; a short dark mane that stands up in a ragged band, a long dark tail; slim legs darker below the knee, on single hooves. It walks as the other beasts do (`step`, `amble("horse", ...)`, `GAITS.horse`) and feels as they do (`feel`: its eye, its ears, the carriage of its head, its tail). `look.pack`: a pack saddle (two frames of crossed wood) with a load lashed on each side, true or the colour of the load's cloth; `look.mane`: its mane's colour. Gives back `{seat, head, nose, load}`: the nose is where a halter's rope ties (`maengLead(..., "horse")` in `maeng/sets.js` leads one) |
+
+The kit's house (`house()`) is a fine teak house and its huts (`bdHut`, `fieldHut`) are open shelters of the
+fields: neither is a poor family's home. A cave at a film's size sits on the forest like a hut until the
+forest grows over it: the film draws a few of the forest's own crowns (`crown()`, the slope's sizes, its
+haze and the light) behind the cave's top and before its foot (the sheet's second cave), and its lintel is
+low, a face of rock, not a dome.
+
+`kit_check.py tale_pieces.html maeng/s01.html`: 2 pages, 0 failures; the sheet draws, same 0 / 0, 9.5 ms a
+frame.
+
+## A film made scene by scene
+
+The owner (2026-10-19), for the film of the creature with four ears and five eyes: "When you make the
+scenes, make them seperately and then wire them together at the end." So the film's scenes live in a folder
+beside the kit, `maeng/`, each a file of its own:
+
+| File | What it is |
+|---|---|
+| `maeng/style.js` | the film's style (`FILM_STYLE`), loaded first by every page of the film, so all of them draw alike |
+| `maeng/sets.js` | what the scenes share: `BEAT`, the skies, the places (Doi Khao Khwai and its cave), the light before dawn and `maengTinted()`, and `maengSubtitles()` |
+| `maeng/words.js` | the narration in Kam Mueang, line by line (`MAENG_WORDS[id]` = what the voice says, the subtitle, the English), made by the film's words tool and not edited by hand |
+| `maeng/sNN_name.js` | one scene: its function, on its own clock from 0, its length (`SNN_LONG`) and its lines (`SNN_LINES`, [from, to, id] on that clock) |
+| `maeng/sNN.html` | that scene's own page: `SCENES = [[0, SNN_LONG, sceneName]]` and its subtitles, so stills, `kit_check.py maeng/sNN.html` and `render.py` work on one scene alone |
+
+Each scene is finished and shown on its own. Only at the end does the film's page load every scene file,
+list them in `SCENES` with their places on the film's clock, lay the lines over the whole, and let
+`scenes.py` render and join them. What two scenes share goes into `sets.js` or into the kit, never into a
+scene file. `kit_check.py`'s names check reads the scripts of such a folder too (`*/*.js`, not
+`node_modules`), since they share a page with the kit.
+
+## Three checks taken from HyperFrames (2026-10-19)
+
+The owner asked what lannamation could learn from HyperFrames (github.com/heygen-com/hyperframes, Apache 2.0),
+a framework that renders HTML pages to video. Its model is lannamation's own: every frame is sought from the
+clock in headless Chrome and encoded by FFmpeg. Three of its methods were worth taking, as methods; none of its
+code is in the kit. All three share `checks/frames.py`: a page's frame as a picture, and kit_check.py's rule for
+"same" in numpy (a pixel counts when a shift of one pixel does not explain it; a real one-pixel shift of a
+whole scene, measured, counts 0 to 4 pixels of some 20,000 to 33,000 that change).
+
+| Check | What it finds |
+|---|---|
+| `checks/seek_check.py` | a lint: no script of the kit, a film's scenes or a page reads the computer's clock or keeps itself going (Date.now, new Date, performance.now, timers, unseeded Math.random), a page's play() let off; and a back test: a frame come to after a later one is the frame come to first. kit_check's "same" comes to a frame forward; this comes back to one, where a creature that remembers where it was goes wrong (a test page that did: 19,615 pixels past the limit of 50) |
+| `checks/snapshot.py save` / `compare` | stills of every film scene's key moments (its first frame, a second into each line, its last frame), kept outside the repository, and compared after a change to the kit, which the films' scenes share: which page, which second, how much, with a picture of where |
+| `checks/ghost.py` | one picture of how things move over a stretch: what holds still behind, every moment's moving parts over it, the earliest faintest; the spacing is the speed. A decorated scene has each animal's course drawn on it with its seconds |
+
+```
+python checks/seek_check.py                       # the lint, and every film scene come back to
+python checks/snapshot.py save                    # before a change to the kit
+python checks/snapshot.py compare                 # after it
+python checks/ghost.py maeng/s04.html s04_ghost.png --from 2 --to 33
+```
+
+The fourth method, music carved under the voice in the voice's own band rather than turned down whole, is for
+when the film's narration is laid over its music (`score.py`); the fifth, renders spread over machines, is
+`scenes.py` rendering scenes on the laptop and on the Spark at once.
+
+## The kit's sounds: voices made from outlines (2026-10-19)
+
+The kit's creatures have voices, and none of them was recorded. `howl.py` makes a voice from an outline of
+numbers: how its pitch goes over time, how loud, how open its mouth is (from "oo" to "ah"), how much growl and
+breath are in it, how big its throat is, and how long a cave's echo rings after it. Underneath, each part is a
+plain rule: a train of pulses that glides along the pitch is the voice; a pulse train at half the pitch,
+beating against it, is the growl; noise is the breath; three resonances that move between the "oo" and the
+"ah" are the mouth; noise dying away, darker as it dies, is the cave. An outline of `{"voices": [...]}` mixes
+several, each from its own second at its own loudness, under the one echo.
+
+`sounds.py` is the library: every sound the kit has, by name, with what it is for. The first are the creature
+with four ears and five eyes, in the moods its story asks of it. The owner asked that "the pack and voice
+should be one thing", so its voice is one voice of many throats: its own low, rough howl, and four higher,
+smoother voices inside it (1.5 to 2.67 times its pitch, each a few hundredths of a second late, each wavering at
+its own rate) that follow its rise and fall, so that they sound as one wild voice and not as wolves answering.
+
+| Sound | For | What it does |
+|---|---|---|
+| `maeng-base` | the night on the mountain | rises, holds high, falls away into the cave (6.9 s) |
+| `maeng-angry` | caught in the snare | three short roars, the last the biggest, rough all through (4.2 s) |
+| `maeng-afraid` | the crowd round its pen | high yelps that break upward, then a thin, wavering cry (4.5 s) |
+| `maeng-sad` | alone in the pen at night | a slow howl that falls, catching like a sob (7.9 s) |
+| `maeng-happy` | eating the embers | quick bouncing howls that rise at the end, no growl (3.3 s) |
+| `maeng-home` | running home into its cave | one long howl that starts low and lifts, its throats swelling (8.9 s) |
+
+```
+python sounds.py                    # every sound into out/sounds/ (NAME.wav, NAME.json), all.wav, list.js
+python sounds.py maeng-sad          # one
+python sounds.py --list             # the names, and what each is for
+python checks/sound_check.py        # each is made, as long as its outline, loud enough, not clipped, not like another
+```
+
+Then `sounds.html` plays each one beside what it is for. The sounds are made, not kept: `out/` and `*.wav`
+stay out of the repository, and anyone makes the same sounds from the same numbers. A new sound is a new
+function in `sounds.py` and a row in `SOUNDS`. A sound is never cut from someone else's recording: the owner
+once asked for a howl sampled from a feature film, and the kit made its own instead. Needs numpy and scipy.
+
+## Music that follows the story's feelings (2026-10-19)
+
+The owner: "Plot each scene musically against the emotion of each sentence and make sure the music always
+reflects the emotion of the sentence. Start from the hero video for lanna_cartoon's music." `score.py`
+does it for any film: it takes cues (a second and a feeling's name, each until the next) and makes music
+that turns with them. It begins to turn 0.6 s before each cue and has turned 0.9 s after it; the two
+feelings' music cross in that one window and nowhere else. The sound is the hero film's: `sash_music.py`'s
+plucked sueng strings, bowed chords, drum, ching, echo and room, imported from there, not copied. "Calm" is
+that film's own: its pentatonic tune on A, and its A minor and C chords.
+
+Each feeling is a recipe, `FEELINGS` in `score.py`. The recipe sets its notes, how high its tune lies, how
+often a string is plucked and whether the line climbs or falls, how long a note rings, its chords, its drum
+and ching, and how loud it is:
+
+| Feeling | Notes | How it goes |
+|---|---|---|
+| calm, tender, sleepy | A C D E G (the hero film's) | calm: the hero film's plucks; tender: higher, sparser, the chords warmer; sleepy: a note every other beat, quiet |
+| wonder | A B C# E F# | two plucks a beat, high, climbing, ringing long |
+| mystery | A B C# D# F (whole tones) | low and sparse, ringing long |
+| comic, bustle | G A B D E | short, quick notes on a drum; bustle steadier, as hammers |
+| joy, hope, triumph | G A B D E | joy: the hero film's dance (drum, ching); hope: climbing, a soft drum; triumph: all of it, and a low gong on the bar |
+| royal | D E F# A B | stately, a note a beat, a slow drum |
+| sad, grief | D F G A C | a note every other beat, falling, the chords held; grief lower, slower, softer |
+| tense, fear | A Bb D E | quick soft repeated notes over a heartbeat drum; fear higher and faster |
+
+Each set of feelings has notes of its own, and every one of its chords holds them (`CHORDS`). Sadness has its
+F (the minor third), gladness its B, the royal its F#, wonder its C#, the mystery its whole tones (C#, D#, F), dread
+its B flat against the A. That is what makes the music say its feeling. It is also what lets a check hear it.
+`checks/score_check.py` listens to the music under every line, not to the cue sheet. It takes the stretch
+where only that line's feeling sounds and scores each note the way an ear picks one out: the note itself and
+its overtones together. So a bowed G's fifth overtone is not heard as a B, a drum's falling body is not
+heard as notes, and an F is not heard because the A's played are its fifth. Then it finds which set holds the
+music: its notes must hold the energy, and each of its notes that does not sound counts against it. That set
+must be the line's feeling's. The check also draws the plot (`out/maeng_music/plot.html`): every sentence of
+every scene as a block in its feeling's colour, under it the notes the music was heard in, and the music's
+loudness and how many notes begin a second, along the time.
+
+The film of the creature has its sentences' feelings in `maeng/feelings.py` (`FEEL`: each line's, from what
+the sentence says). It takes the lines' seconds from the scene files themselves (`SNN_LINES`), so each scene's
+music is made as the scene is, on its own:
+
+```
+python maeng/feelings.py            # every scene's music: out/maeng_music/sNN.wav and cues.json
+python maeng/feelings.py 4          # one scene's, after a change to it
+python checks/score_check.py        # is every line's music in its feeling's notes; the plot
+```
+
+What the check found while it was built, each fixed in the music and not in the check: the next feeling came
+in a second and a half too early, so two feelings sounded together for three seconds; a feeling's chord only
+began to swell as the feeling began, so its first seconds were nearly all strings (now a chord is already
+sounding as each feeling comes in); and the chords, stacked from every other note of a set, could leave out
+the set's own note: sadness without its F sounded like calm. And two sets shared a chord: an A minor chord is
+in both the calm notes and the first mystery notes (A B C E F), so tender music resting on it was heard as
+mystery; the mystery's notes are now whole tones, which share only the A with the calm.
 
 ## A puppet of a Spark drawing
 

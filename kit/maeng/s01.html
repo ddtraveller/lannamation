@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>maeng 1 - Doi Khao Khwai, before dawn</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="style.js"></script>
+<script src="../oldcartoon.js"></script>
+<script src="../naga.js"></script>
+<script src="../beasts.js"></script>
+<script src="../myth.js"></script>
+<script src="../cumulus.js"></script>
+<script src="../highlands.js"></script>
+<script src="words.js"></script>
+<script src="sets.js"></script>
+<script src="s01_doi.js"></script>
+<script>
+// Scene 1 of the film of the creature with four ears and five eyes, on its own: s01_doi.js, with its words.
+var DURATION = S01_LONG;
+var SCENES = [[0, S01_LONG, sceneDoi]];
+function draw(t) {
+  film(t, SCENES);
+  maengSubtitles(t, S01_LINES);
+}
+var rendering = false;
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+requestAnimationFrame(play);
+</script>
+</body>
+</html>
