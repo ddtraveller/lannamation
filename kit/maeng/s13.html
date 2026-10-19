@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>maeng 13 - home</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="style.js"></script>
+<script src="../oldcartoon.js"></script>
+<script src="../naga.js"></script>
+<script src="../beasts.js"></script>
+<script src="../myth.js"></script>
+<script src="../cumulus.js"></script>
+<script src="../highlands.js"></script>
+<script src="../pieces.js"></script>
+<script src="../northbirds.js"></script>
+<script src="../decorate.js"></script>
+<script src="../khom.js"></script>
+<script src="words.js"></script>
+<script src="sets.js"></script>
+<script src="s13_home.js"></script>
+<script>
+// Scene 13 of the film of the creature with four ears and five eyes, on its own: s13_home.js, with its words.
+var DURATION = S13_LONG;
+var SCENES = [[0, S13_LONG, sceneHome]];
+function draw(t) {
+  film(t, SCENES);
+  maengSubtitles(t, S13_LINES);
+}
+var rendering = false;
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

@@ -2,6 +2,7 @@
 
     python maeng/feelings.py                # every scene's music, into out/maeng_music/: sNN.wav, and cues.json
     python maeng/feelings.py 4 9            # only scenes 4 and 9
+    python maeng/feelings.py --film         # then the film's: out/maeng_music/film.wav, the scenes' joined, with their calls
 
 The owner, 2026-10-19: "Plot each scene musically against the emotion of each sentence and make sure the music
 always reflects the emotion of the sentence. Start from the hero video for lanna_cartoon's music." So each line
@@ -61,6 +62,9 @@ FEEL = {
     "M078": "tender", "M079": "joy",
 }
 
+# A scene with no words has its feelings here, as cues: 15, the credits, warm and then glad toward the studio's name.
+SCENE_FEEL = {15: [[0.0, "tender"], [166.0, "joy"]]}
+
 
 def scenes():
     """Each scene file's number, length and lines: {n: (seconds, [[from, to, id], ...], file)}."""
@@ -77,8 +81,11 @@ def scenes():
     return found
 
 
-def cues_of(lines):
-    """A scene's cues: each line's feeling from its first second; the first from the scene's start."""
+def cues_of(lines, n=None):
+    """A scene's cues: each line's feeling from its first second; the first from the scene's start. A scene with no
+    lines takes its cues from SCENE_FEEL."""
+    if not lines:
+        return SCENE_FEEL[n]
     cues = []
     for k, (start, _, line) in enumerate(lines):
         feeling = FEEL[line]
@@ -88,12 +95,48 @@ def cues_of(lines):
     return cues
 
 
+CALLS = re.compile(r'calls: (\[\[.*?\]\])', re.S)
+JOIN = 0.05            # seconds of fade at each join of two scenes' music, so it does not click
+
+
+def film():
+    """The film's music: every scene's (sNN.wav, made first) one after another, as film.html lays the scenes, with
+    the sounds their life calls (decorate.js: calls [[second, sound, loudness], ...], sounds.py's out/sounds/NAME.wav)
+    laid in at their seconds, in the middle of both ears. Into out/maeng_music/film.wav."""
+    parts, calls = [], []
+    for n, (seconds, lines, name) in sorted(scenes().items()):
+        music, rate = soundfile.read(str(OUT / ("s%02d.wav" % n)), always_2d=True)
+        assert rate == RATE, name
+        music = numpy.pad(music.T, ((0, 0), (0, max(0, int(seconds * RATE) - music.shape[0]))))[:, :int(seconds * RATE)]
+        fade = int(JOIN * RATE)
+        music[:, :fade] *= numpy.linspace(0, 1, fade)
+        music[:, -fade:] *= numpy.linspace(1, 0, fade)
+        start = sum(p.shape[1] for p in parts) / RATE
+        for found in CALLS.findall((HERE / name).read_text(encoding="utf-8")):
+            calls += [[start + at, sound, loud, name] for at, sound, loud in json.loads(found)]
+        parts.append(music)
+    track = numpy.concatenate(parts, axis=1)
+    for at, sound, loud, name in calls:
+        heard, rate = soundfile.read(str(HERE.parent / "out" / "sounds" / (sound + ".wav")), always_2d=True)
+        assert rate == RATE, sound
+        heard = heard.mean(axis=1) * loud
+        first = int(at * RATE)
+        heard = heard[:max(0, track.shape[1] - first)]
+        track[:, first:first + len(heard)] += heard
+        print("%7.1f s  %-13s %.2f  (%s)" % (at, sound, loud, name))
+    soundfile.write(str(OUT / "film.wav"), track.T, RATE, subtype="FLOAT")
+    print("film.wav: %.1f s, %d scenes, %d calls" % (track.shape[1] / RATE, len(parts), len(calls)))
+
+
 def main():
+    if sys.argv[1:] == ["--film"]:
+        film()
+        return
     wanted = [int(a) for a in sys.argv[1:]]
     OUT.mkdir(parents=True, exist_ok=True)
     sheet = {}
     for n, (seconds, lines, name) in sorted(scenes().items()):
-        cues = cues_of(lines)
+        cues = cues_of(lines, n)
         sheet["s%02d" % n] = {"file": name, "seconds": seconds, "lines": lines, "cues": cues,
                               "feel": {line: FEEL[line] for _, _, line in lines}}
         if wanted and n not in wanted:

@@ -116,10 +116,15 @@
 //   glow       0 to 1: how far its five eyes light up, as they do when it has eaten an ember
 //   wake       0 to 5: how many of its five eyes are open (5 unless told), so that they open one by one: the two
 //              low ones first, then the two at the sides, then the one at the top; a part is an eye opening
+//   watch      false: its five eyes look straight out together. Else, in a film (film()), three watch the nearest
+//              one drawn in the frame, one stares out at the viewer and then scans slowly side to side, and one
+//              wanders; every ten seconds the staring and the wandering eye change to others (maengEyes())
+//   eyeFeel    the feeling of two of its eyes, the other three having "feel" (else MAENG_EYE_FEEL's for it)
+//   id         a name of its own, so that which three eyes share its feeling is its own (else "maeng")
 var MYTH_KEYS = {};
 
 ["size", "face", "late", "mouth", "colour", "gold", "belly", "step", "eyes", "trail", "depth", "sing", "horns", "wings", "fly", "head", "trunk", "feel",
- "glow", "wake"
+ "glow", "wake", "watch", "eyeFeel", "id"
 ].forEach(function (name) { MYTH_KEYS[name] = true; });
 
 // How the two that walk do it, for amble() of beasts.js: [how large it is
@@ -1017,11 +1022,12 @@ function maengPaw(ax, ay, skin) {
   pen.restore();
 }
 
-// One of its eyes, looking out at the viewer, about (x, y), r across: the carved ring, the white, a green iris,
-// the pupil and a light. A feeling (e, from creatureFeel()) brings the lid down, low at the corner by the nose in
-// anger, at the outer corner in sadness; shut, or laughing, the eye is a line, bowed up in a laugh. "glow" lights
-// the iris and the air about it.
-function maengEye(x, y, r, e, c, shut, glow) {
+// One of its eyes, about (x, y), r across: the carved ring, the white, a green iris, the pupil and a light. A
+// feeling (e, from creatureFeel()) brings the lid down, low at the corner by the nose in anger, at the outer
+// corner in sadness; shut, or laughing, the eye is a line, bowed up in a laugh. "glow" lights the iris and the
+// air about it. "gaze" [-1 to 1, -1 to 1] is where it looks: [0, 0] out at the viewer, 1 to the eye's edge.
+function maengEye(x, y, r, e, c, shut, glow, gaze) {
+  var gx = gaze ? gaze[0] * r * 0.36 : 0, gy = gaze ? gaze[1] * r * 0.3 : 0;
   var closed = Math.max(e.lid, shut ? 1 : 0), ry = r * e.wide, inward = x < -1 ? 1 : x > 1 ? -1 : 0;
   pen.save();
   pen.translate(x, y);
@@ -1057,7 +1063,8 @@ function maengEye(x, y, r, e, c, shut, glow) {
   pen.fill(ball);
   pen.save();
   pen.clip(ball);
-  [[0, 1, 0.66, blend(c.eyes, "#e6ff8a", glow)], [0, 1.5, 0.34, "#16131a"], [-0.28 * r, -0.26 * ry, 0.2, "#ffffff"]].forEach(function (dot) {
+  [[gx, 1 + gy, 0.66, blend(c.eyes, "#e6ff8a", glow)], [gx * 1.15, 1.5 + gy * 1.15, 0.34, "#16131a"],
+   [-0.28 * r + gx * 0.4, -0.26 * ry + gy * 0.4, 0.2, "#ffffff"]].forEach(function (dot) {
     pen.beginPath();                                // the iris, the pupil and the light, filled with no line round them
     pen.ellipse(dot[0], dot[1], r * dot[2], (dot[3] === "#ffffff" ? r : ry) * dot[2], 0, 0, 7);
     pen.fillStyle = dot[3];
@@ -1086,7 +1093,7 @@ function maengEye(x, y, r, e, c, shut, glow) {
 
 // The face, turned to the viewer, about its middle: 172 across the cheeks. "open" is how far the jaw has dropped;
 // e the feeling (creatureFeel()).
-function maengFace(c, e, open, shut, glow, seed, wake) {
+function maengFace(c, e, open, shut, glow, seed, wake, eyes) {
   var ears = e.ears, low = Math.max(0, -ears) * 14, up = Math.max(0, ears) * 6, flat = 1 - 0.3 * Math.max(0, -ears);
   [[-50, -70, 23], [50, -70, 23], [-80, -34, 20], [80, -34, 20]].forEach(function (one) {   // the four round ears, behind the head
     pen.save();
@@ -1118,9 +1125,10 @@ function maengFace(c, e, open, shut, glow, seed, wake) {
   pen.fillStyle = blend(c.lit, "#9a8f86", 0.45);
   pen.fill();
   pen.restore();
-  [[0, -54, 4], [-41, -31, 2], [41, -31, 3], [-21, -6, 0], [21, -6, 1]].forEach(function (one) {   // the five eyes, as the points of a star; the order they open in
-    var lid = 1 - clamp(wake - one[2]);             // shut until its turn, then opening
-    maengEye(one[0], one[1], 14.4, lid > 0 ? Object.assign({}, e, {lid: Math.max(e.lid, lid)}) : e, c, shut || lid >= 1, glow);
+  MAENG_EYES.forEach(function (one, n) {             // the five eyes, as the points of a star; the order they open in
+    var own = eyes ? eyes[n].e : e, lid = Math.max(1 - clamp(wake - one[2]), eyes ? eyes[n].narrow : 0);   // shut until its turn, then opening
+    maengEye(one[0], one[1], 14.4, lid > 0 ? Object.assign({}, own, {lid: Math.max(own.lid, lid)}) : own, c, shut || lid >= 1, glow,
+             eyes ? maengGaze(one, eyes[n]) : null);
   });
   pen.beginPath();                                  // the nose: a small rounded triangle
   pen.moveTo(-11, 13);
@@ -1171,6 +1179,61 @@ function maengFace(c, e, open, shut, glow, seed, wake) {
 // feels (feel), opens its jaw (mouth, 0 to 1), lights its eyes (glow) and opens them one by one (wake). Gives
 // back {head, mouth, paw, neck}, points of the scene: the middle of its face; of its mouth, where an ember goes
 // in; its near fore paw on the ground; and its neck under the head, where a vine is tied.
+// ---------- its eyes, each its own ----------
+// Where the five are on its face (the head's own pixels) and the order they open in: the top, the two upper, the
+// two lower, as the points of a star.
+var MAENG_EYES = [[0, -54, 4], [-41, -31, 2], [41, -31, 3], [-21, -6, 0], [21, -6, 1]];
+var MAENG_EYE_TURN = 10;                           // seconds before the staring eye and the wandering one change to others
+// The second feeling, of the two eyes that do not share the creature's own: wary, or the feeling's neighbour.
+var MAENG_EYE_FEEL = {neutral: "concerned", happy: "surprised", laughing: "happy", sad: "concerned", concerned: "fear",
+                      angry: "concerned", sleepy: "neutral", satiated: "sleepy", surprised: "happy", fear: "concerned"};
+
+function maengHash(n) { return dice(Math.floor(n) * 7.31 + 3.7); }
+
+// What each of its five eyes does at second t, as a list of {role, e, narrow, sees}: three watch the nearest one
+// in the frame (SIGHTS, oldcartoon.js), one stares out at the viewer and then scans slowly from side to side,
+// narrowed in suspicion, and one wanders; every MAENG_EYE_TURN seconds the staring one and the wandering one
+// change to two others. Three eyes, chosen once for this creature, have its own feeling and the other two a
+// second (look.eyeFeel, or MAENG_EYE_FEEL's). From the second alone, as everything in a frame is.
+function maengEyes(look, at, own) {
+  var id = 0, key = look.id || "maeng", n;
+  for (n = 0; n < key.length; n++) { id = (id * 31 + key.charCodeAt(n)) % 997; }
+  var order = [0, 1, 2, 3, 4].sort(function (a, b) { return maengHash(id + a * 11) - maengHash(id + b * 11); });
+  var second = look.eyeFeel || MAENG_EYE_FEEL[FEELING_WAS[look.feel] || look.feel || "neutral"] || "concerned";
+  var other = creatureFeel(Object.assign({}, look, {feel: second}), at);
+  var turn = Math.floor(clock / MAENG_EYE_TURN), stare = Math.floor(maengHash(turn * 13 + id) * 5);
+  var wander = (stare + 1 + Math.floor(maengHash(turn * 17 + id + 5) * 4)) % 5, into = clock - turn * MAENG_EYE_TURN;
+  return MAENG_EYES.map(function (place, k) {
+    var e = order.indexOf(k) < 3 ? own : other;
+    if (k === stare) {                               // out at the viewer, then scanning slowly side to side, narrowed
+      var scan = between(into, 4, 5) * Math.sin((into - 4) * Math.PI * 2 / 6);
+      return {role: "stare", e: e, narrow: 0.15 + 0.2 * between(into, 3.5, 4.5), look: [0.95 * scan, 0]};
+    }
+    if (k === wander) {                              // aimless: slow and never the same way twice
+      var p = k * 1.7 + id;
+      return {role: "wander", e: e, narrow: 0, look: [0.85 * Math.sin(clock * 0.41 + p) * Math.cos(clock * 0.17 + p * 2),
+                                                      0.7 * Math.sin(clock * 0.29 + p * 3)]};
+    }
+    return {role: "watch", e: e, narrow: 0, look: null};
+  });
+}
+
+// Where one eye looks, in its own -1 to 1: the nearest one in the frame for a watcher (the sheet's pixels, brought
+// into the head's own), straight out when there is none, or what maengEyes() gave it.
+function maengGaze(place, eye) {
+  if (eye.look) { return eye.look; }
+  var m = pen.getTransform(), here = m.transformPoint(new DOMPoint(place[0], place[1])), best = null, far = Infinity;
+  sightsNow().forEach(function (one) {
+    if (one[0] < 0 || one[1] < 0 || one[0] > pen.canvas.width || one[1] > pen.canvas.height) { return; }   // off the sheet
+    var d = Math.hypot(one[0] - here.x, one[1] - here.y);
+    if (d < far) { far = d; best = one; }
+  });
+  if (!best) { return [0, 0.1]; }
+  var there = m.inverse().transformPoint(new DOMPoint(best[0], best[1])), dx = there.x - place[0], dy = there.y - place[1];
+  var long = Math.hypot(dx, dy) || 1, reach = Math.min(1, long / 60);
+  return [dx / long * reach, dy / long * reach * 0.8];
+}
+
 function maengSiHuHaTa(x, y, look) {
   checkNames("The name of the creature with four ears and five eyes", look, MYTH_KEYS);
   var size = (look.size || 1) * GAITS.maengSiHuHaTa[0], face = look.face || 1, seed = x * 0.013;
@@ -1235,7 +1298,8 @@ function maengSiHuHaTa(x, y, look) {
   pen.save();                                       // the head on the shoulders, turned to the viewer
   pen.translate(headAt[0], headAt[1]);
   pen.scale(1.24, 1.24);
-  maengFace(c, e, open, blink, glow, seed, look.wake === undefined ? 5 : look.wake);
+  maengFace(c, e, open, blink, glow, seed, look.wake === undefined ? 5 : look.wake,
+            look.watch === false ? null : maengEyes(look, clock + seed, e));
   pen.restore();
   pen.restore();
   FINE = 1;

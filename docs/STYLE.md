@@ -2429,8 +2429,9 @@ and always runs. Measured: a second kit_check on two pages took 1 s against 14, 
 The films open on the hero film, then the card of Slow Life Studios, then the tale (the owner). `sls_intro.html`
 is the card, 12 s: an evening by a river in the north, a house on its stilts with its lamp lit, a mountain with mist
 in its folds, fireflies rising and blinking over the water (`fireflies()`, drawn from the second alone), and the
-studio's name coming up in gold in the Lanna script: ᨩᩦᩅᩥ᩠ᨲᨧ᩶ᩣ᩻ ᩈᨲᩪᨯᩥᩋᩰ, ชีวิตจ้า ๆ สตูดิโอ (the Kam Mueang of the
-voice project's writer: the north's จ้า for "slow"), with its Thai letters and its English under it. A studio card
+studio's name coming up in gold in the Lanna script: ᩁᩰᩫ᩠ᨦᨿᩉ᩠ᨶᩢᨦᨩᩦᩅᩥ᩠ᨲᨧ᩶ᩣ᩻, โรงยะหนังชีวิตจ้า ๆ (a house that makes films of a
+slow life: the north's ยะ for "make" and จ้า for "slow"; the owner chose this, the more Kam Mueang of two
+wordings), with its Thai letters and its English under it. A studio card
 of another studio was its only reference, for its calm: nothing of it is taken. The tale's own titles are over
 its first seconds, in the fog: the series, Lanna Tales (นิทานล้านนา: ᨶᩥᨴᩤ᩠ᨶᩃ᩶ᩣ᩠ᨶᨶᩣ), in the Lanna script alone, then the
 tale, ᨾᩯ᩠ᨦᩈᩦ᩵ᩉᩪᩉ᩶ᩣᨲᩣ, with its English small under it. Every Lanna spelling was written by the Kam Mueang alphabet's
@@ -2553,6 +2554,98 @@ sounding as each feeling comes in); and the chords, stacked from every other not
 the set's own note: sadness without its F sounded like calm. And two sets shared a chord: an A minor chord is
 in both the calm notes and the first mystery notes (A B C E F), so tender music resting on it was heard as
 mystery; the mystery's notes are now whole tones, which share only the A with the calm.
+
+## Putting a tale together: its voice, its sound and its scenes (2026-10-19)
+
+The owner: "Please use Pan's voice for the narrator", and "I'd like the new complete video to go on the
+lanna_cartoon page": the hero film, then the studio's card, then the tale. How the film of the creature with four
+ears and five eyes was put together, in order, each step a tool anyone can run again:
+
+1. **Each scene alone** (`maeng/sNN_*.js` and `sNN.html`), its lines in `SNN_LINES` ([from, to, id] in the scene's
+   own seconds). The fourteenth is the goodbye: Bua-kham, who tells the kit's tales, says what the tale teaches
+   and waves to the children, the same raise and wave as lanna_cartoon's goodbye after the film.
+2. **The voice first, then the lines' seconds fitted to it.** The narration was spoken by a voice made from a
+   speaker of Kam Mueang (her toolset's voice service, one WAV a line), and each line measured against the room
+   before the next line. Measure the voiced part, not the file: each WAV ends in about 0.4 s of silence, and five
+   of eleven lines that seemed too long were not. Where a line was too long, the next lines were moved later into
+   the slack a scene had further on, and what the picture does on those lines moved with them (what is held out,
+   when the ember flies, when someone laughs or a mouth moves). A line is never sped up.
+3. **Heard back before it is used.** Every line went through the voice project's listener (Whisper, fine-tuned on
+   Kam Mueang): the share of its letters heard back, median 0.89. The five lowest were spoken three times more
+   and the clearest take that still fits its room kept (one line went from 0.46, garbled, to 0.95); a take that
+   does not fit is not used, however clear. What is left low is mostly the listener's spelling (tone marks,
+   spaces), which a native speaker's ear should still check.
+4. **The film page** (`maeng/film.html`) lays the scenes end to end from their `SNN_LONG`, and lists WORDS as the
+   hero film does ([from, to, said, written, English, id], in the film's seconds). Its bar of scene buttons is for
+   watching; it hides itself when render.py renders, which photographs the whole page.
+5. **The music**: `maeng/feelings.py` (every scene's, from its lines' feelings), then `feelings.py --film` joins
+   them with a 50 ms fade at each join and lays in the sounds the scenes' life calls (decorate.js `calls`): the
+   tokay at night, the creature's howl from its cave, its roar in the snare, its joy at the first ember, its fear
+   in the crowd and its howl going home. `checks/score_check.py` then hears every line's music.
+6. **The voice over the music**: `sash_narrate.py --page maeng/film.html --music out/maeng_music/film.wav
+   --spoken <folder>`, the hero film's own narrator (the voice's treatment, the music lowered under each line,
+   -14 LUFS): `--spoken` takes lines spoken elsewhere, `ID.wav` for each line's id.
+7. **The pictures, on two machines**: `scenes.py maeng/film.html <film>` renders from the first scene on;
+   `maeng/render_back.py maeng/film.html 14 13 ...` renders from the last back on a copy of the kit elsewhere
+   (the Spark, its GPU). scenes.py leaves alone a scene whose clip is there, so each machine's finished clips are
+   copied to the other (a clip copied under another name first, then renamed: never half a file). Clips from
+   both machines join without encoding again: the same encoder settings make the same stream.
+8. **The films one after another**: `chain.py <out> lanna_sash.mp4 sls_intro.mp4 <tale>+<tale's sound>` encodes
+   them again once, as render.py does (films made at different times are encoded differently, and a video joined
+   from them without encoding can stop where they meet), and says where each starts: the page needs the card's
+   seconds for its fireflies.
+
+## Eyes that watch, and who is where (2026-10-19)
+
+The owner: "Have 4 eyes always look at the closest sprite to them. One other eye should look out at the screen or
+scan slowly side to side suspiciously and one eye should just wander aimlessly. After 10 seconds the wandering eye
+should switch to be a different eye as should the screenward looking eye. Give the eyes different emotions as
+well." The creature has five eyes, as its name says, so (the owner chose): three watch the nearest one in the
+frame, one stares out at the viewer for four seconds and then narrows and scans slowly from side to side, one
+wanders; every ten seconds the staring and the wandering eye change to two others; three eyes, chosen once for the
+creature (by its `id`), have its feeling and the other two a second (`eyeFeel`, or MAENG_EYE_FEEL's: wary beside
+calm, wide beside happy). `maengEyes()` and `maengGaze()` in myth.js; `watch: false` puts them back as one.
+
+**Who is where.** To watch the nearest, the kit has to know where everyone is in the frame: `SIGHTS` in
+oldcartoon.js. While a film's frame is drawn, person() notes each face's middle and decorate() each of a scene's
+life, in the sheet's pixels; `sightsNow()` gives a watcher the list. A watcher is often drawn before those it
+watches (the creature in its pen, then the boy in front of it), so filmFrame() then draws the frame a second time,
+the watcher seeing the whole list of the first: what it sees is the second's own, as everything in a frame is
+(seek to any second and the eyes are where they were). Drawing a frame twice at one second moves nothing that
+swings (follow() steps only when the clock moves). The kit check: 169 pages and scenes, none changed but the
+creature's.
+
+## The credits (2026-10-19)
+
+`maeng/s15_credits.js`, after the goodbye: Doi Khao Khwai at night under its stars, the credits rolling up over
+it at 90 pixels a second, then the studio's name held with the kit's address under it, then the thanks. The owner
+asked for each part:
+
+- **Who made it.** Animation: lannamation, https://github.com/ddtraveller/lannamation, and Claude AI. The voice of
+  the tale: "Panda", a stub until the speaker sends the name she wants in it.
+- **Where it comes from**, as the kit records it: the tale's sources, the music and sounds (the tokay's recording
+  and who made it), the household research, the letters; the photographers on Wikimedia Commons whose pictures the
+  drawings were studied from; and every one of the cartoon maker's people, creatures, things and places, two to a
+  row, each with what it was drawn from (docs/STYLE.md and the kit's files, as far as they say).
+- **The research.** The six NotebookLM notebooks the kit and its films were researched in hold 162 sources from 66
+  websites: named by kind, journals and universities first. Wikipedia is named last: the owner, "Wikipedia hasn't
+  shown to be particularly accurate in studies depending on the subject", and it is not leaned on.
+- **Thanks to as many people as possible** (the owner). Each notebook was asked for the people its sources name, and
+  each name was kept only where it is in that notebook's sources' own text (all 162 sources' texts were read for
+  it; 30 names not found there were left out). They are in `maeng/thanks.js`, made by the film's lab, two lists:
+  the 286 who made the sources (their authors, photographers, editors and advisers, the weavers and basket makers
+  a ministry's book names, the people interviewed, the hosts of the videos), four to a row, and the 807 whose work
+  the sources rest on (whom they cite), five to a row. Left out: names that are no person (a site's
+  "administrator", a desk), people a source is only about, and a member of the royal family named in a ministry's
+  book, whose titles the credits could not give rightly.
+- **A thank-you to the voice.** The owner: "At the end of the credits feature a wai-ing panda bear in python_piggy
+  style but with Lanna princess clothes as a personal thanks to Pan for her work." Three candidates were drawn
+  beside Teacher Piggy (the owner: "I like all 3", then "Can you do 3?"): three pandas in Teacher Piggy's manner (a
+  chibi, a big head over the body, cut at the waist; plum lines, glossy eyes with lashes, blush), each dressed as a
+  Lanna princess her own way (a bun of black fur with gold pins hung with pearls, or with a jasmine garland, or a
+  big orchid by one ear; a fitted blouse; a sabai over one shoulder, patterned in gold; gold ear plugs and a gold
+  necklace). They come up whole from below (a figure drawn see-through shows its own layers), and wai one after
+  another, then all together, their eyes closing in two smiling curves at the deepest of each bow.
 
 ## A puppet of a Spark drawing
 

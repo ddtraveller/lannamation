@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>maeng - the whole film</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tai+Tham:wght@700&family=Noto+Serif+Thai:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; background: #111; color: #ddd; font: 14px sans-serif; }
+  canvas { display: block; width: 100vw; height: calc(100vh - 44px); object-fit: contain; }
+  #bar { display: flex; gap: 4px; align-items: center; padding: 6px 8px; flex-wrap: wrap; }
+  #bar button { background: #333; color: #ddd; border: 0; padding: 5px 9px; border-radius: 3px; cursor: pointer; }
+  #bar button.on { background: #a8435a; color: #fff; }
+  #clock { margin-left: auto; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<div id="bar"><button id="pause">pause</button><span id="scenes"></span><span id="clock"></span></div>
+<script src="style.js"></script>
+<script src="../oldcartoon.js"></script>
+<script src="../naga.js"></script>
+<script src="../beasts.js"></script>
+<script src="../myth.js"></script>
+<script src="../cumulus.js"></script>
+<script src="../highlands.js"></script>
+<script src="../pieces.js"></script>
+<script src="../northbirds.js"></script>
+<script src="../decorate.js"></script>
+<script src="../khom.js"></script>
+<script src="../band.js"></script>
+<script src="../food.js"></script>
+<script src="words.js"></script>
+<script src="sets.js"></script>
+<script src="s01_doi.js"></script>
+<script src="s02_family.js"></script>
+<script src="s03_work.js"></script>
+<script src="s04_wish.js"></script>
+<script src="s05_climb.js"></script>
+<script src="s06_creature.js"></script>
+<script src="s07_embers.js"></script>
+<script src="s08_gold.js"></script>
+<script src="s09_decree.js"></script>
+<script src="s10_trough.js"></script>
+<script src="s11_morning.js"></script>
+<script src="s12_wedding.js"></script>
+<script src="s13_home.js"></script>
+<script src="s14_goodbye.js"></script>
+<script src="thanks.js"></script>
+<script src="s15_credits.js"></script>
+<script>
+// The film of the creature with four ears and five eyes, its fifteen scenes one after another, with their words.
+// Each scene is its own file and its own page (s01.html ... s15.html); this one only lays them end to end.
+var PARTS = [[S01_LONG, sceneDoi, S01_LINES], [S02_LONG, sceneFamily, S02_LINES], [S03_LONG, sceneWork, S03_LINES],
+             [S04_LONG, sceneWish, S04_LINES], [S05_LONG, sceneClimb, S05_LINES], [S06_LONG, sceneCreature, S06_LINES],
+             [S07_LONG, sceneEmbers, S07_LINES], [S08_LONG, sceneGold, S08_LINES], [S09_LONG, sceneDecree, S09_LINES],
+             [S10_LONG, sceneTrough, S10_LINES], [S11_LONG, sceneMorning, S11_LINES], [S12_LONG, sceneWedding, S12_LINES],
+             [S13_LONG, sceneHome, S13_LINES], [S14_LONG, sceneGoodbye, S14_LINES],
+             [S15_LONG, sceneCredits, S15_LINES]];
+var SCENES = [], at = 0;
+PARTS.forEach(function (part) { SCENES.push([at, at + part[0], part[1], part[2]]); at += part[0]; });
+var DURATION = at;
+// The film's lines, as the hero film lists them for its narrator (sash_narrate.py): [from, to, said, written,
+// English, the line's id] in the film's own seconds; the id names the line's voice file (--spoken).
+var WORDS = [];
+SCENES.forEach(function (s) {
+  s[3].forEach(function (line) {
+    var w = MAENG_WORDS[line[2]];
+    WORDS.push([s[0] + line[0], s[0] + line[1], w[0], w[1], w[2], line[2]]);
+  });
+});
+function draw(t) {
+  if (rendering && document.getElementById("bar").style.display !== "none") {   // render.py photographs the page: the film alone
+    document.getElementById("bar").style.display = "none";
+    document.getElementById("stage").style.height = "100vh";
+  }
+  film(t, SCENES);
+  SCENES.forEach(function (s) { if (t >= s[0] && t < s[1]) { maengSubtitles(t - s[0], s[3]); } });
+}
+// To watch: pause, and a button for each scene's start.
+var rendering = false, paused = false, start = null, held = 0;
+SCENES.forEach(function (s, n) {
+  var b = document.createElement("button");
+  b.textContent = n + 1;
+  b.title = "scene " + (n + 1) + ", from " + s[0] + " s";
+  b.onclick = function () { start = null; held = s[0]; };
+  document.getElementById("scenes").appendChild(b);
+});
+document.getElementById("pause").onclick = function () {
+  paused = !paused;
+  this.textContent = paused ? "play" : "pause";
+  start = null;
+};
+function play(now) {
+  if (!rendering) {
+    if (!paused) {
+      if (start === null) { start = now - held * 1000; }
+      held = ((now - start) / 1000) % DURATION;
+    }
+    draw(held);
+    var mm = Math.floor(held / 60), ss = Math.floor(held % 60);
+    document.getElementById("clock").textContent = mm + ":" + (ss < 10 ? "0" : "") + ss + " / " +
+      Math.floor(DURATION / 60) + ":" + (DURATION % 60 < 10 ? "0" : "") + Math.floor(DURATION % 60);
+    var buttons = document.querySelectorAll("#scenes button");
+    SCENES.forEach(function (s, n) { buttons[n].className = held >= s[0] && held < s[1] ? "on" : ""; });
+  }
+  requestAnimationFrame(play);
+}
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

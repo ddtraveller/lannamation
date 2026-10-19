@@ -24,11 +24,16 @@ SHEET = """([t]) => {
 }"""
 
 
+# render.py's FONTS: every web font the page names, loaded before a frame is drawn
+FONTS = "Promise.all(Array.from(document.fonts).map(function (f) { return f.load().catch(function () { return null; }); }))"
+
+
 def open_page(browser, page_file, errors=None):
     page = browser.new_page(viewport={"width": 1920, "height": 1080})
     if errors is not None:
         page.on("pageerror", lambda error: errors.append(str(error)))
     page.goto(page_file.resolve().as_uri(), timeout=180000)
+    page.evaluate(FONTS)                             # the page's web fonts loaded first, as render.py loads them
     page.evaluate("rendering = true")
     return page
 

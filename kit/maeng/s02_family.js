@@ -6,7 +6,7 @@
 // rooster pecking in the yard left of the hut, away from the path; a flock across the sky. The night, nothing:
 // it is the mother's. The next morning, one hen alone, and no flock: the line is a sad one.
 var S02_LONG = 55;
-var S02_LINES = [[1.5, 5.5, "M005"], [6.0, 9.2, "M006"], [9.6, 12.6, "M007"], [13.0, 16.2, "M008"], [16.6, 21.4, "M009"],
+var S02_LINES = [[1.5, 6.2, "M005"], [6.3, 10.4, "M006"], [10.5, 13.2, "M007"], [13.4, 16.2, "M008"], [16.6, 21.4, "M009"],
                  [27.5, 32.5, "M010"], [42.0, 45.6, "M011"]];
 
 var S02_LIFE = [

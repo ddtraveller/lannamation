@@ -3,7 +3,7 @@
 // wood under the great tree and binds it; and he carries the bundle home on his shoulder, tired, and he does
 // not complain.
 var S03_LONG = 35;
-var S03_LINES = [[1.5, 5.0, "M012"], [5.6, 11.0, "M013"], [25.5, 29.5, "M014"]];
+var S03_LINES = [[1.5, 5.0, "M012"], [5.6, 11.2, "M013"], [25.5, 29.5, "M014"]];
 var S03_STAND = 760, S03_GROUND = 968;              // where the buffalo stops to graze, and the ground the two walk on
 var S03_PILE = MAENG_TREE[0] - 90;                  // where the fallen wood lies
 // Its life: a red-billed blue magpie perched on the great tree's left limb, flicking its long tail; as he sets off

@@ -18,6 +18,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 FPS = 30
+FONTS = "Promise.all(Array.from(document.fonts).map(function (f) { return f.load().catch(function () { return null; }); }))"   # checks/frames.py waits for them the same way
 WIDTH = 1920
 HEIGHT = 1080
 
@@ -53,6 +54,9 @@ def render(page_file, video, audio, start=0.0, end=None, fast=False):
         page.on("pageerror", lambda error: errors.append(str(error)))
         # the hero film paints its forests as it loads: 42 s on a laptop on battery
         page.goto(Path(page_file).resolve().as_uri(), timeout=180000)
+        # every web font the page names, loaded before the first frame: a canvas asks for a font only when it first
+        # draws in it, and that frame would be in another (the credits of the creature's film: one frame of 2925)
+        page.evaluate(FONTS)
         page.evaluate("rendering = true")
         seconds = page.evaluate("DURATION")
         end = seconds if end is None else min(end, seconds)

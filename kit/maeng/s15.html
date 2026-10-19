@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tai+Tham:wght@700&family=Noto+Serif+Thai:wght@500;600&display=swap" rel="stylesheet">
+<title>maeng 15 - credits</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="style.js"></script>
+<script src="../oldcartoon.js"></script>
+<script src="../naga.js"></script>
+<script src="../beasts.js"></script>
+<script src="../myth.js"></script>
+<script src="../cumulus.js"></script>
+<script src="../highlands.js"></script>
+<script src="../pieces.js"></script>
+<script src="../northbirds.js"></script>
+<script src="../decorate.js"></script>
+<script src="../khom.js"></script>
+<script src="words.js"></script>
+<script src="sets.js"></script>
+<script src="thanks.js"></script>
+<script src="s15_credits.js"></script>
+<script>
+// Scene 15 of the film of the creature with four ears and five eyes, on its own: s15_credits.js, with its words.
+var DURATION = S15_LONG;
+var SCENES = [[0, S15_LONG, sceneCredits]];
+function draw(t) {
+  film(t, SCENES);
+  maengSubtitles(t, S15_LINES);
+}
+var rendering = false;
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

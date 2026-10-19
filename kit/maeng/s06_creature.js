@@ -5,8 +5,8 @@
 // for a moment; he wonders if it is his father, come back; he ties a vine round its neck, gently, and it
 // follows him home.
 var S06_LONG = 60;
-var S06_LINES = [[1.5, 4.5, "M028"], [5.5, 8.5, "M029"], [10.5, 15.0, "M030"], [15.6, 17.6, "M031"], [18.0, 20.6, "M032"],
-                 [24.0, 28.6, "M033"], [32.0, 36.4, "M034"], [44.0, 48.0, "M035"]];
+var S06_LINES = [[1.5, 6.1, "M028"], [6.2, 8.5, "M029"], [10.5, 15.3, "M030"], [15.6, 17.6, "M031"], [18.0, 20.6, "M032"],
+                 [24.0, 28.6, "M033"], [32.0, 37.7, "M034"], [44.0, 48.0, "M035"]];
 var S06_NEAR = 1.55;                                // the camera's nearness to the cave: the set is seen this much larger
 var S06_SPOT = [MAENG_SLOPE_CAVE[0] - 20, MAENG_SLOPE_CAVE[1] + 14];   // where the creature stands, at the cave's mouth
 var S06_SNARE = [MAENG_SLOPE_CAVE[0] - 60, MAENG_SLOPE_CAVE[1] + 8];
@@ -24,7 +24,10 @@ function s06Crowns(list, size, seed, shake) {        // the forest's own crowns 
 // father (M033) and ties the vine (M034), a green-tailed sunbird hovering at the ferns over the cave's mouth.
 var S06_LIFE = [
   {name: "sunbird", kind: "sunbird", layer: "back", look: {size: 1.0},
-   course: [[22.0, 1720, 300], [24.0, 1310, 470, "sip"], [29.0, 1310, 470], [31.5, 1680, 260]]}
+   course: [[22.0, 1720, 300], [24.0, 1310, 470, "sip"], [29.0, 1310, 470], [31.5, 1680, 260]]},
+  // its roar as it tugs at the snare (sounds.py, maeng-angry)
+  {name: "the creature's roar", kind: "flock", layer: "back", course: [[0, -999, -999], [0.1, -999, -999]],
+   calls: [[5.3, "maeng-angry", 0.7]]}
 ];
 
 function sceneCreature(t) {
@@ -39,7 +42,7 @@ function sceneCreature(t) {
   var mist = 1 - between(t, 0, 12);                 // the morning's mist, thinning as he climbs
   if (mist > 0) { mistDrift(pen, t, {left: -200, right: WIDE + 200, top: 560, bottom: 780, count: 5, wide: 520, drift: 7, seed: 33, alpha: 0.6 * mist}); }
   decorate(t, S06_LIFE, "back");
-  var struggle = t > 4.5 && t < 9.5 ? 1 : 0;        // something tugs at the snare
+  var struggle = t > 5.2 && t < 9.5 ? 1 : 0;        // something tugs at the snare
   s06Crowns(S06_BEHIND, size * 1.6, 3, 0);
   caveMouth(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f"});
   // The creature: hidden in the cave's dark at first (only its pull on the snare shows), then out into the

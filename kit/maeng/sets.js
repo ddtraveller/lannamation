@@ -530,10 +530,13 @@ var MAENG_PALACE_THINGS = [
   {name: "lantern, left", kind: "khom", x: MAENG_PALACE[0] - 300, base: MAENG_PALACE[1] - 430, size: 0.26, look: {lit: 0, late: 0.7}},
   {name: "lantern, right", kind: "khom", x: MAENG_PALACE[0] + 300, base: MAENG_PALACE[1] - 430, size: 0.26, look: {lit: 0, late: 2.1}}
 ];
-function maengPalace(t, part, tint) {               // the palace hall, back or front, dressed
+function maengPalace(t, part, tint, lit) {          // the palace hall, back or front, dressed; lit (0 to 1): its lanterns' candles
   var p = MAENG_PALACE;
   hoKham(pen, p[0], p[1], p[2], {part: part, tint: tint, pediment: "peacock"});
-  if (part === "front") { dress(t, MAENG_PALACE_THINGS, "back"); }
+  if (part === "front") {
+    dress(t, lit ? MAENG_PALACE_THINGS.map(function (one) { return Object.assign({}, one, {look: Object.assign({}, one.look, {lit: lit})}); })
+                 : MAENG_PALACE_THINGS, "back");
+  }
 }
 var MAENG_FINIAL = [MAENG_PALACE[0] + 196 * MAENG_PALACE[2], MAENG_PALACE[1] - 810 * MAENG_PALACE[2]];   // the tip of the roof's right cho fa, where a bird perches
 var MAENG_STAIR = 1100;                             // where a trough laid to the palace meets its stair (x)

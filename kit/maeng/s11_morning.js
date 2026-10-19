@@ -3,7 +3,7 @@
 // right up to his stair. "Whose is this? Follow it!" His man follows it out across the city and the fields, along
 // the path, to a little hut, and to Thukkhata, who says he built it, and there is more gold in his garden.
 var S11_LONG = 40;
-var S11_LINES = [[1.5, 4.5, "M064"], [5.2, 8.6, "M065"], [9.2, 12.6, "M066"], [15.0, 20.5, "M067"], [28.0, 33.5, "M068"]];
+var S11_LINES = [[1.5, 4.5, "M064"], [5.2, 8.6, "M065"], [9.2, 13.6, "M066"], [15.0, 20.5, "M067"], [28.0, 33.5, "M068"]];
 var S11_SHOTS = [13.5, 26.5];                       // the palace; the yard, the king's man following the trough; at the garden
 var S11_KING = [9.2, 12.6];                         // when the king speaks
 var S11_LAD = [28.0, 33.5];                         // when Thukkhata speaks

@@ -21,10 +21,12 @@
 // a little, slowly; the studio's name comes up in the Lanna script, gold, with its Thai letters and its English.
 var DURATION = 12;
 var BEAT = 0.5;
-// The name in Kam Mueang (2026-10-19): the voice project's writer gave ชีวิตจ้า ๆ สตูดิโอ for "Slow Life Studios" (ช้า,
-// slow, is จ้า in the north; Pan's rules changed nothing), written in the Lanna script by the Kam Mueang alphabet's
-// own rules (alphabet.js lanna(), every syllable by rule; ๆ is the Lanna ᩻). Not yet checked by a native speaker.
-var SLS_NAME = {lanna: "ᨩᩦᩅᩥ᩠ᨲᨧ᩶ᩣ᩻ ᩈᨲᩪᨯᩥᩋᩰ", thai: "ชีวิตจ้า ๆ สตูดิโอ", english: "Slow Life Studios"};
+// The name in Kam Mueang (2026-10-19): the voice project's writer gave two for "Slow Life Studios"; the owner took
+// the more Kam Mueang of them, โรงยะหนังชีวิตจ้า ๆ, "the house where films of the slow life are made" (ยะ, to make,
+// and จ้า, slow, are the north's; Pan's rules changed nothing). Written in the Lanna script by the Kam Mueang
+// alphabet's own rules (alphabet.js lanna(), every syllable by rule; โรง keeps its ร, ᩁ, as Lanna spelling does,
+// though the north says it hong; ๆ is the Lanna ᩻). Not yet checked by a native speaker.
+var SLS_NAME = {lanna: "ᩁᩰᩫ᩠ᨦᨿᩉ᩠ᨶᩢᨦᨩᩦᩅᩥ᩠ᨲᨧ᩶ᩣ᩻", thai: "โรงยะหนังชีวิตจ้า ๆ", english: "Slow Life Studios"};
 var SLS_SHEET = null;
 
 function slsRidge(base, tall, shape) {               // a ridge of hills: its height at every x
@@ -109,7 +111,7 @@ function slsTitle(t) {                               // the name, in the Lanna s
   pen.textAlign = "center";
   pen.shadowColor = "rgba(255, 196, 90, 0.75)";
   pen.shadowBlur = 26;
-  pen.font = "700 128px 'Noto Sans Tai Tham', 'Sans Serif Collection', serif";
+  pen.font = "700 112px 'Noto Sans Tai Tham', 'Sans Serif Collection', serif";   // a longer name: a little smaller, to keep inside the sky
   var gold = pen.createLinearGradient(0, 130, 0, 250);
   gold.addColorStop(0, "#fff1c0");
   gold.addColorStop(0.5, "#e8b84a");

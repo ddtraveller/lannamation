@@ -5367,6 +5367,7 @@ function person(x, y, look) {
   HAIR_LINE = "#7a5640";
   PAINTED = true;
   NORTH_FACE = null;
+  if (joints.crown && joints.chin) { sighted((joints.crown[0] + joints.chin[0]) / 2, (joints.crown[1] + joints.chin[1]) / 2); }
   return joints;
 }
 
@@ -8846,9 +8847,43 @@ function settled(t, paint) {
   paint(t);
 }
 
+// ---------- who is where, for eyes that watch ----------
+// In a film's frame the kit notes where each one it draws is (each person at the middle of the face, each of a
+// scene's life at the middle of its box, decorate.js), in the sheet's own pixels, so that eyes can watch the
+// nearest (the creature's: myth.js). A watcher drawn before the ones it watches would see only those drawn
+// before it, so then filmFrame() draws the frame again, the watcher seeing the whole list of the first time: what
+// it sees is the second's own, as everything in a frame is. Only while a film's frame is drawn (SIGHTS.on).
+var SIGHTS = {on: false, seen: [], whole: null, watched: false};
+
+function sighted(x, y) {                           // one seen at (x, y) in the sheet's pixels
+  if (SIGHTS.on) { SIGHTS.seen.push([x, y]); }
+}
+
+function sightsNow() {                             // what a watcher can see in this frame, in the sheet's pixels
+  if (!SIGHTS.on) { return []; }
+  SIGHTS.watched = true;
+  return SIGHTS.whole && SIGHTS.whole.at === clock ? SIGHTS.whole.seen : SIGHTS.seen;
+}
+
 // one frame of a film on the film's own sheet: the scene of that second,
-// with the camera's slow move in, and the iris at a cut
+// with the camera's slow move in, and the iris at a cut; drawn again when
+// something in it watched (SIGHTS, above)
 function filmFrame(t, scenes) {
+  SIGHTS.on = true;
+  SIGHTS.seen = [];
+  SIGHTS.watched = false;
+  filmFrameOnce(t, scenes);
+  if (SIGHTS.watched && !(SIGHTS.whole && SIGHTS.whole.at === t)) {
+    SIGHTS.whole = {at: t, seen: SIGHTS.seen};
+    SIGHTS.seen = [];
+    pen.setTransform(1, 0, 0, 1, 0, 0);
+    pen.clearRect(0, 0, pen.canvas.width, pen.canvas.height);
+    filmFrameOnce(t, scenes);
+  }
+  SIGHTS.on = false;
+}
+
+function filmFrameOnce(t, scenes) {
   clock = t;
   pen.setTransform(PIX, 0, 0, PIX, 0, 0);          // the sheet's base scale: film pixels to device pixels
   for (var i = 0; i < scenes.length; i++) {

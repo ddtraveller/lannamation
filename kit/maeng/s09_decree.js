@@ -5,9 +5,9 @@
 // their houses (off to the left) toward the palace: one runs out halfway, one sags to the ground, one humps up;
 // not one of them can do it. She laughs at each. They go.
 var S09_LONG = 55;
-var S09_LINES = [[1.5, 5.0, "M050"], [5.6, 10.0, "M051"], [10.6, 14.4, "M052"], [14.8, 16.8, "M053"], [17.2, 23.0, "M054"],
-                 [23.4, 26.0, "M055"], [32.0, 37.0, "M056"]];
-var S09_KING = [[17.2, 23.0], [23.4, 26.0]];        // what the king says himself: his mouth moves
+var S09_LINES = [[1.5, 5.0, "M050"], [5.6, 11.8, "M051"], [12.0, 14.6, "M052"], [14.8, 16.8, "M053"], [17.2, 23.5, "M054"],
+                 [23.6, 26.4, "M055"], [32.0, 37.0, "M056"]];
+var S09_KING = [[17.2, 23.5], [23.6, 26.4]];        // what the king says himself: his mouth moves
 var S09_GONG = [1800, 900];
 // Where each prince stands, his row, how far his trough gets, and how it goes wrong; each trough is laid from 27 s,
 // one 3 s after another, for 3.5 s.

@@ -4,6 +4,7 @@
     python sash_narrate.py --voice assistant --takes 4      # the Kam Mueang assistant's voice (since 2026-10-18)
     python sash_narrate.py <the Kam Mueang Voice extension's model folder> --takes 4    # or the extension's
     python render.py sash.html sash.mp4 --audio sash_voice.wav
+    python sash_narrate.py --page maeng/film.html --music out/maeng_music/film.wav --spoken <folder> --out maeng.wav
 
 The words are the film's own: the page is opened in Chrome with no window, as render.py opens it,
 and asked for its WORDS: for each line, the seconds it shows, what the voice says and what is
@@ -23,6 +24,9 @@ line again. Each line starts at its second.
 The music is lowered while the voice speaks and comes back between lines, and fades over the film's
 last two seconds. Then it says, line by line, how long the voice took and whether the line is over
 before its words leave the screen.
+With --spoken the lines were spoken already, elsewhere, one file a line: the page's WORDS give each line its id
+as a sixth item, and the folder has ID.wav for each (the film of the creature with four ears and five eyes:
+Pan's voice, from her toolset's voice service, each line heard back by the voice project's listener first).
 
 The voice's treatment and the mix (2026-10-16; the owner asked for a better-quality sound for the film,
 and said "it's good" of this one). The voice speaks at 16 kHz, so it had nothing above 8 kHz, and the old
@@ -203,18 +207,24 @@ def main():
     parser.add_argument("--music", default=str(HERE / "sash.wav"))
     parser.add_argument("--out", default=str(HERE / "sash_voice.wav"))
     parser.add_argument("--takes", type=int, default=1, help="takes of each new line; the clearest is kept")
+    parser.add_argument("--spoken", help="a folder of lines spoken already, ID.wav for each line's id (WORDS' sixth item)")
     parser.add_argument("--fit", action="store_true",
                         help="keep the clearest take that ends before its words leave the screen and the next line begins")
     args = parser.parse_args()
     if args.voice == "assistant":
         SPOKEN = HERE / "spoken_km_assistant"
-    elif not args.model:
+    elif not args.model and not args.spoken:
         parser.error("give the extension's model folder, or --voice assistant")
 
     words, seconds = words_of(args.page)
     rooms = [min(w[1], words[n + 1][0] if n + 1 < len(words) else seconds) - w[0] - 0.05 for n, w in enumerate(words)]
-    speak([[w[2], room] for w, room in zip(words, rooms)], "assistant" if args.voice == "assistant" else args.model,
-          args.takes, args.fit)
+    if args.spoken:
+        missing = [w[5] for w in words if not (Path(args.spoken) / (w[5] + ".wav")).exists()]
+        if missing:
+            raise SystemExit("no voice file for " + ", ".join(missing))
+    else:
+        speak([[w[2], room] for w, room in zip(words, rooms)], "assistant" if args.voice == "assistant" else args.model,
+              args.takes, args.fit)
     length = int(seconds * RATE)
     music, _ = soundfile.read(args.music, dtype="float64", always_2d=True)  # sash_music.py's two rows
     music = music.T
@@ -224,8 +234,9 @@ def main():
     clock = numpy.arange(length) / RATE
     scratch = tempfile.TemporaryDirectory()
     print("line   from    voice  ends   shown to")
-    for n, (start, shown, said, written, meaning) in enumerate(words):
-        sound = voice_line(file_of(said), scratch.name)
+    for n, line in enumerate(words):
+        start, shown, said = line[:3]
+        sound = voice_line(Path(args.spoken) / (line[5] + ".wav") if args.spoken else file_of(said), scratch.name)
         at = int(start * RATE)
         voice[at:at + len(sound)] += sound[:max(0, length - at)]
         end = start + len(sound) / RATE

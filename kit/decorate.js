@@ -117,6 +117,10 @@ function decorate(t, life, layer) {
     if (!at.on) { return; }
     checkName("A kind of life", one.kind, LIFE_KINDS);
     var box = LIFE_KINDS[one.kind](at, one.look || {}, t);
+    if (box) {                                       // where it is, for eyes that watch (SIGHTS, oldcartoon.js)
+      var mid = pen.getTransform().transformPoint(new DOMPoint((box[0] + box[2]) / 2, (box[1] + box[3]) / 2));
+      sighted(mid.x, mid.y);
+    }
     if (window.LIFE_SEEN) {                          // a check is watching: where it was, and in what measure
       var m = pen.getTransform(), a = m.transformPoint(new DOMPoint(box[0], box[1])), b = m.transformPoint(new DOMPoint(box[2], box[3]));
       window.LIFE_SEEN.push({name: one.name, kind: one.kind, t: t, box: [a.x / PIX, a.y / PIX, b.x / PIX, b.y / PIX]});

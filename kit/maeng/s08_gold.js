@@ -4,7 +4,7 @@
 // day after day there is another mound, until the garden is full. And he still leads the headman's buffalo
 // out, as he always did.
 var S08_LONG = 40;
-var S08_LINES = [[2.0, 5.6, "M045"], [6.2, 9.6, "M046"], [10.4, 15.0, "M047"], [22.0, 26.0, "M048"], [28.0, 33.0, "M049"]];
+var S08_LINES = [[2.0, 5.6, "M045"], [6.2, 9.9, "M046"], [10.4, 15.0, "M047"], [22.0, 26.0, "M048"], [28.0, 33.0, "M049"]];
 var S08_CAMERA = [1234, 690, 1.4];                  // close on the pen and the garden (the view stays on the sheet)
 var S08_DAYS = [15, 22];                            // the days going by: the sky turns, a mound each day
 

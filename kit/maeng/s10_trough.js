@@ -6,7 +6,7 @@
 // palace: the trough has come all the way across the courtyard to the palace's stair; the last piece is beaten
 // in, and it is done.
 var S10_LONG = 60;
-var S10_LINES = [[1.5, 4.5, "M057"], [6.0, 10.0, "M058"], [16.2, 21.2, "M059"], [24.4, 27.8, "M060"], [31.0, 36.0, "M061"],
+var S10_LINES = [[1.5, 4.5, "M057"], [6.0, 10.0, "M058"], [16.2, 21.2, "M059"], [24.4, 29.6, "M060"], [31.0, 36.0, "M061"],
                  [38.0, 43.0, "M062"], [53.5, 57.0, "M063"]];
 var S10_SHOTS = [15, 29, 50];                       // day by the pen; dusk on the path; night; dawn at the palace
 var S10_CAMERA = [1234, 690, 1.4];                  // the first shot, close on the pen and the garden, as scene 8's
