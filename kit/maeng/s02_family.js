@@ -2,9 +2,26 @@
 // Morning: a father, a mother and their little son come out of their hut and walk the path toward the city,
 // the mother with a bowl, to ask for food. Night: the hut's lamp glows in its door, and slowly goes out (his
 // mother passes away; nothing more is shown). The next morning: only the father and the boy walk the path.
+// Its life: the first morning, mist low over the rice fields behind, thinning as the sun climbs; a hen and a
+// rooster pecking in the yard left of the hut, away from the path; a flock across the sky. The night, nothing:
+// it is the mother's. The next morning, one hen alone, and no flock: the line is a sad one.
 var S02_LONG = 55;
 var S02_LINES = [[1.5, 5.5, "M005"], [6.0, 9.2, "M006"], [9.6, 12.6, "M007"], [13.0, 16.2, "M008"], [16.6, 21.4, "M009"],
                  [27.5, 32.5, "M010"], [42.0, 45.6, "M011"]];
+
+var S02_LIFE = [
+  {name: "hen", kind: "hen", layer: "back",
+   course: [[0, 260, 958, "peck"], [4.0, 260, 958], [6.5, 340, 962, "peck"], [11.0, 340, 962], [13.0, 300, 956, "peck"], [24.5, 300, 956]]},
+  {name: "rooster", kind: "rooster", layer: "back", look: {feel: "satiated"},
+   course: [[0, 130, 950], [7.0, 210, 954, "peck"], [10.0, 210, 954], [12.0, 180, 962, "peck"], [24.5, 180, 962]]},
+  {name: "flock", kind: "flock", course: [[2.0, -100, 270], [13.0, 2150, 210]]},
+  {name: "hen, alone", kind: "hen", layer: "back", course: [[39.5, 330, 958, "peck"], [55.0, 330, 958]]}
+];
+
+function s02Mist(t) {                               // low over the rice fields behind the hut, thinning as the sun climbs
+  var thin = 1 - between(t, 2, 18);
+  if (thin > 0) { mistDrift(pen, t, {left: 0, right: WIDE, top: 755, bottom: 872, count: 6, wide: 560, drift: 6, seed: 21, alpha: 0.8 * thin}); }
+}
 
 function s02Bowl(joints) {                          // a small wooden bowl in the mother's near hand
   var hand = joints.handA, wrist = joints.wristA;
@@ -38,8 +55,10 @@ function s02Walk(t, start, names) {                 // the family on the path fr
 
 function sceneFamily(t) {
   if (t < 24.5) {                                   // morning: the three go to the city
-    maengYardAt(t, 0, 0);
+    maengYardAt(t, 0, 0, function () { s02Mist(t); });
+    decorate(t, S02_LIFE, "back");
     s02Walk(t, 3, ["boy", "mother", "father"]);
+    decorate(t, S02_LIFE, "front");
     maengDark(t, 23, 99);
   } else if (t < 39.5) {                            // night: the lamp in the door, and it goes out
     var glow = 1 - between(t, 33, 36.5);
@@ -47,6 +66,7 @@ function sceneFamily(t) {
     maengDark(t, 38, 24.5);
   } else {                                          // the next morning: the father and the boy
     maengYardAt(t, 0, 0);
+    decorate(t, S02_LIFE, "back");
     s02Walk(t, 41.5, ["boy", "father"]);
     maengDark(t, 99, 39.5);
   }

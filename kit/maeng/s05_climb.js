@@ -17,12 +17,21 @@ function s05Crowns(list, size, seed, tint) {          // the forest's own crowns
   });
 }
 
+// Its life: a band of mist drifting across the slope at dusk, below the cave; and a great hornbill crossing the
+// sky on its slow heavy wings, in the quiet between "pulling the rope behind him" (M025) and the rope catching (M026).
+var S05_LIFE = [
+  {name: "great hornbill", kind: "hornbill", layer: "back", look: {size: 0.5}, course: [[13.6, 2150, 230], [21.0, -260, 150]]}
+];
+
 function sceneClimb(t) {
   var slope = maengSlope(), tint = MAENG_DUSK, size = MAENG_SLOPE_CAVE[2];
   pen.drawImage(maengSky("dusk"), 0, 0);
   cumulus(pen, t + 70, S05_CLOUDS);
   pen.drawImage(slope.backDusk, 0, 0);
   pen.drawImage(slope.frontDusk, 0, 0);             // the path, under the cave's ledge
+  mistDrift(pen, t, {left: 0, right: WIDE, top: 640, bottom: 790, count: 5, wide: 520, drift: 8, seed: 31, colour: "#eadcea",
+                     glow: "#f2b8a0", alpha: 0.55});   // dusk mist across the slope, below the cave
+  decorate(t, S05_LIFE, "back");
   s05Crowns(S05_BEHIND, size * 1.6, 3, tint);
   caveMouth(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f", tint: tint});
   s05Crowns(S05_BEFORE, size * 1.6, 9, tint);

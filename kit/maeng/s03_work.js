@@ -6,6 +6,13 @@ var S03_LONG = 35;
 var S03_LINES = [[1.5, 5.0, "M012"], [5.6, 11.0, "M013"], [25.5, 29.5, "M014"]];
 var S03_STAND = 760, S03_GROUND = 968;              // where the buffalo stops to graze, and the ground the two walk on
 var S03_PILE = MAENG_TREE[0] - 90;                  // where the fallen wood lies
+// Its life: a red-billed blue magpie perched on the great tree's left limb, flicking its long tail; as he sets off
+// home with the wood it flies off over the meadow. A flock goes over, high, while he leads the buffalo out.
+var S03_LIFE = [
+  {name: "blue magpie", kind: "magpie", look: {size: 0.8},
+   course: [[0, 1520, 588], [26.0, 1520, 588], [33.0, -220, 260]]},
+  {name: "flock", kind: "flock", course: [[3.0, 2150, 230], [14.0, -150, 170]]}
+];
 
 function s03From() {                                // where the buffalo sets off, so that it stops by 12 s
   var g = GAITS.buffalo, pace = g[1] / 0.62 * g[0] * 0.62;
@@ -21,6 +28,7 @@ function sceneWork(t) {
   cumulus(pen, t + 40, MAENG_CLOUDS.day);
   pen.drawImage(maengYard().back, 0, 0);
   pen.drawImage(maengMeadow().front, 0, 0);
+  decorate(t, S03_LIFE, "front");                   // on the tree and in the sky: before the buffalo and the lad
   var ox = s03Ox(t), lad = maengPerson("boy", MAENG_LAD, {id: "lad"}), go;
   var gathered = between(t, 16, 21.5);              // how much of the wood he has picked up
   if (t < ox.arrives + 1) {                         // leading the buffalo: ahead of it at its pace, the rope in his back hand

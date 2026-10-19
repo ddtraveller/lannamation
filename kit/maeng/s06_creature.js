@@ -20,6 +20,13 @@ function s06Crowns(list, size, seed, shake) {        // the forest's own crowns 
   });
 }
 
+// Its life: morning mist on the slope, thinning as he climbs; and once all is calm, as he wonders if it is his
+// father (M033) and ties the vine (M034), a green-tailed sunbird hovering at the ferns over the cave's mouth.
+var S06_LIFE = [
+  {name: "sunbird", kind: "sunbird", layer: "back", look: {size: 1.0},
+   course: [[22.0, 1720, 300], [24.0, 1310, 470, "sip"], [29.0, 1310, 470], [31.5, 1680, 260]]}
+];
+
 function sceneCreature(t) {
   var slope = maengSlope(), size = MAENG_SLOPE_CAVE[2];
   pen.save();                                       // close to the cave: everything seen S06_NEAR times larger about it
@@ -29,6 +36,9 @@ function sceneCreature(t) {
   pen.drawImage(maengSky("day"), -400, -300, WIDE + 800, 1080 + 600);
   pen.drawImage(slope.back, 0, 0);
   pen.drawImage(slope.front, 0, 0);
+  var mist = 1 - between(t, 0, 12);                 // the morning's mist, thinning as he climbs
+  if (mist > 0) { mistDrift(pen, t, {left: -200, right: WIDE + 200, top: 560, bottom: 780, count: 5, wide: 520, drift: 7, seed: 33, alpha: 0.6 * mist}); }
+  decorate(t, S06_LIFE, "back");
   var struggle = t > 4.5 && t < 9.5 ? 1 : 0;        // something tugs at the snare
   s06Crowns(S06_BEHIND, size * 1.6, 3, 0);
   caveMouth(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f"});

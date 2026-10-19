@@ -16,6 +16,14 @@ var S10_CREW = [[950, 0], [1560, 1], [1830, 2]];    // the traders sitting by th
 var S10_HORSES = [[1440, "#8a5a3a"], [1700, "#5a4a3a"]];   // unloaded, resting in the field behind the trough
 var S10_NIGHT = [820, 1320, 742, 1.6];             // the night shot's camera: close, panning along the path as the trough grows (x from, to; y; zoom)
 
+// Its life: hens in the garden by day; a flock flying home to roost as the caravan comes at dusk; and at dawn, at
+// the palace, mist low over the courtyard and a flock over.
+var S10_LIFE = [
+  {name: "hen", kind: "hen", layer: "back", course: [[0, 700, 966, "peck"], [6.0, 700, 966], [8.0, 790, 968, "peck"], [15.0, 790, 968]]},
+  {name: "flock to roost", kind: "flock", layer: "back", course: [[16.5, -150, 240], [27.0, 2150, 190]]},
+  {name: "flock at dawn", kind: "flock", layer: "back", course: [[51.0, 2150, 180], [60.0, -150, 140]]}
+];
+
 function s10Heap(x, y, count, t) {                  // gold heaped on the ground, in rows that narrow upward
   for (var n = 0, row = 0, k = 0; n < count; n++) {
     var across = 6 - row;
@@ -81,6 +89,7 @@ function s10Garden(t) {                             // the crier goes by calling
   pen.translate(-S10_CAMERA[0], -S10_CAMERA[1]);
   maengYardAt(t, 0, 0);
   maengGarden(t, MAENG_MOUNDS.length, Math.floor(dug), null);
+  decorate(t, S10_LIFE, "back");
   kok(pen, k[0], k[1], k[2], 1, {part: "back"});
   maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: t > 6 ? "happy" : "neutral"});
   kok(pen, k[0], k[1], k[2], 1, {part: "front"});
@@ -110,6 +119,7 @@ function s10Caravan(t) {                            // dusk: the Haw caravan com
   var tint = [MAENG_NIGHT[0], MAENG_NIGHT[1] * dusk];
   tub(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2], {glow: 0.3, tint: tint});
   maengGarden(t, MAENG_MOUNDS.length, MAENG_MOUNDS.length, tint);
+  decorate(t, S10_LIFE, "back");
   kok(pen, k[0], k[1], k[2], 1, {part: "back", tint: tint});
   maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: t > 18 ? "surprised" : "happy"});
   kok(pen, k[0], k[1], k[2], 1, {part: "front", tint: tint});
@@ -174,6 +184,9 @@ function s10Dawn(t) {                               // dawn at the palace: the t
   cumulus(pen, t + 90, MAENG_CLOUDS.dawn);
   pen.drawImage(city.backDawn, 0, 0);
   pen.drawImage(city.frontDawn, 0, 0);
+  mistDrift(pen, t, {left: 0, right: WIDE, top: 760, bottom: 900, count: 5, wide: 560, drift: 6, seed: 41, glow: "#f6c9a0",
+                     alpha: 0.5 * (1 - between(t, 53, 59))});   // the dawn's mist, low over the courtyard, going as the sun comes
+  decorate(t, S10_LIFE, "back");
   hoKham(pen, p[0], p[1], p[2], {part: "back", tint: MAENG_DAWN});
   hoKham(pen, p[0], p[1], p[2], {part: "front", tint: MAENG_DAWN});
   var done = t > 53.2, strike = s10Strike(t, 0), x = MAENG_STAIR - 120;

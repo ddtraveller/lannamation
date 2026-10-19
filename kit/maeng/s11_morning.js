@@ -9,6 +9,15 @@ var S11_KING = [9.2, 12.6];                         // when the king speaks
 var S11_LAD = [28.0, 33.5];                         // when Thukkhata speaks
 var S11_CAMERA = [1234, 690, 1.4];                  // the last shot, close on the pen and the garden, as scene 8's
 
+// Its life: the blue magpie back on the palace roof's finial as the king wakes; by the hut the rooster crowing, it
+// is morning, as the king's man follows the trough there; hens in the garden.
+var S11_LIFE = [
+  {name: "blue magpie", kind: "magpie", layer: "back", look: {size: 0.6},
+   course: [[0, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [13.5, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4]]},
+  {name: "rooster", kind: "rooster", layer: "back", look: {feel: "happy"}, course: [[13.5, 250, 958], [26.5, 250, 958]]},
+  {name: "hen", kind: "hen", layer: "back", course: [[26.5, 700, 966, "peck"], [32.0, 700, 966], [34.0, 780, 968, "peck"], [40.0, 780, 968]]}
+];
+
 function sceneMorning(t) {
   if (t < S11_SHOTS[0]) { s11Palace(t); }
   else if (t < S11_SHOTS[1]) { s11Follow(t); }
@@ -44,6 +53,7 @@ function s11Palace(t) {                             // the king wakes, and the t
   if (sees && t < S11_KING[0] && king.feel === "surprised") { king.reachB = [x + 40, floor - 210]; }   // a hand up in wonder
   person(x, floor, king);
   hoKham(pen, p[0], p[1], p[2], {part: "front"});
+  decorate(t, S11_LIFE, "back");
   linKham(pen, [[-40, row], [MAENG_STAIR, row - 4]], 1, {size: 1.2});
   var man = maengPerson("fellow", MAENG_HERALD, {id: "herald", face: 1, feel: t > 5.6 ? "surprised" : "neutral", at: [x, floor - 180]});
   if (t > 11.2) {                                   // off he goes, along the trough
@@ -59,6 +69,7 @@ function s11Follow(t) {                             // the yard by day: the king
   maengYardAt(t, 0, 0);
   maengYardTrough(1, "far");
   maengGarden(t, 6, 0, null);
+  decorate(t, S11_LIFE, "back");
   kok(pen, k[0], k[1], k[2], 1, {part: "back"});
   maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: "happy"});
   kok(pen, k[0], k[1], k[2], 1, {part: "front"});
@@ -80,6 +91,7 @@ function s11Garden(t) {                             // "I built it, and there is
   maengYardAt(t, 0, 0);
   maengYardTrough(1, "far");
   maengGarden(t, 6, 0, null);                       // new mounds: the creature's gold, every day since
+  decorate(t, S11_LIFE, "back");
   kok(pen, k[0], k[1], k[2], 1, {part: "back"});
   maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: speaks ? "satiated" : "happy"});
   kok(pen, k[0], k[1], k[2], 1, {part: "front"});

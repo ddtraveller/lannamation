@@ -11,6 +11,16 @@ var S07_CAMERA = [1220, 740, 1.6];                  // the camera close on the p
 var S07_NIGHT = 18.5;                               // the cut to night
 var S07_FEEDS = [27.6, 41.5, 44.5, 47.5];           // the seconds an ember leaves the fire for its mouth: the first on "Pop!", caught as the next line begins
 
+// Its life: by day two hens pecking left of the pen; at night the house mouse creeps out from under the hut
+// toward the fire's warmth, sits up to watch it, and bolts back at "crunch, crunch!" (M042).
+var S07_LIFE = [
+  {name: "hen", kind: "hen", layer: "back", course: [[0, 720, 968, "peck"], [6.0, 720, 968], [8.0, 800, 972, "peck"], [18.4, 800, 972]]},
+  {name: "brown hen", kind: "hen", layer: "back", look: {feel: "satiated"}, course: [[0, 660, 960, "peck"], [18.4, 660, 960]]},
+  {name: "house mouse", kind: "mouse", layer: "back", look: {kind: "house", size: 0.55},
+   course: [[20.5, 600, 978, "hide"], [21.0, 600, 978], [23.6, 860, 982, "sniff"], [25.2, 860, 982, "up"], [28.8, 860, 982],
+            [29.8, 560, 978, "hide"], [30.0, 560, 978, "hide"]]}
+];
+
 function s07Grass(x, y) {                           // a handful of grass
   pen.strokeStyle = "#5f8f3a";
   pen.lineWidth = 2.4;
@@ -44,6 +54,7 @@ function sceneEmbers(t) {
   pen.translate(-S07_CAMERA[0], -S07_CAMERA[1]);
   maengYardAt(t, night, night ? 0.5 : 0);
   var tint = night ? [MAENG_NIGHT[0], MAENG_NIGHT[1]] : null;
+  decorate(t, S07_LIFE, "back");
   kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {part: "back", tint: tint});
   // The creature in its pen: by day it turns away from what he holds out, then sleeps; by night it faces the
   // fire, catches each ember, chews, and its eyes light up.

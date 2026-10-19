@@ -2349,6 +2349,44 @@ list them in `SCENES` with their places on the film's clock, lay the lines over 
 scene file. `kit_check.py`'s names check reads the scripts of such a folder too (`*/*.js`, not
 `node_modules`), since they share a page with the kit.
 
+## Decorating a scene (2026-10-19)
+
+The owner: "Come up with a decorate scene process for the kit. Go through the scenes that exist and add
+background flora and mist as appropriate ... Then go through and add birds and animals and then plot their
+courses." A scene is decorated once it is built and checked, in passes, each looked at in stills before the next:
+
+1. **Place.** Mist and flora that the place and the hour have. Mist as mountain mist lies: a sea of it in the
+   valleys at dawn (`mistSea`), bands along a slope (`mistBand`), drifts at a mountain's foot and over the fields
+   (`mistDrift`), thinning as the sun climbs; the opening of the film of the creature starts inside a fog that
+   sinks over its first twelve seconds. Mist that lies behind a house goes between the far sheet and the house
+   (the yard's `maengYardAt(t, night, glow, behind)` draws `behind` there). Flora painted on a set's sheets costs
+   nothing a frame.
+2. **Life.** What lives there at that hour, each on a course (`decorate.js`): by day the yard's rooster and hens,
+   a flock across the sky, a blue magpie in the meadow's tree; at dusk a hornbill over the mountain and a flock
+   going home to roost; on the slope a sunbird at the ferns; at night, in the hut, two mice and a tokay on the
+   wall; at the palace a magpie on the tip of the roof's finial that flies off when the gong is struck.
+3. **Look and check.** Stills of each scene at its moments; `checks/ghost.py` for each course (its spacing is its
+   pace); `checks/seek_check.py` (a course is worked out from the second alone); `kit_check.py maeng/sNN.html`.
+
+The rules the first round taught:
+
+- **The line's feeling rules the life.** Nothing moves through a death (scene 2's night, scene 4's grief); the
+  morning after it there is one hen alone, and no flock. A mouse that listens sits up while the father speaks,
+  and is gone before his son weeps.
+- **Life stays out of the way.** Clear of the people, of the path they walk and of the lines' subtitles (the foot
+  of the picture, about 900 to 1015); a bird crosses a sky in the quiet between two lines, not over one.
+- **Life is seen where the scene is lit.** In the hut the lamp's reach is the stage: an animal beyond about 450
+  of the lamp is lost in the dark that the scene lays over everything.
+- **Small animals are drawn a little larger than life**, as a cartoon draws them: the mice at 0.8 and the tokay
+  at 1, in the hut whose people are drawn twice the yard's size.
+- **One thing does one thing.** A bird perched on a finial flies at the gong; a mouse bolts at "crunch, crunch!".
+- **A course is a row of stops** [second, x, y, what]; "hide" keeps it unseen until the next stop, and a stop that
+  hides through a gap (a scene's days going by) gives its own place again, or it is drawn moving between them.
+- **A layer must be one the scene draws.** An entry with no layer is "front": a scene that calls only
+  `decorate(t, life, "back")` never draws it (the first hornbill and sunbird were lost that way).
+- **What a scene's camera does not show is not decorated**: scene 7's close shot never shows the hut's wall,
+  so its tokay was left out there.
+
 ## Three checks taken from HyperFrames (2026-10-19)
 
 The owner asked what lannamation could learn from HyperFrames (github.com/heygen-com/hyperframes, Apache 2.0),

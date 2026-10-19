@@ -258,7 +258,7 @@ function maengYard() {
 
 // The yard of second t, by day or at night (night 0 to 1): the sky, its clouds, the sets, and the hut with its
 // lamp (glow).
-function maengYardAt(t, night, glow) {
+function maengYardAt(t, night, glow, behind) {   // behind: drawn after the far sheet, before the yard and the hut (mist over the fields)
   var yard = maengYard();
   pen.drawImage(maengSky("day"), 0, 0);
   if (night > 0) {
@@ -269,6 +269,7 @@ function maengYardAt(t, night, glow) {
   cumulus(pen, t + 10, night > 0.5 ? MAENG_CLOUDS.night : MAENG_CLOUDS.day);
   pen.drawImage(yard.back, 0, 0);
   if (night > 0) { pen.globalAlpha = night; pen.drawImage(yard.backNight, 0, 0); pen.globalAlpha = 1; }
+  if (behind) { behind(); }
   pen.drawImage(yard.front, 0, 0);
   if (night > 0) { pen.globalAlpha = night; pen.drawImage(yard.frontNight, 0, 0); pen.globalAlpha = 1; }
   tub(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2], {glow: glow || 0, tint: night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null});
@@ -506,6 +507,7 @@ function maengAt(p) {
 // The palace's courtyard: far hills; the city's brick wall behind, with roofs and trees over it; a courtyard paved
 // with brick before the palace (MAENG_PALACE, drawn live in two parts: who sits in it is inside). Scenes 9, 11, 12.
 var MAENG_PALACE = [1320, 860, 0.8];
+var MAENG_FINIAL = [MAENG_PALACE[0] + 196 * MAENG_PALACE[2], MAENG_PALACE[1] - 810 * MAENG_PALACE[2]];   // the tip of the roof's right cho fa, where a bird perches
 var MAENG_STAIR = 1100;                             // where a trough laid to the palace meets its stair (x)
 var MAENG_HERALD = {size: 0.78, smile: 0.5};       // the king's man: he strikes the gong (scene 9), cries the news (10), follows the trough (11)
 var MAENG_CITY = null;

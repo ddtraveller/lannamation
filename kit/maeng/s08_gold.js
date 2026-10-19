@@ -8,6 +8,16 @@ var S08_LINES = [[2.0, 5.6, "M045"], [6.2, 9.6, "M046"], [10.4, 15.0, "M047"], [
 var S08_CAMERA = [1234, 690, 1.4];                  // close on the pen and the garden (the view stays on the sheet)
 var S08_DAYS = [15, 22];                            // the days going by: the sky turns, a mound each day
 
+// Its life: the rooster and a hen in the yard by morning, and a flock over; nothing while the days go by (they
+// would flicker); after them, as he leads the buffalo out, a hen where it has passed.
+var S08_LIFE = [
+  {name: "rooster", kind: "rooster", layer: "back", look: {feel: "satiated"},
+   course: [[0, 620, 958], [5.0, 660, 962, "peck"], [14.8, 660, 962, "hide"], [15.0, 660, 962, "hide"]]},
+  {name: "hen", kind: "hen", layer: "back", course: [[0, 720, 966, "peck"], [6.0, 720, 966], [8.0, 790, 970, "peck"], [14.8, 790, 970, "hide"],
+                                                    [38.0, 1880, 958, "hide"], [38.4, 1880, 958, "peck"], [40.0, 1880, 958]]},
+  {name: "flock", kind: "flock", course: [[1.0, 2150, 200], [12.0, -150, 160]]}
+];
+
 function sceneGold(t) {
   var turning = between(t, S08_DAYS[0], S08_DAYS[1]), days = turning * 7;
   var night = turning > 0 && turning < 1 ? 0.5 - 0.5 * Math.cos(days * Math.PI * 2) : 0;   // the days and nights going by, fast
@@ -19,6 +29,7 @@ function sceneGold(t) {
   maengYardAt(t, night, 0);
   var tint = night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null;
   maengGarden(t, Math.min(MAENG_MOUNDS.length, mounds), 0, tint);
+  decorate(t, S08_LIFE, "back");
   kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {part: "back", tint: tint});
   var pleased = t > 6.2 && t < 12;
   maengSiHuHaTa(MAENG_PEN[0] - 60, MAENG_PEN[1] - 22, {size: 0.45, face: 1, feel: pleased ? "satiated" : t < 6 ? "sleepy" : "happy"});

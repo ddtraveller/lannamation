@@ -16,6 +16,14 @@ var S09_BUILDS = [{at: 200, row: 850, built: 0.55, look: {}},
                   {at: 480, row: 900, built: 0.8, look: {sag: [0.66, -110]}}];
 function s09Fails(n) { return 27 + n * 3 + 3.5; }
 
+// Its life: a red-billed blue magpie perched on the tip of the palace roof's golden finial, that flies off as the
+// herald strikes the gong; a flock over as the princes come.
+var S09_LIFE = [
+  {name: "blue magpie", kind: "magpie", layer: "back", look: {size: 0.6},
+   course: [[0, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [15.0, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [19.5, 2160, 110]]},
+  {name: "flock", kind: "flock", layer: "back", course: [[9.0, -150, 230], [19.0, 2150, 170]]}
+];
+
 function sceneDecree(t) {
   var city = maengCity(), p = MAENG_PALACE;
   pen.drawImage(maengSky("day"), 0, 0);
@@ -31,6 +39,7 @@ function sceneDecree(t) {
   person(p[0] + 80, dais, maengPerson("lady", MAENG_SIMA, {id: "sima", floor: "side", face: -1, at: [p[0] - 700, 860],
                                                            feel: laughs ? "laughing" : "happy"}));
   hoKham(pen, p[0], p[1], p[2], {part: "front"});
+  decorate(t, S09_LIFE, "back");                    // on the roof, and in the sky
   // The herald at his gong; he strikes it as the king begins.
   var struck = t - 14.8, swing = struck > -0.5 && struck < 0.4, boss = gongAt(S09_GONG[0], S09_GONG[1], 0.9);
   gong(pen, S09_GONG[0], S09_GONG[1], 0.9, {struck: struck >= 0 ? struck : undefined});
