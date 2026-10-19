@@ -51,6 +51,11 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6,
 // the owner's own story (2026-10-17): its last line takes 5.6 s, and the dance
 // ran three seconds longer so that it is said before the music's fade.
 var DURATION = 82;
+// SLOW: the film played slower by that much, its words on their own clock (owner, 2026-10-19: the hero film in the
+// Lanna Tales film, told in Pan's voice, which speaks more slowly than the assistant's: every scene held 15%
+// longer, its subtitles recut to her lines). 1 here; a render sets SLOW, LENGTH (DURATION x SLOW) and WORDS
+// (render.py --set), and this page as it is, and its video, stay as they are.
+var SLOW = 1, LENGTH = DURATION;
 
 var BEAT = 0.5;                         // the same number as in sash_music.py
 
@@ -1108,15 +1113,16 @@ var WORDS = [[3.6, 6.4, "แต่ปางก่อน ชีวิตเดิ
 var CUES = WORDS.map(function (w) { return [w[0] / BEAT, w[2], w[3], w[4], w[1]]; });
 
 function draw(t) {
-  STYLE.hop = t >= 70;                    // only the dance hops on the beat
-  film(t, SCENES);
+  var at = t / SLOW;                      // the film's own second (SLOW, above); the words are on t
+  STYLE.hop = at >= 70;                   // only the dance hops on the beat
+  film(at, SCENES);
   WORDS.forEach(function (w) { if (t >= w[0] && t < w[1]) { subtitle(w[3], w[4]); } });
 }
 
 var rendering = false;
 
 function play(now) {
-  if (!rendering) { draw((now / 1000) % DURATION); }
+  if (!rendering) { draw((now / 1000) % LENGTH); }
   requestAnimationFrame(play);
 }
 

@@ -4,9 +4,9 @@
 // one sits before an elder. The father speaks his wish. The boy takes his hand. The lamp burns low and goes
 // out; nothing more is shown.
 var S04_LONG = 60;
-var S04_LINES = [[1.5, 5.0, "M015"], [6.0, 8.6, "M016"], [10.0, 14.5, "M017"], [15.4, 20.1, "M018"], [20.4, 25.4, "M019"],
-                 [26.4, 30.0, "M020"], [31.0, 35.6, "M021"], [38.0, 41.6, "M022"], [44.0, 48.0, "M023"]];
-var S04_SPEAKS = [[10.0, 14.5], [15.4, 20.1], [20.4, 25.4], [26.4, 30.0], [31.0, 35.6]];   // the lines the father says himself:
+var S04_LINES = [[1.5, 5.48, "M015"], [6.0, 8.6, "M016"], [10.0, 15.16, "M017"], [15.4, 20.1, "M018"], [20.4, 26.08, "M019"],
+                 [26.4, 30.5, "M020"], [31.0, 35.96, "M021"], [38.0, 41.66, "M022"], [44.0, 49.1, "M023"]];
+var S04_SPEAKS = [[10.0, 14.76], [15.4, 19.06], [20.4, 25.68], [26.4, 30.1], [31.0, 35.56]];   // the lines the father says himself:
 // his mouth moves through them, a shape as mouthAt() gives one (the voice is the narrator's; the film's words are
 // timed to it later)
 var S04_LAMP = [930, 925];                          // the lamp on the floor between them

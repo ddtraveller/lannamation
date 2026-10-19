@@ -5,8 +5,8 @@
 // for a moment; he wonders if it is his father, come back; he ties a vine round its neck, gently, and it
 // follows him home.
 var S06_LONG = 60;
-var S06_LINES = [[1.5, 6.1, "M028"], [6.2, 8.5, "M029"], [10.5, 15.3, "M030"], [15.6, 17.6, "M031"], [18.0, 20.6, "M032"],
-                 [24.0, 28.6, "M033"], [32.0, 37.7, "M034"], [44.0, 48.0, "M035"]];
+var S06_LINES = [[1.5, 6.1, "M028"], [6.2, 8.5, "M029"], [10.5, 17.28, "M030"], [17.48, 19.54, "M031"], [19.74, 22.34, "M032"],
+                 [24.0, 28.6, "M033"], [32.0, 37.7, "M034"], [44.0, 48.1, "M035"]];
 var S06_NEAR = 1.55;                                // the camera's nearness to the cave: the set is seen this much larger
 var S06_SPOT = [MAENG_SLOPE_CAVE[0] - 20, MAENG_SLOPE_CAVE[1] + 14];   // where the creature stands, at the cave's mouth
 var S06_SNARE = [MAENG_SLOPE_CAVE[0] - 60, MAENG_SLOPE_CAVE[1] + 8];
@@ -47,7 +47,7 @@ function sceneCreature(t) {
   caveMouth(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f"});
   // The creature: hidden in the cave's dark at first (only its pull on the snare shows), then out into the
   // light; its four ears first, then its eyes opening one after another; afraid, then calm, then it follows.
-  var out = between(t, 9.5, 12.5), wake = t < 15.6 ? 0 : Math.min(5, (t - 17.8) / 0.45 + 1), leave = t > 37;
+  var out = between(t, 9.5, 12.5), wake = t < 17.5 ? 0 : Math.min(5, (t - 19.5) / 0.45 + 1), leave = t > 37;
   var feel = t < 22 ? "fear" : t < 30 ? "concerned" : "neutral";
   var where = [mix(S06_SPOT[0] + 40, S06_SPOT[0] - 40, out), S06_SPOT[1]], step;
   if (leave) {                                      // following him down the path, on the vine
@@ -55,7 +55,7 @@ function sceneCreature(t) {
     where = [go.x, maengTrail(go.x) + 8];
     step = go.look.step;
   }
-  var beast = maengSiHuHaTa(where[0], where[1], {size: 0.5, face: -1, feel: feel, wake: t < 15.6 ? 0 : wake,
+  var beast = maengSiHuHaTa(where[0], where[1], {size: 0.5, face: -1, feel: feel, wake: t < 17.5 ? 0 : wake,
                                                  step: step !== undefined ? step : (t > 9.5 && t < 12.5 ? (t - 9.5) * 1.2 : undefined)});
   var paw = beast.paw;
   snare(pen, S06_SNARE[0], S06_SNARE[1], 0.62, {sprung: 1, t: t, caught: t < 34 ? paw : null});

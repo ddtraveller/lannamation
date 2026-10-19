@@ -6,7 +6,14 @@
 // along its side below the cave; and the film opens inside a thick fog that sinks and thins over the first
 // twelve seconds, so the mountain comes out of it under the title.
 var S01_LONG = 30;
-var S01_LINES = [[8.0, 11.2, "M001"], [11.6, 15.0, "M002"], [15.4, 19.2, "M003"], [19.8, 24.0, "M004"]];
+var S01_LINES = [[8.0, 11.34, "M001"], [11.6, 15.28, "M002"], [15.48, 19.4, "M003"], [19.8, 24.0, "M004"]];
+// Its sound (owner, 2026-10-19: "where was the howl?"): when the tale has been named, the creature howls once from
+// its cave, far off on the mountain (sounds.py, maeng-base), and the howl fades as the film goes on. Heard only:
+// nothing of the scene is drawn for it (feelings.py --film lays the calls of a scene's life into the film's sound).
+var S01_LIFE = [
+  {name: "the creature's howl, far off", kind: "flock", layer: "back", course: [[0, -999, -999], [0.1, -999, -999]],
+   calls: [[24.5, "maeng-base", 0.45]]}
+];
 
 // The titles over the opening, in the fog (owner, 2026-10-19: text over the first seconds, "the story name and
 // series title name ... just write it in the fancy kam muang script and then the story name"): the series, Lanna

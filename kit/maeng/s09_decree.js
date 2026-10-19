@@ -5,9 +5,9 @@
 // their houses (off to the left) toward the palace: one runs out halfway, one sags to the ground, one humps up;
 // not one of them can do it. She laughs at each. They go.
 var S09_LONG = 55;
-var S09_LINES = [[1.5, 5.0, "M050"], [5.6, 11.8, "M051"], [12.0, 14.6, "M052"], [14.8, 16.8, "M053"], [17.2, 23.5, "M054"],
-                 [23.6, 26.4, "M055"], [32.0, 37.0, "M056"]];
-var S09_KING = [[17.2, 23.5], [23.6, 26.4]];        // what the king says himself: his mouth moves
+var S09_LINES = [[1.5, 5.0, "M050"], [5.6, 12.84, "M051"], [13.04, 16.06, "M052"], [16.26, 18.22, "M053"], [18.42, 25.4, "M054"],
+                 [25.6, 29.44, "M055"], [32.0, 37.08, "M056"]];
+var S09_KING = [[18.42, 25.0], [25.6, 29.04]];        // what the king says himself: his mouth moves
 var S09_GONG = [1800, 900];
 // Where each prince stands, his row, how far his trough gets, and how it goes wrong; each trough is laid from 27 s,
 // one 3 s after another, for 3.5 s.
@@ -41,7 +41,7 @@ function sceneDecree(t) {
   maengPalace(t, "front");
   decorate(t, S09_LIFE, "back");                    // on the roof, and in the sky
   // The herald at his gong; he strikes it as the king begins.
-  var struck = t - 14.8, swing = struck > -0.5 && struck < 0.4, boss = gongAt(S09_GONG[0], S09_GONG[1], 0.9);
+  var struck = t - 16.3, swing = struck > -0.5 && struck < 0.4, boss = gongAt(S09_GONG[0], S09_GONG[1], 0.9);
   gong(pen, S09_GONG[0], S09_GONG[1], 0.9, {struck: struck >= 0 ? struck : undefined});
   person(S09_GONG[0] - 110, S09_GONG[1], maengPerson("fellow", MAENG_HERALD, {id: "herald", face: 1,
                                                           reachA: swing ? [boss[0] - 20, boss[1]] : undefined}));

@@ -2595,6 +2595,28 @@ ears and five eyes was put together, in order, each step a tool anyone can run a
    from them without encoding can stop where they meet), and says where each starts: the page needs the card's
    seconds for its fireflies.
 
+## A voice and its subtitles, aligned (2026-10-19, evening)
+
+The owner, hearing the tale: "It's a man's voice", "The sentences spoken are running over each other a bit", "Make
+sure subtitles and voice are aligned". What it took, for any film narrated with lines spoken elsewhere:
+
+- **The voice is told whose voice it is.** A voice model given only text draws a voice anew for each sentence;
+  the tale's narrator follows one of the speaker's own takes (the voice project's fix), and every line is
+  measured before it is used: pitch in her range, likeness to her recordings, heard back by a listener.
+- **A take is placed by its sound, not its file.** Takes began with up to 1.5 s of quiet, which pushed a line into
+  the next; each kept take is trimmed to its first and last sound (35 dB under its loudest, 30 ms kept), and its
+  length is measured the same way, so a soft ending counts.
+- **0.6 s of quiet between lines**, and **a subtitle from her first sound to 0.4 s after her last.** Where a voice
+  needs more room, the lines after it move later into the scene's slack, with what the scene ties to them (a mouth
+  that moves while someone speaks gets the voice's own window), and the scene is rendered again: the subtitles are
+  drawn into its picture. The narrator (sash_narrate.py) then reports any line still longer than its subtitle.
+- **A film too short for its voice is held longer, not its voice sped up.** The hero film, told in her voice,
+  needed 84 s of its 82: `SLOW` in sash.html plays its picture 15% slower on its own clock and its words on the
+  real one, given for one render (`render.py --set SLOW=1.15 --set LENGTH=94.3 --set WORDS=@words.json`, and the
+  narrator takes the same `--set`), its music slowed with its pitch kept; the page as it is, and its video, stay.
+- **The joined film's peaks are held** under -2 dB at four times the rate (chain.py): the AAC encode overshot to
+  +0.5 dBTP.
+
 ## Eyes that watch, and who is where (2026-10-19)
 
 The owner: "Have 4 eyes always look at the closest sprite to them. One other eye should look out at the screen or

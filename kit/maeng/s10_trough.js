@@ -6,7 +6,7 @@
 // palace: the trough has come all the way across the courtyard to the palace's stair; the last piece is beaten
 // in, and it is done.
 var S10_LONG = 60;
-var S10_LINES = [[1.5, 4.5, "M057"], [6.0, 10.0, "M058"], [16.2, 21.2, "M059"], [24.4, 29.6, "M060"], [31.0, 36.0, "M061"],
+var S10_LINES = [[1.5, 4.5, "M057"], [6.0, 10.0, "M058"], [16.2, 22.28, "M059"], [24.4, 29.68, "M060"], [31.0, 36.86, "M061"],
                  [38.0, 43.0, "M062"], [53.5, 57.0, "M063"]];
 var S10_SHOTS = [15, 29, 50];                       // day by the pen; dusk on the path; night; dawn at the palace
 var S10_CAMERA = [1234, 690, 1.4];                  // the first shot, close on the pen and the garden, as scene 8's
@@ -124,7 +124,7 @@ function s10Caravan(t) {                            // dusk: the Haw caravan com
   maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: t > 18 ? "surprised" : "happy"});
   kok(pen, k[0], k[1], k[2], 1, {part: "front", tint: tint});
   s10Heap(820, 966, 22, t);
-  var asks = t > 24.4 && t < 27.8, start = 15.6;
+  var asks = t > 24.4 && t < 29.28, start = 15.6;
   person(700, 962, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: asks ? "concerned" : "happy",
                                                    reachA: asks ? [820, 780] : undefined,
                                                    mouth: asks ? {open: 0.08 + 0.26 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined}));

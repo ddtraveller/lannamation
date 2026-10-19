@@ -25,7 +25,7 @@ The music is lowered while the voice speaks and comes back between lines, and fa
 last two seconds. Then it says, line by line, how long the voice took and whether the line is over
 before its words leave the screen.
 With --spoken the lines were spoken already, elsewhere, one file a line: the page's WORDS give each line its id
-as a sixth item, and the folder has ID.wav for each (the film of the creature with four ears and five eyes:
+as a sixth item (or, with no ids, 01.wav, 02.wav ... in order), and the folder has ID.wav for each (the film of the creature with four ears and five eyes:
 Pan's voice, from her toolset's voice service, each line heard back by the voice project's listener first).
 
 The voice's treatment and the mix (2026-10-16; the owner asked for a better-quality sound for the film,
@@ -67,13 +67,15 @@ VOICE = 0.9          # the voice's peak
 FADE = 2.0           # seconds of the music's fade at the end
 
 
-def words_of(page_file):
-    """The film's lines and its length, asked of the page itself."""
+def words_of(page_file, sets=()):
+    """The film's lines and its length, asked of the page itself; given the values render.py --set gave it."""
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome")
         page = browser.new_page()
         page.goto(Path(page_file).resolve().as_uri())
-        words, seconds = page.evaluate("[WORDS, DURATION]")
+        for name, value in sets:
+            page.evaluate("([name, value]) => { window[name] = value; }", [name, value])
+        words, seconds = page.evaluate("[WORDS, typeof LENGTH !== 'undefined' ? LENGTH : DURATION]")
         browser.close()
     return words, seconds
 
@@ -159,6 +161,11 @@ def say(jobs, model):
         listing.unlink()
 
 
+def line_id(line, n):
+    """A line's name for --spoken: its id, WORDS' sixth item, or for a page whose WORDS have none its number, 01 on."""
+    return line[5] if len(line) > 5 else "%02d" % (n + 1)
+
+
 def seconds_of(sound_file):
     info = soundfile.info(str(sound_file))
     return info.frames / info.samplerate
@@ -208,6 +215,8 @@ def main():
     parser.add_argument("--out", default=str(HERE / "sash_voice.wav"))
     parser.add_argument("--takes", type=int, default=1, help="takes of each new line; the clearest is kept")
     parser.add_argument("--spoken", help="a folder of lines spoken already, ID.wav for each line's id (WORDS' sixth item)")
+    parser.add_argument("--set", action="append", default=[], metavar="NAME=VALUE",
+                        help="as render.py --set: the values the page was rendered with (JSON, or @file.json)")
     parser.add_argument("--fit", action="store_true",
                         help="keep the clearest take that ends before its words leave the screen and the next line begins")
     args = parser.parse_args()
@@ -216,10 +225,14 @@ def main():
     elif not args.model and not args.spoken:
         parser.error("give the extension's model folder, or --voice assistant")
 
-    words, seconds = words_of(args.page)
+    sets = []
+    for one in args.set:
+        name, _, value = one.partition("=")
+        sets.append((name, json.loads(Path(value[1:]).read_text(encoding="utf-8") if value.startswith("@") else value)))
+    words, seconds = words_of(args.page, sets)
     rooms = [min(w[1], words[n + 1][0] if n + 1 < len(words) else seconds) - w[0] - 0.05 for n, w in enumerate(words)]
     if args.spoken:
-        missing = [w[5] for w in words if not (Path(args.spoken) / (w[5] + ".wav")).exists()]
+        missing = [line_id(w, n) for n, w in enumerate(words) if not (Path(args.spoken) / (line_id(w, n) + ".wav")).exists()]
         if missing:
             raise SystemExit("no voice file for " + ", ".join(missing))
     else:
@@ -236,7 +249,7 @@ def main():
     print("line   from    voice  ends   shown to")
     for n, line in enumerate(words):
         start, shown, said = line[:3]
-        sound = voice_line(Path(args.spoken) / (line[5] + ".wav") if args.spoken else file_of(said), scratch.name)
+        sound = voice_line(Path(args.spoken) / (line_id(line, n) + ".wav") if args.spoken else file_of(said), scratch.name)
         at = int(start * RATE)
         voice[at:at + len(sound)] += sound[:max(0, length - at)]
         end = start + len(sound) / RATE

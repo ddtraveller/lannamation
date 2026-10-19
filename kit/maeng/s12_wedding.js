@@ -5,7 +5,7 @@
 // from a rice basket, as his mother once carried a bowl to the city. Last: later he is king, on the dais, and the
 // people sit before him with their hands raised in a wai: the Righteous King, Phaya Thammikarat.
 var S12_LONG = 35;
-var S12_LINES = [[1.5, 5.5, "M069"], [14.0, 19.0, "M070"], [19.6, 24.6, "M071"], [25.8, 33.0, "M072"]];
+var S12_LINES = [[1.5, 6.34, "M069"], [14.0, 20.78, "M070"], [20.98, 25.7, "M071"], [25.8, 33.0, "M072"]];
 var S12_SHOTS = [12.6, 25.0];                       // the wedding at dusk; the rice by day; the Righteous King
 // Thukkhata grown, in a noble's dress of his own colours (the film's lad, now a man); as king, his gold head-cloth.
 var MAENG_GROOM = {turban: "#e8d8a0", sarong: ["#2a6a5a", BROCADE], size: 0.8, smile: 0.7};
@@ -73,13 +73,13 @@ function sceneWedding(t) {
     kongKhao(pen, giver + 70, 902, 0.9);            // the rice basket beside him
     S12_POOR.forEach(function (one, n) {
       var arrive = S12_SHOTS[0] + 0.6 + n * 0.5, walk = stroll(t, 260 - n * 120, giver + one[2], arrive, maengPerson(one[0], one[1], {id: "poor" + n, feel: "concerned"}));
-      var filled = t > S12_SHOTS[0] + 7 + n * 1.6;
+      var filled = t > S12_SHOTS[0] + 8.4 + n * 1.6;
       var look = Object.assign(walk.look, {face: 1, feel: filled ? "happy" : "concerned", reachA: [walk.x + 70, 880 - 80 * one[1].size]});
       if (filled) { gave = n + 1; }
       var joints = person(walk.x, 905, look);
       s12Bowl(joints, filled);
     });
-    var serving = S12_POOR.some(function (one, n) { var at = S12_SHOTS[0] + 7 + n * 1.6; return t > at - 1.2 && t < at + 0.2; });
+    var serving = S12_POOR.some(function (one, n) { var at = S12_SHOTS[0] + 8.4 + n * 1.6; return t > at - 1.2 && t < at + 0.2; });
     person(giver, 905, maengPerson("noble", MAENG_GROOM, {id: "groom", face: -1, feel: "happy",
                                                          reachA: serving ? [giver - 90, 820] : undefined}));
   } else {                                           // later: the Righteous King on the dais, and the people's wai

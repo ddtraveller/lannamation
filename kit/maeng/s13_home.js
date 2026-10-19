@@ -5,7 +5,7 @@
 // of home. Last, Doi Khao Khwai in the morning, wide: a small temple stands on its shoulder today, where the tale is
 // still told.
 var S13_LONG = 40;
-var S13_LINES = [[1.5, 4.8, "M073"], [5.6, 10.6, "M074"], [16.6, 21.0, "M075"], [24.2, 28.0, "M076"], [31.0, 37.7, "M077"]];
+var S13_LINES = [[1.5, 4.8, "M073"], [5.6, 10.6, "M074"], [16.6, 21.0, "M075"], [24.2, 28.0, "M076"], [31.0, 38.0, "M077"]];
 var S13_SHOTS = [15.5, 30.0];                       // the crowd at the pen; the run home; the mountain today
 var S13_CAMERA = [1234, 690, 1.4];                  // close on the pen, as scene 8's
 var S13_BOLT = 12.4;                                // when it leaps the fence

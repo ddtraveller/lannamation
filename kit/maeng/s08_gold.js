@@ -4,7 +4,7 @@
 // day after day there is another mound, until the garden is full. And he still leads the headman's buffalo
 // out, as he always did.
 var S08_LONG = 40;
-var S08_LINES = [[2.0, 5.6, "M045"], [6.2, 9.9, "M046"], [10.4, 15.0, "M047"], [22.0, 26.0, "M048"], [28.0, 33.0, "M049"]];
+var S08_LINES = [[2.0, 5.8, "M045"], [6.2, 10.9, "M046"], [11.1, 16.18, "M047"], [22.0, 26.38, "M048"], [28.0, 33.0, "M049"]];
 var S08_CAMERA = [1234, 690, 1.4];                  // close on the pen and the garden (the view stays on the sheet)
 var S08_DAYS = [15, 22];                            // the days going by: the sky turns, a mound each day
 
@@ -21,7 +21,7 @@ var S08_LIFE = [
 function sceneGold(t) {
   var turning = between(t, S08_DAYS[0], S08_DAYS[1]), days = turning * 7;
   var night = turning > 0 && turning < 1 ? 0.5 - 0.5 * Math.cos(days * Math.PI * 2) : 0;   // the days and nights going by, fast
-  var mounds = t < 12 ? 0 : t < S08_DAYS[0] ? between(t, 12, 14) : 1 + days * 1.6 + (turning >= 1 ? 6 : 0);
+  var mounds = t < 12.7 ? 0 : t < S08_DAYS[0] ? between(t, 12.7, 14.7) : 1 + days * 1.6 + (turning >= 1 ? 6 : 0);
   pen.save();
   pen.translate(WIDE / 2, 540);
   pen.scale(S08_CAMERA[2], S08_CAMERA[2]);
@@ -31,12 +31,12 @@ function sceneGold(t) {
   maengGarden(t, Math.min(MAENG_MOUNDS.length, mounds), 0, tint);
   decorate(t, S08_LIFE, "back");
   kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {part: "back", tint: tint});
-  var pleased = t > 6.2 && t < 12;
+  var pleased = t > 6.2 && t < 12.7;
   maengSiHuHaTa(MAENG_PEN[0] - 60, MAENG_PEN[1] - 22, {size: 0.45, face: 1, feel: pleased ? "satiated" : t < 6 ? "sleepy" : "happy"});
   if (t < 6.4) { goldNugget(pen, MAENG_PEN[0] + 70, MAENG_PEN[1] - 30, 0.9, t, {seed: 3}); }   // on the pen's floor
   kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {part: "front", tint: tint});
   var lad = maengPerson("boy", MAENG_LAD, {id: "lad"}), x, y = 948;
-  if (t < 10.4) {                                   // at the pen: the gold picked up, held up, a wonder
+  if (t < 11.1) {                                   // at the pen: the gold picked up, held up, a wonder
     x = MAENG_PEN[0] + 240;
     var held = t > 6.2;
     lad = Object.assign(lad, {face: -1, feel: held ? "surprised" : "concerned", reachA: held ? [x - 70, y - 175] : [x - 70, y - 130],

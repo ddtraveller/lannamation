@@ -10,6 +10,7 @@ what the page said: an error, or a warning from the kit (a name it does
 not know, which changes nothing).
 """
 import argparse
+import json
 import shutil
 import subprocess
 import time
@@ -45,7 +46,7 @@ def ffmpeg_command(video, audio, start=0, fast=False):
     return command
 
 
-def render(page_file, video, audio, start=0.0, end=None, fast=False):
+def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=()):
     started = time.time()
     errors = []
     with sync_playwright() as playwright:
@@ -57,8 +58,10 @@ def render(page_file, video, audio, start=0.0, end=None, fast=False):
         # every web font the page names, loaded before the first frame: a canvas asks for a font only when it first
         # draws in it, and that frame would be in another (the credits of the creature's film: one frame of 2925)
         page.evaluate(FONTS)
+        for name, value in sets:          # --set: a value the page is given for this render (sash.html's SLOW)
+            page.evaluate("([name, value]) => { window[name] = value; }", [name, value])
         page.evaluate("rendering = true")
-        seconds = page.evaluate("DURATION")
+        seconds = page.evaluate("typeof LENGTH !== 'undefined' ? LENGTH : DURATION")
         end = seconds if end is None else min(end, seconds)
         # a part of a film starts with a jump of the clock; the kit's settled()
         # lets what hangs and swings come to rest first, as it would in the film
@@ -97,6 +100,8 @@ def main():
     parser.add_argument("--from", dest="start", type=float, default=0.0, help="the second to start at")
     parser.add_argument("--to", dest="end", type=float, help="the second to stop at")
     parser.add_argument("--fast", action="store_true", help="JPEG frames and the encoder's usual settings: quicker, softer")
+    parser.add_argument("--set", action="append", default=[], metavar="NAME=VALUE",
+                        help="give the page a value for this render: VALUE is JSON, or @file.json (sash.html: SLOW, LENGTH, WORDS)")
     args = parser.parse_args()
     if not shutil.which("ffmpeg"):
         raise SystemExit("ffmpeg is not installed, or not on the PATH")
@@ -104,7 +109,11 @@ def main():
         raise SystemExit("no such sound file: " + args.audio)
     if args.end is not None and args.end <= args.start:
         raise SystemExit("--to must come after --from")
-    render(args.page, args.video, args.audio, args.start, args.end, args.fast)
+    sets = []
+    for one in args.set:
+        name, _, value = one.partition("=")
+        sets.append((name, json.loads(Path(value[1:]).read_text(encoding="utf-8") if value.startswith("@") else value)))
+    render(args.page, args.video, args.audio, args.start, args.end, args.fast, sets)
 
 
 if __name__ == "__main__":

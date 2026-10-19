@@ -3,9 +3,9 @@
 // and says what the tale teaches, be good, work hard and be honest, like Thukkhata; then she waves goodbye to
 // the children, as she does after the hero film (lanna_cartoon's goodbye: the same raise and wave).
 var S14_LONG = 16;
-var S14_LINES = [[2.0, 6.4, "M078"], [7.6, 10.4, "M079"]];
-var S14_SPEAKS = [[2.0, 6.0], [7.6, 9.8]];          // she says them herself: her mouth moves through them
-var S14_WAVE = [7.4, 8.2, 11.6, 12.4];               // the hand goes up, waves from, waves until, is down
+var S14_LINES = [[2.0, 7.86, "M078"], [8.06, 11.78, "M079"]];
+var S14_SPEAKS = [[2.0, 7.46], [8.06, 11.38]];          // she says them herself: her mouth moves through them
+var S14_WAVE = [7.9, 8.7, 12.1, 12.9];               // the hand goes up, waves from, waves until, is down
 var S14_LIFE = [
   {name: "flock at dusk", kind: "flock", layer: "back", course: [[0.5, -150, 230], [13.0, 2150, 180]]}
 ];

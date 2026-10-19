@@ -3,7 +3,7 @@
 // sight behind the rock at the foot of the path, and nothing of what it pulls is shown. At the cave's mouth the
 // rope catches and will not come. He lets it go, sets his snare there as his father asked, and goes home.
 var S05_LONG = 45;
-var S05_LINES = [[3.0, 6.5, "M024"], [8.0, 13.0, "M025"], [21.5, 26.5, "M026"], [32.0, 36.4, "M027"]];
+var S05_LINES = [[3.0, 6.68, "M024"], [8.0, 13.0, "M025"], [21.5, 27.44, "M026"], [32.0, 36.82, "M027"]];
 var S05_TOP = MAENG_SLOPE_CAVE[0] - 140;            // where he stops, below the cave's ledge
 var S05_SNARE = [MAENG_SLOPE_CAVE[0] - 60, MAENG_SLOPE_CAVE[1] + 8];
 var S05_CLOUDS = {count: 5, lit: "#f6b07a", shade: "#9a5a6a", below: true};

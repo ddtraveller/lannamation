@@ -57,7 +57,10 @@ def main():
         graph.append("[%d:a]aresample=44100,aformat=channel_layouts=stereo,apad,atrim=0:%.3f[a%d]" % (a, long, n))
         print("%6.1f s  %s%s" % (at, Path(video).name, " + " + Path(sound).name if sound else ""))
         at += long
-    graph.append("".join("[v%d][a%d]" % (n, n) for n in range(len(films))) + "concat=n=%d:v=1:a=1[v][a]" % len(films))
+    graph.append("".join("[v%d][a%d]" % (n, n) for n in range(len(films))) + "concat=n=%d:v=1:a=1[v][j]" % len(films))
+    # the films' sound as it was mastered, its peaks held under -2 dB at four times the rate (so peaks between the
+    # samples are caught): an AAC encode overshoots, and a joined film came out at +0.5 dBTP without it
+    graph.append("[j]aresample=176400,alimiter=limit=0.794:attack=1:release=50:level=disabled,aresample=44100[a]")
     for k, (picture_file, start, end, fade) in enumerate(overs):   # each picture over the whole, faded in and out
         start, end, fade = float(start), float(end), float(fade)
         inputs += ["-loop", "1", "-t", "%.3f" % at, "-i", picture_file]
