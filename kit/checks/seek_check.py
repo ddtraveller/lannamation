@@ -16,7 +16,8 @@ Two checks (the idea from HyperFrames' seekable timelines, 2026-10-19; nothing o
          by kit_check.py's rule (frames.py: a pixel counts when a shift of one pixel does not explain it). A page
          passes with fewer than kit_check's SAME_LIMIT. kit_check's "same" comes to a frame forward, by a jump and
          by a run; this comes back to one, which is where a creature that remembers where it was goes wrong.
-Exits 1 if either finds anything.
+Each item is written down, PASS or FAIL (or SKIP), in out/checks/seek_check.txt (report.py). With --changed, a page
+is come back to only when it or a script it loads has changed since it last passed. Exits 1 if either finds anything.
 """
 import re
 import sys
@@ -26,6 +27,7 @@ from playwright.sync_api import sync_playwright
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from frames import differ, frame_at, open_page  # noqa: E402
+from report import Report, fingerprint  # noqa: E402
 
 KIT = Path(__file__).resolve().parent.parent
 LIMIT = 50                                           # kit_check.py's SAME_LIMIT
@@ -59,6 +61,12 @@ def lint():
     return found
 
 
+def page_files(page_file):
+    """A page and every script it loads: what its back test depends on."""
+    names = re.findall(r'<script src="([^":]+)"', page_file.read_text(encoding="utf-8"))
+    return [page_file] + [page_file.parent / name for name in names] + [KIT / "checks" / "frames.py"]
+
+
 def back(browser, page_file):
     errors = []
     page = open_page(browser, page_file, errors)
@@ -72,15 +80,28 @@ def back(browser, page_file):
 
 def main():
     names = [a for a in sys.argv[1:] if a.endswith(".html")]
+    changed = "--changed" in sys.argv
+    report = Report("seek_check")
     pages = [(KIT / n).resolve() for n in names] if names else sorted(p for p in KIT.glob("*/s[0-9]*.html") if "node_modules" not in p.parts)
     found, failed = lint(), 0
     for line in found:
         print("lint  " + line)
     print("lint: %d clock%s read by a script" % (len(found), "" if len(found) == 1 else "s"))
+    report.record("lint", not found, "%d clocks read%s" % (len(found), (": " + "; ".join(found)) if found else ""))
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome")
         for page_file in pages:
+            name = page_file.relative_to(KIT).as_posix() if KIT in page_file.parents else page_file.name
+            mark = fingerprint(page_files(page_file))
+            if changed and report.unchanged(name, mark):
+                report.skip(name, "nothing it loads has changed since it passed")
+                print("back  %-16s left out: nothing it loads has changed since it passed" % name)
+                continue
             (apart, counted), errors = back(browser, page_file)
+            report.record(name, not (counted >= LIMIT or errors), "%d differ, %d past a pixel's shift%s"
+                          % (apart, counted, ("; page error: " + errors[0]) if errors else ""))
+            if not (counted >= LIMIT or errors):
+                report.passed_with(name, mark)
             bad = counted >= LIMIT or errors
             failed += bool(bad)
             print("back  %-16s %6d pixels differ, %5d of them past a pixel's shift%s%s"
@@ -88,6 +109,7 @@ def main():
                      "  page error: " + errors[0] if errors else ""))
         browser.close()
     print("back: %d of %d pages fail" % (failed, len(pages)))
+    report.finish()
     sys.exit(1 if found or failed else 0)
 
 

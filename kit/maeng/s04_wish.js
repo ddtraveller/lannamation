@@ -131,6 +131,7 @@ function s04Blanket(x, y, size) {                   // a cloth of faded checks o
 function sceneWish(t) {
   var flame = 1 - between(t, 46, 50.5);             // the lamp burns low, and goes out
   pen.drawImage(s04Room(), 0, 0);
+  dress(t, MAENG_HUT_THINGS, "back");               // the hearth, cold at night, and the baskets
   decorate(t, S04_LIFE, "back");                    // the mice and the tokay, in the room's own light
   var speaking = S04_SPEAKS.some(function (s) { return t >= s[0] && t < s[1]; });
   var holding = t >= 37.5;                          // from the line "he held his father's hand"

@@ -1453,7 +1453,9 @@ function goldNugget(brush, x, y, size, t, look) {
 // wooden shingles, their eaves trimmed with gold, a golden gable with rays, and a golden finial (cho fa) curling
 // up at each end of the ridge. Drawn in two parts, so that who sits in it is inside: look.part "back" (the wall,
 // the floor, the dais) and "front" (the posts and the roof). 800 wide and 700 high at size 1; the floor is 150 up,
-// the dais's top 190 (hoKhamFloor() and hoKhamDais() give where). look.tint as the hut's.
+// the dais's top 190 (hoKhamFloor() and hoKhamDais() give where). look.tint as the hut's. look.pediment "peacock":
+// a peacock carved in the gable among leaf scrolls, as the Lanna halls' gables have it (the household notebook's
+// sources: the pediment of the old Ho Kham at Wat Phan Tao, "a peacock surrounded by foliate ornament").
 function hoKhamFloor(base, size) { return base - 150 * size; }
 function hoKhamDais(base, size) { return base - 190 * size; }
 
@@ -1554,7 +1556,38 @@ function hoKham(brush, x, base, size, look) {
     fillInk(gold);
     brush.strokeStyle = tone("#b8862a");
     brush.lineWidth = 2.4;
-    for (n = -4; n <= 4; n++) { brush.beginPath(); brush.moveTo(0, -722); brush.lineTo(n * 34, -712); brush.stroke(); }
+    if (look.pediment === "peacock") {              // a peacock carved in the gable, among leaf scrolls
+      var relief = tone("#9a6e1a");
+      [-1, 1].forEach(function (side) {             // the scrolls, curling out to each side
+        brush.strokeStyle = relief;
+        brush.lineWidth = 3;
+        brush.beginPath();
+        brush.moveTo(side * 26, -730);
+        brush.bezierCurveTo(side * 60, -722, side * 92, -738, side * 104, -726);
+        brush.arc(side * 96, -728, 8, side > 0 ? 0 : Math.PI, side > 0 ? Math.PI * 1.6 : -Math.PI * 0.6, side < 0);
+        brush.stroke();
+      });
+      brush.beginPath();                            // its tail, falling in a fan to each side
+      brush.moveTo(0, -738);
+      brush.quadraticCurveTo(-34, -728, -44, -716);
+      brush.lineTo(44, -716);
+      brush.quadraticCurveTo(34, -728, 0, -738);
+      brush.closePath();
+      thingFill(brush, relief, 1.2);
+      brush.beginPath();                            // its body and neck, and the head with its crest
+      brush.ellipse(0, -742, 9, 11, 0, 0, 7);
+      thingFill(brush, relief, 1.2);
+      brush.strokeStyle = relief;
+      brush.lineWidth = 4;
+      brush.beginPath(); brush.moveTo(0, -750); brush.quadraticCurveTo(4, -762, 1, -770); brush.stroke();
+      brush.beginPath(); brush.arc(1, -772, 4, 0, 7); brush.fillStyle = relief; brush.fill();
+      brush.lineWidth = 1.4;
+      brush.beginPath();
+      for (var c = -1; c <= 1; c++) { brush.moveTo(1, -775); brush.lineTo(1 + c * 4, -784); }
+      brush.stroke();
+    } else {
+      for (n = -4; n <= 4; n++) { brush.beginPath(); brush.moveTo(0, -722); brush.lineTo(n * 34, -712); brush.stroke(); }
+    }
     [-1, 1].forEach(function (side) {               // the cho fa: a golden finial curling up at each end of the ridge, and one at the top
       brush.save();
       brush.scale(side, 1);
@@ -1690,3 +1723,234 @@ function linKham(brush, ground, built, look) {
   brush.ellipse(end[0], end[1], 5 * size, 9 * size, 0, 0, 7);
   brush.fill();
 }
+
+// ---------- the things of a Lanna home ----------
+// Read from the household notebook's sources (the Lanna Traditional House Museum, the Ministry of Education's
+// book of Thai basketry, Tai Yuan house studies; 2026-10-19): what a Tai Yuan home has, drawn in the kit's
+// manner. Each a painter on a brush, standing on (x, base), with a size and a look.tint as the hut's.
+//   huad(brush, x, base, size, t, look)   the sticky-rice steamer: a cone of woven bamboo set in the mouth of a
+//                                          round clay pot on three hearth stones, a cloth over its top, and with
+//                                          look.fire (0 to 1) a fire under the pot and steam (t) going up
+//   kongKhao(brush, x, base, size, look)  the kong khao, the lidded basket that keeps the steamed rice: a round
+//                                          body of fine woven bamboo on a squared foot, a domed lid, a cord to
+//                                          carry it by
+//   krabung(brush, x, base, size, look)   an open basket of woven bamboo, round, a little wider at the mouth, its
+//                                          rim bound, for crops and the kitchen's things
+//   mortar(brush, x, base, size, look)    the wooden mortar and its long pestle, kept under the house: a block of
+//                                          wood hollowed at its top, the pestle leaning against it (look.pound, a
+//                                          second: it is pounded, up and down, as the second runs)
+//   taLaew(brush, x, base, size, look)    the ta laew, a star of woven bamboo strips on a post, at a yard's way in,
+//                                          against bad fortune: look.points 6 (or 8, the great one)
+function thingTone(look) { return function (c) { return look && look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }; }
+
+function thingFill(brush, colour, line) {           // the kit's manner: flat colour inside a fine dark line
+  brush.fillStyle = colour;
+  brush.fill();
+  brush.strokeStyle = inkFor(colour);
+  brush.lineWidth = line || 1.8;
+  brush.lineJoin = "round";
+  brush.stroke();
+}
+
+function thingWeave(brush, left, top, wide, high, colour, step) {   // a plain weave of strips, clipped by the caller
+  brush.strokeStyle = colour;
+  brush.lineWidth = 1.2;
+  for (var k = -high; k < wide + high; k += step) {
+    brush.beginPath(); brush.moveTo(left + k, top); brush.lineTo(left + k + high * 0.6, top + high); brush.stroke();
+    brush.beginPath(); brush.moveTo(left + k + high * 0.6, top); brush.lineTo(left + k, top + high); brush.stroke();
+  }
+}
+
+function huad(brush, x, base, size, t, look) {
+  look = look || {};
+  var tone = thingTone(look), fire = clamp(look.fire || 0), n;
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(size, size);
+  if (fire > 0.01) {                                // the fire under the pot, between the stones
+    for (n = 0; n < 3; n++) {
+      var lick = 0.75 + 0.25 * Math.sin(t * 11 + n * 2.1);
+      brush.beginPath();
+      brush.moveTo(-14 + n * 14, -6);
+      brush.quadraticCurveTo(-18 + n * 14, -22 * lick * fire, -7 + n * 14, -34 * lick * fire);
+      brush.quadraticCurveTo(-2 + n * 14, -18 * lick * fire, 0 + n * 14, -6);
+      brush.fillStyle = n === 1 ? "#ffd04a" : "#f07a2a";
+      brush.fill();
+    }
+  }
+  [[-30, 0], [30, 0], [0, 6]].forEach(function (s) { // three hearth stones
+    brush.beginPath();
+    brush.ellipse(s[0], -8 + s[1] * 0.2, 13, 10, 0, 0, 7);
+    thingFill(brush, tone("#8a8378"));
+  });
+  brush.beginPath();                                // the pot: round clay, a short neck
+  brush.moveTo(-26, -66);
+  brush.bezierCurveTo(-52, -60, -50, -18, -24, -14);
+  brush.lineTo(24, -14);
+  brush.bezierCurveTo(50, -18, 52, -60, 26, -66);
+  brush.closePath();
+  thingFill(brush, tone("#8a4a2e"));
+  brush.beginPath();
+  brush.ellipse(0, -66, 26, 6, 0, 0, 7);
+  thingFill(brush, tone("#6a3622"));
+  brush.save();                                     // the huad: a cone of woven bamboo, its point down in the pot's mouth
+  brush.beginPath();
+  brush.moveTo(-8, -64);
+  brush.lineTo(-38, -128);
+  brush.quadraticCurveTo(0, -136, 38, -128);
+  brush.lineTo(8, -64);
+  brush.closePath();
+  thingFill(brush, tone("#d2b06e"));
+  brush.clip();
+  thingWeave(brush, -40, -136, 80, 74, tone("rgba(120, 88, 40, 0.55)"), 7);
+  brush.restore();
+  brush.beginPath();                                // the cloth over its top
+  brush.moveTo(-38, -128);
+  brush.quadraticCurveTo(0, -146, 38, -128);
+  brush.quadraticCurveTo(0, -132, -38, -128);
+  thingFill(brush, tone("#e8e0cc"), 1.4);
+  if (fire > 0.01) {                                // steam rising from it, curling as it goes
+    for (n = 0; n < 3; n++) {
+      var u = ((t * 0.5 + n / 3) % 1), sx = -16 + n * 16 + 8 * Math.sin(t * 2 + n * 2);
+      brush.strokeStyle = "rgba(255, 255, 255, " + (0.5 * (1 - u) * fire).toFixed(3) + ")";
+      brush.lineWidth = 5;
+      brush.lineCap = "round";
+      brush.beginPath();
+      brush.moveTo(sx, -140 - u * 40);
+      brush.quadraticCurveTo(sx + 10, -150 - u * 60, sx, -160 - u * 80);
+      brush.stroke();
+    }
+  }
+  brush.restore();
+}
+
+function kongKhao(brush, x, base, size, look) {
+  var tone = thingTone(look);
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(size, size);
+  brush.beginPath();                                // the squared foot
+  brush.rect(-16, -14, 32, 14);
+  thingFill(brush, tone("#8a6a3a"));
+  brush.save();
+  brush.beginPath();                                // the body: round, of fine woven bamboo
+  brush.moveTo(-14, -14);
+  brush.bezierCurveTo(-40, -22, -40, -68, -16, -76);
+  brush.lineTo(16, -76);
+  brush.bezierCurveTo(40, -68, 40, -22, 14, -14);
+  brush.closePath();
+  thingFill(brush, tone("#c9a35e"));
+  brush.clip();
+  thingWeave(brush, -40, -78, 80, 66, tone("rgba(110, 78, 36, 0.5)"), 5);
+  brush.restore();
+  brush.beginPath();                                // the domed lid
+  brush.moveTo(-19, -76);
+  brush.quadraticCurveTo(0, -100, 19, -76);
+  brush.closePath();
+  thingFill(brush, tone("#b8904e"));
+  brush.strokeStyle = tone("#5a3a22");              // the cord to carry it by
+  brush.lineWidth = 2;
+  brush.beginPath();
+  brush.moveTo(-24, -58); brush.quadraticCurveTo(0, -122, 24, -58);
+  brush.stroke();
+  brush.restore();
+}
+
+function krabung(brush, x, base, size, look) {
+  var tone = thingTone(look);
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(size, size);
+  brush.save();
+  brush.beginPath();
+  brush.moveTo(-26, 0);
+  brush.lineTo(-34, -48);
+  brush.lineTo(34, -48);
+  brush.lineTo(26, 0);
+  brush.closePath();
+  thingFill(brush, tone("#c4a05a"));
+  brush.clip();
+  thingWeave(brush, -36, -50, 72, 52, tone("rgba(110, 78, 36, 0.5)"), 8);
+  brush.restore();
+  brush.beginPath();                                // its bound rim
+  brush.ellipse(0, -48, 34, 6, 0, 0, 7);
+  thingFill(brush, tone("#8a6a3a"));
+  brush.restore();
+}
+
+function mortar(brush, x, base, size, look) {
+  look = look || {};
+  var tone = thingTone(look), lift = look.pound === undefined ? 0 : 40 * Math.max(0, Math.sin(look.pound * Math.PI * 2.4));
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(size, size);
+  brush.beginPath();                                // the block, hollowed at the top
+  brush.moveTo(-28, 0);
+  brush.lineTo(-24, -54);
+  brush.lineTo(24, -54);
+  brush.lineTo(28, 0);
+  brush.closePath();
+  thingFill(brush, tone("#7a5232"));
+  brush.beginPath();
+  brush.ellipse(0, -54, 24, 6, 0, 0, 7);
+  thingFill(brush, tone("#4a2e1a"));
+  brush.save();                                     // the long pestle: leaning against it, or up and down
+  if (look.pound === undefined) { brush.translate(22, -48); brush.rotate(0.35); }
+  else { brush.translate(0, -50 - lift); }
+  brush.beginPath();
+  brush.rect(-4, -120, 8, 124);
+  thingFill(brush, tone("#9a7048"));
+  brush.restore();
+  brush.restore();
+}
+
+function taLaew(brush, x, base, size, look) {
+  look = look || {};
+  var tone = thingTone(look), points = look.points || 6, r = 30, k;
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(size, size);
+  brush.strokeStyle = tone("#6a4a2a");               // the post
+  brush.lineWidth = 6;
+  brush.lineCap = "round";
+  brush.beginPath(); brush.moveTo(0, 0); brush.lineTo(0, -150); brush.stroke();
+  brush.translate(0, -170);
+  // The star, woven, not a figure of lines: narrow pointed petals of strip radiating from a small open lattice
+  // at its middle, where the strips cross over and under one another.
+  var strip = tone("#d8bc7a");
+  for (k = 0; k < points; k++) {                    // the points: each a narrow diamond of two strips
+    brush.save();
+    brush.rotate(k * Math.PI * 2 / points);
+    brush.beginPath();
+    brush.moveTo(10, 0);
+    brush.lineTo(22, -5);
+    brush.lineTo(r + 8, 0);
+    brush.lineTo(22, 5);
+    brush.closePath();
+    thingFill(brush, strip, 1.6);
+    brush.restore();
+  }
+  brush.beginPath();                                // the open lattice at the middle: a ring of strip
+  for (k = 0; k <= points; k++) {
+    var a = k * Math.PI * 2 / points;
+    if (k) { brush.lineTo(Math.cos(a) * 12, Math.sin(a) * 12); } else { brush.moveTo(12, 0); }
+  }
+  brush.closePath();
+  brush.strokeStyle = inkFor(strip);
+  brush.lineWidth = 5.4;
+  brush.stroke();
+  brush.strokeStyle = strip;
+  brush.lineWidth = 3.4;
+  brush.stroke();
+  for (k = 0; k < points / 2; k++) {                // and the strips crossing it, over and under
+    a = k * Math.PI * 2 / points + Math.PI / points;
+    brush.strokeStyle = inkFor(strip);
+    brush.lineWidth = 3.4;
+    brush.beginPath(); brush.moveTo(Math.cos(a) * 12, Math.sin(a) * 12); brush.lineTo(-Math.cos(a) * 12, -Math.sin(a) * 12); brush.stroke();
+    brush.strokeStyle = strip;
+    brush.lineWidth = 1.8;
+    brush.stroke();
+  }
+  brush.restore();
+}
+PIECES_KIT.push("huad", "kongKhao", "krabung", "mortar", "taLaew");

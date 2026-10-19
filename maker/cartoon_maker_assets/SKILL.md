@@ -64,8 +64,9 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   person is happy. A key's sixth entry changes it from that key on,
   `[second, x, y, null, null, "surprised"]` (she is surprised when the dragon
   comes); write null for the pose and the size to keep them. The dog, the
-  rooster, the naga, the dragon, the mom, the luang and the oxcart (its
-  buffalo) take `feel`, and a key's feeling, too.
+  rooster, the naga, the dragon, the mom, the luang, the oxcart (its
+  buffalo), the elephant, tiger, cat, pig, horse, maeng and the five northern
+  birds take `feel`, and a key's feeling, too.
 - Scenes: the film begins on `backdrop`; `"cuts": [{"at": 8, "backdrop": "river"}]`
   begins a new scene at that second, and the kit closes and opens its iris at the
   cut. A set piece's one key says which scene it stands in by its second (0 for
@@ -103,6 +104,24 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   its wheels turn; it is about 700 pixels long. The set pieces `longkhao` (a
   rice granary on posts, with its baskets) and `sawian` (one big rice basket)
   stand on the ground.
+- Animals that walk their course on the ground (y 880 to 1040) and stand when
+  it stops: `elephant` (big), `tiger`, `cat`, `pig`, `horse` (a pack horse of
+  the Haw caravans with its load), `housemouse` and `fieldmouse` (small: a
+  short quick course, a key repeated to make one stop and sniff). `tokay` is
+  a gecko that crawls along its course, on a wall, a trunk or the ground.
+  `maeng` is the creature with four ears and five eyes of the Lanna tale.
+- Five birds of the north: `peafowl` and `pheasant` walk on the ground;
+  `sunbird` hovers while it moves and perches when it stops; `magpie` (the
+  red-billed blue magpie) and `hornbill` fly while they move and perch when
+  they stop (y 100 to 700 to fly, or on a tree or a roof).
+- `campfire` (a fire in a ring of stones, bright at night) and `huad` (the
+  sticky-rice steamer on its pot over the hearth, steaming) stand on the
+  ground. More set pieces: `tub` (a poor family's small hut), `kok` (an empty
+  bamboo pen), `hokham` (a hall of a Lanna palace with a peacock in its
+  gable: big, set it toward the back), `gong`, `kongkhao` (the lidded rice
+  basket), `krabung` (an open basket), `mortar` (a wooden mortar and pestle),
+  `talaew` (the woven bamboo star that guards a yard), `firewood` and `cave`
+  (a cave's mouth in rock).
 - The flowers and fruits of Thailand (the vocabulary lists them: mango,
   durian, longan, orchid, marigold ...) are things that stand on the ground;
   a name ending in `Tree` (`longanTree`, `ratchaphruekTree` ...) is that tree

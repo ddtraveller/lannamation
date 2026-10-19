@@ -12,7 +12,8 @@ of its lines (a scene's SNN_LINES, or any LINES the page has), and its last fram
 seconds spread over it. They are kept at half size (960 x 540), outside the repository (out/ is not kept), and
 compared by kit_check.py's rule (frames.py), at half size both. A moment where a shift of one pixel does not
 explain HALF_LIMIT pixels or more is a change, and is saved beside its still as NAME_now.png, with NAME_diff.png
-showing where it differs, to look at. Exits 1 if anything changed, or a still is missing.
+showing where it differs, to look at. Each moment compared is written down, PASS or FAIL, in out/checks/
+snapshot.txt (report.py). Exits 1 if anything changed, or a still is missing.
 """
 import json
 import sys
@@ -24,6 +25,7 @@ from playwright.sync_api import sync_playwright
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from frames import differ, frame_at, open_page  # noqa: E402
+from report import Report  # noqa: E402
 
 KIT = Path(__file__).resolve().parent.parent
 OUT = KIT / "out" / "snapshots"
@@ -56,6 +58,7 @@ def main():
     doing, names = sys.argv[1], sys.argv[2:]
     pages = [(KIT / n).resolve() for n in names] if names else sorted(p for p in KIT.glob("*/s[0-9]*.html") if "node_modules" not in p.parts)
     changed = 0
+    report = Report("snapshot_" + doing)
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome")
         for page_file in pages:
@@ -68,11 +71,13 @@ def main():
                     Image.fromarray(half(frame_at(page, t)).astype(np.uint8)).save(folder / ("%06.2f.png" % t))
                 (folder / "moments.json").write_text(json.dumps(moments), encoding="utf-8")
                 print("save     %-16s %d stills" % (page_file.relative_to(KIT).as_posix(), len(moments)))
+                report.record(page_file.relative_to(KIT).as_posix(), True, "%d stills saved" % len(moments))
             else:
                 for t in moments:
                     kept = folder / ("%06.2f.png" % t)
                     if not kept.exists():
                         print("compare  %-16s %6.2f s  no still saved" % (page_file.relative_to(KIT).as_posix(), t))
+                        report.record("%s %.2f s" % (page_file.relative_to(KIT).as_posix(), t), False, "no still saved")
                         changed += 1
                         continue
                     now = half(frame_at(page, t))
@@ -85,6 +90,8 @@ def main():
                         diff = (then * 0.35).astype(np.uint8)
                         diff[mark] = [255, 60, 60]
                         Image.fromarray(diff).save(folder / ("%06.2f_diff.png" % t))
+                    report.record("%s %.2f s" % (page_file.relative_to(KIT).as_posix(), t), counted < HALF_LIMIT,
+                                  "%d differ, %d past a pixel's shift" % (apart, counted))
                     print("compare  %-16s %6.2f s  %6d differ, %5d past a pixel's shift%s"
                           % (page_file.relative_to(KIT).as_posix(), t, apart, counted, "  CHANGED" if counted >= HALF_LIMIT else ""))
             if errors:
@@ -92,6 +99,7 @@ def main():
                 changed += 1
             page.close()
         browser.close()
+    report.finish()
     if doing == "compare":
         print("%d moment%s changed or missing" % (changed, "" if changed == 1 else "s"))
         sys.exit(1 if changed else 0)

@@ -38,7 +38,7 @@ function s11Palace(t) {                             // the king wakes, and the t
   cumulus(pen, t + 120, MAENG_CLOUDS.day);
   pen.drawImage(city.back, 0, 0);
   pen.drawImage(city.front, 0, 0);
-  hoKham(pen, p[0], p[1], p[2], {part: "back"});
+  maengPalace(t, "back");
   var waking = t < 5, sees = t >= 5;
   var king = maengPerson("noble", MAENG_KING, {id: "king", face: -1, feel: waking ? "sleepy" : t < 9.2 ? "surprised" : "concerned",
                                                at: sees ? [MAENG_STAIR - 300, row - 30] : undefined, mouth: s11Speaking(t, S11_KING)});
@@ -52,7 +52,7 @@ function s11Palace(t) {                             // the king wakes, and the t
   }
   if (sees && t < S11_KING[0] && king.feel === "surprised") { king.reachB = [x + 40, floor - 210]; }   // a hand up in wonder
   person(x, floor, king);
-  hoKham(pen, p[0], p[1], p[2], {part: "front"});
+  maengPalace(t, "front");
   decorate(t, S11_LIFE, "back");
   linKham(pen, [[-40, row], [MAENG_STAIR, row - 4]], 1, {size: 1.2});
   var man = maengPerson("fellow", MAENG_HERALD, {id: "herald", face: 1, feel: t > 5.6 ? "surprised" : "neutral", at: [x, floor - 180]});

@@ -30,7 +30,7 @@ function sceneDecree(t) {
   cumulus(pen, t + 90, MAENG_CLOUDS.day);
   pen.drawImage(city.back, 0, 0);
   pen.drawImage(city.front, 0, 0);
-  hoKham(pen, p[0], p[1], p[2], {part: "back"});
+  maengPalace(t, "back");
   var dais = hoKhamDais(p[1], p[2]), speaking = S09_KING.some(function (s) { return t >= s[0] && t < s[1]; });
   var laughs = [0, 1, 2].some(function (n) { return t > s09Fails(n) && t < s09Fails(n) + (n === 2 ? 4 : 1.8); });
   person(p[0] - 70, dais, maengPerson("noble", MAENG_KING, {id: "king", floor: "cross", face: -1, at: [p[0] - 700, 860],
@@ -38,7 +38,7 @@ function sceneDecree(t) {
                                                             mouth: speaking ? {open: 0.06 + 0.26 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined}));
   person(p[0] + 80, dais, maengPerson("lady", MAENG_SIMA, {id: "sima", floor: "side", face: -1, at: [p[0] - 700, 860],
                                                            feel: laughs ? "laughing" : "happy"}));
-  hoKham(pen, p[0], p[1], p[2], {part: "front"});
+  maengPalace(t, "front");
   decorate(t, S09_LIFE, "back");                    // on the roof, and in the sky
   // The herald at his gong; he strikes it as the king begins.
   var struck = t - 14.8, swing = struck > -0.5 && struck < 0.4, boss = gongAt(S09_GONG[0], S09_GONG[1], 0.9);

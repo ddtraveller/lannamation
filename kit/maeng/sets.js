@@ -258,6 +258,22 @@ function maengYard() {
 
 // The yard of second t, by day or at night (night 0 to 1): the sky, its clouds, the sets, and the hut with its
 // lamp (glow).
+// The yard's things, a very poor family's, few (the household notebook, 2026-10-19: what a Tai Yuan yard has):
+// a wooden mortar under the hut, an open basket at the ladder's foot, and a ta laew on its post where the path
+// leaves the yard, against bad fortune. Drawn with the hut, in its light.
+var MAENG_YARD_THINGS = [
+  {name: "mortar", kind: "mortar", x: 300, base: 905, size: 0.55},
+  {name: "basket", kind: "krabung", x: 705, base: 912, size: 0.5},
+  {name: "ta laew", kind: "taLaew", x: 1060, base: 918, size: 0.7}   // beside the path, behind it: people walk before it
+];
+// The hut's things, inside (scene 4): the hearth in the corner by the door, its pot and the huad on it, cold at
+// night; the one basket that keeps the rice, by the post at his pillow's end; an open basket by the hearth.
+var MAENG_HUT_THINGS = [
+  {name: "hearth", kind: "huad", x: 1700, base: 748, size: 1.0},
+  {name: "basket", kind: "krabung", x: 1590, base: 752, size: 0.8},
+  {name: "rice basket", kind: "kongKhao", x: 180, base: 770, size: 0.95}
+];
+
 function maengYardAt(t, night, glow, behind) {   // behind: drawn after the far sheet, before the yard and the hut (mist over the fields)
   var yard = maengYard();
   pen.drawImage(maengSky("day"), 0, 0);
@@ -273,6 +289,7 @@ function maengYardAt(t, night, glow, behind) {   // behind: drawn after the far 
   pen.drawImage(yard.front, 0, 0);
   if (night > 0) { pen.globalAlpha = night; pen.drawImage(yard.frontNight, 0, 0); pen.globalAlpha = 1; }
   tub(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2], {glow: glow || 0, tint: night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null});
+  dress(t, MAENG_YARD_THINGS, "back", night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null);
 }
 
 // ---------- the meadow ----------
@@ -507,6 +524,17 @@ function maengAt(p) {
 // The palace's courtyard: far hills; the city's brick wall behind, with roofs and trees over it; a courtyard paved
 // with brick before the palace (MAENG_PALACE, drawn live in two parts: who sits in it is inside). Scenes 9, 11, 12.
 var MAENG_PALACE = [1320, 860, 0.8];
+// The palace dressed as a Lanna ruler's hall is (the household notebook's sources): a peacock carved in its gable,
+// and lanterns of gold-patterned paper hung from its eaves, as before a ruler's hall to show his rank. Scenes 9-11.
+var MAENG_PALACE_THINGS = [
+  {name: "lantern, left", kind: "khom", x: MAENG_PALACE[0] - 300, base: MAENG_PALACE[1] - 430, size: 0.26, look: {lit: 0, late: 0.7}},
+  {name: "lantern, right", kind: "khom", x: MAENG_PALACE[0] + 300, base: MAENG_PALACE[1] - 430, size: 0.26, look: {lit: 0, late: 2.1}}
+];
+function maengPalace(t, part, tint) {               // the palace hall, back or front, dressed
+  var p = MAENG_PALACE;
+  hoKham(pen, p[0], p[1], p[2], {part: part, tint: tint, pediment: "peacock"});
+  if (part === "front") { dress(t, MAENG_PALACE_THINGS, "back"); }
+}
 var MAENG_FINIAL = [MAENG_PALACE[0] + 196 * MAENG_PALACE[2], MAENG_PALACE[1] - 810 * MAENG_PALACE[2]];   // the tip of the roof's right cho fa, where a bird perches
 var MAENG_STAIR = 1100;                             // where a trough laid to the palace meets its stair (x)
 var MAENG_HERALD = {size: 0.78, smile: 0.5};       // the king's man: he strikes the gong (scene 9), cries the news (10), follows the trough (11)

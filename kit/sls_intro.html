@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Slow Life Studios</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tai+Tham:wght@500;700&family=Noto+Serif+Thai:wght@500&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.35, light: [-0.6, 0.5]};</script>
+<script src="oldcartoon.js"></script>
+<script src="highlands.js"></script>
+<script>
+// The opening card of Slow Life Studios: an evening by a river in the north. A Lanna house on its stilts on the far
+// bank, its lamp lit; banana and bamboo by it; a mountain in forest behind, mist in its folds and along its foot;
+// the river going by, the sky's last light on it; fireflies rising and blinking over the water. The camera comes in
+// a little, slowly; the studio's name comes up in the Lanna script, gold, with its Thai letters and its English.
+var DURATION = 12;
+var BEAT = 0.5;
+// The name in Kam Mueang (2026-10-19): the voice project's writer gave ชีวิตจ้า ๆ สตูดิโอ for "Slow Life Studios" (ช้า,
+// slow, is จ้า in the north; Pan's rules changed nothing), written in the Lanna script by the Kam Mueang alphabet's
+// own rules (alphabet.js lanna(), every syllable by rule; ๆ is the Lanna ᩻). Not yet checked by a native speaker.
+var SLS_NAME = {lanna: "ᨩᩦᩅᩥ᩠ᨲᨧ᩶ᩣ᩻ ᩈᨲᩪᨯᩥᩋᩰ", thai: "ชีวิตจ้า ๆ สตูดิโอ", english: "Slow Life Studios"};
+var SLS_SHEET = null;
+
+function slsRidge(base, tall, shape) {               // a ridge of hills: its height at every x
+  return function (x) { return base - tall * (0.55 + 0.3 * Math.sin(x * 0.0035 + shape) + 0.15 * Math.sin(x * 0.009 + shape * 2)); };
+}
+
+function slsPeak(x) {                                // the mountain: one peak, a shoulder to its left
+  var main = 520 * Math.exp(-Math.pow((x - 1180) / 380, 2)), shoulder = 260 * Math.exp(-Math.pow((x - 600) / 300, 2));
+  return 860 - Math.max(main, shoulder) - 12 * Math.sin(x * 0.015);
+}
+
+function slsSheet() {                                // the sky and the mountain, painted once
+  if (SLS_SHEET) { return SLS_SHEET; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var b = paper.getContext("2d"), sky = b.createLinearGradient(0, 0, 0, 860), n;
+  sky.addColorStop(0, "#1c2148");                    // evening: deep blue overhead, violet, then the last warm light
+  sky.addColorStop(0.45, "#4a3b6e");
+  sky.addColorStop(0.78, "#c77a6a");
+  sky.addColorStop(1, "#f2b27a");
+  b.fillStyle = sky;
+  b.fillRect(0, 0, WIDE, 1080);
+  for (n = 0; n < 60; n++) {                         // the first stars, high up
+    b.fillStyle = "rgba(255, 248, 225, " + (0.3 + 0.6 * dice(n + 300)).toFixed(2) + ")";
+    b.beginPath();
+    b.arc(dice(n + 400) * WIDE, dice(n + 500) * 360, 0.8 + dice(n + 600) * 1.3, 0, 7);
+    b.fill();
+  }
+  var far = slsRidge(760, 260, 1.3);                  // a far range, hazed with the evening
+  b.fillStyle = "#6a5a88";
+  b.beginPath(); b.moveTo(0, 1080);
+  for (var x = 0; x <= WIDE; x += 8) { b.lineTo(x, far(x)); }
+  b.lineTo(WIDE, 1080); b.closePath(); b.fill();
+  forestSlope(b, slsPeak, 0, WIDE, 900, {far: 0.35, small: 5, large: 12, haze: "#5a5f86", seed: 77});   // the mountain, in forest
+  SLS_SHEET = paper;
+  return paper;
+}
+
+function slsRiver(t) {                               // the river: dark, the sky's light on it, going by
+  var water = pen.createLinearGradient(0, 860, 0, 1080);
+  water.addColorStop(0, "#c98a74");
+  water.addColorStop(0.18, "#4c4370");
+  water.addColorStop(1, "#1b1d3a");
+  pen.fillStyle = water;
+  pen.fillRect(0, 860, WIDE, 220);
+  for (var k = 0; k < 26; k++) {                     // glints of the last light, drifting with the water
+    var y = 872 + dice(k + 70) * 190, x = ((dice(k + 90) * WIDE + t * (18 + y * 0.03)) % (WIDE + 200)) - 100;
+    pen.strokeStyle = "rgba(255, 210, 160, " + (0.25 * (1 - (y - 860) / 260)).toFixed(3) + ")";
+    pen.lineWidth = 2;
+    pen.beginPath(); pen.moveTo(x, y); pen.lineTo(x + 30 + dice(k) * 60, y); pen.stroke();
+  }
+  // the house's lamp, its light lying on the water in a long broken line
+  for (var r = 0; r < 9; r++) {
+    pen.fillStyle = "rgba(255, 200, 110, " + (0.22 * (1 - r / 9)).toFixed(3) + ")";
+    pen.fillRect(1236 + Math.sin(t * 3 + r) * 6, 880 + r * 18, 26 - r * 2, 6);
+  }
+}
+
+function fireflies(t, count, box) {                  // fireflies over the water: drifting, rising, each blinking in its own time
+  for (var n = 0; n < count; n++) {
+    var u = ((t * (0.04 + 0.03 * dice(n + 1)) + dice(n + 2)) % 1);
+    var x = box[0] + dice(n + 3) * (box[2] - box[0]) + 60 * Math.sin(t * (0.5 + dice(n + 4)) + n);
+    var y = box[3] - u * (box[3] - box[1]) + 18 * Math.sin(t * (1.3 + dice(n + 5)) + n * 2);
+    var lit = Math.pow(Math.max(0, Math.sin(t * (1.6 + 1.4 * dice(n + 6)) + dice(n + 7) * 6)), 3) * Math.min(1, u * 6, (1 - u) * 6);
+    if (lit < 0.02) { continue; }
+    var glow = pen.createRadialGradient(x, y, 0, x, y, 26);
+    glow.addColorStop(0, "rgba(230, 255, 140, " + (0.85 * lit).toFixed(3) + ")");
+    glow.addColorStop(1, "rgba(200, 255, 120, 0)");
+    pen.fillStyle = glow;
+    pen.beginPath(); pen.arc(x, y, 26, 0, 7); pen.fill();
+    pen.fillStyle = "rgba(255, 255, 220, " + lit.toFixed(3) + ")";
+    pen.beginPath(); pen.arc(x, y, 3.2, 0, 7); pen.fill();
+  }
+}
+
+function slsTitle(t) {                               // the name, in the Lanna script, gold; its Thai letters; its English
+  var come = between(t, 4.5, 6.5) * (1 - between(t, 11, 12));
+  if (come <= 0) { return; }
+  pen.save();
+  pen.globalAlpha = come;
+  pen.textAlign = "center";
+  pen.shadowColor = "rgba(255, 196, 90, 0.75)";
+  pen.shadowBlur = 26;
+  pen.font = "700 128px 'Noto Sans Tai Tham', 'Sans Serif Collection', serif";
+  var gold = pen.createLinearGradient(0, 130, 0, 250);
+  gold.addColorStop(0, "#fff1c0");
+  gold.addColorStop(0.5, "#e8b84a");
+  gold.addColorStop(1, "#b07a22");
+  pen.fillStyle = gold;
+  pen.fillText(SLS_NAME.lanna, WIDE / 2, 230);
+  pen.shadowBlur = 10;
+  pen.strokeStyle = "rgba(255, 230, 170, 0.8)";       // a fine flourish under it, from the middle out
+  pen.lineWidth = 2;
+  var reach = 330 * between(t, 5.5, 7.5);
+  pen.beginPath();
+  pen.moveTo(WIDE / 2 - reach, 304); pen.quadraticCurveTo(WIDE / 2, 316, WIDE / 2 + reach, 304);
+  pen.stroke();
+  pen.font = "500 46px 'Noto Serif Thai', 'Leelawadee UI', serif";
+  pen.fillStyle = "#ffeccc";
+  pen.fillText(SLS_NAME.thai, WIDE / 2, 368);
+  pen.font = "italic 40px Georgia, 'Times New Roman', serif";
+  pen.fillStyle = "#f6e2c4";
+  pen.fillText(SLS_NAME.english, WIDE / 2, 424);
+  pen.restore();
+}
+
+function sceneSLS(t) {
+  var push = 1 + 0.06 * between(t, 0, DURATION);    // the camera, in a little, slowly
+  pen.save();
+  pen.translate(WIDE / 2, 600);
+  pen.scale(push, push);
+  pen.translate(-WIDE / 2, -600 + 20 * between(t, 0, DURATION));
+  pen.drawImage(slsSheet(), 0, 0);
+  mistSea(pen, t, {level: 800, left: 0, right: WIDE, deep: 120, swell: 12, wave: 160, drift: 4, layers: 2, colour: "#cfc6e2",
+                   glow: "#f2b8a0", seed: 5, alpha: 0.7});   // mist in the mountain's folds
+  pen.fillStyle = "#2f3a3a";                         // the far bank, a low dark line of grass
+  pen.fillRect(0, 835, WIDE, 30);
+  bamboo(pen, 980, 860, 0.8, 3);
+  house(pen, 1250, 862, 0.75);
+  pen.save();                                        // its lamp, lit in the doorway
+  var lamp = pen.createRadialGradient(1250, 760, 4, 1250, 760, 90);
+  lamp.addColorStop(0, "rgba(255, 210, 120, " + (0.7 + 0.1 * Math.sin(t * 7)).toFixed(3) + ")");
+  lamp.addColorStop(1, "rgba(255, 190, 100, 0)");
+  pen.fillStyle = lamp;
+  pen.fillRect(1160, 670, 180, 180);
+  pen.restore();
+  banana(pen, 1480, 862);
+  mistDrift(pen, t, {left: -100, right: WIDE + 100, top: 790, bottom: 870, count: 6, wide: 560, drift: 6, seed: 9,
+                     colour: "#d8d0e8", glow: "#f2b8a0", alpha: 0.55});   // and low along the bank
+  slsRiver(t);
+  fireflies(t, 70, [80, 560, WIDE - 80, 1040]);
+  pen.restore();
+  slsTitle(t);
+  var dark = Math.max(1 - between(t, 0, 1.8), between(t, 11.2, 12));
+  if (dark > 0) {
+    pen.fillStyle = "rgba(0, 0, 0, " + dark.toFixed(3) + ")";
+    pen.fillRect(0, 0, WIDE, 1080);
+  }
+}
+
+function draw(t) { film(t, [[0, DURATION, sceneSLS]]); }
+var rendering = false;
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

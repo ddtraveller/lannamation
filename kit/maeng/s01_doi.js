@@ -8,24 +8,47 @@
 var S01_LONG = 30;
 var S01_LINES = [[8.0, 11.2, "M001"], [11.6, 14.8, "M002"], [15.4, 19.2, "M003"], [19.8, 24.0, "M004"]];
 
-function s01Title(t) {                              // the title, in the picture: it fades in, holds and fades out
-  var fade = between(t, 1.5, 2.7) * (1 - between(t, 6.3, 7.5));
-  if (fade <= 0) { return; }
+// The titles over the opening, in the fog (owner, 2026-10-19: text over the first seconds, "the story name and
+// series title name ... just write it in the fancy kam muang script and then the story name"): the series, Lanna
+// Tales (นิทานล้านนา, as the voice project's writer has it), in the Lanna script alone, gold; then the tale's name
+// in the Lanna script under it, with its English small beneath for those who do not read it. Both written by the
+// Kam Mueang alphabet's own rules (alphabet.js lanna(); ทาน from its Wiktionary list), not yet checked by a native
+// speaker. The page loads Noto Sans Tai Tham for them.
+var S01_SERIES = "ᨶᩥᨴᩤ᩠ᨶᩃ᩶ᩣ᩠ᨶᨶᩣ";                     // นิทานล้านนา, Lanna Tales
+var S01_STORY = "ᨾᩯ᩠ᨦᩈᩦ᩵ᩉᩪᩉ᩶ᩣᨲᩣ";                   // แมงสี่หูห้าตา, the creature with four ears and five eyes
+
+function s01Title(t) {                              // the series, then the tale, faded in and out over the fog
+  var series = between(t, 1.2, 2.4) * (1 - between(t, 6.6, 7.6)), story = between(t, 3.4, 4.6) * (1 - between(t, 6.6, 7.6));
+  if (series <= 0) { return; }
   pen.save();
-  pen.globalAlpha = fade;
   pen.textAlign = "center";
-  pen.lineJoin = "round";
-  pen.font = "bold 110px 'Leelawadee UI', 'Noto Sans Thai', Tahoma, sans-serif";
-  pen.strokeStyle = "rgba(30, 18, 40, 0.85)";
-  pen.lineWidth = 12;
-  pen.strokeText("แมงสี่หูห้าตา", WIDE / 2, 330);
-  pen.fillStyle = "#ffe9b8";
-  pen.fillText("แมงสี่หูห้าตา", WIDE / 2, 330);
-  pen.font = "italic 50px Georgia, 'Times New Roman', serif";
-  pen.lineWidth = 8;
-  pen.strokeText("The Creature with Four Ears and Five Eyes", WIDE / 2, 410);
-  pen.fillStyle = "#fff6dc";
-  pen.fillText("The Creature with Four Ears and Five Eyes", WIDE / 2, 410);
+  pen.shadowColor = "rgba(255, 196, 90, 0.7)";
+  var gold = pen.createLinearGradient(0, 180, 0, 440);
+  gold.addColorStop(0, "#fff1c0");
+  gold.addColorStop(0.5, "#e8b84a");
+  gold.addColorStop(1, "#b07a22");
+  pen.fillStyle = gold;
+  pen.globalAlpha = series;
+  pen.shadowBlur = 22;
+  pen.font = "700 92px 'Noto Sans Tai Tham', 'Sans Serif Collection', serif";
+  pen.fillText(S01_SERIES, WIDE / 2, 250);
+  pen.shadowBlur = 8;
+  pen.strokeStyle = "rgba(255, 230, 170, 0.8)";        // a fine flourish between the series and the tale
+  pen.lineWidth = 2;
+  var reach = 260 * between(t, 2.0, 3.6);
+  pen.beginPath();
+  pen.moveTo(WIDE / 2 - reach, 312); pen.quadraticCurveTo(WIDE / 2, 322, WIDE / 2 + reach, 312);
+  pen.stroke();
+  if (story > 0) {
+    pen.globalAlpha = story;
+    pen.shadowBlur = 26;
+    pen.font = "700 124px 'Noto Sans Tai Tham', 'Sans Serif Collection', serif";
+    pen.fillText(S01_STORY, WIDE / 2, 440);
+    pen.shadowBlur = 0;
+    pen.font = "italic 42px Georgia, 'Times New Roman', serif";
+    pen.fillStyle = "#fff6dc";
+    pen.fillText("The Creature with Four Ears and Five Eyes", WIDE / 2, 530);
+  }
   pen.restore();
 }
 

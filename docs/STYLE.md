@@ -2387,6 +2387,55 @@ The rules the first round taught:
 - **What a scene's camera does not show is not decorated**: scene 7's close shot never shows the hut's wall,
   so its tokay was left out there.
 
+## The things of a Lanna home, and the things pass (2026-10-19)
+
+The owner: "Use notebooklm to make a notebook about Lanna house hold items. See what you should add to the kit from
+there and then add to the decorate process for house hold items and location decoration like for the palace scene."
+The notebook ("Lanna household items", 22 sources picked by hand from two deep sweeps, each loaded and of real
+length) answered from its sources only, and said which of its sources were not Lanna: a thesis on the Phu Tai of the
+north-east (their stove and wok are not the north's) and a page on the Bangkok court's regalia. What the kit did not
+draw went into pieces.js, each from what the sources say of it:
+
+| Piece | What it is |
+|---|---|
+| `huad(brush, x, base, size, t, look)` | the sticky-rice steamer: a cone of woven bamboo in the mouth of a round clay pot on three hearth stones, a cloth over it; `look.fire` lights a fire under it and its steam rises |
+| `kongKhao(brush, x, base, size, look)` | the kong khao, the lidded basket that keeps steamed rice: a round body of fine weave on a squared foot, a domed lid, a cord |
+| `krabung(brush, x, base, size, look)` | an open basket, round, wider at its mouth, its rim bound |
+| `mortar(brush, x, base, size, look)` | the wooden mortar kept under the house and its long pestle, leaning, or pounding (`look.pound`, a second) |
+| `taLaew(brush, x, base, size, look)` | the ta laew, a star of woven bamboo on a post that guards a yard: pointed petals of strip round a small open lattice (`look.points` 6 or 8). A star of two crossed triangles is a different sign, and was drawn first and taken out |
+| `hoKham(..., {pediment: "peacock"})` | the palace hall's gable carved with a peacock among leaf scrolls, as the old Ho Kham's pediment at Wat Phan Tao has it (the dog under its peacock is one ruler's own, and is left out) |
+
+**The things pass** comes before the life in decorating a scene: `dress(t, things, layer, tint)` in decorate.js
+draws a place's things from a list, `[{name, kind, x, base, size, look, layer, from, to}, ...]`, the kinds being the
+kit's painters (THING_KINDS). What a place has in every scene is listed once, with its set: the film of the creature
+keeps the yard's (a mortar under the hut, a basket at the ladder, a ta laew beside the path), the hut's inside (the
+hearth and its huad, one rice basket, one open basket) and the palace's (`maengPalace()`: the peacock gable, two
+lanterns of gold-patterned paper hung from its eaves, as before a ruler's hall). A very poor family has few things:
+what is not there tells the story too.
+
+## Every check writes its result down (2026-10-19)
+
+The owner: "change the kit test so each test outputs a success or failure message to a file. If it's practical
+break it up some so parts don't run if the thing the test didn't change." `checks/report.py` is what every check
+writes with: `out/checks/NAME.txt` (a line an item, PASS, FAIL or SKIP, and what was found; then SUCCESS or FAILURE
+and the counts), `NAME.json` for a program, and a dated line in `out/checks/history.log`. With `--changed`,
+kit_check, seek_check, sound_check and score_check leave out what nothing it depends on has changed since it passed:
+a page is marked by its own file, every script it loads and the check's own code, so a change to the kit's shared
+files or to the check runs it again, and a `--quick` pass does not stand for a full one. snapshot.py is about change,
+and always runs. Measured: a second kit_check on two pages took 1 s against 14, and wrote what it left out and why.
+
+## The studio's card, and the tale's titles (2026-10-19)
+
+The films open on the hero film, then the card of Slow Life Studios, then the tale (the owner). `sls_intro.html`
+is the card, 12 s: an evening by a river in the north, a house on its stilts with its lamp lit, a mountain with mist
+in its folds, fireflies rising and blinking over the water (`fireflies()`, drawn from the second alone), and the
+studio's name coming up in gold in the Lanna script: ᨩᩦᩅᩥ᩠ᨲᨧ᩶ᩣ᩻ ᩈᨲᩪᨯᩥᩋᩰ, ชีวิตจ้า ๆ สตูดิโอ (the Kam Mueang of the
+voice project's writer: the north's จ้า for "slow"), with its Thai letters and its English under it. A studio card
+of another studio was its only reference, for its calm: nothing of it is taken. The tale's own titles are over
+its first seconds, in the fog: the series, Lanna Tales (นิทานล้านนา: ᨶᩥᨴᩤ᩠ᨶᩃ᩶ᩣ᩠ᨶᨶᩣ), in the Lanna script alone, then the
+tale, ᨾᩯ᩠ᨦᩈᩦ᩵ᩉᩪᩉ᩶ᩣᨲᩣ, with its English small under it. Every Lanna spelling was written by the Kam Mueang alphabet's
+own rules (krueng.ai's alphabet page, `lanna()`), in Noto Sans Tai Tham, and none is yet checked by a native speaker.
+
 ## Three checks taken from HyperFrames (2026-10-19)
 
 The owner asked what lannamation could learn from HyperFrames (github.com/heygen-com/hyperframes, Apache 2.0),

@@ -4,6 +4,13 @@
     python checks/kit_check.py lanna.html      # one page
     python checks/kit_check.py --quick         # without the arms, which take the longest
     python checks/kit_check.py model.html --quick --settle 30     # "same" as it would be with a pre-roll of 30 frames
+    python checks/kit_check.py --changed       # only the pages that something they load has changed since they passed
+
+Every item it checks is written down, PASS or FAIL with what was found, in out/checks/kit_check.txt (and .json),
+and the run's summary is added to out/checks/history.log (report.py). With --changed, a page is checked only when
+the page, a script it loads, or this check's own code has changed since the page last passed (out/checks/
+kit_check_passed.json keeps what each passed with; a --quick pass does not stand for a full one), and the look
+keys and the names only when a script has; what is left out is written down as SKIP, with why.
 
 Run it after any change to oldcartoon.js. First the kit's own list: every key of a "look" that the kit reads must be
 written down in the comment above person(), and every key written there must be read. Then the names: no top-level
@@ -31,6 +38,8 @@ A page that needs a file which is not on this computer (a page's pictures are no
 so. It prints one line a page, then what failed, and ends with exit code 1 if anything did.
 """
 import argparse
+import hashlib
+import json
 import re
 import sys
 from pathlib import Path
@@ -38,6 +47,7 @@ from pathlib import Path
 from playwright.sync_api import Error, sync_playwright
 
 import arms_check
+from report import Report
 
 HERE = Path(__file__).resolve().parent.parent
 
@@ -124,6 +134,27 @@ TIME = """([t]) => {
     return (performance.now() - a) / 20;
   } finally { rendering = true; }
 }"""
+
+
+def fingerprint(page_file, quick):
+    """What a page's check depends on: the page, every script it loads, and this check's own code; and whether the
+    arms were left out. When none of it has changed, a page that passed would pass again."""
+    digest = hashlib.sha1(b"quick" if quick else b"full")
+    for name in ["checks/kit_check.py", "checks/arms_check.py", "checks/report.py"]:
+        digest.update((HERE / name).read_bytes())
+    digest.update(page_file.read_bytes())
+    for name in re.findall(r'<script src="([^":]+)"', page_file.read_text(encoding="utf-8")):
+        source = page_file.parent / name
+        digest.update(name.encode("utf-8") + (source.read_bytes() if source.exists() else b"missing"))
+    return digest.hexdigest()
+
+
+def scripts_fingerprint():
+    """Every script beside the kit and in its films' folders: what the look keys and the names are read from."""
+    digest = hashlib.sha1()
+    for script in sorted(HERE.glob("*.js")) + sorted(q for q in HERE.glob("*/*.js") if q.parent.name != "node_modules"):
+        digest.update(script.name.encode("utf-8") + script.read_bytes())
+    return digest.hexdigest()
 
 
 def pages_of(names):
@@ -225,21 +256,38 @@ def main():
     parser.add_argument("pages", nargs="*", help="pages to check (every page that loads oldcartoon.js unless told)")
     parser.add_argument("--quick", action="store_true", help="leave out the arms, which take the longest")
     parser.add_argument("--settle", type=int, help="measure with this many frames painted before a jump, not the kit's SETTLE")
+    parser.add_argument("--changed", action="store_true", help="only what something it loads has changed since it last passed")
     args = parser.parse_args()
     files = pages_of(args.pages)
-    read, written, listed = keys_of(HERE / "oldcartoon.js")
-    drift = ["look.%s is read by the kit and not written down above person()" % key for key in sorted(read - written)]
-    drift += ["%s is written down above person() and read nowhere" % key for key in sorted(written - read)]
-    drift += ["%s is written down above person() and missing from LOOK_KEYS" % key for key in sorted(written - listed)]
-    drift += ["%s is in LOOK_KEYS and not written down above person()" % key for key in sorted(listed - written)]
-    print("look keys: %d read by the kit, %d written down above person(), %d in LOOK_KEYS"
-          % (len(read), len(written), len(listed)))
-    for line in drift:
-        print("    FAILED: %s" % line)
-    shared = shared_names()
-    print("names: %d top-level names defined in two script files" % len(shared))
-    for name in sorted(shared):
-        print("    FAILED: %s() is defined in %s; the one loaded last replaces the other" % (name, " and ".join(shared[name])))
+    report = Report("kit_check")
+    out = HERE / "out" / "checks"
+    passed_file = out / "kit_check_passed.json"
+    passed = json.loads(passed_file.read_text(encoding="utf-8")) if passed_file.exists() else {}
+    scripts = scripts_fingerprint()
+    drift, shared = [], {}
+    if args.changed and passed.get("__scripts__") == scripts:
+        report.skip("look keys and names", "no script beside the kit or in its films has changed since they passed")
+        print("look keys and names: no script has changed since they passed: left out")
+    else:
+        read, written, listed = keys_of(HERE / "oldcartoon.js")
+        drift = ["look.%s is read by the kit and not written down above person()" % key for key in sorted(read - written)]
+        drift += ["%s is written down above person() and read nowhere" % key for key in sorted(written - read)]
+        drift += ["%s is written down above person() and missing from LOOK_KEYS" % key for key in sorted(written - listed)]
+        drift += ["%s is in LOOK_KEYS and not written down above person()" % key for key in sorted(listed - written)]
+        print("look keys: %d read by the kit, %d written down above person(), %d in LOOK_KEYS"
+              % (len(read), len(written), len(listed)))
+        for line in drift:
+            print("    FAILED: %s" % line)
+        report.record("look keys", not drift, "%d read, %d written down, %d listed%s"
+                      % (len(read), len(written), len(listed), ("; " + "; ".join(drift)) if drift else ""))
+        shared = shared_names()
+        print("names: %d top-level names defined in two script files" % len(shared))
+        for name in sorted(shared):
+            print("    FAILED: %s() is defined in %s; the one loaded last replaces the other" % (name, " and ".join(shared[name])))
+        report.record("names", not shared, "%d top-level names defined in two script files%s"
+                      % (len(shared), (": " + ", ".join(sorted(shared))) if shared else ""))
+        if not drift and not shared:
+            passed["__scripts__"] = scripts
     bad = len(drift) + len(shared)
     with sync_playwright() as playwright:
         # a sheet that has drawn a picture from a file cannot be read back pixel by pixel unless Chrome is told
@@ -247,6 +295,13 @@ def main():
         browser = playwright.chromium.launch(channel="chrome", args=["--allow-file-access-from-files"])
         print("%-16s %6s  %-7s %14s %9s  %s" % ("page", "length", "draws", "same (px)", "ms/frame", "arms: flips, inward, folded"))
         for page_file in files:
+            name = page_file.relative_to(HERE).as_posix() if HERE in page_file.parents else page_file.name
+            mark = fingerprint(page_file, args.quick)
+            full = fingerprint(page_file, False)
+            if args.changed and (passed.get(name) == mark or (args.quick and passed.get(name) == full)):
+                report.skip(name, "nothing it loads has changed since it passed")
+                print("%-16s left out: nothing it loads has changed since it passed" % page_file.name)
+                continue
             found, failed = check(browser, page_file, args.quick, args.settle)
             print("%-16s %s" % (page_file.name, found["skipped"]) if "skipped" in found else line_of(page_file.name, found))
             if found.get("cues"):
@@ -255,8 +310,32 @@ def main():
             for line in failed:
                 print("    FAILED: %s" % line)
             bad += len(failed)
+            if "skipped" in found:
+                report.skip(name, found["skipped"])
+                continue
+            same_bad = [line for line in failed if line.startswith("a still does not")]
+            arms_bad = [line for line in failed if " arm " in line and "(allowed" in line]
+            report.record(name + ": draws", found.get("draws", False),
+                          "%.1f s, 24 frames spread over it" % found["long"] if found.get("draws") else "it did not draw")
+            if "past" in found:
+                report.record(name + ": same", not same_bad, "%d pixels differ, %d past a pixel's shift (limit %d)"
+                              % (found["differ"], found["past"], SAME_LIMIT))
+            if found.get("arms") is not None:
+                arms = found["arms"]
+                report.record(name + ": arms", not arms_bad, "%d flips, %d inward, %d folded"
+                              % (len(arms["flips"]), len(arms["inward"]), len(arms["folded"])))
+            if found.get("cues"):
+                report.record(name + ": cues", not found["cues"]["bad"], "%d lines of the song" % found["cues"]["lines"])
+            others = [line for line in failed if line not in same_bad and line not in arms_bad]
+            if others:
+                report.record(name + ": other", False, "; ".join(others))
+            if not failed:
+                passed[name] = mark
         browser.close()
     print("%d pages, %d failures" % (len(files), bad))
+    out.mkdir(parents=True, exist_ok=True)
+    passed_file.write_text(json.dumps(passed, indent=1), encoding="utf-8")
+    report.finish()
     sys.exit(1 if bad else 0)
 
 

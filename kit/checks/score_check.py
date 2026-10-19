@@ -10,6 +10,8 @@ its own (under a second of its feeling alone) is measured over what there is, an
 loud the music is, how bright (where the middle of its energy lies) and how busy (how many notes begin a
 second), and draws all of it, one scene to a row, into out/maeng_music/plot.html: every sentence a block in its
 feeling's colour, under it the set the music was heard in, and the music's loudness and busyness along the time.
+Each line is written down, PASS or FAIL, in out/checks/score_check.txt (report.py). With --changed, it is left out
+when the music (out/maeng_music/), score.py, feelings.py and the scene files have not changed since it passed.
 Exits 1 if any line's music is heard in another feeling's notes.
 """
 import html
@@ -24,6 +26,7 @@ KIT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(KIT))
 sys.path.insert(0, str(KIT / "maeng"))
 from score import CROSS, EARLY, FEELINGS, SETS  # noqa: E402
+from report import Report, fingerprint  # noqa: E402
 
 OUT = KIT / "out" / "maeng_music"
 WORDS = KIT / "maeng" / "words.js"
@@ -96,6 +99,14 @@ def english():
 
 
 def main():
+    report = Report("score_check")
+    depends = sorted(OUT.glob("*.wav")) + [OUT / "cues.json", KIT / "score.py", KIT / "maeng" / "feelings.py", Path(__file__)]
+    depends += sorted((KIT / "maeng").glob("s[0-9][0-9]_*.js"))
+    mark = fingerprint(depends)
+    if "--changed" in sys.argv and report.unchanged("music", mark):
+        report.skip("music", "the music and what it is made from have not changed since it passed")
+        report.finish()
+        return
     sheet = json.loads((OUT / "cues.json").read_text(encoding="utf-8"))
     words, wrong, rows = english(), 0, []
     for scene, info in sorted(sheet.items()):
@@ -117,6 +128,8 @@ def main():
             expected = FEELINGS[feeling]["notes"]
             ok = heard == expected
             wrong += not ok
+            report.record("%s %s (%s)" % (scene, line, feeling), ok, "wants %s, heard %s (%.0f%%)%s"
+                          % (expected, heard, 100 * share, ", too short to hear alone" if short else ""))
             loud = 20 * numpy.log10(numpy.sqrt(numpy.mean(piece ** 2)) + 1e-9)
             measured.append({"line": line, "start": start, "end": end, "feeling": feeling, "expected": expected,
                              "heard": heard, "share": share, "ok": ok, "short": short, "loud": float(loud),
@@ -127,6 +140,9 @@ def main():
     plot(rows)
     total = sum(len(r[2]) for r in rows)
     print("%d of %d lines' music in another feeling's notes; plot: %s" % (wrong, total, OUT / "plot.html"))
+    if not wrong:
+        report.passed_with("music", mark)
+    report.finish()
     sys.exit(1 if wrong else 0)
 
 

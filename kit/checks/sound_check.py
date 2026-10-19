@@ -5,7 +5,9 @@
 For each sound: it is made at all; it is as long as its outline says (the echo may ring on after it, no more
 than its "cave" seconds and the latest voice's start); nothing in it is not a number; it is loud enough and does
 not clip (its peak between 0.5 and 0.95); it is not silent through its middle; and it is not the same as any
-other sound (two moods that sound alike are one mood too many). Prints one line a sound, and exits 1 if any fails.
+other sound (two moods that sound alike are one mood too many). Prints one line a sound, writes each down, PASS or
+FAIL, in out/checks/sound_check.txt (report.py), and exits 1 if any fails. With --changed, it is left out when
+sounds.py and howl.py have not changed since it passed.
 """
 import sys
 from pathlib import Path
@@ -15,6 +17,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from howl import RATE, chorus, howl  # noqa: E402
 from sounds import SOUNDS  # noqa: E402
+from report import Report, fingerprint  # noqa: E402
 
 
 def longest(outline):
@@ -25,6 +28,13 @@ def longest(outline):
 
 
 def main():
+    report = Report("sound_check")
+    kit = Path(__file__).resolve().parent.parent
+    mark = fingerprint([kit / "sounds.py", kit / "howl.py", Path(__file__)])
+    if "--changed" in sys.argv and report.unchanged("sounds", mark):
+        report.skip("sounds", "sounds.py and howl.py have not changed since they passed")
+        report.finish()
+        return
     failed, made = 0, {}
     for name, (outline_of, _) in SOUNDS.items():
         outline = outline_of()
@@ -48,9 +58,14 @@ def main():
                 wrong.append("sounds like %s" % other)
         made[name] = spectrum
         failed += bool(wrong)
+        report.record(name, not wrong, "%.2f s, peak %.2f, middle %.0f dB%s" % (len(sound) / RATE, np.abs(sound).max(), quiet,
+                                                                         ("; " + "; ".join(wrong)) if wrong else ""))
         print("%-14s %5.2f s  peak %.2f  middle %4.0f dB  %s" % (name, len(sound) / RATE, np.abs(sound).max(), quiet,
                                                                "; ".join(wrong) if wrong else "ok"))
     print("%d of %d sounds wrong" % (failed, len(SOUNDS)))
+    if not failed:
+        report.passed_with("sounds", mark)
+    report.finish()
     sys.exit(1 if failed else 0)
 
 

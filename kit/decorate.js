@@ -4,10 +4,10 @@
 //     <script src="oldcartoon.js"></script>
 //     <script src="decorate.js"></script>
 //
-// A scene that is built is decorated in three passes (docs/STYLE.md, "Decorating a scene"): its place (flora
-// and mist, painted on its sheets or drawn live), its life (what lives there, at that hour, each on a course,
-// listed here), and a check of it (checks/life_check.py plots every course against the scene's lines and
-// people). This file is the second pass.
+// A scene that is built is decorated in passes (docs/STYLE.md, "Decorating a scene"): its place (flora and mist,
+// painted on its sheets or drawn live), its things (what a home or a hall of that place has: dress(), at the end of
+// this file), its life (what lives there, at that hour, each on a course: decorate()), and a check of it
+// (checks/ghost.py plots every course; checks/seek_check.py; kit_check.py).
 //
 // A course is a row of stops, [[second, x, y, what], ...]: where the animal is at each second, and what it does
 // there ("sniff", "up", "rest", "peck", "hide", or nothing). From the first stop's second to the last stop's it
@@ -121,5 +121,36 @@ function decorate(t, life, layer) {
       var m = pen.getTransform(), a = m.transformPoint(new DOMPoint(box[0], box[1])), b = m.transformPoint(new DOMPoint(box[2], box[3]));
       window.LIFE_SEEN.push({name: one.name, kind: one.kind, t: t, box: [a.x / PIX, a.y / PIX, b.x / PIX, b.y / PIX]});
     }
+  });
+}
+
+// ---------- things: what a place has ----------
+// A place's things are a list too: [{name, kind, x, base, size, look, layer, from, to}, ...], each drawn standing
+// on (x, base) by its kind's painter (THING_KINDS: the household things of pieces.js, the water jar, the lantern),
+// "back" or "front" of the people as decorate()'s life is, and only from "from" to "to" (seconds) when given: a
+// pot that is on the fire in one scene and not in another. dress(t, things, layer, tint) draws one layer of them,
+// tint (a set's [colour, amount], at night) over every one that takes one. What is the same in every scene of a
+// place is listed once, with its set (the film's sets.js), and dressed there.
+var THING_KEYS = {};
+["name", "kind", "x", "base", "size", "look", "layer", "from", "to"].forEach(function (name) { THING_KEYS[name] = true; });
+var THING_KINDS = {
+  huad: function (one, look, t) { huad(pen, one.x, one.base, one.size || 1, t, look); },
+  kongKhao: function (one, look) { kongKhao(pen, one.x, one.base, one.size || 1, look); },
+  krabung: function (one, look) { krabung(pen, one.x, one.base, one.size || 1, look); },
+  mortar: function (one, look) { mortar(pen, one.x, one.base, one.size || 1, look); },
+  taLaew: function (one, look) { taLaew(pen, one.x, one.base, one.size || 1, look); },
+  namton: function (one) { namton(pen, one.x, one.base, one.size || 1); },
+  khom: function (one, look) { khom(one.x, one.base, Object.assign({size: one.size || 1}, look)); }   // hung from (x, base)
+};
+
+function dress(t, things, layer, tint) {
+  things.forEach(function (one) {
+    checkNames("A place's thing", one, THING_KEYS);
+    if ((one.layer || "back") !== layer) { return; }
+    if ((one.from !== undefined && t < one.from) || (one.to !== undefined && t > one.to)) { return; }
+    checkName("A kind of thing", one.kind, THING_KINDS);
+    var look = Object.assign({}, one.look || {});
+    if (tint && one.kind !== "namton" && one.kind !== "khom") { look.tint = tint; }
+    THING_KINDS[one.kind](one, look, t);
   });
 }

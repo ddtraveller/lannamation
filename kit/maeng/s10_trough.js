@@ -187,8 +187,8 @@ function s10Dawn(t) {                               // dawn at the palace: the t
   mistDrift(pen, t, {left: 0, right: WIDE, top: 760, bottom: 900, count: 5, wide: 560, drift: 6, seed: 41, glow: "#f6c9a0",
                      alpha: 0.5 * (1 - between(t, 53, 59))});   // the dawn's mist, low over the courtyard, going as the sun comes
   decorate(t, S10_LIFE, "back");
-  hoKham(pen, p[0], p[1], p[2], {part: "back", tint: MAENG_DAWN});
-  hoKham(pen, p[0], p[1], p[2], {part: "front", tint: MAENG_DAWN});
+  maengPalace(t, "back", MAENG_DAWN);
+  maengPalace(t, "front", MAENG_DAWN);
   var done = t > 53.2, strike = s10Strike(t, 0), x = MAENG_STAIR - 120;
   var joints = person(x, row - 8, maengTrader(1, {face: 1, sit: done ? 0 : 1, bend: done ? 0 : 0.5, feel: done ? "happy" : "concerned",
                                                   reachA: done ? undefined : [x + 40, mix(row - 46, row - 150, strike.high)]}));
