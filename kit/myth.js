@@ -1,15 +1,15 @@
-// myth.js - three creatures of the myths of Lanna, the north of Thailand, for
-// films made with oldcartoon.js: the Mom, the Luang and the Hatsadiling
-// bird. They stand on the beasts' legs and the Naga's body, so load it after
-// both:
+// myth.js - four creatures of the myths of Lanna, the north of Thailand, for
+// films made with oldcartoon.js: the Mom, the Luang, the Hatsadiling bird
+// and the creature with four ears and five eyes. They stand on the beasts'
+// legs and the Naga's body, so load it after both:
 //
 //     <script src="oldcartoon.js"></script>
 //     <script src="naga.js"></script>
 //     <script src="beasts.js"></script>
 //     <script src="myth.js"></script>
 //
-// and call mom(x, y, look), luang(x, y, look) or hatsadiling(x, y, look)
-// from a scene.
+// and call mom(x, y, look), luang(x, y, look), hatsadiling(x, y, look) or
+// maengSiHuHaTa(x, y, look) from a scene.
 //
 // Nothing is copied. Each was read by eye from one photograph of a work in
 // the north (all on Wikimedia Commons) and from what is written of it, and
@@ -58,6 +58,27 @@
 //     3. A wing folded along its side, with a round flower at the shoulder.
 //     4. A tail that stands up in a fan of great flames, each with a border.
 //
+//   The creature with four ears and five eyes (แมงสี่หูห้าตา, Maeng Si Hu Ha
+//   Ta). In the tale of Lanna an orphan catches it in a snare at a cave on
+//   Doi Khao Khwai, Chiang Rai; it eats nothing but red-hot embers, and what
+//   it leaves behind is gold (the palm-leaf Tham Si Hu Ha Ta, and the shrine
+//   at Wat Phra That Doi Khao Khwai Kaeo, where people still bring it
+//   charcoal). Read from the shrine's statue (photograph: Chainwit., CC BY-SA
+//   4.0) and the older statue and amulets in its style (Big HDV, CC BY-SA
+//   3.0), all on Wikimedia Commons; then, from three candidates, the owner's
+//   (2026-10-19): "Like C but longer, with a big grin and 2 big tusks and
+//   oversized feet and claws", the tusks up, "Make the mouth bigger":
+//     1. A long heavy body like a bear's, in short dark grey fur, a little
+//        shaggy at its edge, on four short legs.
+//     2. A big round head turned to whoever looks at it, a heavy jaw.
+//     3. Five eyes, as the points of a star: one high in the middle of the
+//        brow, two above at the sides, two lower and nearer the middle; each
+//        in a ring, as the statue's are carved; green.
+//     4. Four round ears, two on each side, high on the head.
+//     5. A small blunt nose, and a grin from cheek to cheek, a row of small
+//        teeth, and two great tusks that rise from the lower jaw.
+//     6. Paws too big for it, with long pale claws hooked down to the ground.
+//
 // And they move. The Mom walks one foot at a time, as the kit's beasts do,
 // blinks, and opens its mouth. The Luang flies: its body follows its head as
 // a chain (the Naga's rule), its wings beat, its legs paddle and its
@@ -90,9 +111,13 @@
 //   fly        true: it flies. The wings beat and the legs are drawn up
 //   head       the colour of its elephant's head
 //   trunk      0 to 1: how high the trunk is lifted
+// for the creature with four ears and five eyes (maengSiHuHaTa), with size, face, step, mouth, colour,
+// eyes and feel:
+//   glow       0 to 1: how far its five eyes light up, as they do when it has eaten an ember
 var MYTH_KEYS = {};
 
-["size", "face", "late", "mouth", "colour", "gold", "belly", "step", "eyes", "trail", "depth", "sing", "horns", "wings", "fly", "head", "trunk", "feel"
+["size", "face", "late", "mouth", "colour", "gold", "belly", "step", "eyes", "trail", "depth", "sing", "horns", "wings", "fly", "head", "trunk", "feel",
+ "glow"
 ].forEach(function (name) { MYTH_KEYS[name] = true; });
 
 // How the two that walk do it, for amble() of beasts.js: [how large it is
@@ -100,6 +125,7 @@ var MYTH_KEYS = {};
 // beats a stride takes].
 GAITS.mom = [0.9, 70, 2];
 GAITS.hatsadiling = [1, 90, 2];
+GAITS.maengSiHuHaTa = [1, 60, 2];
 
 // Scales, inside the shape that "shapeOf" makes: rows of small round scales,
 // each row sitting between the scales of the row above, their round edges
@@ -933,4 +959,284 @@ function hatsadiling(x, y, look) {
   FINE = 1;
   LINE = STYLE.line;
   return {seat: [x - 30 * size * face, y - (300 + bob) * size], head: [crown.x, crown.y]};
+}
+
+// ---------- the creature with four ears and five eyes ----------
+// Its outline as points: from "start", along cubic curves [c1x, c1y, c2x, c2y, x, y], "steps" points each.
+function maengOutline(start, curves, steps) {
+  var points = [start], at = start;
+  curves.forEach(function (c) {
+    for (var n = 1; n <= steps; n++) {
+      var u = n / steps, v = 1 - u;
+      points.push([v * v * v * at[0] + 3 * v * v * u * c[0] + 3 * v * u * u * c[2] + u * u * u * c[4],
+                   v * v * v * at[1] + 3 * v * v * u * c[1] + 3 * v * u * u * c[3] + u * u * u * c[5]]);
+    }
+    at = [c[4], c[5]];
+  });
+  return points;
+}
+
+// The outline as a path; with "shag" each stretch of it bows out from "middle" a little, a tuft of fur.
+function maengPath(points, shag, middle, seed) {
+  pen.beginPath();
+  pen.moveTo(points[0][0], points[0][1]);
+  for (var n = 1; n < points.length; n++) {
+    var a = points[n - 1], b = points[n];
+    if (!shag) { pen.lineTo(b[0], b[1]); continue; }
+    var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, ox = mx - middle[0], oy = my - middle[1], far = Math.sqrt(ox * ox + oy * oy) || 1;
+    var out = shag * (7 + 4 * Math.sin(n * 2.3 + seed));
+    pen.quadraticCurveTo(mx + ox / far * out, my + oy / far * out, b[0], b[1]);
+  }
+  pen.closePath();
+}
+
+// A paw too big for it, at the ankle (ax, ay): broad, with four long pale claws hooked down to the ground.
+function maengPaw(ax, ay, skin) {
+  pen.save();
+  pen.translate(ax, ay);
+  pen.scale(1.7, 1.7);
+  pen.translate(6, -4.2);
+  pen.beginPath();
+  pen.ellipse(6, 2, 26, 13, 0, 0, 7);
+  shape(skin);
+  pen.fillStyle = "#efe6d2";
+  pen.strokeStyle = inkFor("#efe6d2");
+  pen.lineWidth = 1.2 * FINE;
+  for (var claw = 0; claw < 4; claw++) {
+    var cx = -8 + claw * 10;
+    pen.beginPath();
+    pen.moveTo(cx - 2, 4);                          // thick at the root, hooked down to a tip that rests on the ground
+    pen.quadraticCurveTo(cx + 12.5, -1, cx + 16, 15);
+    pen.quadraticCurveTo(cx + 9, 9, cx + 5, 13);
+    pen.closePath();
+    pen.fill();
+    pen.stroke();
+  }
+  pen.restore();
+}
+
+// One of its eyes, looking out at the viewer, about (x, y), r across: the carved ring, the white, a green iris,
+// the pupil and a light. A feeling (e, from creatureFeel()) brings the lid down, low at the corner by the nose in
+// anger, at the outer corner in sadness; shut, or laughing, the eye is a line, bowed up in a laugh. "glow" lights
+// the iris and the air about it.
+function maengEye(x, y, r, e, c, shut, glow) {
+  var closed = Math.max(e.lid, shut ? 1 : 0), ry = r * e.wide, inward = x < -1 ? 1 : x > 1 ? -1 : 0;
+  pen.save();
+  pen.translate(x, y);
+  if (glow > 0.01) {
+    var halo = pen.createRadialGradient(0, 0, r * 0.5, 0, 0, r * 2.6);
+    halo.addColorStop(0, "rgba(214, 255, 120, " + (0.55 * glow).toFixed(3) + ")");
+    halo.addColorStop(1, "rgba(214, 255, 120, 0)");
+    pen.fillStyle = halo;
+    pen.fillRect(-r * 2.6, -r * 2.6, r * 5.2, r * 5.2);
+  }
+  pen.beginPath();
+  pen.arc(0, 0, r + 4.5, 0, 7);
+  pen.fillStyle = blend(c.fur, "#000000", 0.35);
+  pen.fill();
+  pen.strokeStyle = inkFor(c.fur);
+  pen.lineCap = "round";
+  if (closed > 0.9 || (e.bowed && closed > 0.5)) {   // shut: the lid in the fur's colour, and a line across it
+    pen.beginPath();
+    pen.arc(0, 0, r, 0, 7);
+    pen.fillStyle = c.lit;
+    pen.fill();
+    pen.lineWidth = Math.max(1.8, r * 0.3) * FINE;
+    pen.beginPath();
+    pen.moveTo(-r, 0);
+    pen.quadraticCurveTo(0, (e.bowed ? -1.1 : 0.8) * r, r, 0);
+    pen.stroke();
+    pen.restore();
+    return;
+  }
+  var ball = new Path2D();
+  ball.ellipse(0, 0, r, ry, 0, 0, Math.PI * 2);
+  pen.fillStyle = "#fbf6e8";
+  pen.fill(ball);
+  pen.save();
+  pen.clip(ball);
+  [[0, 1, 0.66, blend(c.eyes, "#e6ff8a", glow)], [0, 1.5, 0.34, "#16131a"], [-0.28 * r, -0.26 * ry, 0.2, "#ffffff"]].forEach(function (dot) {
+    pen.beginPath();                                // the iris, the pupil and the light, filled with no line round them
+    pen.ellipse(dot[0], dot[1], r * dot[2], (dot[3] === "#ffffff" ? r : ry) * dot[2], 0, 0, 7);
+    pen.fillStyle = dot[3];
+    pen.fill();
+  });
+  var a = Math.max(0, e.slant), sad = Math.max(0, -e.slant), base = -ry + 2 * ry * 0.9 * closed;
+  var near = base + ry * (1.3 * a + 0.3 * sad), outer = base + ry * (1.1 * sad + 0.2 * a);
+  if (closed > 0.02 || a > 0.02 || sad > 0.02) {   // the lid, in the fur's colour, down to a line
+    var left = inward > 0 ? outer : inward < 0 ? near : (near + outer) / 2, right = inward > 0 ? near : inward < 0 ? outer : (near + outer) / 2;
+    pen.beginPath();
+    pen.moveTo(-r * 1.2, -ry * 1.3);
+    pen.lineTo(r * 1.2, -ry * 1.3);
+    pen.lineTo(r * 1.2, right);
+    pen.lineTo(-r * 1.2, left);
+    pen.closePath();
+    pen.fillStyle = c.fur;
+    pen.fill();
+    pen.lineWidth = Math.max(1.4, ry * 0.26) * FINE;
+    pen.stroke();
+  }
+  pen.restore();
+  pen.lineWidth = Math.max(1.2, r * 0.14) * FINE;
+  pen.stroke(ball);
+  pen.restore();
+}
+
+// The face, turned to the viewer, about its middle: 172 across the cheeks. "open" is how far the jaw has dropped;
+// e the feeling (creatureFeel()).
+function maengFace(c, e, open, shut, glow, seed) {
+  var ears = e.ears, low = Math.max(0, -ears) * 14, up = Math.max(0, ears) * 6, flat = 1 - 0.3 * Math.max(0, -ears);
+  [[-50, -70, 23], [50, -70, 23], [-80, -34, 20], [80, -34, 20]].forEach(function (one) {   // the four round ears, behind the head
+    pen.save();
+    pen.translate(one[0] * (1 + 0.08 * Math.max(0, -ears)), one[1] + low - up);
+    pen.scale(1, flat);                             // in fear and sadness they lie back, low and flat
+    pen.beginPath();
+    pen.arc(0, 0, one[2], 0, 7);
+    shape(c.fur);
+    pen.beginPath();
+    pen.arc(one[0] * 0.02, 2, one[2] * 0.56, 0, 7);
+    pen.fillStyle = blend(c.fur, "#c99a9a", 0.35);
+    pen.fill();
+    pen.restore();
+  });
+  var head = maengOutline([0, -80], [[52, -80, 88, -50, 86, -8], [86, 38, 54, 74, 0, 74],
+                                     [-54, 74, -86, 38, -86, -8], [-88, -50, -52, -80, 0, -80]], 10);
+  maengPath(head, 0.45, [0, -6], seed + 3);
+  shape(c.fur);
+  pen.save();                                       // the light from the upper left, and the pale snout
+  maengPath(head, 0, [0, 0], 0);
+  pen.clip();
+  var light = pen.createRadialGradient(-34, -46, 6, -20, -20, 110);
+  light.addColorStop(0, c.lit);
+  light.addColorStop(1, c.fur);
+  pen.fillStyle = light;
+  pen.fillRect(-100, -100, 200, 190);
+  pen.beginPath();
+  pen.ellipse(0, 38, 66, 40, 0, 0, 7);
+  pen.fillStyle = blend(c.lit, "#9a8f86", 0.45);
+  pen.fill();
+  pen.restore();
+  [[0, -54], [-41, -31], [41, -31], [-21, -6], [21, -6]].forEach(function (one) {   // the five eyes, as the points of a star
+    maengEye(one[0], one[1], 14.4, e, c, shut, glow);
+  });
+  pen.beginPath();                                  // the nose: a small rounded triangle
+  pen.moveTo(-11, 13);
+  pen.quadraticCurveTo(0, 8, 11, 13);
+  pen.quadraticCurveTo(4, 25, 0, 26);
+  pen.quadraticCurveTo(-4, 25, -11, 13);
+  shape("#221e24");
+  // The grin, from cheek to cheek. A smile lifts its corners, a frown or fear draws it in and drops them, and the
+  // jaw drops "open": the lower lip, the tongue and the tusks with it.
+  var g = e.grin, wide = 64 * mix(0.72, 1, clamp(g + 0.6)), corner = 26 + 16 * Math.max(0, -g) - 6 * Math.max(0, g);
+  var drop = 64 * open, lip = 50 - 8 * Math.max(0, g);
+  pen.beginPath();
+  pen.moveTo(-wide, corner);
+  pen.quadraticCurveTo(0, 104 + drop, wide, corner);
+  pen.quadraticCurveTo(0, lip, -wide, corner);
+  pen.closePath();
+  pen.fillStyle = "#6a2a2a";
+  pen.fill();
+  pen.save();
+  pen.clip();
+  oval(0, 62 + drop * 0.75, 26, 11, "#c2575a");     // the tongue, low in the mouth
+  pen.fillStyle = "#f6efdc";
+  for (var tooth = -5; tooth <= 5; tooth++) {       // a row of small blunt teeth under the upper lip
+    var tx = tooth * 10 * wide / 64;
+    pen.fillRect(tx - 4, mix(corner, lip, 1 - Math.pow(tx / wide, 2)) * 0.5 + corner * 0.5 - 2, 8, 10);
+  }
+  pen.restore();
+  pen.strokeStyle = inkFor(c.lit);
+  pen.lineWidth = 2 * FINE;
+  pen.lineJoin = "round";
+  pen.stroke();
+  [-1, 1].forEach(function (side) {                 // the two great tusks, from the lower jaw, curving up and out past the lip
+    pen.save();
+    pen.scale(side, 1);
+    pen.translate(wide - 64, drop * 0.7);
+    pen.beginPath();
+    pen.moveTo(34, 62);
+    pen.quadraticCurveTo(62, 46, 66, 0);
+    pen.quadraticCurveTo(50, 34, 22, 56);
+    pen.closePath();
+    shape("#f4ead2", 1.6 * FINE);
+    pen.restore();
+  });
+}
+
+// The creature with four ears and five eyes, standing on (x, y), its body side on and its face turned to the
+// viewer: see the top of this file. 470 long and 290 high at size 1. It walks (step, as amble() gives it), blinks,
+// feels (feel), opens its jaw (mouth, 0 to 1) and lights its eyes (glow). Gives back {head, mouth}, points of the
+// scene: the middle of its face, and of its mouth, where an ember goes in.
+function maengSiHuHaTa(x, y, look) {
+  checkNames("The name of the creature with four ears and five eyes", look, MYTH_KEYS);
+  var size = (look.size || 1) * GAITS.maengSiHuHaTa[0], face = look.face || 1, seed = x * 0.013;
+  var c = {fur: look.colour || "#46424c", eyes: look.eyes || "#7cc25a"};
+  c.lit = blend(c.fur, "#a8a0b4", 0.3);
+  var e = look.feel !== undefined ? creatureFeel(look, clock + seed)
+                                  : {lid: 0, bowed: false, slant: 0, wide: 1, grin: 0.5, ears: 0, raise: 0, wag: 0, startle: 0};
+  var open = clamp(look.mouth || 0), glow = clamp(look.glow || 0), blink = Math.sin(clock * 0.8 + seed) > 0.97;
+  if (e.jaw) { open = e.jaw(open); }
+  FINE = Math.min(1, Math.pow(Math.max(0.5, size), -0.7));
+  LINE = STYLE.line * FINE / Math.max(0.45, Math.min(1, size * 1.3));
+  var legY = -88, top = -220, headAt = [152, top + 23 - 4 * e.raise];
+  pen.fillStyle = "rgba(60, 40, 30, 0.22)";          // its shadow on the ground
+  pen.beginPath();
+  pen.ellipse(x, y + 4 * size, 215 * size, 17 * size, 0, 0, 7);
+  pen.fill();
+  pen.save();
+  pen.translate(x, y);
+  pen.scale(size * face, size);
+  var hind = [[-130, legY, 0, -1, false], [-106, legY - 4, 0.5, -1, true]];
+  var fore = [[92, legY, 0.25, 1, false], [117, legY - 4, 0.75, 1, true]];
+  function legs(far) {
+    var skin = far ? blend(c.fur, "#1c1c22", 0.2) : c.fur;
+    beastLegs(hind, far, look, [46, 42, 12], [34, 27, 21], skin, GAITS.maengSiHuHaTa[1], 16, maengPaw);
+    beastLegs(fore, far, look, [46, 42, 12], [34, 27, 21], skin, GAITS.maengSiHuHaTa[1], 16, maengPaw);
+  }
+  legs(true);
+  var bob = look.step !== undefined ? 2.5 * Math.abs(Math.sin(look.step * Math.PI * 2)) : 0;
+  pen.translate(0, -bob - 10 * e.startle);
+  pen.save();                                       // a short tail, that wags
+  pen.translate(-200, -150);
+  pen.rotate(-0.5 + 0.35 * e.wag * Math.sin(clock * 14));
+  pen.beginPath();
+  pen.ellipse(0, 0, 18, 13, 0, 0, 7);
+  shape(c.fur);
+  pen.restore();
+  var body = maengOutline([-194, -118], [[-205, top + 10, -110, top - 4, -22, top], [66, top + 2, 154, top + 6, 174, -140],
+                                         [187, -96, 143, legY + 14, 77, legY + 10], [11, legY + 22, -99, legY + 22, -154, legY + 12],
+                                         [-187, legY + 4, -194, -100, -194, -118]], 12);
+  maengPath(body, 0.45, [0, (top + legY) / 2], seed);
+  shape(c.fur);
+  pen.save();
+  maengPath(body, 0, [0, 0], 0);
+  pen.clip();
+  var sheen = pen.createLinearGradient(0, top, 0, legY + 20);   // lit from above, darker under the belly
+  sheen.addColorStop(0, c.lit);
+  sheen.addColorStop(0.55, c.fur);
+  sheen.addColorStop(1, blend(c.fur, "#000000", 0.25));
+  pen.fillStyle = sheen;
+  pen.fillRect(-240, top - 20, 480, legY - top + 60);
+  pen.strokeStyle = blend(c.fur, "#000000", 0.3);   // strokes of fur down the flank
+  pen.lineWidth = 2 * FINE;
+  for (var s = 0; s < 14; s++) {
+    var sx = -165 + s * 24, sy = top + 30 + 18 * Math.sin(s * 1.7);
+    pen.beginPath();
+    pen.moveTo(sx, sy);
+    pen.quadraticCurveTo(sx - 6, sy + 24, sx - 2, sy + 44);
+    pen.stroke();
+  }
+  pen.restore();
+  legs(false);
+  pen.save();                                       // the head on the shoulders, turned to the viewer
+  pen.translate(headAt[0], headAt[1]);
+  pen.scale(1.24, 1.24);
+  maengFace(c, e, open, blink, glow, seed);
+  pen.restore();
+  pen.restore();
+  FINE = 1;
+  LINE = STYLE.line;
+  var lift = bob + 10 * e.startle;
+  return {head: [x + headAt[0] * size * face, y + (headAt[1] - lift) * size],
+          mouth: [x + headAt[0] * size * face, y + (headAt[1] + 1.24 * (44 + 40 * open) - lift) * size]};
 }

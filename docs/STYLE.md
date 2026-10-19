@@ -101,7 +101,7 @@ of it, each a second behind the other.
 | `dragon.js`, `dragon.html` | a dragon of the Himalayan paintings, built on the Naga's spine and body painter (load it after `naga.js`), and its sheet (see "A dragon") |
 | `dragon_flight.html` | the dragon's three manners of flight, glide, hover and fast, on one sheet (see "A dragon") |
 | `dragon_china.html` | the Chinese painters' dragon, `dragon()` with `kind: "chinese"`: scales, a long antlered head, eagle's feet and the flaming pearl it chases (see "The Chinese dragon") |
-| `myth.js`, `myth.html` | three creatures of the myths of Lanna, on the beasts' legs and the Naga's body (load it after `naga.js` and `beasts.js`): the Mom, the Luang and the Hatsadiling bird; and their sheet (see "Three creatures of the myths of Lanna") |
+| `myth.js`, `myth.html`, `fiveeyes.html` | four creatures of the myths of Lanna, on the beasts' legs and the Naga's body (load it after `naga.js` and `beasts.js`): the Mom, the Luang and the Hatsadiling bird, and their sheet (see "Three creatures of the myths of Lanna"); the creature with four ears and five eyes, and its sheet (see "The creature with four ears and five eyes") |
 | `band.js`, `band.html` | the band of the north, the salo, the sueng, the pi chum and the phin phia, each a painter of its own, and `musician(x, y, kind, look)`, a person who sits cross-legged and plays one on the beat; and its sheet (see "The band, more lanterns, the farmstead and the red truck") |
 | `finger_dance.js`, `finger_dance.html` | the fingernail dance of the north: its six poses read by eye from a performance, the 32-second phrase for `poseAt()`, three dresses, and `fingerDancer()`, the kit's dancer dancing it walking; and a troupe of fifteen dancing it (see "The fingernail dance, read from a performance") |
 | `khom_kinds.html` | the sheet for the four lanterns `khom.js` gained on 2026-10-16 (not `lanterns.html`: krueng.ai keeps a lesson of that name beside the kit): the spinning `khomPhat`, the handheld `khomThue`, the star `khomDao` and the lotus `khomBua`, by day and lit at night |
@@ -2256,6 +2256,50 @@ In the maker the Mom's feet slide if its course is faster or slower than its str
 known in the north above all from cremations; it is offered to children here as a bird of the
 Himavanta forest, and the owner was told so. Judged from stills only.
 
+## The creature with four ears and five eyes
+
+The owner (2026-10-19), for the film of the Lanna tale it belongs to: an orphan catches it in a snare
+at a cave on Doi Khao Khwai, Chiang Rai; it eats nothing but red-hot embers, and what it leaves behind
+is gold (แมงสี่หูห้าตา, Maeng Si Hu Ha Ta; the palm-leaf *Tham Si Hu Ha Ta* of Wat Chae Chang, and the
+shrine at Wat Phra That Doi Khao Khwai Kaeo, where people still bring it charcoal).
+`maengSiHuHaTa(x, y, look)` in `myth.js`; its sheet is `fiveeyes.html`.
+
+**Where it is from.** Nothing is copied. It was read from the shrine's statue (photograph by
+Chainwit., CC BY-SA 4.0, `File:ศาลแมงสี่หูห้าตา Si Hu Ha Ta Shrine in Wat Doi Khao Kwai - img 02.jpg`) and
+the older statue and amulets made after it (Big HDV, CC BY-SA 3.0, `File:4eye5eyecr02.jpg`,
+`File:4e5e cr remake1.jpg`, `File:4e5e cr remake2.jpg`), on Wikimedia Commons. Three candidates
+drawn from them were shown beside the photographs (a smooth temple statue, a shaggy one grinning,
+a round cub); the owner: "Like C but longer, with a big grin and 2 big tusks and oversized feet and
+claws"; between tusks that rise from the lower jaw and fangs that hang from the upper, "Tusks up";
+then "Make the mouth bigger".
+
+| Rule | How it is built |
+|---|---|
+| a long heavy body like a bear's, in short dark grey fur a little shaggy at its edge | the outline is points (`maengOutline`, cubic curves sampled), drawn by `maengPath` with each stretch bowed out from the middle a little: a tuft; lit from above, darker under the belly, strokes of fur down the flank |
+| a big round head, turned to whoever looks at it, a heavy jaw | the body is side on, the face full on (`maengFace`), 1.24 times the size it was drawn at |
+| five eyes as the points of a star: one high in the middle of the brow, two above at the sides, two lower and nearer the middle, each in a carved ring, green | `maengEye`: the ring, the white, the iris, the pupil and a light, filled without a line (the kit's `oval()` inks what it fills, and five inked irises went muddy) |
+| four round ears, two on each side, high on the head | drawn behind the head |
+| a small blunt nose; a grin from cheek to cheek with a row of small teeth and a tongue; two great tusks rising from the lower jaw | the tusks belong to the jaw: they drop with it |
+| paws too big for it, with long pale claws hooked down to the ground | `maengPaw`, 1.7 times a paw, four claws thick at the root, their tips on the ground (longer, they lay on the ground as thin blades) |
+
+**It moves and feels.** It walks by `amble("maengSiHuHaTa", ...)` (`GAITS.maengSiHuHaTa`) on the
+beasts' legs (`beastLegs`), blinks, wags a short tail, and takes the kit's feelings
+(`creatureFeel()`): the lids of all five eyes come down as a person's do (in anger low by the nose,
+in sadness and worry at the outer corner; the middle eye takes the mean), wide in wonder and fear,
+shut and bowed up in a laugh, half shut when sleepy or full; the ears lie back, low and flat, in
+fear, anger and sadness; the grin narrows and its corners drop in a frown or fear, and the jaw drops
+in a laugh, a yawn or a fright. `mouth` (0 to 1) drops the jaw for an ember; `glow` (0 to 1) lights
+the five eyes and the air about them, as after one. It gives back `{head, mouth}`, points of the
+scene, so a film can send an ember into its mouth.
+
+**The look.** With the Mom's keys `size`, `face`, `step`, `mouth`, `colour`, `eyes` and `feel`, one of
+its own: `glow`.
+
+**Not in the maker** (yet): only a film written by hand draws it.
+
+`kit_check.py fiveeyes.html myth.html creatures.html sabai.html sash.html` (every page that loads `myth.js`):
+5 pages, 0 failures; `fiveeyes.html` draws, same 0 / 0, 45.9 ms a frame.
+
 ## A puppet of a Spark drawing
 
 The owner's answer to the SVG question (2026-10-11 evening): nobody to draw her, "but the Spark can
@@ -3011,6 +3055,7 @@ The sheet now has 19 parts, 12 seconds each (228 s).
 | peafowl, pheasant (`northbirds.js`) | the eye (`nbEye()`: the dot it always was, or with a feeling a small eye under a lid of the head's colour); the head and neck carried high or low; the peafowl's bill opens in a laugh, a yawn or a fright |
 | sunbird, magpie, hornbill | the eye only. A bird's eye is a few pixels at a film's size: on these three a feeling shows on the sheet, close up, and hardly in a film |
 | Hatsadiling (`myth.js`) | the elephant's eye and brow; its trunk raised in wonder and gladness; its head lifted or hung, shaking a little in a laugh |
+| the creature with four ears and five eyes (`myth.js`) | all five eyes under lids of its fur (the middle one takes the mean of the two corners), wide or shut and bowed up; the four ears laid back low and flat; the grin narrowed and its corners dropped, or the jaw dropped; the head lifted or hung; the tail wags |
 | sun, `sun(x, y, t, how)` with `STYLE.sun = "face"` | `how.feel`: its pie eyes, each looking toward the middle, under lids of its gold; a brow over each; the smile turned (as wide as it is glad) or a frown, or opened in a laugh, a yawn or a fright. The flame sun (`"flames"`, the kit's own) has no face and takes no feeling |
 
 - **The maker.** Its six creatures have the feeling buttons in their panel, the dropdown in the bar over a
