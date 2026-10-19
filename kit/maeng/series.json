@@ -1,0 +1,153 @@
+{
+ "_": "The complete Lanna Tales film of the creature with four ears and five eyes, as rendered and published: the hero film (sash.html, its picture held SLOW times longer for the narrator, its words at these seconds: render.py --set SLOW, LENGTH, WORDS), the studio card (sls_intro.html), then the tale (maeng/film.html), joined by chain.py. Each part starts where the one before ends.",
+ "video": "https://krueng.ai/video/lanna_tales_maeng.mp4",
+ "parts": [
+  {
+   "name": "hero",
+   "page": "sash.html",
+   "seconds": 94.3,
+   "set": {
+    "SLOW": 1.15,
+    "LENGTH": 94.3
+   },
+   "words": [
+    [
+     4.14,
+     7.98,
+     "แต่ปางก่อน ชีวิตเดินไปจ๊า จ๊า เน้อ",
+     "แต่ปางก่อน ชีวิตเดินไปจ๊าๆ เน้อ",
+     "In ancient times, things moved more slowly."
+    ],
+    [
+     8.58,
+     12.54,
+     "แม่หญิงพาดผ้าสะพาย ฮ้องว่าสไบเจ้า",
+     "แม่หญิงพาดผ้าสะพาย ฮ้องว่าสไบเจ้า",
+     "Women wore a long sash called a sabai."
+    ],
+    [
+     13.12,
+     18.48,
+     "ลายตี้ทอไว้ตี้ผืนผ้า มีความหมายกั๊บชีวิตคนเมืองเน้อเจ้า",
+     "ลายตี้ทอไว้ตี้ผืนผ้า มีความหมายกั๊บชีวิตคนเมืองเน้อเจ้า",
+     "The patterns and symbols woven into it were meaningful to the daily life of the people."
+    ],
+    [
+     19.08,
+     22.56,
+     "พญามังรายตั้งล้านนาแปลงเชียงใหม่",
+     "พญามังรายตั้งล้านนาแปลงเชียงใหม่",
+     "King Mangrai founded Lanna and built Chiang Mai."
+    ],
+    [
+     26.45,
+     33.51,
+     "ชีวิตตี้เฮือนเฮาอยู่เงียบ เงียบ จ๊า จ๊า แต่คนเฮือนเฮาใจ๋ดี นับถือกั๋นเน้อเจ้า",
+     "ชีวิตตี้เฮือนเฮาอยู่เงียบๆ จ๊าๆ แต่คนเฮือนเฮาใจ๋ดี นับถือกั๋นเน้อเจ้า",
+     "Village life was quiet and slow but people treated each other with kindness and respect."
+    ],
+    [
+     34.11,
+     36.09,
+     "หันตุงสูงข้างเฮือนบะลูก",
+     "หันตุงสูงข้างเฮือนบะลูก",
+     "See the tung banner by the house?"
+    ],
+    [
+     36.69,
+     40.29,
+     "ตุงแขวนไว้ตี้งานปอยละก่อวันศีลเจ้า",
+     "ตุงแขวนไว้ตี้งานปอยละก่อวันศีลเจ้า",
+     "Tungs are hung for temple and festival days."
+    ],
+    [
+     40.49,
+     42.87,
+     "คนเฮาอยู่กั๊บธรรมชาติ",
+     "คนเฮาอยู่กั๊บธรรมชาติ",
+     "People were more in harmony with nature."
+    ],
+    [
+     43.07,
+     48.15,
+     "มีต้นกว๋าว จ้าง ดอกบัว ละก่อของดีนักขนาดเน้อเจ้า",
+     "มีต้นกว๋าว จ้าง ดอกบัว ละก่อของดีนักขนาดเน้อเจ้า",
+     "They had flame-of-the-forest trees, elephants, lotus flowers and many special things."
+    ],
+    [
+     48.75,
+     51.75,
+     "ช้าก่อน ตัวหลงนี้มาจากเมืองจีนนา",
+     "ช้าก่อน ตัวหลงนี้มาจากเมืองจีนนา",
+     "Wait! This dragon came from China."
+    ],
+    [
+     52.35,
+     56.03,
+     "ตัวหลงเมืองจีนมักถือแก้ว บะใช่ธง",
+     "ตัวหลงเมืองจีนมักถือแก้ว บะใช่ธง",
+     "Chinese dragons usually hold a pearl, not a flag!"
+    ],
+    [
+     56.63,
+     59.93,
+     "พู้นแน่ะ หมู่จ้างเดินหลังต้นกล้วย",
+     "พู้นแน่ะ หมู่จ้างเดินหลังต้นกล้วย",
+     "Do you see the elephants walking behind the banana trees over there?"
+    ],
+    [
+     60.53,
+     63.01,
+     "ฝนซาแล้วเหนือทุ่งนาเน้อ",
+     "ฝนซาแล้วเหนือทุ่งนาเน้อ",
+     "The rain is stopping over the rice fields."
+    ],
+    [
+     63.61,
+     68.57,
+     "แม่หญิงควงจ้องสลัดหยาดฝน เหมือนจ้องตี้บ่อสร้างเน้อเจ้า",
+     "แม่หญิงควงจ้องสลัดหยาดฝน เหมือนจ้องตี้บ่อสร้างเน้อเจ้า",
+     "The women spin their umbrellas to shake off the rain, like those of Bo Sang."
+    ],
+    [
+     69.17,
+     72.43,
+     "ล้านนา หมายถึง นาเป็นล้านทุ่ง",
+     "ล้านนา หมายถึง นาเป็นล้านทุ่ง",
+     "Lanna means a million rice fields."
+    ],
+    [
+     73.03,
+     76.65,
+     "ละอ่อนจูงควายลากเกวียนไม้เจ้า",
+     "ละอ่อนจูงควายลากเกวียนไม้เจ้า",
+     "That boy is leading a water buffalo pulling a traditional wooden cart called a kwian."
+    ],
+    [
+     80.96,
+     85.84,
+     "หันโคมสามอย่าง ช่างดนตรี กั๊บช่างฟ้อนก่อเจ้า",
+     "หันโคมสามอย่าง ช่างดนตรี กั๊บช่างฟ้อนก่อเจ้า",
+     "Do you see the three different kinds of lanterns and the musicians and the dancers?"
+    ],
+    [
+     86.04,
+     92.68,
+     "แต่ปางก่อน งานปอยม่วนขนาด มีของดีตี้คนเฮาแปงเองเน้อเจ้า",
+     "แต่ปางก่อน งานปอยม่วนขนาด มีของดีตี้คนเฮาแปงเองเน้อเจ้า",
+     "In ancient times the celebrations were quite lively and full of special things the people created themselves."
+    ]
+   ]
+  },
+  {
+   "name": "card",
+   "page": "sls_intro.html",
+   "seconds": 12.0
+  },
+  {
+   "name": "tale",
+   "page": "maeng/film.html",
+   "seconds": 821.0
+  }
+ ]
+}
