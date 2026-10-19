@@ -1800,6 +1800,16 @@ fades out, at `1 − smoothstep((hang − 0.25) / 0.5)`, so at the start of the 
 was and by the end the parasol is wholly behind her (a faint copy shows over the chest for about half a
 second). Every carried parasol in the kit behaves this way.
 
+**The handle over the sabai (2026-10-19).** The owner: "When the women are walking away with their
+umbrellas, you can't see 2 of the handles." The two who wear a sabai lost the handle between the fist and
+the skirt, and from the middle of the swing back the whole parasol: the back of the sabai hangs beside her
+arm and was drawn on her layer, so over the parasol on the sheet. The woman without one showed hers. The
+back of a sabai hangs behind the arm whose hand holds the parasol, so while the parasol hangs behind her
+(`layered`) `sabaiBack()` paints it on the sheet, before the parasol, at the same transform: the handle
+runs from the fist over the cloth and on behind the skirt, the fingers still closed over it. With no
+parasol behind her, nothing changes. (Drawing the handle's end over the whole figure was tried first and
+dropped: it lay over the fingers of the fist.)
+
 **Down first, then back (2026-10-17).** The owner: "when the women close the parasols the parasols then
 pass through their torsos. Change it so the parasol swings straight down first and then back." In `fold`
 the furled parasol went from tipped toward the viewer to carried in one movement: `tilt` from 1 to 0

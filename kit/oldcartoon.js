@@ -3918,7 +3918,21 @@ function person(x, y, look) {
     }
     return {half: half, length: len, start: 50, slant: 12, at: at, side: side};
   }
-  function sabaiBack(cloth, border) {               // the back of the sabai, hanging from the top end's corner at the shoulder
+  // The back of a sabai hangs behind the arm, and a parasol that hangs behind
+  // her is in that arm's hand: so on the sheet, before the parasol, not on her
+  // layer over it (owner, 2026-10-19: "When the women are walking away with
+  // their umbrellas, you can't see 2 of the handles": the cloth hid them).
+  function sabaiBack(cloth, border) {
+    if (!layered) { sabaiBackDrawn(cloth, border); return; }
+    var frame = pen.getTransform();
+    pen = sheetPen;
+    pen.save();
+    pen.setTransform(frame);
+    sabaiBackDrawn(cloth, border);
+    pen.restore();
+    pen = PERSON_LAYER;
+  }
+  function sabaiBackDrawn(cloth, border) {          // the back of the sabai, hanging from the top end's corner at the shoulder
     var L = sabaiLine(), corner = L.side(L.length, L.half), foot = seat ? ground - 8 : 59, outer = [], hem = [], n, p;
     for (n = 0; n <= 16; n++) {                     // the outer edge: down past the waist and the hand, leaning out 27 by the foot, waving 4 either way
       var yy = corner[1] + (foot - corner[1]) * n / 16;
