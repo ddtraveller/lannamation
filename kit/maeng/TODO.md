@@ -21,7 +21,9 @@ waits on others starts first and runs while the drawing goes on.
 2. **The live film, put right without waiting for the rest**: the narrator's own name in the credits (owner: "Change
    Panda's name in the credits to" Amornrat Jaijar, อมรรัตน์ ใจจา), the tokay's way down the hut wall kept off the
    doorway and ending at the top of the wall instead of disappearing (`s04`), the hen in front of the golden trough
-   (`s11`). Rendered from the film's own frozen kit on the Spark; then joined, checked and put live.
+   (`s11`). **Done 2026-10-20 12:29 (Thailand):** the two halves of the credits and scenes 4 and 11 rendered from the
+   film's frozen kit on the Spark, the tale joined (821 s), the film joined (927.3 s, -14.1 LUFS, -1.5 dBTP; the
+   credits' one-frame font patch is no longer needed), uploaded and the CDN cleared; the live page plays it.
 3. **The narrator's voice for the cartoon maker** (private, the owner's machines only): training, then the best
    checkpoint by the voice test, into the private copy of the Kam Mueang extension. Tracked outside this repository.
 4. Done 2026-10-20: the gecko of procedural_animation.html no longer folds over itself (a stiffer back).
