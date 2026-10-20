@@ -169,11 +169,14 @@ var SABAI_ROWS = [
 // sash scene and try to make sure each sprite on the sash is unique"): a row
 // of three to five painters repeats each of them six times along it. So
 // sabaiUnique() fills each row up to the number of figures it holds with
-// painters from sabaiPool(), none of them twice: every member of the cast in
-// seven ways (walking, in a wai, waving, sitting, laughing with a Thai face,
-// walking with a fat body, in a wai with both), the band's players, the
-// animals, birds and fish, the creatures of the myths, the flowers and fruits
-// and their trees, the lanterns, and the things of a house and a village.
+// painters from sabaiPool(), none of them twice, and no item twice in another
+// colour (owner: "totally unique items"): every member of the cast in eight
+// ways, each a different person to look at by the kit's face, body and hair
+// (walking, in a wai, sitting, laughing with the Thai face, with a fat body,
+// in a wai with both, with a hair style of their own, sitting with a fat
+// body), the band's players, the animals, birds and fish, the creatures of
+// the myths, the flowers and fruits, the trees of a shape of their own, each
+// lantern, and the things of a house and a village.
 // Each painter has a "key" (its name and its way, "villager walk"); a row's
 // own painters do not have one, and the keys a film's rows already show are
 // passed as "shown", so the pool does not weave them a second time. What the
@@ -184,12 +187,14 @@ var SABAI_PEOPLE = ["villager", "child", "maiden", "fellow", "weaver", "lady", "
 var SABAI_WAYS = {                      // a person's ways, each a look added to the cast member's own; a way with no step stands
   walk: {walks: true},
   wai: {wai: true},
-  wave: {walks: true, handA: [60, -150]},
+  hair: {walks: true, north: "thai", hair: true},   // a hair style of its own (SABAI_HAIRS, by the person's place in the list)
   sit: {floor: true},
   laugh: {walks: true, north: "thai", feel: "laughing"},
   fat: {walks: true, body: "fat"},
-  fatwai: {wai: true, body: "fat", north: "thai"}
+  fatwai: {wai: true, body: "fat", north: "thai"},
+  fatsit: {floor: true, body: "fat"}
 };
+var SABAI_HAIRS = ["low", "wong", "ipun", true];   // BUN_STYLES: a low knot, a knot on top, the e-pun knot, a high bun
 var SABAI_PLAYERS = {salo: "fellow", sueng: "farmer", pichum: "elder", phinphia: "fellow"};   // the band's players, as the maker has them
 
 function sabaiPool() {
@@ -199,6 +204,11 @@ function sabaiPool() {
       if (!CAST[name]) { return; }
       var how = Object.assign({}, SABAI_WAYS[way]), walks = how.walks;
       delete how.walks;
+      if (how.hair) {                                 // the hair changes, not who wears it (the kit's lady apart from bun)
+        delete how.hair;
+        how.bun = SABAI_HAIRS[SABAI_PEOPLE.indexOf(name) % SABAI_HAIRS.length];
+        how.lady = !!CAST[name].bun;
+      }
       var painter = walks ? function (b, u) { person(0, 0, cast(name, Object.assign({size: 1.1, step: u}, how))); }
                           : function (b) { person(0, 0, cast(name, Object.assign({size: 1.1}, how))); };
       painter.key = name + " " + way;
@@ -213,26 +223,17 @@ function sabaiPool() {
   // the animals, the birds and the fish
   more("rooster", "rooster", function (b, u) { rooster(0, 0, u * 2); });
   more("hen", "rooster", function (b, u) { rooster(0, 0, u * 2, {hen: true}); });
-  more("black rooster", "rooster", function (b, u) { rooster(0, 0, u * 2, {black: true}); });
-  more("black hen", "rooster", function (b, u) { rooster(0, 0, u * 2, {black: true, hen: true}); });
-  more("hen pecking", "rooster", function (b, u) { rooster(0, 0, u * 2, {hen: true, peck: 0.8}); });
   more("dog", "dog", function (b, u) { dog(0, 0, u * 2); });
   more("pig", "pig", function (b, u) { pig(0, 0, {size: 0.8, step: u}); });
-  more("black pig", "pig", function (b, u) { pig(0, 0, {size: 0.8, step: u, colour: "#2e2826"}); });
-  more("spotted pig", "pig", function (b, u) { pig(0, 0, {size: 0.8, step: u, points: "#2e2826"}); });
   more("buffalo", "buffalo", function (b, u) { buffalo(0, 0, {size: 0.55, step: u}); });
-  more("pink buffalo", "buffalo", function (b, u) { buffalo(0, 0, {size: 0.55, step: u, colour: "#d6aa9c"}); });
   more("elephant", "elephant", function (b, u) { elephant(0, 0, {size: 0.35, step: u}); });
-  more("dressed elephant", "elephant", function (b, u) { elephant(0, 0, {size: 0.35, step: u, cloth: "#8a2a3a"}); });
   more("tiger", "tiger", function (b, u) { tiger(0, 0, {size: 0.6, step: u}); });
   more("cat", "cat", function (b, u) { cat(0, 0, {size: 1, step: u}); });
-  more("black cat", "cat", function (b, u) { cat(0, 0, {size: 1, step: u, colour: "#2a2624"}); });
   more("horse", "horse", function (b, u) { horse(0, 0, {size: 0.75, step: u, pack: true}); });
   more("house mouse", "mouse", function (b, u) { mouse(0, 0, {kind: "house", size: 1.1, step: u}); });
   more("field mouse", "mouse", function (b, u) { mouse(0, 0, {kind: "field", size: 1.1, step: u}); });
   more("tokay", "gecko", function (b, u) { gecko([[-90, 0], [90, 0]], 150 + 20 * u, {size: 1, t: u}); });
   more("peafowl", "peafowl", function (b, u) { peafowl(0, 0, u, {size: 0.6, display: 1, shiver: 0.5}); });
-  more("peahen walking", "peafowl", function (b, u) { peafowl(0, 0, u, {size: 0.6, step: u}); });
   more("pheasant", "pheasant", function (b, u) { pheasant(0, 0, u, {size: 0.9, step: u}); });
   more("sunbird", "sunbird", function (b, u) { sunbird(0, 0, u / 13, {size: 2.4, hover: 1}); });
   more("magpie", "blueMagpie", function (b, u) { blueMagpie(0, 0, u, {size: 0.9, fly: true}); });
@@ -244,14 +245,14 @@ function sabaiPool() {
   more("mom", "mom", function (b, u) { mom(0, 0, {size: 0.6, step: u}); });
   more("luang", "luang", function () { luang(0, 0, {size: 0.4}); });
   more("maeng", "maengSiHuHaTa", function (b, u) { maengSiHuHaTa(0, 0, {size: 0.6, step: u}); });
-  more("naga three", "naga", function () { naga(0, -60, {size: 0.5, heads: 3}); });
-  more("naga five", "naga", function () { naga(0, -60, {size: 0.5, heads: 5, body: "#d9a441", crest: "#3a2418"}); });
+  more("naga", "naga", function () { naga(0, -60, {size: 0.5, heads: 3}); });
   more("yak", "yak", function (b) { yak(b, 0, 0, 1); });
   more("hong", "hong", function (b) { hong(b, 0, 0, 1); });
-  // the flowers and fruits, and the trees that bear them
+  // the flowers and fruits (owner, 2026-10-20: "I see repeat items. Specifically a tree. Make sure flowers are
+  // represented": the twelve trees in flower or fruit were one round green tree at the cloth's size, so only trees
+  // of a shape of their own are woven, below; each flower once, in its own colour: "totally unique items")
   Object.keys(window.FLORA || {}).forEach(function (name) {
     more(name, "flora", function () { flora(name, 0, 0, {size: 1.6, ground: false}); });
-    if (FLORA_TREES[name]) { more(name + " tree", "floraTree", function (b) { floraTree(b, 0, 0, 0.8, name, 3); }); }
   });
   more("tree", "tree", function (b) { tree(b, 0, 0, 1.1); });
   more("palm", "palm", function (b) { palm(b, 0, 0, 400); });
@@ -259,16 +260,10 @@ function sabaiPool() {
   more("bamboo", "bamboo", function (b) { bamboo(b, 0, 0, 1, 3); });
   more("areca", "areca", function (b) { areca(b, 0, 0, 1, 5); });
   more("lotus", "lotus", function (b) { lotus(b, 0, 0, 1.3, "#f28fa8", 1); });
-  more("white lotus", "lotus", function (b) { lotus(b, 0, 0, 1.2, "#f6f1e6", 1); });
-  more("blue lotus", "lotus", function (b) { lotus(b, 0, 0, 1.2, "#8a7ad8", 0.7); });
   more("lotus leaf", "lotusLeaf", function (b) { lotusLeaf(b, 0, 10, 1.0, 0.2, "#3f8f5a"); });
   // the lanterns
-  (typeof khom === "function" ? [["red", KHOM_RED], ["blue", KHOM_BLUE], ["green", KHOM_GREEN], ["gold", KHOM_GOLD]] : []).forEach(function (c) {
-    more("khom " + c[0], "khom", function () { khom(0, -400, {colour: c[1], lit: 0, sway: 0}); });
-  });
+  more("khom", "khom", function () { khom(0, -400, {colour: KHOM_RED, lit: 0, sway: 0}); });   // each lantern once, in one colour
   more("khom dao", "khomDao", function () { khomDao(0, -300, {colour: KHOM_GOLD, lit: 0, sway: 0}); });   // khom.js, as KHOM_GOLD is
-  more("khom dao red", "khomDao", function () { khomDao(0, -300, {colour: KHOM_RED, lit: 0, sway: 0}); });
-  more("khom dao green", "khomDao", function () { khomDao(0, -300, {colour: KHOM_GREEN, lit: 0, sway: 0}); });
   more("khom phat", "khomPhat", function () { khomPhat(0, -300, {lit: 0}); });
   more("khom bua", "khomBua", function () { khomBua(0, -300, {lit: 0}); });
   // the things of a house and of a village
@@ -300,6 +295,13 @@ function sabaiPool() {
   more("grass", "grassBundle", function (b) { grassBundle(b, 0, 0, 1, {}); });
   more("bananas", "bananas", function (b) { bananas(b, 0, 0, 1, {}); });
   more("gold", "goldNugget", function (b, u) { goldNugget(b, 0, 0, 1, u, {}); });
+  more("fire stick", "fireStick", function (b) { fireStick(b, [-60, 0], [60, -12], {hot: 0.6}); });
+  more("cave", "caveMouth", function (b) { caveMouth(b, 0, 0, 0.6, {}); });
+  more("red truck", "rotDaeng", function (b) { b.save(); b.scale(0.6, 0.6); rotDaeng(b, 0, 0, 1, 0, 1, function () {}); b.restore(); });
+  more("sky lantern", "lantern", function (b) { b.save(); b.beginPath(); b.rect(-45, -190, 90, 140); b.clip(); lantern(0, -100, 70); b.restore(); });
+  more("sun", "sun", function (b, u) { sun(0, -60, u * 2); });
+  more("dragon", "dragon", function () { dragon(0, -80, {size: 0.4, breath: 0.5}); });
+  more("egret", "egret", function (b, u) { egret(0, 0, u, {size: 1, peck: 0.5 + 0.5 * Math.sin(u * Math.PI * 2)}); });
   // dealt people and the rest in turn, about two people to one other, so that every row has both
   for (var p = 0, o = 0; p < people.length || o < others.length;) {
     if (p < people.length) { pool.push(people[p++]); }

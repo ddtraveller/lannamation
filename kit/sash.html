@@ -93,10 +93,29 @@ ROWS[WOMAN_ROW] = SABAI_ROWS[WOMAN_ROW].slice(0, 3).concat([function (b, u) { pe
 // of row 8 are the woman's row's rooster and row 2's maiden again, so they go; "shown" is what the rows weave already.
 ROWS[1] = ROWS[1].filter(function (painter, k) { return k !== 3; });
 ROWS[8] = ROWS[8].filter(function (painter, k) { return k !== 3; });
-var SHOWN = ["villager walk", "child walk", "maiden walk", "fellow walk", "weaver walk", "celestial walk", "dancer wave", "drummer walk",
-             "lady sit", "child sit", "rooster", "sunbird", "buffalo", "elephant", "peafowl", "mom", "luang", "naga three", "naga five",
+// and no item twice in another colour (owner, 2026-10-20: "There are lanterns of differnt colors but I'd like totally
+// unique items"): row 2's second lotus, row 5's blue lantern, row 7's green one, row 8's yak (row 7's, facing the
+// other way) and its five-headed naga (its three-headed one is the naga) go
+ROWS[2] = ROWS[2].filter(function (painter, k) { return k !== 2; });
+ROWS[5] = ROWS[5].filter(function (painter, k) { return k !== 2; });
+ROWS[7] = ROWS[7].filter(function (painter, k) { return k !== 2; });
+ROWS[8] = ROWS[8].filter(function (painter, k) { return k !== 1 && k !== 2; });
+// The tale's own people, as the tale draws them (maeng/sets.js: MAENG_KING, MAENG_GROOM, MAENG_SIMA), woven in the rows
+// the film opens on (owner, 2026-10-20: "add the king and princess of the story and the hero of the story just after
+// marriage"): King Phanthumati in his silk head-cloth, and Thukkhata with Princess Sima, just married, side by side.
+var SASH_KING = {turban: null, wrap: "#6a2a5a", sarong: ["#5a2a6a", BROCADE], size: 1.1, age: 0.45, beard: "#2a2220", smile: 0.6};
+var SASH_GROOM = {turban: "#e8d8a0", sarong: ["#2a6a5a", BROCADE], size: 1.1, smile: 0.8};
+var SASH_SIMA = {skirt: false, sin: 0, sabai: ["#e0b23a", "#8a2a3a"], bun: "ipun", pins: true, flower: "#f2cf5a", dance: false,
+                 bangles: 4, earplug: "#e0b23a", size: 1.05, smile: 0.9};
+ROWS[3] = ROWS[3].concat([function (b, u) { person(0, 0, cast("noble", Object.assign({step: u, id: "woven-king"}, SASH_KING))); }]);
+ROWS[5] = ROWS[5].concat([function (b, u) {
+  person(-45, 0, cast("noble", Object.assign({step: u, id: "woven-groom"}, SASH_GROOM)));
+  person(45, 0, cast("lady", Object.assign({step: u, id: "woven-sima"}, SASH_SIMA)));
+}]);
+var SHOWN = ["villager walk", "child walk", "maiden walk", "fellow walk", "weaver walk", "celestial walk", "drummer walk",
+             "lady sit", "child sit", "rooster", "sunbird", "buffalo", "elephant", "peafowl", "mom", "luang", "naga",
              "yak", "hong", "lotus", "lotus leaf", "longan", "orchid", "thongkwao", "house", "granary", "oxcart", "namton", "temple", "tung",
-             "chedi sai", "krathong", "khom red", "khom blue", "khom green", "khom dao"];
+             "chedi sai", "krathong", "khom", "khom dao", "sueng", "pig"];
 ROWS = sabaiUnique(ROWS, 24, SHOWN);
 
 var CLOTH = {rows: ROWS, from: MUSIC_AT, row: WOMAN_ROW, fine: 1};   // the rows flow and the figures walk when the music begins;
