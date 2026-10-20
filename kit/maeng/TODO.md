@@ -68,6 +68,11 @@ waits on others starts first and runs while the drawing goes on.
 19. The buffalo led by its nose ring: `s03`, `s08`, `s10`.
 20. The crowns: the king (`s09`, `s11`, `s12`) and the princess (`s12`).
 21. The black hen and rooster among the yard's chickens (`s02`, `s08`, `s11`).
+21b. "make the lanna notebooklm notebooks public and add links to them all to the credits": every NotebookLM notebook
+    made for the Lanna kit and its films (the ones named for Lanna: history, faces, women's hair, material culture,
+    household items, fairy tales and mythology, fish, and any made for the items above) shared so anyone with the
+    link can read it, then each one's title and link in the credits' research part (`s15_credits.js`), checked
+    from a browser that is not signed in. After the research of 5, so the new notebooks are in it too.
 
 ## 5. The hero film's scenes
 
