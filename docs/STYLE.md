@@ -2596,6 +2596,9 @@ ears and five eyes was put together, in order, each step a tool anyone can run a
    seconds for its fireflies. `--fade 1,0.75` fades through black where the hero film meets the studio's card
    (owner, 2026-10-20: "fade out and back in over a second or two"): the fades are cut from the two films' own
    ends, so nothing after the join moves.
+   The studio's card has the night's sounds over its music (owner, 2026-10-20: "Add the crickets noise to the SLS
+   scene and at the end 2 tokay sounds"): `sls_sound.py music.wav sls_intro.mp4 out.mp4` lays the kit's crickets
+   under it and the tokay's first two calls at its end, the music lowered under them; the picture is copied as it is.
 
 ## A voice and its subtitles, aligned (2026-10-19, evening)
 
