@@ -217,6 +217,7 @@
       <div class="tl-bar">
         <span id="timeLabel">0.0 วินาที</span>
         <label>ความยาว <input type="number" id="durationBox" min="3" max="90" step="1"> วินาที <small>duration</small></label>
+        <label title="ทุกคนเด้งตามจังหวะ แบบการ์ตูนยุค 1930 · everyone hops on the beat, as in 1930s cartoons"><input type="checkbox" id="bounceBox"> เด้งแบบยุค 1930 <small>1930s bounce</small></label>
         <span class="en">เลื่อนเวลา แล้วลากตัวละครไปที่ใหม่: นั่นคือเส้นทางของมัน · scrub, then drag a character: that is its course</span>
       </div>
     </div>
@@ -489,7 +490,7 @@ var pathing = null, pathStep = 2;       // the mover whose course is being chart
 var picked = [];                        // the points ticked in the panel's list, to delete together: each is a [second, x, y] of the selected mover
 var scripting = false;                  // the panel shows the script: every passage of text in time order
 
-function freshFilm() { return {duration: 12, backdrop: "day", items: [], texts: [], cuts: [], camera: [], next: 1}; }
+function freshFilm() { return {duration: 12, backdrop: "day", bounce: false, items: [], texts: [], cuts: [], camera: [], next: 1}; }
 
 // A cut, {at, backdrop}, begins a new scene at that second; the camera is a course of
 // [second, x, y, zoom] (the centre shown, 1 to 3 times closer). Both are kept sorted.
@@ -868,7 +869,9 @@ function sheetCode(name, sc, k) {         // the code that paints one scene's sk
 
 function filmCode() {
   var lines = [], scenes = scenesOf(), camera = cameraCode();
-  lines.push("var DURATION = " + movie.duration + ";", "", "var BEAT = 0.5;", "");
+  lines.push("var DURATION = " + movie.duration + ";", "", "var BEAT = 0.5;", "",
+             "// the 1930s bounce: everyone hops on the beat (the maker's checkbox, off unless ticked; the kit's STYLE.hop)",
+             "STYLE.hop = " + (movie.bounce ? "true" : "false") + ";", "");
   if (movie.items.some(function (i) { return i.kind === "person" && i.sabai; })) {
     lines.push("// the woven sabai (sabai.js): one cloth, its tiles made once, worn by whoever asks for it; its rows flow from the start",
                "var SABAI_CLOTH = {from: 0};", "");
@@ -2212,9 +2215,14 @@ byId("addSubtitle").onclick = function () { var t = addText("subtitle"); if (t) 
   };
 });
 byId("openScript").onclick = function () { selected = null; scripting = true; show(); panel(); };
+byId("bounceBox").onchange = function () {   // the 1930s bounce on or off, for the whole film
+  movie.bounce = byId("bounceBox").checked;
+  rebuild();
+  show();
+};
 byId("durationBox").onchange = function () {
   movie.duration = Math.max(3, Math.min(90, Number(byId("durationBox").value) || 12));
-  byId("durationBox").value = movie.duration;
+  byId("durationBox").value = movie.duration; byId("bounceBox").checked = !!movie.bounce;
   rebuild();
   show();
 };
@@ -2245,7 +2253,7 @@ function resetAll() {
   byId("aiJson").value = "";
   byId("aiStory").value = AI_STORY_FIRST;
   if (byId("aiStatus")) { byId("aiStatus").textContent = ""; }
-  byId("durationBox").value = movie.duration;
+  byId("durationBox").value = movie.duration; byId("bounceBox").checked = !!movie.bounce;
   markBackdrop();
   setTool("course");
   zoom = 1; pan = [0, 0]; applyZoom();
@@ -2281,7 +2289,7 @@ byId("exampleBtn").onclick = function () {
                   {id: 9, kind: "subtitle", big: "สวัสดีเจ้า!", small: "Hello!", from: 9, to: 13}]};
   movie.items.forEach(function (i) { if (i.kind === "person" && !CAST[i.name]) { i.name = "child"; } });   // an older kit
   selected = null; time = 0;
-  byId("durationBox").value = movie.duration; markBackdrop(); rebuild(); show(); panel();
+  byId("durationBox").value = movie.duration; byId("bounceBox").checked = !!movie.bounce; markBackdrop(); rebuild(); show(); panel();
 };
 byId("codeBtn").onclick = function () { byId("codeBox").value = pageCode(); byId("codeSheet").className = "sheet open"; };
 byId("closeCode").onclick = function () { byId("codeSheet").className = "sheet"; };
@@ -2397,6 +2405,7 @@ function adoptFilm(data) {
   });
   film.duration = Math.round(clean(data.duration, 3, 90, 12));
   film.backdrop = BACKS.some(function (b) { return b[0] === data.backdrop; }) ? data.backdrop : "day";
+  film.bounce = data.bounce === true;   // the 1930s bounce, off unless a film asks for it
   var byRaw = {}, byRawId = {};          // each item taken, by its place in the JSON's items, and by the id a film this page saved gave it
   (data.items || []).slice(0, 20).forEach(function (raw, index) {
     var kind = raw.kind, name = String(raw.name || "");
@@ -2487,7 +2496,7 @@ function takeFilm(data) {
   if (!got.film.items.length) { throw new Error("the answer had no character, thing or piece the kit knows"); }
   movie = got.film;
   selected = null; pathing = null; time = 0;
-  byId("durationBox").value = movie.duration;
+  byId("durationBox").value = movie.duration; byId("bounceBox").checked = !!movie.bounce;
   markBackdrop(); rebuild(); show(); panel();
   return got.film.items.length + " items, " + got.film.texts.length + " texts" + (got.dropped.length ? "; dropped unknown: " + got.dropped.join(", ") : "");
 }
@@ -2822,7 +2831,7 @@ byId("guideBtn").onclick = function () { if (guideAt >= 0) { guideClose(); } els
 
 // ---------- start ----------
 load();
-byId("durationBox").value = movie.duration;
+byId("durationBox").value = movie.duration; byId("bounceBox").checked = !!movie.bounce;
 markBackdrop();
 rebuild();
 show();

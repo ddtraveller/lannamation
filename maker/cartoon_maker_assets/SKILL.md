@@ -67,6 +67,9 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   rooster, the naga, the dragon, the mom, the luang, the oxcart (its
   buffalo), the elephant, tiger, cat, pig, horse, maeng and the five northern
   birds take `feel`, and a key's feeling, too.
+- The 1930s bounce: `"bounce": true` makes everyone hop on the beat, as in the
+  old cartoons (the kit's `STYLE.hop`); left out or false, people walk evenly and
+  stand still. The maker's checkbox beside the film's length sets it, off at first.
 - Scenes: the film begins on `backdrop`; `"cuts": [{"at": 8, "backdrop": "river"}]`
   begins a new scene at that second, and the kit closes and opens its iris at the
   cut. A set piece's one key says which scene it stands in by its second (0 for
