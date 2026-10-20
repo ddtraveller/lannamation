@@ -98,4 +98,7 @@ waits on others starts first and runs while the drawing goes on.
 28. "When switching from the intro to the SLS scene fade out and back in over a second or two to give the scenes a
     transition": a fade through black at that join in `../chain.py`, taken from the two films' ends so the length,
     the page's fireflies (94.3 s to 106.3 s) and the narrator's toolset's line times do not move.
+28b. "change the woman who waves at the end and peaks out from the video to wai instead of wave": the lanna_cartoon
+    page's goodbye (the kit figure who leans out past the video's edge after the film) gives a wai, not a wave. A page
+    change only: no render. (The film's own goodbye, `s14`, where Bua-kham waves inside the picture, is not this one.)
 29. The joined film's checks (loudness, subtitles against the voice, the credits), then up, and the page.
