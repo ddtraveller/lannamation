@@ -701,8 +701,6 @@ function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maide
   pen.save();
   pen.translate(SIDE, 0);                 // the figures, the water and the dragon, at their places on the old sheet
   pond(pen, 380, 700, 900, 340, {t: t, rings: POND_RINGS});          // the water moves, and the drops ring it
-  lotusClump(pen, 520, 1010, 0.9, 4, "#ee7f9c", t);                 // the lotus stirs in the breeze
-  lotusClump(pen, 1150, 1030, 1.2, 1, "#e9627f", t);
   // The fish of a Lanna pond (the kit's nativeFish(), side on and true to the species, from the "Lanna fish"
   // notebook): a snakehead lying deep, two mud barbs below, a school of flying barbs just under the surface, and two
   // gouramis, the one she watches first (owner, 2026-10-20: "Work to improve the fish in the pond scene", then "try
@@ -717,6 +715,10 @@ function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maide
   var watched = [700 + Math.sin(t * 0.6) * 60, 850 + 6 * Math.sin(t * 1.1)];   // the gourami she watches
   nativeFish(pen, watched[0], watched[1], 1.7, Math.cos(t * 0.6) > 0 ? 1 : -1, "gourami", t);
   nativeFish(pen, 900 - Math.sin(t * 0.5) * 40, 868, 1.4, Math.cos(t * 0.5) > 0 ? -1 : 1, "gourami", t + 2);
+  // the lotus over them: the fish swim behind its stems and leaves (owner, 2026-10-20: "Make sure the fish are behind
+  // the lotus on the z scale")
+  lotusClump(pen, 520, 1010, 0.9, 4, "#ee7f9c", t);                 // it stirs in the breeze
+  lotusClump(pen, 1150, 1030, 1.2, 1, "#e9627f", t);
   birds(t, 100 + t * 60, 180);
   var head = dragonFly(t + POND_AT);
   var drake = dragon(head[0], head[1], {size: 0.34, depth: head[4], trail: dragonFly, fly: "glide", breath: 0.3 + 0.3 * Math.sin(t * 2), late: 0.5,
