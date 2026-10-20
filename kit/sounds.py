@@ -166,6 +166,8 @@ FETCHED = {
                    "what": "a tokay gecko calling at nightfall, recorded: a cackle, then five to-kays (29 s)"},
     "tokay": {"url": TOKAY, "cut": [10.8, 24.0], "from": TOKAY_FROM,
               "what": "the tokay's five to-kays, cut from that recording, for a gecko on a wall at night"},
+    "tokay-two": {"url": TOKAY, "cut": [10.8, 15.0], "from": TOKAY_FROM,
+                  "what": "two of the tokay's to-kays, cut from that recording: the last sound of the film (2026-10-20)"},
 }
 # The village's animals and the day and night around them (owner, 2026-10-20: "Do a round of sounds research for the
 # video and try to find sounds for the story for animals and birds that appear in it such as with the gecko. Add some

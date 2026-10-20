@@ -8,7 +8,8 @@
 var S15_LONG = 195;
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the crickets and the frogs of the night on the mountain, under the music.
-var S15_SOUND = {calls: [[0, "crickets", 0.3, 195], [0, "frogs", 0.4, 195]]};
+var S15_SOUND = {calls: [[0, "crickets", 0.3, 195], [0, "frogs", 0.4, 195], [186.6, "tokay-two", 0.6]]};   // and last, the tokay's two calls
+// (owner, 2026-10-20: two tokay sounds "at the end of the process"), done before the dark at S15_LONG - 2.4
 var S15_LINES = [];                                  // no words are said: music alone (feelings.py, SCENE_FEEL)
 var S15_ROLL = [3.0, 174.0];                          // the credits come up from below the frame, and the last stops
 // Last, the thanks (owner, 2026-10-19: "At the end of the credits feature a wai-ing panda bear in python_piggy style
