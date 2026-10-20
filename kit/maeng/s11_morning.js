@@ -15,7 +15,9 @@ var S11_LIFE = [
   {name: "blue magpie", kind: "magpie", layer: "back", look: {size: 0.6},
    course: [[0, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [13.5, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4]]},
   {name: "rooster", kind: "rooster", layer: "back", look: {feel: "happy"}, course: [[13.5, 250, 958], [26.5, 250, 958]]},
-  {name: "hen", kind: "hen", layer: "back", course: [[26.5, 700, 966, "peck"], [32.0, 700, 966], [34.0, 780, 968, "peck"], [40.0, 780, 968]]}
+  // The hen pecks in front of the trough (nearer than it): drawn after its near side (owner, 2026-10-20: "fix the
+  // chickens in the story re their z layer"; she was drawn between the trough's far and near sides, under it).
+  {name: "hen", kind: "hen", layer: "front", course: [[26.5, 700, 966, "peck"], [32.0, 700, 966], [34.0, 780, 968, "peck"], [40.0, 780, 968]]}
 ];
 
 function sceneMorning(t) {
@@ -99,5 +101,6 @@ function s11Garden(t) {                             // "I built it, and there is
   person(MAENG_GARDEN[0] + 60, 948, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: "happy", mouth: s11Speaking(t, S11_LAD),
                                                                     reachA: t > 30.5 && t < 34 ? [MAENG_GARDEN[0] + 200, 860] : undefined}));
   person(1820, 958, maengPerson("fellow", MAENG_HERALD, {id: "herald", face: -1, feel: t > 31 ? "surprised" : "happy"}));
+  decorate(t, S11_LIFE, "front");                   // the hen, in front of the trough
   pen.restore();
 }

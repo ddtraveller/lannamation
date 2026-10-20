@@ -99,6 +99,7 @@ var STYLE = {
   hold: 0.06,                           // of a beat: the pause at the bottom of a hop
   sway: 1,                              // how much the spine sways: 0 for none, 2 for twice as much
   hop: true,                            // everyone hops on the beat, as in the 1930s; false: they stand still and walk evenly
+  lids: "folded",                       // every person's eye folded at the lid, as the Thai face's (owner, 2026-10-20: "fix the eyes in all the models with a folded lid eye"); "kit" for the creased eye the kit drew before
   hands: "round",                       // a bare hand drawn in the round (hand()), which can show its edge or its palm; "flat" is the flat hand the kit drew until 2026-10-15 (glove)
   gold: "#e0b23a",
   hair: "#2a1a12",
@@ -275,6 +276,57 @@ function blendOutline(t, P, Q, F) {
   }
   return out;
 }
+
+// ---------- bodies ----------
+// A body is a choice, as a face of the north is (owner, 2026-10-20: "Add a few fat bodies for men, women and children
+// ... Ideally faces, hair and bodies and clothes will be swappable", then "Rather than just swelling I'd like fat bodies
+// redrawn from scratch"). look.body names one of BODIES: its chests (a man's and a lady's, each as three lists:
+// profile, three-quarter and full face, for blendOutline), where its shoulders, hips and feet stand from the middle
+// (profile, three-quarter, full face, as blend3), how thick its arms and legs are (at the root, the joint and the
+// end; legThin under a skirt), how wide its waist is where cloth hangs from it (tier), how much wider its hems,
+// its waist cloth and its neck, where a hanging hand comes to rest (clear of the belly), its shadow, and how broad
+// its face is drawn. "slim" is the kit's own body; a child is any body at a child's measure (build).
+//
+// The fat chest is its own shape, not the slim one swollen: a man's back broad and curving out from the waist, the
+// shoulders sloping and round, a thick neck, the chest running down and forward into a round belly carried low, at
+// its fullest under the navel, tucking under to a wide waist; a lady's bust fuller, a soft belly under it, a wide
+// waist, the back rounder at the shoulder blade.
+var CHEST_MAN_FAT = [[-56, 2],
+                     [[-68, -24], [-78, -64], [-74, -104]],         // a broad back, out from the waist
+                     [[-72, -124], [-56, -136], [-30, -142]],
+                     [[0, -148], [26, -143]],                       // a thick neck
+                     [[56, -138], [74, -126], [74, -104]],          // the shoulder, sloping and round
+                     [[82, -84], [104, -62], [110, -32]],           // the chest running into the belly
+                     [[114, -2], [86, 14], [52, 12]],               // the belly, fullest low, tucking under
+                     [[0, 18], [-56, 2]]];
+var CHEST_LADY_FAT = [[-50, 2],
+                      [[-60, -26], [-70, -62], [-66, -100]],
+                      [[-66, -120], [-52, -132], [-26, -139]],
+                      [[0, -145], [22, -139]],
+                      [[48, -135], [66, -122], [66, -102]],
+                      [[84, -90], [86, -60], [76, -46]],            // a fuller bust
+                      [[90, -36], [94, -10], [66, 6]],              // a soft belly under it, the dip between them shallow
+                      [[0, 16], [-50, 2]]];
+// A three-quarter chest seen in profile and from the front: in profile the back comes in to the spine and the front
+// stays out (a belly is seen most from the side); from the front both sides are alike, as wide as the wider side.
+function chestTurns(q) {
+  function each(f) {
+    return q.map(function (seg, n) {
+      return n === 0 ? f(seg) : seg.map(f);
+    });
+  }
+  return [each(function (pt) { return [pt[0] * (pt[0] < 0 ? 0.62 : 0.74), pt[1]]; }), q,
+          each(function (pt) { return [pt[0] * (pt[0] < 0 ? 1.12 : 0.97), pt[1]]; })];
+}
+var BODIES = {
+  slim: {chest: {man: [CHEST_MAN_P, CHEST_MAN, CHEST_MAN_F], lady: [CHEST_LADY_P, CHEST_LADY, CHEST_LADY_F]},
+         root: [4, 40, 46], hips: [6, 20, 23], feet: [8, 26, 30], arm: [12, 10, 8.5], leg: [15, 12, 9.5], legThin: [9, 7.5, 6],
+         waist: 30, hem: 0, cloth: 1, neck: 13, hand: 12, shadow: 96, face: 1},
+  fat: {chest: {man: chestTurns(CHEST_MAN_FAT), lady: chestTurns(CHEST_LADY_FAT)},
+        root: [7, 56, 62], hips: [11, 36, 40], feet: [12, 38, 42], arm: [20, 17, 12.5], leg: [27, 21, 13], legThin: [16, 12.5, 8.5],
+        waist: 56, hem: 28, cloth: 1.75, neck: 21, hand: 44, shadow: 140, face: 1.1}
+};
+var BODY = BODIES.slim;                             // the body being drawn now: person() sets it, as it sets SKIN
 
 // the path of such a list, with every point put where put(x, y) says it
 // goes: a drawing bent along a curve, and tipped, and still drawn only once
@@ -1076,9 +1128,24 @@ var NORTH_FACES = {
   square: {cheek: 5, jaw: 8, chin: 1, wide: 1.06},
   broad: {cheek: 8, jaw: 4, chin: 2, wide: 1.12},
   soft: {cheek: 5, jaw: -1, chin: 0, wide: 0.98},
-  full: {cheek: 3, jaw: 3, chin: 5, wide: 1.04}
+  full: {cheek: 3, jaw: 3, chin: 5, wide: 1.04},
+  // The Thai face (owner, 2026-10-20: "They don't really look like Asian eyes. They look Western", then "Start
+  // from scratch with faces in general and try one from your research", then "fold these faces into the kit"):
+  // drawn from photographs of Thai people and a 3D study of Thai faces, not from any one face. Broad cheekbones and
+  // a soft jaw; the eye "folded": the upper lid with no crease and no hollow under the brow, the lid line running on
+  // past the inner corner into the fold over it, a dark iris filling the opening; a slant between the 6 degrees
+  // measured on men and the 9 on women; the brows straight, low and heavier; a low, broad nose; fuller lips. Its own
+  // numbers ("own") take the place of NORTH's; a child keeps half of each change, as every face of the north does.
+  thai: {cheek: 6, jaw: 3, chin: 3, wide: 1.08, eyes: "folded",
+         own: {apart: 2, lid: 0.1, lidMan: 0.08, fold: 0, tilt: 0.13, browLow: 4, browLowMan: 7, browArch: 0.25, browHeavy: 1.7,
+               noseLow: 3, noseWide: 1.45, lipsWide: 1.15, lipsFull: 1.3, eyeSmall: 0.8}}
 };
 var NORTH_FACE = null;                              // the face of the north being drawn now: person() sets it, as it sets SKIN
+// The eye of everyone else, while STYLE.lids is "folded": the Thai face's own lid (NORTH_FACES.thai.own), not its
+// face. person() sets EYE_LIDS to the face of the north it draws, or to this, or to null; eye() reads only it, so
+// an animal's eye (drawn outside person()) keeps its own.
+var FOLDED_EYE = {lid: 0.1, lidMan: 0.08, fold: 0, tilt: 0.13, eyes: "folded"};
+var EYE_LIDS = null;
 
 // What a figure's face of the north is, from its look (null when it has none):
 // its shape's numbers and every one of NORTH. A child keeps a child's measure:
@@ -1087,12 +1154,15 @@ function northFace(look) {
   if (!look.north) { return null; }
   if (typeof look.north === "string") { checkName("A face of the north", look.north, NORTH_FACES); }
   var shape = NORTH_FACES[look.north] || NORTH_FACES.round;
+  var base = Object.assign({}, NORTH, shape.own || {});   // a face's own numbers, where it has them (the Thai face)
   var child = clamp(-(look.build || 0)), half = 1 - 0.5 * child;
-  var face = {cheek: shape.cheek, jaw: shape.jaw * (1 - 0.7 * child), chin: shape.chin + 2 * child, wide: shape.wide, tilt: NORTH.tilt};
-  ["apart", "lid", "lidMan", "browLow", "browLowMan", "noseLow"].forEach(function (name) { face[name] = NORTH[name] * half; });
+  var face = {cheek: shape.cheek, jaw: shape.jaw * (1 - 0.7 * child), chin: shape.chin + 2 * child, wide: shape.wide, tilt: base.tilt,
+              eyes: shape.eyes || "kit"};
+  ["apart", "lid", "lidMan", "browLow", "browLowMan", "noseLow"].forEach(function (name) { face[name] = base[name] * half; });
   ["fold", "browArch", "browHeavy", "noseWide", "lipsWide", "lipsFull", "eyeSmall"].forEach(function (name) {
-    face[name] = 1 + (NORTH[name] - 1) * half;
+    face[name] = 1 + (base[name] - 1) * half;
   });
+  if (face.eyes === "folded") { face.eyeSmall = base.eyeSmall; }   // a child's folded eye as small as a grown one's: a child's comic eye is huge
   return face;
 }
 
@@ -1180,7 +1250,10 @@ function eye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed) {
   var gx = glance.length ? glance[0] : glance, gy = glance.length ? glance[1] : 0;
   // "shut" may be 0 to 1: the upper lid comes down that far, and past 0.9 the eye is shut.
   // A face of the north (NORTH_FACE) has a heavy upper lid: open, it hangs at least that far.
-  var north = NORTH_FACE, closed = shut === true ? 1 : shut ? shut : 0;
+  var north = EYE_LIDS, closed = shut === true ? 1 : shut ? shut : 0;
+  // A folded eye (the Thai face): a lower arch, a dark iris that fills the opening with one light, no crease, and
+  // the lid line running on past the inner corner into the fold over it.
+  var folded = !!north && north.eyes === "folded", arch = folded ? 1.45 : 1.9;
   var hangs = north && closed <= 0.9 ? (lashes ? north.lid : north.lidMan) : 0;
   var heavy = Math.max(closed, hangs), lid = 1 - 0.85 * heavy, weight = north ? heavy : 0;
   shut = closed > 0.9;
@@ -1199,13 +1272,13 @@ function eye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed) {
     pen.quadraticCurveTo(x, y + tall * (bowed ? -1.2 : 0.9), x + wide, y);
     pen.stroke();
   } else {
-    pen.fillStyle = "rgba(150, 110, 150, " + (painted ? 0.07 : 0.22) * (north ? north.fold : 1) + ")";    // the hollow under the brow
+    pen.fillStyle = "rgba(150, 110, 150, " + (folded ? 0 : (painted ? 0.07 : 0.22) * (north ? north.fold : 1)) + ")";    // the hollow under the brow (none over a folded lid)
     pen.beginPath();
     pen.ellipse(x, y - tall * 1.25, wide * 1.05, tall * 0.7, 0, 0, 7);
     pen.fill();
     pen.beginPath();                                // the white of the eye
     pen.moveTo(x - wide, y);
-    pen.quadraticCurveTo(x - wide * 0.15, y - tall * 1.9 * lid, x + wide, y - 1);
+    pen.quadraticCurveTo(x - wide * 0.15, y - tall * arch * lid, x + wide, y - 1);
     pen.quadraticCurveTo(x, y + tall * 0.95, x - wide, y);
     pen.closePath();
     if (below) {                                    // a slanted lid: nothing of the eye shows above its line
@@ -1217,11 +1290,11 @@ function eye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed) {
     pen.save();
     pen.clip();                                     // nothing of the iris shows outside the lids
     pen.translate(0, gy);
-    var round = painted ? 1.15 : 0.8;               // a painted eye's iris is large: it touches the upper lid and fills the eye's height
+    var round = folded ? 1.05 : painted ? 1.15 : 0.8;   // a painted eye's iris is large: it touches the upper lid and fills the eye's height (a folded one's too)
     var iris = pen.createRadialGradient(x + gx, y - tall * 0.2, tall * 0.1, x + gx, y - tall * 0.3, tall * round);
-    iris.addColorStop(0, painted ? "#6a4424" : "#9a6a34");     // the brown of it: light round the pupil,
-    iris.addColorStop(0.7, painted ? "#3a2010" : "#6a3e1c");   // darker outward,
-    iris.addColorStop(1, painted ? "#160c05" : "#2e1808");     // and a dark rim
+    iris.addColorStop(0, folded ? "#3e2614" : painted ? "#6a4424" : "#9a6a34");     // the brown of it: light round the pupil,
+    iris.addColorStop(0.7, folded ? "#22140a" : painted ? "#3a2010" : "#6a3e1c");   // darker outward,
+    iris.addColorStop(1, folded ? "#0e0804" : painted ? "#160c05" : "#2e1808");     // and a dark rim (a folded eye's, nearly black)
     pen.fillStyle = iris;
     pen.beginPath();
     pen.arc(x + gx, y - tall * 0.3, tall * round, 0, 7);
@@ -1233,24 +1306,24 @@ function eye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed) {
     pen.fillStyle = "#ffffff";                      // two lights, one big and one small; a painted eye has one
     pen.beginPath();
     pen.arc(x + gx - tall * 0.3, y - tall * 0.62 + weight * tall * 0.51, tall * 0.24, 0, 7);   // (under a heavy lid, lower)
-    if (!painted) { pen.arc(x + gx + tall * 0.34, y - tall * 0.02, tall * 0.11, 0, 7); }
+    if (!painted && !folded) { pen.arc(x + gx + tall * 0.34, y - tall * 0.02, tall * 0.11, 0, 7); }
     pen.fill();
     pen.strokeStyle = "rgba(90, 50, 50, " + (0.22 + 0.25 * weight) + ")";   // the upper lid's shadow, on the white and the iris (a heavy lid's is deeper)
     pen.lineWidth = tall * (0.55 + 0.5 * weight);
     pen.beginPath();
     pen.moveTo(x - wide, y - tall * 0.1);
-    pen.quadraticCurveTo(x - wide * 0.15, y - tall * 2.0 * lid, x + wide, y - tall * 0.1);
+    pen.quadraticCurveTo(x - wide * 0.15, y - tall * (arch + 0.1) * lid, x + wide, y - tall * 0.1);
     pen.stroke();
     pen.restore();
     pen.lineWidth = (painted ? LINE * 0.95 : LINE + 0.8 * FINE) * (1 + 0.4 * weight);   // the upper lid, a little heavier
     pen.beginPath();
     pen.moveTo(x - wide, y);
-    pen.quadraticCurveTo(x - wide * 0.15, y - tall * 1.9 * lid, x + wide, y - 1);
+    pen.quadraticCurveTo(x - wide * 0.15, y - tall * arch * lid, x + wide, y - 1);
     pen.stroke();
     if (below) {                                    // the slanted lid's own line, inside the eye: its shadow, then the ink,
       var almond = new Path2D(), cut = below.line;  // each twice as wide, since only the half under the line is seen
       almond.moveTo(x - wide, y);
-      almond.quadraticCurveTo(x - wide * 0.15, y - tall * 1.9 * lid, x + wide, y - 1);
+      almond.quadraticCurveTo(x - wide * 0.15, y - tall * arch * lid, x + wide, y - 1);
       almond.quadraticCurveTo(x, y + tall * 0.95, x - wide, y);
       almond.closePath();
       pen.save();
@@ -1272,13 +1345,24 @@ function eye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed) {
     pen.moveTo(x + wide, y - 1);
     pen.quadraticCurveTo(x, y + tall * 0.95, x - wide, y);
     pen.stroke();
-    pen.strokeStyle = "rgba(58, 36, 24, " + (painted ? 0.28 : 0.4) * (below ? 1 - Math.min(1, Math.abs(slant)) : 1) * (north ? north.fold : 1) + ")";   // the fold of the lid above it, gone under a slanted lid (and nearly gone on a face of the north)
+    pen.strokeStyle = "rgba(58, 36, 24, " + (folded ? 0 : (painted ? 0.28 : 0.4) * (below ? 1 - Math.min(1, Math.abs(slant)) : 1) * (north ? north.fold : 1)) + ")";   // the fold of the lid above it, gone under a slanted lid (and nearly gone on a face of the north)
     pen.lineWidth = (painted ? 1.1 : 2) * FINE;
     pen.beginPath();
     pen.moveTo(x - wide * 0.8, y - tall * 0.95 * lid);
     pen.quadraticCurveTo(x - wide * 0.1, y - tall * 2.25 * lid, x + wide * 0.85, y - tall * 0.9 * lid);
     pen.stroke();
     pen.strokeStyle = INK;
+    if (folded) {                                   // the fold over the inner corner: the lid line runs on, down over the corner
+      // short and light, measured by the eye's height (a comic eye is wide, and a long fold met the nose's line)
+      var inner = x - outer * wide;
+      pen.strokeStyle = "rgba(58, 36, 24, 0.6)";    // a soft crease, not an ink line: eyes set close meet over the nose
+      pen.lineWidth = 1.6 * FINE;
+      pen.beginPath();
+      pen.moveTo(inner + outer * tall * 0.55, y - tall * 0.85 * lid);
+      pen.quadraticCurveTo(inner - outer * tall * 0.05, y - tall * 0.45, inner - outer * tall * 0.08, y);
+      pen.stroke();
+      pen.strokeStyle = INK;
+    }
   }
   if (lashes && !north) {                           // the lid line runs on past the outer corner and lifts: a flick (a painting's, not the photograph's)
     var flick = wide / 15;                          // the flick is as long as the eye is: 8 on an eye 30 across
@@ -1288,7 +1372,7 @@ function eye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed) {
     pen.quadraticCurveTo(x + outer * (wide + 4 * flick), y - 3 * flick, x + outer * (wide + 8 * flick), y - 7 * flick);
     pen.stroke();
     if (!shut && !painted) {                        // two more lashes, on the outer half of the upper lid
-      var cx = x - wide * 0.15, cy = y - tall * 1.9 * lid;   // the lid is a curve through this control point
+      var cx = x - wide * 0.15, cy = y - tall * arch * lid;   // the lid is a curve through this control point
       pen.lineWidth = 2 * FINE;
       for (var lash = 0; lash < 2; lash++) {
         var u = outer > 0 ? 0.74 + lash * 0.12 : 0.26 - lash * 0.12;   // along the lid, toward the outer corner
@@ -1821,11 +1905,13 @@ function stripe(left, mid, right, colour, width, kind) {
 //   pushes       [x, y, reach] points under the cloth, such as knees, measured from
 //                the waist: an edge within "reach" of one moves out to cover it
 function tier(long, wide, reach, phase, colour, deep, stripes, pushes) {
+  var waist = BODY.waist;                           // the body's waist, where the cloth hangs from (BODIES); its hem wider with it
+  wide += BODY.hem;
   // a point on one edge: u is 0 at the waist and 1 at the hem
   function edge(u, side) {
     var late = phase - 1.6 * u;                     // lower cloth is later in the swing
     var drift = -reach * Math.pow(u, 1.3) * Math.sin(late);
-    var half = 30 + (wide - 30) * Math.pow(u, 0.75);
+    var half = waist + (wide - waist) * Math.pow(u, 0.75);
     half *= 1 - side * Math.cos(late) * 0.16 * u;   // one side swells, the other tucks in
     var level = -6 + (long + 6) * u;
     for (var p = 0; pushes && p < pushes.length; p++) {   // a knee under the cloth pushes it out
@@ -1839,7 +1925,7 @@ function tier(long, wide, reach, phase, colour, deep, stripes, pushes) {
   }
   var steps = 12, scallops = 6, n, point;
   pen.beginPath();
-  pen.moveTo(-30, -6);
+  pen.moveTo(-waist, -6);
   for (n = 1; n <= steps; n++) {                    // down the left side
     point = edge(n / steps, -1);
     pen.lineTo(point[0], point[1]);
@@ -2732,7 +2818,7 @@ function arm(shoulderX, shoulderY, hand, outward, colour, key) {
   // leans on the way it pointed the frame before. A hand from handFor() is
   // near on purpose (a third number, 1, says so): its wrist has a place to be.
   var at = armJoints(hand[0] / far * long, hand[1] / far * long, 62, 58, outward, key, hand[2] ? 2 : clamp(far / 25));
-  return limb(shoulderX, shoulderY, shoulderX + at[0], shoulderY + at[1], 62, 58, [12, 10, 8.5], colour,
+  return limb(shoulderX, shoulderY, shoulderX + at[0], shoulderY + at[1], 62, 58, BODY.arm, colour,
               [shoulderX + at[2], shoulderY + at[3]], 0.4);
 }
 
@@ -2755,7 +2841,7 @@ function legOf(hipX, hipY, ankleX, ankleY, thin, colour, longer) {
   // under a skirt the bones are a little shorter, so the knees stay inside the cloth;
   // "longer" is how much longer than the cartoon's the legs are (1 unless a build is given)
   return limb(hipX, hipY, ankleX, ankleY, (thin ? 86 : 106) * longer, (thin ? 84 : 102) * longer,
-              thin ? [9, 7.5, 6] : [15, 12, 9.5], colour,
+              thin ? BODY.legThin : BODY.leg, colour,
               function (knee) { return knee[0]; });
 }
 
@@ -3284,9 +3370,9 @@ var COMBED = {
 
 var LOOK_KEYS = {};
 
-["age", "anger", "at", "bangles", "bare", "beard", "bend", "blink", "build", "bun", "buttons", "coat", "collar", "dance", "drum", "earplug", "eyes", "face",
+["age", "anger", "at", "bangles", "bare", "beard", "bend", "blink", "body", "build", "bun", "buttons", "coat", "collar", "dance", "drum", "earplug", "eyes", "face",
  "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
- "handB", "hat", "head", "holding", "id", "late", "laugh", "legs", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "reachA", "reachB",
+ "handB", "hat", "head", "holding", "id", "late", "laugh", "lady", "legs", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "reachA", "reachB",
  "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt", "sleepy",
  "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wonder", "worn", "worry", "wristA", "wristB"
 ].forEach(function (name) { LOOK_KEYS[name] = true; });
@@ -3295,6 +3381,9 @@ var LOOK_KEYS = {};
 // (Every key the kit reads is in this list, and every key in it is read:
 // checks/kit_check.py compares the two.)
 //   size            how large the figure is drawn: 1.25 to 1.5 fills the frame for three to five people
+//   body            which body (BODIES): "slim", the kit's own (unless told), or "fat", drawn as its own shape: a
+//                   broad back, sloping shoulders, a thick neck, a round belly carried low (a lady's a fuller bust and
+//                   a soft belly), thicker arms and legs, wider hips, and its cloth cut wider; a child at its measure
 //   shirt, legs     colours
 //   skirt           true for a long striped skirt (a pha sin)
 //   weave           0 to 3: which weave the pha sin is (see WEAVES)
@@ -3362,6 +3451,9 @@ var LOOK_KEYS = {};
 //                   a jewelled belt, earrings, and gold flowers at the knot of the hair; the head-cloth is patterned
 //   hat, bun        a woven hat, or a lady's hair tied up: true, or the name of a way of
 //                   wearing it, "wong", "low" or "ipun" (see BUN_STYLES)
+//   lady            true: a woman's face, chest, neck, hands and jewellery; false: a man's. Left out, it follows
+//                   bun (hair tied up is a lady), so the hair and the one who wears it can be chosen apart:
+//                   {lady: true} with no bun is a woman with a fellow's hair, {bun: "low", lady: false} a man with a knot
 //   turban          a colour: a Lanna head-cloth, a band tied round the head with the hair above it
 //   face            1 looks right, -1 looks left
 //   turn            -1 to 1: the head turned to profile, or round to full face (0 is three-quarter).
@@ -3487,6 +3579,7 @@ function person(x, y, look) {
   if (clock !== DRAWN_AT) { DRAWN = 0; DRAWN_AT = clock; }     // the n-th person drawn in a frame is the same person in the next
   var who = look.id || "n" + (DRAWN++);
   var rig = look.rig;                             // a puppet of drawn parts, or nothing
+  var lady = look.lady !== undefined ? !!look.lady : !!look.bun;   // a woman's face, chest, neck, hands and jewellery (lady), whatever her hair
   // A parasol on its way down to her side, or carried there, hangs behind her
   // (owner, 2026-10-15: "when the women put the parasols down they are behind
   // the body not in front"). She is drawn on a layer of her own, the parasol
@@ -3510,7 +3603,7 @@ function person(x, y, look) {
     inFront = 1 - clamp(hangs / 0.2) * clamp(hangs / 0.2) * (3 - 2 * clamp(hangs / 0.2));   // as it starts back from straight down, beside her skirt, before it can cross her
   }
   // One who sits on the floor: "side" or "cross" (see seated()), or nothing.
-  var seat = rig || !look.floor ? null : look.floor === true ? (look.bun ? "side" : "cross") : look.floor;
+  var seat = rig || !look.floor ? null : look.floor === true ? (lady ? "side" : "cross") : look.floor;
   if (seat) {
     look = Object.assign({}, look, {step: 0, sit: 0, raise: null});   // one who sits does not walk, half-sit or lift a foot
     // Hands that a scene does not place lie in the lap, turned in toward
@@ -3524,7 +3617,13 @@ function person(x, y, look) {
   HAIR = look.hair || STYLE.hair;                 // and its own hair: white hair wants a line of its own too
   HAIR_LINE = look.hair ? inkFor(look.hair) : "#7a5640";
   PAINTED = !(look.age || look.build < 0);        // a child's lips, and an old woman's, are their own colour
-  NORTH_FACE = northFace(look);                   // a face of the north, or none
+  NORTH_FACE = northFace(look);
+  // the lids eye() draws: a face of the north's own heavy lid, folded too while STYLE.lids is "folded"; or everyone's
+  var folds = STYLE.lids === "folded";
+  EYE_LIDS = NORTH_FACE ? (folds && NORTH_FACE.eyes !== "folded" ? Object.assign({}, NORTH_FACE, {eyes: "folded", fold: 0}) : NORTH_FACE)
+                        : folds ? FOLDED_EYE : null;
+  if (look.body !== undefined) { checkName("A body", look.body, BODIES); }
+  BODY = BODIES[look.body] || BODIES.slim;        // the body (BODIES): its chest, its measures, its cloth                   // a face of the north, or none
   // a tube of cloth to the ankle: a lady's pha sin (one of SINS) or a man's sarong
   var tube = look.sin !== undefined ? SINS[look.sin % SINS.length] : Array.isArray(look.sarong) ? look.sarong : look.sarong ? [look.sarong, SARONG_BANDS] : null;
   var slight = look.skirt || look.sin !== undefined;   // a lady's smaller feet, and her anklets
@@ -3569,7 +3668,7 @@ function person(x, y, look) {
   // The figure is seen from the front and a little to one side, so neither
   // hand crosses to the other side of the body, and the two never meet.
   var swing = look.step ? Math.cos(walk) * Math.min(1.6, gait) : 0;
-  var handA = look.handA || (look.parasol ? parasolHand(parasolOf(look.parasol).tilt, parasolOf(look.parasol).hang) : look.holding === "stick" ? [34, 62] : [12 + 16 * swing, 97 - 12 * Math.max(0, swing)]);   // a hand on a stick is held forward, one on a parasol up to its handle
+  var handA = look.handA || (look.parasol ? parasolHand(parasolOf(look.parasol).tilt, parasolOf(look.parasol).hang) : look.holding === "stick" ? [34, 62] : [BODY.hand + 16 * swing, 97 - 12 * Math.max(0, swing)]);   // a hand on a stick is held forward, one on a parasol up to its handle
   var handB = look.handB || [-12 - 16 * swing, 97 - 12 * Math.max(0, -swing)];
   if (look.parasol && parasolOf(look.parasol).busy) {   // the other hand at the parasol's handle, working it
     var busy = parasolOf(look.parasol).busy;
@@ -3667,7 +3766,7 @@ function person(x, y, look) {
   // little less while it is behind (about 8 degrees each way).
   var bodyTurn = Math.max(-1, Math.min(1, look.twist || 0));
   var chestTurn = Math.max(-1, Math.min(1, bodyTurn + (look.step && !seat ? 0.15 * Math.cos(walk) * Math.min(1, gait) : 0)));
-  var hipHalf = blend3(bodyTurn, 6, 20, 23), footHalf = blend3(bodyTurn, 8, 26, 30);   // each leg's root and foot, this far from the middle
+  var hipHalf = blend3(bodyTurn, BODY.hips[0], BODY.hips[1], BODY.hips[2]), footHalf = blend3(bodyTurn, BODY.feet[0], BODY.feet[1], BODY.feet[2]);   // each leg's root and foot, this far from the middle
   var sideOn = bodyTurn < -0.5;                     // nearer profile than three-quarter: the far side goes behind the body
 
   // a soft shadow on the ground, smaller while they are in the air (none for ground: false)
@@ -3676,7 +3775,7 @@ function person(x, y, look) {
   pen.beginPath();
   if (seat === "astride") { pen.rect(x, y, 0, 0); }   // one who rides is not on the ground, and has no shadow on it
   else if (seat) { pen.ellipse(x + (seat === "side" ? 16 : 0) * size * (look.face || 1), y + 3, 124 * size, 15 * size, 0, 0, 7); }
-  else { pen.ellipse(x, y + 4, (96 - up * 26) * size, (17 - up * 5) * size, 0, 0, 7); }
+  else { pen.ellipse(x, y + 4, (BODY.shadow - up * 26) * size, (17 - up * 5) * size, 0, 0, 7); }
   pen.fill();
   if (STYLE.light && seat !== "astride") {          // and the shadow the light throws: a lozenge on the ground, leaning away from the light
     pen.save();
@@ -3827,7 +3926,7 @@ function person(x, y, look) {
   // stands on a neck: look.head is how wide the head is (0.9 for her unless
   // told, 1 for anyone else), and a head narrower than 1 is lifted by 12.
   // A face of the north is as broad as its shape says, a lady's too.
-  var narrow = look.head !== undefined ? look.head : NORTH_FACE ? NORTH_FACE.wide : look.bun ? 0.9 : 1, long = narrow < 1 ? 1 : 0;
+  var narrow = (look.head !== undefined ? look.head : NORTH_FACE ? NORTH_FACE.wide : lady ? 0.9 : 1) * BODY.face, long = narrow < 1 ? 1 : 0;
   joints.waist = spot(0, 0);
   joints.neck = spot(neckX, -148);
   // Where a point of the chest is, once the spine has bent it and the two
@@ -4036,7 +4135,7 @@ function person(x, y, look) {
   // chest; the rest are drawn after the head, over the body.
   var flex = Math.sin(phase * 2 - 1.1) * 0.22;     // the wrist bends a little after the arm, once a beat
   var wristA, wristB, poseA, poseB;
-  var rootHalf = blend3(chestTurn, 4, 40, 46);      // the shoulders this far from the spine: over the middle in profile, widest seen from the front
+  var rootHalf = blend3(chestTurn, BODY.root[0], BODY.root[1], BODY.root[2]);      // the shoulders this far from the spine: over the middle in profile, widest seen from the front
   var rootA = chest(rootHalf, shoulderY), rootB = chest(-rootHalf, shoulderY);   // the shoulders, where the spine, their line and the arms have put them
   // A child's arms are as much shorter as its legs are, and its hands with
   // them: an arm is drawn smaller about its shoulder, with the pen's weight
@@ -4072,8 +4171,8 @@ function person(x, y, look) {
   }
   // Big gloved hands for the fellows, as they drew them, and small bare
   // hands for the ladies.
-  var handSize = (look.gloves ? 1.25 : look.bun ? 0.95 : 1.1) * arms;
-  var rings = look.bangles !== undefined ? look.bangles : look.bun ? 2 : look.coat ? 0 : 1;
+  var handSize = (look.gloves ? 1.25 : lady ? 0.95 : 1.1) * arms;
+  var rings = look.bangles !== undefined ? look.bangles : lady ? 2 : look.coat ? 0 : 1;
   // Everything about a hand, from the look and the arm it ends ("A" the
   // near arm, "B" the far one; "given" is where the hand was asked for).
   // A hand points the way its forearm points, from the elbow to the wrist,
@@ -4195,8 +4294,8 @@ function person(x, y, look) {
     part(rig, "torso", 0, 14, 0, -134, true);
     pen.restore();
   } else {
-  outline(look.bun ? blendOutline(chestTurn, CHEST_LADY_P, CHEST_LADY, CHEST_LADY_F)
-                   : blendOutline(chestTurn, CHEST_MAN_P, CHEST_MAN, CHEST_MAN_F), chest);   // the chest, turned, bent along the spine and tipped
+  var chests = BODY.chest[lady ? "lady" : "man"];   // the body's chest (BODIES)
+  outline(blendOutline(chestTurn, chests[0], chests[1], chests[2]), chest);   // the chest, turned, bent along the spine and tipped
   shape(look.bare ? SKIN : look.shirt);              // a bare chest is the skin
   // Paint on the body, kept inside its outline: the back is in shadow, the
   // head throws a shadow on the shoulders, and the front catches the light.
@@ -4223,7 +4322,7 @@ function person(x, y, look) {
     // down both sides of a V neck, and on from its point down the front edge
     // to the waist. look.collar is [the band's colour, the pattern's].
     var c0 = chest(-17, -133), c1 = chest(5, -97), c2 = chest(25, -132), c3 = chest(27, -6);
-    outline(look.bun ? CHEST_LADY : CHEST_MAN, chest);
+    outline(lady ? CHEST_LADY : CHEST_MAN, chest);
     pen.save();
     pen.clip();                                     // the band stays on the blouse
     pen.lineCap = "round";
@@ -4354,7 +4453,7 @@ function person(x, y, look) {
       pen.arc(buttonAt[0], buttonAt[1], 5, 0, 7);
       pen.fill();
     }
-    if (!look.coat && !look.plain && !look.bun) {   // a breast pocket on a mo hom
+    if (!look.coat && !look.plain && !lady) {   // a breast pocket on a mo hom
       var pocketAt = chest(37, -85), pocketX = pocketAt[0] - 37, pocketY = pocketAt[1] + 85;
       pen.strokeStyle = "rgba(20, 20, 50, 0.4)";
       pen.lineWidth = 2 * FINE;
@@ -4393,10 +4492,11 @@ function person(x, y, look) {
     }
     pen.stroke();
     pen.beginPath();
-    pen.moveTo(-34, -14);
-    pen.quadraticCurveTo(0, -6, 34, -14);
-    pen.lineTo(32, 8);
-    pen.quadraticCurveTo(0, 16, -32, 8);
+    var cw = BODY.cloth;                            // the waist cloth, as wide as the body's waist
+    pen.moveTo(-34 * cw, -14);
+    pen.quadraticCurveTo(0, -6, 34 * cw, -14);
+    pen.lineTo(32 * cw, 8);
+    pen.quadraticCurveTo(0, 16, -32 * cw, 8);
     pen.closePath();
     shape("#c8553d");
     pen.save();
@@ -4448,12 +4548,12 @@ function person(x, y, look) {
     pen.restore();
   }
   if (!rig) {                                       // a drawn head brings its own neck
-  oval(neckX, -142 - (look.bun ? 4 : 0) - 5 * long, 13 - 1.5 * long, (look.bun ? 28 : 24) + 6 * long, SKIN);   // a long neck, between chest and head
+  oval(neckX, -142 - (lady ? 4 : 0) - 5 * long, BODY.neck - 1.5 * long, (lady ? 28 : 24) + 6 * long, SKIN);   // a long neck, between chest and head
   pen.fillStyle = "rgba(150, 70, 60, 0.3)";         // in the shadow of the chin
   pen.beginPath();
   pen.ellipse(2 + neckX, -152 - 11 * long, 12 - 1.5 * long, 9, 0, 0, 7);
   pen.fill();
-  if (look.bun) {                                   // a necklace, and a pendant
+  if (lady) {                                   // a necklace, and a pendant
     pen.strokeStyle = "#e0b23a";
     pen.lineWidth = 3;
     pen.beginPath();
@@ -4527,7 +4627,7 @@ function person(x, y, look) {
   // The head is drawn about its middle, which is 59 above its chin. A smaller
   // head is moved down by what it lost below its middle, so the chin stays
   // where it was, on the neck.
-  pen.translate(neckX, -186 - (look.bun ? 8 : 3) - 12 * long + (still ? 0 : 8 * (1 - up)) + 59 * headTall * (1 - small));
+  pen.translate(neckX, -186 - (lady ? 8 : 3) - 12 * long + (still ? 0 : 8 * (1 - up)) + 59 * headTall * (1 - small));
   var tilted = look.tilt !== undefined ? look.tilt : feel.tilt;   // how far a dancer's pose, or a feeling, tilts the head
   pen.rotate(-rock * 2.4 + 0.6 * swayAt(1.3) + tilted + lagH[0] * 0.004); // the sway reaches it last
   if (rig) {                                        // the drawn head, turning about the top of the neck
@@ -4827,8 +4927,8 @@ function person(x, y, look) {
   // every beat for a person who only sings along.
   var mouth = look.mouth || (look.sing && sung < 0.55 ? {open: 1 - sung, wide: 0.3, round: 0} : null);
   if (!mouth && feel.open) { mouth = {open: feel.open[0], wide: feel.open[1], round: feel.open[2]}; }   // a feeling that opens the mouth
-  var drop = mouth ? (look.bun ? 5 : 11) * mouth.open : 0;
-  var turn = Math.max(-1, Math.min(1, look.turn !== undefined ? look.turn : bodyTurn)), V = view(turn, look.bun, NORTH_FACE);   // where the turn puts every feature: the head turns with the body unless told its own turn
+  var drop = mouth ? (lady ? 5 : 11) * mouth.open : 0;
+  var turn = Math.max(-1, Math.min(1, look.turn !== undefined ? look.turn : bodyTurn)), V = view(turn, lady, NORTH_FACE);   // where the turn puts every feature: the head turns with the body unless told its own turn
   // Hair moves a little after the head does. On the way up it floats and
   // spreads; on the beat it drops again.
   var late = phase - 0.9;
@@ -4884,7 +4984,7 @@ function person(x, y, look) {
   }                                                                // a man has no tuft at the nape: the back of his head is shaved (Hallett, 1890)
   // The ear nearest the camera, where the turn puts it; as the head comes
   // round, the far ear shows at the other side.
-  var earX = V.ear, earLess = V.side * (look.bun ? 1 : 0.4);     // in profile an ear is smaller: a lady's small, a fellow's a little
+  var earX = V.ear, earLess = V.side * (lady ? 1 : 0.4);     // in profile an ear is smaller: a lady's small, a fellow's a little
   function earplug(x, fade) {                                    // a lan hu: a rolled leaf or sheet of gold through the stretched lobe
     oval(x, -272, 5.5 - 1.5 * fade, 6 - 1.5 * fade, look.earplug);
     pen.strokeStyle = "rgba(58, 36, 24, 0.55)";                  // the roll's edge, a curl inside it
@@ -4914,7 +5014,7 @@ function person(x, y, look) {
     pen.arc(49, -284, 6, -Math.PI * 0.4, Math.PI * 0.4);
     pen.stroke();
     if (look.earplug) { earplug(50, 0); }
-    if (look.bun && !look.earplug) {
+    if (lady && !look.earplug) {
       var farDrop = hung(50, -272, 0, 15), farBead = hung(50, -272, 0, 18);
       hose(50, -272, farDrop[0], farDrop[1], 0, 2, "#f4c542");
       oval(farBead[0], farBead[1], 4, 5, "#f4c542");
@@ -4928,7 +5028,7 @@ function person(x, y, look) {
     hose(earX, -272, dropE[0], dropE[1], 0, 2, "#f4c542");
     oval(beadE[0], beadE[1], 4, 5, "#f4c542");
   }
-  if ((look.bun || look.regalia) && !look.earplug && !earInFront) { earring(); }   // it hangs with its ear: behind the head here, before it toward profile
+  if ((lady || look.regalia) && !look.earplug && !earInFront) { earring(); }   // it hangs with its ear: behind the head here, before it toward profile
   // The head: one path with a brow, a cheek, a jaw and a chin, blended for
   // the turn between its profile, three-quarter and full-face shapes. When
   // the mouth opens to sing, the jaw drops with it.
@@ -4953,7 +5053,7 @@ function person(x, y, look) {
   // the front of the skull as a piece of their own. Its tip is where the
   // face draws the tip of the nose (V.tip), so while that is still inside
   // the face the piece is hidden, and the nose is the first of it to show.
-  var piece = V.side > 0 ? profilePiece(V.tip, V.side, drop, look.bun) : null;
+  var piece = V.side > 0 ? profilePiece(V.tip, V.side, drop, lady) : null;
   var skinInk = inkFor(SKIN);
   pen.fillStyle = SKIN;
   pen.fill(skull);
@@ -5115,7 +5215,7 @@ function person(x, y, look) {
   }
   if (earInFront) {
     nearEar();
-    if ((look.bun || look.regalia) && !look.earplug) { earring(); }
+    if ((lady || look.regalia) && !look.earplug) { earring(); }
   }
   if (look.hat) {
     pen.save();                                                  // a hat is loose: it lags the head,
@@ -5205,7 +5305,7 @@ function person(x, y, look) {
     glance = [Math.max(-4, Math.min(4, (look.at[0] - x) / 120 * (look.face || 1))),
               Math.max(-3, Math.min(3, (look.at[1] - headY) / 120))];
   }
-  if (look.bun) {
+  if (lady) {
     ladyFace(shut, mouth, glance, V, feel);
   } else {
     manFace(shut, mouth, glance, V, feel);
@@ -5367,6 +5467,8 @@ function person(x, y, look) {
   HAIR_LINE = "#7a5640";
   PAINTED = true;
   NORTH_FACE = null;
+  EYE_LIDS = null;
+  BODY = BODIES.slim;
   if (joints.crown && joints.chin) { sighted((joints.crown[0] + joints.chin[0]) / 2, (joints.crown[1] + joints.chin[1]) / 2); }
   return joints;
 }

@@ -54,6 +54,7 @@ var PARTS = [
   ]],
   ["the head", [
     ["bun", "lady", function () { return {}; }, "bun: true"],
+    ["lady", "lady", function () { return {bun: false, lady: true}; }, "lady: true,|bun: false"],
     ["hat", "fellow", function () { return {hat: true}; }, "hat: true"],
     ["turban", "fellow", function () { return {turban: "#c4654f"}; }, 'turban: "#c4654f"'],
     ["shaved", "monk", function () { return {}; }, "shaved: true"],
@@ -125,6 +126,7 @@ var PARTS = [
   ["the body, and how it moves", [
     ["size", "fellow", function () { return {size: 0.5}; }, "size: 0.5"],
     ["build", "lady", function () { return {build: 1}; }, "build: 1"],
+    ["body", "fellow", function () { return {body: "fat"}; }, 'body: "fat"'],
     ["up", "fellow", function () { return {up: 1}; }, "up: 1"],
     ["late", "fellow", function () { return {late: 0.5}; }, "late: 0.5 (off the beat)"],
     ["spring", "fellow", function () { return {late: 0, spring: 2}; }, "spring: 2"],

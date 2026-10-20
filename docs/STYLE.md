@@ -2644,7 +2644,8 @@ it at 90 pixels a second, then the studio's name held with the kit's address und
 asked for each part:
 
 - **Who made it.** Animation: lannamation, https://github.com/ddtraveller/lannamation, and Claude AI. The voice of
-  the tale: "Panda", a stub until the speaker sends the name she wants in it.
+  the tale: อมรรัตน์ ใจจา · Amornrat Jaijar (2026-10-20; "Panda" stood in until she sent her name), thanked by name
+  again under the three pandas.
 - **Where it comes from**, as the kit records it: the tale's sources, the music and sounds (the tokay's recording
   and who made it), the household research, the letters; the photographers on Wikimedia Commons whose pictures the
   drawings were studied from; and every one of the cartoon maker's people, creatures, things and places, two to a
@@ -3530,6 +3531,50 @@ her hair. In the maker they are six more people of the palette (👨 อิน�
 - **Not done.** In profile a face of the north keeps the painted profile piece (its nose, lips and
   chin), and the nostril line that the lady's profile keeps is gone; the brow, the eye and the
   outline there are the kit's. The six are not yet in any film.
+
+## The Thai face, bodies, and the lady apart from her hair (2026-10-20)
+
+The owner, 2026-10-20: "They don't really look like Asian eyes. They look Western", then "Start from scratch with
+faces in general and try one from your research", then "fold these faces into the kit ... Add a few fat bodies for
+men, women and children. Ideally faces, hair and bodies and clothes will be swappable", and "Rather than just
+swelling I'd like fat bodies redrawn from scratch". Each is a look name, off unless asked for: a figure without them
+draws as it did.
+
+- **`north: "thai"`**, a face in `NORTH_FACES` with its own numbers (`own`, in place of `NORTH`'s) and its own
+  eye (`eyes: "folded"`): broad cheekbones and a soft jaw (cheek 6, jaw 3, chin 3, head 1.08); the eye's upper lid
+  with no crease and no hollow under the brow, a lower arch (1.45 of the opening's height, the kit's 1.9), a dark
+  iris filling the opening with one light, and the lid line running on past the inner corner into the fold over
+  it; a slant of 0.13 (between the 6 degrees measured on men and the 9 on women); brows straight, low and heavy;
+  a low, broad nose; fuller lips. A child keeps half of each change, as every face of the north does, but not
+  the smaller eye. Drawn from photographs of Thai people and a 3D study of Thai faces, never from one face.
+- **Everyone's eye is folded** (owner, 2026-10-20: "Make sure to fix the eyes in all the models with a folded lid
+  eye"): `STYLE.lids` is `"folded"`, so every person, of the cast or not, has the Thai face's eye (its lid, the
+  dark iris, no crease, no hollow, the soft fold at the inner corner) on their own face; a face of the north keeps
+  its heavy lid and is folded too. `person()` sets `EYE_LIDS` (`FOLDED_EYE`, or the face of the north's), and
+  `eye()` reads only it, so an animal's eye, drawn outside `person()`, keeps its own. The fold at the inner corner
+  is a short soft crease measured by the eye's height: drawn long and in ink, it met the nose's line on the comic
+  eyes, which are wide. `FILM_STYLE = {lids: "kit"}` draws the creased eye the kit drew before. The Lanna Tales
+  film was rendered before this, with the eye it had.
+- **`body`**, one of `BODIES`: `"slim"` is the kit's own; `"fat"` has its own chests (a man's and a lady's,
+  `CHEST_MAN_FAT`, `CHEST_LADY_FAT`, turned to profile and full face by `chestTurns()`): a broad back curving out
+  from the waist, sloping round shoulders, a thick neck, the chest running down into a belly carried low; a
+  lady's fuller bust over a soft belly. With it: shoulders, hips and feet further from the middle, thicker arms
+  and legs, a wider waist where cloth hangs (`tier()`), wider hems and waist cloth, a thicker neck, hands that
+  rest clear of the belly, a larger shadow, a face 1.1 as broad. A child is any body at a child's measure.
+- **`lady`**: true for a woman's face, chest, neck, hands and jewellery, false for a man's. Left out it follows
+  `bun`, as before (hair tied up is a lady), so the hair and the one who wears it can now be chosen apart:
+  `{lady: true}` with no bun is a woman with a fellow's hair, `{bun: "low", lady: false}` a man with a knot.
+  `bun` itself now says only how the hair is tied.
+
+Sheets (outside the kit, for looking): the slim and fat cast with the Thai face, five swaps, and every cast member's
+eyes before and after the fold. `checks/kit_check.py` passes with all of it (169 of 169, 2026-10-20). With the Thai
+face added and nothing else, the kit as committed and the kit then drew every page alike (apsara, fonlep and puman
+differ at 2 seconds between two loads of one and the same kit too); the folded eye for everyone changes every page
+with a person on it, as it was asked to.
+
+- **Not done.** The cast still wears the kit's own faces: nobody is given the Thai face or the fat body until the
+  owner picks. Clothes are still drawn by the person (`sin`, `skirt`, `sabai`, `bare`): swapping them is the
+  next step, then the cast as compositions of face, hair, body and clothes.
 
 ## The kit's own checks
 

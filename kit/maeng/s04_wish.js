@@ -16,7 +16,7 @@ var S04_ROOM = null;
 // Its life: two mice creep through the hut, and a tokay comes down the wall.
 // They are drawn a little larger than life, as a cartoon draws small animals, so that they read in the room.
 // Each keeps to the right of the room, in the lamp's reach, away from the father and his son; each is still while
-// the father speaks his wish, and all three are gone before the grief (38 s on).
+// the father speaks his wish; the mice are gone before the grief (38 s on), and the tokay stays high on the wall.
 var S04_LIFE = [
   // The house mouse: in under the doorway, along the foot of the wall; it sniffs as the father calls his son
   // close (M016), sits up while he speaks (M017, M018), back into the gap by the door post; out again to sit up
@@ -31,10 +31,13 @@ var S04_LIFE = [
    course: [[19.5, 1780, 790, "hide"], [20.0, 1780, 790], [23.4, 1500, 822, "sniff"], [27.6, 1500, 822], [28.0, 1475, 828, "sniff"],
             [29.6, 1475, 828], [30.6, 1790, 792, "hide"], [31.0, 1790, 792, "hide"]]},
   // The tokay: down the wall from the beam, to rest above the boy; in the quiet after "look after it" (M021 ends
-  // 35.6, M022 begins 38.0) it calls once, to-kay; then it climbs back into the thatch as the lamp burns low.
+  // 35.6, M022 begins 38.0) it calls once, to-kay; then it climbs back up as the lamp burns low, and stays there at
+  // the top of the wall, under the beam. Its way keeps left of the doorway (x 1440 to 1650 from y 230), on the
+  // woven wall: it crossed the door's top corner before, over the night (owner, 2026-10-20: "crawls over empty air
+  // when moving over the door frame ... make it stop and stay where it is at the top of the wall").
   {name: "tokay", kind: "gecko", layer: "back", look: {size: 1.0},
-   course: [[0, 1560, 100], [9.0, 1450, 230], [13.0, 1420, 260], [21.0, 1300, 360], [24.0, 1250, 390, "rest"], [39.5, 1250, 390],
-            [44.0, 1300, 200], [46.5, 1330, 96, "hide"], [47.0, 1330, 96, "hide"]],
+   course: [[0, 1400, 104], [9.0, 1380, 200], [13.0, 1350, 260], [21.0, 1290, 350], [24.0, 1250, 390, "rest"], [39.5, 1250, 390],
+            [44.0, 1290, 240], [46.5, 1320, 112, "rest"], [60.0, 1320, 112]],
    calls: [[36.0, "tokay", 0.5]]}
 ];
 

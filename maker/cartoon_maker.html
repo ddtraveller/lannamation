@@ -218,6 +218,8 @@
         <span id="timeLabel">0.0 วินาที</span>
         <label>ความยาว <input type="number" id="durationBox" min="3" max="90" step="1"> วินาที <small>duration</small></label>
         <label title="ทุกคนเด้งตามจังหวะ แบบการ์ตูนยุค 1930 · everyone hops on the beat, as in 1930s cartoons"><input type="checkbox" id="bounceBox"> เด้งแบบยุค 1930 <small>1930s bounce</small></label>
+        <label title="เมื่อเล่น อ่านคำบรรยายและคำพูดในฟองออกเสียง ด้วยเสียงของเบราว์เซอร์ · while it plays, the subtitles and the speech bubbles are read aloud by the browser's own voice"><input type="checkbox" id="readBox"> 🔊 อ่านออกเสียง <small>read aloud</small></label>
+        <select id="voiceSel" title="เสียงที่อ่าน · the voice that reads"></select>
         <span class="en">เลื่อนเวลา แล้วลากตัวละครไปที่ใหม่: นั่นคือเส้นทางของมัน · scrub, then drag a character: that is its course</span>
       </div>
     </div>
@@ -293,11 +295,15 @@
       <span class="en">Select a sprite to set its size: the slider, the square handle at its top-right corner on the stage (drag it out to grow, in to shrink), or Alt and the mouse wheel over the stage. A person also has a feeling, one of nine: neutral, happy, laughing, sad, concerned, angry, sleepy, satiated and surprised; each changes the face and how the body is carried. The dog, the rooster, the Naga, the dragon, the Mom, the Luang and the ox cart's buffalo have feelings too. Pick it in the panel, or in the bar over a person or creature just put in; and a point of the course can change it from there on (its row in the panel, or the box that opens when the point is placed). Five poses: normal (walks on a course, stands when there), wave, wai, sit, and sing. Everyone keeps the beat of the film by themselves.</span>
       <p><b>สี:</b> เลือกส่วนก่อน (เสื้อ ขา/ซิ่น ผิว; พญานาค: ตัว ท้อง หงอน ปาก; มังกร: ตัว จุด ท้อง ไฟ แผงคอ ไข่มุก) แล้วแตะสีในจานสี หรือเลือกสีใดก็ได้จากช่องสีข้าง ๆ "คืนสีเดิม" กลับไปสีของชุดวาด</p>
       <span class="en">Colours: pick a part first (shirt, legs or sin, skin; the Naga: body, belly, crest, mouth; the dragon: body, spots, belly, flame, mane, pearls), then tap a swatch, or choose any colour in the box beside them. "Reset" returns to the kit's own colours.</span>
+      <p><b>หน้า ผม รูปร่าง:</b> ในแผงของคน เลือกหน้า (ตามชุด หรือหน้าไทย) ผม (มวยสูง มวยต่ำ มวยกลางหัว หรือผมสั้น) และรูปร่าง (ผอม หรืออ้วน) แยกกันได้ ผู้ชายหรือผู้หญิงก็ได้ทุกแบบ</p>
+      <span class="en">Face, hair, body: in a person's panel, choose the face (as drawn, or a Thai face), the hair (a high bun, a low knot, a knot on top, or short) and the body (slim or fat), each apart, for a man or a woman alike.</span>
       <h3>4. ข้อความ <small>Text on the timeline</small></h3>
       <p><b>ป้ายชื่อเรื่อง</b> เต็มจอในช่วงเวลาของมัน: บรรทัดใหญ่กับบรรทัดเล็ก ตั้งแต่วินาทีไหนถึงวินาทีไหน <b>คำบรรยาย</b> คือคำใต้ภาพในช่วงเวลาของมัน <b>คำพูด</b> และ <b>ความคิด</b> คือฟองเหนือหัวของคนหนึ่ง: ฟองพูดมีหางชี้ลงที่หัว ฟองคิดเป็นก้อนเมฆมีฟองเล็ก ๆ เลือกคนได้ในแผง หรือกด 💬 พูด / 💭 คิด ในแผงของคนนั้น ข้อความถูกสร้างที่วินาทีที่กำลังดู ยาวสามวินาที แล้วแก้ในแผงทางขวา แถบสีบนแถบเวลาคือข้อความ แตะเพื่อเลือก</p>
       <span class="en">A title card fills the screen during its time: a big line and a small line, from one second to another. A subtitle is words under the picture during its time. A speech or a thought is a bubble over one person's head: a speech bubble has a tail that points at the head, a thought bubble is a cloud with little puffs. Pick the person in the panel, or press 💬 says / 💭 thinks in that person's panel; the bubble keeps over them as they walk. A text starts at the second you are looking at, lasts three seconds, and is edited in the panel. The coloured bars on the time bar are the texts; tap one to select it.</span>
       <p><b>บทพูดทุกตอน</b> แสดงข้อความทุกตอนเรียงตามเวลา แตะตอนไหนก็แก้ตอนนั้น "ตอนถัดไป" เพิ่มตอนใหม่ต่อจากตอนสุดท้าย และกล่อง "หลายตอนทีเดียว" ทำหลายตอนจากบรรทัดที่พิมพ์: บรรทัดละตอน บรรทัดใหญ่ | บรรทัดเล็ก ตอนละกี่วินาทีก็ตั้งได้ ต่อกันไปเรื่อย ๆ บรรทัดที่ขึ้นต้นด้วย = คือป้ายชื่อเรื่อง ในแผงของตอนหนึ่งมีปุ่มไปตอนก่อน ตอนถัดไป และเพิ่มตอนใหม่ต่อจากตอนนี้</p>
       <span class="en">"The script" lists every passage in time order; tap one to edit it. "Next passage" adds one after the last, and the "many at once" box makes a run of passages from typed lines: one passage per line, big | small, each the same number of seconds, one after another; a line that starts with = is a title card. A passage's own panel has previous, next, and a new passage after this one.</span>
+      <p><b>🔊 อ่านออกเสียง</b> ข้างความยาวของหนัง: ติ๊กแล้วกดเล่น คำบรรยายและคำพูดในฟองจะถูกอ่านออกเสียงเมื่อถึงเวลาของมัน (บรรทัดใหญ่ ความคิดไม่อ่าน) ด้วยเสียงที่เลือกในช่องข้าง ๆ: เสียงคำเมืองถ้ามีส่วนขยาย Kam Mueang Voice ใน Chrome ไม่อย่างนั้นเสียงไทยของเบราว์เซอร์ ไม่มีเสียงไทยก็เงียบ</p>
+      <span class="en">🔊 Read aloud, beside the film's length: tick it and press play, and each subtitle and speech bubble is read aloud as its time comes (its big line; a thought is not said), in the voice chosen beside it: a Kam Mueang voice when Chrome has the Kam Mueang Voice extension, otherwise the browser's Thai voice; with no Thai voice it stays silent.</span>
       <h3>5. ฉาก <small>Backdrop and set pieces</small></h3>
       <p>ฉากหลังมีสองพวก พวกแรกคือเนินเขาสีเขียวสามเวลา กลางวัน เย็น กลางคืน เมฆลอยไปเองทั้งเรื่อง ก้อนใกล้ใหญ่และเร็ว ก้อนไกลเล็ก ช้า และจางลงในระยะไกล พวกที่สองคือภาพวาดทั้งภาพ เช่น นาข้าว แม่น้ำ ดอย น้ำตก หมู่บ้าน ตลาด และคืนยี่เป็ง แตะรูปเล็กเพื่อเลือก ภาพพวกนี้มีท้องฟ้าของตัวเอง และเมฆในภาพไม่ลอย ชิ้นฉาก (บ้าน ต้นไม้ มะพร้าว กล้วย วัด ยักษ์ และต้นไม้ที่ออกดอกออกผล เช่น ต้นลำไย ต้นราชพฤกษ์) อยู่นิ่ง ลากเพื่อย้าย คนที่ยืนต่ำกว่าบนจอจะอยู่หน้ากว่า</p>
       <span class="en">Two kinds of backdrop. The first is the green hills at three hours: day, dusk, night. Their clouds drift by themselves all film long: near ones big and quick, far ones small, slow and faded with distance. The second is whole painted pictures, such as rice fields, a river, a mountain, a waterfall, a village, a market and the night of Yi Peng: tap a small picture to choose it. A picture has its own sky, and the clouds in it do not drift. Set pieces (house, tree, palm, banana, temple, yak, and the trees in flower or fruit, such as a longan or a golden shower tree) stand still; drag one to move it. Whoever stands lower on the stage is drawn in front.</span>
@@ -424,6 +430,27 @@ var POSES = [["walk", "🚶 ปกติ"], ["wave", "👋 โบกมือ"],
 // as if shaking the rain off, closed, swung straight down and then back to her side, 5.6 s), opened upright, furled upright, and bloom (tipped furled,
 // opened, spun, furled, lifted).
 // Which parasol she carries:
+// A person's face, hair and body, each chosen apart (owner, 2026-10-20: "Ideally faces, hair and bodies and clothes
+// will be swappable"): item.style = {face, hair, body}, each left out for the cast member's own. The kit's look names:
+// north: "thai" (the Thai face), bun (how the hair is tied; false: a fellow's hair) with lady kept as the cast
+// member's own, so a change of hair never changes who wears it, and body: "fat" (drawn from scratch, not swollen).
+var STYLES = {
+  face: [["", "😊 ตามชุด <small>as drawn</small>"], ["thai", "🙂 หน้าไทย <small>Thai face</small>"]],
+  hair: [["", "ตามชุด <small>as drawn</small>"], ["high", "มวยสูง <small>high bun</small>"], ["low", "มวยต่ำ <small>low knot</small>"],
+         ["wong", "มวยกลางหัว <small>knot on top</small>"], ["loose", "ผมสั้น <small>short, a fellow's</small>"]],
+  body: [["", "ผอม <small>slim</small>"], ["fat", "อ้วน <small>fat</small>"]]
+};
+var STYLE_LABELS = {face: "หน้า <small>face</small>", hair: "ผม <small>hair</small>", body: "รูปร่าง <small>body</small>"};
+function styleCode(item) {              // the person's chosen face, hair and body, as entries of their look
+  var st = item.style || {}, out = [];
+  if (st.face === "thai") { out.push('north: "thai"'); }
+  if (st.hair) {
+    out.push("bun: " + (st.hair === "high" ? "true" : st.hair === "loose" ? "false" : js(st.hair)));
+    out.push("lady: " + (window.CAST && CAST[item.name] && CAST[item.name].bun ? "true" : "false"));
+  }
+  if (st.body === "fat") { out.push('body: "fat"'); }
+  return out;
+}
 var PARASOLS = [["lai", "🌂 ลายไทย"], ["yantra", "🌂 ยันต์แปดทิศ"], ["buddha", "🌂 พระพุทธรูป"]];
 // How a person feels, the kit's nine names (feel: "happy" ...): each sets the face and how the body is carried, for the
 // whole film. A sleepy one nods and yawns by themselves, a satiated one shuts their eyes now and then.
@@ -704,7 +731,7 @@ function personCode(item, n) {
               "face: p" + n + "[3]", "step: p" + n + "[2] ? p" + n + "[6] / (112 * " + sizeValue(item) + ") : 0", "id: " + js("i" + item.id)];
   if (same) { look = look.concat(poseLook(poses[0], late, item.keys[0][0], item)); }
   if (AGED[item.name]) { look.push(AGED[item.name]); }
-  var more = "{" + look.concat(colourCode(item)).join(", ") + "}";
+  var more = "{" + look.concat(colourCode(item), styleCode(item)).join(", ") + "}";
   if (!same) {                          // the pose changes along the course: the one of the key reached, p[7]
     more = "Object.assign(" + more + ", [" + poses.map(function (q, i) { return "{" + poseLook(q, late, item.keys[i][0], item).join(", ") + "}"; }).join(", ") + "][p" + n + "[7]])";
   }
@@ -1035,17 +1062,58 @@ function tick(now) {
     time = (now - playedAt) / 1000;
     if (time >= movie.duration) {
       if (recorder) { stopRecording(); }
+      readAloud(READ.last, movie.duration);
       time = 0;
       playedAt = now;
+      READ.last = -0.001;                 // from the top again: a line at second 0 is read too
     }
+    readAloud(READ.last, time);
+    READ.last = time;
     show();
   }
   requestAnimationFrame(tick);
 }
 
+// ---------- read aloud ----------
+// While the film plays, each subtitle and each speech bubble is read aloud as its time comes (owner, 2026-10-19: a
+// voice for the maker's words). The browser's own voices: speechSynthesis, with the voice picked beside the box; a
+// Kam Mueang voice (one whose name starts "Kam Mueang", from the Kam Mueang Voice extension) first, then Google's
+// Thai, then any Thai voice; with none it stays silent. Its first line (big) is read; a thought is not said aloud. At 0.9 of the voice's pace:
+// a story is read a little slow, never fast. The box and the voice are this browser's, not the film's.
+var READ = {on: false, voice: "", last: 0};
+try { var keptRead = JSON.parse(localStorage.getItem("cartoon_maker_read")); if (keptRead) { READ.on = !!keptRead.on; READ.voice = keptRead.voice || ""; } } catch (error) { /* nothing kept */ }
+function keepRead() { try { localStorage.setItem("cartoon_maker_read", JSON.stringify({on: READ.on, voice: READ.voice})); } catch (error) { /* a browser that keeps nothing */ } }
+function readingVoices() {
+  if (!window.speechSynthesis) { return []; }
+  var score = function (v) { return /^kam mueang/i.test(v.name) ? 3 : /^th/i.test(v.lang) && /google/i.test(v.name) ? 2 : /^(th|nod)/i.test(v.lang) ? 1 : 0; };
+  return speechSynthesis.getVoices().filter(function (v) { return score(v) > 0; }).sort(function (a, b) { return score(b) - score(a); });
+}
+function fillVoices() {
+  var sel = byId("voiceSel"), voices = readingVoices();
+  sel.innerHTML = voices.length ? voices.map(function (v) { return "<option>" + v.name.replace(/</g, "&lt;") + "</option>"; }).join("")
+                                : "<option value=''>ไม่มีเสียงไทย · no Thai voice</option>";
+  if (voices.some(function (v) { return v.name === READ.voice; })) { sel.value = READ.voice; }
+  else { READ.voice = voices.length ? voices[0].name : ""; }
+}
+function readAloud(from, to) {          // every subtitle and speech bubble whose time comes between the two seconds
+  if (!READ.on || !window.speechSynthesis) { return; }
+  var voice = speechSynthesis.getVoices().filter(function (v) { return v.name === READ.voice; })[0];
+  if (!voice) { return; }               // no Thai voice: never Thai words read by an English one
+  movie.texts.filter(function (x) { return (x.kind === "subtitle" || x.kind === "say") && x.from >= from && x.from < to && (x.big || x.small); })
+    .sort(function (a, b) { return a.from - b.from; }).forEach(function (x) {
+      var u = new SpeechSynthesisUtterance(x.big || x.small);
+      u.voice = voice;
+      u.lang = voice.lang;
+      u.rate = 0.9;
+      speechSynthesis.speak(u);
+    });
+}
+
 function setPlaying(on) {
   playing = on;
   playedAt = null;
+  READ.last = time;
+  if (!on && window.speechSynthesis) { speechSynthesis.cancel(); }
   byId("playBtn").innerHTML = on ? "⏸ หยุด <small>pause</small>" : "▶ เล่น <small>play</small>";
 }
 
@@ -1624,6 +1692,11 @@ function panel() {
     if (selected.kind === "person") {
       h.push("<label>ความรู้สึก <small>feeling</small></label><div class='poses'>" +
              FEELS.map(function (f) { return "<button data-feel='" + f[0] + "'" + (f[0] === feelOf(selected.feel) ? " class='on'" : "") + ">" + f[1] + "</button>"; }).join("") + "</div>",
+             Object.keys(STYLES).map(function (key) {   // face, hair and body, each chosen apart
+               var now = (selected.style || {})[key] || "";
+               return "<label>" + STYLE_LABELS[key] + "</label><div class='poses'>" + STYLES[key].map(function (q) {
+                 return "<button data-style='" + key + "' data-value='" + q[0] + "'" + (q[0] === now ? " class='on'" : "") + ">" + q[1] + "</button>"; }).join("") + "</div>";
+             }).join(""),
              "<label>คำพูดในฟอง <small>words in a bubble over the head, from now</small></label><div class='poses'>" +
              "<button data-bubble='say'>💬 พูด <small>says</small></button><button data-bubble='think'>💭 คิด <small>thinks</small></button></div>",
              "<label>ท่าทาง <small>pose</small></label><div class='poses'>" +
@@ -1762,6 +1835,15 @@ function panel() {
   });
   if (byId("parasolKind")) { byId("parasolKind").onchange = function () { that.parasol = byId("parasolKind").value; rebuild(); show(); }; }
   if (byId("sabaiBtn")) { byId("sabaiBtn").onclick = function () { that.sabai = !that.sabai; rebuild(); show(); panel(); }; }
+  p.querySelectorAll("[data-style]").forEach(function (b) {   // a person's face, hair or body
+    b.onclick = function () {
+      var key = b.getAttribute("data-style"), value = b.getAttribute("data-value");
+      that.style = that.style || {};
+      if (value) { that.style[key] = value; } else { delete that.style[key]; }
+      if (!Object.keys(that.style).length) { delete that.style; }
+      rebuild(); show(); panel();
+    };
+  });
   p.querySelectorAll("[data-candle]").forEach(function (b) {
     b.onclick = function () { var c = b.getAttribute("data-candle"); if (c === "auto") { delete that.candle; } else { that.candle = c; } rebuild(); show(); panel(); };
   });
@@ -2215,6 +2297,16 @@ byId("addSubtitle").onclick = function () { var t = addText("subtitle"); if (t) 
   };
 });
 byId("openScript").onclick = function () { selected = null; scripting = true; show(); panel(); };
+byId("readBox").checked = READ.on;
+byId("readBox").onchange = function () {
+  READ.on = byId("readBox").checked;
+  READ.last = time;
+  if (!READ.on && window.speechSynthesis) { speechSynthesis.cancel(); }
+  keepRead();
+};
+byId("voiceSel").onchange = function () { READ.voice = byId("voiceSel").value; keepRead(); };
+fillVoices();
+if (window.speechSynthesis) { speechSynthesis.onvoiceschanged = fillVoices; }   // the list is empty until the voices load
 byId("bounceBox").onchange = function () {   // the 1930s bounce on or off, for the whole film
   movie.bounce = byId("bounceBox").checked;
   rebuild();
@@ -2357,7 +2449,7 @@ function filmPrompt() {
     "You write a short cartoon for a web page that draws it. Answer with ONE JSON object and nothing else.",
     "The stage is a sheet 1440 wide and 1080 high; x runs 0..1440 left to right, y runs 0..1080 top to bottom. The ground is y 880..1040 (feet stand there, 900 is typical); the sky is y 60..600.",
     "JSON shape: {\"duration\": seconds 5..60, \"backdrop\": one of " + JSON.stringify(BACKS.map(function (b) { return b[0]; })) + ",",
-    " \"items\": [ {\"kind\": \"person\", \"name\": one of " + JSON.stringify(people) + ", \"keys\": [[second, x, y], ...], \"size\": 0.7..1.7, \"feel\": one of " + JSON.stringify(FEELS.map(function (f) { return f[0]; })) + " (the face, and how the body is carried, from the start; a key may change it), \"pose\": one of " + JSON.stringify(POSES.map(function (p) { return p[0]; })) + ", \"parasol\": one of " + JSON.stringify(PARASOLS.map(function (p) { return p[0]; })) + " (which parasol a woman carries, with a parasol pose; optional), \"sabai\": true for a shoulder cloth woven with small figures that walk (optional), \"colours\": {\"shirt\"|\"legs\"|\"skin\": \"#rrggbb\"} },",
+    " \"items\": [ {\"kind\": \"person\", \"name\": one of " + JSON.stringify(people) + ", \"keys\": [[second, x, y], ...], \"size\": 0.7..1.7, \"feel\": one of " + JSON.stringify(FEELS.map(function (f) { return f[0]; })) + " (the face, and how the body is carried, from the start; a key may change it), \"pose\": one of " + JSON.stringify(POSES.map(function (p) { return p[0]; })) + ", \"parasol\": one of " + JSON.stringify(PARASOLS.map(function (p) { return p[0]; })) + " (which parasol a woman carries, with a parasol pose; optional), \"sabai\": true for a shoulder cloth woven with small figures that walk (optional), \"style\": {\"face\": \"thai\", \"hair\": \"high\"|\"low\"|\"wong\"|\"loose\", \"body\": \"fat\"} (the face, the hair and the body chosen apart, for a man or a woman alike; each optional), \"colours\": {\"shirt\"|\"legs\"|\"skin\": \"#rrggbb\"} },",
     "            {\"kind\": \"thing\", \"name\": one of " + JSON.stringify(THINGS.concat(FLORAS).map(function (t) { return t[0]; })) + ", \"keys\": [[second, x, y], ...], \"size\": 0.5..2 (1.2 is as the kit draws it; optional), \"feel\": as a person's, for the dog, rooster, naga, dragon, mom, luang and the oxcart's buffalo (its eyes, brows, mouth, and how it carries its head, ears and tail; optional)},",
     "            {\"kind\": \"piece\", \"name\": one of " + JSON.stringify(PIECES.concat(TREES).map(function (p) { return p[0]; })) + ", \"keys\": [[0, x, y]]} ],",
     " \"texts\": [ {\"kind\": \"card\", \"big\": title, \"small\": second line, \"from\": second, \"to\": second}, {\"kind\": \"subtitle\", \"big\": words under the picture, \"small\": translation, \"from\": s, \"to\": s}, {\"kind\": \"say\" or \"think\", \"who\": the person's place in items (0 for the first), \"big\": what they say, or think, in a bubble over their head, \"small\": translation, \"from\": s, \"to\": s} ],",
@@ -2438,6 +2530,11 @@ function adoptFilm(data) {
     var item = {id: film.next++, kind: kind, name: name, keys: keys, size: clean(raw.size, 0.5, 2, name === "boy" || name === "girl" ? 0.95 : 1.2),
                 feel: feelOf(raw.feel, raw.smile), pose: POSES.some(function (p) { return p[0] === raw.pose; }) ? raw.pose : "walk"};
     if (kind === "person" && raw.sabai === true) { item.sabai = true; }
+    if (kind === "person" && raw.style && typeof raw.style === "object") {   // face, hair, body: only the names the maker knows
+      Object.keys(STYLES).forEach(function (key) {
+        if (STYLES[key].some(function (q) { return q[0] && q[0] === raw.style[key]; })) { item.style = item.style || {}; item.style[key] = raw.style[key]; }
+      });
+    }
     if (kind === "person" && PARASOLS.some(function (q) { return q[0] === raw.parasol; })) { item.parasol = raw.parasol; }
     if (CANDLES[name] && (raw.candle === "on" || raw.candle === "off")) { item.candle = raw.candle; }
     var parts = kind === "person" ? PARTS.person : PARTS[name];

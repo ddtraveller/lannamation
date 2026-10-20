@@ -129,6 +129,10 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   durian, longan, orchid, marigold ...) are things that stand on the ground;
   a name ending in `Tree` (`longanTree`, `ratchaphruekTree` ...) is that tree
   in flower or fruit, a piece.
+- A person may take `"style"`: its face, hair and body chosen apart, each left out for
+  the person's own: `{"face": "thai", "hair": "low", "body": "fat"}`. face: `thai`;
+  hair: `high` (a high bun), `low` (a low knot), `wong` (a knot on top), `loose` (short,
+  a fellow's hair), worn by a man or a woman alike; body: `fat`.
 - A person may take `"sabai": true`: a shoulder cloth woven with small figures of
   the kit that walk along it as the person moves (sabai.js). It costs a moment the
   first time it is drawn, while its tiles are made.

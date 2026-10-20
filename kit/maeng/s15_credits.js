@@ -3,7 +3,8 @@
 // tells it, where the tale and its sounds come from, then everything the cartoon maker can put in a film, each
 // with where it was drawn from as far as the kit records it (docs/STYLE.md and the kit's files); last, the
 // studio's name, held. Owner, 2026-10-19: "List animation credits as lannamation and the github repo and for AI
-// voice: list Panda" (a stub: the speaker's own name goes in when she sends it), "You can also list Claude AI".
+// voice: list Panda" (a stub until the speaker sent her own name), "You can also list Claude AI"; 2026-10-20: "Change
+// Panda's name in the credits to" her name, in English and in Thai.
 var S15_LONG = 195;
 var S15_LINES = [];                                  // no words are said: music alone (feelings.py, SCENE_FEEL)
 var S15_ROLL = [3.0, 174.0];                          // the credits come up from below the frame, and the last stops
@@ -20,7 +21,7 @@ var S15_PANDAS = [
   {bun: true, garland: true, blouse: "#e8f0e2", blouseDot: "#d0dfc4", sabai: "#7a4a9a", flowers: [[124, 22, 9, "#f6a6c0"]]},
   {bun: false, blouse: "#fbe9d4", blouseDot: "#f0d4b4", sabai: "#a8243a", flowers: [[150, 56, 13, "#f2cf5a"], [136, 48, 8, "#fffaf0"]]}
 ];
-var S15_THANK_YOU = ["ขอบคุณหลาย ๆ เจ้า", "Thank you, Panda, for the voice of this tale"];   // her own name, when she sends it
+var S15_THANK_YOU = ["ขอบคุณหลาย ๆ เจ้า", "Thank you, Amornrat Jaijar, for the voice of this tale"];
 
 // What rolls, in order: ["title", Lanna script, English], ["head", Thai, English], ["line", text], ["small", text],
 // ["pair", [Thai, English, drawn from], [the same, or null]], ["gap"], and last ["end", Lanna script, English,
@@ -35,7 +36,7 @@ var S15_CREDITS = [
   ["line", "Claude AI (Anthropic)"],
   ["gap"],
   ["head", "เสียงเล่าเรื่อง", "Narrator (AI voice)"],
-  ["line", "Panda"],
+  ["line", "อมรรัตน์ ใจจา · Amornrat Jaijar"],
   ["gap"]
 ];
 // Where the tale, its research, its sounds and its letters come from, as the kit records them.
