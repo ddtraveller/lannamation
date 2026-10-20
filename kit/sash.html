@@ -120,7 +120,7 @@ var SHOWN = ["villager walk", "child walk", "maiden walk", "fellow walk", "weave
              "lady sit", "child sit", "rooster", "sunbird", "buffalo", "elephant", "peafowl", "mom", "luang", "naga",
              "yak", "hong", "lotus", "lotus leaf", "longan", "orchid", "thongkwao", "house", "granary", "oxcart", "namton", "temple", "tung",
              "chedi sai", "krathong", "khom", "khom dao", "sueng", "pig"];
-ROWS = sabaiUnique(ROWS, 24, SHOWN);
+ROWS = sabaiUnique(ROWS, 24, SHOWN, [WOMAN_ROW, 8]);   // dealt outward from where the film opens, her figure (WOMAN_AT, below)
 // Her own woven figure at slot WOMAN_AT of her row: the row flows toward the cloth's cut end as the music plays, and from
 // there she does not reach it before the camera has pulled back (from slot 3, where she was, she would have walked off
 // that end at 12.6 s and come on again at the other, the camera jumping with her).

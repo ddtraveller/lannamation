@@ -201,7 +201,28 @@ var SABAI_WAYS = {                      // a person's ways, each a look added to
 // noses. Get rid of those ones": at a woven figure's size, hands pressed together before the chest read as something
 // held over the nose).
 var SABAI_HAIRS = ["low", "wong", "ipun", true];   // BUN_STYLES: a low knot, a knot on top, the e-pun knot, a high bun
-var SABAI_PLAYERS = {salo: "fellow", sueng: "farmer", pichum: "elder", phinphia: "fellow"};   // the band's players, as the maker has them
+var SABAI_PLAYERS = {salo: "fellow", sueng: "farmer", pichum: "elder", phinphia: "fellow"};
+// What comes first on the cloth, nearest where the film opens, and what last: by what matters most to Lanna (owner,
+// 2026-10-20: "Use mythical and exotic things like animals, birds, people, etc. before common items", then "Think
+// about what's important to lanna culture and place items more important to Lanna towards the center"). First Yi
+// Peng's lanterns and lamps and the tung of the temples; the tale's creature and the tattooed pu man; the Lanna table
+// (sticky rice in its kong khao, the khantoke, khao soi, sai ua, nam phrik); the house and the palace hall; the band
+// of the north and the gong; the ta laew that guards a yard; the people in Lanna dress and at their work; the north's
+// birds and beasts (the peafowl of Phayao, the hornbill, Mrs Hume's pheasant, the tokay of the house wall, the Haw
+// caravans' pack horse) and the pond's fish; the flowers of its temples and gardens. Then whatever else (the Chinese
+// dragon, the apsara, the dishes of elsewhere, the fruits), then the things of every day (SABAI_COMMON), and last the
+// people's other ways. (The rows' own figures, sash.html's, already hold the naga, the elephant, the temple, the khom,
+// the tung, the krathong, the chedi sai, the hong, the Mom, Phaya Luang, the yak, the granary and the water jar.)
+var SABAI_LANNA = ["khom phat", "khom bua", "hand lantern", "sky lantern", "pratheep", "tung sai mu", "tung yai",
+                   "maeng", "pu man", "stickyrice", "rice basket", "khantoke", "khaosoi", "saiua", "namphrik",
+                   "bamboo house", "hall", "drum cart", "salo", "pichum", "phinphia", "gong", "ta laew",
+                   "dancer walk", "noble walk", "devotee walk", "elder walk", "grandmother walk", "farmer walk", "oldfarmer walk",
+                   "buakham walk", "sinuan walk", "inta walk", "khammun walk", "bunma walk", "dokkham walk", "lady walk", "girl walk", "boy walk",
+                   "peafowl walking", "hornbill", "pheasant", "magpie", "tokay", "horse", "tiger", "egret",
+                   "gourami", "barb", "flying", "snakehead", "ratchaphruek", "frangipani", "jasmine", "marigold"];
+var SABAI_COMMON = ["house", "bamboo house", "field hut", "hut", "granary", "basket", "rice basket", "open basket", "mortar", "ta laew",
+                    "firewood", "huad", "grass", "bananas", "gold", "fire stick", "pen", "gong", "snare", "cave", "namton",
+                    "lotus leaf", "tree", "palm", "banana", "bamboo", "areca"];   // the band's players, as the maker has them
 
 function sabaiPool() {
   var people = [];
@@ -240,6 +261,7 @@ function sabaiPool() {
   more("field mouse", "mouse", function (b, u) { mouse(0, 0, {kind: "field", size: 1.1, step: u}); });
   more("tokay", "gecko", function (b, u) { gecko([[-90, 0], [90, 0]], 150 + 20 * u, {size: 1, t: u}); });
   more("peafowl", "peafowl", function (b, u) { peafowl(0, 0, u, {size: 0.6, display: 1, shiver: 0.5}); });
+  more("peafowl walking", "peafowl", function (b, u) { peafowl(0, 0, u, {size: 0.6, step: u}); });   // its train down (owner, 2026-10-20: "replace the camp fire with a peafowl")
   more("pheasant", "pheasant", function (b, u) { pheasant(0, 0, u, {size: 0.9, step: u}); });
   more("sunbird", "sunbird", function (b, u) { sunbird(0, 0, u / 13, {size: 2.4, hover: 1}); });
   more("magpie", "blueMagpie", function (b, u) { blueMagpie(0, 0, u, {size: 0.9, fly: true}); });
@@ -296,7 +318,6 @@ function sabaiPool() {
   more("mortar", "mortar", function (b) { mortar(b, 0, 0, 1.1); });
   more("ta laew", "taLaew", function (b) { taLaew(b, 0, 0, 1.1); });
   more("firewood", "firewood", function (b) { firewood(b, 0, -8, 1.1, {loose: true}); });
-  more("campfire", "campfire", function (b, u) { campfire(b, 0, 0, 1, u * 2, {light: 0}); });   // no light: it would run past its tile and show square
   more("huad", "huad", function (b, u) { huad(b, 0, 0, 1, u * 2, {fire: 1}); });
   more("grass", "grassBundle", function (b) { grassBundle(b, 0, 0, 1, {}); });
   more("bananas", "bananas", function (b) { bananas(b, 0, 0, 1, {}); });
@@ -323,25 +344,33 @@ function sabaiPool() {
   // variations on a theme (owner, 2026-10-20: "Make sure all unique items are represented before repeating themes"):
   // a cloth with fewer places than the pool has leaves out a variation, never an item. sabaiUnique() deals the pool
   // to the rows in turn, so the items are spread over every row.
-  var once_ = people.filter(function (one) { return / walk$/.test(one.key); }), again = people.filter(function (one) { return !/ walk$/.test(one.key); });
-  var first = [];
-  for (var o = 0, q = 0; o < others.length || q < once_.length;) {   // the items and the people met once, mixed
-    if (o < others.length) { first.push(others[o++]); }
-    if (o < others.length) { first.push(others[o++]); }
-    if (o < others.length) { first.push(others[o++]); }
-    if (q < once_.length) { first.push(once_[q++]); }
-  }
-  return first.concat(again);
+  // And among the items, by what matters most to Lanna, then the rest, then the things of every day (SABAI_LANNA,
+  // SABAI_COMMON): sabaiUnique() with a centre deals the first nearest it.
+  var items = others.concat(people.filter(function (one) { return / walk$/.test(one.key); }));
+  var again = people.filter(function (one) { return !/ walk$/.test(one.key); });
+  var rank = function (one) { var at = SABAI_LANNA.indexOf(one.key); return at >= 0 ? at : SABAI_COMMON.indexOf(one.key) >= 0 ? 2000 : 1000; };
+  var ranked = items.map(function (one, i) { return [rank(one), i, one]; });
+  ranked.sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+  return ranked.map(function (one) { return one[2]; }).concat(again);
 }
 
 // The rows, each filled with painters of the pool up to "count" figures, none of them twice on the cloth and none
 // whose key is in "shown". A row that has more than "count" painters already is left as it is.
-function sabaiUnique(rows, count, shown) {
+// With "centre" ([row, slot]: where the film opens, the figure it follows), the places nearest it, in its row and the
+// rows beside it, are dealt first, so the pool's first (the mythical and the exotic) are what is seen there.
+function sabaiUnique(rows, count, shown, centre) {
   var pool = sabaiPool().filter(function (painter) { return !(shown || []).some(function (k) { return k === painter.key; }); });
-  var out = rows.map(function (row) { return row.slice(); }), need = 0;
+  var out = rows.map(function (row) { return row.slice(); }), need = 0, n = 0;
   out.forEach(function (row) { need += Math.max(0, count - row.length); });
   if (need > pool.length) { warn("sabaiUnique: the cloth needs " + need + " more figures and the pool has " + pool.length + ": some come twice"); }
-  for (var k = 0, n = 0; k < count; k++) {           // a figure to each row in turn, so the rows share the pool's mix
+  if (centre) {
+    var places = [];
+    out.forEach(function (row, r) { for (var i = row.length; i < count; i++) { places.push([r, i, Math.abs(r - centre[0]) * 2.5 + Math.abs(i - centre[1])]); } });
+    places.sort(function (a, b) { return a[2] - b[2] || a[0] - b[0] || a[1] - b[1]; });
+    places.forEach(function (one) { out[one[0]][one[1]] = pool[n++ % pool.length]; });
+    return out;
+  }
+  for (var k = 0; k < count; k++) {                  // a figure to each row in turn, so the rows share the pool's mix
     out.forEach(function (row) {
       if (row.length >= count) { return; }
       row.push(pool[n++ % pool.length]);
