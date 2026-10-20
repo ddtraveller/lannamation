@@ -230,19 +230,21 @@ function chediSai(brush, x, base, size, t, seed) { // standing on (x, base); the
   brush.restore();
 }
 
-function pratheep(brush, x, y, size, t, seed) {   // the dish on (x, y); the flame flickers with t
-  var s = size || 1, clock = t || 0, k = seed || 0;
+function pratheep(brush, x, y, size, t, seed, look) {   // the dish on (x, y); the flame flickers with t; look.glow false: no light on the ground
+  var s = size || 1, clock = t || 0, k = seed || 0, lit = !(look && look.glow === false);
   var flick = 1 + 0.25 * Math.sin(clock * 11 + k * 1.7) * Math.sin(clock * 7.3 + k), lean = Math.sin(clock * 4 + k * 2.1) * 2;
   brush.save();
   brush.translate(x, y);
   brush.scale(s, s);
-  var glow = brush.createRadialGradient(0, -6, 0, 0, -6, 34);   // the warm glow on the ground
-  glow.addColorStop(0, "rgba(255, 190, 90, 0.45)");
-  glow.addColorStop(1, "rgba(255, 170, 60, 0)");
-  brush.fillStyle = glow;
-  brush.beginPath();
-  brush.ellipse(0, -2, 34, 14, 0, 0, 7);
-  brush.fill();
+  if (lit) {
+    var glow = brush.createRadialGradient(0, -6, 0, 0, -6, 34);   // the warm glow on the ground
+    glow.addColorStop(0, "rgba(255, 190, 90, 0.45)");
+    glow.addColorStop(1, "rgba(255, 170, 60, 0)");
+    brush.fillStyle = glow;
+    brush.beginPath();
+    brush.ellipse(0, -2, 34, 14, 0, 0, 7);
+    brush.fill();
+  }
   brush.fillStyle = "#a8603c";                      // the dish: shallow terracotta, a rim
   brush.beginPath();
   brush.ellipse(0, -4, 10, 3.5, 0, 0, Math.PI);

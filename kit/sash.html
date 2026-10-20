@@ -36,6 +36,10 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6,
 <script src="flora.js"></script>
 <script src="highlands.js"></script>
 <script src="northbirds.js"></script>
+<script src="food.js"></script>
+<script src="paperdoll.js"></script>
+<script src="apsara.js"></script>
+<script src="puman.js"></script>
 <script>
 // sash.html - a film of the kit. It opens on a cloth, close up: twelve rows
 // of the small things of Thai life, woven across it. Music begins, and the
@@ -117,9 +121,17 @@ var SHOWN = ["villager walk", "child walk", "maiden walk", "fellow walk", "weave
              "yak", "hong", "lotus", "lotus leaf", "longan", "orchid", "thongkwao", "house", "granary", "oxcart", "namton", "temple", "tung",
              "chedi sai", "krathong", "khom", "khom dao", "sueng", "pig"];
 ROWS = sabaiUnique(ROWS, 24, SHOWN);
+// Her own woven figure at slot WOMAN_AT of her row: the row flows toward the cloth's cut end as the music plays, and from
+// there she does not reach it before the camera has pulled back (from slot 3, where she was, she would have walked off
+// that end at 12.6 s and come on again at the other, the camera jumping with her).
+var WOMAN_AT = 8;
+ROWS[WOMAN_ROW].splice(WOMAN_AT, 0, ROWS[WOMAN_ROW].splice(3, 1)[0]);
 
-var CLOTH = {rows: ROWS, from: MUSIC_AT, row: WOMAN_ROW, fine: 1};   // the rows flow and the figures walk when the music begins;
-                                                                   // the rows the film opens on are woven fine, the rest at half
+// The rows flow and the figures walk when the music begins; the rows the film opens on are woven fine, the rest at half.
+// The camera opens on her own woven figure (ROWS[WOMAN_ROW][WOMAN_AT]) and keeps it in the middle as the row moves, until it
+// pulls back to her standing there wearing the cloth (owner, 2026-10-20: "Make sure the central sprite that starts out
+// being focused on is the same one that is the woman standing there wearing the sash when the video pulls out").
+var CLOTH = {rows: ROWS, from: MUSIC_AT, row: WOMAN_ROW, fine: 1, follow: WOMAN_AT};
 
 // ---------- the sets ----------
 // The sky of a scene, painted once: day, dusk or night, with the stars at

@@ -51,7 +51,9 @@
 //   row     which row the camera of sabaiCamera() opens on (4)
 //   fine    how many rows on each side of "row" get tiles of the full size (SABAI_TILE): the rest are made at half
 //           of it, since the camera is far out before they fill the screen. Left out, every row is full size
-var SABAI_KEYS = {wide: true, rows: true, tiles: true, cloth: true, flow: true, from: true, row: true, fine: true};
+//   follow  which figure of "row" (its place in the row's list) sabaiCamera() holds in the middle until it pulls back:
+//           the film opens on that figure and keeps it as the row moves. Left out, a fixed place on the chest
+var SABAI_KEYS = {wide: true, rows: true, tiles: true, cloth: true, flow: true, from: true, row: true, fine: true, follow: true};
 
 var SABAI_TILE = 384;                   // a tile's side: large enough for a camera that shows one row close up
 var SABAI_FRAMES = 6;                   // moments of a walk in one tile's cycle
@@ -172,9 +174,9 @@ var SABAI_ROWS = [
 // painters from sabaiPool(), none of them twice, and no item twice in another
 // colour (owner: "totally unique items"): every member of the cast in eight
 // ways, each a different person to look at by the kit's face, body and hair
-// (walking, in a wai, sitting, laughing with the Thai face, with a fat body,
-// in a wai with both, with a hair style of their own, sitting with a fat
-// body), the band's players, the animals, birds and fish, the creatures of
+// (walking, sitting, laughing with the Thai face, with a fat body, fat and
+// laughing with the Thai face, with a hair style of their own, sitting with a
+// fat body, sitting with the Thai face and a hair style of their own), the band's players, the animals, birds and fish, the creatures of
 // the myths, the flowers and fruits, the trees of a shape of their own, each
 // lantern, and the things of a house and a village.
 // Each painter has a "key" (its name and its way, "villager walk"); a row's
@@ -183,22 +185,26 @@ var SABAI_ROWS = [
 // pool has comes from the scripts the page loads: a painter whose script is
 // not loaded is not in it. The kit's monk is not woven, nor the Hatsadiling.
 var SABAI_PEOPLE = ["villager", "child", "maiden", "fellow", "weaver", "lady", "celestial", "dancer", "drummer", "boy", "girl",
-                    "farmer", "noble", "elder", "grandmother", "oldfarmer", "devotee", "inta", "khammun", "buakham", "sinuan", "bunma", "dokkham"];
+                    "farmer", "noble", "elder", "grandmother", "oldfarmer", "devotee", "inta", "khammun", "buakham", "sinuan", "bunma", "dokkham",
+                    "scientist"];
 var SABAI_WAYS = {                      // a person's ways, each a look added to the cast member's own; a way with no step stands
   walk: {walks: true},
-  wai: {wai: true},
   hair: {walks: true, north: "thai", hair: true},   // a hair style of its own (SABAI_HAIRS, by the person's place in the list)
   sit: {floor: true},
   laugh: {walks: true, north: "thai", feel: "laughing"},
   fat: {walks: true, body: "fat"},
-  fatwai: {wai: true, body: "fat", north: "thai"},
-  fatsit: {floor: true, body: "fat"}
+  fatlaugh: {walks: true, body: "fat", north: "thai", feel: "laughing"},
+  fatsit: {floor: true, body: "fat"},
+  hairsit: {floor: true, north: "thai", hair: true}
 };
+// No wai on the cloth (owner, 2026-10-20: "There are people who look like they have bells or tissues over their
+// noses. Get rid of those ones": at a woven figure's size, hands pressed together before the chest read as something
+// held over the nose).
 var SABAI_HAIRS = ["low", "wong", "ipun", true];   // BUN_STYLES: a low knot, a knot on top, the e-pun knot, a high bun
 var SABAI_PLAYERS = {salo: "fellow", sueng: "farmer", pichum: "elder", phinphia: "fellow"};   // the band's players, as the maker has them
 
 function sabaiPool() {
-  var pool = [], people = [];
+  var people = [];
   Object.keys(SABAI_WAYS).forEach(function (way) {
     SABAI_PEOPLE.forEach(function (name) {
       if (!CAST[name]) { return; }
@@ -277,7 +283,7 @@ function sabaiPool() {
   more("tung yai", "tungYai", function (b, u) { tungYai(b, 0, 0, 0.8, u * 2); });
   more("chedi sai", "chediSai", function (b, u) { chediSai(b, 0, 0, 1, u * 2, 2); });
   more("krathong", "krathong", function (b, u) { krathong(b, 0, 0, 1, u * 2, false); });
-  more("pratheep", "pratheep", function (b, u) { pratheep(b, 0, 0, 1.6, u * 2, 1); });
+  more("pratheep", "pratheep", function (b, u) { pratheep(b, 0, 0, 1.6, u * 2, 1, {glow: false}); });   // no glow on the ground: it would show square
   more("namton", "namton", function (b) { namton(b, 0, 0, 1.2); });
   more("oxcart", "oxcart", function (b, u) { oxcart(b, 0, 0, 1, u * Math.PI, 1); });
   more("drum cart", "drumCart", function (b) { drumCart(b, 0, 0, 0.5, 1); });
@@ -290,7 +296,7 @@ function sabaiPool() {
   more("mortar", "mortar", function (b) { mortar(b, 0, 0, 1.1); });
   more("ta laew", "taLaew", function (b) { taLaew(b, 0, 0, 1.1); });
   more("firewood", "firewood", function (b) { firewood(b, 0, -8, 1.1, {loose: true}); });
-  more("campfire", "campfire", function (b, u) { campfire(b, 0, 0, 1, u * 2, {light: 0.4}); });
+  more("campfire", "campfire", function (b, u) { campfire(b, 0, 0, 1, u * 2, {light: 0}); });   // no light: it would run past its tile and show square
   more("huad", "huad", function (b, u) { huad(b, 0, 0, 1, u * 2, {fire: 1}); });
   more("grass", "grassBundle", function (b) { grassBundle(b, 0, 0, 1, {}); });
   more("bananas", "bananas", function (b) { bananas(b, 0, 0, 1, {}); });
@@ -302,13 +308,30 @@ function sabaiPool() {
   more("sun", "sun", function (b, u) { sun(0, -60, u * 2); });
   more("dragon", "dragon", function () { dragon(0, -80, {size: 0.4, breath: 0.5}); });
   more("egret", "egret", function (b, u) { egret(0, 0, u, {size: 1, peck: 0.5 + 0.5 * Math.sin(u * Math.PI * 2)}); });
-  // dealt people and the rest in turn, about two people to one other, so that every row has both
-  for (var p = 0, o = 0; p < people.length || o < others.length;) {
-    if (p < people.length) { pool.push(people[p++]); }
-    if (p < people.length && p % 3 !== 0) { pool.push(people[p++]); }
-    if (o < others.length) { pool.push(others[o++]); }
+  more("birds", "birds", function (b, u) {             // the kit's flock is drawn in its dark ink, which the cloth would hide: here in cream
+    b.save(); birds(u * 2, 0, -60); b.globalCompositeOperation = "source-in"; b.fillStyle = "#f4ecd2"; b.fillRect(-400, -400, 800, 800); b.restore();
+  });
+  more("apsara", "apsara", function () { apsara(0, 0, {size: 1}); });
+  more("pu man", "puman", function (b, u) { puman(0, 0, {size: 1, step: u}); });
+  more("hut", "tub", function (b) { tub(b, 0, 0, 1.4); });
+  more("snare", "snare", function (b) { snare(b, 0, 0, 0.8, {}); });
+  more("hand lantern", "khomThue", function () { khomThue(0, -200, {size: 1, lit: 0}); });
+  Object.keys(window.FOODS || {}).forEach(function (name) {   // food.js: the dishes of the north, and the khantoke they are set out on
+    more(name, "food", function () { food(name, 0, 0, {size: 2, steam: false}); });
+  });
+  // Every item first, each person once among them (their first way), and only then the people's other ways, the
+  // variations on a theme (owner, 2026-10-20: "Make sure all unique items are represented before repeating themes"):
+  // a cloth with fewer places than the pool has leaves out a variation, never an item. sabaiUnique() deals the pool
+  // to the rows in turn, so the items are spread over every row.
+  var once_ = people.filter(function (one) { return / walk$/.test(one.key); }), again = people.filter(function (one) { return !/ walk$/.test(one.key); });
+  var first = [];
+  for (var o = 0, q = 0; o < others.length || q < once_.length;) {   // the items and the people met once, mixed
+    if (o < others.length) { first.push(others[o++]); }
+    if (o < others.length) { first.push(others[o++]); }
+    if (o < others.length) { first.push(others[o++]); }
+    if (q < once_.length) { first.push(once_[q++]); }
   }
-  return pool;
+  return first.concat(again);
 }
 
 // The rows, each filled with painters of the pool up to "count" figures, none of them twice on the cloth and none
@@ -550,6 +573,18 @@ function sabaiTiles(cloth) {                         // the cloth's tiles, made 
   return cloth.tiles;
 }
 
+// How far along the cloth's middle line figure k of a row is at second t: the row holds a whole number of its patterns,
+// evenly spaced, flowing along the cloth (each row the other way from its neighbour) from second cloth.from on, the
+// figure walking off one end coming on at the other. sabai() lays its figures by it, and sabaiCamera() follows one.
+function sabaiAlong(where, cloth, row, k, t) {
+  var wide = cloth.wide || 72, tiles = sabaiTiles(cloth), rowTall = (wide - 6) / tiles.length, step = rowTall * 0.92 * 1.15;
+  var flow = cloth.flow === undefined ? 2.5 : cloth.flow, dancing = Math.max(0, t - (cloth.from || 0));
+  var lo = where.start || 0, round = where.length - lo + step, n = tiles[row].length;
+  var count = n * Math.max(1, Math.round(round / (step * n))), gap = round / count;
+  var slide = (row % 2 ? 1 : -1) * flow * dancing;
+  return lo + ((k * gap + slide) % round + round) % round - gap / 2;
+}
+
 // The woven cloth at "where" (from sabaiOf), at second t, drawn as bands. Each
 // end of a band is cut one of three ways: square (nothing), on a line
 // ({N, c, s, kx, ky}: the line through N with the normal (kx, ky), met by a
@@ -633,7 +668,7 @@ function sabai(t, where, cloth, part) {
       var lo = where.start || 0, round = where.length - lo + step, reach = half + step;
       var count = cycles.length * Math.max(1, Math.round(round / (step * cycles.length))), gap = round / count;
       for (var k = 0; k < count; k++) {
-        var first = lo + ((k * gap + slide) % round + round) % round - gap / 2;
+        var first = sabaiAlong(where, cloth, row, k, t);
         var bob = dancing ? hop(t, row * 0.1 + k * 0.05) * size * 0.16 : 0;
         var rock = dancing ? Math.sin(t * 2 * Math.PI / BEAT / 2 + row + k) * 0.14 : 0;
         var cycle = cycles[((k % cycles.length) + cycles.length) % cycles.length];
@@ -757,7 +792,8 @@ function sabaiCamera(t, where, cloth, start, end) {
   var zoom = Math.exp(mix(Math.log(rowZoom), 0, u));   // the same share of the way out every second: steady to the eye
   var turn = mix(-where.tilt, 0, u);
   var rowAcross = -wide / 2 + 3 + (row + 0.5) * rowTall;
-  var point = sabaiAt(where, where.top * 0.4, mix(rowAcross, 0, Math.min(1, u * 3)));   // from the row to the cloth's middle line, on the chest (0.4 of the way to the shoulder, where "tilt" is read)
+  var along = cloth.follow === undefined ? where.top * 0.4 : sabaiAlong(where, cloth, row, cloth.follow, t);   // the figure it follows, or the chest
+  var point = sabaiAt(where, along, mix(rowAcross, 0, Math.min(1, u * 3)));   // from the row to the cloth's middle line (on the chest, 0.4 of the way to the shoulder, "tilt" is read)
   var slow = u * u * u;                          // the cloth stays in the middle until the view is wide
   var cx = mix(point[0], WIDE / 2, slow), cy = mix(point[1], 540, slow);
   pen.translate(WIDE / 2, 540);
