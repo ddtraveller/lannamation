@@ -26,6 +26,8 @@ sounds' makers, the four new notebooks' sources, all ten notebooks' links, 241 s
 to be given at the join. 28b: the page's goodbye is a wai (site commit f0076df1). Left: 27 (render every scene and
 the hero film once), then 29 (the join's checks, and up, on the owner's word).
 
+**Live again 2026-10-21 04:30 (Thailand):** the sash ranked by what matters most to Lanna nearest her figure (`SABAI_LANNA`, `sabaiUnique(..., centre)`), the campfire a peafowl; invalidation I3B2MJ0W7C63V9TQA4JW7M9VHC.
+
 **Live again 2026-10-20 19:38:** the sash with every unique item before any variation (139 items, `sabaiPool()`
 order), no repeats and no colour copies, no wai, the camera on her own woven figure (`cloth.follow`), the tale's king
 and newly-weds on it; invalidation I2228M60S1H8VIJRKHW99Z4LC9.
