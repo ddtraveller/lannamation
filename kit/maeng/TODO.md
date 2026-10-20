@@ -26,6 +26,13 @@ sounds' makers, the four new notebooks' sources, all ten notebooks' links, 241 s
 to be given at the join. 28b: the page's goodbye is a wai (site commit f0076df1). Left: 27 (render every scene and
 the hero film once), then 29 (the join's checks, and up, on the owner's word).
 
+**Done 2026-10-20 17:40 (Thailand): the whole list, live.** After the list: the pond's fish redrawn side on and true
+to each species, behind the lotus, the cat beside the maiden; the old orange fish gone from the kit; the studio card's
+crickets and two tokay calls (`../sls_sound.py`), and the tokay's two calls at the end of the credits. Rendered once
+(laptop and Spark, from lannamation c0237ba to be1e1d0), joined with `../chain.py --fade 1,0.75 --over
+thanks_jing.png,905.5,911.8`: 927.3 s, -14.1 LUFS, peak -1.4 dBFS; uploaded over s3://krueng.ai/video/
+lanna_tales_maeng.mp4 on the owner's word ("ship it"), CloudFront invalidated (I8OP849T9PRW0F6L7XEYBVKUJY).
+
 ## 0. Under way now (finish first)
 
 1. **The kit: faces, bodies, eyes** (uncommitted in `../oldcartoon.js`): the Thai face (`north: "thai"`), bodies
