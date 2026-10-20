@@ -6026,141 +6026,214 @@ function pond(brush, x, y, wide, tall, flow) {
   brush.restore();
 }
 
-// A fish in the water, in profile: "facing" is 1 or -1
+// A fish in the water, in profile: "facing" is 1 or -1. Once an orange cartoon fish; since 2026-10-20 (owner:
+// "remove the orange fish from the kit or update their look to be more consistent with the kit style") one of the
+// kit's native fish of a Lanna pond (nativeFish, below), as big as the old one was: a warm colour asks for the mud
+// barb, whose fins are red, any other for the gourami. Its tail sweeps on the kit's clock.
 function fish(brush, x, y, size, facing, colour) {
-  colour = colour || "#e8793a";
-  brush.save();
-  brush.translate(x, y);
-  brush.scale(size * (facing || 1), size);
-  brush.beginPath();                                // the tail, then the body over it
-  brush.moveTo(-20, 0);
-  brush.lineTo(-36, -10);
-  brush.quadraticCurveTo(-30, 0, -36, 10);
-  brush.closePath();
-  brush.fillStyle = colour;
-  brush.fill();
-  brush.strokeStyle = "rgba(110, 45, 25, 0.8)";
-  brush.lineWidth = 1.2;
-  brush.lineJoin = "round";
-  brush.stroke();
-  brush.beginPath();
-  brush.moveTo(22, 0);
-  brush.quadraticCurveTo(4, -15, -22, 0);
-  brush.quadraticCurveTo(4, 13, 22, 0);
-  brush.closePath();
-  var side = brush.createLinearGradient(0, -12, 0, 11);
-  side.addColorStop(0, colour);
-  side.addColorStop(1, "#fff3dc");
-  brush.fillStyle = side;
-  brush.fill();
-  brush.stroke();
-  brush.fillStyle = "#2a1a12";
-  brush.beginPath();
-  brush.arc(13, -2, 1.6, 0, 7);
-  brush.fill();
-  brush.restore();
+  var warm = !colour || /^#(e|f|d)/i.test(colour);
+  nativeFish(brush, x, y, size * 1.25, facing || 1, warm ? "barb" : "gourami", clock);
 }
 
-// The native fish of a Lanna pond, in profile, its middle on (x, y), "facing" 1 or -1, t its swim (owner,
-// 2026-10-20: "Work to improve the fish in the pond scene. research notebooklm to find lanna fish"; the "Lanna fish"
-// notebook's Field Guide to the Northern Thai Fishes and FishBase). None brought in later: no tilapia (1965), no carp.
-//   gourami     three-spot gourami, ปลากระดี่หม้อ (Trichopodus trichopterus): leaf-shaped, flat, silver-green with faint
-//               slanting bars, a dark spot mid-body and one at the tail, thread-like feelers below; near the surface
-//   barb        silver mud barb, ปลาสร้อยนกเขา (Osteochilus vittatus): carp-shaped, silver, rows of dark dots along it, a
-//               dark spot at the tail, the lower fins and the tail red; mid-water and down, in schools
-//   flying      flying barb, ปลาซิวหนวดยาว (Esomus metallicus): a small slim silver minnow, a dark line along it, long
-//               whiskers; just under the surface, quick, in schools
-//   snakehead   striped snakehead, ปลาช่อน (Channa striata): long, round, olive-brown with dark bars, a long fin along
-//               the back, a broad flat head; lying still, deep
+// The native fish of a Lanna pond, side on, as one sees them through clear water from the bank (owner, 2026-10-20:
+// "A top down view wouldn't make sense for the pond scene so try again with a side view but more realistic and as
+// true to the real fish as possible"). Each is drawn to the species: its outline, where each fin begins and ends, its
+// markings, its scales, the rays of its fins. From the procedural_animation page's fish it keeps what a side view
+// shows of swimming: the tail sweeps (seen side on, a sweeping tail narrows and widens), the soft fins and feelers
+// trail and wave a moment behind the body, and every fin has its rays.
+//   gourami     three-spot gourami, ปลากระดี่หม้อ (Trichopodus trichopterus): deep, flat, leaf-shaped; a small mouth
+//               turned up; a small dorsal fin far back; a long anal fin under most of the belly; the pelvic fins two
+//               long threads; blue-grey to olive, with faint dark wavy bars; a dark spot mid-body and one at the
+//               base of the tail (the eye is the third); the eye's iris red
+//   barb        silver mud barb, ปลาสร้อยนกเขา (Osteochilus vittatus): carp-shaped; a tall dorsal fin with a long base;
+//               a deeply forked tail; silver, the back olive; a dark dot on each scale, so rows of dots run along it;
+//               a dark blotch at the base of the tail; the tail, the pelvic and the anal fins red
+//   flying      flying barb, ปลาซิวหนวดยาว (Esomus metallicus): small and slim; a dark band from the snout to the tail,
+//               gold above it; two pairs of barbels, the long pair past the pectoral fins; the pectoral fins long;
+//               the dorsal fin set far back; the tail forked
+//   snakehead   striped snakehead, ปลาช่อน (Channa striata): long and round; a broad flat head in big plate scales, a
+//               wide mouth to below the eye, the lower jaw ahead; one long low fin along the back and one under
+//               the belly; a rounded tail; olive-brown above with dark chevrons on the flank pointing forward, the belly cream
+// nativeFish(brush, x, y, size, facing, kind, t): its middle on (x, y), facing 1 (right) or -1, t its swim. About 46
+// long at size 1 (the snakehead about 60), as the kit's earlier fish were.
+var NATIVE_FISH = {
+  gourami: {beat: 3.2, body: ["#6f8a8c", "#9fb3ad", "#e2e8de"], fin: "rgba(150, 170, 175, 0.62)", ray: "rgba(70, 90, 95, 0.55)", line: "#3e5254"},
+  barb: {beat: 5.0, body: ["#5f6f58", "#b9c0b4", "#f2f2ec"], fin: "rgba(214, 92, 60, 0.82)", ray: "rgba(130, 44, 24, 0.6)", line: "#4a5048"},
+  flying: {beat: 9.0, body: ["#8a7a3a", "#d6d6c8", "#f4f4ee"], fin: "rgba(220, 220, 205, 0.55)", ray: "rgba(120, 120, 100, 0.5)", line: "#5a5640"},
+  snakehead: {beat: 1.6, body: ["#3f3a26", "#7a7050", "#e6dcc0"], fin: "rgba(110, 100, 70, 0.8)", ray: "rgba(50, 44, 28, 0.6)", line: "#2e2a1c"}
+};
+
 function nativeFish(brush, x, y, size, facing, kind, t) {
   t = t || 0;
-  var wag = Math.sin(t * (kind === "flying" ? 14 : kind === "snakehead" ? 2.2 : 6));
+  var F = NATIVE_FISH[kind] || NATIVE_FISH.gourami, unit = (kind === "snakehead" ? 60 / 260 : 46 / 200) * size;
+  var beat = t * F.beat, sweep = Math.sin(beat), line = 1 / unit;   // a line of about one pixel at any size
   brush.save();
   brush.translate(x, y);
-  brush.scale(size * (facing || 1), size);
+  brush.scale(unit * (facing || 1), unit);
   brush.lineJoin = "round";
   brush.lineCap = "round";
-  function body(path, top, belly, line) {
-    var side = brush.createLinearGradient(0, -14, 0, 12);
-    side.addColorStop(0, top);
-    side.addColorStop(1, belly);
-    brush.beginPath();
-    path();
-    brush.closePath();
-    brush.fillStyle = side;
-    brush.fill();
-    brush.strokeStyle = line;
-    brush.lineWidth = 1.2;
-    brush.stroke();
+  function mid(p, q) { return [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]; }
+  function curve(points, closed) {                   // a smooth line through the midpoints of the points
+    var n = points.length, s = closed ? mid(points[n - 1], points[0]) : points[0];
+    brush.moveTo(s[0], s[1]);
+    for (var i = closed ? 0 : 1; i < n - (closed ? 0 : 1); i++) { var m = mid(points[i], points[(i + 1) % n]); brush.quadraticCurveTo(points[i][0], points[i][1], m[0], m[1]); }
+    if (!closed) { brush.lineTo(points[n - 1][0], points[n - 1][1]); }
   }
-  function tail(at, long, high, colour, line) {     // a forked tail, swinging with the swim
-    brush.beginPath();
-    brush.moveTo(at, 0);
-    brush.lineTo(at - long, -high + wag * 3);
-    brush.quadraticCurveTo(at - long * 0.6, wag * 2, at - long, high + wag * 3);
-    brush.closePath();
-    brush.fillStyle = colour;
-    brush.fill();
-    brush.strokeStyle = line;
-    brush.lineWidth = 1;
-    brush.stroke();
+  function along(points, u) {                        // a point a share u of the way along a line of points
+    var lens = [0], total = 0, i;
+    for (i = 1; i < points.length; i++) { total += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]); lens.push(total); }
+    var want = u * total;
+    for (i = 1; i < points.length; i++) {
+      if (lens[i] >= want) { var f = (want - lens[i - 1]) / ((lens[i] - lens[i - 1]) || 1); return [points[i - 1][0] + (points[i][0] - points[i - 1][0]) * f, points[i - 1][1] + (points[i][1] - points[i - 1][1]) * f]; }
+    }
+    return points[points.length - 1];
   }
-  function eye(ex, ey, r) {
-    brush.fillStyle = "#f4ead0";
-    brush.beginPath(); brush.arc(ex, ey, r, 0, 7); brush.fill();
-    brush.fillStyle = "#1a120c";
-    brush.beginPath(); brush.arc(ex + r * 0.15, ey, r * 0.6, 0, 7); brush.fill();
+  // A fin: its base from b0 to b1 on the body, its free edge through the points of edge (from b0's side round to
+  // b1's), a soft skin of the fin's colour, and rays from the base out to the edge.
+  function fin(b0, b1, edge, rays, colour, rayColour) {
+    var outline = [b0].concat(edge, [b1]);
+    brush.beginPath(); curve(outline, false); brush.closePath();
+    brush.fillStyle = colour || F.fin; brush.fill();
+    brush.strokeStyle = F.line; brush.globalAlpha = 0.55; brush.lineWidth = line * 0.8; brush.stroke(); brush.globalAlpha = 1;
+    brush.strokeStyle = rayColour || F.ray; brush.lineWidth = line * 0.6;
+    for (var i = 1; i < rays; i++) {
+      var u = i / rays, from = [b0[0] + (b1[0] - b0[0]) * u, b0[1] + (b1[1] - b0[1]) * u], to = along(edge, u);
+      brush.beginPath(); brush.moveTo(from[0], from[1]); brush.quadraticCurveTo(from[0] + (to[0] - from[0]) * 0.5 + 2, from[1] + (to[1] - from[1]) * 0.6, to[0], to[1]); brush.stroke();
+    }
   }
-  var n;
+  function wave(points, amp, lag) {                  // a soft fin's edge, rippling back along it
+    return points.map(function (p) { return [p[0], p[1] + amp * Math.sin(beat * 0.8 - p[0] * 0.05 + (lag || 0))]; });
+  }
+  // The tail, seen side on as it sweeps: narrower as it turns toward or away, wider as it comes square on.
+  function tail(root, points, rays) {
+    var square = 0.58 + 0.42 * Math.abs(Math.cos(beat));
+    var swept = points.map(function (p) { return [root[0] + (p[0] - root[0]) * square, p[1] + (p[0] - root[0]) * 0.06 * sweep]; });
+    fin([root[0], root[1] - (kind === "snakehead" ? 18 : 12)], [root[0], root[1] + (kind === "snakehead" ? 18 : 12)], swept, rays);
+  }
+  function body(outline, top, bottom) {               // the body: dark above, pale below, a sheen along its middle
+    brush.beginPath(); curve(outline, true); brush.closePath();
+    var g = brush.createLinearGradient(0, top, 0, bottom);
+    g.addColorStop(0, F.body[0]); g.addColorStop(0.45, F.body[1]); g.addColorStop(1, F.body[2]);
+    brush.fillStyle = g; brush.fill();
+  }
+  function inBody(outline, draw) { brush.save(); brush.beginPath(); curve(outline, true); brush.closePath(); brush.clip(); draw(); brush.restore(); }
+  function ink(outline) { brush.beginPath(); curve(outline, true); brush.closePath(); brush.strokeStyle = F.line; brush.lineWidth = line; brush.stroke(); }
+  function scales(x0, x1, y0, y1, r, colour, dot) {  // rows of scales, each row half a scale on from the last
+    brush.strokeStyle = colour; brush.lineWidth = line * 0.55;
+    for (var row = 0, yy = y0; yy < y1; yy += r * 0.9, row++) {
+      for (var xx = x1 - (row % 2) * r; xx > x0; xx -= r * 1.6) {
+        brush.beginPath(); brush.arc(xx, yy, r, Math.PI * 0.62, Math.PI * 1.38); brush.stroke();
+        if (dot) { brush.fillStyle = dot; brush.beginPath(); brush.arc(xx - r * 0.55, yy, r * 0.16, 0, 7); brush.fill(); }
+      }
+    }
+  }
+  function eye(ex, ey, r, iris) {
+    brush.fillStyle = iris; brush.beginPath(); brush.arc(ex, ey, r, 0, 7); brush.fill();
+    brush.strokeStyle = F.line; brush.lineWidth = line * 0.8; brush.stroke();
+    brush.fillStyle = "#0e0c0a"; brush.beginPath(); brush.arc(ex + r * 0.08, ey, r * 0.58, 0, 7); brush.fill();
+    brush.fillStyle = "rgba(255, 255, 255, 0.85)"; brush.beginPath(); brush.arc(ex + r * 0.3, ey - r * 0.3, r * 0.2, 0, 7); brush.fill();
+  }
+  function gill(gx, top, bottom) {                   // the edge of the gill cover, behind the eye
+    brush.strokeStyle = F.line; brush.globalAlpha = 0.6; brush.lineWidth = line * 0.8;
+    brush.beginPath(); brush.moveTo(gx + 6, top); brush.quadraticCurveTo(gx - 6, (top + bottom) / 2, gx + 4, bottom); brush.stroke();
+    brush.globalAlpha = 1;
+  }
+
   if (kind === "gourami") {
-    tail(-24, 14, 9, "rgba(150, 175, 160, 0.85)", "rgba(60, 80, 70, 0.7)");
-    brush.strokeStyle = "rgba(225, 140, 60, 0.9)";   // the anal fin's orange edge, along the belly
-    brush.lineWidth = 2.4;
-    brush.beginPath(); brush.moveTo(-18, 9); brush.quadraticCurveTo(-2, 16, 10, 8); brush.stroke();
-    body(function () { brush.moveTo(22, 0); brush.quadraticCurveTo(8, -19, -24, -2); brush.quadraticCurveTo(-8, 17, 22, 0); },
-         "#7f9f8e", "#dfe8dc", "rgba(50, 70, 60, 0.8)");
-    brush.strokeStyle = "rgba(70, 90, 90, 0.35)";   // faint slanting bars
-    brush.lineWidth = 1;
-    for (n = -14; n < 14; n += 5) { brush.beginPath(); brush.moveTo(n, -9); brush.lineTo(n - 5, 8); brush.stroke(); }
-    brush.fillStyle = "#2a3430";                    // the two spots: mid-body and at the tail
-    brush.beginPath(); brush.arc(-1, 0, 2.6, 0, 7); brush.arc(-20, -1, 2.2, 0, 7); brush.fill();
-    brush.strokeStyle = "rgba(200, 220, 210, 0.9)"; // the thread-like feelers, reaching forward and down
-    brush.lineWidth = 0.9;
-    brush.beginPath(); brush.moveTo(10, 7); brush.quadraticCurveTo(4, 18 + wag * 2, -14, 24); brush.stroke();
-    eye(15, -2, 2.2);
+    var gBody = [[98, -2], [82, -20], [44, -38], [-8, -42], [-44, -32], [-62, -14], [-66, 0], [-62, 14], [-44, 28], [-6, 38], [42, 36], [80, 20], [96, 8]];
+    tail([-62, 0], [[-70, -16], [-90, -34], [-102, -26], [-98, 0], [-102, 26], [-90, 34], [-70, 16]], 10);   // rounded, a shallow notch
+    fin([30, 34], [-58, 16], wave([[24, 48], [0, 60], [-30, 60], [-58, 50], [-72, 34]], 2.5), 16);          // the long anal fin
+    fin([-26, -40], [-50, -28], wave([[-32, -54], [-48, -56], [-62, -38]], 2), 6);                            // the small dorsal, far back
+    body(gBody, -50, 46);
+    inBody(gBody, function () {
+      scales(-60, 70, -44, 44, 6.5, "rgba(40, 60, 64, 0.22)");
+      brush.strokeStyle = "rgba(48, 66, 70, 0.13)";                          // faint, uneven wavy bars, broken in places
+      for (var b = -50, q = 0; b < 64; b += 9 + 6 * dice(q * 3 + 1), q++) {
+        brush.lineWidth = 3 + 4 * dice(q * 7 + 2);
+        brush.beginPath(); brush.moveTo(b + 6 * dice(q), -44); brush.bezierCurveTo(b - 8, -20 + 10 * dice(q + 5), b + 9, 6, b - 3 + 6 * dice(q + 9), 40); brush.stroke();
+      }
+      brush.fillStyle = "#1d2628";                                           // the two spots
+      brush.beginPath(); brush.ellipse(-4, 0, 9, 8, 0, 0, 7); brush.fill();
+      brush.beginPath(); brush.ellipse(-58, 0, 7, 7, 0, 0, 7); brush.fill();
+      brush.fillStyle = "rgba(170, 200, 210, 0.25)"; brush.fillRect(-70, -6, 170, 5);   // a blue sheen
+    });
+    ink(gBody);
+    gill(58, -26, 28);
+    brush.strokeStyle = F.line; brush.lineWidth = line;                      // the small mouth, turned up
+    brush.beginPath(); brush.moveTo(96, -3); brush.lineTo(90, -1); brush.stroke();
+    fin([58, 8], [52, 18], wave([[44, 22], [36, 24], [34, 16]], 1.5, 1), 5, "rgba(220, 230, 225, 0.45)");   // the clear pectoral
+    eye(78, -10, 7, "#c4532e");
+    brush.strokeStyle = "rgba(225, 232, 226, 0.9)"; brush.lineWidth = line * 1.2;   // the two feelers, trailing and waving
+    [0, 1].forEach(function (k) {
+      var sway = Math.sin(beat * 0.7 + k * 1.3);
+      brush.beginPath(); brush.moveTo(48, 30);
+      brush.bezierCurveTo(30, 60 + sway * 5, -20, 70 - sway * 6 + k * 6, -70 - k * 8, 74 + sway * 8 + k * 4); brush.stroke();
+    });
   } else if (kind === "barb") {
-    tail(-22, 15, 9, "#d0583a", "rgba(110, 40, 25, 0.8)");
-    brush.fillStyle = "#d0583a";                    // the red lower fins
-    brush.beginPath(); brush.moveTo(2, 8); brush.lineTo(-4, 15); brush.lineTo(6, 10); brush.closePath(); brush.fill();
-    brush.beginPath(); brush.moveTo(-12, 8); brush.lineTo(-17, 14); brush.lineTo(-9, 9); brush.closePath(); brush.fill();
-    body(function () { brush.moveTo(22, 2); brush.quadraticCurveTo(12, -14, -22, -1); brush.quadraticCurveTo(-4, 12, 22, 2); },
-         "#9aa6aa", "#f2f4f0", "rgba(70, 80, 85, 0.8)");
-    brush.fillStyle = "rgba(50, 55, 60, 0.6)";      // rows of dark dots along the scales
-    for (n = -18; n < 16; n += 3.4) { [-4, 0, 4].forEach(function (r) { brush.beginPath(); brush.arc(n, r + n * 0.04, 0.7, 0, 7); brush.fill(); }); }
-    brush.fillStyle = "#2a2e30";
-    brush.beginPath(); brush.arc(-20, 0, 2.2, 0, 7); brush.fill();
-    eye(15, -1, 2.4);
+    var bBody = [[100, 3], [88, -12], [58, -28], [14, -34], [-26, -30], [-58, -15], [-68, -7], [-70, 0], [-68, 7], [-58, 15], [-24, 25], [20, 29], [62, 24], [90, 13]];
+    tail([-68, 0], [[-74, -12], [-96, -40], [-110, -50], [-100, -22], [-86, 0], [-100, 22], [-110, 50], [-96, 40], [-74, 12]], 14);   // deeply forked
+    fin([14, -33], [-28, -30], wave([[16, -56], [6, -72], [-8, -64], [-22, -48], [-34, -34]], 1.5), 12, "rgba(170, 120, 100, 0.7)");   // the tall dorsal, a long base
+    fin([-6, 27], [-20, 25], wave([[-10, 42], [-22, 44], [-26, 31]], 1.5), 6);                                         // pelvic
+    fin([-34, 22], [-48, 19], wave([[-38, 37], [-50, 39], [-56, 26]], 1.5, 1), 6);                                     // anal
+    body(bBody, -40, 34);
+    inBody(bBody, function () {
+      scales(-66, 84, -32, -6, 7, "rgba(60, 70, 60, 0.3)");                                // the back's scales, plain
+      scales(-66, 84, -6, 30, 7, "rgba(60, 70, 60, 0.3)", "rgba(40, 44, 40, 0.5)");       // below, a dark dot on each: lines of dots along the rows
+      brush.strokeStyle = "rgba(60, 64, 60, 0.4)"; brush.lineWidth = line * 0.7;          // the lateral line
+      brush.beginPath(); brush.moveTo(64, -12); brush.quadraticCurveTo(0, -4, -64, 0); brush.stroke();
+      brush.fillStyle = "#22261f"; brush.beginPath(); brush.ellipse(-60, 0, 9, 8, 0, 0, 7); brush.fill();   // the blotch at the tail
+      brush.fillStyle = "rgba(255, 255, 255, 0.22)"; brush.fillRect(-60, -8, 150, 6);                       // the silver sheen
+    });
+    ink(bBody);
+    gill(64, -22, 24);
+    brush.strokeStyle = F.line; brush.lineWidth = line * 0.9;                // the mouth under the snout, and its small barbels
+    brush.beginPath(); brush.moveTo(94, 8); brush.lineTo(86, 10); brush.moveTo(90, 10); brush.lineTo(84, 18); brush.stroke();
+    fin([62, 14], [56, 22], wave([[46, 30], [38, 32], [38, 22]], 1.5, 1), 6, "rgba(214, 120, 90, 0.6)");   // pectoral
+    eye(80, -6, 7.5, "#d8d8cc");
   } else if (kind === "flying") {
-    tail(-15, 8, 4, "rgba(200, 205, 205, 0.8)", "rgba(80, 90, 90, 0.6)");
-    body(function () { brush.moveTo(16, 0); brush.quadraticCurveTo(4, -6, -15, 0); brush.quadraticCurveTo(4, 5, 16, 0); },
-         "#a8b4b4", "#f4f6f4", "rgba(70, 80, 80, 0.7)");
-    brush.strokeStyle = "#2a3030";                  // the dark line along it
-    brush.lineWidth = 1.1;
-    brush.beginPath(); brush.moveTo(13, 0); brush.lineTo(-15, 0); brush.stroke();
-    brush.strokeStyle = "rgba(200, 205, 200, 0.85)"; // the long whiskers
-    brush.lineWidth = 0.6;
-    brush.beginPath(); brush.moveTo(15, 1); brush.lineTo(4, 7 + wag); brush.stroke();
-    eye(11, -1, 1.4);
-  } else {                                          // snakehead
-    tail(-46, 10, 7, "#5a5034", "rgba(30, 25, 15, 0.8)");
-    brush.fillStyle = "#5a5034";                    // the long fin along the back
-    brush.beginPath(); brush.moveTo(14, -6); brush.quadraticCurveTo(-14, -14 - wag, -44, -5); brush.lineTo(-44, -2); brush.quadraticCurveTo(-14, -8, 14, -4); brush.closePath(); brush.fill();
-    body(function () { brush.moveTo(30, 1); brush.quadraticCurveTo(26, -8, 10, -7); brush.lineTo(-46, -3); brush.lineTo(-46, 3);
-                       brush.lineTo(10, 7); brush.quadraticCurveTo(26, 8, 30, 1); },
-         "#6a6040", "#c8bf9a", "rgba(30, 25, 15, 0.85)");
-    brush.fillStyle = "rgba(40, 32, 20, 0.5)";      // dark bars along its side
-    for (n = -40; n < 6; n += 8) { brush.beginPath(); brush.ellipse(n, 0, 2.6, 5, 0.3, 0, 7); brush.fill(); }
-    eye(22, -2, 2);
+    var fBody = [[98, 0], [84, -12], [50, -18], [0, -19], [-44, -14], [-66, -7], [-72, 0], [-66, 7], [-44, 12], [0, 17], [50, 16], [84, 10]];
+    tail([-70, 0], [[-76, -8], [-96, -28], [-106, -32], [-96, -12], [-86, 0], [-96, 12], [-106, 32], [-96, 28], [-76, 8]], 12);
+    fin([-22, -18], [-38, -15], wave([[-28, -34], [-40, -34], [-46, -20]], 1), 6);               // dorsal, set far back
+    fin([-30, 14], [-46, 11], wave([[-36, 26], [-48, 26], [-52, 15]], 1, 1), 6);                 // anal
+    fin([60, 10], [54, 14], wave([[30, 26], [-4, 30], [-10, 22], [20, 16]], 1.5, 1), 8);          // the long pectoral
+    body(fBody, -19, 17);
+    inBody(fBody, function () {
+      scales(-70, 86, -18, 16, 4.5, "rgba(80, 80, 60, 0.25)");
+      brush.fillStyle = "rgba(214, 178, 70, 0.55)"; brush.fillRect(-80, -8, 180, 4);       // the gold above the band
+      brush.fillStyle = "#2a2a22"; brush.beginPath();                                        // the dark band, snout to tail
+      brush.moveTo(96, -1); brush.quadraticCurveTo(10, -6, -76, -2); brush.lineTo(-76, 3); brush.quadraticCurveTo(10, 0, 96, 3); brush.closePath(); brush.fill();
+    });
+    ink(fBody);
+    gill(66, -12, 12);
+    brush.strokeStyle = "rgba(230, 226, 205, 0.9)"; brush.lineWidth = line * 0.9;   // the barbels: a short pair and a long pair, waving
+    var s1 = Math.sin(beat * 0.5);
+    brush.beginPath(); brush.moveTo(94, 4); brush.quadraticCurveTo(84, 18, 74, 20 + s1 * 2);
+    brush.moveTo(92, 6); brush.bezierCurveTo(78, 30, 40, 36 + s1 * 4, 10, 40 + s1 * 6); brush.stroke();
+    eye(82, -3, 6, "#e6e2c8");
+  } else {                                          // the snakehead
+    var sBody = [[130, 4], [122, -14], [96, -26], [60, -30], [0, -30], [-60, -26], [-96, -20], [-104, 0], [-96, 20], [-60, 24], [0, 28], [60, 28], [100, 22], [124, 14]];
+    tail([-100, 0], [[-104, -20], [-122, -26], [-132, -12], [-134, 0], [-132, 12], [-122, 26], [-104, 20]], 12);   // rounded
+    fin([66, -28], [-98, -18], wave([[56, -40], [0, -44], [-60, -40], [-96, -34], [-104, -24]], 1.8), 30);   // the long dorsal
+    fin([24, 27], [-98, 18], wave([[16, 38], [-40, 40], [-90, 34], [-104, 24]], 1.8, 1), 22);               // the long anal
+    body(sBody, -30, 28);
+    inBody(sBody, function () {
+      scales(-100, 70, -28, 26, 6, "rgba(30, 26, 16, 0.3)");
+      brush.strokeStyle = "rgba(30, 26, 14, 0.3)";                            // dark chevrons along the flank, pointing forward to the head
+      for (var c = -88, q = 0; c < 56; c += 15 + 7 * dice(q + 40), q++) {  // (the "Lanna fish" notebook), faint and uneven, as on the fish
+        brush.lineWidth = 4 + 4 * dice(q + 60);
+        var tip = [c + 10 + 4 * dice(q), 4 + 4 * dice(q + 3)];
+        brush.beginPath(); brush.moveTo(c - 4, -14 + 6 * dice(q + 20)); brush.quadraticCurveTo(c + 6, -6, tip[0], tip[1]);
+        brush.quadraticCurveTo(c + 4, 14, c - 6 + 4 * dice(q + 8), 22); brush.stroke();
+      }
+      brush.strokeStyle = "rgba(30, 26, 16, 0.45)"; brush.lineWidth = line * 0.8;   // the head's big plate scales
+      [[104, -14], [92, -20], [96, -6], [84, -12]].forEach(function (p) { brush.beginPath(); brush.arc(p[0], p[1], 6, Math.PI * 0.6, Math.PI * 1.4); brush.stroke(); });
+    });
+    ink(sBody);
+    gill(78, -24, 24);
+    brush.strokeStyle = F.line; brush.lineWidth = line * 1.1;                // the wide mouth, the lower jaw ahead
+    brush.beginPath(); brush.moveTo(132, 6); brush.lineTo(104, 8); brush.stroke();
+    fin([72, 10], [64, 18], wave([[54, 24], [46, 26], [44, 16]], 1.2, 1), 7);   // the rounded pectoral
+    eye(112, -10, 5.5, "#c8a050");
   }
   brush.restore();
 }

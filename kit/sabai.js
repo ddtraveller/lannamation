@@ -132,7 +132,8 @@ function sabaiTile(painter, side) {
 // the sun and the cloud of the thangka are the hong, the golden swan on its
 // pole, and a chedi sai, the sand pagoda of Songkran with its flags; and the
 // two plain blossoms are a thong kwao flower and a krathong of Yi Peng. A film
-// made before this that loads no northbirds.js weaves the fish and the dog.
+// made before this that loads no northbirds.js weaves a gourami, a barb and the dog (the kit's native fish:
+// owner, 2026-10-20, "Replace any of the old style fish on the sash").
 function sabaiBird(painter, before) {    // a tile of northbirds.js, or what was woven there before it
   return function (b, u) { if (typeof sunbird === "function") { painter(b, u); } else { before(b, u); } };
 }
@@ -144,8 +145,8 @@ var SABAI_ROWS = [
    function () { flora("longan", 0, 0, {size: 2, ground: false}); }, function (b, u) { rooster(0, 0, u * 2); }, function (b) { namton(b, 0, 0, 1.2); }],
   [function (b) { lotus(b, 0, 0, 1.3, "#f28fa8", 1); }, function (b, u) { person(0, 0, cast("maiden", {size: 1.1, step: u})); }, function (b) { lotus(b, 0, 0, 1.1, "#e9627f", 0.4); },
    sabaiBird(function (b, u) { flora("thongkwao", 26, 64, {size: 0.6, ground: false}); sunbird(-36, -14, u / 13, {size: 3.4, hover: 1, sip: 1}); },
-             function (b) { fish(b, 0, 0, 1.6, 1, "#f0803a"); })],
-  [sabaiBird(function (b, u) { sunbird(0, 0, u / 13, {size: 2.4, hover: 1}); }, function (b) { fish(b, 0, 0, 1.6, 1, "#f6a24a"); }),
+             function (b) { nativeFish(b, 0, 0, 1.6, 1, "gourami", 0); })],
+  [sabaiBird(function (b, u) { sunbird(0, 0, u / 13, {size: 2.4, hover: 1}); }, function (b) { nativeFish(b, 0, 0, 1.6, 1, "barb", 0); }),
    function (b, u) { person(0, 0, cast("fellow", {size: 1.1, step: u})); }, function (b, u) { buffalo(0, 0, {size: 0.55, step: u}); },
    function (b) { lotusLeaf(b, 0, 10, 1.0, 0.2, "#3f8f5a"); }],
   [function (b, u) { rooster(0, 0, u * 2); }, function (b, u) { person(0, 0, cast("weaver", {size: 1.1, step: u})); }, function (b, u) { elephant(0, 0, {size: 0.35, step: u}); },

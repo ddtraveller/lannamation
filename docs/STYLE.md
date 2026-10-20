@@ -1428,7 +1428,7 @@ the right, no lens.
 | `lotusClump(brush, x, base, size, seed, colour, t)` | seven to nine stems from one root: flowers, buds, leaves, and curling blades at the root; given a second it stirs in a breeze |
 | `flowerSpray(brush, x, base, size, colour, seed)` | a thangka's flowering plant: a leaning stem, six leaves, a flower of three rings |
 | `blossom(brush, x, y, r, colour)` | a small five-petal flower for the ground |
-| `waves(brush, x, y, wide, tall, colour, t)`, `pond(brush, x, y, wide, tall, {t, rings})`, `ripples(brush, rings, t)`, `fish(brush, x, y, size, facing, colour)` | water, still or moving with the second; a pool with a bank line; the rings of a drop; a fish in profile |
+| `waves(brush, x, y, wide, tall, colour, t)`, `pond(brush, x, y, wide, tall, {t, rings})`, `ripples(brush, rings, t)`, `fish(brush, x, y, size, facing, colour)` | water, still or moving with the second; a pool with a bank line; the rings of a drop; a fish in profile (since 2026-10-20 one of the native fish: the orange one is gone) |
 | `tree`, `leafPad`, `palm`, `banana`, `hills`, `scrollCloud`, `pathside` | rebuilt on the rules: a trunk as a shape with a line; fronds and banana leaves as leaves with ribs and cuts; grass as three small blades |
 | `leafPath`, `paintPetal`, `paintLeaf`, `blend(a, b, amount)` | the shared shape, its two paints, and a colour between two |
 | `peaks(brush, x, base, wide, tall, colour, seed)` | a heap of pointed peaks, as a thangka piles a mountain (see "Mountains and plants from a thangka") |
@@ -3602,6 +3602,12 @@ credits roll have all the sprites used come out and take a bow when they are lis
 - **The bows.** As each name of the tale's cast and of the maker's list rolls up past the middle, its figure comes
   out from the frame's edge beside it, bows (a person over a wai, a creature or a thing tipping forward), and goes
   back as the next comes (s15_credits.js, `S15_FIGURES`). Each is a tile, as the sash's are.
+- **The fish of a Lanna pond** (`nativeFish`): redrawn side on and true to each species (owner: "try again with a
+  side view but more realistic and as true to the real fish as possible"): the gourami's long anal fin, feelers and
+  two spots, the barb's tall dorsal, forked red tail and rows of dots, the flying barb's band and barbels, the
+  snakehead's long fins and forward-pointing chevrons (the "Lanna fish" notebook). The tail sweeps (narrower as it
+  turns), the soft fins and feelers wave a moment behind, every fin has its rays. The kit's old orange `fish()` now
+  draws one of them; the pond's cat sits beside the maiden again.
 - **The maker** offers the hen and the black chickens, the cattle egret (northbirds.js `egret()`, moved out of the
   tale's fields), the four native fish, the bamboo house, grass, bananas and the fire stick.
 
