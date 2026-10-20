@@ -126,6 +126,12 @@ ROWS = sabaiUnique(ROWS, 24, SHOWN, [WOMAN_ROW, 8]);   // dealt outward from whe
 // that end at 12.6 s and come on again at the other, the camera jumping with her).
 var WOMAN_AT = 8;
 ROWS[WOMAN_ROW].splice(WOMAN_AT, 0, ROWS[WOMAN_ROW].splice(3, 1)[0]);
+// Two places to her right the oil lamp (pratheep), a flame on its dish, read as a campfire at the size it is woven: a
+// naga there instead (owner, 2026-10-21: "replace the camp fire icon in the sash with the naga"), the golden one with
+// five heads, so it is not a copy of the three-headed naga of the rows.
+ROWS[WOMAN_ROW] = ROWS[WOMAN_ROW].map(function (painter) {
+  return painter.key !== "pratheep" ? painter : function (b, u) { naga(0, -60, {size: 0.5, heads: 5, body: "#d9a441", crest: "#3a2418"}); };
+});
 
 // The rows flow and the figures walk when the music begins; the rows the film opens on are woven fine, the rest at half.
 // The camera opens on her own woven figure (ROWS[WOMAN_ROW][WOMAN_AT]) and keeps it in the middle as the row moves, until it
@@ -445,6 +451,20 @@ function paddyBirds(t) {                 // the rice fields, once the storm has 
 // flowers and the jasmine, and the grandmother her knot at the nape. The woman
 // of the cloth keeps the high bun she is woven with.
 var HAIR_OF = {weaver: {bun: "low", ueang: true}, maiden: {bun: "wong", maiwai: "#dfe4ea"}};   // silver: gold flowers were lost against the golden shower behind her at the pond
+// Every face in a scene its own (owner, 2026-10-21: "make the faces different from each other in each scene"): each
+// person a face of the north (NORTH_FACES: the Thai face and the five shapes of the photograph of about 1909), a skin
+// of their own, and eyes and lips a little larger or smaller. No two of these are the same; a scene gives each of its
+// people a different one, FACE(n).
+var FACES = [
+  {north: "thai", skin: "#d9a676"}, {north: "round", skin: "#f1cda8", eyes: 1.1}, {north: "square", skin: "#c99668", lips: 1.1},
+  {north: "soft", skin: "#eebf96", eyes: 0.95}, {north: "broad", skin: "#d6a272", lips: 1.15}, {north: "full", skin: "#e8bf98", eyes: 1.15, lips: 0.9},
+  {north: "thai", skin: "#c4905f", eyes: 0.92, lips: 1.2}, {north: "round", skin: "#dcae84", eyes: 0.9, lips: 1.1},
+  {north: "soft", skin: "#f6e2d0", eyes: 1.05, lips: 0.9}, {north: "square", skin: "#e6bd95", eyes: 1.08},
+  {north: "broad", skin: "#f0c9a0", eyes: 0.95, lips: 0.95}, {north: "full", skin: "#d4a070", lips: 1.2},
+  {north: "thai", skin: "#f1d0ae", eyes: 1.08}, {north: "round", skin: "#c99668", lips: 0.95},
+  {north: "soft", skin: "#d6a272", eyes: 0.9, lips: 1.15}, {north: "square", skin: "#f4d6b8", eyes: 0.95, lips: 1.2}
+];
+function FACE(n) { return FACES[n % FACES.length]; }
 
 // ---------- the scenes ----------
 function sceneCloth(t) {                // 0-22: one row, still; the music and the walk; one steady pull-back
@@ -528,10 +548,10 @@ function sceneLane(t) {                 // 22-35: the lane: a man and a child co
   // short first and last step; the stride is set so each arrives about when
   // the old walk did. The nod is a tween: a small dip back first, two bows.
   var nod = tween(t, [[7, 0], [7.2, -0.06], [7.6, 0.35], [8.1, 0.05], [8.5, 0.3], [9, 0]], "smooth");
-  var man = stroll(t, -100, 420, 0, cast("farmer", {stride: 0.9, late: 0, spring: 0.4, feel: "joy", at: [820, 700], bend: nod}));
-  var woman = stroll(t, 1500, 820, 0.5, cast("weaver", Object.assign({stride: 0.9, late: 0.3, spring: 0.4, at: [420, 700], wai: t >= 6.3}, HAIR_OF.weaver)));
-  var kid = stroll(t, -200, 300, 1, cast("child", {stride: 0.9, late: 0.5, spring: 0.7, smile: 1, at: [820, 700], wai: t >= 7.2,
-                                                   wonder: tween(t, [[6, 0.3], [6.5, 1], [7.4, 1], [8, 0.4]], "smooth")}));   // her wai takes him
+  var man = stroll(t, -100, 420, 0, cast("farmer", Object.assign({stride: 0.9, late: 0, spring: 0.4, feel: "joy", at: [820, 700], bend: nod}, FACE(0))));
+  var woman = stroll(t, 1500, 820, 0.5, cast("weaver", Object.assign({stride: 0.9, late: 0.3, spring: 0.4, at: [420, 700], wai: t >= 6.3}, HAIR_OF.weaver, FACE(1))));
+  var kid = stroll(t, -200, 300, 1, cast("child", Object.assign({stride: 0.9, late: 0.5, spring: 0.7, smile: 1, at: [820, 700], wai: t >= 7.2,
+                                                   wonder: tween(t, [[6, 0.3], [6.5, 1], [7.4, 1], [8, 0.4]], "smooth")}, FACE(2))));   // her wai takes him
   person(man.x, 960, man.look);
   person(woman.x, 950, woman.look);
   person(kid.x, 985, kid.look);
@@ -774,10 +794,10 @@ function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maide
   var her = t >= POND_FLAG && t < POND_LAUGHED ? {feel: "laughing", at: sky}
           : {smile: 1, wonder: t < POND_FLAG ? awe : 0, at: awe > 0.5 ? sky : t < POND_LOOKS_UP ? watched : [1330, 800]};
   var hands = t >= POND_FLAG || t < POND_LOOKS_UP + 0.3 ? {} : {wai: true};   // her hands in her lap; the wai to him; in her lap again at the flag
-  person(300, 1000, cast("maiden", Object.assign({floor: true, late: 0, spring: 0.4}, her, hands, HAIR_OF.maiden)));
+  person(300, 1000, cast("maiden", Object.assign({floor: true, late: 0, spring: 0.4}, her, hands, HAIR_OF.maiden, FACE(3))));
   var his = t < POND_SEEN || t >= POND_CALM ? "happy" : t < POND_FLAG ? "surprised" : "angry";
-  var fellow = stroll(t, 1600, 1330, 0, cast("fellow", {stride: 0.8, late: 0.25, spring: 0.4, feel: his,
-                                                        at: t >= POND_SEEN && t < POND_CALM ? sky : [300, 800]}));   // he stops short of the water's edge
+  var fellow = stroll(t, 1600, 1330, 0, cast("fellow", Object.assign({stride: 0.8, late: 0.25, spring: 0.4, feel: his,
+                                                        at: t >= POND_SEEN && t < POND_CALM ? sky : [300, 800]}, FACE(4))));   // he stops short of the water's edge
   person(fellow.x, 990, fellow.look);
   blossom(pen, 1300 + Math.sin(t) * 10, 700 + t * 20, 10, "#ee7f9c");
   pen.restore();
@@ -959,9 +979,9 @@ function scenePaddy(t) {                // 50-70: the rice fields: a storm that 
   // he walks ahead of its head at its own pace, his feet planted by the
   // ground it has covered, and stands when it stands. His back hand holds
   // the rope, which runs from his wrist to the nose with a little sag.
-  var lead = ox.look.face, boyX = ox.x + lead * 330, boyLook = cast("boy", {size: 0.58, id: "boy-paddy", face: lead, smile: 1,
+  var lead = ox.look.face, boyX = ox.x + lead * 330, boyLook = cast("boy", Object.assign({size: 0.58, id: "boy-paddy", face: lead, smile: 1,
                                                                             at: [boyX + lead * 300, 760], handB: [-56, 26],
-                                                                            fingersB: [0.75, 0.85, 0.9, 0.95, 0.7]});
+                                                                            fingersB: [0.75, 0.85, 0.9, 0.95, 0.7]}, FACE(5)));
   if (ox.look.step !== undefined) {
     boyLook.stride = 1.4;
     boyLook.step = (2100 - ox.x) / (136 * boyLook.stride * 0.82 * boyLook.size);
@@ -983,7 +1003,7 @@ function scenePaddy(t) {                // 50-70: the rice fields: a storm that 
     var umbrella = t < PADDY_TWIRL + w.late ? w.kind
                  : t < PADDY_FOLD + w.late ? parasolAt(t, PADDY_TWIRL + w.late, w.kind, undefined, "spin")
                  : parasolAt(t, PADDY_FOLD + w.late, w.kind, undefined, "fold");
-    var look = cast(w.name, Object.assign({size: 1.3, smile: 1, id: w.name + "-paddy", parasol: umbrella}, w.hair));
+    var look = cast(w.name, Object.assign({size: 1.3, smile: 1, id: w.name + "-paddy", parasol: umbrella}, w.hair, FACE(6 + n)));
     go = t < PADDY_WALK + w.late ? stroll(t, w.from, w.to, w.start, look) : stroll(t, w.to, w.to + 1400, PADDY_WALK + w.late, look);
     joints = person(go.x, 1000, go.look);
     pen.restore();                          // the drops are in the film's own pixels, as the joints are
@@ -1114,10 +1134,10 @@ function spinningLantern(t) {            // the khom phat on its arm, and the th
     person(x, y, look);
   }
   var pointing = [0, 1, 1, 1, 0.8].map(function (c, i) { return mix(c, REST[i], down); });
-  child(235, 975, cast("girl", Object.assign({id: "phat-girl-2", face: -1, shirt: "#e9c45c", flower: "#f6c445"}, girlGaze, {late: 0.7})), [175, 540], [225, 935], -1, 60);   // she reaches up to it
-  child(55, 975, cast("girl", Object.assign({id: "phat-girl"}, girlGaze, {late: 0.2})), [115, 540], [70, 935], 1, 60);   // and so does she
+  child(235, 975, cast("girl", Object.assign({id: "phat-girl-2", face: -1, shirt: "#e9c45c", flower: "#f6c445"}, girlGaze, {late: 0.7}, FACE(12))), [175, 540], [225, 935], -1, 60);   // she reaches up to it
+  child(55, 975, cast("girl", Object.assign({id: "phat-girl"}, girlGaze, {late: 0.2}, FACE(13))), [115, 540], [70, 935], 1, 60);   // and so does she
   var wrist = where(BOY_DOWN, t);
-  person(140, 980, cast("boy", Object.assign({id: "phat-boy", reachA: [wrist[0], wrist[1]], fingersA: pointing}, gaze)));   // he points up at it, drawn last so his hand shows
+  person(140, 980, cast("boy", Object.assign({id: "phat-boy", reachA: [wrist[0], wrist[1]], fingersA: pointing}, gaze, FACE(14))));   // he points up at it, drawn last so his hand shows
 }
 
 function sceneDance(t) {                // 70-79: a night of dancing: a dancer, a drummer, a celestial; the khom phat at the left
@@ -1142,14 +1162,14 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
   // More dancers, a step behind the three and a little smaller, each in her own colours and a beat apart (owner,
   // 2026-10-20: "Add a few more dancers to the night scene")
   [[560, "#c8452f", "#2a1a1a", 0.15, 1], [890, "#2a6a8a", "#1f2a3a", 0.4, -1], [1230, "#e0b23a", "#5a1e2a", 0.65, 1]].forEach(function (d, k) {
-    person(d[0], 962, cast("dancer", {size: 0.86, late: d[3], spring: 0.7, smile: 1, dance: true, face: d[4], shirt: d[1], legs: d[2],
+    person(d[0], 962, cast("dancer", Object.assign({size: 0.86, late: d[3], spring: 0.7, smile: 1, dance: true, face: d[4], shirt: d[1], legs: d[2],
                                      id: "night-dancer" + k, at: [720, 520],
-                                     handA: [64 + Math.sin(t * 3 + k) * 18, -126 - hop(t, d[3]) * 26], handB: [-56, -104 + Math.cos(t * 3 + k) * 18]}));
+                                     handA: [64 + Math.sin(t * 3 + k) * 18, -126 - hop(t, d[3]) * 26], handB: [-56, -104 + Math.cos(t * 3 + k) * 18]}, FACE(k))));
   });
-  person(380, 990, cast("drummer", Object.assign({late: 0, spring: 0.6, smile: 1, at: [720, 700]}, LANNA_MAN)));
-  person(720, 985, cast("dancer", {late: 0.25, spring: 0.7, smile: 1, dance: true, at: [900, 500], maiwai: true, malai: true,
-                                  handA: [70 + Math.sin(t * 3) * 20, -130 - hop(t, 0.25) * 30], handB: [-60, -110 + Math.cos(t * 3) * 20]}));
-  person(1060, 990, cast("celestial", {late: 0.5, spring: 0.6, smile: 1, face: -1, at: [720, 500], handA: [50, -120 - hop(t, 0.5) * 25]}));
+  person(380, 990, cast("drummer", Object.assign({late: 0, spring: 0.6, smile: 1, at: [720, 700]}, LANNA_MAN, FACE(3))));
+  person(720, 985, cast("dancer", Object.assign({late: 0.25, spring: 0.7, smile: 1, dance: true, at: [900, 500], maiwai: true, malai: true,
+                                  handA: [70 + Math.sin(t * 3) * 20, -130 - hop(t, 0.25) * 30], handB: [-60, -110 + Math.cos(t * 3) * 20]}, FACE(4))));
+  person(1060, 990, cast("celestial", Object.assign({late: 0.5, spring: 0.6, smile: 1, face: -1, at: [720, 500], handA: [50, -120 - hop(t, 0.5) * 25]}, FACE(5))));
   // An old couple watches the dancing, side by side and turned to us, holding hands, their eyes on the dancer
   // (owner, 2026-10-16: "Add an old couple to the end scene too"): the cast's grandmother, and its elder, who
   // leaves his stick for the night. They stand a step behind the band, so the players sitting in front hide
@@ -1158,14 +1178,14 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
   // to wrist; a point at hanging height was 117 off and his hand stopped short of hers). They do not hop on the
   // beat, as the dancers do: the stretch of a hop would take his hand away from hers.
   var hands = [1646, 772 + 4 * Math.sin(t * 1.4)];
-  person(1715, 950, cast("grandmother", {size: 1.0, twist: 1, face: -1, spring: 0, at: [720, 640], reachA: hands, id: "old-woman", bun: "low"}));
-  person(1575, 955, cast("elder", {size: 1.1, twist: 1, holding: null, spring: 0, at: [720, 640], reachA: hands, id: "old-man"}));
+  person(1715, 950, cast("grandmother", Object.assign({size: 1.0, twist: 1, face: -1, spring: 0, at: [720, 640], reachA: hands, id: "old-woman", bun: "low"}, FACE(6))));
+  person(1575, 955, cast("elder", Object.assign({size: 1.1, twist: 1, holding: null, spring: 0, at: [720, 640], reachA: hands, id: "old-man"}, FACE(7))));
   // The band of the north (band.js), sitting cross-legged on the ground at the right, a step nearer than the
   // dancers, facing them, each on the beat (owner, 2026-10-16: "Add the band members to the night scene"): the
   // pi chum, the salo (its bow across the piper's empty lap), the sueng (its neck behind the next player) and the
   // phin phia, as far right as the words under the picture allow.
-  [["pichum", "elder", 1420, 0.31], ["salo", "fellow", 1570, 0], ["sueng", "farmer", 1715, 0.13], ["phinphia", "fellow", 1850, 0.07]].forEach(function (b) {
-    musician(b[2], 1005, b[0], cast(b[1], {size: 1.0, face: -1, smile: 1, id: "band-" + b[0]}), b[3]);
+  [["pichum", "elder", 1420, 0.31], ["salo", "fellow", 1570, 0], ["sueng", "farmer", 1715, 0.13], ["phinphia", "fellow", 1850, 0.07]].forEach(function (b, k) {
+    musician(b[2], 1005, b[0], cast(b[1], Object.assign({size: 1.0, face: -1, smile: 1, id: "band-" + b[0]}, FACE(8 + k))), b[3]);
   });
   pen.restore();
 }
