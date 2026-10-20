@@ -1234,9 +1234,13 @@ function kok(brush, x, base, wide, size, look) {
 // rattan lies open on the ground under it. look.sprung (0 to 1): the trigger let go, the pole flies up
 // straight and the noose with it, closed; look.caught: a point of the scene (a foot, a paw) the noose holds,
 // so that it closes round it there instead of in the air; look.t stirs the cord; look.tint as the hut's.
-// 160 wide and 200 high at size 1.
+// Stout, and drawn 1.3 times its size (owner, 2026-10-20: "Increase the size of the snare and make it look a little
+// stronger"; of the snare as it was and this, "Stout, 1.3x larger"): a thick pole, a cord of twisted rattan, a
+// thick noose, a trigger of a hooked peg and a crossbar under the hook, and a stake at the pole's root, lashed to it.
+// About 210 wide and 260 high at size 1.
 function snare(brush, x, base, size, look) {
   look = look || {};
+  size *= 1.3;
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
   var sprung = clamp(look.sprung || 0), cane = tone("#a8883e"), rattan = tone("#7a5a2e"), peg = tone("#6a4a2a");
   var ease = sprung * sprung * (3 - 2 * sprung), n;
@@ -1249,15 +1253,26 @@ function snare(brush, x, base, size, look) {
   var tip = [mix(tipSet[0], tipSprung[0], ease), mix(tipSet[1], tipSprung[1], ease)];
   var bow = [mix(-40, -76, ease), mix(-150, -110, ease)];
   brush.strokeStyle = inkFor(cane);
-  brush.lineWidth = 8.5;
+  brush.lineWidth = 13.5;
   brush.lineCap = "round";
   brush.beginPath();
   brush.moveTo(root[0], root[1]);
   brush.quadraticCurveTo(bow[0], bow[1], tip[0], tip[1]);
   brush.stroke();
   brush.strokeStyle = cane;
-  brush.lineWidth = 6;
+  brush.lineWidth = 10.5;
   brush.stroke();
+  {                                                 // the stake at the root, and the lashing that holds the pole to it
+    brush.fillStyle = peg;
+    brush.strokeStyle = inkFor(peg);
+    brush.lineWidth = 1.6;
+    brush.beginPath();
+    brush.moveTo(-82, 4); brush.lineTo(-78, -46); brush.lineTo(-71, -50); brush.lineTo(-68, 4);
+    brush.closePath(); brush.fill(); brush.stroke();
+    brush.strokeStyle = rattan;
+    brush.lineWidth = 2.6;
+    for (n = 0; n < 3; n++) { brush.beginPath(); brush.moveTo(-82, -12 - n * 9); brush.lineTo(-64, -8 - n * 9); brush.stroke(); }
+  }
   brush.strokeStyle = blend(cane, "#3a2a1a", 0.3);   // its joints
   brush.lineWidth = 7;
   [0.35, 0.68].forEach(function (u) {
@@ -1266,11 +1281,21 @@ function snare(brush, x, base, size, look) {
     brush.arc(jx, jy, 1.2, 0, 7);
     brush.stroke();
   });
+  if (sprung < 0.05) {                              // a stout trigger: a hooked peg, and a crossbar caught under its hook
+    brush.fillStyle = peg;
+    brush.strokeStyle = inkFor(peg);
+    brush.lineWidth = 1.6;
+    brush.beginPath();
+    brush.moveTo(56, 4); brush.lineTo(57, -26); brush.lineTo(68, -26); brush.lineTo(68, -21); brush.lineTo(62, -21); brush.lineTo(63, 4);
+    brush.closePath(); brush.fill(); brush.stroke();
+    brush.beginPath();                              // the crossbar
+    brush.moveTo(40, -20); brush.lineTo(74, -17); brush.lineTo(74, -13); brush.lineTo(40, -16);
+    brush.closePath(); brush.fill(); brush.stroke();
+  }
   if (sprung < 0.05) {                              // set: the trigger peg in the ground, the cord from the tip down to it
     brush.fillStyle = peg;
-    brush.fillRect(58, -16, 6, 18);
     brush.strokeStyle = rattan;
-    brush.lineWidth = 2;
+    brush.lineWidth = 4.2;
     brush.beginPath();
     brush.moveTo(tip[0], tip[1]);
     brush.lineTo(61, -14);
@@ -1281,15 +1306,22 @@ function snare(brush, x, base, size, look) {
   else if (hold) { loop = {x: hold[0], y: hold[1], rx: 9, ry: 5}; }        // closed round what it caught
   else { loop = {x: tip[0] + 4, y: tip[1] + 40, rx: 6, ry: 10}; }          // closed on nothing, hanging from the tip
   brush.strokeStyle = rattan;                       // the line from the tip to the noose, and the noose
-  brush.lineWidth = 2.4;
+  brush.lineWidth = 4.8;
   brush.beginPath();
   brush.moveTo(tip[0], tip[1]);
   brush.quadraticCurveTo(mix(tip[0], loop.x, 0.5) + 6, mix(tip[1], loop.y, 0.5) - 4 * (1 - ease), loop.x, loop.y - loop.ry);
   brush.stroke();
-  brush.lineWidth = 3;
+  brush.lineWidth = 5.6;
   brush.beginPath();
   brush.ellipse(loop.x, loop.y, loop.rx, loop.ry, 0, 0, 7);
   brush.stroke();
+  {                                                 // the rattan's twist, along the noose
+    brush.strokeStyle = blend(rattan, "#e0c080", 0.35);
+    brush.lineWidth = 1.2;
+    brush.setLineDash([3, 4]);
+    brush.stroke();
+    brush.setLineDash([]);
+  }
   for (n = 0; n < 3; n++) {                         // a few leaves laid over the noose, to hide it
     if (sprung > 0.05) { break; }
     brush.fillStyle = tone(["#6f8f3a", "#8a7a3a", "#5f7f34"][n]);
@@ -1954,3 +1986,242 @@ function taLaew(brush, x, base, size, look) {
   brush.restore();
 }
 PIECES_KIT.push("huad", "kongKhao", "krabung", "mortar", "taLaew");
+
+// Things a person holds out, to feed an animal (owner, 2026-10-20: "Make grass and a banana for the kit"), drawn with
+// their middle on (x, y), so a hand can hold them: grassBundle() an armful of cut grass, look.tied (true: a band of
+// twisted grass round the middle, the blades fanned above and below it; false: loose blades, drooping);
+// bananas() a hand of short, plump bananas (kluai nam wa, the north's everyday banana), look.count (1 to 6),
+// look.ripe (0 green to 1 yellow, brown-flecked), look.angle. Each about 90 long at size 1.
+function grassBundle(brush, x, y, size, look) {
+  look = look || {};
+  function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
+  var greens = ["#6f9a3a", "#86ad44", "#5c8432", "#9bbf55", "#76a03c"], n, tied = look.tied !== false;
+  brush.save();
+  brush.translate(x, y);
+  brush.scale(size, size);
+  brush.rotate(look.angle || 0);
+  brush.lineCap = "round";
+  for (n = 0; n < 26; n++) {                        // the blades, each a thin curve from the stems' ends to its tip
+    var u = n / 25 - 0.5, sway = Math.sin(n * 2.3) * 6, lenUp = 44 + 10 * Math.sin(n * 1.7), lenDown = 30 + 8 * Math.cos(n * 1.3);
+    brush.strokeStyle = tone(greens[n % greens.length]);
+    brush.lineWidth = 2.2 + (n % 3) * 0.6;
+    brush.beginPath();
+    if (tied) {                                     // fanned up from the band, and the cut stems below it
+      brush.moveTo(u * 10, 0);
+      brush.quadraticCurveTo(u * 30 + sway, -lenUp * 0.6, u * 52 + sway, -lenUp);
+      brush.moveTo(u * 10, 0);
+      brush.lineTo(u * 18, lenDown * 0.6);
+    } else {                                        // loose: an armful, the blades drooping over both ends
+      brush.moveTo(-34, u * 14);
+      brush.quadraticCurveTo(0, u * 18 - 6 + sway * 0.5, 38 + Math.abs(u) * 10, u * 22 + 10 + sway);
+      brush.moveTo(-34, u * 14);
+      brush.quadraticCurveTo(-46, u * 16 + 4, -52 - Math.abs(sway), u * 20 + 16);
+    }
+    brush.stroke();
+  }
+  if (tied) {                                       // the band of twisted grass
+    brush.fillStyle = tone("#b89a4a");
+    brush.strokeStyle = inkFor(tone("#b89a4a"));
+    brush.lineWidth = 1.4;
+    brush.beginPath();
+    brush.ellipse(0, 2, 13, 5, 0, 0, 7);
+    brush.fill();
+    brush.stroke();
+    brush.strokeStyle = tone("#8a7230");
+    for (n = -2; n <= 2; n++) { brush.beginPath(); brush.moveTo(n * 5 - 2, -2); brush.lineTo(n * 5 + 2, 6); brush.stroke(); }
+  }
+  brush.restore();
+}
+function bananas(brush, x, y, size, look) {
+  look = look || {};
+  function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
+  var count = Math.max(1, Math.min(6, Math.round(look.count || 1))), ripe = clamp(look.ripe === undefined ? 1 : look.ripe), n;
+  var skin = tone(blend("#8fae3a", "#f2cf4a", ripe)), shade = tone(blend("#6a8a2a", "#c99a2a", ripe));
+  brush.save();
+  brush.translate(x, y);
+  brush.scale(size, size);
+  brush.rotate(look.angle || 0);
+  for (n = count - 1; n >= 0; n--) {                // fanned from the crown, the back ones first
+    var a = (n - (count - 1) / 2) * 0.22;
+    brush.save();
+    brush.rotate(a);
+    brush.beginPath();                              // one banana: short, plump, curved up, its ends blunt
+    brush.moveTo(-2, -4);
+    brush.quadraticCurveTo(20, -20, 50, -14);
+    brush.quadraticCurveTo(62, -10, 64, -2);
+    brush.quadraticCurveTo(46, 10, 18, 8);
+    brush.quadraticCurveTo(2, 6, -2, 3);
+    brush.closePath();
+    brush.fillStyle = skin;
+    brush.fill();
+    brush.strokeStyle = inkFor(skin);
+    brush.lineWidth = 1.8;
+    brush.stroke();
+    brush.strokeStyle = shade;                      // a ridge along it
+    brush.lineWidth = 1.4;
+    brush.beginPath();
+    brush.moveTo(4, -1);
+    brush.quadraticCurveTo(28, -10, 58, -6);
+    brush.stroke();
+    brush.fillStyle = tone("#4a3a22");              // the dark tip
+    brush.beginPath();
+    brush.ellipse(63, -5, 3, 2.4, 0.4, 0, 7);
+    brush.fill();
+    if (ripe > 0.7) {                               // a few brown flecks on a ripe one
+      brush.fillStyle = "rgba(110, 70, 30, 0.55)";
+      [[22, -6], [36, -9], [44, -2]].forEach(function (q) { brush.beginPath(); brush.arc(q[0], q[1], 1.3, 0, 7); brush.fill(); });
+    }
+    brush.restore();
+  }
+  brush.fillStyle = tone("#6a5a2a");                // the crown where they meet the stalk
+  brush.strokeStyle = inkFor(tone("#6a5a2a"));
+  brush.lineWidth = 1.4;
+  brush.beginPath();
+  brush.ellipse(-4, 0, 6, 7, 0, 0, 7);
+  brush.fill();
+  brush.stroke();
+  brush.restore();
+}
+PIECES_KIT.push("grassBundle", "bananas");
+
+// A fire stick (owner, 2026-10-20: "When he's feeding the monster coals, have the boy flip them up with a stick"): a
+// thin length of split bamboo from a hand (from) out to its far end (to), the far end charred, and glowing while it
+// is in the fire (look.hot, 0 to 1). Pass a person's hand joint as from, and the point in the coals, or up in the
+// air at the top of a flick, as to; emberFlight() then throws the ember from the stick's end.
+function fireStick(brush, from, to, look) {
+  look = look || {};
+  var hot = clamp(look.hot || 0), cane = look.tint ? blend("#b0904a", look.tint[0], look.tint[1]) : "#b0904a";
+  var dx = to[0] - from[0], dy = to[1] - from[1], long = Math.sqrt(dx * dx + dy * dy) || 1;
+  var back = [from[0] - dx / long * 14, from[1] - dy / long * 14];   // a little of it shows behind the hand
+  brush.save();
+  brush.lineCap = "round";
+  brush.strokeStyle = inkFor(cane);
+  brush.lineWidth = 7.5;
+  brush.beginPath(); brush.moveTo(back[0], back[1]); brush.lineTo(to[0], to[1]); brush.stroke();
+  brush.strokeStyle = cane;
+  brush.lineWidth = 4.5;
+  brush.beginPath(); brush.moveTo(back[0], back[1]); brush.lineTo(to[0], to[1]); brush.stroke();
+  var char = [to[0] - dx / long * 22, to[1] - dy / long * 22];       // the charred end
+  brush.strokeStyle = "#2a1a12";
+  brush.lineWidth = 5;
+  brush.beginPath(); brush.moveTo(char[0], char[1]); brush.lineTo(to[0], to[1]); brush.stroke();
+  if (hot > 0) {                                    // the end glowing from the coals
+    var glow = brush.createRadialGradient(to[0], to[1], 0, to[0], to[1], 16);
+    glow.addColorStop(0, "rgba(255, 190, 80, " + (0.9 * hot) + ")");
+    glow.addColorStop(1, "rgba(255, 120, 40, 0)");
+    brush.fillStyle = glow;
+    brush.beginPath(); brush.arc(to[0], to[1], 16, 0, 7); brush.fill();
+    brush.fillStyle = "rgba(255, 210, 120, " + hot + ")";
+    brush.beginPath(); brush.arc(to[0], to[1], 2.6, 0, 7); brush.fill();
+  }
+  brush.restore();
+}
+PIECES_KIT.push("fireStick");
+
+// The poor family's house of the north, a bamboo house (เรือนเครื่องผูก), drawn 2026-10-20. Owner: "research traditional Lanna housing
+// and redo the poor house like this" (a picture of the bamboo house at Chiang Mai University's Lanna Traditional House
+// Museum). From the kit's research ("Lanna houses" notebook): the เรือนเครื่องผูก, a house tied together, not nailed:
+// bamboo posts with bracing, the floor raised; walls and floor of flattened split bamboo (ฟาก), bound with bamboo
+// strips and rattan; one steep gable roof (45 degrees and more) with low sweeping eaves, laid in rows of tong tueng
+// leaf panels (ตับ), a plain ridge with crossed bamboo tips (no carved kalae: that is a rich house's); an open veranda
+// (ชาน) with a low railing and a water-pot shelf under its own little roof; the ladder recessed under the eaves, a
+// water jar at its foot to wash the feet; hardly any windows; under the house, firewood and tools.
+// ruenPhuk(brush, x, base, size, look): standing on (x, base); about 290 wide and 240 high at size 1; the door at the
+// right, the veranda and the ladder right of it, where the tub's door and ladder were. look: glow (0 to 1, a lamp in
+// the doorway at night), tint ([colour, amount]).
+function ruenPhuk(brush, x, base, size, look) {
+  look = look || {};
+  function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
+  var post = tone("#b49a5a"), postDark = tone("#8a7240"), fak = tone("#d8c48a"), fakDark = tone("#b8a066"),
+      leaf = tone("#8a5a34"), leafLight = tone("#a8744a"), leafDark = tone("#5e3a22"), tie = tone("#6a4a26"),
+      glow = look.glow || 0, n, k;
+  var floorY = -96, wallTop = -170, roomL = -128, roomR = 52, chanR = 136;
+  function ink(c) { brush.strokeStyle = inkFor(c); brush.lineWidth = 1.8; brush.lineJoin = "round"; brush.stroke(); }
+  function rect(x0, y0, x1, y1, c) { brush.beginPath(); brush.rect(x0, y0, x1 - x0, y1 - y0); brush.fillStyle = c; brush.fill(); ink(c); }
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(size, size);
+  brush.lineCap = "round";
+  // under the house: its shade, firewood stacked, a hoe leaning
+  brush.fillStyle = "rgba(60, 40, 20, 0.18)";
+  brush.beginPath(); brush.ellipse(0, -4, 160, 12, 0, 0, 7); brush.fill();
+  for (n = 0; n < 7; n++) {
+    brush.fillStyle = tone(n % 2 ? "#8a6a42" : "#9a7a4a");
+    brush.beginPath(); brush.ellipse(-70 + (n % 4) * 9, -6 - Math.floor(n / 4) * 7, 22, 3.6, 0, 0, 7); brush.fill(); ink(tone("#8a6a42"));
+  }
+  brush.strokeStyle = tie; brush.lineWidth = 2.4;
+  brush.beginPath(); brush.moveTo(-10, -2); brush.lineTo(4, -56); brush.stroke();
+  brush.fillStyle = tone("#6a6a6a"); brush.beginPath(); brush.moveTo(-14, -2); brush.lineTo(-4, -2); brush.lineTo(-8, 4); brush.closePath(); brush.fill();
+  // the posts of bamboo, the floor beams on them, and the braces, tied
+  [roomL + 6, -40, roomR - 6, chanR - 6].forEach(function (px, i) {
+    var top = i === 3 ? floorY + 6 : floorY;
+    rect(px - 5, top, px + 5, 0, post);
+    brush.strokeStyle = postDark; brush.lineWidth = 1.4;  // its nodes
+    for (k = top + 22; k < -6; k += 26) { brush.beginPath(); brush.moveTo(px - 5, k); brush.lineTo(px + 5, k); brush.stroke(); }
+  });
+  brush.strokeStyle = post; brush.lineWidth = 4;     // a brace between the posts
+  brush.beginPath(); brush.moveTo(roomL + 6, -24); brush.lineTo(-40, floorY + 8); brush.moveTo(roomR - 6, -24); brush.lineTo(-40, floorY + 8); brush.stroke();
+  rect(roomL - 6, floorY - 2, chanR + 4, floorY + 8, postDark);   // the floor's edge: flattened bamboo on the joists
+  // the room: walls of flattened bamboo, strips upright, bound by a rail at the top and the middle
+  rect(roomL, wallTop, roomR, floorY - 2, fak);
+  brush.strokeStyle = fakDark; brush.lineWidth = 1.1;
+  for (k = roomL + 7; k < roomR; k += 7) { brush.beginPath(); brush.moveTo(k, wallTop + 2); brush.lineTo(k + 0.6, floorY - 3); brush.stroke(); }
+  brush.strokeStyle = fakDark; brush.lineWidth = 1.6;   // the nodes, in a ragged line across
+  for (k = roomL + 3; k < roomR; k += 7) { var ny = -134 + 6 * Math.sin(k * 0.7); brush.beginPath(); brush.moveTo(k, ny); brush.lineTo(k + 5, ny); brush.stroke(); }
+  [wallTop + 6, -128].forEach(function (ry) {
+    rect(roomL - 2, ry - 3, roomR + 2, ry + 3, post);
+    brush.strokeStyle = tie; brush.lineWidth = 1.6;    // rattan ties where the rail crosses the posts
+    [roomL + 6, -40, roomR - 6].forEach(function (px) { brush.beginPath(); brush.moveTo(px - 4, ry - 4); brush.lineTo(px + 4, ry + 4); brush.moveTo(px + 4, ry - 4); brush.lineTo(px - 4, ry + 4); brush.stroke(); });
+  });
+  // the door, at the right of the room, dark inside, a lamp's light at night
+  brush.beginPath(); brush.rect(20, -160, 26, 62); brush.fillStyle = tone("#2a1c12"); brush.fill(); ink(tone("#6a4a26"));
+  if (glow > 0) {
+    var g = brush.createRadialGradient(33, -126, 2, 33, -126, 40);
+    g.addColorStop(0, "rgba(255, 200, 110, " + glow + ")"); g.addColorStop(1, "rgba(255, 160, 60, 0)");
+    brush.fillStyle = g; brush.fillRect(20, -160, 26, 62);
+  }
+  brush.fillStyle = tone("#2a1c12");                 // a slit for air (ป่อง), the one opening in the wall
+  brush.fillRect(-92, -150, 18, 4);
+  // the veranda: open, a low railing, the water-pot shelf at its end under its own small roof
+  rect(roomR, floorY + 4, chanR, floorY + 10, post);
+  brush.strokeStyle = post; brush.lineWidth = 3;
+  brush.beginPath(); brush.moveTo(roomR + 4, floorY - 26); brush.lineTo(chanR - 22, floorY - 26); brush.stroke();
+  for (k = roomR + 8; k < chanR - 20; k += 9) { brush.beginPath(); brush.moveTo(k, floorY + 4); brush.lineTo(k, floorY - 26); brush.stroke(); }
+  rect(chanR - 22, floorY - 30, chanR - 2, floorY + 4, post);   // the shelf's frame
+  brush.fillStyle = tone("#a0603a"); brush.beginPath(); brush.ellipse(chanR - 12, floorY - 36, 8, 9, 0, 0, 7); brush.fill(); ink(tone("#a0603a"));   // the water pot
+  brush.beginPath(); brush.moveTo(chanR - 30, floorY - 46); brush.lineTo(chanR - 12, floorY - 64); brush.lineTo(chanR + 6, floorY - 46); brush.closePath();
+  brush.fillStyle = leaf; brush.fill(); ink(leaf);   // its little roof of leaves
+  // the ladder, down from the veranda's end, under the eaves; a water jar at its foot
+  brush.strokeStyle = post; brush.lineWidth = 4;
+  brush.beginPath(); brush.moveTo(chanR - 2, floorY + 6); brush.lineTo(chanR + 26, 0); brush.moveTo(chanR + 12, floorY + 6); brush.lineTo(chanR + 40, 0); brush.stroke();
+  brush.lineWidth = 2.6;
+  for (k = 1; k < 5; k++) { var u = k / 5; brush.beginPath(); brush.moveTo(chanR - 2 + 28 * u, floorY + 6 - (floorY + 6) * u); brush.lineTo(chanR + 12 + 28 * u, floorY + 6 - (floorY + 6) * u); brush.stroke(); }
+  brush.fillStyle = tone("#8a4a2a"); brush.beginPath(); brush.ellipse(chanR + 2, -8, 7, 8, 0, 0, 7); brush.fill(); ink(tone("#8a4a2a"));   // beside the ladder's foot
+  // the roof: one steep gable, its long side to us, low eaves, rows of leaf panels, the ridge, crossed tips
+  var eaveY = -150, ridgeY = -248, eaveL = roomL - 26, eaveR = roomR + 34, ridgeL = roomL + 4, ridgeR = roomR + 6;
+  brush.beginPath();
+  brush.moveTo(eaveL, eaveY); brush.lineTo(ridgeL, ridgeY); brush.lineTo(ridgeR, ridgeY); brush.lineTo(eaveR, eaveY); brush.closePath();
+  brush.fillStyle = leaf; brush.fill(); ink(leafDark);
+  brush.save(); brush.clip();
+  for (n = 0; n < 9; n++) {                          // the rows of panels, from the eaves up, each a ragged edge of leaves
+    var ry2 = eaveY - n * 11.5;
+    brush.fillStyle = n % 2 ? leafLight : leaf;
+    brush.beginPath(); brush.moveTo(eaveL - 20, ry2 - 12);
+    for (k = eaveL - 20; k < eaveR + 20; k += 5 + 6 * dice(k + n * 31)) { brush.quadraticCurveTo(k + 3, ry2 + 2 + 5 * dice(k * 3 + n), k + 6, ry2 - 2 + 3 * dice(k + 7 * n)); }   // leaves, not tiles: each its own length
+    brush.lineTo(eaveR + 20, ry2 - 12); brush.closePath(); brush.fill();
+    brush.strokeStyle = leafDark; brush.lineWidth = 1; brush.stroke();
+    brush.strokeStyle = "rgba(60, 36, 20, 0.35)";   // the leaves' veins, a few strokes down each row
+    brush.lineWidth = 0.8;
+    for (k = eaveL; k < eaveR; k += 11) { var vx = k + 6 * dice(k + n * 13); brush.beginPath(); brush.moveTo(vx, ry2 - 10); brush.lineTo(vx + 2, ry2 - 1); brush.stroke(); }
+  }
+  brush.restore();
+  brush.strokeStyle = leafDark; brush.lineWidth = 2.2;   // the eaves' ragged leaf ends
+  brush.beginPath();
+  for (k = eaveL; k <= eaveR; k += 7) { brush.moveTo(k, eaveY); brush.lineTo(k + 2 + 2 * Math.sin(k), eaveY + 5 + 2 * Math.cos(k * 1.7)); }
+  brush.stroke();
+  rect(ridgeL - 6, ridgeY - 5, ridgeR + 6, ridgeY + 3, postDark);   // the ridge pole, and the bamboo tips crossed at each end
+  brush.strokeStyle = post; brush.lineWidth = 3.4;
+  [ridgeL - 6, ridgeR + 6].forEach(function (rx) { brush.beginPath(); brush.moveTo(rx - 10, ridgeY - 16); brush.lineTo(rx + 8, ridgeY + 6); brush.moveTo(rx + 10, ridgeY - 16); brush.lineTo(rx - 8, ridgeY + 6); brush.stroke(); });
+  brush.restore();
+}
+PIECES_KIT.push("ruenPhuk");

@@ -88,8 +88,19 @@ var WOMAN_ROW = 4;
 
 var ROWS = SABAI_ROWS.slice();
 ROWS[WOMAN_ROW] = SABAI_ROWS[WOMAN_ROW].slice(0, 3).concat([function (b, u) { person(0, 0, Object.assign({}, WOMAN, {size: 1.1, step: u, id: "woman-woven", at: undefined})); }]);
+// Every figure on the cloth its own (owner, 2026-10-20: "make sure each sprite on the sash is unique"): each row is
+// filled to the 24 figures it holds with the kit's pool (sabaiUnique), none twice. The rooster of row 1 and the maiden
+// of row 8 are the woman's row's rooster and row 2's maiden again, so they go; "shown" is what the rows weave already.
+ROWS[1] = ROWS[1].filter(function (painter, k) { return k !== 3; });
+ROWS[8] = ROWS[8].filter(function (painter, k) { return k !== 3; });
+var SHOWN = ["villager walk", "child walk", "maiden walk", "fellow walk", "weaver walk", "celestial walk", "dancer wave", "drummer walk",
+             "lady sit", "child sit", "rooster", "sunbird", "buffalo", "elephant", "peafowl", "mom", "luang", "naga three", "naga five",
+             "yak", "hong", "lotus", "lotus leaf", "longan", "orchid", "thongkwao", "house", "granary", "oxcart", "namton", "temple", "tung",
+             "chedi sai", "krathong", "khom red", "khom blue", "khom green", "khom dao"];
+ROWS = sabaiUnique(ROWS, 24, SHOWN);
 
-var CLOTH = {rows: ROWS, from: MUSIC_AT, row: WOMAN_ROW};   // the rows flow and the figures walk when the music begins
+var CLOTH = {rows: ROWS, from: MUSIC_AT, row: WOMAN_ROW, fine: 1};   // the rows flow and the figures walk when the music begins;
+                                                                   // the rows the film opens on are woven fine, the rest at half
 
 // ---------- the sets ----------
 // The sky of a scene, painted once: day, dusk or night, with the stars at
@@ -611,14 +622,22 @@ function ridgeLine(x, face, half) {
 }
 
 function pondElephants(t) {
-  var cow = amble("elephant", t, 1180 + SIDE, 1000 + SIDE, 0, {size: 0.09, late: 0});
-  var calf = amble("elephant", t, 1290 + SIDE, 1110 + SIDE, 0.7, {size: 0.052, late: 0.3, tusks: false});
+  // a little smaller than they were, and walking through the forest's edge rather than on top of it (owner,
+  // 2026-10-20: "make them a bit smaller and make it look like they are walking through the foliage"): set a
+  // little into the ridge, and a band of leaves drawn after them, over their legs
+  var cow = amble("elephant", t, 1180 + SIDE, 1000 + SIDE, 0, {size: 0.068, late: 0});
+  var calf = amble("elephant", t, 1290 + SIDE, 1110 + SIDE, 0.7, {size: 0.04, late: 0.3, tusks: false});
   var film = pen;
   pen = FAR_PEN;                                  // the kit's painters draw on "pen": the far sheet for the length of this
   pen.clearRect(0, 0, WIDE, 1080);
   var cowOn = ridgeLine(cow.x, cow.look.face, 32), calfOn = ridgeLine(calf.x, calf.look.face, 18);
-  elephant(cow.x, cowOn.y + 6, Object.assign({}, cow.look, {slope: cowOn.slope}));   // on the hill's line, pitched with it, so all four feet are on it
-  elephant(calf.x, calfOn.y + 6, Object.assign({}, calf.look, {slope: calfOn.slope}));
+  elephant(cow.x, cowOn.y + 11, Object.assign({}, cow.look, {slope: cowOn.slope}));   // on the hill's line, pitched with it, a little sunk into the leaves
+  elephant(calf.x, calfOn.y + 9, Object.assign({}, calf.look, {slope: calfOn.slope}));
+  for (var leafX = 940 + SIDE; leafX < 1480 + SIDE; leafX += 7) {   // the forest's edge before them: leaves over their legs
+    var ly = ridgeAt(leafX) + 6, r = 6 + 4 * dice(leafX);
+    pen.fillStyle = dice(leafX + 1) > 0.5 ? "#6f9a52" : "#5f8a48";
+    pen.beginPath(); pen.ellipse(leafX, ly - r * 0.6, r * 1.3, r, 0, 0, 7); pen.fill();
+  }
   POND_GROVE.forEach(function (one) {
     pen.save();
     pen.translate(one[0] + SIDE, ridgeAt(one[0] + SIDE) + 14);
@@ -647,6 +666,31 @@ var POND_LAUGHED = FLAG[1] + 0.6;       // and her laugh dies away a moment afte
 // hand showing, and nothing crossed (owner, 2026-10-18: "the woman crosses her arms but she should look like
 // she is sitting naturally and her left arm should be below the sash").
 
+// Reeds at the pond's edge, a clump of sedge, their blades swaying; "back" the ones behind what stands in them,
+// "front" the ones before it.
+function pondReeds(x, base, size, t, part) {
+  pen.save();
+  pen.translate(x, base);
+  pen.scale(size, size);
+  pen.lineCap = "round";
+  for (var n = 0; n < 14; n++) {
+    var front = n % 2 === 1;
+    if ((part === "front") !== front) { continue; }
+    var at = (n - 7) * 11 + 6 * Math.sin(n * 2.1), tall = 130 + 70 * dice(n + 3), lean = 0.18 * Math.sin(n * 1.3) + 0.04 * Math.sin(t * 1.4 + n);
+    pen.strokeStyle = front ? "#5f8a34" : "#3f6a24";
+    pen.lineWidth = 4;
+    pen.beginPath();
+    pen.moveTo(at, 0);
+    pen.quadraticCurveTo(at + lean * tall * 0.3, -tall * 0.6, at + lean * tall, -tall);
+    pen.stroke();
+    if (n % 4 === 0) {                              // a seed head here and there
+      pen.fillStyle = "#8a6a3a";
+      pen.beginPath(); pen.ellipse(at + lean * tall, -tall - 4, 3, 8, lean, 0, 7); pen.fill();
+    }
+  }
+  pen.restore();
+}
+
 function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maiden at the bank who wais; a Chinese dragon flies by with a flag; elephants far off
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t + POND_AT);
   pen.drawImage(POND.back, 0, 0);
@@ -659,8 +703,19 @@ function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maide
   pond(pen, 380, 700, 900, 340, {t: t, rings: POND_RINGS});          // the water moves, and the drops ring it
   lotusClump(pen, 520, 1010, 0.9, 4, "#ee7f9c", t);                 // the lotus stirs in the breeze
   lotusClump(pen, 1150, 1030, 1.2, 1, "#e9627f", t);
-  fish(pen, 700 + Math.sin(t * 0.6) * 24, 940, 1.1, -1, "#f0803a");
-  fish(pen, 900 - Math.sin(t * 0.5) * 24, 980, 0.9, 1, "#f6a24a");
+  // The fish of a Lanna pond (the kit's nativeFish(), from the "Lanna fish" notebook): a snakehead lying deep, two
+  // mud barbs below, a school of flying barbs just under the surface, and two gouramis, the one she watches first
+  // (owner, 2026-10-20: "Work to improve the fish in the pond scene").
+  nativeFish(pen, 980 + Math.sin(t * 0.15) * 30, 935, 1.5, -1, "snakehead", t);
+  nativeFish(pen, 760 + Math.sin(t * 0.4) * 60, 900, 1.3, Math.cos(t * 0.4) > 0 ? 1 : -1, "barb", t);
+  nativeFish(pen, 1060 - Math.sin(t * 0.35 + 1) * 50, 912, 1.15, Math.cos(t * 0.35 + 1) > 0 ? -1 : 1, "barb", t + 1);
+  for (var school = 0; school < 6; school++) {     // the flying barbs, quick, together
+    var sx = 600 + ((t * 70 + school * 23) % 600), sy = 800 + 9 * Math.sin(school * 1.7 + t * 2);
+    nativeFish(pen, sx, sy, 1.0, 1, "flying", t + school * 0.3);
+  }
+  var watched = [700 + Math.sin(t * 0.6) * 60, 850 + 6 * Math.sin(t * 1.1)];   // the gourami she watches
+  nativeFish(pen, watched[0], watched[1], 1.7, Math.cos(t * 0.6) > 0 ? 1 : -1, "gourami", t);
+  nativeFish(pen, 900 - Math.sin(t * 0.5) * 40, 868, 1.4, Math.cos(t * 0.5) > 0 ? -1 : 1, "gourami", t + 2);
   birds(t, 100 + t * 60, 180);
   var head = dragonFly(t + POND_AT);
   var drake = dragon(head[0], head[1], {size: 0.34, depth: head[4], trail: dragonFly, fly: "glide", breath: 0.3 + 0.3 * Math.sin(t * 2), late: 0.5,
@@ -669,13 +724,22 @@ function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maide
   pen.globalAlpha = 0.8 + 0.2 * head[4];                        // far off, a little faded, but not so much that the dragon shows through it
   chinaFlag(drake.claw[0], drake.claw[1], drake.size, t);
   pen.restore();
-  siamese(130, 1012, 0.9, t);                                 // her Siamese cat sits beside her
+  // her Siamese cat, in the reeds at the water's edge, watching the fish too (owner, 2026-10-20: "Put the cat in
+  // the reeds like it's watching the fish, too"): the reeds behind and before it
+  pondReeds(445, 1010, 0.9, t, "back");
+  siamese(470, 1012, 0.75, t);
+  pondReeds(445, 1010, 0.9, t, "front");
   flora("orchid", 172, 800, {size: 0.9, ground: false});     // wild orchids (dok ueang), as they grow, on the trunks of the trees
   flora("orchid", 1552, 806, {size: 0.9, colour: "#f2f0f6", ground: false});
   var awe = tween(t, [[8, 0], [8.6, 1], [11, 1], [11.8, 0]], "smooth");           // the dragon passes over: eyes up, brows up
   var sky = [head[0], head[1]];
-  var her = t >= POND_FLAG && t < POND_LAUGHED ? {feel: "laughing", at: sky} : {smile: 1, wonder: t < POND_FLAG ? awe : 0, at: awe > 0.5 ? sky : [700, 800]};
-  var hands = t >= POND_FLAG ? {} : {wai: t > 1};   // the wai until the flag; then her hands in her lap
+  // She begins looking down into the pond, watching a gourami swim; when the man comes along the bank she looks up
+  // to him and gives him a wai, and then the dragon (owner, 2026-10-20: "starts with the woman looking into the pond
+  // and watching fish swim and then she looks up to see the man and dragon").
+  var POND_LOOKS_UP = 5.2;
+  var her = t >= POND_FLAG && t < POND_LAUGHED ? {feel: "laughing", at: sky}
+          : {smile: 1, wonder: t < POND_FLAG ? awe : 0, at: awe > 0.5 ? sky : t < POND_LOOKS_UP ? watched : [1330, 800]};
+  var hands = t >= POND_FLAG || t < POND_LOOKS_UP + 0.3 ? {} : {wai: true};   // her hands in her lap; the wai to him; in her lap again at the flag
   person(300, 1000, cast("maiden", Object.assign({floor: true, late: 0, spring: 0.4}, her, hands, HAIR_OF.maiden)));
   var his = t < POND_SEEN || t >= POND_CALM ? "happy" : t < POND_FLAG ? "surprised" : "angry";
   var fellow = stroll(t, 1600, 1330, 0, cast("fellow", {stride: 0.8, late: 0.25, spring: 0.4, feel: his,
@@ -1041,6 +1105,13 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
   pen.translate(SIDE, 0);                 // the three, at their places on the old sheet
   spinningLantern(t);                     // the khom phat at the left, and the children behind the drum looking up at it
   drumCart(pen, 110, 988, 0.75, 1);       // the temple's great drum on its cart (pieces.js), brought out for the night, beside the drummer
+  // More dancers, a step behind the three and a little smaller, each in her own colours and a beat apart (owner,
+  // 2026-10-20: "Add a few more dancers to the night scene")
+  [[560, "#c8452f", "#2a1a1a", 0.15, 1], [890, "#2a6a8a", "#1f2a3a", 0.4, -1], [1230, "#e0b23a", "#5a1e2a", 0.65, 1]].forEach(function (d, k) {
+    person(d[0], 962, cast("dancer", {size: 0.86, late: d[3], spring: 0.7, smile: 1, dance: true, face: d[4], shirt: d[1], legs: d[2],
+                                     id: "night-dancer" + k, at: [720, 520],
+                                     handA: [64 + Math.sin(t * 3 + k) * 18, -126 - hop(t, d[3]) * 26], handB: [-56, -104 + Math.cos(t * 3 + k) * 18]}));
+  });
   person(380, 990, cast("drummer", Object.assign({late: 0, spring: 0.6, smile: 1, at: [720, 700]}, LANNA_MAN)));
   person(720, 985, cast("dancer", {late: 0.25, spring: 0.7, smile: 1, dance: true, at: [900, 500], maiwai: true, malai: true,
                                   handA: [70 + Math.sin(t * 3) * 20, -130 - hop(t, 0.25) * 30], handB: [-60, -110 + Math.cos(t * 3) * 20]}));

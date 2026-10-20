@@ -793,7 +793,10 @@ function feelingOf(look, at) {
   if (look.feel !== undefined) { checkName("The feeling", name, FEELINGS); }
   var named = FEELINGS[name] || {};
   function amount(given, key) { return clamp(given !== undefined ? given : named[key] || 0); }
-  return feelingOverTime({wonder: amount(look.wonder, "wonder"), smile: amount(look.smile, "smile"),
+  // A cast member's resting smile (the boy's smile: 1) gives way to a sad, worried, frightened or cross feeling:
+  // the boy told to be sad smiled through his tears (2026-10-20).
+  var unhappy = look.feel !== undefined && (named.sad || named.worry || named.fear || named.anger);
+  return feelingOverTime({wonder: amount(look.wonder, "wonder"), smile: unhappy ? clamp(named.smile || 0) : amount(look.smile, "smile"),
           fear: amount(look.fear, "fear"), anger: amount(look.anger, "anger"), sad: amount(look.sad, "sad"),
           sleepy: amount(look.sleepy, "sleepy"), full: amount(look.full, "full"), worry: amount(look.worry, "worry"),
           laugh: amount(look.laugh, "laugh"),
@@ -1146,6 +1149,10 @@ var NORTH_FACE = null;                              // the face of the north bei
 // an animal's eye (drawn outside person()) keeps its own.
 var FOLDED_EYE = {lid: 0.1, lidMan: 0.08, fold: 0, tilt: 0.13, eyes: "folded"};
 var EYE_LIDS = null;
+// Tears (look.tears, 0 to 1: how much one cries), drawn by eye() from the lower lid: person() sets EYE_TEARS as it
+// sets EYE_LIDS. The eyes brim, and a drop gathers at the corner and falls (owner, 2026-10-20: "Add some tears for
+// when the boy cries"; of three ways drawn, a stream, falling drops and this, "C welling").
+var EYE_TEARS = 0;
 
 // What a figure's face of the north is, from its look (null when it has none):
 // its shape's numbers and every one of NORTH. A child keeps a child's measure:
@@ -1388,6 +1395,40 @@ function eye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed) {
       }
     }
   }
+  if (EYE_TEARS > 0) { tearsFrom(x, y, wide, tall, outer, shut); }
+  pen.restore();
+}
+
+// Tears from one eye (see EYE_TEARS): the lower lid brims with water, and a drop gathers at its middle toward the
+// outer corner, grows, and now and then lets go and runs down the cheek. They move with the clock, so a still frame
+// catches them on the way; the two eyes are out of step.
+function tearsFrom(x, y, wide, tall, outer, shut) {
+  var much = EYE_TEARS, start = [x + outer * wide * 0.25, y + tall * 0.75], fall = tall * 7 * (0.6 + 0.4 * much);
+  var phase = (clock * 0.9 + (outer > 0 ? 0.37 : 0)) % 1;
+  pen.strokeStyle = "rgba(200, 235, 255, " + (0.5 + 0.4 * much) + ")";   // the brimming lower lid
+  pen.lineWidth = tall * 0.32;
+  pen.beginPath();
+  pen.moveTo(x - wide * 0.7, y + tall * 0.25);
+  pen.quadraticCurveTo(x, y + tall * 0.95, x + wide * 0.7, y + tall * 0.25);
+  pen.stroke();
+  var hang = phase < 0.6 ? 0 : (phase - 0.6) / 0.4;  // the drop: gathering, then falling
+  var px = start[0] + outer * tall * 0.3, py = start[1] + tall * 0.4 + hang * hang * fall;
+  var r = tall * (0.3 + 0.25 * Math.min(1, phase / 0.6));
+  pen.save();
+  pen.globalAlpha *= 1 - 0.5 * hang;
+  pen.beginPath();                                  // round below, pointed above
+  pen.moveTo(px, py - r * 2.1);
+  pen.quadraticCurveTo(px + r * 1.1, py - r * 0.4, px, py + r);
+  pen.quadraticCurveTo(px - r * 1.1, py - r * 0.4, px, py - r * 2.1);
+  pen.fillStyle = "rgba(170, 215, 245, 0.9)";
+  pen.fill();
+  pen.strokeStyle = "rgba(60, 110, 160, 0.7)";
+  pen.lineWidth = 1.1 * FINE;
+  pen.stroke();
+  pen.fillStyle = "rgba(255, 255, 255, 0.95)";      // its light
+  pen.beginPath();
+  pen.arc(px - r * 0.35, py - r * 0.35, r * 0.28, 0, 7);
+  pen.fill();
   pen.restore();
 }
 
@@ -3368,13 +3409,14 @@ var COMBED = {
          [2, -318, -14, -358, -34, -364]]
 };
 
+var HIDEABLE = {hair: true};                       // the parts a look may hide (look.hidden)
 var LOOK_KEYS = {};
 
 ["age", "anger", "at", "bangles", "bare", "beard", "bend", "blink", "body", "build", "bun", "buttons", "coat", "collar", "dance", "drum", "earplug", "eyes", "face",
  "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
- "handB", "hat", "head", "holding", "id", "late", "laugh", "lady", "legs", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "reachA", "reachB",
+ "handB", "hat", "head", "hidden", "holding", "id", "late", "laugh", "lady", "legs", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "reachA", "reachB",
  "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt", "sleepy",
- "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wonder", "worn", "worry", "wristA", "wristB"
+ "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tears", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wonder", "worn", "worry", "wrap", "wristA", "wristB"
 ].forEach(function (name) { LOOK_KEYS[name] = true; });
 
 // One villager, standing on (x, y). Everything about them is in "look".
@@ -3455,6 +3497,16 @@ var LOOK_KEYS = {};
 //                   bun (hair tied up is a lady), so the hair and the one who wears it can be chosen apart:
 //                   {lady: true} with no bun is a woman with a fellow's hair, {bun: "low", lady: false} a man with a knot
 //   turban          a colour: a Lanna head-cloth, a band tied round the head with the hair above it
+//   tears           0 to 1: the eyes brim and a drop gathers at each and falls, now and then (owner, 2026-10-20: "Add
+//                   some tears for when the boy cries"); with a sad feeling
+//   wrap            a colour: a ruler's head-cloth of silk wound over the whole head, gold along its turns, its end
+//                   standing at the side, a gold pin at the front: what the rulers of Lanna wore, not the Siamese
+//                   court's spired crown (the kit's research, 2026-10-20; owner: "Historical Lanna"); it hides
+//                   the hair under it
+//   hidden          the parts not drawn: ["hair"] draws no hair at all (no knot, no bun, no hair under a hat), so a
+//                   hat or a head-cloth of any shape can be worn over any hair (owner, 2026-10-20: "add a
+//                   visibility feature for hair to the kit so future hats no matter the style can be worn with
+//                   any hair by making the hair invisible")
 //   face            1 looks right, -1 looks left
 //   turn            -1 to 1: the head turned to profile, or round to full face (0 is three-quarter).
 //                   A lady's profile is the paintings', and a fellow's the same build (see view()).
@@ -3580,6 +3632,9 @@ function person(x, y, look) {
   var who = look.id || "n" + (DRAWN++);
   var rig = look.rig;                             // a puppet of drawn parts, or nothing
   var lady = look.lady !== undefined ? !!look.lady : !!look.bun;   // a woman's face, chest, neck, hands and jewellery (lady), whatever her hair
+  // hidden: the parts not drawn, so that a hat or a head-cloth of any shape can be worn over any hair ("hair")
+  (look.hidden || []).forEach(function (part) { checkName("A part to hide", part, HIDEABLE); });
+  var hairShown = (look.hidden || []).indexOf("hair") < 0 && !look.wrap;   // a wound head-cloth covers the hair
   // A parasol on its way down to her side, or carried there, hangs behind her
   // (owner, 2026-10-15: "when the women put the parasols down they are behind
   // the body not in front"). She is drawn on a layer of her own, the parasol
@@ -3622,6 +3677,7 @@ function person(x, y, look) {
   var folds = STYLE.lids === "folded";
   EYE_LIDS = NORTH_FACE ? (folds && NORTH_FACE.eyes !== "folded" ? Object.assign({}, NORTH_FACE, {eyes: "folded", fold: 0}) : NORTH_FACE)
                         : folds ? FOLDED_EYE : null;
+  EYE_TEARS = clamp(look.tears || 0);
   if (look.body !== undefined) { checkName("A body", look.body, BODIES); }
   BODY = BODIES[look.body] || BODIES.slim;        // the body (BODIES): its chest, its measures, its cloth                   // a face of the north, or none
   // a tube of cloth to the ankle: a lady's pha sin (one of SINS) or a man's sarong
@@ -4935,7 +4991,7 @@ function person(x, y, look) {
   var toss = 9 + 9 * up;
   var afloat = 1 - 0.1 * up;
   var sway = Math.sin(late) * toss * 0.4;                        // the top of the hair leans
-  if (look.bun) {
+  if (look.bun && hairShown) {
     // Which way she wears her hair (BUN_STYLES), and where its knot sits as
     // the head turns. The knot sinks a little on the beat and leans after the
     // head, the high one most and the one at the nape least.
@@ -5080,7 +5136,7 @@ function person(x, y, look) {
   pen.fillStyle = shade;
   pen.fillRect(-60, -350, 120, 130);
   pen.restore();
-  if (look.bun) {
+  if (look.bun && hairShown) {
     // Lanna hair: pulled back smooth from the brow into one knot, and nothing
     // curls. The high bun at the back of the head (bun: true) has a comb
     // across it and stones on the comb; the other ways (BUN_STYLES) are drawn
@@ -5156,7 +5212,7 @@ function person(x, y, look) {
       knotFlowers(bunX, bunY);
       knotDress(bunX, bunY, knotR);
     }
-  } else if (!look.hat && !look.shaved) {
+  } else if (hairShown && !look.hat && !look.shaved) {
     // A man's hair gathered up into a knot on the top of the head (the
     // owner's reference picture, 2026-10-14; the men of the murals wear it
     // so, with a head-cloth wound round below the knot): the hair combed up
@@ -5207,7 +5263,7 @@ function person(x, y, look) {
         oval(knotX + at[0], knotY + at[1], 1.4, 1.4, "#d9533a");
       });
     }
-  } else if (!look.shaved) {
+  } else if (hairShown && !look.shaved) {
     pen.fillStyle = look.hair || "#2a1a12";                      // hair, under the hat
     pen.beginPath();
     pen.ellipse(0, -312, 53, 28, 0, Math.PI * 1.03, Math.PI * 1.97);
@@ -5234,6 +5290,47 @@ function person(x, y, look) {
       pen.lineTo(line * 6, -360);
       pen.stroke();
     }
+    pen.restore();
+  }
+  if (look.wrap) {                                  // a ruler's head-cloth of silk, wound over the whole head (see wrap in LOOK_KEYS)
+    pen.save();
+    pen.translate(4, -312);
+    pen.scale(0.69, 0.69);
+    var wrapEdge = STYLE.gold, wrapInk = inkFor(look.wrap), turnN;
+    pen.beginPath();                                 // the wound mass, over the crown and low on the brow
+    pen.moveTo(-94, 22);
+    pen.bezierCurveTo(-112, -50, -60, -96, 0, -98);
+    pen.bezierCurveTo(64, -98, 112, -52, 96, 22);
+    pen.quadraticCurveTo(0, 8, -94, 22);
+    pen.closePath();
+    pen.fillStyle = look.wrap;
+    pen.fill();
+    pen.strokeStyle = wrapInk;
+    pen.lineWidth = 2.9 * FINE;
+    pen.stroke();
+    pen.save();
+    pen.clip();
+    for (turnN = 0; turnN < 5; turnN++) {           // the turns of the cloth, slanting across, each gold along its edge
+      pen.strokeStyle = blend(look.wrap, "#000000", 0.25);
+      pen.lineWidth = 3;
+      pen.beginPath(); pen.moveTo(-110, 10 - turnN * 24); pen.quadraticCurveTo(0, -20 - turnN * 24, 110, -30 - turnN * 22); pen.stroke();
+      pen.strokeStyle = wrapEdge;
+      pen.lineWidth = 2.4;
+      pen.beginPath(); pen.moveTo(-110, 4 - turnN * 24); pen.quadraticCurveTo(0, -26 - turnN * 24, 110, -36 - turnN * 22); pen.stroke();
+    }
+    pen.restore();
+    pen.beginPath();                                 // the end of the cloth, tucked in and standing at the side
+    pen.moveTo(70, -60);
+    pen.quadraticCurveTo(108, -96, 96, -120);
+    pen.quadraticCurveTo(80, -98, 58, -78);
+    pen.closePath();
+    pen.fillStyle = look.wrap;
+    pen.fill();
+    pen.strokeStyle = wrapInk;
+    pen.lineWidth = 2.2 * FINE;
+    pen.stroke();
+    oval(-8, -24, 9, 11, wrapEdge);                 // the gold pin at the front, and its red stone
+    oval(-8, -24, 4, 4, "#8a1f2a");
     pen.restore();
   }
   if (look.turban) {
@@ -5468,6 +5565,7 @@ function person(x, y, look) {
   PAINTED = true;
   NORTH_FACE = null;
   EYE_LIDS = null;
+  EYE_TEARS = 0;
   BODY = BODIES.slim;
   if (joints.crown && joints.chin) { sighted((joints.crown[0] + joints.chin[0]) / 2, (joints.crown[1] + joints.chin[1]) / 2); }
   return joints;
@@ -5963,6 +6061,110 @@ function fish(brush, x, y, size, facing, colour) {
   brush.restore();
 }
 
+// The native fish of a Lanna pond, in profile, its middle on (x, y), "facing" 1 or -1, t its swim (owner,
+// 2026-10-20: "Work to improve the fish in the pond scene. research notebooklm to find lanna fish"; the "Lanna fish"
+// notebook's Field Guide to the Northern Thai Fishes and FishBase). None brought in later: no tilapia (1965), no carp.
+//   gourami     three-spot gourami, ปลากระดี่หม้อ (Trichopodus trichopterus): leaf-shaped, flat, silver-green with faint
+//               slanting bars, a dark spot mid-body and one at the tail, thread-like feelers below; near the surface
+//   barb        silver mud barb, ปลาสร้อยนกเขา (Osteochilus vittatus): carp-shaped, silver, rows of dark dots along it, a
+//               dark spot at the tail, the lower fins and the tail red; mid-water and down, in schools
+//   flying      flying barb, ปลาซิวหนวดยาว (Esomus metallicus): a small slim silver minnow, a dark line along it, long
+//               whiskers; just under the surface, quick, in schools
+//   snakehead   striped snakehead, ปลาช่อน (Channa striata): long, round, olive-brown with dark bars, a long fin along
+//               the back, a broad flat head; lying still, deep
+function nativeFish(brush, x, y, size, facing, kind, t) {
+  t = t || 0;
+  var wag = Math.sin(t * (kind === "flying" ? 14 : kind === "snakehead" ? 2.2 : 6));
+  brush.save();
+  brush.translate(x, y);
+  brush.scale(size * (facing || 1), size);
+  brush.lineJoin = "round";
+  brush.lineCap = "round";
+  function body(path, top, belly, line) {
+    var side = brush.createLinearGradient(0, -14, 0, 12);
+    side.addColorStop(0, top);
+    side.addColorStop(1, belly);
+    brush.beginPath();
+    path();
+    brush.closePath();
+    brush.fillStyle = side;
+    brush.fill();
+    brush.strokeStyle = line;
+    brush.lineWidth = 1.2;
+    brush.stroke();
+  }
+  function tail(at, long, high, colour, line) {     // a forked tail, swinging with the swim
+    brush.beginPath();
+    brush.moveTo(at, 0);
+    brush.lineTo(at - long, -high + wag * 3);
+    brush.quadraticCurveTo(at - long * 0.6, wag * 2, at - long, high + wag * 3);
+    brush.closePath();
+    brush.fillStyle = colour;
+    brush.fill();
+    brush.strokeStyle = line;
+    brush.lineWidth = 1;
+    brush.stroke();
+  }
+  function eye(ex, ey, r) {
+    brush.fillStyle = "#f4ead0";
+    brush.beginPath(); brush.arc(ex, ey, r, 0, 7); brush.fill();
+    brush.fillStyle = "#1a120c";
+    brush.beginPath(); brush.arc(ex + r * 0.15, ey, r * 0.6, 0, 7); brush.fill();
+  }
+  var n;
+  if (kind === "gourami") {
+    tail(-24, 14, 9, "rgba(150, 175, 160, 0.85)", "rgba(60, 80, 70, 0.7)");
+    brush.strokeStyle = "rgba(225, 140, 60, 0.9)";   // the anal fin's orange edge, along the belly
+    brush.lineWidth = 2.4;
+    brush.beginPath(); brush.moveTo(-18, 9); brush.quadraticCurveTo(-2, 16, 10, 8); brush.stroke();
+    body(function () { brush.moveTo(22, 0); brush.quadraticCurveTo(8, -19, -24, -2); brush.quadraticCurveTo(-8, 17, 22, 0); },
+         "#7f9f8e", "#dfe8dc", "rgba(50, 70, 60, 0.8)");
+    brush.strokeStyle = "rgba(70, 90, 90, 0.35)";   // faint slanting bars
+    brush.lineWidth = 1;
+    for (n = -14; n < 14; n += 5) { brush.beginPath(); brush.moveTo(n, -9); brush.lineTo(n - 5, 8); brush.stroke(); }
+    brush.fillStyle = "#2a3430";                    // the two spots: mid-body and at the tail
+    brush.beginPath(); brush.arc(-1, 0, 2.6, 0, 7); brush.arc(-20, -1, 2.2, 0, 7); brush.fill();
+    brush.strokeStyle = "rgba(200, 220, 210, 0.9)"; // the thread-like feelers, reaching forward and down
+    brush.lineWidth = 0.9;
+    brush.beginPath(); brush.moveTo(10, 7); brush.quadraticCurveTo(4, 18 + wag * 2, -14, 24); brush.stroke();
+    eye(15, -2, 2.2);
+  } else if (kind === "barb") {
+    tail(-22, 15, 9, "#d0583a", "rgba(110, 40, 25, 0.8)");
+    brush.fillStyle = "#d0583a";                    // the red lower fins
+    brush.beginPath(); brush.moveTo(2, 8); brush.lineTo(-4, 15); brush.lineTo(6, 10); brush.closePath(); brush.fill();
+    brush.beginPath(); brush.moveTo(-12, 8); brush.lineTo(-17, 14); brush.lineTo(-9, 9); brush.closePath(); brush.fill();
+    body(function () { brush.moveTo(22, 2); brush.quadraticCurveTo(12, -14, -22, -1); brush.quadraticCurveTo(-4, 12, 22, 2); },
+         "#9aa6aa", "#f2f4f0", "rgba(70, 80, 85, 0.8)");
+    brush.fillStyle = "rgba(50, 55, 60, 0.6)";      // rows of dark dots along the scales
+    for (n = -18; n < 16; n += 3.4) { [-4, 0, 4].forEach(function (r) { brush.beginPath(); brush.arc(n, r + n * 0.04, 0.7, 0, 7); brush.fill(); }); }
+    brush.fillStyle = "#2a2e30";
+    brush.beginPath(); brush.arc(-20, 0, 2.2, 0, 7); brush.fill();
+    eye(15, -1, 2.4);
+  } else if (kind === "flying") {
+    tail(-15, 8, 4, "rgba(200, 205, 205, 0.8)", "rgba(80, 90, 90, 0.6)");
+    body(function () { brush.moveTo(16, 0); brush.quadraticCurveTo(4, -6, -15, 0); brush.quadraticCurveTo(4, 5, 16, 0); },
+         "#a8b4b4", "#f4f6f4", "rgba(70, 80, 80, 0.7)");
+    brush.strokeStyle = "#2a3030";                  // the dark line along it
+    brush.lineWidth = 1.1;
+    brush.beginPath(); brush.moveTo(13, 0); brush.lineTo(-15, 0); brush.stroke();
+    brush.strokeStyle = "rgba(200, 205, 200, 0.85)"; // the long whiskers
+    brush.lineWidth = 0.6;
+    brush.beginPath(); brush.moveTo(15, 1); brush.lineTo(4, 7 + wag); brush.stroke();
+    eye(11, -1, 1.4);
+  } else {                                          // snakehead
+    tail(-46, 10, 7, "#5a5034", "rgba(30, 25, 15, 0.8)");
+    brush.fillStyle = "#5a5034";                    // the long fin along the back
+    brush.beginPath(); brush.moveTo(14, -6); brush.quadraticCurveTo(-14, -14 - wag, -44, -5); brush.lineTo(-44, -2); brush.quadraticCurveTo(-14, -8, 14, -4); brush.closePath(); brush.fill();
+    body(function () { brush.moveTo(30, 1); brush.quadraticCurveTo(26, -8, 10, -7); brush.lineTo(-46, -3); brush.lineTo(-46, 3);
+                       brush.lineTo(10, 7); brush.quadraticCurveTo(26, 8, 30, 1); },
+         "#6a6040", "#c8bf9a", "rgba(30, 25, 15, 0.85)");
+    brush.fillStyle = "rgba(40, 32, 20, 0.5)";      // dark bars along its side
+    for (n = -40; n < 6; n += 8) { brush.beginPath(); brush.ellipse(n, 0, 2.6, 5, 0.3, 0, 7); brush.fill(); }
+    eye(22, -2, 2);
+  }
+  brush.restore();
+}
+
 // A small flower of five round petals, pale at their rims, with a gold heart
 function blossom(brush, x, y, r, colour) {
   var fade = brush.createRadialGradient(x, y, r * 0.1, x, y, r * 1.15);
@@ -6364,11 +6566,21 @@ var ROOSTER_COAT = {body: "#fff6e6", wing: "#f0dcc0", far: "#e6ceb0", ruff: "#e9
                     tail: ["#2f6b5a", "#c9452e", "#2f6b5a", "#e9c76b", "#c9452e"], long: 50};
 var HEN_COAT = {body: "#c98b4e", wing: "#a96a33", far: "#94592a", ruff: "#dcae72",
                 tail: ["#6e3f1e", "#8a5228", "#6e3f1e"], long: 30};
+// The black-boned chicken of the north (ไก่ดำ, the rooster's black: true; owner, 2026-10-20: "add a black chicken and rooster to the
+// kit"): black feathers with a dark green sheen, the comb and wattles black-red, the beak, face, skin and legs
+// black (HRDI's report and Maejo University's handbook on black-boned chickens, in the kit's research). The
+// rooster's sickle tail and hackles green-black; the hen's comb small, as every hen's is.
+var BLACK_ROOSTER_COAT = {body: "#26272a", wing: "#1e2a26", far: "#161c1a", ruff: "#2f4a3e",
+                          tail: ["#1f3a30", "#2a2c30", "#1f3a30", "#34584a", "#2a2c30"], long: 50, sheen: "#3f7a62",
+                          comb: "#4a1e22", beak: "#2e2a28", legs: "#2a2624", face: "#3a2c2c"};
+var BLACK_HEN_COAT = {body: "#2a2b2e", wing: "#22302b", far: "#1a201e", ruff: "#30443b",
+                      tail: ["#1f3a30", "#2a2c30", "#1f3a30"], long: 30, sheen: "#3f7a62",
+                      comb: "#4a1e22", beak: "#2e2a28", legs: "#2a2624", face: "#3a2c2c"};
 
 // The names a rooster's look may have (see rooster()), so that one it does
 // not know is warned of.
 var ROOSTER_KEYS = {};
-["step", "flap", "wings", "lean", "peck", "alarm", "sink", "face", "hen", "feel"].forEach(function (name) { ROOSTER_KEYS[name] = true; });
+["step", "flap", "wings", "lean", "peck", "alarm", "sink", "face", "hen", "feel", "black"].forEach(function (name) { ROOSTER_KEYS[name] = true; });
 
 // A rooster. It crows once every two beats, in three parts, as an animator
 // would time it: it sinks first (the part that makes the crow read), then
@@ -6403,7 +6615,8 @@ var ROOSTER_KEYS = {};
 function rooster(x, y, t, bird) {
   bird = bird || {};
   checkNames("The rooster's name", bird, ROOSTER_KEYS);
-  var coat = bird.hen ? HEN_COAT : ROOSTER_COAT;
+  var coat = bird.black ? (bird.hen ? BLACK_HEN_COAT : BLACK_ROOSTER_COAT) : bird.hen ? HEN_COAT : ROOSTER_COAT;
+  var combColour = coat.comb || "#d63a2f", beakColour = coat.beak || "#f0a030", legColour = coat.legs || "#c8861e";
   var running = bird.step !== undefined, flap = clamp(bird.flap || 0), wings = clamp(bird.wings || 0);
   var e = creatureFeel(bird, t), f = e.f;
   var peck = clamp(bird.peck || 0), alarm = Math.max(clamp(bird.alarm || 0), e.startle), sink = Math.max(clamp(bird.sink || 0), 0.5 * f.sleepy + 0.3 * f.full);
@@ -6434,7 +6647,7 @@ function rooster(x, y, t, bird) {
   for (n = 0; n < 2; n++) {                         // two legs, and three toes each
     var stride = running ? Math.sin(bird.step * Math.PI * 2 + n * Math.PI) : 0;   // running: each foot swings forward and back, the other half a step behind
     var footX = -8 + n * 18 + stride * 12, lift = running ? Math.max(0, stride) * 7 : 0;
-    pen.strokeStyle = "#c8861e";
+    pen.strokeStyle = legColour;
     pen.lineWidth = 4;
     pen.beginPath();
     var hipX = -6 + n * 18;
@@ -6461,6 +6674,15 @@ function rooster(x, y, t, bird) {
   pen.translate(0, -30);
   pen.rotate(-0.12 - crowing * 0.22);
   oval(0, 0, 31, 24 + crowing * 3, coat.body);
+  if (coat.sheen) {                                 // the black chicken's green sheen, along the back
+    pen.strokeStyle = coat.sheen;
+    pen.lineWidth = 4;
+    pen.globalAlpha *= 0.7;
+    pen.beginPath();
+    pen.ellipse(0, 0, 25, 18 + crowing * 2, 0, Math.PI * 1.1, Math.PI * 1.75);
+    pen.stroke();
+    pen.globalAlpha /= 0.7;
+  }
   pen.fillStyle = "rgba(120, 80, 60, 0.18)";        // the belly is in shadow
   pen.beginPath();
   pen.ellipse(-4, 12, 24, 9, 0, 0, 7);
@@ -6479,12 +6701,12 @@ function rooster(x, y, t, bird) {
   var comb = bird.hen ? 0.6 : 1;
   for (n = 0; n < 3; n++) {                         // the comb: three bumps that wobble, and shake in a fright
     oval((-7 + n * 7) * comb, -13 * (bird.hen ? 0.85 : 1) - (n === 1 ? 3 * comb : 0) + Math.sin(t * 9 + n) * 1.2 + alarm * Math.sin(t * 60 + n * 2) * 1.5,
-         5.5 * comb, 6.5 * comb, "#d63a2f");
+         5.5 * comb, 6.5 * comb, combColour);
   }
   pen.save();                                       // the wattle swings under the beak
   pen.translate(9, 9);
   pen.rotate(Math.sin(t * 8) * 0.25 + crowing * 0.4);
-  oval(0, 6 * comb, 4.5 * comb, 8 * comb, "#d63a2f");
+  oval(0, 6 * comb, 4.5 * comb, 8 * comb, combColour);
   pen.restore();
   var gape = 0.08 + crowing * 0.5 + 0.35 * e.open;  // the beak: two halves that open (a laugh's "ha", a yawn, a fright)
   for (n = -1; n <= 1; n += 2) {
@@ -6496,7 +6718,7 @@ function rooster(x, y, t, bird) {
     pen.lineTo(n < 0 ? 22 : 17, 0);
     pen.lineTo(0, 0);
     pen.closePath();
-    shape("#f0a030");
+    shape(beakColour);
     pen.restore();
   }
   oval(0, 0, 14, 13, coat.body);

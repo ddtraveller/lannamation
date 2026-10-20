@@ -5,6 +5,9 @@
 // of home. Last, Doi Khao Khwai in the morning, wide: a small temple stands on its shoulder today, where the tale is
 // still told.
 var S13_LONG = 40;
+// Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
+// seconds after them): the cicadas by day at the pen.
+var S13_SOUND = {calls: [[0, "cicadas", 0.5, 22]]};
 var S13_LINES = [[1.5, 4.8, "M073"], [5.6, 10.6, "M074"], [16.6, 21.0, "M075"], [24.2, 28.0, "M076"], [31.0, 38.0, "M077"]];
 var S13_SHOTS = [15.5, 30.0];                       // the crowd at the pen; the run home; the mountain today
 var S13_CAMERA = [1234, 690, 1.4];                  // close on the pen, as scene 8's
@@ -16,7 +19,7 @@ var S13_CROWD = [["inta", 2.0, 2100, 1560, 948], ["sinuan", 2.6, 2150, 1690, 965
 var S13_LIFE = [
   // its cries: afraid in the crowd, and its howl of home from inside the cave (the kit's sounds, sounds.py)
   {name: "the creature's cries", kind: "flock", layer: "back", course: [[0, -999, -999], [0.1, -999, -999]],
-   calls: [[11.2, "maeng-afraid", 0.8], [22.4, "maeng-home", 0.9]]},
+   calls: [[11.2, "maeng-afraid", 0.97], [22.4, "maeng-home", 2.95]]},
   {name: "flock over the mountain", kind: "flock", layer: "back", course: [[30.5, 2150, 260], [40.0, -150, 200]]}
 ];
 

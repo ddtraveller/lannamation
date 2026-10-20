@@ -5,6 +5,9 @@
 // their houses (off to the left) toward the palace: one runs out halfway, one sags to the ground, one humps up;
 // not one of them can do it. She laughs at each. They go.
 var S09_LONG = 55;
+// Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
+// seconds after them): the cicadas in the palace's trees, low.
+var S09_SOUND = {calls: [[0, "cicadas", 0.35, 55]]};
 var S09_LINES = [[1.5, 5.0, "M050"], [5.6, 12.84, "M051"], [13.04, 16.06, "M052"], [16.26, 18.22, "M053"], [18.42, 25.4, "M054"],
                  [25.6, 29.44, "M055"], [32.0, 37.08, "M056"]];
 var S09_KING = [[18.42, 25.0], [25.6, 29.04]];        // what the king says himself: his mouth moves

@@ -3,6 +3,9 @@
 // wood under the great tree and binds it; and he carries the bundle home on his shoulder, tired, and he does
 // not complain.
 var S03_LONG = 35;
+// Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
+// seconds after them): the cicadas of the meadow by day, and the buffalo's call as he leads it out.
+var S03_SOUND = {calls: [[0, "cicadas", 0.55, 35], [4, "buffalo", 0.45]]};
 var S03_LINES = [[1.5, 5.22, "M012"], [5.6, 11.2, "M013"], [25.5, 29.5, "M014"]];
 var S03_STAND = 760, S03_GROUND = 968;              // where the buffalo stops to graze, and the ground the two walk on
 var S03_PILE = MAENG_TREE[0] - 90;                  // where the fallen wood lies

@@ -49,7 +49,9 @@
 //   flow    how fast the rows flow along the cloth, in units a second (2.5); 0 for a still cloth
 //   from    the second the rows begin to flow and the figures to walk (0): before it the cloth is still
 //   row     which row the camera of sabaiCamera() opens on (4)
-var SABAI_KEYS = {wide: true, rows: true, tiles: true, cloth: true, flow: true, from: true, row: true};
+//   fine    how many rows on each side of "row" get tiles of the full size (SABAI_TILE): the rest are made at half
+//           of it, since the camera is far out before they fill the screen. Left out, every row is full size
+var SABAI_KEYS = {wide: true, rows: true, tiles: true, cloth: true, flow: true, from: true, row: true, fine: true};
 
 var SABAI_TILE = 384;                   // a tile's side: large enough for a camera that shows one row close up
 var SABAI_FRAMES = 6;                   // moments of a walk in one tile's cycle
@@ -66,7 +68,7 @@ function paintWith(brush, action, at) {
 
 // A tile from a painter: the picture is drawn once on a scratch sheet and
 // measured, then drawn again to fit the tile, at each moment of its cycle.
-function sabaiTile(painter) {
+function sabaiTile(painter, side) {
   var scratch = document.createElement("canvas");
   scratch.width = 800;
   scratch.height = 800;
@@ -83,14 +85,15 @@ function sabaiTile(painter) {
       }
     }
   }
-  var wide = Math.max(8, right - left), tall = Math.max(8, bottom - top), fit = (SABAI_TILE * 0.86) / Math.max(wide, tall);
+  side = side || SABAI_TILE;
+  var wide = Math.max(8, right - left), tall = Math.max(8, bottom - top), fit = (side * 0.86) / Math.max(wide, tall);
   var frames = [], count = painter.length >= 2 ? SABAI_FRAMES : 1;   // a painter that takes "u" moves; the rest stand
   for (var n = 0; n < count; n++) {
     var sheet = document.createElement("canvas");
-    sheet.width = SABAI_TILE;
-    sheet.height = SABAI_TILE;
+    sheet.width = side;
+    sheet.height = side;
     var brush = sheet.getContext("2d");
-    brush.translate(SABAI_TILE / 2 - ((left + right) / 2 - 400) * fit, SABAI_TILE / 2 - ((top + bottom) / 2 - 520) * fit);
+    brush.translate(side / 2 - ((left + right) / 2 - 400) * fit, side / 2 - ((top + bottom) / 2 - 520) * fit);
     brush.scale(fit, fit);
     var u = n / SABAI_FRAMES;
     paintWith(brush, (function (b, moment) { return function () { painter(b, moment); }; })(brush, u), u);
@@ -160,6 +163,166 @@ var SABAI_ROWS = [
    function (b, u) { krathong(b, 0, 0, 1, u * 2, false); },
    sabaiBird(function (b, u) { peafowl(0, 0, u, {size: 0.6, display: 1, shiver: 0.5}); }, function (b, u) { dog(0, 0, u); })]
 ];
+
+// Every figure on the cloth its own (owner, 2026-10-20: "review the initial
+// sash scene and try to make sure each sprite on the sash is unique"): a row
+// of three to five painters repeats each of them six times along it. So
+// sabaiUnique() fills each row up to the number of figures it holds with
+// painters from sabaiPool(), none of them twice: every member of the cast in
+// seven ways (walking, in a wai, waving, sitting, laughing with a Thai face,
+// walking with a fat body, in a wai with both), the band's players, the
+// animals, birds and fish, the creatures of the myths, the flowers and fruits
+// and their trees, the lanterns, and the things of a house and a village.
+// Each painter has a "key" (its name and its way, "villager walk"); a row's
+// own painters do not have one, and the keys a film's rows already show are
+// passed as "shown", so the pool does not weave them a second time. What the
+// pool has comes from the scripts the page loads: a painter whose script is
+// not loaded is not in it. The kit's monk is not woven, nor the Hatsadiling.
+var SABAI_PEOPLE = ["villager", "child", "maiden", "fellow", "weaver", "lady", "celestial", "dancer", "drummer", "boy", "girl",
+                    "farmer", "noble", "elder", "grandmother", "oldfarmer", "devotee", "inta", "khammun", "buakham", "sinuan", "bunma", "dokkham"];
+var SABAI_WAYS = {                      // a person's ways, each a look added to the cast member's own; a way with no step stands
+  walk: {walks: true},
+  wai: {wai: true},
+  wave: {walks: true, handA: [60, -150]},
+  sit: {floor: true},
+  laugh: {walks: true, north: "thai", feel: "laughing"},
+  fat: {walks: true, body: "fat"},
+  fatwai: {wai: true, body: "fat", north: "thai"}
+};
+var SABAI_PLAYERS = {salo: "fellow", sueng: "farmer", pichum: "elder", phinphia: "fellow"};   // the band's players, as the maker has them
+
+function sabaiPool() {
+  var pool = [], people = [];
+  Object.keys(SABAI_WAYS).forEach(function (way) {
+    SABAI_PEOPLE.forEach(function (name) {
+      if (!CAST[name]) { return; }
+      var how = Object.assign({}, SABAI_WAYS[way]), walks = how.walks;
+      delete how.walks;
+      var painter = walks ? function (b, u) { person(0, 0, cast(name, Object.assign({size: 1.1, step: u}, how))); }
+                          : function (b) { person(0, 0, cast(name, Object.assign({size: 1.1}, how))); };
+      painter.key = name + " " + way;
+      people.push(painter);
+    });
+  });
+  var others = [];
+  function more(key, needs, painter) { if (typeof window[needs] === "function") { painter.key = key; others.push(painter); } }
+  Object.keys(SABAI_PLAYERS).forEach(function (kind) {
+    more(kind, "musician", function (b, u) { musician(0, 0, kind, cast(SABAI_PLAYERS[kind], {size: 1.1}), u * 2); });
+  });
+  // the animals, the birds and the fish
+  more("rooster", "rooster", function (b, u) { rooster(0, 0, u * 2); });
+  more("hen", "rooster", function (b, u) { rooster(0, 0, u * 2, {hen: true}); });
+  more("black rooster", "rooster", function (b, u) { rooster(0, 0, u * 2, {black: true}); });
+  more("black hen", "rooster", function (b, u) { rooster(0, 0, u * 2, {black: true, hen: true}); });
+  more("hen pecking", "rooster", function (b, u) { rooster(0, 0, u * 2, {hen: true, peck: 0.8}); });
+  more("dog", "dog", function (b, u) { dog(0, 0, u * 2); });
+  more("pig", "pig", function (b, u) { pig(0, 0, {size: 0.8, step: u}); });
+  more("black pig", "pig", function (b, u) { pig(0, 0, {size: 0.8, step: u, colour: "#2e2826"}); });
+  more("spotted pig", "pig", function (b, u) { pig(0, 0, {size: 0.8, step: u, points: "#2e2826"}); });
+  more("buffalo", "buffalo", function (b, u) { buffalo(0, 0, {size: 0.55, step: u}); });
+  more("pink buffalo", "buffalo", function (b, u) { buffalo(0, 0, {size: 0.55, step: u, colour: "#d6aa9c"}); });
+  more("elephant", "elephant", function (b, u) { elephant(0, 0, {size: 0.35, step: u}); });
+  more("dressed elephant", "elephant", function (b, u) { elephant(0, 0, {size: 0.35, step: u, cloth: "#8a2a3a"}); });
+  more("tiger", "tiger", function (b, u) { tiger(0, 0, {size: 0.6, step: u}); });
+  more("cat", "cat", function (b, u) { cat(0, 0, {size: 1, step: u}); });
+  more("black cat", "cat", function (b, u) { cat(0, 0, {size: 1, step: u, colour: "#2a2624"}); });
+  more("horse", "horse", function (b, u) { horse(0, 0, {size: 0.75, step: u, pack: true}); });
+  more("house mouse", "mouse", function (b, u) { mouse(0, 0, {kind: "house", size: 1.1, step: u}); });
+  more("field mouse", "mouse", function (b, u) { mouse(0, 0, {kind: "field", size: 1.1, step: u}); });
+  more("tokay", "gecko", function (b, u) { gecko([[-90, 0], [90, 0]], 150 + 20 * u, {size: 1, t: u}); });
+  more("peafowl", "peafowl", function (b, u) { peafowl(0, 0, u, {size: 0.6, display: 1, shiver: 0.5}); });
+  more("peahen walking", "peafowl", function (b, u) { peafowl(0, 0, u, {size: 0.6, step: u}); });
+  more("pheasant", "pheasant", function (b, u) { pheasant(0, 0, u, {size: 0.9, step: u}); });
+  more("sunbird", "sunbird", function (b, u) { sunbird(0, 0, u / 13, {size: 2.4, hover: 1}); });
+  more("magpie", "blueMagpie", function (b, u) { blueMagpie(0, 0, u, {size: 0.9, fly: true}); });
+  more("hornbill", "hornbill", function (b, u) { hornbill(0, 0, u, {size: 0.7, fly: true}); });
+  ["gourami", "barb", "flying", "snakehead"].forEach(function (kind) {
+    more(kind, "nativeFish", function (b, u) { nativeFish(b, 0, 0, 1.6, 1, kind, u); });
+  });
+  // the creatures of the myths
+  more("mom", "mom", function (b, u) { mom(0, 0, {size: 0.6, step: u}); });
+  more("luang", "luang", function () { luang(0, 0, {size: 0.4}); });
+  more("maeng", "maengSiHuHaTa", function (b, u) { maengSiHuHaTa(0, 0, {size: 0.6, step: u}); });
+  more("naga three", "naga", function () { naga(0, -60, {size: 0.5, heads: 3}); });
+  more("naga five", "naga", function () { naga(0, -60, {size: 0.5, heads: 5, body: "#d9a441", crest: "#3a2418"}); });
+  more("yak", "yak", function (b) { yak(b, 0, 0, 1); });
+  more("hong", "hong", function (b) { hong(b, 0, 0, 1); });
+  // the flowers and fruits, and the trees that bear them
+  Object.keys(window.FLORA || {}).forEach(function (name) {
+    more(name, "flora", function () { flora(name, 0, 0, {size: 1.6, ground: false}); });
+    if (FLORA_TREES[name]) { more(name + " tree", "floraTree", function (b) { floraTree(b, 0, 0, 0.8, name, 3); }); }
+  });
+  more("tree", "tree", function (b) { tree(b, 0, 0, 1.1); });
+  more("palm", "palm", function (b) { palm(b, 0, 0, 400); });
+  more("banana", "banana", function (b) { banana(b, 0, 0); });
+  more("bamboo", "bamboo", function (b) { bamboo(b, 0, 0, 1, 3); });
+  more("areca", "areca", function (b) { areca(b, 0, 0, 1, 5); });
+  more("lotus", "lotus", function (b) { lotus(b, 0, 0, 1.3, "#f28fa8", 1); });
+  more("white lotus", "lotus", function (b) { lotus(b, 0, 0, 1.2, "#f6f1e6", 1); });
+  more("blue lotus", "lotus", function (b) { lotus(b, 0, 0, 1.2, "#8a7ad8", 0.7); });
+  more("lotus leaf", "lotusLeaf", function (b) { lotusLeaf(b, 0, 10, 1.0, 0.2, "#3f8f5a"); });
+  // the lanterns
+  (typeof khom === "function" ? [["red", KHOM_RED], ["blue", KHOM_BLUE], ["green", KHOM_GREEN], ["gold", KHOM_GOLD]] : []).forEach(function (c) {
+    more("khom " + c[0], "khom", function () { khom(0, -400, {colour: c[1], lit: 0, sway: 0}); });
+  });
+  more("khom dao", "khomDao", function () { khomDao(0, -300, {colour: KHOM_GOLD, lit: 0, sway: 0}); });   // khom.js, as KHOM_GOLD is
+  more("khom dao red", "khomDao", function () { khomDao(0, -300, {colour: KHOM_RED, lit: 0, sway: 0}); });
+  more("khom dao green", "khomDao", function () { khomDao(0, -300, {colour: KHOM_GREEN, lit: 0, sway: 0}); });
+  more("khom phat", "khomPhat", function () { khomPhat(0, -300, {lit: 0}); });
+  more("khom bua", "khomBua", function () { khomBua(0, -300, {lit: 0}); });
+  // the things of a house and of a village
+  more("house", "house", function (b) { house(b, 0, 0, 0.7); });
+  more("bamboo house", "ruenPhuk", function (b) { ruenPhuk(b, 0, 0, 1); });
+  more("field hut", "fieldHut", function (b) { fieldHut(b, 0, 0, 1); });
+  more("granary", "longKhao", function (b) { longKhao(b, 0, 0, 0.6); });
+  more("temple", "temple", function (b) { temple(b, 0, 0); });
+  more("tung", "tung", function (b) { tung(b, 0, 0, 0); });
+  more("tung sai mu", "tungSaiMu", function (b, u) { tungSaiMu(b, 0, 0, 1.3, u * 2, 7, 7); });
+  more("tung yai", "tungYai", function (b, u) { tungYai(b, 0, 0, 0.8, u * 2); });
+  more("chedi sai", "chediSai", function (b, u) { chediSai(b, 0, 0, 1, u * 2, 2); });
+  more("krathong", "krathong", function (b, u) { krathong(b, 0, 0, 1, u * 2, false); });
+  more("pratheep", "pratheep", function (b, u) { pratheep(b, 0, 0, 1.6, u * 2, 1); });
+  more("namton", "namton", function (b) { namton(b, 0, 0, 1.2); });
+  more("oxcart", "oxcart", function (b, u) { oxcart(b, 0, 0, 1, u * Math.PI, 1); });
+  more("drum cart", "drumCart", function (b) { drumCart(b, 0, 0, 0.5, 1); });
+  more("hall", "hoKham", function (b) { hoKham(b, 0, 0, 0.5, {part: "back", pediment: "peacock"}); hoKham(b, 0, 0, 0.5, {part: "front", pediment: "peacock"}); });
+  more("gong", "gong", function (b) { gong(b, 0, 0, 1.1); });
+  more("pen", "kok", function (b) { kok(b, 0, 0, 380, 1, {part: "back"}); kok(b, 0, 0, 380, 1, {part: "front"}); });
+  more("basket", "sawian", function (b) { sawian(b, 0, 0, 1.2); });
+  more("rice basket", "kongKhao", function (b) { kongKhao(b, 0, 0, 1.1); });
+  more("open basket", "krabung", function (b) { krabung(b, 0, 0, 1.1); });
+  more("mortar", "mortar", function (b) { mortar(b, 0, 0, 1.1); });
+  more("ta laew", "taLaew", function (b) { taLaew(b, 0, 0, 1.1); });
+  more("firewood", "firewood", function (b) { firewood(b, 0, -8, 1.1, {loose: true}); });
+  more("campfire", "campfire", function (b, u) { campfire(b, 0, 0, 1, u * 2, {light: 0.4}); });
+  more("huad", "huad", function (b, u) { huad(b, 0, 0, 1, u * 2, {fire: 1}); });
+  more("grass", "grassBundle", function (b) { grassBundle(b, 0, 0, 1, {}); });
+  more("bananas", "bananas", function (b) { bananas(b, 0, 0, 1, {}); });
+  more("gold", "goldNugget", function (b, u) { goldNugget(b, 0, 0, 1, u, {}); });
+  // dealt people and the rest in turn, about two people to one other, so that every row has both
+  for (var p = 0, o = 0; p < people.length || o < others.length;) {
+    if (p < people.length) { pool.push(people[p++]); }
+    if (p < people.length && p % 3 !== 0) { pool.push(people[p++]); }
+    if (o < others.length) { pool.push(others[o++]); }
+  }
+  return pool;
+}
+
+// The rows, each filled with painters of the pool up to "count" figures, none of them twice on the cloth and none
+// whose key is in "shown". A row that has more than "count" painters already is left as it is.
+function sabaiUnique(rows, count, shown) {
+  var pool = sabaiPool().filter(function (painter) { return !(shown || []).some(function (k) { return k === painter.key; }); });
+  var out = rows.map(function (row) { return row.slice(); }), need = 0;
+  out.forEach(function (row) { need += Math.max(0, count - row.length); });
+  if (need > pool.length) { warn("sabaiUnique: the cloth needs " + need + " more figures and the pool has " + pool.length + ": some come twice"); }
+  for (var k = 0, n = 0; k < count; k++) {           // a figure to each row in turn, so the rows share the pool's mix
+    out.forEach(function (row) {
+      if (row.length >= count) { return; }
+      row.push(pool[n++ % pool.length]);
+    });
+  }
+  return out;
+}
 
 var SABAI_SCRATCH = null;               // a sheet the person is drawn on to ask where their joints are
 var SABAI_SLEEVE = {};                  // how far the sleeve's outer line is from the far elbow, for each build of figure, read once
@@ -374,7 +537,13 @@ function sabaiBand(where, inner, outer, from, to) {  // the shape between two of
 }
 
 function sabaiTiles(cloth) {                         // the cloth's tiles, made once from its rows
-  if (!cloth.tiles) { cloth.tiles = (cloth.rows || SABAI_ROWS).map(function (row) { return row.map(sabaiTile); }); }
+  if (!cloth.tiles) {
+    var near = cloth.row === undefined ? 4 : cloth.row;
+    cloth.tiles = (cloth.rows || SABAI_ROWS).map(function (row, r) {
+      var side = cloth.fine === undefined || Math.abs(r - near) <= cloth.fine ? SABAI_TILE : SABAI_TILE / 2;
+      return row.map(function (painter) { return sabaiTile(painter, side); });
+    });
+  }
   return cloth.tiles;
 }
 

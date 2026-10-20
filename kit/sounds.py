@@ -17,7 +17,9 @@ with it and with one another, so that they sound as one wild voice and not as wo
 story's: the night on the mountain, the snare, the crowd, the pen at night, the embers, the way home.
 """
 import json
+import subprocess
 import sys
+import tempfile
 import urllib.request
 from pathlib import Path
 
@@ -105,6 +107,41 @@ def maeng_home():
     return {"voices": many(lead, pack=1.1), "cave": [2.8, 0.5], "seed": 9}
 
 
+# Two sounds of the village at night that no free recording had clean (2026-10-20: the takes found had speech or
+# engines in them), made by the kit from numbers instead, not by howl.py: a painter of these gives back the sound.
+def crickets():
+    """Field crickets in the grass at night, a chorus of seven: each sings chirps of three or four pulses (a pulse
+    16 ms of a tone near 4.6 kHz, one every 34 ms), two or three chirps a second, at its own pitch, pace and
+    distance, a little unsteady; 20 s, so a scene can lay it end to end."""
+    seconds, rng = 20.0, np.random.default_rng(11)
+    out = np.zeros(int(seconds * RATE))
+    for n in range(7):
+        tone, rate, gain = rng.uniform(4300, 5000), rng.uniform(2.0, 3.2), rng.uniform(0.25, 1.0)
+        at = rng.uniform(0, 0.5)
+        while at < seconds - 0.3:
+            for k in range(int(rng.integers(3, 5))):  # the pulses of one chirp
+                a = int((at + k * 0.034) * RATE)
+                m = np.arange(int(0.016 * RATE))
+                shape = np.sin(np.pi * m / len(m)) ** 2
+                out[a:a + len(m)] += gain * shape * np.sin(2 * np.pi * tone * (a + m) / RATE)
+            at += (1 / rate) * rng.uniform(0.85, 1.15)
+    out += 0.004 * rng.standard_normal(len(out))      # the night air
+    return 0.5 * out / np.abs(out).max()
+
+
+def mouse_squeak():
+    """A mouse's squeaks: three short whistles, each rising then falling between 3.5 and 6.5 kHz, 50 to 80 ms."""
+    rng = np.random.default_rng(5)
+    out = np.zeros(int(0.9 * RATE))
+    for at, long, low, high in [(0.05, 0.06, 3800, 6200), (0.22, 0.05, 4200, 6500), (0.5, 0.08, 3500, 5600)]:
+        m = np.arange(int(long * RATE)) / RATE
+        pitch = low + (high - low) * np.sin(np.pi * m / long)
+        wave = np.sin(2 * np.pi * np.cumsum(pitch) / RATE) + 0.2 * np.sin(4 * np.pi * np.cumsum(pitch) / RATE)
+        a = int(at * RATE)
+        out[a:a + len(m)] += wave * np.sin(np.pi * m / long) ** 1.5 * rng.uniform(0.7, 1)
+    return 0.89 * out / np.abs(out).max()
+
+
 # Every sound: its name, what makes its outline, and what it is for.
 SOUNDS = {
     "maeng-base": (maeng_base, "the creature's howl, the night on the mountain: rises, holds high, falls away into the cave"),
@@ -113,7 +150,10 @@ SOUNDS = {
     "maeng-sad": (maeng_sad, "alone in the pen at night: a slow howl that falls, catching like a sob"),
     "maeng-happy": (maeng_happy, "eating the embers: quick bouncing howls that rise at the end, no growl"),
     "maeng-home": (maeng_home, "running home into its cave: one long howl that starts low and lifts, its throats swelling"),
+    "crickets": (crickets, "field crickets in the grass at night, seven of them chirping, 20 s to lay end to end"),
+    "mouse-squeak": (mouse_squeak, "a mouse's three high squeaks, for the mice along a wall"),
 }
+MADE = ("crickets", "mouse-squeak")     # the two made from numbers, not by howl.py
 
 # Sounds the kit does not make but fetches: recordings whose makers gave them to everyone (public domain, or a
 # licence that lets the kit use them, named here with them), each from where it lives, cut if a part is wanted.
@@ -127,6 +167,55 @@ FETCHED = {
     "tokay": {"url": TOKAY, "cut": [10.8, 24.0], "from": TOKAY_FROM,
               "what": "the tokay's five to-kays, cut from that recording, for a gecko on a wall at night"},
 }
+# The village's animals and the day and night around them (owner, 2026-10-20: "Do a round of sounds research for the
+# video and try to find sounds for the story for animals and birds that appear in it such as with the gecko. Add some
+# cicadas singing and crickets at night", and "Make sure sounds get added to the kit"). Each take was chosen from
+# several, then heard through an AudioSet classifier (AST) two seconds at a time, and cut where it hears only the
+# animal (no speech, no engine): the stretches are those. A tree cricket's trill from Doi Suthep was
+# heard as a fire alarm, and is not here: the kit's own crickets (above) sing the nights. A bed (cicadas, frogs) lies under a
+# scene, laid end to end for as long as the scene asks; "rms" brings a bed to a steady level (dB), where the others
+# are brought to the same peak. A CC BY recording's maker is named in a film that uses it (its credits).
+COMMONS = "https://upload.wikimedia.org/wikipedia/commons/"
+INAT = "https://static.inaturalist.org/sounds/"
+FETCHED.update({
+    "hens": {"url": COMMONS + "d/d6/Chickens_demanding_food.ogg", "cut": [6.0, 11.2],
+             "from": 'alys, "Chickens demanding food"; public domain (Wikimedia Commons: File:Chickens_demanding_food.ogg)',
+             "what": "hens clucking in a yard, wanting their food (5 s)"},
+    "hen-cackle": {"url": COMMONS + "4/44/Hen_announcing_shes_lain_an_egg.ogg", "cut": None,
+                   "from": 'alys, "Hen announcing she\'s lain an egg"; public domain (Wikimedia Commons)',
+                   "what": "a hen's cackle when she has laid an egg (9 s)"},
+    "rooster-crow": {"url": INAT + "383475.wav", "cut": [0.0, 3.6],
+                     "from": "Wich'yanan L., red junglefowl, Kaeng Krachan, Phetchaburi, Thailand; CC BY 4.0 "
+                             "(iNaturalist observation 110186322)",
+                     "what": "a rooster's crow: the red junglefowl, the village rooster's wild kin, in a Thai forest"},
+    "buffalo": {"url": INAT + "1241617.mpga", "cut": [14.0, 16.6],
+                "from": "Ashwin A., water buffalo, Aluva, Kerala, India; CC BY 4.0 (iNaturalist observation 249871642)",
+                "what": "a water buffalo's low call"},
+    "elephant-trumpet": {"url": COMMONS + "4/40/Elephant_voice_-_trumpeting.ogg", "cut": None,
+                         "from": 'Thagavaluzhavan (தகவலுழவன்), "Elephant voice - trumpeting"; CC0 (Wikimedia Commons)',
+                         "what": "an elephant's short trumpet (1.4 s)"},
+    "horse": {"url": COMMONS + "d/db/Wiehern.ogg", "cut": None,
+              "from": 'Hü., "Wiehern"; public domain (Wikimedia Commons: File:Wiehern.ogg)',
+              "what": "a horse's whinny (2.3 s), for the pack horses of a caravan"},
+    "magpie": {"url": INAT + "828421.wav", "cut": [2.0, 7.2],
+               "from": "red-billed blue magpie, Sham Shui Po, Hong Kong; CC0 (iNaturalist observation 187003410)",
+               "what": "the red-billed blue magpie's calls"},
+    "dog": {"url": INAT + "1346356.m4a", "cut": [16.0, 24.0],
+            "from": "domestic dog, Jiufengshan, Ningbo, China; CC0 (iNaturalist observation 266621147)",
+            "what": "a village dog barking"},
+    "flock": {"url": COMMONS + "e/e9/2018-10-10_kreisende_stare.ogg", "cut": [12.0, 24.0],
+              "from": 'Gunter Königsmann, "2018-10-10 kreisende Stare"; CC BY 4.0 (Wikimedia Commons)',
+              "what": "a flock of birds wheeling overhead, wings and calls (12 s)"},
+    "frogs": {"url": "https://archive.org/download/aporee_38387_43891/NochmehrKlapperfroschatmoChomThongbeiPuhAnna1708200132.mp3",
+              "cut": [66.0, 92.0], "rms": -24,
+              "from": "golo.foellmer, frogs at a pond and rice field, Chom Thong, Chiang Mai; Public Domain Mark "
+                      "(radio aporee ::: maps, archive.org aporee_38387_43891)",
+              "what": "the frogs of the rice fields of Chiang Mai at night, a bed (26 s)"},
+    "cicadas": {"url": INAT + "1818207.wav", "cut": [20.0, 43.5], "rms": -24,
+                "from": "Wich'yanan (Jay) Limparungpatthanakij, cicadas, Ban Luang, Chom Thong, Chiang Mai; CC BY 4.0 "
+                        "(iNaturalist observation 344470233)",
+                "what": "cicadas singing in the trees by day, Chiang Mai, a bed (23 s)"},
+})
 
 
 def fetch(name, out):
@@ -136,7 +225,13 @@ def fetch(name, out):
     if not source.exists():
         request = urllib.request.Request(one["url"], headers={"User-Agent": "lannamation-kit/1.0 (sounds.py)"})
         source.write_bytes(urllib.request.urlopen(request, timeout=60).read())
-    sound, rate = soundfile.read(str(source), always_2d=True)
+    try:
+        sound, rate = soundfile.read(str(source), always_2d=True)
+    except (RuntimeError, soundfile.LibsndfileError):   # what soundfile cannot read (m4a, an mp3 called .mpga): ffmpeg reads it
+        with tempfile.TemporaryDirectory() as scratch:
+            plain = Path(scratch) / "plain.wav"
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(source), str(plain)], check=True)
+            sound, rate = soundfile.read(str(plain), always_2d=True)
     sound = sound.mean(axis=1)
     if one["cut"]:
         sound = sound[int(one["cut"][0] * rate):int(one["cut"][1] * rate)]
@@ -145,7 +240,10 @@ def fetch(name, out):
     fade = int(0.05 * RATE)
     sound[:fade] *= np.linspace(0, 1, fade)
     sound[-fade:] *= np.linspace(1, 0, fade)
-    sound = 0.89 * sound / (np.abs(sound).max() or 1)
+    if one.get("rms"):                               # a bed: a steady level, its peaks kept under 0.89
+        sound = sound * min(10 ** (one["rms"] / 20) / (np.sqrt(np.mean(sound ** 2)) or 1), 0.89 / (np.abs(sound).max() or 1))
+    else:
+        sound = 0.89 * sound / (np.abs(sound).max() or 1)
     wavfile.write(str(out / (name + ".wav")), RATE, (sound * 32767).astype(np.int16))
     return sound
 
@@ -154,6 +252,9 @@ def make(name, out):
     if name in FETCHED:
         return fetch(name, out)
     outline = SOUNDS[name][0]()
+    if name in MADE:                                 # made from numbers by its painter: the sound itself
+        wavfile.write(str(out / (name + ".wav")), RATE, (outline * 32767).astype(np.int16))
+        return outline
     sound = chorus(outline) if "voices" in outline else howl(outline)
     (out / (name + ".json")).write_text(json.dumps(outline, indent=1), encoding="utf-8")
     wavfile.write(str(out / (name + ".wav")), RATE, (sound * 32767).astype(np.int16))
@@ -183,7 +284,8 @@ def main():
         wavfile.write(str(OUT / "all.wav"), RATE, (np.concatenate(reel) * 32767).astype(np.int16))
         print("all.wav: every sound, %.1f s apart" % 1.2)
     listed = [{"name": n, "what": every[n], "seconds": round(len(made[n]) / RATE, 2),
-               "from": FETCHED[n]["from"] if n in FETCHED else "made by howl.py from its outline in sounds.py"} for n in made]
+               "from": FETCHED[n]["from"] if n in FETCHED else "made by the kit from numbers in sounds.py" if n in MADE
+               else "made by howl.py from its outline in sounds.py"} for n in made]
     (OUT / "list.js").write_text("var SOUND_LIST = %s;\n" % json.dumps(listed, ensure_ascii=False, indent=1), encoding="utf-8")
 
 

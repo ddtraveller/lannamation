@@ -4,6 +4,9 @@
 // day after day there is another mound, until the garden is full. And he still leads the headman's buffalo
 // out, as he always did.
 var S08_LONG = 40;
+// Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
+// seconds after them): the morning's rooster and hens, the cicadas, the buffalo as he leads it out.
+var S08_SOUND = {calls: [[0, "cicadas", 0.5, 40], [1, "rooster-crow", 0.28], [4, "hens", 0.55], [27.5, "buffalo", 0.45]]};
 var S08_LINES = [[2.0, 5.8, "M045"], [6.2, 10.9, "M046"], [11.1, 16.18, "M047"], [22.0, 26.38, "M048"], [28.0, 33.0, "M049"]];
 var S08_CAMERA = [1234, 690, 1.4];                  // close on the pen and the garden (the view stays on the sheet)
 var S08_DAYS = [15, 22];                            // the days going by: the sky turns, a mound each day
@@ -15,6 +18,8 @@ var S08_LIFE = [
    course: [[0, 620, 958], [5.0, 660, 962, "peck"], [14.8, 660, 962, "hide"], [15.0, 660, 962, "hide"]]},
   {name: "hen", kind: "hen", layer: "back", course: [[0, 720, 966, "peck"], [6.0, 720, 966], [8.0, 790, 970, "peck"], [14.8, 790, 970, "hide"],
                                                     [38.0, 1880, 958, "hide"], [38.4, 1880, 958, "peck"], [40.0, 1880, 958]]},
+  {name: "black rooster", kind: "rooster", layer: "back", look: {black: true, feel: "happy"},   // a black-boned rooster (ไก่ดำ)
+   course: [[0, 650, 964], [4.0, 690, 968, "peck"], [14.8, 690, 968, "hide"], [15.0, 690, 968, "hide"]]},
   {name: "flock", kind: "flock", course: [[1.0, 2150, 200], [12.0, -150, 160]]}
 ];
 

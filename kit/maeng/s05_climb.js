@@ -3,6 +3,9 @@
 // sight behind the rock at the foot of the path, and nothing of what it pulls is shown. At the cave's mouth the
 // rope catches and will not come. He lets it go, sets his snare there as his father asked, and goes home.
 var S05_LONG = 45;
+// Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
+// seconds after them): the crickets of dusk on the mountain.
+var S05_SOUND = {calls: [[0, "crickets", 0.3, 45]]};
 var S05_LINES = [[3.0, 6.68, "M024"], [8.0, 13.0, "M025"], [21.5, 27.44, "M026"], [32.0, 36.82, "M027"]];
 var S05_TOP = MAENG_SLOPE_CAVE[0] - 140;            // where he stops, below the cave's ledge
 var S05_SNARE = [MAENG_SLOPE_CAVE[0] - 60, MAENG_SLOPE_CAVE[1] + 8];
@@ -23,7 +26,7 @@ var S05_LIFE = [
   {name: "great hornbill", kind: "hornbill", layer: "back", look: {size: 0.5}, course: [[13.6, 2150, 230], [21.0, -260, 150]]},
   // the creature, unseen in its cave, howls once as the snare is set and dusk comes on (sounds.py, maeng-base)
   {name: "the creature's howl", kind: "flock", layer: "back", course: [[0, -999, -999], [0.1, -999, -999]],
-   calls: [[38.0, "maeng-base", 0.55]]}
+   calls: [[38.0, "maeng-base", 0.87]]}
 ];
 
 function sceneClimb(t) {

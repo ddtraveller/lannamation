@@ -4,6 +4,9 @@
 // one sits before an elder. The father speaks his wish. The boy takes his hand. The lamp burns low and goes
 // out; nothing more is shown.
 var S04_LONG = 60;
+// Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
+// seconds after them): the crickets outside the hut, low; a squeak as each mouse comes in.
+var S04_SOUND = {calls: [[0, "crickets", 0.22, 60], [3.4, "mouse-squeak", 0.15], [20.4, "mouse-squeak", 0.13]]};
 var S04_LINES = [[1.5, 5.48, "M015"], [6.0, 8.6, "M016"], [10.0, 15.16, "M017"], [15.4, 20.1, "M018"], [20.4, 26.08, "M019"],
                  [26.4, 30.5, "M020"], [31.0, 35.96, "M021"], [38.0, 41.66, "M022"], [44.0, 49.1, "M023"]];
 var S04_SPEAKS = [[10.0, 14.76], [15.4, 19.06], [20.4, 25.68], [26.4, 30.1], [31.0, 35.56]];   // the lines the father says himself:
@@ -47,20 +50,26 @@ function s04Room() {                                // the inside of the hut, pa
   paper.width = WIDE;
   paper.height = 1080;
   var b = paper.getContext("2d"), k, n;
-  b.fillStyle = "#c9ab72";                          // the back wall of woven bamboo
+  // The back wall of flattened split bamboo (ฟาก), the strips upright, a rail across bound to the posts with rattan:
+  // the wall of the bamboo house outside (ruenPhuk; the kit's research, 2026-10-20).
+  b.fillStyle = "#cdb47a";
   b.fillRect(0, 0, WIDE, 700);
-  b.save();
-  b.beginPath();
-  b.rect(0, 0, WIDE, 700);
-  b.clip();
-  b.lineWidth = 9;
-  for (k = -1200; k < WIDE + 1200; k += 30) {
-    b.strokeStyle = "#a88a54";
-    b.beginPath(); b.moveTo(k, 0); b.lineTo(k + 700, 700); b.stroke();
-    b.strokeStyle = "#b99c64";
-    b.beginPath(); b.moveTo(k + 700, 0); b.lineTo(k, 700); b.stroke();
+  for (k = 0; k < WIDE; k += 26) {
+    b.fillStyle = (k / 26) % 2 ? "#c7ad72" : "#d3bb82";
+    b.fillRect(k, 0, 24, 700);
+    b.strokeStyle = "#a48a54";
+    b.lineWidth = 2;
+    b.beginPath(); b.moveTo(k + 25, 0); b.lineTo(k + 25, 700); b.stroke();
+    b.strokeStyle = "rgba(140, 110, 60, 0.6)";      // the node, split open, in a ragged line across
+    b.lineWidth = 4;
+    var nodeY = 330 + 24 * Math.sin(k * 0.13);
+    b.beginPath(); b.moveTo(k + 2, nodeY); b.lineTo(k + 22, nodeY + 2); b.stroke();
   }
-  b.restore();
+  b.fillStyle = "#8a6a40";                          // the rail, and the rattan ties at each post
+  b.fillRect(0, 300, WIDE, 14);
+  b.strokeStyle = "#5a3a1e";
+  b.lineWidth = 4;
+  [107, 1807].forEach(function (px) { b.beginPath(); b.moveTo(px - 22, 294); b.lineTo(px + 22, 320); b.moveTo(px + 22, 294); b.lineTo(px - 22, 320); b.stroke(); });
   b.fillStyle = "#6e4c30";                          // posts at the corners of the room, and the beam under the roof
   b.fillRect(90, 0, 34, 710);
   b.fillRect(1790, 0, 34, 710);
@@ -87,6 +96,12 @@ function s04Room() {                                // the inside of the hut, pa
     var fy = 708 + k * (12 + k * 4.5);
     b.beginPath(); b.moveTo(0, fy); b.lineTo(WIDE, fy); b.stroke();
   }
+  b.fillStyle = "#7a5234";                          // the hearth: a wooden tray of packed earth, three stones in it, under the pot
+  b.fillRect(1600, 722, 200, 34);
+  b.fillStyle = "#9a7650";
+  b.fillRect(1608, 726, 184, 22);
+  b.fillStyle = "#6e6a62";
+  [[1668, 738], [1700, 734], [1732, 738]].forEach(function (st) { b.beginPath(); b.ellipse(st[0], st[1], 14, 9, 0, 0, 7); b.fill(); });
   b.fillStyle = "#d9c48c";                          // the sleeping mat of reed, a plain weave, under the father
   b.beginPath();
   b.moveTo(250, 800); b.lineTo(1390, 800); b.lineTo(1470, 960); b.lineTo(170, 960);
@@ -143,6 +158,7 @@ function sceneWish(t) {
                                                     mouth: speaking ? {open: 0.06 + 0.26 * Math.abs(Math.sin(t * 8.5)), wide: 0.5, round: 0.15} : null,
                                                     at: [1150, 600], size: MAENG_FATHER.size * S04_NEAR});
   var lad = maengPerson("boy", MAENG_LAD, {id: "lad", floor: "side", face: -1, feel: t > 33 ? "sad" : "concerned", at: [700, 560],
+                                           tears: between(t, 37.5, 38.5),   // he cries, as the words say he does (M022, 38.0) (owner: "Add some tears for when the boy cries")
                                            size: MAENG_LAD.size * S04_NEAR});
   if (holding) { father.reachA = meet; lad.reachA = meet; }
   person(770, 900, father);

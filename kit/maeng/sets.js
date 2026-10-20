@@ -124,15 +124,22 @@ var MAENG_FATHER = {turban: "#8a6a58", sabai: ["#9a8a66", "#6a5a44", "check"], s
 var MAENG_MOTHER = {shirt: "#5d6e82", size: 0.78, smile: 0.6, earplug: "#b8a060"};
 var MAENG_BOY = {turban: "#9a6a58", sabai: ["#a2946e", "#6a5a44", "check"], sarong: "#4f3e30", size: 0.42};
 var MAENG_LAD = Object.assign({}, MAENG_BOY, {size: 0.58});   // Thukkhata older, from scene 3
-// The city (from scene 9): King Phanthumati, a noble in his gold, older, with a moustache; Princess Sima in a sin of
-// the paintings with a gold shoulder cloth and a fan of gold leaves behind her bun; the princes who come to marry her,
-// each in his own colours.
-var MAENG_KING = {turban: "#e0b23a", sarong: ["#5a2a6a", BROCADE], size: 0.82, age: 0.45, beard: "#2a2220", smile: 0.6};
-var MAENG_SIMA = {skirt: false, sin: 0, sabai: ["#e0b23a", "#8a2a3a"], fan: true, dance: false, bangles: 4, earplug: "#e0b23a",
-                  size: 0.78, smile: 0.8};
+// The city (from scene 9): King Phanthumati, older, with a moustache, in a ruler's head-cloth of silk wound over his
+// head, gold along its turns; Princess Sima in a sin of the paintings with a gold shoulder cloth, her hair in the high
+// e-pun knot with gold pins and a gold flower. As Lanna dressed its rulers and princesses (the kit's research,
+// 2026-10-20: the spired chada was the Siamese court's, and a crown of silver flowers is a costume of today; owner:
+// "Historical Lanna", "K1 silk head-cloth", "P2 the e-pun knot"). The princes who come to marry her, each in his own
+// colours.
+var MAENG_KING = {turban: null, wrap: "#6a2a5a", sarong: ["#5a2a6a", BROCADE], size: 0.82, age: 0.45, beard: "#2a2220", smile: 0.6};
+var MAENG_SIMA = {skirt: false, sin: 0, sabai: ["#e0b23a", "#8a2a3a"], bun: "ipun", pins: true, flower: "#f2cf5a", dance: false,
+                  bangles: 4, earplug: "#e0b23a", size: 0.78, smile: 0.8};
 var MAENG_PRINCES = [{turban: "#2a5a8a", sarong: ["#2a5a8a", BROCADE], size: 0.78},
                      {turban: "#3a7a4a", sarong: ["#3a7a4a", BROCADE], size: 0.8},
                      {turban: "#c8452f", sarong: ["#6a3a7a", BROCADE], size: 0.76}];
+// Thukkhata grown, in a noble's dress of his own colours (the film's lad, now a man); as king, a ruler's head-cloth
+// (scene 12, and the credits' cast).
+var MAENG_GROOM = {turban: "#e8d8a0", sarong: ["#2a6a5a", BROCADE], size: 0.8, smile: 0.7};
+var MAENG_KING_THUKKHATA = Object.assign({}, MAENG_GROOM, {turban: null, wrap: "#8a2a3a", size: 0.82});   // the new king, in a ruler's head-cloth
 
 // A look of the film's cast: the kit's cast (kind), the film's colours, the scene's own. A feeling given by the
 // scene takes the place of the cast's own smile and wonder (the kit's boy smiles, and a smile given in the look
@@ -211,6 +218,7 @@ function maengYard() {
   brush.fillRect(1560, 780, 40, 34);
   brush.fillStyle = blend("#3a2a22", "#a9cfc9", 0.3);
   brush.fillRect(1572, 796, 16, 18);
+  maengFields(brush);                               // the rice fields: plots, bunds, water, rice (below)
   var air = brush.createLinearGradient(0, 640, 0, 840);   // the air between, so the far things sit far
   air.addColorStop(0, "rgba(226, 238, 240, 0)");
   air.addColorStop(0.4, "rgba(226, 238, 240, 0.35)");
@@ -218,13 +226,6 @@ function maengYard() {
   brush.fillStyle = air;
   brush.fillRect(0, 640, WIDE, 200);
   brush = front.getContext("2d");
-  for (n = 0; n < 6; n++) {                         // the rice fields, row behind row, the bunds between
-    var top = 812 + n * 16 + n * n * 1.6, deep = 16 + n * 4;
-    brush.fillStyle = n % 2 ? "#8fbf5a" : "#7fb24e";
-    brush.fillRect(0, top, WIDE, deep + 2);
-    brush.fillStyle = "rgba(120, 90, 50, 0.55)";
-    brush.fillRect(0, top, WIDE, 2.5);
-  }
   var yard = brush.createLinearGradient(0, 900, 0, 1080);   // the yard of beaten earth
   yard.addColorStop(0, "#c9a878");
   yard.addColorStop(1, "#b48f62");
@@ -285,10 +286,11 @@ function maengYardAt(t, night, glow, behind) {   // behind: drawn after the far 
   cumulus(pen, t + 10, night > 0.5 ? MAENG_CLOUDS.night : MAENG_CLOUDS.day);
   pen.drawImage(yard.back, 0, 0);
   if (night > 0) { pen.globalAlpha = night; pen.drawImage(yard.backNight, 0, 0); pen.globalAlpha = 1; }
+  if (night < 0.5) { maengFieldLife(t); }         // the farmers, the buffalo and the egrets out in the fields
   if (behind) { behind(); }
   pen.drawImage(yard.front, 0, 0);
   if (night > 0) { pen.globalAlpha = night; pen.drawImage(yard.frontNight, 0, 0); pen.globalAlpha = 1; }
-  tub(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2], {glow: glow || 0, tint: night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null});
+  ruenPhuk(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2] * 0.92, {glow: glow || 0, tint: night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null});
   dress(t, MAENG_YARD_THINGS, "back", night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null);
 }
 
@@ -647,5 +649,113 @@ function maengYardTrough(built, part, tint) {
 function maengSubtitles(t, lines) {
   lines.forEach(function (line) {
     if (t >= line[0] && t < line[1]) { subtitle(MAENG_WORDS[line[2]][1], MAENG_WORDS[line[2]][2]); }
+  });
+}
+
+// ---------- the rice fields ----------
+// The rice fields behind the poor family's house (2026-10-20). Owner: "Increase the quality of
+// the background fields behind the home of the poor family and the fields as well. A few of the fields should be
+// flooded and a few farmers and buffalo, etc. should be working the fields and a crane should fly off from the
+// fields"; the bird is the cattle egret (นกยางควาย) that walks behind the plough (the kit's research; owner: "Egret").
+// maengFields(brush) paints the plots once, onto the yard's far sheet; maengFieldLife(t) draws what moves on them.
+
+var FIELD_ROWS = 6;
+var FIELD_TOP = 812;
+function fieldRow(r) {                             // a row of plots: its top and its depth, nearer rows deeper
+  return [FIELD_TOP + r * 16 + r * r * 1.6, 16 + r * 4];
+}
+// Each plot: [row, from x, to x, kind]: "water" flooded and new-planted (the sky in it, rows of seedlings), "rice"
+// green and grown, "mud" ploughed and wet. Laid out by hand, so the ploughing and the planting have their places.
+var FIELD_PLOTS = [
+  [0, 0, 420, "rice"], [0, 420, 900, "water"], [0, 900, 1500, "rice"], [0, 1500, 1920, "water"],
+  [1, 0, 300, "water"], [1, 300, 760, "rice"], [1, 760, 1250, "mud"], [1, 1250, 1920, "rice"],
+  [2, 0, 520, "rice"], [2, 520, 1100, "water"], [2, 1100, 1640, "rice"], [2, 1640, 1920, "water"],
+  [3, 0, 380, "mud"], [3, 380, 980, "rice"], [3, 980, 1560, "water"], [3, 1560, 1920, "rice"],
+  [4, 0, 700, "rice"], [4, 700, 1300, "rice"], [4, 1300, 1920, "water"],
+  [5, 0, 1000, "rice"], [5, 1000, 1920, "rice"]
+];
+var FIELD_PLOUGH = [1, 780, 1230];                 // the row and the stretch the buffalo ploughs, back and forth
+var FIELD_PLANTERS = [[3, 1060], [3, 1180], [3, 1320]];   // women planting rice in the flooded plot, bent over
+
+function maengFields(brush) {
+  var n, k;
+  FIELD_PLOTS.forEach(function (p, i) {
+    var row = fieldRow(p[0]), top = row[0], deep = row[1], x0 = p[1], x1 = p[2];
+    if (p[3] === "water") {                         // the sky in the water, pale, a little rippled
+      var w = brush.createLinearGradient(0, top, 0, top + deep);
+      w.addColorStop(0, "#cfe3e6");
+      w.addColorStop(1, "#9fc4c6");
+      brush.fillStyle = w;
+      brush.fillRect(x0, top, x1 - x0, deep + 2);
+      brush.strokeStyle = "rgba(255, 255, 255, 0.55)";
+      brush.lineWidth = 1;
+      for (k = 0; k < 5; k++) {
+        var ry = top + 3 + dice(i * 7 + k) * (deep - 4), rx = x0 + dice(i * 11 + k) * (x1 - x0 - 60);
+        brush.beginPath(); brush.moveTo(rx, ry); brush.lineTo(rx + 30 + 30 * dice(i + k), ry); brush.stroke();
+      }
+      brush.strokeStyle = "rgba(100, 150, 60, 0.75)";   // rows of seedlings, short green ticks
+      brush.lineWidth = 1.4;
+      for (var sy = top + 4; sy < top + deep - 1; sy += 5 + p[0] * 1.4) {
+        for (var sx = x0 + 8 + (sy % 11); sx < x1 - 6; sx += 16 + p[0] * 3) {
+          brush.beginPath(); brush.moveTo(sx, sy + 2); brush.lineTo(sx + 0.6, sy - 1 - p[0] * 0.3); brush.stroke();
+        }
+      }
+    } else if (p[3] === "mud") {                    // ploughed: wet earth, furrows along it
+      brush.fillStyle = "#8a6a48";
+      brush.fillRect(x0, top, x1 - x0, deep + 2);
+      brush.strokeStyle = "rgba(60, 40, 24, 0.45)";
+      brush.lineWidth = 1.2;
+      for (k = top + 3; k < top + deep; k += 3) { brush.beginPath(); brush.moveTo(x0, k); brush.lineTo(x1, k + 1); brush.stroke(); }
+      brush.fillStyle = "rgba(190, 215, 220, 0.5)";  // a little water lying in it
+      brush.fillRect(x0 + (x1 - x0) * 0.6, top + 2, (x1 - x0) * 0.3, deep * 0.4);
+    } else {                                        // grown rice: green, in two shades, the blades catching the light
+      brush.fillStyle = i % 2 ? "#86b852" : "#78ac48";
+      brush.fillRect(x0, top, x1 - x0, deep + 2);
+      brush.strokeStyle = i % 2 ? "#9ac862" : "#6a9c3e";
+      brush.lineWidth = 1.2;
+      for (k = x0 + 3; k < x1; k += 5 + p[0]) {
+        var h = 3 + p[0] * 0.8;
+        brush.beginPath(); brush.moveTo(k, top + deep); brush.lineTo(k + 1, top + deep - h); brush.stroke();
+      }
+    }
+  });
+  for (n = 0; n < FIELD_ROWS; n++) {                // the bunds: a line of earth and grass along each row, and across it
+    var row = fieldRow(n);
+    brush.fillStyle = "#a08058";
+    brush.fillRect(0, row[0] - 1, WIDE, 2.5 + n * 0.5);
+    brush.fillStyle = "#7f9a48";
+    brush.fillRect(0, row[0] - 2, WIDE, 1.2);
+  }
+  FIELD_PLOTS.forEach(function (p) {
+    if (p[1] === 0) { return; }
+    var row = fieldRow(p[0]);
+    brush.fillStyle = "#a08058";
+    brush.fillRect(p[1] - 1, row[0], 2 + p[0] * 0.5, row[1] + 2);
+  });
+}
+
+function maengFieldLife(t) {
+  var row = fieldRow(FIELD_PLOUGH[0]), y = row[0] + row[1] - 2, span = FIELD_PLOUGH[2] - FIELD_PLOUGH[1];
+  var lap = (t * 9) % (2 * span), going = lap < span, along = going ? lap : 2 * span - lap;
+  var bx = FIELD_PLOUGH[1] + along, face = going ? 1 : -1;
+  buffalo(bx, y, {size: 0.055, face: face, step: t * 1.4});   // the buffalo, at its slow walk
+  var fx = bx - face * 18;                          // the plough behind it, and the farmer behind the plough
+  pen.strokeStyle = "#5a3a22";
+  pen.lineWidth = 1.6;
+  pen.lineWidth = 1.1; pen.beginPath(); pen.moveTo(bx - face * 6, y - 9); pen.lineTo(fx + face * 3, y - 5); pen.lineTo(fx + face * 1, y); pen.stroke();
+  person(fx - face * 3, y + 1, cast("farmer", {size: 0.085, face: face, id: "ploughman", step: t * 1.6, turban: null, hat: false, shirt: "#2f3a5a", legs: "#2f3a5a", sarong: undefined}));   // in indigo cotton (the research)
+  [0, 1, 2].forEach(function (k) {                 // egrets after the plough, for what it turns up
+    var ex = fx - face * (14 + k * 12 + 3 * Math.sin(t + k)), peck = 0.5 + 0.5 * Math.sin(t * 2.3 + k * 2);
+    egret(ex, y + 1, t, {size: 0.086, peck: peck, face: face});   // northbirds.js
+  });
+  var cycle = t % 24;                               // and now and then one flies off, up and away over the hills
+  if (cycle > 14) {
+    var u = (cycle - 14) / 10;
+    egret(fx - face * 14 - 300 * u * face, y - 4 - 240 * u - 40 * Math.sin(u * 3), t, {size: (0.32 + 0.2 * u) / 2.8, fly: true, face: -face, seed: 3});
+  }
+  FIELD_PLANTERS.forEach(function (w, k) {          // women planting rice, bent, stepping slowly back along the row
+    var r = fieldRow(w[0]), px = w[1] - (t * 2) % 60;
+    person(px, r[0] + r[1] - 1, cast("villager", {size: 0.095, face: -1, id: "planter" + k, bend: 0.7, bun: "low", lady: true, turban: null,
+                                                  shirt: "#2f3a5a", legs: "#3a3a5a", reachA: [px + 8, r[0] + r[1] - 1], late: k * 0.3}));
   });
 }

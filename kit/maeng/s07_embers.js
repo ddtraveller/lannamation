@@ -4,6 +4,9 @@
 // jumps out of it, and the creature catches it, crunches it, and its five eyes light up. He laughs. From then on
 // he feeds it embers every day.
 var S07_LONG = 55;
+// Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
+// seconds after them): the cicadas by day at the pen; the crickets of the cold night.
+var S07_SOUND = {calls: [[0, "cicadas", 0.5, 18.5], [18.5, "crickets", 0.35, 36.5]]};
 var S07_LINES = [[2.0, 8.3, "M036"], [8.4, 12.6, "M037"], [12.8, 15.9, "M038"], [16.1, 18.22, "M039"], [19.6, 26.2, "M040"],
                  [26.3, 30.16, "M041"], [30.36, 34.5, "M042"], [34.7, 38.38, "M043"], [38.58, 43.2, "M044"]];
 var S07_FIRE = [1430, 952];
@@ -21,31 +24,12 @@ var S07_LIFE = [
             [31.6, 560, 978, "hide"], [31.8, 560, 978, "hide"]]},
   // its happy howls once the first ember is eaten and its eyes light (sounds.py, maeng-happy)
   {name: "the creature's joy", kind: "flock", layer: "back", course: [[0, -999, -999], [0.1, -999, -999]],
-   calls: [[31.9, "maeng-happy", 0.5]]}
+   calls: [[31.9, "maeng-happy", 2.8]]}
 ];
 
-function s07Grass(x, y) {                           // a handful of grass
-  pen.strokeStyle = "#5f8f3a";
-  pen.lineWidth = 2.4;
-  pen.lineCap = "round";
-  for (var k = -3; k <= 3; k++) {
-    pen.beginPath();
-    pen.moveTo(x, y);
-    pen.quadraticCurveTo(x + k * 4, y - 16, x + k * 7, y - 28 + Math.abs(k) * 3);
-    pen.stroke();
-  }
-}
-
-function s07Banana(x, y) {                          // a banana
-  pen.save();
-  pen.translate(x, y);
-  pen.beginPath();
-  pen.moveTo(-4, 0);
-  pen.quadraticCurveTo(14, 6, 26, -12);
-  pen.quadraticCurveTo(14, -2, -2, -6);
-  pen.closePath();
-  shape("#f2d24a");
-  pen.restore();
+function s07Here(point) {                          // a joint (the film's own pixels) where the camera's pen draws it
+  var p = pen.getTransform().inverse().transformPoint(new DOMPoint(point[0], point[1]));
+  return [p.x, p.y];
 }
 
 function sceneEmbers(t) {
@@ -73,18 +57,28 @@ function sceneEmbers(t) {
   if (night) {                                      // the fire, and Thukkhata by it
     campfire(pen, S07_FIRE[0], S07_FIRE[1], 0.8, t, {light: 1});
     var laughs = t > 34.7 && t < 38.0;
+    // From the second ember on he feeds it himself: a fire stick in the coals, and on each feed a flick that throws
+    // the ember up from the stick's end (owner, 2026-10-20: "have the boy flip them up with a stick"). The first,
+    // on "Pop!", jumps out of the fire by itself, as the words say.
+    var stickFrom = t > 38.6, flick = feed !== null && feed > 30 && since < 0.35 ? Math.sin(since / 0.35 * Math.PI) : 0;
+    var tip = [S07_FIRE[0] + 12 + 14 * flick, S07_FIRE[1] - 12 - 70 * flick];
     var lad = maengPerson("boy", MAENG_LAD, {id: "lad", floor: "cross", face: -1, feel: laughs ? "laughing" : t > 26.3 && t < 30.4 ? "surprised" : "happy",
-                                             reachA: feed !== null && since < 1.2 && feed > 30 ? [S07_FIRE[0] - 30, S07_FIRE[1] - 40] : undefined});
-    person(S07_FIRE[0] + 170, S07_FIRE[1] - 6, lad);
-    if (flying) { emberFlight(pen, [S07_FIRE[0] - 10, S07_FIRE[1] - 40], beast.mouth, since / 1.0, 1.2, 150, t); }
+                                             reachA: stickFrom ? [S07_FIRE[0] + 96, S07_FIRE[1] - 44 - 16 * flick] : undefined, grip: stickFrom});
+    var ladAt = person(S07_FIRE[0] + 170, S07_FIRE[1] - 6, lad);
+    if (stickFrom) { fireStick(pen, s07Here(ladAt.handA), tip, {hot: 1 - 0.5 * flick, tint: tint}); }
+    var from = feed > 30 ? [S07_FIRE[0] + 16, S07_FIRE[1] - 40] : [S07_FIRE[0] - 10, S07_FIRE[1] - 40];
+    if (flying) { emberFlight(pen, from, beast.mouth, since / 1.0, 1.2, 150, t); }
   } else {                                          // by day: Thukkhata at the pen, holding out grass, then a banana
     var holding = t > 8.4 && t < 11.8 ? "grass" : t > 12.8 && t < 15.4 ? "banana" : null;
     var hand = [MAENG_PEN[0] + 160, MAENG_PEN[1] - 120];
     var boy = maengPerson("boy", MAENG_LAD, {id: "lad", face: -1, feel: holding && away ? "concerned" : t > 16.1 ? "sad" : "neutral",
                                              reachA: holding ? hand : undefined});
-    person(MAENG_PEN[0] + 270, MAENG_PEN[1] + 4, boy);
-    if (holding === "grass") { s07Grass(hand[0] - 6, hand[1] + 4); }
-    if (holding === "banana") { s07Banana(hand[0] - 14, hand[1] + 2); }
+    var boyAt = person(MAENG_PEN[0] + 270, MAENG_PEN[1] + 4, boy);
+    // what he holds out, in his hand: a tied bundle of cut grass, then a hand of bananas (the kit's grassBundle() and
+    // bananas(); owner, 2026-10-20: "Work on the feeding of grass and the banana")
+    var held = holding ? s07Here(boyAt.handA) : null;
+    if (holding === "grass") { grassBundle(pen, held[0] - 4, held[1] - 8, 0.7, {tied: true, angle: -0.3}); }
+    if (holding === "banana") { bananas(pen, held[0] - 4, held[1] - 2, 0.7, {count: 4, angle: Math.PI + 0.35}); }
   }
   pen.restore();
   if (dark > 0) {

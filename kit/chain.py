@@ -3,6 +3,7 @@
     python chain.py series.mp4 lanna_sash.mp4 sls_intro.mp4 maeng.mp4
     python chain.py series.mp4 lanna_sash.mp4 sls_intro.mp4 maeng_silent.mp4+maeng.wav    # a film and its sound
     python chain.py series.mp4 a.mp4 b.mp4 c.mp4 --over thanks.png,893.2,899.5   # a picture laid over, seconds of the whole
+    python chain.py series.mp4 a.mp4 b.mp4 c.mp4 --fade 1,0.75   # a fade through black where a meets b
 
 Films made at different times are encoded differently, and a video joined from them without encoding it again can
 stop playing where one meets the next: so they are encoded again, once, as render.py encodes (each film 1920 x 1080
@@ -13,6 +14,10 @@ to know to do something during one of them (lanna_cartoon's fireflies, over the 
 lays a clear picture (caption.py's words, in the kit's subtitle style) over the joined film from one second of it
 to another, fading in and out over 0.4 s (or PICTURE,FROM,TO,FADE: 0, none): words added after the films were
 rendered, without rendering them again; or one frame put right, with the frame after it laid over it, unfaded.
+--fade JOIN,SECONDS fades through black where two films meet (JOIN 1 is where the first meets the second): the
+last SECONDS of the one before fade out, picture and sound, and the first SECONDS of the one after fade in (owner,
+2026-10-20: "When switching from the intro to the SLS scene fade out and back in over a second or two to give the
+scenes a transition"). The fades are taken from the films' own ends, so nothing in the joined film moves.
 """
 import json
 import subprocess
@@ -33,7 +38,8 @@ def main():
         raise SystemExit(__doc__)
     args = sys.argv[1:]
     overs = [(args[k + 1].split(",") + ["0.4"])[:4] for k, a in enumerate(args) if a == "--over"]   # picture, from, to, fade
-    args = [a for k, a in enumerate(args) if a != "--over" and (k == 0 or args[k - 1] != "--over")]
+    fades = dict((int(j), float(d)) for j, d in (args[k + 1].split(",") for k, a in enumerate(args) if a == "--fade"))   # join: seconds
+    args = [a for k, a in enumerate(args) if a not in ("--over", "--fade") and (k == 0 or args[k - 1] not in ("--over", "--fade"))]
     out, films = args[0], args[1:]
     # render.py's encoding: its picture filter, and its settings from the colours on (without its input and file)
     settings = render.ffmpeg_command(out, None)
@@ -53,9 +59,13 @@ def main():
             inputs += ["-f", "lavfi", "-t", "%.3f" % long, "-i", "anullsrc=r=44100:cl=stereo"]
             a, count = count, count + 1
         # each film's sound padded or cut to its picture's length, so the next film starts with its own picture
-        graph.append("[%d:v]fps=%d,setsar=1,%s[v%d]" % (v, render.FPS, picture, n))
-        graph.append("[%d:a]aresample=44100,aformat=channel_layouts=stereo,apad,atrim=0:%.3f[a%d]" % (a, long, n))
-        print("%6.1f s  %s%s" % (at, Path(video).name, " + " + Path(sound).name if sound else ""))
+        fin, fout = fades.get(n, 0), fades.get(n + 1, 0)   # the join before this film (n) and the one after it (n + 1)
+        vfade = (",fade=in:st=0:d=%.3f" % fin if fin else "") + (",fade=out:st=%.3f:d=%.3f" % (long - fout, fout) if fout else "")
+        afade = (",afade=in:st=0:d=%.3f" % fin if fin else "") + (",afade=out:st=%.3f:d=%.3f" % (long - fout, fout) if fout else "")
+        graph.append("[%d:v]fps=%d,setsar=1,%s%s[v%d]" % (v, render.FPS, picture, vfade, n))
+        graph.append("[%d:a]aresample=44100,aformat=channel_layouts=stereo,apad,atrim=0:%.3f%s[a%d]" % (a, long, afade, n))
+        print("%6.1f s  %s%s%s" % (at, Path(video).name, " + " + Path(sound).name if sound else "",
+                                   "  (fades in %.2f s)" % fin if fin else ""))
         at += long
     graph.append("".join("[v%d][a%d]" % (n, n) for n in range(len(films))) + "concat=n=%d:v=1:a=1[v][j]" % len(films))
     # the films' sound as it was mastered, its peaks held under -2 dB at four times the rate (so peaks between the

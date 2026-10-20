@@ -57,6 +57,8 @@ var PARTS = [
     ["lady", "lady", function () { return {bun: false, lady: true}; }, "lady: true,|bun: false"],
     ["hat", "fellow", function () { return {hat: true}; }, "hat: true"],
     ["turban", "fellow", function () { return {turban: "#c4654f"}; }, 'turban: "#c4654f"'],
+    ["wrap", "fellow", function () { return {turban: null, wrap: "#6a2a5a"}; }, 'wrap: "#6a2a5a"'],
+    ["hidden", "fellow", function () { return {turban: null, hidden: ["hair"]}; }, 'hidden: ["hair"]'],
     ["shaved", "monk", function () { return {}; }, "shaved: true"],
     ["flower", "lady", function () { return {flower: "#fff6ea"}; }, 'flower: "#fff6ea"'],
     ["garland", "lady", function () { return {}; }, "garland: true"],
@@ -72,6 +74,7 @@ var PARTS = [
     ["skin", "fellow", function () { return {skin: "#c98f62"}; }, 'skin: "#c98f62"'],
     ["eyes", "child", function () { return {eyes: 1.3}; }, "eyes: 1.3"],
     ["lips", "fellow", function () { return {lips: 1.4}; }, "lips: 1.4"],
+    ["tears", "boy", function () { return {feel: "sad", tears: 1}; }, 'tears: 1|(feel: "sad")'],
     ["north", "maiden", function () { return {north: "square"}; }, 'north: "square"'],
     ["hair", "lady", function () { return {hair: "#e8e3da"}; }, 'hair: "#e8e3da"'],
     ["beard", "fellow", function () { return {beard: "#f4f0e6", hair: "#ece7dd"}; }, 'beard: "#f4f0e6"']

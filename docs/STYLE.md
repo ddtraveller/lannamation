@@ -2593,7 +2593,9 @@ ears and five eyes was put together, in order, each step a tool anyone can run a
 8. **The films one after another**: `chain.py <out> lanna_sash.mp4 sls_intro.mp4 <tale>+<tale's sound>` encodes
    them again once, as render.py does (films made at different times are encoded differently, and a video joined
    from them without encoding can stop where they meet), and says where each starts: the page needs the card's
-   seconds for its fireflies.
+   seconds for its fireflies. `--fade 1,0.75` fades through black where the hero film meets the studio's card
+   (owner, 2026-10-20: "fade out and back in over a second or two"): the fades are cut from the two films' own
+   ends, so nothing after the join moves.
 
 ## A voice and its subtitles, aligned (2026-10-19, evening)
 
@@ -3575,6 +3577,33 @@ with a person on it, as it was asked to.
 - **Not done.** The cast still wears the kit's own faces: nobody is given the Thai face or the fat body until the
   owner picks. Clothes are still drawn by the person (`sin`, `skirt`, `sabai`, `bare`): swapping them is the
   next step, then the cast as compositions of face, hair, body and clothes.
+
+## Every figure its own, the village's sounds, the credits' bows (2026-10-20)
+
+The owner, of the tale and its hero film: "make sure each sprite on the sash is unique", "Do a round of sounds
+research ... Add some cicadas singing and crickets at night", "Make sure sounds get added to the kit", "When the
+credits roll have all the sprites used come out and take a bow when they are listed".
+
+- **The sash.** A row of the woven cloth held three to five painters, each repeated about six times along it.
+  `sabaiUnique(rows, count, shown)` (sabai.js) fills each row to the figures it holds from `sabaiPool()`: every
+  member of the cast in seven ways (walking, a wai, a wave, sitting, laughing with the Thai face, a fat body, a wai
+  with both), the band's players, the animals, birds and fish, the creatures of the myths, the flowers, fruits and
+  their trees, the lanterns and the things of a house; none twice, and none that the rows weave already (`shown`,
+  by key). sash.html: 288 figures, all different. A cloth's `fine` keeps full-size tiles for the rows the camera
+  opens on and makes the rest at half, so the 288 tiles stay in memory.
+- **The sounds.** sounds.py fetches eleven more recordings, public domain, CC0 or CC BY, each named with its maker
+  and licence: hens, the rooster (a Thai red junglefowl), the buffalo, an elephant, a horse, the blue magpie, a dog,
+  a flock, the frogs of a Chom Thong rice field, the cicadas of Chom Thong. Each take was heard through an AudioSet
+  classifier two seconds at a time and cut where it heard only the animal (the takes had speech, engines and music
+  in them); a tree cricket's trill was heard as a fire alarm and left out. Two the kit makes from numbers: a chorus
+  of field crickets (heard as "Cricket") and a mouse's squeaks. A scene's call with a fourth number is a bed, laid
+  end to end for that many seconds (maeng/feelings.py's `bed()`); each scene's are its `SNN_SOUND`, set to measured
+  levels: beds near -30 LUFS in the mix, under the music, and the creature's howls a few LU under the narrator.
+- **The bows.** As each name of the tale's cast and of the maker's list rolls up past the middle, its figure comes
+  out from the frame's edge beside it, bows (a person over a wai, a creature or a thing tipping forward), and goes
+  back as the next comes (s15_credits.js, `S15_FIGURES`). Each is a tile, as the sash's are.
+- **The maker** offers the hen and the black chickens, the cattle egret (northbirds.js `egret()`, moved out of the
+  tale's fields), the four native fish, the bamboo house, grass, bananas and the fire stick.
 
 ## The kit's own checks
 

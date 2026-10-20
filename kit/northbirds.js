@@ -1,4 +1,4 @@
-// northbirds.js - five birds of the north of Thailand, for the Lanna cartoon kit.
+// northbirds.js - six birds of the north of Thailand, for the Lanna cartoon kit.
 // Load it after the kit:
 //
 //     <script src="oldcartoon.js"></script>
@@ -13,6 +13,7 @@
 //   sunbird(x, y, t, look)      the green-tailed sunbird: perches, hovers on blurred wings, sips from a flower
 //   blueMagpie(x, y, t, look)   the red-billed blue magpie: perches and flicks its long tail; flies, beating and gliding
 //   hornbill(x, y, t, look)     the great hornbill: perches and turns its head; flies on slow, heavy wings
+//   egret(x, y, t, look)        the cattle egret: walks behind the plough and pecks; flies off on slow white wings
 //
 // Why these five (each said in its own words below, with its source): the
 // green peafowl's largest known mainland population is in Phayao; Mrs Hume's
@@ -37,6 +38,7 @@ var PEAFOWL_KEYS = {}, PHEASANT_KEYS = {}, SUNBIRD_KEYS = {}, MAGPIE_KEYS = {}, 
 ["size", "face", "hover", "sip", "feel"].forEach(function (n) { SUNBIRD_KEYS[n] = true; });
 ["size", "face", "fly", "bob", "feel"].forEach(function (n) { MAGPIE_KEYS[n] = true; });
 ["size", "face", "fly", "turn", "feel"].forEach(function (n) { HORNBILL_KEYS[n] = true; });
+var EGRET_KEYS = {size: true, face: true, peck: true, fly: true, seed: true};   // it has no feelings yet
 // Every bird also takes feel, a feeling as a person's (creatureFeel() in the kit): its eye shuts, bows or
 // slants under a lid of its head's colour; the peafowl's and the pheasant's heads are carried high or low
 // and the peafowl's bill opens. A bird's eye is small: at a film's sizes it shows most in the head and the bill.
@@ -783,4 +785,70 @@ function hornbill(x, y, t, look) {
     hornbillWing(lift, HORNBILL.black);
   }
   nbEnd(keep);
+}
+
+// ---------- the cattle egret ----------
+// The cattle egret (นกยางควาย, Bubulcus ibis), the white bird of the rice fields of the north, that walks close behind
+// a buffalo at the plough for what the plough turns up (the kit's research, the "Lanna village farming" notebook;
+// drawn for the tale's fields, 2026-10-20: "a crane should fly off from the fields", owner: "Egret"). White, a
+// yellow beak, dark legs; standing, look.peck (0 to 1) dips its head to the mud; flying (look.fly), its wings beat
+// with t, look.seed setting where in the beat. Its feet on (x, y), or the middle of its body in flight; look.face.
+function egret(x, y, t, look) {
+  look = look || {};
+  checkNames("The egret's name", look, EGRET_KEYS);
+  var face = look.face || 1, size = (look.size || 1) * 2.8;   // drawn 40 high: at size 1 it stands about 112
+  var ink = Math.min(1, 1.3 / size), white = "#fbfaf4", line = "#9a9a8e";   // its fine line: about 1.3 pixels at any size, as the kit draws
+  function outlined(fill) { pen.fillStyle = fill; pen.fill(); pen.strokeStyle = line; pen.lineWidth = ink; pen.stroke(); }
+  function beak(hx, hy, ang, long) {                 // tapered, yellow, from the head's front
+    var bx = hx + 2.4 * Math.cos(ang), by = hy + 2.4 * Math.sin(ang), c = Math.cos(ang), n = Math.sin(ang);
+    pen.beginPath(); pen.moveTo(bx - 1.1 * n, by + 1.1 * c); pen.lineTo(bx + long * c, by + long * n); pen.lineTo(bx + 1.1 * n, by - 1.1 * c); pen.closePath();
+    pen.fillStyle = "#e8b83a"; pen.fill(); pen.strokeStyle = "#b08a20"; pen.lineWidth = ink * 0.7; pen.stroke();
+  }
+  pen.save();
+  pen.translate(x, y);
+  pen.scale(size * face, size);
+  pen.lineCap = "round";
+  pen.lineJoin = "round";
+  if (look.fly) {
+    // Flying as egrets fly: the neck drawn back into the shoulders, the head forward of them, the legs trailing out
+    // behind, the broad wings beating slowly (the far one shows above the body as it rises).
+    var beat = Math.sin(t * 7 + (look.seed || 0));
+    function wing(lift, shade) {                      // a broad wing from the shoulder, its tip up (lift 1) or down (-1)
+      pen.beginPath(); pen.moveTo(4, -21);
+      pen.quadraticCurveTo(-2, -21 - 14 * lift, -12, -21 - 20 * lift);
+      pen.quadraticCurveTo(-8, -20 - 9 * lift, -6, -19);
+      pen.closePath(); outlined(shade);
+    }
+    wing(0.4 + 0.8 * beat, "#ecebe2");               // the far wing
+    pen.strokeStyle = "#5a5a38"; pen.lineWidth = Math.max(ink, 0.8);   // the legs, trailing
+    pen.beginPath(); pen.moveTo(-8, -18.5); pen.lineTo(-20, -17.5); pen.moveTo(-8, -19.5); pen.lineTo(-20, -19); pen.stroke();
+    pen.beginPath(); pen.ellipse(-1, -20, 10, 3.6, -0.05, 0, 7); outlined(white);   // the body
+    pen.beginPath(); pen.ellipse(8.5, -21.5, 3.6, 3, 0, 0, 7); outlined(white);     // the drawn-in neck and head
+    beak(9.5, -21.6, 0.08, 6);
+    pen.fillStyle = "#2a2418"; pen.beginPath(); pen.arc(10.2, -22.4, 0.55, 0, 7); pen.fill();
+    wing(-0.2 + 1.0 * beat, white);                  // the near wing
+  } else {
+    // Standing: a slim body carried tilted up at the chest, the tail low behind; the neck an S drawn in its own white
+    // inside the fine line; a short yellow beak, tapered; thin dark legs with the knee bent back. Pecking (peck 0 to
+    // 1) the neck stretches forward and down to the mud.
+    var dip = clamp(look.peck || 0);
+    pen.strokeStyle = "#5a5a38"; pen.lineWidth = Math.max(ink, 0.8);   // the legs: thigh down to the knee, then the shank
+    pen.beginPath(); pen.moveTo(-1, -15); pen.lineTo(-2.4, -8); pen.lineTo(-1.6, 0); pen.lineTo(-4.6, 0.4);
+    pen.moveTo(2, -15); pen.lineTo(1.4, -8); pen.lineTo(2.8, 0); pen.lineTo(5.8, 0.4); pen.stroke();
+    pen.beginPath();                                   // the body and the tail, one shape
+    pen.moveTo(8, -24); pen.quadraticCurveTo(9, -16, 2, -14.5); pen.quadraticCurveTo(-6, -13.5, -11, -15.5);
+    pen.lineTo(-9, -18.5); pen.quadraticCurveTo(-4, -25, 3, -25.5); pen.quadraticCurveTo(6.5, -26, 8, -24); pen.closePath();
+    outlined(white);
+    pen.strokeStyle = "rgba(150, 150, 135, 0.6)"; pen.lineWidth = ink * 0.7;   // the folded wing's edge
+    pen.beginPath(); pen.moveTo(5, -22); pen.quadraticCurveTo(-2, -18, -9, -17); pen.stroke();
+    var head = [9 + 12 * dip, -36 + 30 * dip], bend = [11 + 3 * dip, -29 + 9 * dip];
+    var lift = [bend[0] + 3 - dip, bend[1] - 4 + 7 * dip];   // the S's upper curve: it straightens as the head goes down
+    function neck() { pen.beginPath(); pen.moveTo(6.5, -24); pen.quadraticCurveTo(bend[0] - 6, bend[1] + 1, bend[0], bend[1]); pen.quadraticCurveTo(lift[0], lift[1], head[0], head[1]); }
+    neck(); pen.strokeStyle = line; pen.lineWidth = 3.2 + 2 * ink; pen.stroke();   // the neck: its line, then its white over it
+    neck(); pen.strokeStyle = white; pen.lineWidth = 3.2; pen.stroke();
+    pen.beginPath(); pen.ellipse(head[0], head[1], 3.2, 2.6, 0.2 + 1.0 * dip, 0, 7); outlined(white);
+    beak(head[0], head[1], 0.15 + 1.2 * dip, 6.5);
+    pen.fillStyle = "#2a2418"; pen.beginPath(); pen.arc(head[0] + 1 - dip, head[1] - 0.5 + 0.6 * dip, 0.6, 0, 7); pen.fill();   // the eye
+  }
+  pen.restore();
 }

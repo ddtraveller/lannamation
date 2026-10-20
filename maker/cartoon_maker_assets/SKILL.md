@@ -113,6 +113,11 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   short quick course, a key repeated to make one stop and sniff). `tokay` is
   a gecko that crawls along its course, on a wall, a trunk or the ground.
   `maeng` is the creature with four ears and five eyes of the Lanna tale.
+  `hen`, `blackrooster` and `blackhen` are the yard's chickens (the black ones
+  of the north, black from comb to feet). `egret`, the cattle egret of the rice
+  fields, pecks while it stands and flies while it moves. `gourami`, `barb`,
+  `flyingbarb` and `snakehead` are the native fish of a Lanna pond: they swim
+  along their course, so give them water to swim in.
 - Five birds of the north: `peafowl` and `pheasant` walk on the ground;
   `sunbird` hovers while it moves and perches when it stops; `magpie` (the
   red-billed blue magpie) and `hornbill` fly while they move and perch when
@@ -123,8 +128,11 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   bamboo pen), `hokham` (a hall of a Lanna palace with a peacock in its
   gable: big, set it toward the back), `gong`, `kongkhao` (the lidded rice
   basket), `krabung` (an open basket), `mortar` (a wooden mortar and pestle),
-  `talaew` (the woven bamboo star that guards a yard), `firewood` and `cave`
-  (a cave's mouth in rock).
+  `talaew` (the woven bamboo star that guards a yard), `firewood`, `cave`
+  (a cave's mouth in rock), `ruenphuk` (the bamboo house of a poor family of
+  the north, on posts, with a veranda and a ladder), `grass` (a tied bundle of
+  cut grass), `bananas` (a hand of bananas) and `firestick` (a split-bamboo
+  stick for the fire).
 - The flowers and fruits of Thailand (the vocabulary lists them: mango,
   durian, longan, orchid, marigold ...) are things that stand on the ground;
   a name ending in `Tree` (`longanTree`, `ratchaphruekTree` ...) is that tree

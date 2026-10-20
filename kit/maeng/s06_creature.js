@@ -5,11 +5,15 @@
 // for a moment; he wonders if it is his father, come back; he ties a vine round its neck, gently, and it
 // follows him home.
 var S06_LONG = 60;
+// Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
+// seconds after them): the forest's cicadas by day at the cave.
+var S06_SOUND = {calls: [[0, "cicadas", 0.6, 60]]};
 var S06_LINES = [[1.5, 6.1, "M028"], [6.2, 8.5, "M029"], [10.5, 17.28, "M030"], [17.48, 19.54, "M031"], [19.74, 22.34, "M032"],
                  [24.0, 28.6, "M033"], [32.0, 37.7, "M034"], [44.0, 48.1, "M035"]];
 var S06_NEAR = 1.55;                                // the camera's nearness to the cave: the set is seen this much larger
 var S06_SPOT = [MAENG_SLOPE_CAVE[0] - 20, MAENG_SLOPE_CAVE[1] + 14];   // where the creature stands, at the cave's mouth
 var S06_SNARE = [MAENG_SLOPE_CAVE[0] - 60, MAENG_SLOPE_CAVE[1] + 8];
+var S06_VINE = 250;                                 // how far behind him it walks home, on the vine (from where they stood, 190): the vine short, and seen
 var S06_BEHIND = [[-86, -58, 13], [-64, -82, 14], [-36, -92, 13], [-6, -96, 14], [24, -94, 13], [52, -88, 14], [80, -70, 13], [94, -40, 12]];
 var S06_BEFORE = [[-80, 10, 12], [-52, 14, 13], [74, 12, 12], [96, 4, 11]];
 
@@ -27,7 +31,7 @@ var S06_LIFE = [
    course: [[22.0, 1720, 300], [24.0, 1310, 470, "sip"], [29.0, 1310, 470], [31.5, 1680, 260]]},
   // its roar as it tugs at the snare (sounds.py, maeng-angry)
   {name: "the creature's roar", kind: "flock", layer: "back", course: [[0, -999, -999], [0.1, -999, -999]],
-   calls: [[5.3, "maeng-angry", 0.7]]}
+   calls: [[5.3, "maeng-angry", 3.7]]}
 ];
 
 function sceneCreature(t) {
@@ -50,10 +54,15 @@ function sceneCreature(t) {
   var out = between(t, 9.5, 12.5), wake = t < 17.5 ? 0 : Math.min(5, (t - 19.5) / 0.45 + 1), leave = t > 37;
   var feel = t < 22 ? "fear" : t < 30 ? "concerned" : "neutral";
   var where = [mix(S06_SPOT[0] + 40, S06_SPOT[0] - 40, out), S06_SPOT[1]], step;
-  if (leave) {                                      // following him down the path, on the vine
-    var go = amble("maengSiHuHaTa", t, S06_SPOT[0] - 40, S06_SPOT[0] - 900, 39.5, {size: 0.5, feel: "neutral"});
-    where = [go.x, maengTrail(go.x) + 8];
-    step = go.look.step;
+  var lad = maengPerson("boy", MAENG_LAD, {id: "lad"}), x;
+  if (leave) {                                      // following him down the path, on the vine, a short vine's length behind him
+    // (owner, 2026-10-20: "The vine becomes very long. Have the boy stay closer to the monster as they walk away": the
+    // two had walked off each at its own pace and the gap grew). Its steps are the ground it has covered, as amble's are.
+    var off = S06_SPOT[0] - 40, ahead = stroll(t, S06_SPOT[0] - 230, S06_SPOT[0] - 1300, 39.5, lad).x;
+    var gait = GAITS.maengSiHuHaTa, pace = gait[1] / 0.62 * gait[0] * 0.5;
+    var behind = Math.min(off, ahead + mix(190, S06_VINE, between(t, 39.5, 41.5)));
+    where = [behind, maengTrail(behind) + 8];
+    step = off - behind > 0.5 ? (off - behind) / pace : undefined;
   }
   var beast = maengSiHuHaTa(where[0], where[1], {size: 0.5, face: -1, feel: feel, wake: t < 17.5 ? 0 : wake,
                                                  step: step !== undefined ? step : (t > 9.5 && t < 12.5 ? (t - 9.5) * 1.2 : undefined)});
@@ -61,7 +70,6 @@ function sceneCreature(t) {
   snare(pen, S06_SNARE[0], S06_SNARE[1], 0.62, {sprung: 1, t: t, caught: t < 34 ? paw : null});
   s06Crowns(S06_BEFORE, size * 1.6, 9, struggle * 3);
   // Thukkhata: up the path into view, then still before it; he ties the vine, and leads it home.
-  var lad = maengPerson("boy", MAENG_LAD, {id: "lad"}), x;
   if (t < 30) {
     var come = stroll(t, S06_SPOT[0] - 700, S06_SPOT[0] - 230, 0.5, lad);
     x = come.x;

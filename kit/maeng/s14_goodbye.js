@@ -1,8 +1,12 @@
 // s14_goodbye.js - scene 14 of the film of the creature with four ears and five eyes: the goodbye (16 s).
 // The yard by the hut at dusk, its lamp lit, as the tale began: Bua-kham, who tells the kit's tales, comes in
 // and says what the tale teaches, be good, work hard and be honest, like Thukkhata; then she waves goodbye to
-// the children, as she does after the hero film (lanna_cartoon's goodbye: the same raise and wave).
+// the children. (The lanna_cartoon page's own goodbye, when the whole video ends, is a wai since 2026-10-20; this one
+// is the tale's wave, inside the picture.)
 var S14_LONG = 16;
+// Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
+// seconds after them): the crickets of the yard at dusk.
+var S14_SOUND = {calls: [[0, "crickets", 0.3, 16]]};
 var S14_LINES = [[2.0, 7.86, "M078"], [8.06, 11.78, "M079"]];
 var S14_SPEAKS = [[2.0, 7.46], [8.06, 11.38]];          // she says them herself: her mouth moves through them
 var S14_WAVE = [7.9, 8.7, 12.1, 12.9];               // the hand goes up, waves from, waves until, is down

@@ -6,6 +6,10 @@
 // palace: the trough has come all the way across the courtyard to the palace's stair; the last piece is beaten
 // in, and it is done.
 var S10_LONG = 60;
+// Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
+// seconds after them): the cicadas by day; the flock going home and a pack horse at dusk; the crickets and the frogs
+// of the night; the rooster at dawn.
+var S10_SOUND = {calls: [[0, "cicadas", 0.5, 15], [15.5, "flock", 0.3], [19, "horse", 0.35], [29, "crickets", 0.35, 21], [29, "frogs", 0.45, 21], [51, "rooster-crow", 0.28]]};
 var S10_LINES = [[1.5, 4.5, "M057"], [6.0, 10.0, "M058"], [16.2, 22.28, "M059"], [24.4, 29.68, "M060"], [31.0, 36.86, "M061"],
                  [38.0, 43.0, "M062"], [53.5, 57.0, "M063"]];
 var S10_SHOTS = [15, 29, 50];                       // day by the pen; dusk on the path; night; dawn at the palace
@@ -117,7 +121,7 @@ function s10Caravan(t) {                            // dusk: the Haw caravan com
   pen.drawImage(yard.front, 0, 0);
   pen.globalAlpha = dusk; pen.drawImage(yard.frontNight, 0, 0); pen.globalAlpha = 1;
   var tint = [MAENG_NIGHT[0], MAENG_NIGHT[1] * dusk];
-  tub(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2], {glow: 0.3, tint: tint});
+  ruenPhuk(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2] * 0.92, {glow: 0.3, tint: tint});
   maengGarden(t, MAENG_MOUNDS.length, MAENG_MOUNDS.length, tint);
   decorate(t, S10_LIFE, "back");
   kok(pen, k[0], k[1], k[2], 1, {part: "back", tint: tint});

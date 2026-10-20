@@ -19,7 +19,8 @@
 // A scene's life is a list: [{name, kind, look, course, layer}, ...]. kind is one of LIFE_KINDS (below), look
 // the animal's own look, layer "back" (drawn before the people, as a scene calls decorate(t, life, "back")) or
 // "front" (after them), and calls its sounds: [[second, sound, loudness], ...], a sound of sounds.py's by name
-// (the film's sound is mixed from them when its scenes are joined). decorate(t, life, layer) draws every one of that layer at second t.
+// (the film's sound is mixed from them when its scenes are joined); a fourth number makes it a bed, laid end to end
+// under the scene for that many seconds (cicadas, crickets, frogs: maeng/feelings.py's bed()). decorate(t, life, layer) draws every one of that layer at second t.
 var LIFE_KEYS = {};
 ["name", "kind", "look", "course", "layer", "calls"].forEach(function (name) { LIFE_KEYS[name] = true; });
 

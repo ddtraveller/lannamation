@@ -6,6 +6,10 @@
 // rooster pecking in the yard left of the hut, away from the path; a flock across the sky. The night, nothing:
 // it is the mother's. The next morning, one hen alone, and no flock: the line is a sad one.
 var S02_LONG = 55;
+// Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
+// seconds after them): the morning's rooster and hens and the cicadas; the crickets of the night; the next morning's
+// rooster.
+var S02_SOUND = {calls: [[0, "cicadas", 0.5, 24.4], [1, "rooster-crow", 0.28], [6, "hens", 0.6], [24.6, "crickets", 0.35, 14.8], [39.6, "cicadas", 0.5, 15.4], [40.5, "rooster-crow", 0.25]]};
 var S02_LINES = [[1.5, 6.2, "M005"], [6.3, 10.4, "M006"], [10.5, 13.42, "M007"], [13.62, 16.46, "M008"], [16.66, 21.46, "M009"],
                  [27.5, 33.22, "M010"], [42.0, 45.6, "M011"]];
 
@@ -14,6 +18,8 @@ var S02_LIFE = [
    course: [[0, 260, 958, "peck"], [4.0, 260, 958], [6.5, 340, 962, "peck"], [11.0, 340, 962], [13.0, 300, 956, "peck"], [24.5, 300, 956]]},
   {name: "rooster", kind: "rooster", layer: "back", look: {feel: "satiated"},
    course: [[0, 130, 950], [7.0, 210, 954, "peck"], [10.0, 210, 954], [12.0, 180, 962, "peck"], [24.5, 180, 962]]},
+  // a black-boned hen of the north (ไก่ดำ), pecking under the house (owner, 2026-10-20: "add a black chicken and rooster")
+  {name: "black hen", kind: "hen", layer: "back", look: {black: true}, course: [[0, 430, 962, "peck"], [9.0, 430, 962], [11.0, 470, 966, "peck"], [24.5, 470, 966]]},
   {name: "flock", kind: "flock", course: [[2.0, -100, 270], [13.0, 2150, 210]]},
   {name: "hen, alone", kind: "hen", layer: "back", course: [[39.5, 330, 958, "peck"], [55.0, 330, 958]]}
 ];

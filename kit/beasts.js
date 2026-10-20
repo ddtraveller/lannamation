@@ -57,7 +57,8 @@
 //   howdah     true: a seat of wood on its back, with a cushion, a rail and a high
 //              back. The seat it gives back is then on the cushion
 // and for the buffalo only:
-//   rope       true: a rope through its nose, with the end hanging
+//   rope       true: the nose rope, through the nose and looped back behind the horns, the lead
+//              tied on at the side, its end hanging
 // and for the cat and the tiger:
 //   sit        true: sitting, the fore legs straight and the tail round the feet. The
 //              elephant's too: it lies down with its legs folded, so that someone
@@ -1159,11 +1160,24 @@ function buffalo(x, y, look) {
   shape(blend(colour, "#000000", 0.12));
   pen.restore();
   horn(0, 0, "#a8a294");                            // the near horn
-  if (look.rope) {                                  // a rope through the nose, its end hanging and swinging
+  if (look.rope) {                                  // the nose rope (สนตะพาย): through the pierced nose itself, looped back
+    // behind the horns, and the lead tied on at the near side, its end hanging and swinging (the kit's research,
+    // 2026-10-20: no ring; owner: "R2 through the nose")
     pen.strokeStyle = "#c9a878";
     pen.lineWidth = 4;
     pen.beginPath();
-    pen.moveTo(206, 32);
+    pen.moveTo(202, 30);
+    pen.quadraticCurveTo(150, -6, 40, -18);         // up the face, to behind the horns
+    pen.stroke();
+    pen.strokeStyle = blend("#c9a878", "#000000", 0.25);
+    pen.lineWidth = 2;
+    pen.beginPath();
+    pen.arc(204, 34, 3.5, 0, 7);                     // where it goes through
+    pen.stroke();
+    pen.strokeStyle = "#c9a878";
+    pen.lineWidth = 4;
+    pen.beginPath();
+    pen.moveTo(200, 38);
     pen.quadraticCurveTo(170, 96, 150 + swing * 0.5, 170);
     pen.stroke();
   }

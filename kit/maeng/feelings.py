@@ -97,12 +97,31 @@ def cues_of(lines, n=None):
 
 CALLS = re.compile(r'calls: (\[\[.*?\]\])', re.S)
 JOIN = 0.05            # seconds of fade at each join of two scenes' music, so it does not click
+LAP = 0.5              # a bed laid end to end: the seconds each lap crosses into the next
+EASE = 1.5             # a bed's fade in and out
+
+
+def bed(heard, seconds):
+    """A sound laid end to end for "seconds", each lap crossing into the next over LAP, faded in and out over EASE
+    (cicadas, frogs, crickets: a call with a fourth number, how long it lies under the scene)."""
+    lap, want = int(LAP * RATE), int(seconds * RATE)
+    out = heard.copy()
+    rise = numpy.linspace(0, 1, lap)
+    while len(out) < want:
+        out[-lap:] = out[-lap:] * (1 - rise) + heard[:lap] * rise
+        out = numpy.concatenate([out, heard[lap:]])
+    out = out[:want]
+    ease = min(int(EASE * RATE), want // 2)
+    out[:ease] *= numpy.linspace(0, 1, ease)
+    out[-ease:] *= numpy.linspace(1, 0, ease)
+    return out
 
 
 def film():
     """The film's music: every scene's (sNN.wav, made first) one after another, as film.html lays the scenes, with
     the sounds their life calls (decorate.js: calls [[second, sound, loudness], ...], sounds.py's out/sounds/NAME.wav)
-    laid in at their seconds, in the middle of both ears. Into out/maeng_music/film.wav."""
+    laid in at their seconds, in the middle of both ears; a call with a fourth number is a bed, laid end to end for
+    that many seconds (bed()). Into out/maeng_music/film.wav."""
     parts, calls = [], []
     for n, (seconds, lines, name) in sorted(scenes().items()):
         music, rate = soundfile.read(str(OUT / ("s%02d.wav" % n)), always_2d=True)
@@ -113,17 +132,19 @@ def film():
         music[:, -fade:] *= numpy.linspace(1, 0, fade)
         start = sum(p.shape[1] for p in parts) / RATE
         for found in CALLS.findall((HERE / name).read_text(encoding="utf-8")):
-            calls += [[start + at, sound, loud, name] for at, sound, loud in json.loads(found)]
+            calls += [[start + c[0], c[1], c[2], name] + c[3:] for c in json.loads(found)]
         parts.append(music)
     track = numpy.concatenate(parts, axis=1)
-    for at, sound, loud, name in calls:
+    for at, sound, loud, name, *lies in calls:
         heard, rate = soundfile.read(str(HERE.parent / "out" / "sounds" / (sound + ".wav")), always_2d=True)
         assert rate == RATE, sound
         heard = heard.mean(axis=1) * loud
+        if lies:
+            heard = bed(heard, lies[0])
         first = int(at * RATE)
         heard = heard[:max(0, track.shape[1] - first)]
         track[:, first:first + len(heard)] += heard
-        print("%7.1f s  %-13s %.2f  (%s)" % (at, sound, loud, name))
+        print("%7.1f s  %-13s %.2f  (%s)%s" % (at, sound, loud, name, "  for %.1f s" % lies[0] if lies else ""))
     soundfile.write(str(OUT / "film.wav"), track.T, RATE, subtype="FLOAT")
     print("film.wav: %.1f s, %d scenes, %d calls" % (track.shape[1] / RATE, len(parts), len(calls)))
 

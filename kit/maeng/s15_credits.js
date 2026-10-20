@@ -6,6 +6,9 @@
 // voice: list Panda" (a stub until the speaker sent her own name), "You can also list Claude AI"; 2026-10-20: "Change
 // Panda's name in the credits to" her name, in English and in Thai.
 var S15_LONG = 195;
+// Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
+// seconds after them): the crickets and the frogs of the night on the mountain, under the music.
+var S15_SOUND = {calls: [[0, "crickets", 0.3, 195], [0, "frogs", 0.4, 195]]};
 var S15_LINES = [];                                  // no words are said: music alone (feelings.py, SCENE_FEEL)
 var S15_ROLL = [3.0, 174.0];                          // the credits come up from below the frame, and the last stops
 // Last, the thanks (owner, 2026-10-19: "At the end of the credits feature a wai-ing panda bear in python_piggy style
@@ -37,6 +40,13 @@ var S15_CREDITS = [
   ["gap"],
   ["head", "เสียงเล่าเรื่อง", "Narrator (AI voice)"],
   ["line", "อมรรัตน์ ใจจา · Amornrat Jaijar"],
+  ["gap"],
+  ["head", "ตัวละคร", "The cast"],
+  ["pair", ["อ้ายทุกขตะ", "Thukkhata", "a poor boy of the north"], ["ป้อ", "His father", "who asked for the snare"]],
+  ["pair", ["แม่", "His mother", "who went before"], ["แมงสี่หูห้าตา", "The creature", "four ears, five eyes"]],
+  ["pair", ["พญาพันธุมติ", "King Phanthumati", "of the city of Phanthumati"], ["เจ้านางสีมา", "Princess Sima", "his daughter"]],
+  ["pair", ["คนของพญา", "The king's man", "the gong, the news, the trough"], ["ป้อค้าฮ่อ", "The Haw traders", "a caravan of Yunnan"]],
+  ["pair", ["พญาธรรมิกราช", "The Righteous King", "Thukkhata, grown"], ["บัวคำ", "Bua-kham", "who tells the kit's tales"]],
   ["gap"]
 ];
 // Where the tale, its research, its sounds and its letters come from, as the kit records them.
@@ -50,12 +60,16 @@ var S15_SOURCES = [
   ["line", "music made from numbers by the kit, after the hero film's sueng, drum and ching"],
   ["line", "the creature's voice: made by the kit from outlines, nothing recorded"],
   ["line", "the tokay gecko: Richard Ling, public domain (Wikimedia Commons)"],
+  ["small", "the hens: alys, public domain (Wikimedia Commons) · the rooster: Wich'yanan L., CC BY 4.0 (iNaturalist)"],
+  ["small", "the buffalo: Ashwin A., CC BY 4.0 (iNaturalist) · the cicadas: Wich'yanan (Jay) Limparungpatthanakij, CC BY 4.0 (iNaturalist)"],
+  ["small", "the frogs of Chom Thong: golo.foellmer, Public Domain Mark (radio aporee ::: maps) · the flock: Gunter Königsmann, CC BY 4.0"],
+  ["small", "the pack horse: Hü., public domain (Wikimedia Commons) · the crickets and the mice: made by the kit from numbers"],
   ["gap"],
   ["head", "ข้าวของเครื่องใช้", "The things of a Lanna home"],
   ["small", "researched in 22 sources: the Lanna Traditional House Museum (Chiang Mai University),"],
   ["small", "a Ministry of Education book of basketry, studies of the Tai Yuan house"],
   ["gap"],
-  ["head", "ค้นคว้า", "Research: 162 sources in six NotebookLM notebooks"],
+  ["head", "ค้นคว้า", "Research: 241 sources in ten NotebookLM notebooks"],
   ["small", "Thai journals on ThaiJo · Chiang Mai University: Lanna Info, ACCL, Art and Culture · Chulalongkorn University"],
   ["small", "Mahidol University · Silpakorn University · Mae Fah Luang University · RMUTP · NIU SEAsite · UPSI, Malaysia"],
   ["small", "studies of Thai faces: Brunelli et al. 2017, Freas 2011, King 1997, Techataweewan et al. 2021, Rejuso-Kalbit et al."],
@@ -68,6 +82,26 @@ var S15_SOURCES = [
   ["small", "Fan Club Thailand · Chiang Mai à la carte · Hotsia · Buddha Images · Photo Dharma · Katta Shekar · Classical Theravada"],
   ["small", "chiangmai1 · Buddhist University · Araya Time · GotoKnow · Lemon8 · Yi Peng Chiang Mai · soodprod and a Lanna page on Facebook"],
   ["small", "and Wikipedia, English and Thai"],
+  ["small", "Lanna houses: Chiang Mai University's Lanna Traditional House Museum and ACCL · STOU · Saranukrom Thai · Lek-Prapai"],
+  ["small", "the Fine Arts Department's Chiang Mai library · Baan Lae Suan · SCG · Chiang Mai News · a study in ThaiJo"],
+  ["small", "Royal dress: the Fine Arts Department · ACCL · Chulalongkorn University's Art and Culture · Silpa Wattanatham"],
+  ["small", "the National Library of Thailand · ICH Thailand · OAPEN · cmocity · Thai Enquirer · Chiang Mai PAO"],
+  ["small", "Village farming: Lanna Info (Chiang Mai University) · Maejo University · HRDI · STOU · the Ministry of Culture"],
+  ["small", "AIMS Press · MDPI · Thai PBS · Read the Cloud · Krua.co · ONEP · Khon Kaen Zoo · Rakbankerd · Thai Language Hut"],
+  ["small", "Lanna fish: the Field Guide to the Northern Thai Fishes · FishBase · Maejo University · the Department of Fisheries"],
+  ["small", "the Lee Kong Chian Natural History Museum (NUS) · the Nagao Natural Environment Foundation · Saranukrom Thai · ThaiJo"],
+  ["gap"],
+  ["head", "สมุดค้นคว้า", "The research notebooks, open to read (Google asks for a sign-in)"],
+  ["small", "Lanna houses · notebooklm.google.com/notebook/113b14eb-cc08-44fd-8646-dfa8a1296ea0"],
+  ["small", "Lanna material culture · notebooklm.google.com/notebook/c4f5b066-4067-4a19-87bd-aad08cee36c8"],
+  ["small", "Lanna village farming · notebooklm.google.com/notebook/b60a376b-2ba0-4bdd-baa9-071ae38a1f4c"],
+  ["small", "Lanna royal dress · notebooklm.google.com/notebook/96884a5c-424f-4e03-abbb-a6abfea73507"],
+  ["small", "Lanna fish · notebooklm.google.com/notebook/732ac6ef-3b47-4e62-9e01-c28e5132eb56"],
+  ["small", "Lanna history · notebooklm.google.com/notebook/d4d0435c-e262-45d9-934b-9cdfcef9ddea"],
+  ["small", "Faces of the north · notebooklm.google.com/notebook/d8935530-2558-4894-891a-f1d7954eae37"],
+  ["small", "Lanna women's hair · notebooklm.google.com/notebook/918d561e-9488-47ee-8192-eacea4243181"],
+  ["small", "Lanna household items · notebooklm.google.com/notebook/51aaf1ee-6676-4e56-bf69-618a3bc7a219"],
+  ["small", "Lanna fairy tales and myths · notebooklm.google.com/notebook/fd7ed330-3806-456e-b9be-5ef912977abe"],
   ["gap"],
   ["head", "ภาพถ่ายที่ใช้ศึกษา", "Photographs studied (Wikimedia Commons)"],
   ["small", "Chainwit., Big HDV, Dennis G. Jarvis, Hałun, Iudexvivorum, Photo Dharma,"],
@@ -113,6 +147,8 @@ var S15_MAKER = [
   ["pair", ["ไก่ฟ้าหางลายขวาง", "Mrs Hume's pheasant", "Doi Chiang Dao; BirdLife"], ["นกกินปลี", "Sunbird", "the sunbird of Doi Inthanon"]],
   ["pair", ["นกขุนแผน", "Blue magpie", "Thai National Parks"], ["นกเงือก", "Hornbill", "Thai PBS World; Chiang Mai City Life"]],
   ["pair", ["แมงสี่หูห้าตา", "Maeng Si Hu Ha Ta", "the shrine's statue, Doi Khao Khwai (Commons)"], ["กองไฟ หวดนึ่งข้าว", "Fire, rice steamer", "the tale; a Lanna kitchen"]],
+  ["pair", ["แม่ไก่ ไก่ดำ", "Hen, black chickens", "the kai dam of the north; Krua.co"], ["นกยางควาย", "Cattle egret", "the egret behind the plough; Read the Cloud"]],
+  ["pair", ["ปลากระดี่ ปลาสร้อย ปลาซิว ปลาช่อน", "Native fish", "the Field Guide to the Northern Thai Fishes"], null],
   ["gap"],
   ["head", "บ้านเรือนและสถานที่", "Houses and places"],
   ["pair", ["บ้าน", "House", "the crossed gable ends of a northern house"], ["ต้นไม้ มะพร้าว กล้วย", "Trees, palm, banana", "a lotus-pond painting and a thangka"]],
@@ -122,7 +158,8 @@ var S15_MAKER = [
   ["pair", ["เสวียน", "Sawian", "the Lanna Traditional House Museum"], ["ตูบ", "Hut", "as the tales have it"]],
   ["pair", ["หอคำ", "Ho Kham", "the peacock gable of Wat Phan Tao"], ["ก่องข้าว กระบุง", "Rice basket, basket", "the House Museum; basketry"]],
   ["pair", ["ครกไม้", "Mortar", "the House Museum; Tai Yuan houses"], ["ตาแหลว", "Ta laew", "the House Museum; Tai Yuan houses"]],
-  ["pair", ["คอก ฆ้อง ฟืน ถ้ำ", "Pen, gong, firewood, cave", "made for this tale"], null],
+  ["pair", ["คอก ฆ้อง ฟืน ถ้ำ", "Pen, gong, firewood, cave", "made for this tale"], ["เรือนเครื่องผูก", "Bamboo house", "the Lanna Traditional House Museum (CMU)"]],
+  ["pair", ["หญ้ามัด กล้วยน้ำว้า", "Grass, bananas", "made for this tale"], ["ไม้เขี่ยไฟ", "Fire stick", "made for this tale"]],
   ["gap"]
 ];
 var S15_END = ["end", "ᩁᩰᩫ᩠ᨦᨿᩉ᩠ᨶᩢᨦᨩᩦᩅᩥ᩠ᨲᨧ᩶ᩣ᩻", "Slow Life Studios", "แล้วปะกั๋นใหม่เจ้า · See you again",
@@ -389,6 +426,123 @@ function s15Thanks(t) {                              // the three pandas and the
   pen.restore();
 }
 
+// ---------- the bows ----------
+// Owner, 2026-10-20: "When the credits role have all the sprites use come out and take a bow when they are listed".
+// Each name of the cast and of the maker's list has its figure (S15_FIGURES, by its English name). As its row comes
+// up the frame, the figure comes out from the frame's edge beside it (the left one's on the left, the right one's on
+// the right, each facing in), bows as the row passes the middle (a person over a wai, a creature or a thing tipping
+// forward from its feet), and goes back out as the roll goes on. Each is drawn once onto a tile (sabai.js's
+// sabaiTile(), as the woven figures are), so the roll stays quick to draw; one that moves has its cycle.
+var S15_BOW_TILE = 256;                               // a tile's side
+var S15_BOW_TALL = 150;                               // the figure's height (or width, if wider) on the screen
+var S15_BOW_EDGE = 112;                               // its middle from the frame's edge when it is out
+var S15_BOW_AT = [680, 610, 520, 450];                // the row's height on the screen: it comes out from the first to the second, goes back from the third to
+                                                      // the fourth, so one is coming out as the one before goes back (a row is 74 below the one before)
+var S15_BOW_DEEP = [610, 520];                        // and bows while the row goes from the one to the other
+var S15_TILES = {};
+
+function s15Ease(u) { u = clamp(u); return u * u * (3 - 2 * u); }
+
+function s15Who(kind, own) {                          // a person of the cast, in a wai
+  return function () { person(0, 0, maengPerson(kind, own || {}, {wai: true, feel: "happy", face: 1, id: "bow-" + kind})); };
+}
+function s15Many(list) {                              // a few side by side, each painter at its offset across
+  return function (b, u) { list.forEach(function (one) { b.save(); b.translate(one[0], 0); one[1](b, u); b.restore(); }); };
+}
+function s15Small(size, painter) {                    // a big thing drawn smaller, so its tile can hold it
+  var moving = painter.length >= 2;
+  return moving ? function (b, u) { b.save(); b.scale(size, size); painter(b, u); b.restore(); }
+                : function (b) { b.save(); b.scale(size, size); painter(b); b.restore(); };
+}
+var S15_FIGURES = {
+  // the cast
+  "Thukkhata": s15Who("boy", MAENG_LAD), "His father": s15Who("fellow", MAENG_FATHER), "His mother": s15Who("weaver", MAENG_MOTHER),
+  "The creature": function (b, u) { maengSiHuHaTa(0, 0, {size: 0.6, step: u, feel: "happy"}); },
+  "King Phanthumati": s15Who("noble", MAENG_KING), "Princess Sima": s15Who("lady", MAENG_SIMA), "The king's man": s15Who("fellow", MAENG_HERALD),
+  "The Haw traders": s15Many([[-60, function () { person(0, 0, maengTrader(0, {wai: true, face: 1, id: "bow-trader0"})); }],
+                              [60, function () { person(0, 0, maengTrader(1, {wai: true, face: 1, id: "bow-trader1"})); }]]),
+  "The Righteous King": s15Who("noble", MAENG_KING_THUKKHATA), "Bua-kham": s15Who("buakham"),
+  // the maker's people
+  "Boy": s15Who("boy"), "Girl": s15Who("girl"), "Lady": s15Who("lady"), "Young man": s15Who("fellow"), "Villager": s15Who("villager"),
+  "Chiang Mai lad": s15Who("farmer"), "Prince": s15Who("noble"), "Maiden": s15Who("maiden"), "Grandmother weaver": s15Who("weaver", {hair: "#e8e3da", age: 1}),
+  "Grandfather": s15Who("elder"), "Grandmother": s15Who("grandmother"), "Old farmer": s15Who("oldfarmer"),
+  "Grandmother to the temple": s15Who("devotee"), "Dancer": s15Who("dancer"), "Celestial": s15Who("celestial"), "Drummer": s15Who("drummer"),
+  "Scientist": s15Who("scientist"),
+  "Inta, Khammun, Bua-kham": s15Many([[-90, s15Who("inta")], [0, s15Who("khammun")], [90, s15Who("buakham")]]),
+  "Sinuan, Bunma, Dokkham": s15Many([[-80, s15Who("sinuan")], [0, s15Who("bunma")], [70, s15Who("dokkham")]]),
+  // the maker's creatures and things
+  "Dog": function (b, u) { dog(0, 0, u * 2); }, "Rooster": function (b, u) { rooster(0, 0, u * 2); },
+  "Naga": function () { naga(0, -60, {size: 0.5, heads: 5}); }, "Dragon": function () { dragon(0, -80, {size: 0.4, breath: 0.5}); },
+  "Mom": function (b, u) { mom(0, 0, {size: 0.6, step: u}); }, "Phaya Luang": function () { luang(0, 0, {size: 0.4}); },
+  "Sun": function (b, u) { sun(0, -60, u * 2); }, "Birds": function (b, u) {                         // the kit's flock is drawn in its dark ink, which the night hides: here in the credits' own
+    b.save(); birds(u * 2, 0, -60); b.globalCompositeOperation = "source-in"; b.fillStyle = S15_INK; b.fillRect(-400, -400, 800, 800); b.restore();
+  },
+  "Sky lantern": function (b) { b.save(); b.beginPath(); b.rect(-45, -190, 90, 140); b.clip(); lantern(0, -100, 70); b.restore(); },   // its glow runs past a tile: the lantern alone
+  "Lanna lantern": function () { khom(0, -300, {lit: 0, sway: 0}); },
+  "Sand stupa": function (b, u) { chediSai(b, 0, 0, 1, u * 2, 3); }, "Oil lamps": function (b, u) { pratheepRow(b, -90, 0, 4, 60, 1.2, u * 2); },
+  "Krathong": function (b, u) { krathong(b, 0, 0, 1.2, u * 2, false); }, "Ox cart": function (b, u) { oxcart(b, 0, 0, 0.8, u * Math.PI, 1); },
+  "Salo": function (b, u) { musician(0, 0, "salo", cast("fellow", {size: 1.1}), u * 2); },
+  "Sueng": function (b, u) { musician(0, 0, "sueng", cast("farmer", {size: 1.1}), u * 2); },
+  "Pi chum": function (b, u) { musician(0, 0, "pichum", cast("elder", {size: 1.1}), u * 2); },
+  "Phin phia": function (b, u) { musician(0, 0, "phinphia", cast("fellow", {size: 1.1}), u * 2); },
+  "Turning lantern": function () { khomPhat(0, -300, {lit: 0}); },
+  "Star and lotus lanterns": s15Many([[-80, function () { khomDao(0, -300, {lit: 0, sway: 0}); }], [80, function () { khomBua(0, -300, {lit: 0}); }]]),
+  "Hand lantern": function () { khomThue(0, -200, {size: 1, lit: 0}); },
+  "Tung sai mu": function (b, u) { tungSaiMu(b, 0, 0, 1.3, u * 2, 7, 7); }, "Tung yai": function (b, u) { tungYai(b, 0, 0, 0.8, u * 2); },
+  "Red truck": s15Small(0.6, function (b) { rotDaeng(b, 0, 0, 1, 0, 1, function () {}); }),
+  "Elephant": function (b, u) { elephant(0, 0, {size: 0.35, step: u}); }, "Tiger": function (b, u) { tiger(0, 0, {size: 0.6, step: u}); },
+  "Cat": function (b, u) { cat(0, 0, {size: 1, step: u}); }, "Pig": function (b, u) { pig(0, 0, {size: 0.8, step: u}); },
+  "Pack horse": function (b, u) { horse(0, 0, {size: 0.75, step: u, pack: true}); },
+  "House and field mice": s15Many([[-40, function (b, u) { mouse(0, 0, {kind: "house", size: 1.1, step: u}); }],
+                                   [40, function (b, u) { mouse(0, 0, {kind: "field", size: 1.1, step: u}); }]]),
+  "Tokay gecko": function (b, u) { gecko([[-90, 0], [90, 0]], 150 + 20 * u, {size: 1, t: u}); },
+  "Green peafowl": function (b, u) { peafowl(0, 0, u, {size: 0.6, display: 1, shiver: 0.5}); },
+  "Mrs Hume's pheasant": function (b, u) { pheasant(0, 0, u, {size: 0.9, step: u}); },
+  "Sunbird": function (b, u) { sunbird(0, 0, u / 13, {size: 2.4, hover: 1}); },
+  "Blue magpie": function (b, u) { blueMagpie(0, 0, u, {size: 0.9, fly: true}); }, "Hornbill": function (b, u) { hornbill(0, 0, u, {size: 0.7, fly: true}); },
+  "Maeng Si Hu Ha Ta": function (b, u) { maengSiHuHaTa(0, 0, {size: 0.6, step: u}); },
+  "Fire, rice steamer": s15Many([[-70, function (b, u) { campfire(b, 0, 0, 1, u * 2, {light: 0}); }], [70, function (b, u) { huad(b, 0, 0, 1, u * 2, {fire: 1}); }]]),
+  // the maker's houses and places
+  "House": function (b) { house(b, 0, 0, 0.6); },
+  "Trees, palm, banana": s15Small(0.5, s15Many([[-260, function (b) { tree(b, 0, 0, 1.1); }], [0, function (b) { palm(b, 0, 0, 400); }], [220, function (b) { banana(b, 0, 0); }]])),
+  "Temple": s15Small(0.5, function (b) { temple(b, 0, 0); }), "Giant": function (b) { yak(b, 0, 0, 1); },
+  "Water jar": function (b) { namton(b, 0, 0, 1.2); }, "Tung": s15Small(0.5, function (b) { tung(b, 0, 0, 0, true); }),
+  "Great drum": function (b) { drumCart(b, 0, 0, 0.5, 1); }, "Granary": function (b) { longKhao(b, 0, 0, 0.6); },
+  "Sawian": function (b) { sawian(b, 0, 0, 1.2); }, "Hut": function (b) { tub(b, 0, 0, 1.4); },
+  "Ho Kham": function (b) { hoKham(b, 0, 0, 0.45, {part: "back", pediment: "peacock"}); hoKham(b, 0, 0, 0.45, {part: "front", pediment: "peacock"}); },
+  "Rice basket, basket": s15Many([[-50, function (b) { kongKhao(b, 0, 0, 1.1); }], [50, function (b) { krabung(b, 0, 0, 1.1); }]]),
+  "Mortar": function (b) { mortar(b, 0, 0, 1.1); }, "Ta laew": function (b) { taLaew(b, 0, 0, 1.1); },
+  "Hen, black chickens": s15Many([[-80, function (b, u) { rooster(0, 0, u * 2, {hen: true}); }], [0, function (b, u) { rooster(0, 0, u * 2, {black: true}); }],
+                                  [80, function (b, u) { rooster(0, 0, u * 2, {black: true, hen: true}); }]]),
+  "Cattle egret": function (b, u) { egret(0, 0, u, {size: 1, peck: 0.5 + 0.5 * Math.sin(u * Math.PI * 2)}); },
+  "Native fish": s15Many([[-60, function (b, u) { nativeFish(b, 0, -60, 1.6, 1, "gourami", u); }], [60, function (b, u) { nativeFish(b, 0, -40, 1.6, 1, "barb", u); }],
+                          [-60, function (b, u) { nativeFish(b, 0, -10, 1.6, 1, "flying", u); }], [60, function (b, u) { nativeFish(b, 0, 10, 1.6, 1, "snakehead", u); }]]),
+  "Bamboo house": function (b) { ruenPhuk(b, 0, 0, 1); },
+  "Grass, bananas": s15Many([[-50, function (b) { grassBundle(b, 0, -45, 1.2, {tied: true}); }], [50, function (b) { bananas(b, 0, -18, 1.2, {count: 5, ripe: 0.8}); }]]),
+  "Fire stick": function (b) { fireStick(b, [-60, 0], [60, -12], {hot: 0.6}); },
+  "Pen, gong, firewood, cave": s15Many([[-70, function (b) { gong(b, 0, 0, 1.1); }], [70, function (b) { firewood(b, 0, -8, 1.1, {loose: true}); }]])
+};
+
+function s15Bow(row, y, t) {                          // the figures of a row whose middle is at y
+  [row[1], row[2]].forEach(function (one, side) {
+    var painter = one && S15_FIGURES[one[1]];
+    if (!painter) { return; }
+    var out = s15Ease((S15_BOW_AT[0] - y) / (S15_BOW_AT[0] - S15_BOW_AT[1])) * s15Ease((y - S15_BOW_AT[3]) / (S15_BOW_AT[2] - S15_BOW_AT[3]));
+    if (out <= 0) { return; }
+    var frames = S15_TILES[one[1]] || (S15_TILES[one[1]] = sabaiTile(painter, S15_BOW_TILE));
+    var frame = frames[Math.floor(t * 7.5) % frames.length];
+    var bow = Math.sin(Math.PI * clamp((S15_BOW_DEEP[0] - y) / (S15_BOW_DEEP[0] - S15_BOW_DEEP[1])));
+    var shown = S15_BOW_TALL / 0.86, face = side ? -1 : 1;   // the tile's picture fills 0.86 of it
+    var x = side ? WIDE - mix(-shown / 2, S15_BOW_EDGE, out) : mix(-shown / 2, S15_BOW_EDGE, out);
+    pen.save();
+    pen.translate(x, y + shown * 0.43 + 6 * bow);      // about its feet, at the foot of the tile
+    pen.rotate(face * 0.3 * bow);                      // tipping forward, toward the middle of the frame
+    pen.scale(face, 1);
+    pen.drawImage(frame, -shown / 2, -shown, shown, shown);
+    pen.restore();
+  });
+}
+
 function sceneCredits(t) {
   var mountain = maengMountain();
   if (!mountain.backNight) {                         // the mountain by night, as the yard is at night
@@ -410,7 +564,7 @@ function sceneCredits(t) {
   pen.globalAlpha = 1 - clamp((t - S15_THANKS[0]) / 0.8);   // the words go before the thanks
   for (n = 0; n < rows.length; n++) {                // the end is held with its middle in the frame's
     var middle = rows[n][0] === "end" ? y + S15_END_ROOM : y + S15_TALL[rows[n][0]] / 2;
-    if (middle > -160 && middle < 1240) { s15Row(rows[n], middle); }
+    if (middle > -160 && middle < 1240) { s15Row(rows[n], middle); if (rows[n][0] === "pair") { s15Bow(rows[n], middle, t); } }
     y += S15_TALL[rows[n][0]];
   }
   pen.restore();

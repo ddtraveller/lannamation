@@ -11,6 +11,21 @@ each new look as a sheet of candidates beside its reference (the owner picks, on
 rounds), then the kit check once, then every scene rendered once, then the sound, then the join. Research that
 waits on others starts first and runs while the drawing goes on.
 
+## Where it stands (2026-10-20, afternoon)
+
+Drawn and checked in stills: 14 (the fields), 14b (the bamboo house), 15 to 21 (tears, snare, grass and bananas, the
+fire stick, the nose rope, the head-cloth and the e-pun knot, the black chickens), 21d (the vine: the creature
+follows him 250 behind, `S06_VINE`), 22 (every figure on the sash its own: `sabaiUnique()`, 288 figures, none twice),
+23 to 25 (the pond retold, the elephants, the dancers). 21c: the credits' bows (`S15_FIGURES`, 88 figures, and a cast
+part for the tale's own people). 25b: 13 sounds into the kit (`sounds.py`: 11 recordings, each heard through an
+AudioSet classifier and cut where only the animal is heard, and the kit's own crickets and mouse), laid into every
+scene (`SNN_SOUND`, beds by feelings.py's `bed()`), each at a measured level. 26: the howls 1.5 to 6 LU under the voice
+(measured in a trial mix). The maker offers the hen, the black chickens, the egret (now `egret()` in
+northbirds.js), the four native fish, the bamboo house, grass, bananas and the fire stick. 26b: the credits name the
+sounds' makers, the four new notebooks' sources, all ten notebooks' links, 241 sources. 28: `../chain.py --fade 1,0.75`,
+to be given at the join. 28b: the page's goodbye is a wai (site commit f0076df1). Left: 27 (render every scene and
+the hero film once), then 29 (the join's checks, and up, on the owner's word).
+
 ## 0. Under way now (finish first)
 
 1. **The kit: faces, bodies, eyes** (uncommitted in `../oldcartoon.js`): the Thai face (`north: "thai"`), bodies
@@ -61,6 +76,13 @@ waits on others starts first and runs while the drawing goes on.
     should fly off from the fields." The yard's far fields (`sets.js`, `maengYardAt`): seen in most of the tale's
     scenes, so done before any of them is rendered.
 
+14b. "research traditional Lanna housing and redo the poor house like this" (a picture from Chiang Mai University's
+    Lanna Traditional House Museum: a bamboo house, เรือนไม้ไผ่): the poor family's hut drawn anew after it, on bamboo
+    posts with the space under it open, walls of flattened woven bamboo, a roof of leaf shingles (ตองตึง, dried
+    dipterocarp leaves) laid in rows, an open veranda with a bamboo railing, a ladder. Researched first (how such a
+    house is built and lived in), then a candidate beside the picture, then the hut of every scene it stands in
+    (and the room inside it, `s04`). With 14, as the yard's backdrop.
+
 ## 4. The tale's scenes, using the new parts
 
 15. "Add some tears for when the boy cries": the grief of `s04` (and the mother's night of `s02` if he cries there).
@@ -75,6 +97,21 @@ waits on others starts first and runs while the drawing goes on.
     household items, fairy tales and mythology, fish, and any made for the items above) shared so anyone with the
     link can read it, then each one's title and link in the credits' research part (`s15_credits.js`), checked
     from a browser that is not signed in. After the research of 5, so the new notebooks are in it too.
+    **Public since 2026-10-20** (all ten named for Lanna, viewers see the full notebook: chat, sources and notes):
+    houses 113b14eb, material culture c4f5b066, village farming b60a376b, royal dress 96884a5c, fish 732ac6ef, history
+    d4d0435c, faces d8935530, women's hair 918d561e, household items 51aaf1ee, fairy tales fd7ed330, each at
+    https://notebooklm.google.com/notebook/<its id>. A browser not signed in is sent to Google's sign-in first:
+    NotebookLM's "public" means anyone with a Google account, so the credits say so. The links go in with 26b.
+21c. "When the credits roll have all the sprites used come out and take a bow when they are listed": as each person,
+    creature or thing of the film comes up in the credits, it comes out beside its name and bows (a person bows or
+    gives a wai, an animal dips its head, a thing tips), then steps back as the roll goes on. After 6 to 21, so the
+    new parts (the black chickens, the crowned king and princess) are among them; the credits' length and its
+    music stay as they are.
+21d. (owner, 2026-10-20) "reshoot when the boy takes the monster away with the vine. The vine becomes very long.
+    Have the boy stay closer to the monster as they walk away." `s06` from 39.5 s: the boy walks off with stroll()
+    (1070 wide, a person's pace) and the creature with amble() (860 wide, its own pace, from another start), each on
+    its own, so the gap between them grows and the vine with it. The creature follows him instead, a short vine's
+    length behind (about 150), its steps from the ground it covers; the vine stays short and sags a little.
 
 ## 5. The hero film's scenes
 
@@ -90,10 +127,27 @@ waits on others starts first and runs while the drawing goes on.
 
 ## 6. The sound
 
+25b. "Do a round of sounds research for the video and try to find sounds for the story for animals and birds that
+    appear in it such as with the gecko. Add some cicadas singing and crickets at night." Every animal and bird the
+    film shows (the hens and rooster, the buffalo, the mice, the elephants, the horses, the magpie, the flock, the
+    pond's fish jumping, the dog, the frogs of the rice fields), each a recording with a licence that allows it
+    (public domain or CC BY, its maker credited, as the tokay's: Richard Ling), or made by the kit where none is
+    found; cicadas by day in the trees, crickets and frogs at night. Laid into each scene's sound under the voice
+    (the decorate `calls`, sounds.py), and their makers into the credits. Research first (it runs in the background,
+    with 5); the mix with 26.
+
 26. "increase the volume on the monster howls to be a little less than the voice": the creature's howls brought up
     to a little under the narrator's level (measured), in the tale's mix; no picture changes.
 
 ## 7. Render, join, check, put live
+
+26b. **The last thing before the render:** "update credits with new resources used in the video". Every new
+    source the film took from since the credits were written: the research notebooks and their sources (Lanna fish;
+    royal dress; village farming; Lanna houses, with Chiang Mai University's Lanna Traditional House Museum), the
+    sound recordings and their makers (25b), the people thanked by name in them, and the new things of the cartoon
+    maker (the black chickens, the egret, the bamboo house, grass and bananas, the fire stick), each with where it
+    was drawn from. Together with 21b (the notebooks' public links) and 21c (the bows), so the credits are written
+    once, after everything else is final, and rendered with the rest.
 
 27. Every scene of the tale and the hero film, once, from the kit as it then is (the Spark's GPU; `../scenes.py`);
     the hero film keeps its narration and timing (`SLOW` 1.15).
