@@ -3894,6 +3894,30 @@ function personDrawn(x, y, look) {
       pen.fill();
     }
   }
+  // the person being drawn: each stage below reads from it what it needs, and adds what it worked out
+  var fig = {bodyTurn: bodyTurn, build: build, chestTurn: chestTurn, dip: dip, feel: feel, figureFrame: figureFrame,
+    footHalf: footHalf, gait: gait, hairShown: hairShown, handA: handA, handB: handB, hipHalf: hipHalf,
+    hipTip: hipTip, hipX: hipX, hipY: hipY, inFront: inFront, joints: joints, lady: lady, land: land,
+    layered: layered, leggy: leggy, look: look, rig: rig, rock: rock, scene: scene, sceneFrame: sceneFrame,
+    seat: seat, sheetPen: sheetPen, shoulderTip: shoulderTip, sideOn: sideOn, size: size, slight: slight,
+    small: small, speed: speed, spot: spot, still: still, sung: sung, swayAt: swayAt, swing: swing,
+    tallness: tallness, tube: tube, turned: turned, umbrellaAt: umbrellaAt, up: up, who: who, x: x, y: y};
+  personLegs(fig);
+  personTrunk(fig);
+  personReach(fig);
+  personBody(fig);
+  personHead(fig);
+  return personArms(fig);
+}
+
+// person(), stage 3 of 8: the figure's own frame, and the legs: a thigh and a shin each, the walk, the feet, and the cloth
+// a sitter's legs are in
+function personLegs(fig) {
+  // what the stages before this one worked out
+  var figureFrame = fig.figureFrame, footHalf = fig.footHalf, gait = fig.gait, hipHalf = fig.hipHalf,
+      hipTip = fig.hipTip, hipX = fig.hipX, hipY = fig.hipY, joints = fig.joints, leggy = fig.leggy, look = fig.look,
+      rig = fig.rig, rock = fig.rock, seat = fig.seat, sideOn = fig.sideOn, size = fig.size, slight = fig.slight,
+      spot = fig.spot, swing = fig.swing, tallness = fig.tallness, tube = fig.tube, up = fig.up, x = fig.x, y = fig.y;
   pen.save();
   pen.translate(x, y - (seat ? 0 : up * 26 * size));
   pen.scale(size * (look.face || 1) / Math.sqrt(tallness), size * tallness);
@@ -3998,18 +4022,8 @@ function personDrawn(x, y, look) {
     joints["ankle" + (leg ? "A" : "B")] = spot(ankleX, ankleY);
   }
   joints.hip = spot(hipX, hipY);
-  // the person being drawn: each stage below reads from it what it needs, and adds what it worked out
-  var fig = {ankles: ankles, bodyTurn: bodyTurn, build: build, chestTurn: chestTurn, dip: dip, feel: feel,
-    figureFrame: figureFrame, hairShown: hairShown, handA: handA, handB: handB, hipTip: hipTip, hipX: hipX,
-    hipY: hipY, inFront: inFront, joints: joints, knees: knees, lady: lady, land: land, layered: layered,
-    leggy: leggy, look: look, rig: rig, rock: rock, scene: scene, sceneFrame: sceneFrame, seat: seat,
-    sheetPen: sheetPen, shoulderTip: shoulderTip, size: size, small: small, speed: speed, spot: spot, still: still,
-    sung: sung, swayAt: swayAt, tube: tube, turned: turned, umbrellaAt: umbrellaAt, up: up, who: who, x: x, y: y};
-  personTrunk(fig);
-  personReach(fig);
-  personBody(fig);
-  personHead(fig);
-  return personArms(fig);
+  // what the stages after this one use
+  Object.assign(fig, {ankles: ankles, figureFrame: figureFrame, knees: knees});
 }
 
 // person(), stage 4 of 8: at the waist: the breath, the spine, the chest's outline, the shoulders that work with the
