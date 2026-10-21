@@ -5448,6 +5448,25 @@ function personDrawn(x, y, look) {
   if (look.beard) { beard(look.beard, V, drop); }
   }                                                 // end of the kit's own head
   pen.restore();                                  // back at the waist, for the arms
+  // the person being drawn: each stage below reads from it what it needs, and adds what it worked out
+  var fig = {armBand: armBand, armOf: armOf, arms: arms, behindA: behindA, drawHand: drawHand, end: end, flex: flex,
+    ground: ground, handA: handA, handB: handB, handPose: handPose, inFront: inFront, joints: joints,
+    layered: layered, look: look, poseA: poseA, rig: rig, rootA: rootA, rootB: rootB, sabaiFront: sabaiFront,
+    sheetPen: sheetPen, sleeve: sleeve, spot: spot, trunk: trunk, umbrellaAt: umbrellaAt, who: who, wristA: wristA};
+  return personArms(fig);
+}
+
+// person(), stage 8 of 8: the arms, drawn last over the body and the head; what the hands hold; her layer put over the
+// parasol; and the usual pen again
+function personArms(fig) {
+  // what the stages before this one worked out
+  var armBand = fig.armBand, armOf = fig.armOf, arms = fig.arms, behindA = fig.behindA, drawHand = fig.drawHand,
+      end = fig.end, flex = fig.flex, ground = fig.ground, handA = fig.handA, handB = fig.handB,
+      handPose = fig.handPose, inFront = fig.inFront, joints = fig.joints, layered = fig.layered, look = fig.look,
+      poseA = fig.poseA, rig = fig.rig, rootA = fig.rootA, rootB = fig.rootB, sabaiFront = fig.sabaiFront,
+      sheetPen = fig.sheetPen, sleeve = fig.sleeve, spot = fig.spot, trunk = fig.trunk, umbrellaAt = fig.umbrellaAt,
+      who = fig.who, wristA = fig.wristA;
+  var poseB, wristB;   // declared with the arms worked out, first given a value here
   LINE = STYLE.line * FINE;                         // and the body's pen again
   // The arms are drawn last, over the body and the head (owner, 2026-10-11),
   // so an arm that crosses the chest, or a hand raised before the face, as a
