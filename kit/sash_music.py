@@ -27,7 +27,7 @@ from scipy.signal import butter, fftconvolve, sosfilt
 RATE = 44100
 BEAT = 0.5                   # sash.html uses the same number
 SILENCE = 3.0                # seconds before the first note
-BEATS = 158                  # 79 seconds of music: the film is 82 s
+BEATS = 164                  # 82 seconds of music: the film is 85 s (the pond 3 s longer, 2026-10-21)
 TUNE_NOTES = [220.0, 261.63, 293.66, 329.63, 392.0, 440.0, 523.25]
 CHORDS = [[110.0, 164.81, 220.0, 261.63],
           [87.31, 174.61, 220.0, 261.63],
