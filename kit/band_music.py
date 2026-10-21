@@ -1,36 +1,60 @@
-"""village_music.py - a Thai-style tune for village.html, saved as village.wav.
+"""band_music.py - a Thai-style tune for a film of the kit, saved as the film's .wav.
 
-    python village_music.py
+    python band_music.py lanna       # lanna.html's tune  -> lanna.wav    (lanna_sing.py adds the voice)
+    python band_music.py village     # village.html's tune -> village.wav  (village_sing.py adds the voice)
 
 The instruments of a small Thai band, each made from sine waves: a ranat
 (a wooden xylophone) plays the tune, small cymbals (ching) keep the time,
-a drum marks the beat, and a low string holds the chord. The tune is written
-out by hand below, one letter for one beat. village_sing.py adds the voice.
+a drum marks the beat, and a low string holds the chord. Each film's tune is
+written out by hand below, one letter for one beat, with the chord of each
+bar; the band is the same for every film. (Until 2026-10-21 each film had a
+copy of this file of its own, lanna_music.py and village_music.py; the
+sound of each is byte for byte what its copy made.)
 """
+import sys
 import wave
 
 import numpy
 
 RATE = 44100                 # samples in one second of sound
-BEAT = 0.5                   # seconds; village.html uses the same number
+BEAT = 0.5                   # seconds; the films' pages use the same number
 # Five notes only, as in much Thai folk music: G A B D E, low and then high.
-# In TUNE they are written C D E G A, the letters a beginner knows, and a
+# In a tune they are written C D E G A, the letters a beginner knows, and a
 # small letter is the same note one step of the scale higher than the top.
 NOTES = {"C": 196.0, "D": 220.0, "E": 246.94, "G": 293.66, "A": 329.63, "c": 392.0}
-# One bar is four beats. A letter is a note, a dash is a rest.
-TUNE = ("CDEG AGEG "         # the band plays alone
-        "EGAG EDC- "         # the rooster crows, the sun is up
-        "E-GG AcAG "         # beat the long drum, walk to the temple
-        "E-GG AcAG "         # (again)
-        "EDC- DECD "         # ... pound by pound,
-        "EGAG EDcA "         # the herbal medicine. It's done!
-        "cAAG EC-C "         # it's done, it's done
-        "DEEG AccA "         # lanterns rise to the sky, good night
-        "GEDC ----")
 # one chord for each bar: its low note, and the two notes played above it
 CHORDS = {"G": (98.0, [196.0, 293.66]), "C": (130.81, [196.0, 329.63]),
           "D": (146.83, [220.0, 293.66])}
-BARS = "GG GG GC GC GG GC GG CG GG"
+# Each film's tune: one bar is four beats, a letter is a note, a dash is a rest;
+# and "bars", the chord of each bar.
+SONGS = {
+    "lanna": {"tune": ("CDEG AGEG "         # the band plays alone, under the stars
+                       "EGAG EDC- "         # three friends come to the house
+                       "GAcA GEDC "         # the door opens, the big sister comes out
+                       "EGAc AGEG "         # let's go out and play
+                       "E-GG AcAG "         # skip the rope, kick the takraw
+                       "E-GG AcAG "         # (again, for the games)
+                       "EDC- DECD "         # walk on coconut shells, play hopscotch
+                       "EGAG EDcA "         # fly a kite, spin a top
+                       "cAAG EC-C "         # the whole lane dances
+                       "DEEG AccA "         # (the dance goes on)
+                       "GEDC EGAc "         # at night, lanterns and lights
+                       "EGAc AGEG "         # let's go out and play
+                       "cAcA GEC- "         # what fun, what fun
+                       "GAGE DC-- "         # the end
+                       "C--- ----"),
+              "bars": "GG GG GC GC GG GC GG CG GG GC GG GC GC GG CC"},
+    "village": {"tune": ("CDEG AGEG "         # the band plays alone
+                         "EGAG EDC- "         # the rooster crows, the sun is up
+                         "E-GG AcAG "         # beat the long drum, walk to the temple
+                         "E-GG AcAG "         # (again)
+                         "EDC- DECD "         # ... pound by pound,
+                         "EGAG EDcA "         # the herbal medicine. It's done!
+                         "cAAG EC-C "         # it's done, it's done
+                         "DEEG AccA "         # lanterns rise to the sky, good night
+                         "GEDC ----"),
+                "bars": "GG GG GC GC GG GC GG CG GG"},
+}
 
 
 def tone(frequency, seconds):
@@ -74,9 +98,9 @@ def add(track, sound, at_second):
     track[start:end] += sound[:end - start]
 
 
-def compose():
-    tune = TUNE.replace(" ", "")
-    bars = BARS.replace(" ", "")
+def compose(song):
+    tune = SONGS[song]["tune"].replace(" ", "")
+    bars = SONGS[song]["bars"].replace(" ", "")
     noise = numpy.random.RandomState(7)          # the same hiss every time
     track = numpy.zeros(int(len(tune) * BEAT * RATE))
     for beat in range(len(tune)):
@@ -109,10 +133,13 @@ def save(track, name):
 
 
 def main():
-    track = compose()
-    save(track, "village.wav")
-    print("village.wav: %.1f seconds, %d beats of %.1f seconds"
-          % (len(track) / RATE, len(track) / RATE / BEAT, BEAT))
+    if len(sys.argv) != 2 or sys.argv[1] not in SONGS:
+        sys.exit(__doc__)
+    song = sys.argv[1]
+    track = compose(song)
+    save(track, song + ".wav")
+    print("%s.wav: %.1f seconds, %d beats of %.1f seconds"
+          % (song, len(track) / RATE, len(track) / RATE / BEAT, BEAT))
 
 
 if __name__ == "__main__":

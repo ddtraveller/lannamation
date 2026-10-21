@@ -1,6 +1,6 @@
 """village_sing.py - sing the Thai words over village.wav, saved as village_song.wav.
 
-    python village_music.py
+    python band_music.py village
     python village_sing.py
 
 No singer is recorded, and no music model is used. A Thai computer voice
@@ -18,12 +18,12 @@ import edge_tts
 import librosa
 import numpy
 
-from village_music import BEAT, NOTES, RATE, add, save
+from band_music import BEAT, NOTES, RATE, add, save
 
 VOICE = "th-TH-PremwadeeNeural"
 SPOKEN = Path("spoken")      # each syllable is asked for once, and kept here
 # Where each line begins (in beats), its syllables, and the note for each.
-# The notes are the tune of village_music.py: the band and the voice agree.
+# The notes are the tune of band_music.py's village: the band and the voice agree.
 LINES = [
     (8, "ไก่ ขัน แล้ว ตะ วัน ขึ้น ฟ้า", "E G A G E D C"),
     (18, "ตี กลอง ยาว เดิน ไป วัด", "G G A c A G"),

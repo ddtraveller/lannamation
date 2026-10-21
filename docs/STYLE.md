@@ -121,8 +121,8 @@ of it, each a second behind the other.
 | `northfaces.html` | the six people with faces of the north (2026-10-18): each face large, then all six at their own size beside the kit's lady and fellow; three-quarter from 0 s, full face from 4 s, from profile round to full face from 8 s, four feelings from 12 s (see "Faces of the north, from a photograph") |
 | `floor.html`, `checks/floor_check.py` | the sheet for sitting on the floor (legs to one side, cross-legged, in trousers and in cloth), and the check that draws every frame of it and measures how far each seat, knee and neck travels |
 | `together.html`, `checks/reach_check.py` | the sheet for hands that go to a place (two children holding hands, a wai, a wrist that follows a lotus), and the check that draws every frame of it and measures how far each wrist is from its point |
-| `lanna_music.py`, `lanna_sing.py` | the pattern for a song: `TUNE` one letter a beat in the band's file, and the lines of the song in the film's own page, as `CUES`; the singer's file reads them from the page (see "One list for the song"). Copy these two for a new film |
-| `village_music.py`, `village_sing.py` | the first film's song, the older way: `LINES` `[beat, syllables, notes]` in the Python and the same lines a second time in the page |
+| `band_music.py lanna`, `lanna_sing.py` | the pattern for a song: the tune one letter a beat in the band's file (its `SONGS`), and the lines of the song in the film's own page, as `CUES`; the singer's file reads them from the page (see "One list for the song"). Copy these two for a new film |
+| `band_music.py village`, `village_sing.py` | the first film's song, the older way: `LINES` `[beat, syllables, notes]` in the Python and the same lines a second time in the page |
 | `village.html` | the first film: scenes, a song's syllables for the mouths, words for the subtitles |
 | `model.html` | the model sheet, where the character model is judged on its own: the lady walking in place and dancing (the tracked dance), her head at 4.4 times, the rest of the cast in a row, on a plain ground with no lens |
 
@@ -294,13 +294,13 @@ The band and the singer are two Python files, and the film is cut to their beat,
 because we wrote it.
 
 ```
-python village_music.py      # the band: ranat, ching, drum, low string  -> village.wav
+python band_music.py village # the band: ranat, ching, drum, low string  -> village.wav
 python village_sing.py       # the words, tuned to the tune              -> village_song.wav
 python render.py village.html village.mp4 --audio village_song.wav
 ```
 
-- `village_music.py`: `BEAT` seconds a beat (the same number as in the film's page), five notes
-  (`NOTES`), and `TUNE`, one letter for one beat, a dash for a rest.
+- `band_music.py`: `BEAT` seconds a beat (the same number as in the film's page), five notes
+  (`NOTES`), and each film's tune in `SONGS`, one letter for one beat, a dash for a rest.
 - `village_sing.py`: `LINES` is a list of (the beat a line begins on, its syllables, a note for
   each). A Thai voice (edge-tts, `th-TH-PremwadeeNeural`, needs the internet) says each syllable
   once into `spoken/`; `librosa.pyin` finds the pitch it was said at; `pitch_shift` moves it to the

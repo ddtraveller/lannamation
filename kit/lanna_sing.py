@@ -1,6 +1,6 @@
 """lanna_sing.py - sing the Thai words over lanna.wav, saved as lanna_song.wav.
 
-    python lanna_music.py
+    python band_music.py lanna
     python lanna_sing.py
 
 No singer is recorded, and no music model is used. A Thai computer voice
@@ -25,7 +25,7 @@ import librosa
 import numpy
 from playwright.sync_api import sync_playwright
 
-from lanna_music import BEAT, NOTES, RATE, TUNE, add, save
+from band_music import BEAT, NOTES, RATE, SONGS, add, save
 from singer import sing
 
 VOICE = "th-TH-PremwadeeNeural"
@@ -50,7 +50,7 @@ def cues_of(page_file):
 
 def note_on(beat):
     """the note the tune plays on a beat, or the last one before a rest"""
-    letters = TUNE.replace(" ", "")
+    letters = SONGS["lanna"]["tune"].replace(" ", "")
     while beat > 0 and letters[beat] == "-":
         beat -= 1
     return NOTES[letters[beat]] if letters[beat] != "-" else NOTES["C"]

@@ -23,7 +23,7 @@ import numpy
 
 import lanna_sing
 import singer
-from lanna_music import BEAT, RATE, add, save
+from band_music import BEAT, RATE, add, save
 
 
 def sung_old(syllable, frequency):
