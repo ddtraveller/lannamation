@@ -462,7 +462,11 @@ var FACES = [
   {north: "soft", skin: "#f6e2d0", eyes: 1.05, lips: 0.9}, {north: "square", skin: "#e6bd95", eyes: 1.08},
   {north: "broad", skin: "#f0c9a0", eyes: 0.95, lips: 0.95}, {north: "full", skin: "#d4a070", lips: 1.2},
   {north: "thai", skin: "#f1d0ae", eyes: 1.08}, {north: "round", skin: "#c99668", lips: 0.95},
-  {north: "soft", skin: "#d6a272", eyes: 0.9, lips: 1.15}, {north: "square", skin: "#f4d6b8", eyes: 0.95, lips: 1.2}
+  {north: "soft", skin: "#d6a272", eyes: 0.9, lips: 1.15}, {north: "square", skin: "#f4d6b8", eyes: 0.95, lips: 1.2},
+  // the man at the pond: the broad face (4) looked strange on him (owner, 2026-10-21: "change the face of the man by the
+  // pond. His face looks strange to me"; of four drawn, the Thai face); the old pi chum player darker (owner: "one of
+  // the old musicians is very pale. Give him darker skin"; he had 8)
+  {north: "thai", skin: "#c48a58"}, {north: "thai", skin: "#a87048", eyes: 0.95, lips: 1.05}
 ];
 function FACE(n) { return FACES[n % FACES.length]; }
 
@@ -797,7 +801,7 @@ function scenePond(t) {                 // 35-50: the pond: lotus, fish, a maide
   person(300, 1000, cast("maiden", Object.assign({floor: true, late: 0, spring: 0.4}, her, hands, HAIR_OF.maiden, FACE(3))));
   var his = t < POND_SEEN || t >= POND_CALM ? "happy" : t < POND_FLAG ? "surprised" : "angry";
   var fellow = stroll(t, 1600, 1330, 0, cast("fellow", Object.assign({stride: 0.8, late: 0.25, spring: 0.4, feel: his,
-                                                        at: t >= POND_SEEN && t < POND_CALM ? sky : [300, 800]}, FACE(4))));   // he stops short of the water's edge
+                                                        at: t >= POND_SEEN && t < POND_CALM ? sky : [300, 800]}, FACE(16))));   // he stops short of the water's edge
   person(fellow.x, 990, fellow.look);
   blossom(pen, 1300 + Math.sin(t) * 10, 700 + t * 20, 10, "#ee7f9c");
   pen.restore();
@@ -1161,7 +1165,7 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
   drumCart(pen, 110, 988, 0.75, 1);       // the temple's great drum on its cart (pieces.js), brought out for the night, beside the drummer
   // More dancers, a step behind the three and a little smaller, each in her own colours and a beat apart (owner,
   // 2026-10-20: "Add a few more dancers to the night scene")
-  [[560, "#c8452f", "#2a1a1a", 0.15, 1], [890, "#2a6a8a", "#1f2a3a", 0.4, -1], [1230, "#e0b23a", "#5a1e2a", 0.65, 1]].forEach(function (d, k) {
+  [[560, "#c8452f", "#2a1a1a", 0.15, 1], [890, "#2a6a8a", "#1f2a3a", 0.4, -1], [1230, "#b8457a", "#5a1e2a", 0.65, 1]].forEach(function (d, k) {   // the third pink, not the gold of the celestial before her (owner, 2026-10-21)
     person(d[0], 962, cast("dancer", Object.assign({size: 0.86, late: d[3], spring: 0.7, smile: 1, dance: true, face: d[4], shirt: d[1], legs: d[2],
                                      id: "night-dancer" + k, at: [720, 520],
                                      handA: [64 + Math.sin(t * 3 + k) * 18, -126 - hop(t, d[3]) * 26], handB: [-56, -104 + Math.cos(t * 3 + k) * 18]}, FACE(k))));
@@ -1185,7 +1189,7 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
   // pi chum, the salo (its bow across the piper's empty lap), the sueng (its neck behind the next player) and the
   // phin phia, as far right as the words under the picture allow.
   [["pichum", "elder", 1420, 0.31], ["salo", "fellow", 1570, 0], ["sueng", "farmer", 1715, 0.13], ["phinphia", "fellow", 1850, 0.07]].forEach(function (b, k) {
-    musician(b[2], 1005, b[0], cast(b[1], Object.assign({size: 1.0, face: -1, smile: 1, id: "band-" + b[0]}, FACE(8 + k))), b[3]);
+    musician(b[2], 1005, b[0], cast(b[1], Object.assign({size: 1.0, face: -1, smile: 1, id: "band-" + b[0]}, FACE(k ? 8 + k : 17))), b[3]);
   });
   pen.restore();
 }
