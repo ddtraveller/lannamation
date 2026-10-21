@@ -22,8 +22,8 @@
 <script>
 // The opening card of Slow Life Studios: dawn, high over the mountains of the north. Peaks stand out of a sea of
 // mist, ridge behind ridge, gold where the low sun finds them; mist drifts in the valleys below. In the air, at our
-// height, birds glide by on long rolling curves, unhurried: egrets, some so far off they are flecks, a blue magpie,
-// a hong on the wing; far off, Phaya Luang, a flock, and birds so far away they are only a "v" each. The camera rises a little; the studio's name comes up in the Lanna script, gold, with its Thai letters
+// height, birds glide by on long rolling curves, unhurried: egrets, some so far off they are flecks, a hong on the
+// wing; far off, Phaya Luang, a blue magpie, and birds so far away they are only a "v" each. The camera rises a little; the studio's name comes up in the Lanna script, gold, with its Thai letters
 // and its English. (Owner, 2026-10-21: "Change the SLS video to be of a misty mountain scene with birds flying and
 // ... these Thai angels and other mystic beings flying around. Everything should move glide and soar effortlessly
 // and slowly as if viewing something really high up"; golden dawn; the hong, Phaya Luang, a kinnari and ordinary
@@ -45,7 +45,11 @@ var SLS_SHEET = null;
 // really far away and the v shaped super far away birds too"): each one's pace swells and eases (by a third, at its
 // own rate) and it rides long gentle waves up and down, tilting with them (slsPath). Then fewer (owner, 2026-10-21:
 // "Get rid of the near egret, the Thai angel one set of v birds, one of the golden birds and the hornbills"): the
-// nearest egret, the kinnari, the flock on the right, the smaller hong and both hornbills are gone.
+// nearest egret, the kinnari, the flock on the right, the smaller hong and both hornbills are gone; then "Get rid of
+// the white bird near the bird with blue markings and make that bird much smaller" and "Also get rid of the largest
+// set of v birds": that egret and the other flock are gone, and the magpie is far off.
+// The hong soars ("Have the golden bird just soar and glide without flapping", then "Actually have it beat it's
+// wings just two or three times"): three beats from 4 s, then it glides on.
 var SLS_FLIGHT = [
   ["egret", 420, 600, 20, 0.07, {seed: 0.4}],
   ["egret", 470, 585, 21, 0.06, {seed: 1.9}],
@@ -53,9 +57,8 @@ var SLS_FLIGHT = [
   ["egret", 1610, 628, -19, 0.06, {seed: 3.6}],
   ["luang", 260, 520, 24, 0.22, {}],
   ["egret", 240, 660, 30, 0.16, {seed: 1.2}],
-  ["magpie", 1320, 360, 30, 0.5, {}],
-  ["egret", 1500, 440, 28, 0.42, {seed: 4.1}],
-  ["hong", 640, 650, 40, 0.75, {seed: 4.4}]
+  ["magpie", 1320, 360, 30, 0.2, {}],
+  ["hong", 640, 650, 40, 0.75, {seed: 4.4, soar: true, beats: [4, 3]}]
 ];
 
 function slsRidge(base, tall, shape) {               // a ridge of hills: its height at every x
@@ -210,9 +213,8 @@ function sceneSLS(t) {
   pen.fillStyle = under;
   pen.fillRect(-100, 860, WIDE + 200, 300);
   slsFarBirds(t);                                    // the birds so far off they are a "v" each
-  birds(t * 0.5, 300 + 18 * t, 360);                 // a flock, far off, its wingbeats slowed by the distance
   SLS_FLIGHT.forEach(function (one, k) {             // the birds, the far ones first
-    if (k === 6) {
+    if (k === 7) {
       mistDrift(pen, t, {left: -200, right: WIDE + 200, top: 640, bottom: 760, count: 5, wide: 700, drift: 7, seed: 4,
                          colour: "#f6e6d4", glow: "#ffd8a0", alpha: 0.45});   // mist between the far and the near
     }

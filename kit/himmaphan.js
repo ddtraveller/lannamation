@@ -14,7 +14,8 @@
 // 1 being about 220 from crown to the lowest point; look.seed sets each one's own time, so a flight of them do not move
 // as one; look.scarves (the thewada's and the kinnari's): two long scarves streaming behind; look.gift: what the
 // thewada holds up, "lotus" (the default) or "garland"; look.light (0 to 1, 0.6 unless told): the low sun on them,
-// gilding their edges.
+// gilding their edges; look.soar (the hong's): it soars and glides, its wings held out; look.beats, [when, how
+// many] (with soar): from "when" (seconds) it gives that many strong beats, then glides on.
 //
 // Drawn for the studio's card (owner, 2026-10-21: "Change the SLS video to be of a misty mountain scene with birds
 // flying and ... these Thai angels and other mystic beings flying around. Everything should move glide and soar
@@ -23,7 +24,7 @@
 // crown, the gilded skin, the patterned cloth whose ends flare back like flames, the pose of flight).
 
 var HIMMA_KEYS = {};
-["size", "face", "seed", "scarves", "gift", "light", "wings"].forEach(function (n) { HIMMA_KEYS[n] = true; });
+["size", "face", "seed", "scarves", "gift", "light", "wings", "soar", "beats"].forEach(function (n) { HIMMA_KEYS[n] = true; });
 
 var HIMMA = {skin: "#e8b860", skinLit: "#f8dc94", skinShade: "#c48a3c", skinLine: "#7a4e1c", gold: "#dca63c", goldLit: "#f6d47a",
              goldLine: "#6e4612", jewel: "#c8303a", jewel2: "#2e8a6a", cloth: "#a8322a", clothDeep: "#6a1c16", clothIn: "#2e6a5a",
@@ -501,28 +502,35 @@ function himmaFeather(root, tip, wide, deep, lit) {
   pen.beginPath(); pen.moveTo(root[0], root[1]); pen.quadraticCurveTo(mx + nx * 0.15, my + ny * 0.15, tip[0], tip[1]); pen.stroke();
 }
 
-// The hong's wing from its shoulder (0, 0), raised up and back: long primaries fanned from the wrist, the secondaries
-// along the trailing edge, rows of scalloped coverts over the arm, gilt along the leading edge. "lift" (-1 down to
-// 1 up) turns it about the shoulder and foreshortens it, as a side view sees a wing beat; "far" darkens it.
-function hongWing(lift, light, far) {
+// The hong's wing from its shoulder (0, 0), seen from the side as it beats: long primaries fanned from the wrist, the
+// secondaries along the trailing edge, rows of scalloped coverts over the arm, gilt along the leading edge. "up" (-1
+// down to 1 up) is where the stroke is, "rate" how fast it is rising (+) or falling (-). The arm swings about the
+// shoulder and is seen shorter as it comes toward us; the hand bends at the wrist and trails the stroke, higher than
+// the arm on the way down and lower on the way up; the primaries spread on the downstroke and close on the upstroke;
+// the secondaries always trail back (owner, 2026-10-21: "Make the golden bird's wing flap like a natural wing instead
+// of rotating"). "far" darkens it.
+function hongWing(up, rate, light, far) {
   var deep = far ? blend(HIMMA.gold, HIMMA.goldLine, 0.45) : blend(HIMMA.gold, HIMMA.goldLine, 0.2);
   var lit = far ? HIMMA.gold : blend(HIMMA.goldLit, "#fff6dc", 0.4 * light);
+  var arm = 0.2 + 0.85 * up;                         // the arm's angle above level, -0.65 to 1.05
+  var hand = arm - 0.45 * rate;                      // the hand trails the stroke
+  var spread = 0.13 + 0.07 * Math.max(0, -rate);     // the primaries part on the downstroke
   pen.save();
-  pen.rotate(-0.42 * lift);
-  pen.scale(1, 0.5 + 0.5 * Math.cos(lift * 1.1));
-  var wrist = [-52, -70];
-  for (var s = 6; s >= 0; s--) {                     // the secondaries, the inner first, hanging back from the arm
-    var u = s / 6, root = [mix(-6, wrist[0] + 6, u), mix(-4, wrist[1] + 6, u)], a = -2.75 - 0.1 * u, len = 54 - 10 * u;
-    himmaFeather(root, [root[0] + Math.cos(a) * len, root[1] + Math.sin(a) * len + 18], 13, deep, lit);
+  var wrist = [-28, -80 * Math.sin(arm)];
+  for (var s = 6; s >= 0; s--) {                     // the secondaries, the inner first, trailing back from the arm
+    var u = s / 6, root = [mix(-6, wrist[0] + 6, u), mix(-4, wrist[1] * 0.92, u)], len = 54 - 10 * u;
+    himmaFeather(root, [root[0] - len * 0.93, root[1] + len * 0.12 + 6], 13, deep, lit);
   }
   for (var f = 5; f >= 0; f--) {                     // the primaries, fanned from the wrist, broad and overlapping
-    var ang = -1.98 - f * 0.15, plen = 90 - f * 6;
-    himmaFeather([wrist[0] + f * 3, wrist[1] + f * 4], [wrist[0] + Math.cos(ang) * plen, wrist[1] + Math.sin(ang) * plen], 15, deep, lit);
+    var phi = 0.2 + f * spread, plen = 90 - f * 6, root = [wrist[0] * (1 + 0.06 * f) + f * 2, wrist[1] * (1 - 0.06 * f)];
+    himmaFeather(root, [root[0] - plen * (0.3 + 0.7 * Math.sin(phi)), root[1] - plen * Math.cos(phi) * Math.sin(hand)], 15, deep, lit);
   }
+  var lead = [wrist[0] * 0.4 + 8, wrist[1] * 0.6 - 4];   // the leading edge's bow, forward of the line to the wrist
   pen.beginPath();                                   // the coverts over the arm
   pen.moveTo(6, 4);
-  pen.bezierCurveTo(-10, -30, -34, -64, wrist[0] - 4, wrist[1] - 6);
-  pen.bezierCurveTo(wrist[0] - 14, wrist[1] + 24, -40, -14, -18, 14);
+  pen.quadraticCurveTo(lead[0], lead[1], wrist[0] - 4, wrist[1]);
+  pen.lineTo(wrist[0] - 20, wrist[1] + 4);
+  pen.quadraticCurveTo(-34, wrist[1] * 0.5 + 8, -20, 14);
   pen.closePath();
   var cg = pen.createLinearGradient(0, 0, wrist[0], wrist[1]);
   cg.addColorStop(0, deep);
@@ -534,16 +542,18 @@ function hongWing(lift, light, far) {
   pen.lineWidth = 0.8;
   for (var row = 0; row < 4; row++) {
     for (var k = 0; k < 7; k++) {
-      var v = k / 6, cx = mix(-2, wrist[0] + 4, v) - row * 7, cy = mix(2, wrist[1] + 4, v) + row * 9;
+      var v = k / 6, cx = mix(-2, wrist[0] + 2, v) - row * 6, cy = mix(2, wrist[1] + 3, v) + row * 3;
       pen.beginPath(); pen.arc(cx, cy, 5.2, 0.3, Math.PI - 0.3); pen.stroke();
     }
   }
   pen.restore();
   pen.strokeStyle = blend(HIMMA.goldLit, "#ffffff", 0.35 + 0.3 * light);   // gilt along the leading edge
   pen.lineWidth = 2.2;
-  pen.beginPath(); pen.moveTo(6, 4); pen.bezierCurveTo(-10, -30, -34, -64, wrist[0] - 4, wrist[1] - 6); pen.stroke();
+  pen.beginPath(); pen.moveTo(6, 4); pen.quadraticCurveTo(lead[0], lead[1], wrist[0] - 4, wrist[1]); pen.stroke();
   pen.restore();
 }
+
+var HONG_BEAT = 1.1;                                 // seconds of one of a soaring hong's few beats (look.beats)
 
 function hongFlight(x, y, t, look) {
   look = look || {};
@@ -552,13 +562,24 @@ function hongFlight(x, y, t, look) {
   var beat = Math.sin(t * 1.0 + seed);               // slow deep beats, now and then a glide (the wings held up)
   var glide = Math.max(0, Math.sin(t * 0.21 + seed * 1.7));
   beat = beat * (1 - 0.8 * glide) + 0.35 * glide;
+  var rate = Math.cos(t * 1.0 + seed) * (1 - 0.8 * glide);   // rising (+) or falling (-)
+  if (look.soar) {                                   // soaring (owner, 2026-10-21: "Have the golden bird just soar and
+    beat = 0.6 + 0.04 * Math.sin(t * 0.5 + seed);    // glide without flapping"): the wings held out and up in a V,
+    rate = 0.12 * Math.sin(t * 0.7 + seed);          // only the hands flexing slowly as it rides the air
+    var b = look.beats ? (t - look.beats[0]) / HONG_BEAT : -1;   // then "Actually have it beat it's wings just two
+    if (b > 0 && b < look.beats[1]) {                // or three times": each beat down first and back up through the
+      var ph = b * 2 * Math.PI, ease = Math.min(1, b * 4, (look.beats[1] - b) * 4);   // soaring pose, so none jumps
+      beat -= Math.sin(ph) * (ph < Math.PI ? 1.4 : 0.6);   // down below the belly, back up over the back
+      rate = rate * (1 - ease) - ease * Math.cos(ph);
+    }
+  }
   pen.save();
   pen.translate(x, y + 6 * Math.sin(t * 0.45 + seed) * size - 4 * beat * size);   // the body lifts a little as the wings come down
   pen.scale(size * (look.face || 1), size);
   pen.rotate(-0.04 * beat);
   pen.lineJoin = "round";
   pen.lineCap = "round";
-  pen.save(); pen.translate(-2, -10); hongWing(beat * 0.9, light, true); pen.restore();   // the far wing
+  pen.save(); pen.translate(-2, -10); hongWing(beat * 0.9, rate * 0.9, light, true); pen.restore();   // the far wing
   for (var p = 4; p >= 0; p--) {                     // the tail: five plumes curling back and up like a flame (kranok)
     himmaPlume([-62, 6], 3.25 + p * 0.17, 82 - p * 7, 11, p % 2 ? HIMMA.gold : blend(HIMMA.goldLit, HIMMA.gold, 0.3),
                -0.55 + 0.07 * Math.sin(t * 0.9 + p + seed));
@@ -631,6 +652,6 @@ function hongFlight(x, y, t, look) {
   pen.beginPath(); pen.arc(95, -58, 2.8, 0, Math.PI * 2); pen.fill();
   pen.fillStyle = HIMMA.brow;
   pen.beginPath(); pen.arc(95.5, -58, 1.5, 0, Math.PI * 2); pen.fill();
-  pen.save(); pen.translate(8, -8); hongWing(beat, light, false); pen.restore();   // the near wing
+  pen.save(); pen.translate(8, -8); hongWing(beat, rate, light, false); pen.restore();   // the near wing
   pen.restore();
 }
