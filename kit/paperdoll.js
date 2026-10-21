@@ -47,6 +47,7 @@
 
 var DOLLS = {}, DOLLS_DRAWN = 0, DOLLS_AT = -1;      // each paperdoll's chains and joints, by id
 var DOLL = null;                                    // the paperdoll person() is drawing, while it draws her
+FORGET.push(function () { DOLLS = {}; DOLLS_DRAWN = 0; DOLLS_AT = -1; });   // a render's jump: the chains start at rest (the kit's forget())
 var KIT = {arm: arm, follow: follow, ladyFace: ladyFace, manFace: manFace};   // the kit's own functions, kept to call
 
 // Draw a doll: what hangs behind her first, then the kit's person() with the
@@ -65,6 +66,14 @@ function paperdoll(style, x, y, more) {
   doll.own = own;
   doll.x = x;
   doll.y = y;
+  // Her chains are drawn where they were last moved, on the sheet: not when she was last drawn at another scale,
+  // where those points belong to another picture (a woven doll's full-size measuring, then her tile: a red end of the
+  // pu man's cloth left loose by his feet, 2026-10-21). Their points go; chainOf() makes the chains again.
+  var called = scaleNow();
+  if (!doll.called || Math.abs(Math.log(called / doll.called)) > 0.2) {
+    Object.keys(doll.chains).forEach(function (name) { doll.chains[name].points = null; });
+  }
+  doll.called = called;
   if (doll.scale && style.behind) {
     pen.save();
     pen.setTransform(1, 0, 0, 1, 0, 0);
@@ -189,7 +198,14 @@ function limit(angle, middle, most) {
 }
 
 function chainOf(doll, name, count, gap, bend, sink, keep) {
-  return doll.chains[name] || (doll.chains[name] = {count: count, gap: gap, bend: bend, sink: sink, keep: keep, points: null});
+  var chain = doll.chains[name];
+  // A chain made at another scale is made again: the gap between its points is in the sheet's pixels. A doll woven
+  // into the sabai is drawn once at full size to be measured (sabaiTile) and then small in its tile, and kept the
+  // full-size chain there, five times too long for her (2026-10-21). The film's slow push-in (6% at the most) keeps it.
+  if (!chain || Math.abs(Math.log(gap / chain.gap)) > 0.2) {
+    chain = doll.chains[name] = {count: count, gap: gap, bend: bend, sink: sink, keep: keep, points: null};
+  }
+  return chain;
 }
 
 // One frame of a chain whose first point is "lead". Every other point keeps

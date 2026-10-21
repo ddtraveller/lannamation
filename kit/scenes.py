@@ -27,10 +27,12 @@ it has no seam where the scenes meet.
 With --jobs, that many scenes are rendered at once, each by render.py in a
 process and a Chrome of its own: about that many times sooner, while the
 computer has the cores and the memory (a Chrome drawing the hero film holds
-1 to 2 GB). Each scene is rendered as it is alone. (A scene that starts
-part-way into a film does not come out bit for bit the same from one render
-to the next, alone or not: village.html's second scene, twice, differed in
-225 of 300 frames, at 42 dB or more. --jobs adds nothing to that.)
+1 to 2 GB). Each scene is rendered as it is alone. A render's first frame
+forgets what the page drew live while it loaded (the kit's settled() and
+forget()), so a scene comes out the same each time it is rendered, alone or
+not, but for Chrome's own drawing on the graphics card, which now and then
+puts a dozen pixels of a frame a shade apart (village.html, 2026-10-21: 5 of
+120 frames, 1 to 12 pixels each; before, 225 of 300 frames differed).
 """
 import argparse
 import concurrent.futures

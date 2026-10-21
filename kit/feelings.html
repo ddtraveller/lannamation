@@ -61,8 +61,11 @@ function lookFor(who, size, feel, id) {
 var CROWNS = {};
 function crownOf(who, size) {
   var key = who[0] + " " + size;
-  if (CROWNS[key] === undefined) {
+  if (CROWNS[key] === undefined) {                  // measured at second 0, whenever it is first asked: a person breathes and sways,
+    var was = clock;                                // and a crown measured mid-sway set the page's rows by when it was first drawn
+    clock = 0;
     CROWNS[key] = person(0, 1000, lookFor(who, size, "neutral", "measure " + key)).crown[1] - 1000;
+    clock = was;
   }
   return CROWNS[key];
 }

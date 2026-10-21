@@ -9380,9 +9380,31 @@ function cutFade(dark) {
 // computer must not be made to paint sixty frames for one.
 var SETTLE = 60, SETTLED_AT = null;
 
+// What the kit remembers from one frame to the next: the springs of what hangs (FOLLOWS), how each arm last bent
+// (BENDS), who was drawn n-th (DRAWN), what the eyes saw (SIGHTS); a module that remembers more puts a function
+// that forgets it in FORGET (paperdoll.js: the dolls' chains). When a render jumps the clock, settled() forgets it
+// all before the frames it paints unseen, so that they start from rest, as the numbers above assume, and not from
+// whatever the page drew live while it loaded: a render gives the same pixels every time. (2026-10-21: before, the
+// same second of village.html or fonlep.html came out differently with what had been drawn before it.)
+var FORGET = [];
+
+function forget() {
+  FOLLOWS = {};
+  BENDS = {};
+  DRAWN = 0;
+  DRAWN_AT = -1;
+  SIGHTS.whole = null;
+  FORGET.forEach(function (more) { more(); });
+}
+
+var SETTLED_RENDERING = false;                     // whether the frame before was a render's: the first one after it a jump too
+
 function settled(t, paint) {
-  var jumped = SETTLED_AT === null || t < SETTLED_AT - 1e-6 || t - SETTLED_AT > 0.1;
-  if (jumped && typeof rendering !== "undefined" && rendering) {
+  var now = typeof rendering !== "undefined" && rendering;
+  var jumped = SETTLED_AT === null || t < SETTLED_AT - 1e-6 || t - SETTLED_AT > 0.1 || !SETTLED_RENDERING;
+  SETTLED_RENDERING = now;
+  if (jumped && now) {
+    forget();
     for (var back = SETTLE; back >= 1; back--) {
       if (t - back / 30 >= 0) { paint(t - back / 30); }
     }
