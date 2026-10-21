@@ -15,7 +15,8 @@
 // as one; look.scarves (the thewada's and the kinnari's): two long scarves streaming behind; look.gift: what the
 // thewada holds up, "lotus" (the default) or "garland"; look.light (0 to 1, 0.6 unless told): the low sun on them,
 // gilding their edges; look.soar (the hong's): it soars and glides, its wings held out; look.beats, [when, how
-// many] (with soar): from "when" (seconds) it gives that many strong beats, then glides on.
+// many] (with soar): from "when" (seconds) it gives that many strong beats, then glides on; look.trail (the hong's):
+// a function of the time giving [x, y], where the film moves it, so its spine follows its rises and falls.
 //
 // Drawn for the studio's card (owner, 2026-10-21: "Change the SLS video to be of a misty mountain scene with birds
 // flying and ... these Thai angels and other mystic beings flying around. Everything should move glide and soar
@@ -24,7 +25,7 @@
 // crown, the gilded skin, the patterned cloth whose ends flare back like flames, the pose of flight).
 
 var HIMMA_KEYS = {};
-["size", "face", "seed", "scarves", "gift", "light", "wings", "soar", "beats"].forEach(function (n) { HIMMA_KEYS[n] = true; });
+["size", "face", "seed", "scarves", "gift", "light", "wings", "soar", "beats", "trail"].forEach(function (n) { HIMMA_KEYS[n] = true; });
 
 var HIMMA = {skin: "#e8b860", skinLit: "#f8dc94", skinShade: "#c48a3c", skinLine: "#7a4e1c", gold: "#dca63c", goldLit: "#f6d47a",
              goldLine: "#6e4612", jewel: "#c8303a", jewel2: "#2e8a6a", cloth: "#a8322a", clothDeep: "#6a1c16", clothIn: "#2e6a5a",
@@ -554,36 +555,103 @@ function hongWing(up, rate, light, far) {
 }
 
 var HONG_BEAT = 1.1;                                 // seconds of one of a soaring hong's few beats (look.beats)
+// The hong's spine, from the head back to the root of its tail, as the bird is drawn flying level to the right: the
+// head, four joints down the neck's S, its root at the breast, the middle of the body, the root of the tail. The neck's
+// width at each of its joints (the head's end first).
+var HONG_SPINE = [[93, -56], [82, -58], [72, -46], [67, -30], [60, -12], [46, 2], [0, 4], [-60, 6]];
+var HONG_NECK = [9, 12, 15, 18, 22, 28];
+var HONG_AIR = 60;                                   // how fast it flies through the air, drawn pixels a second
+var HONG_BEND = Math.PI / 10;                        // the most one joint turns from the one in front
 
+// The way each joint of the hong's spine faces, by the rule of procedural_animation.html, as nagaChain's: the head
+// leads, each joint turns to face the one in front, no more than HONG_BEND from it, and keeps its own gap behind it.
+// The head flies on at HONG_AIR and rises and falls as "rise" says (in drawn pixels, a function of the time). A chain
+// remembers where it has been and a film must not, so the chain is laid out straight as it was four seconds ago and
+// led from then until now, in every frame. Returns the angle each joint faces (0 is level, to the right).
+function hongChain(rise, t) {
+  var STEPS = 120, gaps = [], points = [], angles = [], n;
+  for (n = 1; n < HONG_SPINE.length; n++) {
+    gaps.push(Math.hypot(HONG_SPINE[n][0] - HONG_SPINE[n - 1][0], HONG_SPINE[n][1] - HONG_SPINE[n - 1][1]));
+  }
+  function was(ago) { return [-HONG_AIR * ago / 30, rise(t - ago / 30)]; }   // where the head was, ago thirtieths back
+  var first = was(STEPS), next = was(STEPS - 1), facing = Math.atan2(next[1] - first[1], next[0] - first[0]);
+  points.push(first);
+  angles.push(facing);
+  for (n = 1; n < HONG_SPINE.length; n++) {
+    points.push([points[n - 1][0] - Math.cos(facing) * gaps[n - 1], points[n - 1][1] - Math.sin(facing) * gaps[n - 1]]);
+    angles.push(facing);
+  }
+  for (var ago = STEPS - 1; ago >= 0; ago--) {
+    var head = was(ago);
+    angles[0] = Math.atan2(head[1] - points[0][1], head[0] - points[0][0]);   // it faces the way it flies
+    points[0] = head;
+    for (n = 1; n < HONG_SPINE.length; n++) {
+      var away = Math.atan2(points[n - 1][1] - points[n][1], points[n - 1][0] - points[n][0]) - angles[n - 1];
+      away -= Math.PI * 2 * Math.round(away / (Math.PI * 2));               // the short way round
+      angles[n] = angles[n - 1] + Math.max(-HONG_BEND, Math.min(HONG_BEND, away));
+      points[n] = [points[n - 1][0] - Math.cos(angles[n]) * gaps[n - 1], points[n - 1][1] - Math.sin(angles[n]) * gaps[n - 1]];
+    }
+  }
+  return angles;
+}
+
+// The hong flying, about the middle of its body, to the right (look.face -1 left). Its spine moves as
+// procedural_animation.html's does (owner, 2026-10-21: "Can you use the spine logic from procedural_animation on the
+// bird so it's neck and head and body move more fluidly?"): the head leads and the neck and body follow it a joint at
+// a time (hongChain), so as it rises the head tips up first, then the neck bends, then the body comes round; each
+// piece of the drawing turns with its joint, so the S of the neck is kept. The wings lift the body under a steady
+// head, so the neck flexes with every beat.
 function hongFlight(x, y, t, look) {
   look = look || {};
   checkNames("The hong's name", look, HIMMA_KEYS);
   var size = look.size || 1, seed = look.seed || 0, light = look.light === undefined ? 0.6 : look.light;
-  var beat = Math.sin(t * 1.0 + seed);               // slow deep beats, now and then a glide (the wings held up)
-  var glide = Math.max(0, Math.sin(t * 0.21 + seed * 1.7));
-  beat = beat * (1 - 0.8 * glide) + 0.35 * glide;
-  var rate = Math.cos(t * 1.0 + seed) * (1 - 0.8 * glide);   // rising (+) or falling (-)
-  if (look.soar) {                                   // soaring (owner, 2026-10-21: "Have the golden bird just soar and
-    beat = 0.6 + 0.04 * Math.sin(t * 0.5 + seed);    // glide without flapping"): the wings held out and up in a V,
-    rate = 0.12 * Math.sin(t * 0.7 + seed);          // only the hands flexing slowly as it rides the air
-    var b = look.beats ? (t - look.beats[0]) / HONG_BEAT : -1;   // then "Actually have it beat it's wings just two
-    if (b > 0 && b < look.beats[1]) {                // or three times": each beat down first and back up through the
-      var ph = b * 2 * Math.PI, ease = Math.min(1, b * 4, (look.beats[1] - b) * 4);   // soaring pose, so none jumps
-      beat -= Math.sin(ph) * (ph < Math.PI ? 1.4 : 0.6);   // down below the belly, back up over the back
-      rate = rate * (1 - ease) - ease * Math.cos(ph);
+  function beating(t) {                              // [where the wings are, how fast they rise] at second t
+    var beat = Math.sin(t * 1.0 + seed);             // slow deep beats, now and then a glide (the wings held up)
+    var glide = Math.max(0, Math.sin(t * 0.21 + seed * 1.7));
+    var rate = Math.cos(t * 1.0 + seed) * (1 - 0.8 * glide);   // rising (+) or falling (-)
+    beat = beat * (1 - 0.8 * glide) + 0.35 * glide;
+    if (look.soar) {                                 // soaring (owner, 2026-10-21: "Have the golden bird just soar and
+      beat = 0.6 + 0.04 * Math.sin(t * 0.5 + seed);  // glide without flapping"): the wings held out and up in a V,
+      rate = 0.12 * Math.sin(t * 0.7 + seed);        // only the hands flexing slowly as it rides the air
+      var b = look.beats ? (t - look.beats[0]) / HONG_BEAT : -1;   // then "Actually have it beat it's wings just two
+      if (b > 0 && b < look.beats[1]) {              // or three times": each beat down first and back up through the
+        var ph = b * 2 * Math.PI, ease = Math.min(1, b * 4, (look.beats[1] - b) * 4);   // soaring pose, so none jumps
+        beat -= Math.sin(ph) * (ph < Math.PI ? 1.4 : 0.6);   // down below the belly, back up over the back
+        rate = rate * (1 - ease) - ease * Math.cos(ph);
+      }
     }
+    return [beat, rate];
+  }
+  var wings = beating(t), beat = wings[0], rate = wings[1];
+  var trail = look.trail, now = trail ? trail(t)[1] : 0;
+  function rise(s) {                                 // the head's height at second s, drawn pixels: its slow bob, and
+    return 6 * Math.sin(s * 0.45 + seed) + (trail ? (trail(s)[1] - now) * 0.6 / size : 0);   // the film's path, eased
+  }
+  var angles = hongChain(rise, t), spine = [[HONG_SPINE[0][0], HONG_SPINE[0][1] + rise(t)]];
+  var lift = [0, 0.15, 0.35, 0.55, 0.75, 1, 1, 1];   // how much of the body's lift on the wings each joint takes
+  for (var j = 1; j < HONG_SPINE.length; j++) {      // each piece of the drawing turned by its joint's angle
+    var dx = HONG_SPINE[j][0] - HONG_SPINE[j - 1][0], dy = HONG_SPINE[j][1] - HONG_SPINE[j - 1][1], a = angles[j];
+    spine.push([spine[j - 1][0] + dx * Math.cos(a) - dy * Math.sin(a), spine[j - 1][1] + dx * Math.sin(a) + dy * Math.cos(a)]);
+  }
+  spine = spine.map(function (q, k) { return [q[0], q[1] - 4 * beat * lift[k]]; });   // the body lifts as the wings come down
+  function onJoint(k) {                              // draw from here in the drawing's own place, turned with joint k
+    pen.translate(spine[k][0], spine[k][1]);
+    pen.rotate(angles[k]);
+    pen.translate(-HONG_SPINE[k][0], -HONG_SPINE[k][1]);
   }
   pen.save();
-  pen.translate(x, y + 6 * Math.sin(t * 0.45 + seed) * size - 4 * beat * size);   // the body lifts a little as the wings come down
+  pen.translate(x, y);
   pen.scale(size * (look.face || 1), size);
-  pen.rotate(-0.04 * beat);
   pen.lineJoin = "round";
   pen.lineCap = "round";
-  pen.save(); pen.translate(-2, -10); hongWing(beat * 0.9, rate * 0.9, light, true); pen.restore();   // the far wing
-  for (var p = 4; p >= 0; p--) {                     // the tail: five plumes curling back and up like a flame (kranok)
+  pen.save(); onJoint(6); pen.translate(-2, -10); hongWing(beat * 0.9, rate * 0.9, light, true); pen.restore();   // the far wing
+  pen.save(); onJoint(7);                            // the tail, on the last joint: it comes round after the body
+  for (var p = 4; p >= 0; p--) {                     // five plumes curling back and up like a flame (kranok)
     himmaPlume([-62, 6], 3.25 + p * 0.17, 82 - p * 7, 11, p % 2 ? HIMMA.gold : blend(HIMMA.goldLit, HIMMA.gold, 0.3),
                -0.55 + 0.07 * Math.sin(t * 0.9 + p + seed));
   }
+  pen.restore();
+  pen.save(); onJoint(6);
   pen.beginPath();                                   // the body: a full breast, the back, the belly
   pen.moveTo(-66, 4);
   pen.bezierCurveTo(-46, -14, -4, -18, 30, -10);
@@ -605,29 +673,9 @@ function hongFlight(x, y, t, look) {
     }
   }
   pen.restore();
-  pen.beginPath();                                   // the neck: a long S up from the breast to the head
-  pen.moveTo(34, -10);
-  pen.bezierCurveTo(52, -16, 56, -34, 66, -52);
-  pen.bezierCurveTo(72, -62, 84, -66, 94, -60);
-  pen.lineTo(96, -50);
-  pen.bezierCurveTo(88, -52, 80, -48, 76, -36);
-  pen.bezierCurveTo(70, -16, 62, 6, 52, 12);
-  pen.closePath();
-  var ng = pen.createLinearGradient(40, 0, 90, -60);
-  ng.addColorStop(0, HIMMA.gold);
-  ng.addColorStop(1, blend(HIMMA.gold, HIMMA.goldLit, 0.4 + 0.5 * light));
-  himmaFill(ng, HIMMA.goldLine, 1.2);
-  pen.strokeStyle = HIMMA.goldLine;                  // its fine feathers, in ticks down the neck
-  pen.lineWidth = 0.7;
-  for (var n = 0; n < 7; n++) {
-    var nu = n / 7, nx = mix(56, 82, nu), ny = mix(4, -50, nu);
-    pen.beginPath(); pen.moveTo(nx - 4, ny); pen.quadraticCurveTo(nx, ny + 3, nx + 4, ny - 1); pen.stroke();
-  }
-  pen.strokeStyle = HIMMA.jewel;                     // the jewelled collar at the neck's root: red, with gold beads
-  pen.lineWidth = 3;
-  pen.beginPath(); pen.moveTo(46, -10); pen.quadraticCurveTo(56, -8, 62, 6); pen.stroke();
-  pen.fillStyle = HIMMA.goldLit;
-  [[49, -10], [55, -6], [59, 0]].forEach(function (b) { pen.beginPath(); pen.arc(b[0], b[1], 1.4, 0, Math.PI * 2); pen.fill(); });
+  pen.restore();
+  hongNeck(spine, light);
+  pen.save(); onJoint(0);
   pen.beginPath();                                   // the head
   pen.ellipse(94, -56, 10, 8.5, -0.2, 0, Math.PI * 2);
   himmaFill(blend(HIMMA.gold, HIMMA.goldLit, 0.45 + 0.4 * light), HIMMA.goldLine, 1.2);
@@ -652,6 +700,58 @@ function hongFlight(x, y, t, look) {
   pen.beginPath(); pen.arc(95, -58, 2.8, 0, Math.PI * 2); pen.fill();
   pen.fillStyle = HIMMA.brow;
   pen.beginPath(); pen.arc(95.5, -58, 1.5, 0, Math.PI * 2); pen.fill();
-  pen.save(); pen.translate(8, -8); hongWing(beat, rate, light, false); pen.restore();   // the near wing
   pen.restore();
+  pen.save(); onJoint(6); pen.translate(8, -8); hongWing(beat, rate, light, false); pen.restore();   // the near wing
+  pen.restore();
+}
+
+// The hong's neck through the first six joints of its spine (the head's end first), as wide as HONG_NECK says at
+// each: a smooth band, gold deepening down to the breast, its fine feathers in ticks, the jewelled collar at its root.
+function hongNeck(spine, light) {
+  var left = [], right = [], n, last = HONG_NECK.length - 1;
+  for (n = 0; n <= last; n++) {                      // each joint's two edges, across the way the neck runs there
+    var a = spine[Math.max(0, n - 1)], b = spine[Math.min(last, n + 1)];
+    var run = Math.atan2(b[1] - a[1], b[0] - a[0]), w = HONG_NECK[n] / 2;
+    left.push([spine[n][0] + Math.sin(run) * w, spine[n][1] - Math.cos(run) * w]);
+    right.push([spine[n][0] - Math.sin(run) * w, spine[n][1] + Math.cos(run) * w]);
+  }
+  function edge(side, from, to, step) {              // a smooth curve through one edge's points
+    for (var k = from; k !== to; k += step) {
+      var q = side[k], r = side[k + step];
+      pen.quadraticCurveTo(q[0], q[1], (q[0] + r[0]) / 2, (q[1] + r[1]) / 2);
+    }
+    pen.lineTo(side[to][0], side[to][1]);
+  }
+  pen.beginPath();
+  pen.moveTo(left[last][0], left[last][1]);
+  edge(left, last, 0, -1);                           // up the front, over the top under the head, down the back
+  pen.lineTo(right[0][0], right[0][1]);
+  edge(right, 0, last, 1);
+  pen.closePath();
+  var ng = pen.createLinearGradient(spine[last][0], spine[last][1], spine[0][0], spine[0][1]);
+  ng.addColorStop(0, HIMMA.gold);
+  ng.addColorStop(1, blend(HIMMA.gold, HIMMA.goldLit, 0.4 + 0.5 * light));
+  himmaFill(ng, HIMMA.goldLine, 1.2);
+  pen.strokeStyle = HIMMA.goldLine;                  // its fine feathers, in ticks down the neck
+  pen.lineWidth = 0.7;
+  for (n = 1; n < last; n++) {
+    for (var h = 0; h < 2; h++) {
+      var u = h / 2, cx = mix(spine[n][0], spine[n + 1][0], u), cy = mix(spine[n][1], spine[n + 1][1], u);
+      var run2 = Math.atan2(spine[n + 1][1] - spine[n][1], spine[n + 1][0] - spine[n][0]);
+      pen.save(); pen.translate(cx, cy); pen.rotate(run2 + Math.PI / 2);
+      pen.beginPath(); pen.moveTo(-4, 0); pen.quadraticCurveTo(0, 3, 4, -1); pen.stroke();
+      pen.restore();
+    }
+  }
+  var c0 = mix(left[last - 1][0], left[last][0], 0.6), c1 = mix(left[last - 1][1], left[last][1], 0.6);
+  var d0 = mix(right[last - 1][0], right[last][0], 0.6), d1 = mix(right[last - 1][1], right[last][1], 0.6);
+  var m0 = mix(spine[last - 1][0], spine[last][0], 0.6), m1 = mix(spine[last - 1][1], spine[last][1], 0.6);
+  pen.strokeStyle = HIMMA.jewel;                     // the jewelled collar at the neck's root: red, with gold beads
+  pen.lineWidth = 3;
+  pen.beginPath(); pen.moveTo(c0, c1); pen.quadraticCurveTo(m0 + (m0 - (c0 + d0) / 2), m1 + (m1 - (c1 + d1) / 2), d0, d1); pen.stroke();
+  pen.fillStyle = HIMMA.goldLit;
+  [0.25, 0.5, 0.75].forEach(function (u) {
+    var bx = mix(mix(c0, m0, u), mix(m0, d0, u), u), by = mix(mix(c1, m1, u), mix(m1, d1, u), u);
+    pen.beginPath(); pen.arc(bx, by, 1.4, 0, Math.PI * 2); pen.fill();
+  });
 }

@@ -14,16 +14,14 @@
 <script>window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.35, light: [0.6, -0.4]};</script>
 <script src="oldcartoon.js"></script>
 <script src="highlands.js"></script>
-<script src="naga.js"></script>
 <script src="beasts.js"></script>
-<script src="myth.js"></script>
 <script src="northbirds.js"></script>
 <script src="himmaphan.js"></script>
 <script>
 // The opening card of Slow Life Studios: dawn, high over the mountains of the north. Peaks stand out of a sea of
 // mist, ridge behind ridge, gold where the low sun finds them; mist drifts in the valleys below. In the air, at our
 // height, birds glide by on long rolling curves, unhurried: egrets, some so far off they are flecks, a hong on the
-// wing; far off, Phaya Luang, a blue magpie, and birds so far away they are only a "v" each. The camera rises a little; the studio's name comes up in the Lanna script, gold, with its Thai letters
+// wing; far off, a blue magpie, and birds so far away they are only a "v" each. The camera rises a little; the studio's name comes up in the Lanna script, gold, with its Thai letters
 // and its English. (Owner, 2026-10-21: "Change the SLS video to be of a misty mountain scene with birds flying and
 // ... these Thai angels and other mystic beings flying around. Everything should move glide and soar effortlessly
 // and slowly as if viewing something really high up"; golden dawn; the hong, Phaya Luang, a kinnari and ordinary
@@ -49,16 +47,16 @@ var SLS_SHEET = null;
 // the white bird near the bird with blue markings and make that bird much smaller" and "Also get rid of the largest
 // set of v birds": that egret and the other flock are gone, and the magpie is far off.
 // The hong soars ("Have the golden bird just soar and glide without flapping", then "Actually have it beat it's
-// wings just two or three times"): three beats from 4 s, then it glides on.
+// wings just two or three times"): three beats from 4 s, then it glides on. Phaya Luang, the dragon, is gone too
+// ("Get rid of the dragon"). The hong a touch slower, 34 a second for 40 ("Slow the bird down just a touch").
 var SLS_FLIGHT = [
   ["egret", 420, 600, 20, 0.07, {seed: 0.4}],
   ["egret", 470, 585, 21, 0.06, {seed: 1.9}],
   ["egret", 1560, 640, -18, 0.07, {seed: 2.8}],
   ["egret", 1610, 628, -19, 0.06, {seed: 3.6}],
-  ["luang", 260, 520, 24, 0.22, {}],
   ["egret", 240, 660, 30, 0.16, {seed: 1.2}],
   ["magpie", 1320, 360, 30, 0.2, {}],
-  ["hong", 640, 650, 40, 0.75, {seed: 4.4, soar: true, beats: [4, 3]}]
+  ["hong", 640, 650, 34, 0.75, {seed: 4.4, soar: true, beats: [4, 3]}]
 ];
 
 function slsRidge(base, tall, shape) {               // a ridge of hills: its height at every x
@@ -128,10 +126,13 @@ function slsBeing(one, t) {                          // one of SLS_FLIGHT at sec
   pen.save();
   pen.globalAlpha = 0.45 + 0.55 * Math.min(1, size * 1.4);   // the far ones hazed by the air between
   pen.translate(at.x, at.y);
+  if (one[0] === "hong") {                           // its own spine tilts it, following where it flies (hongChain)
+    hongFlight(0, 0, t, Object.assign(look, {trail: function (s) { var q = slsPath(one, s); return [q.x, q.y]; }}));
+    pen.restore();
+    return;
+  }
   pen.rotate(at.tilt);                               // tilting up as it climbs a wave, down as it comes off it
-  if (one[0] === "hong") { hongFlight(0, 0, t, look); }
-  else if (one[0] === "luang") { luang(0, 0, {size: size, face: face}); }
-  else if (one[0] === "magpie") { blueMagpie(0, 0, t, {size: size, face: face, fly: true}); }
+  if (one[0] === "magpie") { blueMagpie(0, 0, t, {size: size, face: face, fly: true}); }
   else if (one[0] === "egret") { egret(0, 0, t, {size: size, face: face, fly: true, seed: look.seed}); }
   pen.restore();
 }
@@ -214,7 +215,7 @@ function sceneSLS(t) {
   pen.fillRect(-100, 860, WIDE + 200, 300);
   slsFarBirds(t);                                    // the birds so far off they are a "v" each
   SLS_FLIGHT.forEach(function (one, k) {             // the birds, the far ones first
-    if (k === 7) {
+    if (k === 6) {
       mistDrift(pen, t, {left: -200, right: WIDE + 200, top: 640, bottom: 760, count: 5, wide: 700, drift: 7, seed: 4,
                          colour: "#f6e6d4", glow: "#ffd8a0", alpha: 0.45});   // mist between the far and the near
     }
