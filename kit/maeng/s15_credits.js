@@ -569,7 +569,7 @@ var S15_OWLS = [                                     // [from, to, fly, path: [x
   [118, 130, "side", [[2080, 210, 0.75], [-160, 320, 0.75]]]    // back the other way, over the far hills
 ];
 var S15_PERCH = [150, 195];                           // the owl on a branch at the upper left, to the end
-var S15_BATS = [[34, [1760, 110], [1180, 540]], [96, [1830, 190], [1300, 560]], [158, [1700, 90], [1000, 520]]];   // [start, from, to]: out past the moon, where they show black on its glow, and down behind the near ridge
+var S15_BATS = [[34, [1790, 50], [1080, 560]], [96, [1820, 110], [1200, 560]], [158, [1760, 40], [1000, 540]]];   // [start, from, to]: across the moon's face and down behind the near ridge
 var S15_MOTHS = [[86, 98, [1960, 760], [1500, 640]], [138, 150, [-60, 700], [420, 620]]];   // [from, to, where from, where to]
 
 function s15Owl(o, t, moon) {                        // one of S15_OWLS, at second t of its flight
@@ -586,8 +586,30 @@ function s15NightSky(t) {                             // behind the far hills: t
   return moon;
 }
 
-function s15NightHills(t) {                           // between the far hills and the near: the bats, going behind the near ridge
-  S15_BATS.forEach(function (b) { batStream(t, {start: b[0], from: b[1], to: b[2], count: 50, every: 0.18, long: 9, size: 1.4, far: 0.35, spread: 80}); });
+// The bats over the veil, so it does not dim them away (owner, 2026-10-21: "I don't see the bats. Are they hidden
+// behind a layer?": they were, dark on the dark sky under it), on a sheet of their own with the near ridge cut out of
+// it, so they still go behind the hills; moonlit grey, larger, every stream across the moon's face.
+var S15_BAT_SHEET = null;
+function s15NightBats(t, front) {
+  if (!S15_BAT_SHEET) {
+    S15_BAT_SHEET = document.createElement("canvas");
+    S15_BAT_SHEET.width = pen.canvas.width;
+    S15_BAT_SHEET.height = pen.canvas.height;
+  }
+  var sheet = S15_BAT_SHEET.getContext("2d"), keep = pen;
+  sheet.setTransform(1, 0, 0, 1, 0, 0);
+  sheet.clearRect(0, 0, S15_BAT_SHEET.width, S15_BAT_SHEET.height);
+  sheet.setTransform(pen.getTransform());
+  pen = sheet;
+  S15_BATS.forEach(function (b) { batStream(t, {start: b[0], from: b[1], to: b[2], count: 60, every: 0.15, long: 9, size: 2.4, far: 0.5, spread: 50, colour: "#5c536c"}); });
+  pen = keep;
+  sheet.globalCompositeOperation = "destination-out";   // the near ridge, cut out: behind it they are gone
+  sheet.drawImage(front, 0, 0);
+  sheet.globalCompositeOperation = "source-over";
+  pen.save();
+  pen.setTransform(1, 0, 0, 1, 0, 0);
+  pen.drawImage(S15_BAT_SHEET, 0, 0);
+  pen.restore();
 }
 
 function s15NightNear(t, moon) {                      // in front of the mountain: the fireflies on its slopes, a moth, the perched owl
@@ -623,11 +645,11 @@ function sceneCredits(t) {
   pen.drawImage(maengSky("night"), 0, 0);
   var moon = s15NightSky(t);
   pen.drawImage(mountain.backNight, 0, 0);
-  s15NightHills(t);
   pen.drawImage(mountain.frontNight, 0, 0);
   s15NightNear(t, moon);
   pen.fillStyle = "rgba(4, 6, 20, 0.45)";            // a veil, so the words read over the mountain
   pen.fillRect(0, 0, WIDE, 1080);
+  s15NightBats(t, mountain.frontNight);
   // The roll: the first row comes in at the foot of the frame at S15_ROLL[0], and the end's middle reaches the
   // middle of the frame at S15_ROLL[1], and stays.
   var rows = s15Rows(), tall = 0, n;

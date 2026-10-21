@@ -319,7 +319,8 @@ function atlasMoth(x, y, t, look) {
 // ---------- bats going out ----------
 // look: from, to ([x, y]: where the stream starts and where it goes, into the distance), start (the second the first
 // bat leaves), long (the seconds each takes, 14), count (40), every (seconds between one bat and the next, 0.25),
-// size (at the start, 1), far (its size at the end, 0.25), spread (how wide the stream is, 60). Each bat is a
+// size (at the start, 1), far (its size at the end, 0.25), spread (how wide the stream is, 60), colour ("#16131c",
+// near black: a lighter one, moonlit, shows against a dark sky). Each bat is a
 // flapping "m", dark against the sky, smaller and fainter as it goes; one drawn before a hill's sheet goes behind it.
 function batStream(t, look) {
   var from = look.from, to = look.to, long = look.long || 14, every = look.every || 0.25, count = look.count || 40;
@@ -335,7 +336,7 @@ function batStream(t, look) {
     var s = size * mix(1, far, Math.sqrt(u)), w = 9 * s * (0.85 + 0.3 * dice(n + 103));
     var flap = 6 * s * Math.sin(t * 34 + n * 1.7);
     pen.globalAlpha = (1 - between(u, 0.55, 1)) * clamp(u * 20);
-    pen.strokeStyle = "#16131c";
+    pen.strokeStyle = look.colour || "#16131c";
     pen.lineWidth = Math.max(0.8, 2.4 * s);
     pen.beginPath();
     pen.moveTo(bx - w, by - flap);
