@@ -40,6 +40,7 @@ so. It prints one line a page, then what failed, and ends with exit code 1 if an
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -60,6 +61,9 @@ KNOWN = {
 PLACES = (0.4, 0.78)      # where in a page "same" is measured, as parts of its length
 RUN = 120                 # the frames of the run a jump is compared with
 SAME_LIMIT = 50           # pixels of the 1440 x 1080 sheet that a shift of one pixel does not explain
+# how long a page may take to load: the hero film paints its forests as it loads, 42 s on a laptop on battery and
+# more than 180 s on GitHub's two cores with no GPU, where the check is given KIT_CHECK_LOAD_SECONDS
+LOAD_SECONDS = int(os.environ.get("KIT_CHECK_LOAD_SECONDS", "180"))
 
 DRAWS = """([long]) => {
   rendering = false;                                  // as a page watched live: one frame is one frame
@@ -228,8 +232,7 @@ def check(browser, page_file, quick, settle=None):
     own, found, failed = [], {}, []
     page.on("pageerror", lambda error: own.append(str(error)))
     try:
-        # the hero film paints its forests as it loads: 42 s on a laptop on battery
-        page.goto(page_file.as_uri(), timeout=180000)
+        page.goto(page_file.as_uri(), timeout=LOAD_SECONDS * 1000)
         page.evaluate("rendering = true")
         if settle is not None:
             page.evaluate("SETTLE = %d" % settle)
