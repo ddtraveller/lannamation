@@ -453,8 +453,8 @@ the five birds of the north and the sun).
 | Film | Seconds | Sound |
 |---|---|---|
 | `starter.html` | 8 | none; the smallest film, the one to copy |
-| `village.html` | 36 | `band_music.py village`, then `village_sing.py` |
-| `lanna.html` | 60 | `band_music.py lanna`, then `lanna_sing.py` |
+| `village.html` | 36 | `village_music.py`, then `village_sing.py` |
+| `lanna.html` | 60 | `lanna_music.py`, then `lanna_sing.py` |
 | `sash.html` | 79 | `sash_music.py`, then `sash_narrate.py`: the story of Lanna for children, told in Kam Mueang; the brief it was first made from is `sash_prompt.md` |
 | `parasol_rain.html` | 35 | none |
 | `finger_dance.html` | 32 | none; a troupe of fifteen dancing the fingernail dance on the night of Yi Peng |
