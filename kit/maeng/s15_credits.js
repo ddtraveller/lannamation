@@ -73,6 +73,7 @@ var S15_SOURCES = [
   ["small", "the buffalo: Ashwin A., CC BY 4.0 (iNaturalist) · the cicadas: Wich'yanan (Jay) Limparungpatthanakij, CC BY 4.0 (iNaturalist)"],
   ["small", "the frogs of Chom Thong: golo.foellmer, Public Domain Mark (radio aporee ::: maps) · the flock: Gunter Königsmann, CC BY 4.0"],
   ["small", "the pack horse: Hü., public domain (Wikimedia Commons) · the crickets and the mice: made by the kit from numbers"],
+  ["small", "the studio's card: the wind made by the kit · the blue magpie, CC0 · the shama: Utain Pummarin, CC BY 4.0 (iNaturalist)"],
   ["gap"],
   ["head", "ข้าวของเครื่องใช้", "The things of a Lanna home"],
   ["small", "researched in 22 sources: the Lanna Traditional House Museum (Chiang Mai University),"],

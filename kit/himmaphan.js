@@ -483,70 +483,154 @@ function kinnari(x, y, t, look) {
   pen.restore();
 }
 
+// A feather as a leaf from its root to its tip, "wide" across, shaded from its root's deep gold to its tip's light.
+function himmaFeather(root, tip, wide, deep, lit) {
+  var mx = (root[0] + tip[0]) / 2, my = (root[1] + tip[1]) / 2, dx = tip[0] - root[0], dy = tip[1] - root[1];
+  var len = Math.hypot(dx, dy) || 1, nx = -dy / len * wide, ny = dx / len * wide;
+  pen.beginPath();
+  pen.moveTo(root[0], root[1]);
+  pen.quadraticCurveTo(mx + nx, my + ny, tip[0], tip[1]);
+  pen.quadraticCurveTo(mx - nx * 0.7, my - ny * 0.7, root[0], root[1]);
+  pen.closePath();
+  var g = pen.createLinearGradient(root[0], root[1], tip[0], tip[1]);
+  g.addColorStop(0, deep);
+  g.addColorStop(1, lit);
+  himmaFill(g, HIMMA.goldLine, 0.9);
+  pen.strokeStyle = blend(deep, HIMMA.goldLine, 0.5);   // its shaft
+  pen.lineWidth = 0.7;
+  pen.beginPath(); pen.moveTo(root[0], root[1]); pen.quadraticCurveTo(mx + nx * 0.15, my + ny * 0.15, tip[0], tip[1]); pen.stroke();
+}
+
+// The hong's wing from its shoulder (0, 0), raised up and back: long primaries fanned from the wrist, the secondaries
+// along the trailing edge, rows of scalloped coverts over the arm, gilt along the leading edge. "lift" (-1 down to
+// 1 up) turns it about the shoulder and foreshortens it, as a side view sees a wing beat; "far" darkens it.
+function hongWing(lift, light, far) {
+  var deep = far ? blend(HIMMA.gold, HIMMA.goldLine, 0.45) : blend(HIMMA.gold, HIMMA.goldLine, 0.2);
+  var lit = far ? HIMMA.gold : blend(HIMMA.goldLit, "#fff6dc", 0.4 * light);
+  pen.save();
+  pen.rotate(-0.42 * lift);
+  pen.scale(1, 0.5 + 0.5 * Math.cos(lift * 1.1));
+  var wrist = [-52, -70];
+  for (var s = 6; s >= 0; s--) {                     // the secondaries, the inner first, hanging back from the arm
+    var u = s / 6, root = [mix(-6, wrist[0] + 6, u), mix(-4, wrist[1] + 6, u)], a = -2.75 - 0.1 * u, len = 54 - 10 * u;
+    himmaFeather(root, [root[0] + Math.cos(a) * len, root[1] + Math.sin(a) * len + 18], 13, deep, lit);
+  }
+  for (var f = 5; f >= 0; f--) {                     // the primaries, fanned from the wrist, broad and overlapping
+    var ang = -1.98 - f * 0.15, plen = 90 - f * 6;
+    himmaFeather([wrist[0] + f * 3, wrist[1] + f * 4], [wrist[0] + Math.cos(ang) * plen, wrist[1] + Math.sin(ang) * plen], 15, deep, lit);
+  }
+  pen.beginPath();                                   // the coverts over the arm
+  pen.moveTo(6, 4);
+  pen.bezierCurveTo(-10, -30, -34, -64, wrist[0] - 4, wrist[1] - 6);
+  pen.bezierCurveTo(wrist[0] - 14, wrist[1] + 24, -40, -14, -18, 14);
+  pen.closePath();
+  var cg = pen.createLinearGradient(0, 0, wrist[0], wrist[1]);
+  cg.addColorStop(0, deep);
+  cg.addColorStop(1, lit);
+  himmaFill(cg, HIMMA.goldLine, 1);
+  pen.save();
+  pen.clip();
+  pen.strokeStyle = HIMMA.goldLine;                  // the scallops of the coverts, in rows
+  pen.lineWidth = 0.8;
+  for (var row = 0; row < 4; row++) {
+    for (var k = 0; k < 7; k++) {
+      var v = k / 6, cx = mix(-2, wrist[0] + 4, v) - row * 7, cy = mix(2, wrist[1] + 4, v) + row * 9;
+      pen.beginPath(); pen.arc(cx, cy, 5.2, 0.3, Math.PI - 0.3); pen.stroke();
+    }
+  }
+  pen.restore();
+  pen.strokeStyle = blend(HIMMA.goldLit, "#ffffff", 0.35 + 0.3 * light);   // gilt along the leading edge
+  pen.lineWidth = 2.2;
+  pen.beginPath(); pen.moveTo(6, 4); pen.bezierCurveTo(-10, -30, -34, -64, wrist[0] - 4, wrist[1] - 6); pen.stroke();
+  pen.restore();
+}
+
 function hongFlight(x, y, t, look) {
   look = look || {};
   checkNames("The hong's name", look, HIMMA_KEYS);
   var size = look.size || 1, seed = look.seed || 0, light = look.light === undefined ? 0.6 : look.light;
-  var beat = Math.sin(t * 0.8 + seed);
+  var beat = Math.sin(t * 1.0 + seed);               // slow deep beats, now and then a glide (the wings held up)
+  var glide = Math.max(0, Math.sin(t * 0.21 + seed * 1.7));
+  beat = beat * (1 - 0.8 * glide) + 0.35 * glide;
   pen.save();
-  pen.translate(x, y + 6 * Math.sin(t * 0.45 + seed) * size);
+  pen.translate(x, y + 6 * Math.sin(t * 0.45 + seed) * size - 4 * beat * size);   // the body lifts a little as the wings come down
   pen.scale(size * (look.face || 1), size);
+  pen.rotate(-0.04 * beat);
   pen.lineJoin = "round";
   pen.lineCap = "round";
-  function wing(lift, deep) {                        // a long golden wing, its feathers fingered, swept back
-    pen.save();
-    pen.scale(1, 0.55 + 0.45 * Math.cos(lift));
-    pen.rotate(-0.3 * lift);
-    for (var f = 5; f >= 0; f--) {
-      var len = 130 - f * 10, a = -2.35 + f * 0.1;
-      pen.beginPath();
-      pen.moveTo(-6 - f * 8, -2);
-      pen.quadraticCurveTo(Math.cos(a + 0.12) * len * 0.6 - f * 8, Math.sin(a + 0.12) * len * 0.6, Math.cos(a) * len - f * 6, Math.sin(a) * len);
-      pen.quadraticCurveTo(Math.cos(a - 0.1) * len * 0.7 - f * 8, Math.sin(a - 0.1) * len * 0.7 + 5, -f * 8, 6);
-      pen.closePath();
-      himmaFill(blend(HIMMA.gold, deep ? HIMMA.goldLine : HIMMA.goldLit, f % 2 ? 0.15 : 0.3 * light), HIMMA.goldLine, 1);
-    }
-    pen.beginPath();
-    pen.moveTo(4, 2);
-    pen.bezierCurveTo(-24, -26, -64, -52, -100, -62);
-    pen.bezierCurveTo(-80, -34, -50, -10, -16, 10);
-    pen.closePath();
-    himmaFill(blend(HIMMA.gold, HIMMA.goldLit, deep ? 0 : 0.4 * light), HIMMA.goldLine, 1);
-    pen.strokeStyle = HIMMA.goldLine; pen.lineWidth = 0.9;
-    for (var k = 0; k < 6; k++) { var px = -14 - k * 14, py = -10 - k * 8; pen.beginPath(); pen.moveTo(px, py); pen.quadraticCurveTo(px - 4, py + 7, px - 10, py + 5); pen.stroke(); }
-    pen.restore();
+  pen.save(); pen.translate(-2, -10); hongWing(beat * 0.9, light, true); pen.restore();   // the far wing
+  for (var p = 4; p >= 0; p--) {                     // the tail: five plumes curling back and up like a flame (kranok)
+    himmaPlume([-62, 6], 3.25 + p * 0.17, 82 - p * 7, 11, p % 2 ? HIMMA.gold : blend(HIMMA.goldLit, HIMMA.gold, 0.3),
+               -0.55 + 0.07 * Math.sin(t * 0.9 + p + seed));
   }
-  pen.save(); pen.translate(-4, -6); wing(beat, true); pen.restore();
-  for (var p = 3; p >= 0; p--) {                     // the tail: plumes curling back and up like a flame (kranok)
-    himmaPlume([-64, 4], 3.3 + p * 0.22, 70 - p * 6, 10, p % 2 ? HIMMA.gold : HIMMA.goldLit, -0.5 + 0.06 * Math.sin(t * 0.9 + p + seed));
-  }
-  pen.beginPath();                                   // the body, the neck's long S, the head and its crest
-  pen.moveTo(-70, 6);
-  pen.bezierCurveTo(-40, -10, 10, -12, 40, -4);
-  pen.bezierCurveTo(60, 0, 64, -20, 72, -36);
-  pen.bezierCurveTo(78, -48, 92, -50, 100, -42);
-  pen.lineTo(98, -36);
-  pen.bezierCurveTo(90, -38, 84, -32, 80, -20);
-  pen.bezierCurveTo(74, 2, 60, 14, 30, 14);
-  pen.bezierCurveTo(-10, 16, -50, 16, -70, 6);
+  pen.beginPath();                                   // the body: a full breast, the back, the belly
+  pen.moveTo(-66, 4);
+  pen.bezierCurveTo(-46, -14, -4, -18, 30, -10);
+  pen.bezierCurveTo(52, -6, 60, 4, 54, 14);
+  pen.bezierCurveTo(40, 26, 0, 26, -36, 20);
+  pen.bezierCurveTo(-52, 18, -64, 12, -66, 4);
   pen.closePath();
-  var bg = pen.createLinearGradient(0, -40, 0, 16);
-  bg.addColorStop(0, blend(HIMMA.gold, HIMMA.goldLit, 0.3 + 0.5 * light));
-  bg.addColorStop(1, HIMMA.gold);
+  var bg = pen.createLinearGradient(0, -18, 0, 26);
+  bg.addColorStop(0, blend(HIMMA.gold, HIMMA.goldLit, 0.35 + 0.5 * light));
+  bg.addColorStop(1, blend(HIMMA.gold, HIMMA.goldLine, 0.25));
   himmaFill(bg, HIMMA.goldLine, 1.3);
-  pen.save(); pen.clip();
-  pen.strokeStyle = HIMMA.goldLine; pen.lineWidth = 0.8;   // the breast's feathers
-  for (var row = 0; row < 3; row++) { for (var c = 0; c < 7; c++) { pen.beginPath(); pen.arc(-40 + c * 12 + (row % 2) * 6, -4 + row * 6, 4.5, 0.2, Math.PI - 0.2); pen.stroke(); } }
+  pen.save();
+  pen.clip();
+  pen.strokeStyle = HIMMA.goldLine;                  // the small feathers of the breast and belly, in rows
+  pen.lineWidth = 0.7;
+  for (var row = 0; row < 5; row++) {
+    for (var c = 0; c < 10; c++) {
+      pen.beginPath(); pen.arc(-50 + c * 11 + (row % 2) * 5.5, -8 + row * 7, 4.2, 0.25, Math.PI - 0.25); pen.stroke();
+    }
+  }
   pen.restore();
-  pen.strokeStyle = HIMMA.jewel; pen.lineWidth = 2.2;      // a red collar at the neck's root
-  pen.beginPath(); pen.moveTo(56, 0); pen.quadraticCurveTo(62, -8, 66, -18); pen.stroke();
-  pen.beginPath();                                   // the crest, a little flame back from the head
-  pen.moveTo(88, -48); pen.quadraticCurveTo(80, -60, 70, -60); pen.quadraticCurveTo(80, -54, 84, -44);
+  pen.beginPath();                                   // the neck: a long S up from the breast to the head
+  pen.moveTo(34, -10);
+  pen.bezierCurveTo(52, -16, 56, -34, 66, -52);
+  pen.bezierCurveTo(72, -62, 84, -66, 94, -60);
+  pen.lineTo(96, -50);
+  pen.bezierCurveTo(88, -52, 80, -48, 76, -36);
+  pen.bezierCurveTo(70, -16, 62, 6, 52, 12);
+  pen.closePath();
+  var ng = pen.createLinearGradient(40, 0, 90, -60);
+  ng.addColorStop(0, HIMMA.gold);
+  ng.addColorStop(1, blend(HIMMA.gold, HIMMA.goldLit, 0.4 + 0.5 * light));
+  himmaFill(ng, HIMMA.goldLine, 1.2);
+  pen.strokeStyle = HIMMA.goldLine;                  // its fine feathers, in ticks down the neck
+  pen.lineWidth = 0.7;
+  for (var n = 0; n < 7; n++) {
+    var nu = n / 7, nx = mix(56, 82, nu), ny = mix(4, -50, nu);
+    pen.beginPath(); pen.moveTo(nx - 4, ny); pen.quadraticCurveTo(nx, ny + 3, nx + 4, ny - 1); pen.stroke();
+  }
+  pen.strokeStyle = HIMMA.jewel;                     // the jewelled collar at the neck's root: red, with gold beads
+  pen.lineWidth = 3;
+  pen.beginPath(); pen.moveTo(46, -10); pen.quadraticCurveTo(56, -8, 62, 6); pen.stroke();
+  pen.fillStyle = HIMMA.goldLit;
+  [[49, -10], [55, -6], [59, 0]].forEach(function (b) { pen.beginPath(); pen.arc(b[0], b[1], 1.4, 0, Math.PI * 2); pen.fill(); });
+  pen.beginPath();                                   // the head
+  pen.ellipse(94, -56, 10, 8.5, -0.2, 0, Math.PI * 2);
+  himmaFill(blend(HIMMA.gold, HIMMA.goldLit, 0.45 + 0.4 * light), HIMMA.goldLine, 1.2);
+  pen.beginPath();                                   // the crest: a flame of three curls swept back (kranok)
+  pen.moveTo(92, -63);                              // slim, long, curling up at its end
+  pen.bezierCurveTo(78, -70, 58, -70, 44, -78);
+  pen.quadraticCurveTo(38, -84, 44, -88);
+  pen.quadraticCurveTo(46, -80, 54, -76);
+  pen.bezierCurveTo(48, -72, 44, -68, 42, -64);
+  pen.bezierCurveTo(56, -66, 72, -62, 86, -57);
+  pen.closePath();
   himmaFill(HIMMA.gold, HIMMA.goldLine, 1);
-  pen.fillStyle = HIMMA.jewel;                       // the beak
-  pen.beginPath(); pen.moveTo(100, -42); pen.lineTo(116, -38); pen.lineTo(98, -35); pen.closePath(); pen.fill();
+  pen.beginPath();                                   // the beak, a little curved, red with a gold base
+  pen.moveTo(101, -59);
+  pen.quadraticCurveTo(112, -60, 120, -54);
+  pen.quadraticCurveTo(110, -52, 101, -52);
+  pen.closePath();
+  himmaFill(HIMMA.jewel, blend(HIMMA.jewel, "#000000", 0.4), 1);
+  pen.strokeStyle = HIMMA.goldLit; pen.lineWidth = 1.6;
+  pen.beginPath(); pen.moveTo(101, -59); pen.lineTo(101, -52); pen.stroke();
+  pen.fillStyle = HIMMA.goldLit;                     // the eye, in a ring of gold
+  pen.beginPath(); pen.arc(95, -58, 2.8, 0, Math.PI * 2); pen.fill();
   pen.fillStyle = HIMMA.brow;
-  pen.beginPath(); pen.arc(91, -42, 1.8, 0, Math.PI * 2); pen.fill();
-  pen.save(); pen.translate(4, -4); wing(beat * 0.8 + 0.1, false); pen.restore();
+  pen.beginPath(); pen.arc(95.5, -58, 1.5, 0, Math.PI * 2); pen.fill();
+  pen.save(); pen.translate(8, -8); hongWing(beat, light, false); pen.restore();   // the near wing
   pen.restore();
 }

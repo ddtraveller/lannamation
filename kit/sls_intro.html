@@ -22,9 +22,9 @@
 <script>
 // The opening card of Slow Life Studios: dawn, high over the mountains of the north. Peaks stand out of a sea of
 // mist, ridge behind ridge, gold where the low sun finds them; mist drifts in the valleys below. In the air, at our
-// height, the beings of the Himmaphan glide by, slowly, as if nothing up here were in a hurry: thewada with a lotus
-// held up or their scarves streaming, a kinnari, two hong on the wing; far off, Phaya Luang, a hornbill and a flock
-// of birds. The camera rises a little; the studio's name comes up in the Lanna script, gold, with its Thai letters
+// height, birds and the beings of the Himmaphan glide by on long rolling curves, unhurried: egrets near and so far off
+// they are flecks, hornbills, a blue magpie, two hong on the wing, a kinnari; far off, Phaya Luang, flocks, and birds
+// so far away they are only a "v" each. The camera rises a little; the studio's name comes up in the Lanna script, gold, with its Thai letters
 // and its English. (Owner, 2026-10-21: "Change the SLS video to be of a misty mountain scene with birds flying and
 // ... these Thai angels and other mystic beings flying around. Everything should move glide and soar effortlessly
 // and slowly as if viewing something really high up"; golden dawn; the hong, Phaya Luang, a kinnari and ordinary
@@ -40,17 +40,26 @@ var SLS_NAME = {lanna: "ᩁᩰᩫ᩠ᨦᨿᩉ᩠ᨶᩢᨦᨩᩦᩅᩥ᩠ᨲᨧ�
 var SLS_SUN = [1380, 610];                           // the sun, just risen behind the far peaks
 var SLS_SHEET = null;
 
-// Who flies, slowest and smallest the farthest: [what, x at 0 s, y, pixels a second, size, its own look]
+// Who flies, smallest and hazed the farthest: [what, x at 0 s, y, pixels a second on average, size, its own look].
+// Birds in place of the thewada (owner, 2026-10-21: "Replace the angels with birds and make them move a touch faster
+// but also at variable rates and over gently rolling curves rather than flat lines", then "Add some of the egrets
+// really far away and the v shaped super far away birds too"): each one's pace swells and eases (by a third, at its
+// own rate) and it rides long gentle waves up and down, tilting with them (slsPath).
 var SLS_FLIGHT = [
-  ["luang", 260, 520, 18, 0.22, {}],
-  ["hornbill", 1950, 560, -20, 0.3, {}],
-  ["thewada", 300, 640, 16, 0.38, {seed: 2.2, scarves: true}],
-  ["hong", 1450, 600, 20, 0.5, {seed: 1.3}],
-  ["kinnari", 120, 330, 14, 0.7, {seed: 0.6, scarves: true}],
-  ["thewada", 1500, 330, 12, 0.7, {seed: 3.1, gift: "garland"}],
-  ["hong", 700, 640, 26, 0.75, {seed: 4.4}],
-  ["thewada", 1380, 760, 18, 0.95, {seed: 5.2, scarves: true}],
-  ["thewada", 140, 720, 22, 1.0, {seed: 0.0}]
+  ["egret", 420, 600, 20, 0.07, {seed: 0.4}],
+  ["egret", 470, 585, 21, 0.06, {seed: 1.9}],
+  ["egret", 1560, 640, -18, 0.07, {seed: 2.8}],
+  ["egret", 1610, 628, -19, 0.06, {seed: 3.6}],
+  ["luang", 260, 520, 24, 0.22, {}],
+  ["hornbill", 1900, 560, -30, 0.3, {}],
+  ["egret", 240, 660, 30, 0.16, {seed: 1.2}],
+  ["hong", 1400, 600, 32, 0.5, {seed: 1.3}],
+  ["kinnari", 120, 330, 22, 0.7, {seed: 0.6, scarves: true}],
+  ["magpie", 1320, 360, 30, 0.5, {}],
+  ["egret", 1500, 440, 28, 0.42, {seed: 4.1}],
+  ["hong", 640, 650, 40, 0.75, {seed: 4.4}],
+  ["hornbill", 1820, 770, -34, 0.62, {}],
+  ["egret", 100, 740, 38, 0.6, {seed: 5.2}]
 ];
 
 function slsRidge(base, tall, shape) {               // a ridge of hills: its height at every x
@@ -105,16 +114,58 @@ function slsSheet() {                                // the sky, the sun's glow 
   return paper;
 }
 
-function slsBeing(one, t) {                          // one of SLS_FLIGHT at second t: gliding across, slowly
-  var x = one[1] + one[3] * t, y = one[2] + 10 * Math.sin(t * 0.3 + one[1] * 0.01), size = one[4];
-  var look = Object.assign({size: size, face: one[3] < 0 ? -1 : 1, light: 0.75}, one[5]);
+function slsPath(one, t) {                           // where one of SLS_FLIGHT is at t: its pace swelling and easing, on rolling curves
+  var v = one[3] * 1.3, w = 0.35 + 0.25 * dice(Math.abs(one[1]) + 7), ph = 6.3 * dice(Math.abs(one[1]) + 3);
+  var x = one[1] + v * t + (v * 0.33 / w) * (Math.sin(w * t + ph) - Math.sin(ph));    // the pace, a third up and down
+  var lift = 34 * Math.min(1, one[4] * 2.2 + 0.2), w2 = 0.45 + 0.3 * dice(Math.abs(one[1]) + 11), ph2 = 6.3 * dice(Math.abs(one[1]) + 5);
+  var y = one[2] + lift * Math.sin(w2 * t + ph2);
+  var slope = lift * w2 * Math.cos(w2 * t + ph2) / (Math.abs(v) * (1 + 0.33 * Math.cos(w * t + ph)) || 1);
+  return {x: x, y: y, tilt: Math.atan(slope) * 0.6 * (v < 0 ? -1 : 1)};
+}
+
+function slsBeing(one, t) {                          // one of SLS_FLIGHT at second t
+  var at = slsPath(one, t), size = one[4], face = one[3] < 0 ? -1 : 1;
+  var look = Object.assign({size: size, face: face, light: 0.75}, one[5]);
   pen.save();
-  pen.globalAlpha = 0.55 + 0.45 * Math.min(1, size);  // the far ones hazed by the air between
-  if (one[0] === "thewada") { thewada(x, y, t, look); }
-  else if (one[0] === "kinnari") { kinnari(x, y, t, look); }
-  else if (one[0] === "hong") { hongFlight(x, y, t, look); }
-  else if (one[0] === "luang") { luang(x, y, {size: size, face: look.face}); }
-  else if (one[0] === "hornbill") { hornbill(x, y, t, {size: size, face: look.face, fly: true}); }
+  pen.globalAlpha = 0.45 + 0.55 * Math.min(1, size * 1.4);   // the far ones hazed by the air between
+  pen.translate(at.x, at.y);
+  pen.rotate(at.tilt);                               // tilting up as it climbs a wave, down as it comes off it
+  if (one[0] === "kinnari") { kinnari(0, 0, t, look); }
+  else if (one[0] === "hong") { hongFlight(0, 0, t, look); }
+  else if (one[0] === "luang") { luang(0, 0, {size: size, face: face}); }
+  else if (one[0] === "hornbill") { hornbill(0, 0, t, {size: size, face: face, fly: true}); }
+  else if (one[0] === "magpie") { blueMagpie(0, 0, t, {size: size, face: face, fly: true}); }
+  else if (one[0] === "egret") { egret(0, 0, t, {size: size, face: face, fly: true, seed: look.seed}); }
+  pen.restore();
+}
+
+// Birds so far off they are only a "v" each, flapping: two loose skeins drifting slowly across the far sky, and a few
+// alone, each on its own gentle wave.
+function slsFarBirds(t) {
+  pen.save();
+  pen.strokeStyle = "rgba(70, 52, 70, 0.55)";
+  pen.lineCap = "round";
+  for (var n = 0; n < 34; n++) {
+    var skein = n < 14 ? 0 : n < 26 ? 1 : 2, k = skein === 0 ? n : skein === 1 ? n - 14 : n - 26;
+    var bx, by;
+    if (skein === 2) {                              // the ones alone
+      bx = (dice(n + 40) * WIDE + (dice(n + 41) - 0.5) * 30 * t + WIDE) % WIDE;
+      by = 380 + dice(n + 42) * 220;
+    } else {                                        // the two skeins, each a loose V
+      var lead = skein === 0 ? [380 + 16 * t, 300] : [1500 - 13 * t, 250];
+      var side = k % 2 ? 1 : -1, rank = Math.ceil(k / 2);
+      bx = lead[0] - (skein === 0 ? 1 : -1) * rank * 14 + 3 * Math.sin(t + n);
+      by = lead[1] + side * rank * 7 + 4 * Math.sin(t * 0.7 + n * 1.3);
+    }
+    by += 6 * Math.sin(t * 0.5 + n);
+    var w = 3 + 2.5 * dice(n + 43), flap = w * 0.6 * Math.sin(t * 6 + n * 2.1);
+    pen.lineWidth = 1.3;
+    pen.beginPath();
+    pen.moveTo(bx - w, by - flap);
+    pen.lineTo(bx, by + 1);
+    pen.lineTo(bx + w, by - flap);
+    pen.stroke();
+  }
   pen.restore();
 }
 
@@ -164,10 +215,11 @@ function sceneSLS(t) {
   under.addColorStop(1, "rgba(250, 236, 220, 1)");
   pen.fillStyle = under;
   pen.fillRect(-100, 860, WIDE + 200, 300);
-  birds(t * 0.5, 300 + 14 * t, 360);                 // a flock, far off, its wingbeats slowed by the distance
-  birds(t * 0.5 + 3, 1700 - 10 * t, 290);
-  SLS_FLIGHT.forEach(function (one, k) {             // the beings of the Himmaphan, the far ones first
-    if (k === 4) {
+  slsFarBirds(t);                                    // the birds so far off they are a "v" each
+  birds(t * 0.5, 300 + 18 * t, 360);                 // a flock, far off, its wingbeats slowed by the distance
+  birds(t * 0.5 + 3, 1700 - 13 * t, 290);
+  SLS_FLIGHT.forEach(function (one, k) {             // the birds and the beings of the Himmaphan, the far ones first
+    if (k === 7) {
       mistDrift(pen, t, {left: -200, right: WIDE + 200, top: 640, bottom: 760, count: 5, wide: 700, drift: 7, seed: 4,
                          colour: "#f6e6d4", glow: "#ffd8a0", alpha: 0.45});   // mist between the far and the near
     }

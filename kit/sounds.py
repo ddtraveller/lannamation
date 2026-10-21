@@ -234,6 +234,13 @@ FETCHED.update({
                 "from": "Wich'yanan (Jay) Limparungpatthanakij, cicadas, Ban Luang, Chom Thong, Chiang Mai; CC BY 4.0 "
                         "(iNaturalist observation 344470233)",
                 "what": "cicadas singing in the trees by day, Chiang Mai, a bed (23 s)"},
+    # A songbird of the north's forests for the studio's card (owner, 2026-10-21: "At the end of the video do two bird
+    # calls like the way the tokay calls were but with a nice sounding bird call from a northern thai bird"). Of ten
+    # CC BY recordings of the shama in Thailand, this was the clearest; the one from Mae Chaem was too faint.
+    "shama": {"url": INAT + "1016066.wav", "cut": [17.15, 20.5],
+              "from": "Utain Pummarin, white-rumped shama, Wang Saphung, Loei, Thailand; CC BY 4.0 "
+                      "(iNaturalist observation 213325298)",
+              "what": "the white-rumped shama (นกกางเขนดง) singing twice: fluted notes, then a bright whistle rising (3 s)"},
 })
 
 
