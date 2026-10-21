@@ -577,7 +577,8 @@ function sceneLane(t) {                 // 22-35: the lane: a man and a child co
 // can say where it is from before the two at the pond look up at it.
 var POND_AT = 35;
 
-var DRAGON_COURSE = [[38, -700, 330, 0.05], [43.5, 250, 260, 0.3], [47.3, 900, 340, 0.6], [52.3, 2200, 230, 0.9]];   // a touch slower than it was (owner, 2026-10-15)
+var DRAGON_COURSE = [[38, -700, 330, 0.05], [43.5, 250, 260, 0.3], [47.3, 900, 340, 0.6], [52.3, 2200, 230, 0.9],   // a touch slower than it was (owner, 2026-10-15)
+                     [55, 2900, 170, 0.95]];   // and on out of the picture, at its own pace: the pond is 3 s longer, and the dragon stopped at 52.3 with its body in view (owner, 2026-10-21)
 
 function dragonFly(T) { return where(DRAGON_COURSE, T); }
 
