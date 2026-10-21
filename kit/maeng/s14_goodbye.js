@@ -14,8 +14,14 @@ var S14_LIFE = [
   {name: "flock at dusk", kind: "flock", layer: "back", course: [[0.5, -150, 230], [13.0, 2150, 180]]}
 ];
 
+// u: 0 to 1 (held there outside it); gives back 0 to 1, eased in and out. e.g. var up = s14Ease((t - 7.9) / 0.5);
 function s14Ease(u) { u = clamp(u); return u * u * (3 - 2 * u); }
 
+// Scene 14, the entry the film calls (SCENES): t, its own second, 0 to S14_LONG (16 s): Bua-kham walks in from 0.3 s,
+// speaks (S14_SPEAKS), and makes a wai over S14_WAI (7.9 s to 12.8 s); out of black at the start, into it from 14.2 s.
+// Gives back nothing: it draws the whole sheet with pen. From sets.js: maengYardAt() at dusk 0.35 with the lamp lit,
+// maengDark(). Its life is S14_LIFE; its words S14_LINES (M078, M079), written under it by the page.
+// e.g. sceneGoodbye(10);
 function sceneGoodbye(t) {
   var dusk = 0.35;
   maengYardAt(t, dusk, 1);

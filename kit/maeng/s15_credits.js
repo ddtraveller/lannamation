@@ -189,12 +189,16 @@ var S15_ROWS = null;
 var S15_END_ROOM = 170;                              // from the row before the end to the end's middle: its name stands above that
 var S15_GOLD = "#e0b23a", S15_INK = "#f4ecd2", S15_SOFT = "#c9c2dc";
 
+// names: an array of strings (MAENG_THANKED, MAENG_SCHOLARS); across: 4 or 5 (S15_TALL and s15Row() know only
+// those). Gives back rows ["names4" or "names5", [up to "across" names]]. e.g. s15Names(MAENG_THANKED, 4);
 function s15Names(names, across) {                  // a long list of names as rows of "across" (thanks.js)
   var rows = [];
   for (var n = 0; n < names.length; n += across) { rows.push(["names" + across, names.slice(n, n + across)]); }
   return rows;
 }
 
+// Gives back the whole list of rows, as S15_CREDITS describes them, made on the first call and kept in S15_ROWS
+// after. e.g. var rows = s15Rows();
 function s15Rows() {                                 // every row: the credits, the maker's list, the thanks, the end last
   if (!S15_ROWS) {
     S15_ROWS = S15_CREDITS.concat(S15_SOURCES, [["head", "ในโรงหนังการ์ตูน", "In the cartoon maker"], ["gap"]], S15_MAKER,
@@ -205,6 +209,9 @@ function s15Rows() {                                 // every row: the credits, 
   return S15_ROWS;
 }
 
+// text at x, y (pixels of the sheet, its middle line at y), in a CSS font and colour; align "center" when left out;
+// wide in pixels, or left out for no limit. Gives back nothing: it writes with pen and leaves pen's font, fill,
+// textAlign and textBaseline set. e.g. s15Text("Lanna Tales", WIDE / 2, 540, "italic 38px Georgia", S15_INK);
 function s15Text(text, x, y, font, colour, align, wide) {   // wide: the most it may take across (squeezed to it)
   pen.font = font;
   pen.textAlign = align || "center";
@@ -213,6 +220,8 @@ function s15Text(text, x, y, font, colour, align, wide) {   // wide: the most it
   if (wide) { pen.fillText(text, x, y, wide); } else { pen.fillText(text, x, y); }
 }
 
+// row: one of s15Rows(); y: its middle, in pixels of the sheet. Gives back nothing: it writes with pen (s15Text()).
+// e.g. s15Row(["head", "ตัวละคร", "The cast"], 540);
 function s15Row(row, y) {                            // one row, its middle at y
   var serif = "'Noto Serif Thai', 'Leelawadee UI', serif", lanna = "'Noto Sans Tai Tham', 'Sans Serif Collection', serif";
   if (row[0] === "title") {
@@ -251,8 +260,12 @@ function s15Row(row, y) {                            // one row, its middle at y
 // body go down, and at the deepest its eyes close in two smiling curves.
 var S15_PLUM = "#4a2a3a";
 
+// Begins a path of one ellipse (radii rx, ry; turn in radians, 0 when left out), in the panda's own points; it
+// fills nothing. e.g. s15Ell(100, 184, 3, 5); pen.fill();
 function s15Ell(x, y, rx, ry, turn) { pen.beginPath(); pen.ellipse(x, y, rx, ry, turn || 0, 0, Math.PI * 2); }
 
+// Fills pen's path with fill and strokes it in S15_PLUM, width 2.2 when left out. Gives back nothing.
+// e.g. s15Ell(100, 120, 20, 20); s15Inked("#ffffff");
 function s15Inked(fill, width) {
   pen.fillStyle = fill;
   pen.fill();
@@ -262,12 +275,16 @@ function s15Inked(fill, width) {
   pen.stroke();
 }
 
+// A radial gradient about x, y out to r; stops: [[0 to 1, colour], ...]. Gives back the gradient, for pen.fillStyle.
+// e.g. pen.fillStyle = s15Glow(84, 80, 110, [[0, "#ffffff"], [1, "#e6dfe2"]]);
 function s15Glow(x, y, r, stops) {
   var g = pen.createRadialGradient(x, y, 0, x, y, r);
   stops.forEach(function (one) { g.addColorStop(one[0], one[1]); });
   return g;
 }
 
+// x, y: its middle, r its radius, in the panda's own points; petal: a CSS colour. Gives back nothing: it draws with
+// pen. e.g. s15Flower(78, 24, 8, "#f2cf5a");
 function s15Flower(x, y, r, petal) {                 // five petals and an orange heart
   for (var k = 0; k < 5; k++) {
     var a = k * Math.PI * 2 / 5 - Math.PI / 2;
@@ -278,6 +295,9 @@ function s15Flower(x, y, r, petal) {                 // five petals and an orang
   s15Inked("#e08a2a", 1);
 }
 
+// path: a function that makes pen's path (no arguments); base, gold: CSS colours; diamonds: true for diamonds,
+// false for dots. The motifs are laid from y 150 down, in the panda's own 200 by 240. Gives back nothing: it fills
+// and inks the path with pen. e.g. s15Cloth(torso, look.blouse, look.blouseDot, false);
 function s15Cloth(path, base, gold, diamonds) {      // a cloth: its colour, small gold motifs in rows, inside the path
   pen.save();
   path();
@@ -301,6 +321,9 @@ function s15Cloth(path, base, gold, diamonds) {      // a cloth: its colour, sma
   pen.stroke();
 }
 
+// x, base: the middle of its waist, in pixels of the sheet; scale: 1 for 200 by 240; look: one of S15_PANDAS (bun,
+// garland, blouse, blouseDot, sabai, flowers); bow: 0 to 1. Gives back nothing: it draws with pen.
+// e.g. s15Panda(WIDE / 2, 1080, 2.5, S15_PANDAS[0], 0);
 function s15Panda(x, base, scale, look, bow) {
   var fur = "#2b2630";
   pen.save();
@@ -427,6 +450,9 @@ function s15Panda(x, base, scale, look, bow) {
   pen.restore();
 }
 
+// t: the scene's second: nothing before S15_THANKS[0]; then the warm light, S15_THANK_YOU, and the three pandas
+// rising, each bowing at its seconds in S15_WAIS (1.8 s a bow). Gives back nothing: it draws with pen.
+// e.g. s15Thanks(185);
 function s15Thanks(t) {                              // the three pandas and the thank-you, from S15_THANKS on
   var come = clamp((t - S15_THANKS[0]) / (S15_THANKS[1] - S15_THANKS[0]));
   if (come <= 0) { return; }
@@ -461,14 +487,21 @@ var S15_BOW_AT = [680, 610, 520, 450];                // the row's height on the
 var S15_BOW_DEEP = [610, 520];                        // and bows while the row goes from the one to the other
 var S15_TILES = {};
 
+// u: 0 to 1 (held there outside it); gives back 0 to 1, eased in and out. e.g. var out = s15Ease(0.4);
 function s15Ease(u) { u = clamp(u); return u * u * (3 - 2 * u); }
 
+// kind: a name of the kit's cast; own: the film's look (MAENG_LAD, ...), or left out. Gives back a painter for
+// S15_FIGURES (it draws the person at 0, 0 when called). e.g. "Thukkhata": s15Who("boy", MAENG_LAD)
 function s15Who(kind, own) {                          // a person of the cast, in a wai
   return function () { person(0, 0, maengPerson(kind, own || {}, {wai: true, feel: "happy", face: 1, id: "bow-" + kind})); };
 }
+// list: [[offset across, in the painter's own pixels, painter], ...]. Gives back one painter (b, u) that draws them
+// all. e.g. s15Many([[-60, s15Who("inta")], [60, s15Who("khammun")]])
 function s15Many(list) {                              // a few side by side, each painter at its offset across
   return function (b, u) { list.forEach(function (one) { b.save(); b.translate(one[0], 0); one[1](b, u); b.restore(); }); };
 }
+// size: how much smaller (0.5, half); painter: (b) for a still one, (b, u) for one that moves. Gives back a painter
+// of the same kind. e.g. "Temple": s15Small(0.5, function (b) { temple(b, 0, 0); })
 function s15Small(size, painter) {                    // a big thing drawn smaller, so its tile can hold it
   var moving = painter.length >= 2;
   return moving ? function (b, u) { b.save(); b.scale(size, size); painter(b, u); b.restore(); }
@@ -547,6 +580,9 @@ var S15_FIGURES = {
   "Pen, gong, firewood, cave": s15Many([[-70, function (b) { gong(b, 0, 0, 1.1); }], [70, function (b) { firewood(b, 0, -8, 1.1, {loose: true}); }]])
 };
 
+// row: a "pair" row; y: its middle, in pixels of the sheet; t: seconds (a moving figure's frame, 7.5 a second). Each
+// side's figure in S15_FIGURES (by its English name), if it has one, is drawn from its tile. It fills S15_TILES on
+// a figure's first call (sabaiTile()). Gives back nothing: it draws with pen. e.g. s15Bow(rows[n], 560, t);
 function s15Bow(row, y, t) {                          // the figures of a row whose middle is at y
   [row[1], row[2]].forEach(function (one, side) {
     var painter = one && S15_FIGURES[one[1]];
@@ -581,6 +617,8 @@ var S15_PERCH = [150, 195];                           // the owl on a branch at 
 var S15_BATS = [[34, [1790, 50], [1080, 560]], [96, [1820, 110], [1200, 560]], [158, [1760, 40], [1000, 540]]];   // [start, from, to]: across the moon's face and down behind the near ridge
 var S15_MOTHS = [[86, 98, [1960, 760], [1500, 640]], [138, 150, [-60, 700], [420, 620]]];   // [from, to, where from, where to]
 
+// o: one of S15_OWLS; t: seconds; moon: what nightMoon() gave back (for its light). Gives back nothing: it draws
+// with pen, and nothing outside o's seconds. e.g. s15Owl(S15_OWLS[0], 20, moon);
 function s15Owl(o, t, moon) {                        // one of S15_OWLS, at second t of its flight
   if (t < o[0] || t > o[1]) { return; }
   var u = (t - o[0]) / (o[1] - o[0]), a = o[3][0], b = o[3][1];
@@ -588,6 +626,8 @@ function s15Owl(o, t, moon) {                        // one of S15_OWLS, at seco
   barnOwl(x, y, t, {fly: o[2], size: mix(a[2], b[2], u * u), face: b[0] < a[0] ? -1 : 1, lit: moonLight(x, y, moon), moon: moon});
 }
 
+// t: seconds. Draws the moon (S15_MOON), the clouds and the "side" owls with pen; gives back the moon, as
+// nightMoon() gives it. e.g. var moon = s15NightSky(t);
 function s15NightSky(t) {                             // behind the far hills: the moon, the clouds, the owl in flight
   var moon = nightMoon(S15_MOON[0], S15_MOON[1], S15_MOON[2]);
   cumulus(pen, t, CLOUD_LOOKS.night);
@@ -599,6 +639,9 @@ function s15NightSky(t) {                             // behind the far hills: t
 // behind a layer?": they were, dark on the dark sky under it), on a sheet of their own with the near ridge cut out of
 // it, so they still go behind the hills; moonlit grey, larger, every stream across the moon's face.
 var S15_BAT_SHEET = null;
+// t: seconds; front: the sheet of the near ridge to cut them out by (the mountain's frontNight). It makes
+// S15_BAT_SHEET (pen's canvas size) on its first call and draws on it with pen pointed there, then lays it over the
+// picture; pen is given back as it was. Gives back nothing. e.g. s15NightBats(t, mountain.frontNight);
 function s15NightBats(t, front) {
   if (!S15_BAT_SHEET) {
     S15_BAT_SHEET = document.createElement("canvas");
@@ -621,6 +664,8 @@ function s15NightBats(t, front) {
   pen.restore();
 }
 
+// t: seconds; moon: as s15NightSky() gave it. Gives back nothing: it draws with pen (the perched owl from
+// S15_PERCH[0], the moths of S15_MOTHS, the "front" owl). e.g. s15NightNear(t, moon);
 function s15NightNear(t, moon) {                      // in front of the mountain: the fireflies on its slopes, a moth, the perched owl
   farFireflies(t, {box: [0, 820, WIDE, 1070], count: 70});
   S15_OWLS.forEach(function (o) { if (o[2] === "front") { s15Owl(o, t, moon); } });   // coming down toward us, in front of the mountain
@@ -645,6 +690,13 @@ function s15NightNear(t, moon) {                      // in front of the mountai
   }
 }
 
+// Scene 15, the entry the film calls (SCENES): t, its own second, 0 to S15_LONG (195 s): the night over the mountain;
+// the roll of s15Rows() from S15_ROLL[0] (3 s) until the end is held at S15_ROLL[1] (174 s), each "pair" row's
+// figures bowing as it passes (s15Bow()); the words go at S15_THANKS[0] (177.5 s) for the pandas' thanks; into black
+// from 192.6 s. Gives back nothing: it draws the whole sheet with pen. On the first call it adds backNight and
+// frontNight to MAENG_MOUNTAIN. From sets.js: maengMountain(), maengTinted(), maengSky("night"), MAENG_NIGHT,
+// maengDark(), maengPerson() and maengTrader() (the figures); from thanks.js MAENG_THANKED and MAENG_SCHOLARS. No
+// words are said: S15_LINES is empty. e.g. sceneCredits(60);
 function sceneCredits(t) {
   var mountain = maengMountain();
   if (!mountain.backNight) {                         // the mountain by night, as the yard is at night

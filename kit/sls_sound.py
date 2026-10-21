@@ -12,6 +12,11 @@ The card's picture is copied as it is (no render); only its sound is mixed. The 
 faded in and out; the magpie (CC0, iNaturalist) at MAGPIE_AT, the flock (Gunter Koenigsmann, CC BY 4.0) at FLOCK_AT,
 the shama (Utain Pummarin, CC BY 4.0) so its second song ends SHAMA_END before the card does; the music lowered
 under the calls.
+
+It needs ffmpeg on the PATH, numpy and soundfile, and wind.wav, magpie.wav, flock.wav and shama.wav in
+out/sounds/ (sounds.py makes them). It writes the third file named (the second's picture, AAC sound) and prints
+when each call comes in. Exit code 0; 1 with this text when it is not given three files, or when ffmpeg stops
+(CalledProcessError) or a sound is missing.
 """
 import subprocess
 import sys
@@ -32,6 +37,12 @@ SHAMA_DIP = 0.5       # the music under the shama, lower: the card's last sound
 
 
 def mono(path, rate):
+    """A sound file read as one channel (the ears averaged) at "rate" samples a second, a numpy array.
+
+    path: the file (a Path or a str). rate: samples a second; a file at another rate is resampled by straight
+    lines between samples. Fails with soundfile's error when the file is not there.
+    e.g. mono(SOUNDS / "wind.wav", 48000)
+    """
     sound, got = soundfile.read(str(path), always_2d=True)
     sound = sound.mean(axis=1)
     if got != rate:
@@ -40,6 +51,12 @@ def mono(path, rate):
 
 
 def place(mixed, sound, at, rate):
+    """Adds a one-channel sound into both ears of "mixed" from second "at"; what runs past its end is cut off.
+
+    mixed: the mix, a numpy array (samples, ears), changed in place. sound: one channel. at: seconds. rate:
+    samples a second. Returns (first, last) samples it covered (equal when it starts after the end).
+    e.g. place(mixed, magpie, MAGPIE_AT, rate)
+    """
     a = int(at * rate)
     room = min(len(sound), len(mixed) - a)
     if room > 0:
@@ -48,6 +65,10 @@ def place(mixed, sound, at, rate):
 
 
 def main():
+    """The script (the module's text says how): reads sys.argv, writes the card with its new sound, prints a line.
+
+    Fails with SystemExit (this module's text) when it is not given three files.
+    """
     if len(sys.argv) != 4:
         raise SystemExit(__doc__)
     music_file, video, out = sys.argv[1:]

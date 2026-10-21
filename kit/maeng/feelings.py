@@ -12,6 +12,11 @@ A scene's first feeling holds from its start. The lines' seconds are the scene f
 sNN_*.js), so a scene's music is made as the scene is, on its own, and the film's music is the scenes' joined.
 checks/score_check.py hears the music under every line and says whether it carries that line's feeling, and
 writes the plot of it (out/maeng_music/plot.html).
+
+It needs numpy, soundfile and the kit's score.py; --film needs the scenes' sNN.wav made first and sounds.py's
+out/sounds/NAME.wav for every call. It prints a line a scene (its cues) or a call, and ends with exit code 0; 1
+with a traceback when a line's feeling is not one score.py has (ValueError), a file is missing, or an argument is
+not a scene number.
 """
 import json
 import re
@@ -67,7 +72,11 @@ SCENE_FEEL = {15: [[0.0, "tender"], [166.0, "joy"]]}
 
 
 def scenes():
-    """Each scene file's number, length and lines: {n: (seconds, [[from, to, id], ...], file)}."""
+    """Each scene file's number, length and lines: {n: (seconds, [[from, to, id], ...], file)}.
+
+    Reads every sNN_*.js beside this file for its sNN_LONG and sNN_LINES; a file without both is left out.
+    e.g. scenes()[4]   # (seconds, lines, "s04_wish.js")
+    """
     found = {}
     for script in sorted(HERE.glob("s[0-9][0-9]_*.js")):
         text = script.read_text(encoding="utf-8")
@@ -83,7 +92,13 @@ def scenes():
 
 def cues_of(lines, n=None):
     """A scene's cues: each line's feeling from its first second; the first from the scene's start. A scene with no
-    lines takes its cues from SCENE_FEEL."""
+    lines takes its cues from SCENE_FEEL.
+
+    lines: [[from, to, id], ...] as scenes() gives them (seconds). n: the scene's number, read only when lines is
+    empty. Returns [[second, feeling], ...], score.compose's cues. Fails with ValueError when a line's feeling is not
+    in score.FEELINGS, KeyError when a line has no FEEL or a scene with no lines has no SCENE_FEEL.
+    e.g. cues_of(scenes()[4][1], 4)
+    """
     if not lines:
         return SCENE_FEEL[n]
     cues = []
@@ -103,7 +118,12 @@ EASE = 1.5             # a bed's fade in and out
 
 def bed(heard, seconds):
     """A sound laid end to end for "seconds", each lap crossing into the next over LAP, faded in and out over EASE
-    (cicadas, frogs, crickets: a call with a fourth number, how long it lies under the scene)."""
+    (cicadas, frogs, crickets: a call with a fourth number, how long it lies under the scene).
+
+    heard: one channel at RATE, a numpy array, longer than LAP. seconds: how long the bed is. Returns the new array,
+    "seconds" long; heard is not changed.
+    e.g. bed(heard, 12.0)
+    """
     lap, want = int(LAP * RATE), int(seconds * RATE)
     out = heard.copy()
     rise = numpy.linspace(0, 1, lap)
@@ -121,7 +141,12 @@ def film():
     """The film's music: every scene's (sNN.wav, made first) one after another, as film.html lays the scenes, with
     the sounds their life calls (decorate.js: calls [[second, sound, loudness], ...], sounds.py's out/sounds/NAME.wav)
     laid in at their seconds, in the middle of both ears; a call with a fourth number is a bed, laid end to end for
-    that many seconds (bed()). Into out/maeng_music/film.wav."""
+    that many seconds (bed()). Into out/maeng_music/film.wav.
+
+    Returns nothing; prints a line a call and one for the film. Fails (AssertionError) when a file is not at
+    score.RATE, and with soundfile's error when a sNN.wav or a sound is missing.
+    e.g. film()
+    """
     parts, calls = [], []
     for n, (seconds, lines, name) in sorted(scenes().items()):
         music, rate = soundfile.read(str(OUT / ("s%02d.wav" % n)), always_2d=True)
@@ -150,6 +175,9 @@ def film():
 
 
 def main():
+    """The script (the module's text says how): each wanted scene's music into OUT/sNN.wav and every scene's
+    cues into OUT/cues.json, or with --film alone, film(). Fails as cues_of() and film() do.
+    """
     if sys.argv[1:] == ["--film"]:
         film()
         return

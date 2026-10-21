@@ -5,6 +5,11 @@
 A second machine helping scenes.py: scenes.py renders from the first scene on and leaves alone a scene whose clip
 is there already, so this one, run elsewhere on a copy of the kit, renders from the end, and each clip it makes is
 copied into the first machine's film_scenes/ before scenes.py comes to it. A clip already made is not made again.
+
+It needs what render.py needs (Google Chrome through Playwright, ffmpeg on the PATH) and a page that lists SCENES.
+It writes each clip into the page's <stem>_scenes/ folder (scenes.clip_of names it; a .part.mp4 while it renders)
+and prints a line as each begins and ends. Exit code 0; 1 when the page lists no SCENES or a render fails
+(SystemExit from scenes.py or render.py), or with a traceback for a scene number that is not a number or not there.
 """
 import sys
 from pathlib import Path

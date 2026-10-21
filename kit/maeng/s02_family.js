@@ -27,11 +27,14 @@ var S02_LIFE = [
    course: [[39.5, 330, 958, "peck"], [43.0, 330, 958], [45.5, 440, 962, "peck"], [49.5, 440, 962], [52.0, 330, 958, "peck"], [55.0, 330, 958]]}
 ];
 
+// t: the scene's second (gone by 18 s). Gives back nothing: it draws with pen. e.g. maengYardAt(t, 0, 0, function () { s02Mist(t); });
 function s02Mist(t) {                               // low over the rice fields behind the hut, thinning as the sun climbs
   var thin = 1 - between(t, 2, 18);
   if (thin > 0) { mistDrift(pen, t, {left: 0, right: WIDE, top: 755, bottom: 872, count: 6, wide: 560, drift: 6, seed: 21, alpha: 0.8 * thin}); }
 }
 
+// joints: what person() gave back for the mother (the film's own pixels). Gives back nothing: it draws with pen,
+// with no camera. e.g. s02Bowl(person(x, y, look));
 function s02Bowl(joints) {                          // a small wooden bowl in the mother's near hand
   var hand = joints.handA, wrist = joints.wristA;
   pen.save();
@@ -49,6 +52,9 @@ function s02Bowl(joints) {                          // a small wooden bowl in th
   pen.restore();
 }
 
+// t: the scene's second; start: the second they set off; names: "boy", "mother", "father" (all three: neutral; the
+// boy and the father alone: sad and concerned, slower). Each walks 1400 pixels of the sheet from his place in the
+// line. Gives back nothing: it draws with pen. e.g. s02Walk(t, 3, ["boy", "mother", "father"]);
 function s02Walk(t, start, names) {                 // the family on the path from the hut, out to the right
   var spots = names.length === 2 ? {father: 860, boy: 760} : {father: 1000, boy: 860, mother: 720};   // in a line, the father first
   names.forEach(function (name) {
@@ -62,6 +68,11 @@ function s02Walk(t, start, names) {                 // the family on the path fr
   });
 }
 
+// Scene 2, the entry the film calls (SCENES): t, its own second, 0 to S02_LONG (55 s): the morning to 24.5 s, the
+// night to 39.5 s, the next morning after. Gives back nothing: it draws the whole sheet with pen. From sets.js:
+// maengYardAt() (the yard, MAENG_HUT's lamp), maengWay(), maengPerson() with MAENG_FATHER, MAENG_MOTHER and
+// MAENG_BOY, maengDark(). Its life is S02_LIFE (decorate()); its words S02_LINES (M005 to M011), written under it by
+// the page. e.g. sceneFamily(30);
 function sceneFamily(t) {
   if (t < 24.5) {                                   // morning: the three go to the city
     maengYardAt(t, 0, 0, function () { s02Mist(t); });

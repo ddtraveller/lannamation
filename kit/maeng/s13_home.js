@@ -24,6 +24,8 @@ var S13_LIFE = [
   {name: "flock over the mountain", kind: "flock", layer: "back", course: [[30.5, 2150, 260], [40.0, -150, 200]]}
 ];
 
+// t: the scene's second: each of S13_CROWD walks in from its side at its second, turns to the pen, points (every
+// other one) until S13_BOLT, then is surprised. Gives back nothing: it draws with pen. e.g. s13Crowd(t);
 function s13Crowd(t) {                               // people from both sides, pressing round the pen, pointing
   S13_CROWD.forEach(function (one, n) {
     var look = cast(one[0], {size: 0.62 * (one[0] === "bunma" || one[0] === "dokkham" ? 0.75 : 1), id: "crowd" + n, smile: 0.8});
@@ -39,6 +41,12 @@ function s13Crowd(t) {                               // people from both sides, 
   });
 }
 
+// Scene 13, the entry the film calls (SCENES): t, its own second, 0 to S13_LONG (40 s), in three shots cut through
+// black at S13_SHOTS: the crowd at the pen (S13_CAMERA; it leaps at S13_BOLT, 12.4 s, and runs off) to 15.5 s; the run
+// up the trail into the cave to 30 s; the mountain today with its temple after. Gives back nothing: it draws the whole
+// sheet with pen. From sets.js: maengYardAt(), maengYardTrough(), maengGarden(), MAENG_PEN, maengSlope(),
+// MAENG_SLOPE_CAVE, maengTrail(), maengMountain(), maengPeak(), maengSky("day"), MAENG_CLOUDS.day, maengDark(). Its
+// life is S13_LIFE; its words S13_LINES (M073 to M077), written under it by the page. e.g. sceneHome(20);
 function sceneHome(t) {
   var k = MAENG_PEN;
   if (t < S13_SHOTS[0]) {                            // the crowd at the pen

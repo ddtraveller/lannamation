@@ -23,6 +23,11 @@ var S11_LIFE = [
   {name: "hen", kind: "hen", layer: "front", course: [[26.5, 700, 966, "peck"], [32.0, 700, 966], [34.0, 780, 968, "peck"], [40.0, 780, 968]]}
 ];
 
+// Scene 11, the entry the film calls (SCENES): t, its own second, 0 to S11_LONG (40 s), in three shots cut through
+// black at S11_SHOTS: s11Palace() to 13.5 s, s11Follow() to 26.5 s, s11Garden() after. Gives back nothing: it draws
+// the whole sheet with pen. From sets.js: maengDark(), and through its shots the city, the palace, the yard, the trough
+// and the garden (see each). Its life is S11_LIFE; its words S11_LINES (M064 to M068), written under it by the page.
+// e.g. sceneMorning(10);
 function sceneMorning(t) {
   if (t < S11_SHOTS[0]) { s11Palace(t); }
   else if (t < S11_SHOTS[1]) { s11Follow(t); }
@@ -33,10 +38,15 @@ function sceneMorning(t) {
   maengDark(t, -10, 0);
 }
 
+// t: seconds; when: [from, to] in seconds (S11_KING, S11_LAD). Gives back a mouth for a look, or undefined outside
+// it. e.g. maengPerson("boy", MAENG_LAD, {id: "lad", mouth: s11Speaking(t, S11_LAD)});
 function s11Speaking(t, when) {                     // a mouth that moves while its owner speaks
   return t > when[0] && t < when[1] ? {open: 0.06 + 0.26 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined;
 }
 
+// The first shot (t, the scene's second, 0 to 13.5 s): he rubs his eyes to 5 s, sees, speaks (S11_KING) and points;
+// his man sets off at 11.2 s. Gives back nothing: it draws with pen. From sets.js: maengCity(), maengSky("day"),
+// maengPalace(), MAENG_PALACE, MAENG_STAIR, maengPerson() with MAENG_KING and MAENG_HERALD. e.g. s11Palace(10);
 function s11Palace(t) {                             // the king wakes, and the trough is at his stair
   var city = maengCity(), p = MAENG_PALACE, row = 880, floor = hoKhamFloor(p[1], p[2]), x = p[0] - 60;
   pen.drawImage(maengSky("day"), 0, 0);
@@ -69,6 +79,9 @@ function s11Palace(t) {                             // the king wakes, and the t
   }
 }
 
+// The second shot (t, the scene's second, 13.5 s to 26.5 s): the king's man walks in along the path to the hut.
+// Gives back nothing: it draws with pen. From sets.js: maengYardAt(), maengYardTrough(), maengGarden(), MAENG_PEN,
+// maengWay(), maengPerson() with MAENG_LAD and MAENG_HERALD. e.g. s11Follow(20);
 function s11Follow(t) {                             // the yard by day: the king's man follows the trough to the hut
   var k = MAENG_PEN;
   maengYardAt(t, 0, 0);
@@ -87,6 +100,9 @@ function s11Follow(t) {                             // the yard by day: the king
   person(man.x, maengWay(man.x) + 18, man.look);
 }
 
+// The last shot (t, the scene's second, 26.5 s to 40 s), under the camera S11_CAMERA: he speaks (S11_LAD) and points
+// to the garden 30.5 s to 34 s. Gives back nothing: it draws with pen. From sets.js: maengYardAt(), maengYardTrough(),
+// maengGarden(), MAENG_PEN, MAENG_GARDEN, maengPerson() with MAENG_LAD and MAENG_HERALD. e.g. s11Garden(31);
 function s11Garden(t) {                             // "I built it, and there is more gold in my garden"
   var k = MAENG_PEN, speaks = t > S11_LAD[0] && t < S11_LAD[1];
   pen.save();

@@ -27,6 +27,8 @@ var S01_LIFE = [
 var S01_SERIES = "ᨶᩥᨴᩤ᩠ᨶᩃ᩶ᩣ᩠ᨶᨶᩣ";                     // นิทานล้านนา, Lanna Tales
 var S01_STORY = "ᨾᩯ᩠ᨦᩈᩦ᩵ᩉᩪᩉ᩶ᩣᨲᩣ";                   // แมงสี่หูห้าตา, the creature with four ears and five eyes
 
+// t: the scene's second (seen from 1.2 s to 7.6 s). Gives back nothing: it writes S01_SERIES and S01_STORY with pen,
+// over the whole sheet with no camera. e.g. s01Title(t);
 function s01Title(t) {                              // the series, then the tale, faded in and out over the fog
   var series = between(t, 1.2, 2.4) * (1 - between(t, 6.6, 7.6)), story = between(t, 3.4, 4.6) * (1 - between(t, 6.6, 7.6));
   if (series <= 0) { return; }
@@ -62,6 +64,8 @@ function s01Title(t) {                              // the series, then the tale
   pen.restore();
 }
 
+// t: the scene's second (seen from 24.5 s to 28.5 s); drawn at MAENG_CAVE, under the scene's camera. Gives back
+// nothing: it draws with pen. e.g. s01Eyes(t);
 function s01Eyes(t) {                               // five green eyes in the cave's dark: they open, blink once, close
   var open = between(t, 24.5, 25.3) * (1 - between(t, 27.6, 28.5));
   if (open <= 0 || (t > 26.3 && t < 26.5)) { return; }
@@ -83,6 +87,8 @@ function s01Eyes(t) {                               // five green eyes in the ca
 var S01_BEHIND = [[-86, -58, 13, 6], [-64, -82, 14, 7], [-36, -92, 13, 8], [-6, -96, 14, 9], [24, -94, 13, 10], [52, -88, 14, 11], [80, -70, 13, 12], [94, -40, 12, 15], [-94, -26, 12, 16]];
 var S01_BEFORE = [[-62, 8, 11, 1], [-40, 12, 13, 2], [-16, 14, 12, 3], [8, 13, 13, 4], [32, 12, 12, 5], [56, 9, 13, 13], [80, 6, 11, 14]];
 
+// list: S01_BEHIND or S01_BEFORE, each [x and y from MAENG_CAVE, radius, seed]; dawn: how much of MAENG_DAWN's colour
+// is on them, 0 to 1. Gives back nothing: it draws with pen. e.g. s01Crowns(S01_BEHIND, MAENG_DAWN[1]);
 function s01Crowns(list, dawn) {
   list.forEach(function (c) {
     var green = blend(blend(FOREST_GREENS[c[3] % FOREST_GREENS.length], "#79ad84", 0.15), MAENG_DAWN[0], dawn);   // the slope's own haze, then the light
@@ -90,6 +96,10 @@ function s01Crowns(list, dawn) {
   });
 }
 
+// Scene 1, the entry the film calls (SCENES): t, its own second, 0 to S01_LONG (30 s). Gives back nothing: it draws
+// the whole sheet with pen and leaves it as it found it. From sets.js: maengMountain(), maengSky("night"/"dawn"),
+// MAENG_CLOUDS.dawn, MAENG_CAVE, MAENG_DAWN. Its words are S01_LINES (M001 to M004, 8 s to 24 s), written under it
+// by the page (maengSubtitles); S01_SOUND and S01_LIFE are heard only. e.g. sceneDoi(12);
 function sceneDoi(t) {
   var mountain = maengMountain(), light = between(t, 0, S01_LONG);
   var day = 0.6 * light * light * (3 - 2 * light), dawn = MAENG_DAWN[1] * (1 - day);   // the sun coming up behind the mountain

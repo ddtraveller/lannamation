@@ -17,11 +17,15 @@ var S03_LIFE = [
   {name: "flock", kind: "flock", course: [[3.0, 2150, 230], [14.0, -150, 170]]}
 ];
 
+// Gives back an x in pixels of the sheet (left of the picture), from the kit's GAITS.buffalo and BEAT.
+// e.g. amble("buffalo", t, s03From(), S03_STAND, 0.5, {size: 0.62, rope: true});
 function s03From() {                                // where the buffalo sets off, so that it stops by 12 s
   var g = GAITS.buffalo, pace = g[1] / 0.62 * g[0] * 0.62;
   return S03_STAND - pace * (11.5 / (g[2] * BEAT));
 }
 
+// The buffalo at the scene's second t: what amble() gives back ({x, look, arrives, ...}); it draws nothing.
+// e.g. var ox = s03Ox(t);
 function s03Ox(t) {
   return amble("buffalo", t, s03From(), S03_STAND, 0.5, {size: 0.62, rope: true});
 }
@@ -30,14 +34,20 @@ function s03Ox(t) {
 // "Add a buffalo eating grass behavior and show the buffalo eating. Add some grass tufts"): its head goes down a
 // second after it stops, comes up for a moment every 6 s, and the tuft under its muzzle is cropped as the scene goes.
 var S03_TUFTS = [[300, 952, 0.9], [520, 990, 1.1], [1130, 958, 0.8], [1290, 1012, 1.2], [1700, 970, 1.0], [180, 1030, 1.3]];
+// How far down its head is at second t, 0 (up) to 1 (grazing); ox: what s03Ox() gave back.
+// e.g. buffalo(ox.x, S03_GROUND - 6, Object.assign({}, ox.look, {graze: s03Graze(t, ox)}));
 function s03Graze(t, ox) {
   var down = between(t, ox.arrives + 1, ox.arrives + 2.4), cycle = (t - ox.arrives - 2.4) % 6;
   var lift = t > ox.arrives + 2.4 && cycle > 4.4 ? Math.sin(Math.PI * (cycle - 4.4) / 1.6) : 0;
   return down * (1 - 0.8 * lift);
 }
+// ox: what s03Ox() gave back; gives back an x in pixels of the sheet. e.g. var x = s03Muzzle(ox);
 function s03Muzzle(ox) {                             // where its muzzle meets the ground when it grazes
   return ox.x + 195 * 0.62 * GAITS.buffalo[0] * (ox.look.face || 1);
 }
+// The tufts of S03_TUFTS on one side of S03_GROUND: front false, those behind it; true, those before it, and with an
+// ox (what s03Ox() gave back, or null) the one it eats. Gives back nothing: it draws with pen.
+// e.g. s03Tufts(t, null, false);
 function s03Tufts(t, ox, front) {
   S03_TUFTS.forEach(function (tuft) {
     if ((tuft[1] > S03_GROUND) === front) { grassTuft(pen, tuft[0], tuft[1], tuft[2], {t: t}); }
@@ -47,6 +57,11 @@ function s03Tufts(t, ox, front) {
   }
 }
 
+// Scene 3, the entry the film calls (SCENES): t, its own second, 0 to S03_LONG (35 s): he leads the buffalo out
+// until it stops (about 12 s), gathers the wood (16 s to 22 s), goes home with it from 24 s. Gives back nothing: it
+// draws the whole sheet with pen. From sets.js: maengSky("day"), MAENG_CLOUDS.day, maengYard().back,
+// maengMeadow(), MAENG_TREE, maengPerson() with MAENG_LAD, maengLead(), maengMeasure(). Its life is S03_LIFE; its
+// words S03_LINES (M012 to M014), written under it by the page. e.g. sceneWork(20);
 function sceneWork(t) {
   pen.drawImage(maengSky("day"), 0, 0);
   cumulus(pen, t + 40, MAENG_CLOUDS.day);

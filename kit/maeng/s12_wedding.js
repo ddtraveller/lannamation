@@ -19,6 +19,8 @@ var S12_LIFE = [
    course: [[S12_SHOTS[0], MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [S12_LONG, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4]]}
 ];
 
+// joints: what person() gave back for the one who holds it; full: true heaps rice in it. Gives back nothing: it
+// draws with pen, in the film's own pixels. e.g. s12Bowl(person(x, 905, look), true);
 function s12Bowl(joints, full) {                    // a wooden bowl in a near hand, its rice heaped once it is filled
   var hand = joints.handA, wrist = joints.wristA;
   pen.save();
@@ -38,6 +40,9 @@ function s12Bowl(joints, full) {                    // a wooden bowl in a near h
   pen.restore();
 }
 
+// t: seconds; tint: MAENG_DUSK for dusk, or null for day. On the first call with a tint it adds backDusk and frontDusk
+// to MAENG_CITY. Gives back nothing: it draws with pen (the palace's front is left to the caller).
+// e.g. s12City(t, MAENG_DUSK); person(...); maengPalace(t, "front", MAENG_DUSK, 1);
 function s12City(t, tint) {                         // the courtyard, the palace's back, in the scene's light
   var city = maengCity();
   if (tint && !city.backDusk) {
@@ -52,6 +57,12 @@ function s12City(t, tint) {                         // the courtyard, the palace
   decorate(t, S12_LIFE, "back");
 }
 
+// Scene 12, the entry the film calls (SCENES): t, its own second, 0 to S12_LONG (35 s), in three shots cut through
+// black at S12_SHOTS: the wedding at dusk to 12.6 s, the rice for the poor (S12_POOR) to 25 s, the Righteous King and
+// the people's wai (S12_PEOPLE) after. Gives back nothing: it draws the whole sheet with pen. From sets.js: maengCity(),
+// maengPalace(), MAENG_PALACE, MAENG_STAIR, MAENG_DUSK, maengDark(), maengPerson() with MAENG_KING, MAENG_GROOM,
+// MAENG_SIMA, MAENG_KING_THUKKHATA and the family's looks. Its life is S12_LIFE; its words S12_LINES (M069 to M072),
+// written under it by the page. e.g. sceneWedding(18);
 function sceneWedding(t) {
   var p = MAENG_PALACE, dais = hoKhamDais(p[1], p[2]);
   if (t < S12_SHOTS[0]) {                            // the wedding, at dusk

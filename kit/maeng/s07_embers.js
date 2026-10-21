@@ -27,11 +27,18 @@ var S07_LIFE = [
    calls: [[31.9, "maeng-happy", 2.8]]}
 ];
 
+// point: [x, y] in the film's own pixels; gives back [x, y] under pen's camera now (as maengAt() does).
+// e.g. var held = s07Here(boyAt.handA);
 function s07Here(point) {                          // a joint (the film's own pixels) where the camera's pen draws it
   var p = pen.getTransform().inverse().transformPoint(new DOMPoint(point[0], point[1]));
   return [p.x, p.y];
 }
 
+// Scene 7, the entry the film calls (SCENES): t, its own second, 0 to S07_LONG (55 s): by day the grass (8.4 s) and
+// the banana (12.8 s), then sleep; the cut to night at S07_NIGHT (18.5 s), the embers at S07_FEEDS. Gives back
+// nothing: it draws the whole sheet with pen, under the camera S07_CAMERA. From sets.js: maengYardAt(), MAENG_NIGHT,
+// MAENG_PEN, maengPerson() with MAENG_LAD. Its life is S07_LIFE; its words S07_LINES (M036 to M044), written under it
+// by the page. e.g. sceneEmbers(31);
 function sceneEmbers(t) {
   var night = t >= S07_NIGHT ? 1 : 0, dark = Math.max(between(t, S07_NIGHT - 1.4, S07_NIGHT) * (t < S07_NIGHT ? 1 : 0),
                                                       t >= S07_NIGHT ? 1 - between(t, S07_NIGHT, S07_NIGHT + 1.4) : 0);

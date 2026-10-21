@@ -28,6 +28,8 @@ var S10_LIFE = [
   {name: "flock at dawn", kind: "flock", layer: "back", course: [[51.0, 2150, 180], [60.0, -150, 140]]}
 ];
 
+// x, y: the middle of its foot, in pixels of the sheet; count: how many nuggets; t: seconds (they glint by it). Gives
+// back nothing: it draws with pen. e.g. s10Heap(S10_HEAP[0], S10_HEAP[1], 22, t);
 function s10Heap(x, y, count, t) {                  // gold heaped on the ground, in rows that narrow upward
   for (var n = 0, row = 0, k = 0; n < count; n++) {
     var across = 6 - row;
@@ -36,6 +38,8 @@ function s10Heap(x, y, count, t) {                  // gold heaped on the ground
   }
 }
 
+// joints: what person() gave back for the trader; size: his look's size. Gives back nothing: it draws with pen, in
+// the film's own pixels, at the camera's scale. e.g. s10Hammer(person(x, y, maengTrader(1, {face: 1})), MAENG_TRADERS[1].size);
 function s10Hammer(joints, size) {                  // a hammer in a trader's near hand: a handle on from the fist, a head of iron
   var h = joints.handA, w = joints.wristA, long = Math.hypot(h[0] - w[0], h[1] - w[1]) || 1;
   var scale = pen.getTransform().a * size;          // the film's pixels to a scene's, under its camera
@@ -58,11 +62,15 @@ function s10Hammer(joints, size) {                  // a hammer in a trader's ne
   pen.restore();
 }
 
+// t: seconds; late: 0 to 1, how far behind the others in its swing (1.6 strikes a second). Gives back {high: 0 to 1,
+// spark: 0 to 1 just after it lands, else null}. e.g. var strike = s10Strike(t, 0.37);
 function s10Strike(t, late) {                       // 0 to 1: how high a hammer is (it falls fast and rises slow); and a spark as it lands
   var u = (t * 1.6 + late) % 1, high = u < 0.25 ? 1 - u / 0.25 : (u - 0.25) / 0.75;
   return {high: high, spark: u < 0.18 ? u / 0.18 : null};
 }
 
+// x, y: where it lands, in pixels of the sheet; u: 0 to 1 since it landed (s10Strike()'s spark); seed: which
+// sparks. Gives back nothing: it draws with pen. e.g. if (strike.spark !== null) { s10Sparks(x, y, strike.spark, 3); }
 function s10Sparks(x, y, u, seed) {                 // sparks off the gold where a hammer lands: out and up, and gone
   for (var n = 0; n < 6; n++) {
     var a = -Math.PI * (0.15 + 0.7 * dice(seed * 7 + n)), far = 10 + 34 * u * (0.6 + 0.6 * dice(seed * 3 + n));
@@ -73,6 +81,11 @@ function s10Sparks(x, y, u, seed) {                 // sparks off the gold where
   }
 }
 
+// Scene 10, the entry the film calls (SCENES): t, its own second, 0 to S10_LONG (60 s), in four shots cut through
+// black at S10_SHOTS: s10Garden() to 15 s, s10Caravan() to 29 s, s10Night() to 50 s, s10Dawn() after. Gives back
+// nothing: it draws the whole sheet with pen. From sets.js: maengDark(), and through its shots the yard, the garden,
+// the pen, the trough and the city (see each). Its life is S10_LIFE; its words S10_LINES (M057 to M063), written
+// under it by the page. e.g. sceneTrough(40);
 function sceneTrough(t) {
   if (t < S10_SHOTS[0]) { s10Garden(t); }
   else if (t < S10_SHOTS[1]) { s10Caravan(t); }
@@ -85,6 +98,9 @@ function sceneTrough(t) {
   maengDark(t, -10, 0);
 }
 
+// The first shot (t, the scene's second, 0 to 15 s), under the camera S10_CAMERA: the gold dug up over S10_DIG and
+// heaped at S10_HEAP. Gives back nothing: it draws with pen. From sets.js: maengYardAt(), maengGarden(), MAENG_MOUNDS,
+// MAENG_GARDEN, MAENG_PEN, maengWay(), maengPerson() with MAENG_LAD and MAENG_HERALD. e.g. s10Garden(8);
 function s10Garden(t) {                             // the crier goes by calling; Thukkhata hears, and digs up his gold
   var dug = between(t, S10_DIG[0], S10_DIG[1]) * MAENG_MOUNDS.length, k = MAENG_PEN;
   pen.save();
@@ -112,6 +128,9 @@ function s10Garden(t) {                             // the crier goes by calling
   pen.restore();
 }
 
+// The second shot (t, the scene's second, 15 s to 29 s): the horses come from 15.6 s; he asks 24.4 s to 29.3 s. Gives
+// back nothing: it draws with pen. From sets.js: maengYard() and its night sheets at 0.4, maengSky("dusk"),
+// MAENG_HUT, MAENG_NIGHT, maengGarden(), MAENG_PEN, maengLead() and maengTrader(). e.g. s10Caravan(25);
 function s10Caravan(t) {                            // dusk: the Haw caravan comes along the path; he asks them to help
   var yard = maengYard(), dusk = 0.4, k = MAENG_PEN;
   pen.drawImage(maengSky("dusk"), 0, 0);
@@ -142,6 +161,9 @@ function s10Caravan(t) {                            // dusk: the Haw caravan com
   });
 }
 
+// The third shot (t, the scene's second, 29 s to 50 s), under a camera panning by S10_NIGHT: the trough laid from 0
+// to 1 between 29.5 s and 48.5 s, the crew of S10_CREW at it. Gives back nothing: it draws with pen. From sets.js:
+// maengYardAt() at night, maengYardTrough(), MAENG_TROUGH_TURN, maengGarden(), MAENG_PEN, MAENG_NIGHT. e.g. s10Night(40);
 function s10Night(t) {                              // all night under the lanterns: hammering, and the trough grows
   var built = between(t, S10_SHOTS[1] + 0.5, S10_SHOTS[2] - 1.5), k = MAENG_PEN, tint = MAENG_NIGHT, c = S10_NIGHT;
   pen.save();
@@ -162,6 +184,8 @@ function s10Night(t) {                              // all night under the lante
   pen.restore();
 }
 
+// t: seconds; c: one of S10_CREW, [x, which trader]; built: how much of the trough is laid, 0 to 1 (no sparks
+// before it reaches him). Gives back nothing: it draws with pen. e.g. S10_CREW.forEach(function (c) { s10Crew(t, c, 0.5); });
 function s10Crew(t, c, built) {                     // a trader sitting behind the trough, by his lantern on its pole, hammering
     var x = c[0], y = maengTroughAt(x)[1] - 8, size = MAENG_TRADERS[c[1]].size;
     pen.strokeStyle = "#3a3226";
@@ -178,6 +202,10 @@ function s10Crew(t, c, built) {                     // a trader sitting behind t
     if (strike.spark !== null && built > (x - 600) / (WIDE - 520)) { s10Sparks(anvil[0], anvil[1], strike.spark, c[1] + Math.floor(t * 1.6)); }
 }
 
+// The last shot (t, the scene's second, 50 s to 60 s): the last piece beaten in, done at 53.2 s. Gives back nothing:
+// it draws with pen. From sets.js: maengCity() (on the first call it adds backDawn and frontDawn to MAENG_CITY, made
+// by maengTinted()), maengSky("dawn"), MAENG_CLOUDS.dawn, maengPalace(), MAENG_PALACE, MAENG_STAIR, MAENG_DAWN,
+// maengTrader(). e.g. s10Dawn(52);
 function s10Dawn(t) {                               // dawn at the palace: the trough has come to its stair, and it is done
   var city = maengCity(), p = MAENG_PALACE, row = 880;
   if (!city.backDawn) {

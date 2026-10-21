@@ -27,6 +27,12 @@ var S08_LIFE = [
   {name: "flock", kind: "flock", course: [[1.0, 2150, 200], [12.0, -150, 160]]}
 ];
 
+// Scene 8, the entry the film calls (SCENES): t, its own second, 0 to S08_LONG (40 s): the gold on the pen's floor,
+// picked up at 6.2 s; the first mound from 12.7 s; the days go by at S08_DAYS (15 s to 22 s), a mound each; the full
+// garden; from 27 s he leads the buffalo out; out of black over 1.5 s, into it from 38 s. Gives back nothing: it draws
+// the whole sheet with pen, under the camera S08_CAMERA. From sets.js: maengYardAt(), maengGarden(), MAENG_MOUNDS,
+// MAENG_GARDEN, MAENG_PEN, MAENG_NIGHT, maengAt(), maengLead(), maengPerson() with MAENG_LAD. Its life is S08_LIFE;
+// its words S08_LINES (M045 to M049), written under it by the page. e.g. sceneGold(18);
 function sceneGold(t) {
   var turning = between(t, S08_DAYS[0], S08_DAYS[1]), days = turning * 7;
   var night = turning > 0 && turning < 1 ? 0.5 - 0.5 * Math.cos(days * Math.PI * 2) : 0;   // the days and nights going by, fast

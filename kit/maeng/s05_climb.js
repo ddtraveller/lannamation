@@ -13,6 +13,9 @@ var S05_CLOUDS = {count: 5, lit: "#f6b07a", shade: "#9a5a6a", below: true};
 var S05_BEHIND = [[-86, -58, 13], [-64, -82, 14], [-36, -92, 13], [-6, -96, 14], [24, -94, 13], [52, -88, 14], [80, -70, 13], [94, -40, 12]];
 var S05_BEFORE = [[-80, 10, 12], [-52, 14, 13], [74, 12, 12], [96, 4, 11]];
 
+// list: S05_BEHIND or S05_BEFORE, each [x and y from MAENG_SLOPE_CAVE, radius] at size 1; size: how much larger;
+// seed: picks their greens; tint: [colour, 0 to 1] (MAENG_DUSK). Gives back nothing: it draws with pen.
+// e.g. s05Crowns(S05_BEHIND, MAENG_SLOPE_CAVE[2] * 1.6, 3, MAENG_DUSK);
 function s05Crowns(list, size, seed, tint) {          // the forest's own crowns over and beside the cave, at its size
   list.forEach(function (c, n) {
     var green = blend(blend(FOREST_GREENS[(n + seed) % FOREST_GREENS.length], "#79ad84", 0.05), tint[0], tint[1]);
@@ -29,6 +32,11 @@ var S05_LIFE = [
    calls: [[38.0, "maeng-base", 0.87]]}
 ];
 
+// Scene 5, the entry the film calls (SCENES): t, its own second, 0 to S05_LONG (45 s): he climbs to 21 s, the rope
+// catches to 27 s, he sets the snare 29 s to 33 s, and goes down from 38 s; out of black over 2 s, into it from 43 s.
+// Gives back nothing: it draws the whole sheet with pen. From sets.js: maengSlope() (its dusk sheets), maengSky("dusk"),
+// MAENG_SLOPE_CAVE, MAENG_DUSK, maengTrail(), maengPerson() with MAENG_LAD. Its life is S05_LIFE; its words
+// S05_LINES (M024 to M027), written under it by the page. e.g. sceneClimb(30);
 function sceneClimb(t) {
   var slope = maengSlope(), tint = MAENG_DUSK, size = MAENG_SLOPE_CAVE[2];
   pen.drawImage(maengSky("dusk"), 0, 0);

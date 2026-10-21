@@ -17,6 +17,8 @@ var S09_GONG = [1800, 900];
 var S09_BUILDS = [{at: 200, row: 850, built: 0.55, look: {}},
                   {at: 340, row: 875, built: 1, look: {sag: [0.55, 55]}},
                   {at: 480, row: 900, built: 0.8, look: {sag: [0.66, -110]}}];
+// n: 0, 1 or 2, which prince (S09_BUILDS); gives back the second his trough is done failing.
+// e.g. if (t > s09Fails(0)) { feel = "sad"; }
 function s09Fails(n) { return 27 + n * 3 + 3.5; }
 
 // Its life: a red-billed blue magpie perched on the tip of the palace roof's golden finial, that flies off as the
@@ -27,6 +29,12 @@ var S09_LIFE = [
   {name: "flock", kind: "flock", layer: "back", course: [[9.0, -150, 230], [19.0, 2150, 170]]}
 ];
 
+// Scene 9, the entry the film calls (SCENES): t, its own second, 0 to S09_LONG (55 s): the princes come in from
+// 10.4 s, the gong at 16.3 s, the king speaks (S09_KING), the troughs are laid from 27 s and fail (s09Fails), the
+// princes go from 40 s; out of black over 1.5 s, into it from 53 s. Gives back nothing: it draws the whole sheet with
+// pen. From sets.js: maengCity(), maengSky("day"), MAENG_CLOUDS.day, maengPalace(), MAENG_PALACE, MAENG_STAIR,
+// MAENG_FINIAL, maengPerson() with MAENG_KING, MAENG_SIMA, MAENG_HERALD and MAENG_PRINCES. Its life is S09_LIFE; its
+// words S09_LINES (M050 to M056), written under it by the page. e.g. sceneDecree(20);
 function sceneDecree(t) {
   var city = maengCity(), p = MAENG_PALACE;
   pen.drawImage(maengSky("day"), 0, 0);

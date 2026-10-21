@@ -24,14 +24,22 @@
 // photograph of a temple mural of thewada flying among clouds the owner gave (studied, not copied: the tall tiered
 // crown, the gilded skin, the patterned cloth whose ends flare back like flames, the pose of flight).
 
+// The look keys thewada(), kinnari() and hongFlight() take, said above; any other is warned of once (checkNames) and
+// changes nothing. The three share the list, so a key one of them does not read (gift on the hong) is passed by quietly.
 var HIMMA_KEYS = {};
 ["size", "face", "seed", "scarves", "gift", "light", "soar", "beats", "trail"].forEach(function (n) { HIMMA_KEYS[n] = true; });
 
+// The beings' colours, each "#rrggbb": gilded skin, gold, jewels, cloth, scarves, lotus, feathers. Every function here
+// reads them as it draws; a page may change one before it draws.
 var HIMMA = {skin: "#e8b860", skinLit: "#f8dc94", skinShade: "#c48a3c", skinLine: "#7a4e1c", gold: "#dca63c", goldLit: "#f6d47a",
              goldLine: "#6e4612", jewel: "#c8303a", jewel2: "#2e8a6a", cloth: "#a8322a", clothDeep: "#6a1c16", clothIn: "#2e6a5a",
              border: "#e3b04a", scarf: "#f0cc6a", scarf2: "#d0503c", lotus: "#f4a8ba", lotusDeep: "#c8607e", leaf: "#5f8a34",
              lip: "#b8343a", brow: "#3a2410", feather: "#f2ead6", featherDeep: "#c9b48a", featherLine: "#7a6440"};
 
+// Fills the path now on pen with "fill" (a colour or a gradient) and strokes it with "line" (a colour), "width" pixels
+// wide (1.4 when left out). Returns nothing. It leaves pen's fillStyle, strokeStyle and lineWidth as it set them, and so
+// do the helpers below that draw through it; thewada(), kinnari() and hongFlight() save pen and restore it.
+// e.g. pen.beginPath(); pen.arc(0, 0, 5, 0, Math.PI * 2); himmaFill(HIMMA.gold, HIMMA.goldLine);
 function himmaFill(fill, line, width) {             // the kit's way: the paint, then a fine line of the colour's own ink
   pen.fillStyle = fill;
   pen.fill();
@@ -40,6 +48,9 @@ function himmaFill(fill, line, width) {             // the kit's way: the paint,
   pen.stroke();
 }
 
+// Returns a gradient (it draws nothing) along the line from (x0, y0) to (x1, y1) in pen's place now: skinLit blended in
+// by "light" (0 to 1) at the start, skinShade at the end. For himmaFill().
+// e.g. himmaFill(himmaSkin(-8, -10, 10, 10, 0.6), HIMMA.skinLine);
 function himmaSkin(x0, y0, x1, y1, light) {          // gilded skin: lit toward the sun (the upper right), shaded away
   var g = pen.createLinearGradient(x0, y0, x1, y1);
   g.addColorStop(0, blend(HIMMA.skin, HIMMA.skinLit, light));
@@ -50,6 +61,8 @@ function himmaSkin(x0, y0, x1, y1, light) {          // gilded skin: lit toward 
 
 // A hand of Thai dance at (x, y), its wrist turned "turn" (radians), the four fingers together and bent far back,
 // the thumb apart: the hand the murals give every thewada.
+// size: 1 is about 22 pixels from wrist to fingertips; light: 0 to 1, as himmaSkin's. Returns nothing: it draws with pen.
+// e.g. himmaHand(-3, -22, -0.6, 0.95, 0.6);
 function himmaHand(x, y, turn, size, light) {
   pen.save();
   pen.translate(x, y);
@@ -78,6 +91,9 @@ function himmaHand(x, y, turn, size, light) {
 
 // The tall crown of the thewada (chada): a band of jewels at the brow, tiers narrowing to a spire that flicks back at
 // its tip, and the flame of gold behind each ear (kanchiak).
+// (x, y): the middle of the brow band; the spire rises about 70 pixels above it. light: 0 to 1, the gold's shine.
+// Returns nothing: it draws with pen.
+// e.g. himmaCrown(4, -74, 0.6);
 function himmaCrown(x, y, light) {
   pen.save();
   pen.translate(x, y);
@@ -126,6 +142,9 @@ function himmaCrown(x, y, light) {
 
 // The face, turned a little to us: brows arched high, the eyes long and lowered, a fine nose, a small red mouth, an
 // earring hanging from the long lobe.
+// (x, y): the middle of the face, about 20 pixels across and 25 high, facing right; light: 0 to 1; tilt: radians, 0
+// when left out. Returns nothing: it draws with pen.
+// e.g. himmaHead(4, -66, 0.6, 0.08);
 function himmaHead(x, y, light, tilt) {
   pen.save();
   pen.translate(x, y);
@@ -165,6 +184,9 @@ function himmaHead(x, y, light, tilt) {
 }
 
 // Two scarves from the shoulders, streaming back and waving slowly: each a band that narrows, its border gold.
+// t: the second; seed: shifts their wave in time; from: [x, y], the shoulders; length: the pixels they stream back
+// (to the left), falling about 40 pixels by their ends. Returns nothing: it draws with pen.
+// e.g. himmaScarves(t, 0, [0, -42], 210);
 function himmaScarves(t, seed, from, length) {
   [[HIMMA.scarf, 0, 0], [HIMMA.scarf2, 4, 1.9]].forEach(function (sc) {
     var top = [], bottom = [];
@@ -184,6 +206,10 @@ function himmaScarves(t, seed, from, length) {
 
 // The cloth wrapped at the hips: red with rows of gold diamonds, a green under-layer showing at its edge, a gold
 // border, its ends flaring back in curling flames that ripple as it flies.
+// Drawn in the thewada's own place: the belt across about x -14 to 19 at y 0, the flames out to about 80 pixels behind
+// and 76 below. t: the second; seed: shifts its ripple in time; light: 0 to 1, the sheen. Returns nothing: it draws
+// with pen.
+// e.g. himmaCloth(t, 0, 0.6);
 function himmaCloth(t, seed, light) {
   var r = function (k) { return Math.sin(t * 1.1 + seed + k * 1.3) * 3.2; };
   function flames(shift, colour, line) {
@@ -241,6 +267,11 @@ function himmaCloth(t, seed, light) {
   himmaFill(HIMMA.goldLit, HIMMA.goldLine, 0.9);
 }
 
+// A thewada, an angel, flying, as the top of this file says: (x, y) about the middle of the figure, pixels of the
+// sheet; t: the second; look: its keys are HIMMA_KEYS above, the thewada reading size (1 when left out: about 220
+// pixels tall), face (1, to the right; -1 to the left), seed (0), scarves (none), gift ("lotus", or "garland") and
+// light (0 to 1; 0.6). Returns nothing: it draws with pen and leaves pen as it found it.
+// e.g. thewada(250, 330, t, {size: 1.9, scarves: true, gift: "garland", seed: 1.5});
 function thewada(x, y, t, look) {
   look = look || {};
   checkNames("The thewada's name", look, HIMMA_KEYS);
@@ -360,6 +391,9 @@ function thewada(x, y, t, look) {
 
 // One plume of a tail from its root, out at angle "a" for "len", "wide" across at its fullest, its tip curling by
 // "curl" (radians): a leaf of gold, its rib, and a red eye near its end.
+// root: [x, y]; a and curl: radians (curl 0 when left out); len and wide: pixels; colour: its fill. Returns nothing: it
+// draws with pen.
+// e.g. himmaPlume([-24, 28], 3.1, 100, 9, HIMMA.gold, 0.05);
 function himmaPlume(root, a, len, wide, colour, curl) {
   var mid = [root[0] + Math.cos(a) * len * 0.55, root[1] + Math.sin(a) * len * 0.55];
   var tipA = a + (curl || 0), tip = [mid[0] + Math.cos(tipA) * len * 0.45, mid[1] + Math.sin(tipA) * len * 0.45];
@@ -380,6 +414,9 @@ function himmaPlume(root, a, len, wide, colour, curl) {
 
 // A wing spread for gliding, from its root (0, 0) out to the left (behind a figure flying right): coverts in rows and
 // long flight feathers, white with buff edges, gilded along its leading edge by the low sun. "lift" (-1 to 1) beats it.
+// light: 0 to 1, the gilt on the coverts; size: its scale, 1 about 120 pixels from root to tip. It draws at pen's
+// (0, 0), so translate there first. Returns nothing: it draws with pen and leaves its place as it found it.
+// e.g. pen.save(); pen.translate(-4, -40); himmaWing(Math.sin(t), 0.6, 1.05); pen.restore();
 function himmaWing(lift, light, size) {
   pen.save();
   pen.scale(size, size * (0.55 + 0.45 * Math.cos(lift * 0.9)));
@@ -418,6 +455,11 @@ function himmaWing(lift, light, size) {
   pen.restore();
 }
 
+// A kinnari flying, as the top of this file says, her wings beating slowly (one beat about every 7 seconds): (x, y)
+// about the middle of the figure, pixels of the sheet; t: the second; look: its keys are HIMMA_KEYS above, the kinnari
+// reading size (1), face (1 or -1), seed (0), scarves and light (0 to 1; 0.6). Returns nothing: it draws with pen and
+// leaves pen as it found it.
+// e.g. kinnari(1230, 330, t, {size: 1.8, seed: 0.7});
 function kinnari(x, y, t, look) {
   look = look || {};
   checkNames("The kinnari's name", look, HIMMA_KEYS);
@@ -486,6 +528,9 @@ function kinnari(x, y, t, look) {
 }
 
 // A feather as a leaf from its root to its tip, "wide" across, shaded from its root's deep gold to its tip's light.
+// root and tip: [x, y], pixels; wide: how far its one side swells (the other 0.7 of that); deep and lit: "#rrggbb"
+// colours (blend() reads deep). Returns nothing: it draws with pen.
+// e.g. himmaFeather([0, 0], [-60, 10], 13, HIMMA.gold, HIMMA.goldLit);
 function himmaFeather(root, tip, wide, deep, lit) {
   var mx = (root[0] + tip[0]) / 2, my = (root[1] + tip[1]) / 2, dx = tip[0] - root[0], dy = tip[1] - root[1];
   var len = Math.hypot(dx, dy) || 1, nx = -dy / len * wide, ny = dx / len * wide;
@@ -510,6 +555,9 @@ function himmaFeather(root, tip, wide, deep, lit) {
 // the arm on the way down and lower on the way up; the primaries spread on the downstroke and close on the upstroke;
 // the secondaries always trail back (owner, 2026-10-21: "Make the golden bird's wing flap like a natural wing instead
 // of rotating"). "far" darkens it.
+// up: -1 to 1; rate: about -1 to 1; light: 0 to 1; far: true for the wing behind the body. It draws at pen's (0, 0).
+// Returns nothing: it draws with pen and leaves its place as it found it.
+// e.g. hongWing(Math.sin(t), Math.cos(t), 0.6, false);
 function hongWing(up, rate, light, far) {
   var deep = far ? blend(HIMMA.gold, HIMMA.goldLine, 0.45) : blend(HIMMA.gold, HIMMA.goldLine, 0.2);
   var lit = far ? HIMMA.gold : blend(HIMMA.goldLit, "#fff6dc", 0.4 * light);
@@ -568,6 +616,9 @@ var HONG_BEND = Math.PI / 10;                        // the most one joint turns
 // The head flies on at HONG_AIR and rises and falls as "rise" says (in drawn pixels, a function of the time). A chain
 // remembers where it has been and a film must not, so the chain is laid out straight as it was four seconds ago and
 // led from then until now, in every frame. Returns the angle each joint faces (0 is level, to the right).
+// rise: a function of the second giving the head's height, drawn pixels; t: the second. Returns HONG_SPINE.length
+// angles in radians, the head's first. It changes nothing outside itself; each call leads the chain 120 steps.
+// e.g. var angles = hongChain(function (s) { return 6 * Math.sin(s * 0.45); }, t);
 function hongChain(rise, t) {
   var STEPS = 120, gaps = [], points = [], angles = [], n;
   for (n = 1; n < HONG_SPINE.length; n++) {
@@ -601,6 +652,11 @@ function hongChain(rise, t) {
 // a time (hongChain), so as it rises the head tips up first, then the neck bends, then the body comes round; each
 // piece of the drawing turns with its joint, so the S of the neck is kept. The wings lift the body under a steady
 // head, so the neck flexes with every beat.
+// (x, y): pixels of the sheet; t: the second; look: its keys are HIMMA_KEYS above, the hong reading size (1, as the
+// top of this file says), face (1 or -1), seed (0), light (0 to 1; 0.6), soar, beats ([second, how many], with soar;
+// HONG_BEAT seconds each) and trail (a function of the second giving [x, y], the path the page moves it on; only its
+// y is read, for the rise). Returns nothing: it draws with pen and leaves pen as it found it.
+// e.g. hongFlight(1660, 300, t, {size: 1.6, seed: 2.1, soar: true, beats: [3, 2]});
 function hongFlight(x, y, t, look) {
   look = look || {};
   checkNames("The hong's name", look, HIMMA_KEYS);
@@ -707,6 +763,9 @@ function hongFlight(x, y, t, look) {
 
 // The hong's neck through the first six joints of its spine (the head's end first), as wide as HONG_NECK says at
 // each: a smooth band, gold deepening down to the breast, its fine feathers in ticks, the jewelled collar at its root.
+// spine: [[x, y], ...], at least six joints, drawn pixels (hongFlight()'s, turned and lifted); light: 0 to 1.
+// Returns nothing: it draws with pen.
+// e.g. hongNeck(spine, 0.6);
 function hongNeck(spine, light) {
   var left = [], right = [], n, last = HONG_NECK.length - 1;
   for (n = 0; n <= last; n++) {                      // each joint's two edges, across the way the neck runs there

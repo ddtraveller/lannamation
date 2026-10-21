@@ -17,6 +17,8 @@ var S06_VINE = 250;                                 // how far behind him it wal
 var S06_BEHIND = [[-86, -58, 13], [-64, -82, 14], [-36, -92, 13], [-6, -96, 14], [24, -94, 13], [52, -88, 14], [80, -70, 13], [94, -40, 12]];
 var S06_BEFORE = [[-80, 10, 12], [-52, 14, 13], [74, 12, 12], [96, 4, 11]];
 
+// list: S06_BEHIND or S06_BEFORE, as s05Crowns() takes; size, seed as there; shake: pixels they sway by the kit's
+// clock, 0 for still. Gives back nothing: it draws with pen. e.g. s06Crowns(S06_BEFORE, MAENG_SLOPE_CAVE[2] * 1.6, 9, 3);
 function s06Crowns(list, size, seed, shake) {        // the forest's own crowns over and beside the cave; the near ones shake while it struggles
   list.forEach(function (c, n) {
     var green = blend(FOREST_GREENS[(n + seed) % FOREST_GREENS.length], "#79ad84", 0.05);
@@ -34,6 +36,12 @@ var S06_LIFE = [
    calls: [[5.3, "maeng-angry", 3.7]]}
 ];
 
+// Scene 6, the entry the film calls (SCENES): t, its own second, 0 to S06_LONG (60 s): he climbs to the snare, the
+// creature tugs (5.2 s to 9.5 s) and comes out (to 12.5 s), its eyes open from 19.5 s, he ties the vine at about 34 s,
+// and from 39.5 s it follows him down; out of black over 1.5 s, into it from 56 s. Gives back nothing: it draws the
+// whole sheet with pen, under a camera S06_NEAR times near. From sets.js: maengSlope(), maengSky("day"),
+// MAENG_SLOPE_CAVE, maengTrail(), maengAt(), maengPerson() with MAENG_LAD. Its life is S06_LIFE; its words
+// S06_LINES (M028 to M035), written under it by the page. e.g. sceneCreature(20);
 function sceneCreature(t) {
   var slope = maengSlope(), size = MAENG_SLOPE_CAVE[2];
   pen.save();                                       // close to the cave: everything seen S06_NEAR times larger about it

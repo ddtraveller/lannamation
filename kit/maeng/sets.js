@@ -10,6 +10,9 @@ var BEAT = 0.5;
 // "day", "dusk". The clouds are not on it: a scene drifts them over it (cumulus.js).
 var MAENG_SKY = {};
 
+// maengSky(kind): kind "night", "dawn", "day" or "dusk". Gives back the sky's canvas (WIDE by 1080 pixels of the
+// sheet), painted on the first call and kept in MAENG_SKY after.
+// e.g. pen.drawImage(maengSky("dawn"), 0, 0);
 function maengSky(kind) {
   if (MAENG_SKY[kind]) { return MAENG_SKY[kind]; }
   var paper = document.createElement("canvas");
@@ -46,11 +49,16 @@ var MAENG_CLOUDS = {dawn: {count: 6, lit: "#f2c3a6", shade: "#7a6a96", below: fa
 // caveMouth() of highlands.js). Scenes 1, 5, 6 and 13.
 var MAENG_CAVE = [1300, 600];
 
+// x in pixels of the sheet; gives back the y of the mountain's top edge there (forestSlope() takes it as a ridge).
+// e.g. var top = maengPeak(MAENG_CAVE[0]);
 function maengPeak(x) {                            // how high Doi Khao Khwai stands at x
   var main = 690 * Math.exp(-Math.pow((x - 1150) / 430, 2)), shoulder = 300 * Math.exp(-Math.pow((x - 560) / 300, 2));
   return 1040 - Math.max(main, shoulder) - 18 * Math.sin(x * 0.013) - 9 * Math.sin(x * 0.031);
 }
 
+// base: the y the ridge stands on; tall: how high it rises, in pixels; shape: the phase hills() was given. Gives back
+// a function of x (pixels of the sheet) that gives the ridge's y there, read from a table made once.
+// e.g. forestSlope(brush, maengRange(700, 360, 1.7), 0, WIDE, 780, {far: 0.8, small: 3, large: 6, haze: "#a9cfc9", seed: 41});
 function maengRange(base, tall, shape) {           // the ridge of hills(brush, WIDE, base, tall, shape, colour), at every x
   var tops = [];
   for (var x = 0; x < WIDE; x++) {
@@ -65,6 +73,9 @@ var MAENG_MOUNTAIN = null;
 // whatever a scene draws live on the set is blended toward it by as much.
 var MAENG_DAWN = ["#28285a", 0.4];
 
+// paper: a canvas; colour: a CSS colour; amount: 0 to 1. Gives back a new canvas of paper's size; paper is not
+// changed, and what is clear on it stays clear.
+// e.g. var night = maengTinted(yard.front, MAENG_NIGHT[0], MAENG_NIGHT[1]);
 function maengTinted(paper, colour, amount) {     // a copy of a sheet, with one colour laid over what is painted on it
   var copy = document.createElement("canvas");
   copy.width = paper.width;
@@ -80,6 +91,9 @@ function maengTinted(paper, colour, amount) {     // a copy of a sheet, with one
 
 // The mountain on two clear sheets: "back", the far ranges under the air between them, and "front", Doi
 // Khao Khwai; and each again in the light before dawn ("backDawn", "frontDawn").
+// Gives back {back, front, backDawn, frontDawn}, canvases WIDE by 1080, painted on the first call and kept in
+// MAENG_MOUNTAIN after.
+// e.g. var mountain = maengMountain(); pen.drawImage(mountain.frontDawn, 0, 0);
 function maengMountain() {
   if (MAENG_MOUNTAIN) { return MAENG_MOUNTAIN; }
   function sheet() {
@@ -144,6 +158,9 @@ var MAENG_KING_THUKKHATA = Object.assign({}, MAENG_GROOM, {turban: null, wrap: "
 // A look of the film's cast: the kit's cast (kind), the film's colours, the scene's own. A feeling given by the
 // scene takes the place of the cast's own smile and wonder (the kit's boy smiles, and a smile given in the look
 // outweighs the feeling's own: a sad boy smiled), unless the scene gives those too.
+// kind: a name of the kit's cast ("fellow", "weaver", "boy", ...); own: the film's look (MAENG_BOY, MAENG_KING, ...);
+// extra: the scene's keys (id, face, feel, step, ...), or left out. Gives back a look for person(); changes nothing.
+// e.g. person(800, maengWay(800) + 12, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: "happy"}));
 function maengPerson(kind, own, extra) {
   var look = cast(kind, Object.assign({}, own, extra || {}));
   if (extra && extra.feel !== undefined) {
@@ -158,6 +175,9 @@ function maengPerson(kind, own, extra) {
 // and swings on the one seen is not moved twice. For a thing a scene puts on a person: a bundle on a shoulder.
 var MAENG_SCRATCH = null;
 
+// x, y and look as person() takes them. Gives back the joints person() would (in the film's own pixels), drawn on a
+// scratch sheet (MAENG_SCRATCH, made on the first call); nothing is seen, and pen is given back as it was.
+// e.g. var shoulder = maengMeasure(go.x, S03_GROUND, go.look).shoulderB;
 function maengMeasure(x, y, look) {
   if (!MAENG_SCRATCH) {
     MAENG_SCRATCH = document.createElement("canvas");
@@ -185,10 +205,14 @@ var MAENG_NIGHT = ["#14183a", 0.55];
 var MAENG_HUT = [470, 905, 2.6];
 var MAENG_YARD = null;
 
+// x in pixels of the sheet; gives back the y there. e.g. person(go.x, maengWay(go.x) + 12, go.look);
 function maengWay(x) {                             // where the path's middle is at x: from the hut's foot out to the right edge
   return 958 - 18 * between(x, 600, WIDE) - 10 * Math.sin(x * 0.006);
 }
 
+// Gives back {back, front, backNight, frontNight}, canvases WIDE by 1080, painted on the first call and kept in
+// MAENG_YARD after (the rice fields by maengFields() on back). Most scenes draw it by maengYardAt().
+// e.g. var yard = maengYard(); pen.drawImage(yard.front, 0, 0);
 function maengYard() {
   if (MAENG_YARD) { return MAENG_YARD; }
   function sheet() {
@@ -275,6 +299,10 @@ var MAENG_HUT_THINGS = [
   {name: "rice basket", kind: "kongKhao", x: 180, base: 770, size: 0.95}
 ];
 
+// t: the scene's second (the clouds drift by it, the fields' life moves by it); night: 0 by day to 1 at night;
+// glow: the hut's lamp, 0 (out) to 1, 0 when left out; behind: a function of no arguments, or left out. Gives back
+// nothing: it draws with pen, the whole picture behind the people (life in the fields only while night < 0.5).
+// e.g. maengYardAt(t, 1, 0.9, function () { s02Mist(t); });
 function maengYardAt(t, night, glow, behind) {   // behind: drawn after the far sheet, before the yard and the hut (mist over the fields)
   var yard = maengYard();
   pen.drawImage(maengSky("day"), 0, 0);
@@ -301,6 +329,9 @@ function maengYardAt(t, night, glow, behind) {   // behind: drawn after the far 
 var MAENG_TREE = [1560, 905];
 var MAENG_MEADOW = null;
 
+// Gives back {front}, a canvas WIDE by 1080 (clear above the grass: a scene draws the yard's sky and far sheet
+// first), painted on the first call and kept in MAENG_MEADOW after.
+// e.g. pen.drawImage(maengMeadow().front, 0, 0);
 function maengMeadow() {
   if (MAENG_MEADOW) { return MAENG_MEADOW; }
   var front = document.createElement("canvas");
@@ -347,15 +378,20 @@ var MAENG_SLOPE_CAVE = [1380, 660, 1.15];
 var MAENG_DUSK = ["#5a2a46", 0.34];
 var MAENG_SLOPE = null;
 
+// x in pixels of the sheet; gives back the y there. e.g. var top = maengHillside(900);
 function maengHillside(x) {                        // the top edge of the hillside, rising to the right
   return 600 - 380 * (x / WIDE) - 26 * Math.sin(x * 0.006);
 }
 
+// x in pixels of the sheet (40 to the ledge); gives back the y there. e.g. person(x, maengTrail(x), go.look);
 function maengTrail(x) {                           // where the path is at x: up from the lower left to the cave's ledge
   var u = between(x, 40, MAENG_SLOPE_CAVE[0] - 60);
   return mix(1010, MAENG_SLOPE_CAVE[1] + 4, u * u * (3 - 2 * u)) + 22 * Math.sin(u * Math.PI * 3) * (1 - u);
 }
 
+// Gives back {back, front, fore, backDusk, frontDusk, foreDusk}, canvases WIDE by 1080, painted on the first call and
+// kept in MAENG_SLOPE after.
+// e.g. var slope = maengSlope(); pen.drawImage(slope.backDusk, 0, 0);
 function maengSlope() {
   if (MAENG_SLOPE) { return MAENG_SLOPE; }
   function sheet() {
@@ -444,6 +480,10 @@ var MAENG_MOUNDS = [];
 
 // The garden at second t: "count" mounds (a part of one rising while he heaps it), "dug" how many have been
 // opened again (scene 10), the gold glinting at the open ones; tint as the hut's.
+// t: seconds (the glints shine by it); count: how many mounds, 0 to MAENG_MOUNDS.length (a fraction: the last one
+// rising); dug: how many of them are open holes; tint: [colour, 0 to 1] as the hut's, or null. Gives back nothing:
+// it draws with pen.
+// e.g. maengGarden(t, 6, 0, null);
 function maengGarden(t, count, dug, tint) {
   function tone(c) { return tint ? blend(c, tint[0], tint[1]) : c; }
   var g = MAENG_GARDEN, n;
@@ -494,6 +534,10 @@ function maengGarden(t, count, dug, tint) {
 // ground it has covered, the rope in his back hand, sagging a little to the nose. "lad" is his look, "size" the
 // beast's. Gives back where he is and his joints.
 var MAENG_AHEAD = {buffalo: 380 / 0.62, horse: 420};  // how far ahead of the beast's middle the leader walks, at size 1
+// ox: what amble() gave back for the beast; from: the x it set off from; ground: the y it walks on; lad: the
+// leader's look; size: the beast's size; kind: "buffalo" (left out) or "horse". It draws the beast, the leader and
+// the rope with pen, and gives back {x, joints}.
+// e.g. var ox = amble("buffalo", t, 2300, 900, 27, {size: 0.55, rope: true}); maengLead(ox, 2300, 975, lad, 0.55);
 function maengLead(ox, from, ground, lad, size, kind) {
   kind = kind || "buffalo";
   var drawn = (kind === "horse" ? horse : buffalo)(ox.x, ground - 6, ox.look), way = ox.look.face;
@@ -517,6 +561,8 @@ function maengLead(ox, from, ground, lad, size, kind) {
 
 // A point of the film's own pixels (a joint, as person() gives it) back in the scene's own measure, where the
 // scene draws now (under its camera): for a thing put in a hand.
+// p: [x, y] in the film's own pixels. Gives back [x, y] under pen's transform as it is now.
+// e.g. var hand = maengAt(joints.handA); goldNugget(pen, hand[0], hand[1] - 10, 2.1, t, {seed: 3});
 function maengAt(p) {
   var q = pen.getTransform().inverse().transformPoint(new DOMPoint(p[0], p[1]));
   return [q.x, q.y];
@@ -532,6 +578,9 @@ var MAENG_PALACE_THINGS = [
   {name: "lantern, left", kind: "khom", x: MAENG_PALACE[0] - 300, base: MAENG_PALACE[1] - 430, size: 0.26, look: {lit: 0, late: 0.7}},
   {name: "lantern, right", kind: "khom", x: MAENG_PALACE[0] + 300, base: MAENG_PALACE[1] - 430, size: 0.26, look: {lit: 0, late: 2.1}}
 ];
+// t: seconds; part: "back" (drawn before who sits in it) or "front" (after, with its lanterns); tint: [colour, 0 to
+// 1], or left out; lit: left out keeps the lanterns dark. Gives back nothing: it draws with pen.
+// e.g. maengPalace(t, "back", MAENG_DAWN); person(...); maengPalace(t, "front", MAENG_DAWN);
 function maengPalace(t, part, tint, lit) {          // the palace hall, back or front, dressed; lit (0 to 1): its lanterns' candles
   var p = MAENG_PALACE;
   hoKham(pen, p[0], p[1], p[2], {part: part, tint: tint, pediment: "peacock"});
@@ -545,6 +594,9 @@ var MAENG_STAIR = 1100;                             // where a trough laid to th
 var MAENG_HERALD = {size: 0.78, smile: 0.5};       // the king's man: he strikes the gong (scene 9), cries the news (10), follows the trough (11)
 var MAENG_CITY = null;
 
+// Gives back {back, front}, canvases WIDE by 1080 (clear above the hills: a scene draws its sky first), painted on
+// the first call and kept in MAENG_CITY after.
+// e.g. var city = maengCity(); pen.drawImage(city.back, 0, 0);
 function maengCity() {
   if (MAENG_CITY) { return MAENG_CITY; }
   function sheet() {
@@ -589,6 +641,9 @@ function maengCity() {
 // which is already 1 before "back": the picture snapped to black at "out", a scene opened on 1.2 s of black that then
 // cut to the picture, and a call with "back" before "out" drew nothing (owner, 2026-10-21, of the cuts: "Some scenes
 // hard cut but there is one with a smooth transition"; found at the creature's run, s13).
+// t, out and back: seconds of the scene's clock (99, past the scene's end, for "never"). Gives back nothing: it lays
+// the black over the whole sheet with pen; call it last.
+// e.g. maengDark(t, 23, 99);   // fades out at 23 s, and does not come back
 function maengDark(t, out, back) {
   var going = t >= out && (back <= out || t < back) ? between(t, out, out + 1.2) : 0;
   var coming = t >= back ? 1 - between(t, back, back + 1.2) : 0;
@@ -607,6 +662,8 @@ var MAENG_PEN = [1120, 930, 380];
 var MAENG_TRADERS = [{shirt: "#2e3a5a", legs: "#3a3a44", turban: "#efe9dc", size: 0.8, skin: "#e2b68e", smile: 0.6},
                      {shirt: "#2a2a2e", legs: "#2e3a5a", turban: "#2a2a2e", beard: "#2a2220", size: 0.82, skin: "#d9a878", smile: 0.6},
                      {shirt: "#4a5a6a", legs: "#3a3a44", turban: "#efe9dc", size: 0.78, skin: "#e6bd95", smile: 0.6, age: 0.4}];
+// n: 0, 1 or 2, which of MAENG_TRADERS; extra: the scene's keys, or left out. Gives back a look for person().
+// e.g. person(x, y, maengTrader(1, {face: 1, feel: "happy"}));
 function maengTrader(n, extra) {                    // a trader's look, with the scene's own (a feeling takes the place of his smile)
   var look = Object.assign({id: "trader" + n}, MAENG_TRADERS[n], extra || {});
   if (extra && extra.feel !== undefined && extra.smile === undefined) { delete look.smile; }
@@ -620,6 +677,9 @@ function maengTrader(n, extra) {                    // a trader's look, with the
 // way (0 to 1) the whole of it.
 var MAENG_TROUGH_TURN = 1240;                       // where it leaves the path (x)
 var MAENG_TROUGH = null;
+// Gives back {near, far, nearLong, farLong}: the two parts' points ([x, y], pixels of the sheet) and their lengths,
+// made on the first call and kept in MAENG_TROUGH after.
+// e.g. var route = maengTroughRoute();
 function maengTroughRoute() {
   if (MAENG_TROUGH) { return MAENG_TROUGH; }
   var near = [], far = [], x, n, from = [MAENG_TROUGH_TURN, maengWay(MAENG_TROUGH_TURN) - 6], bend = [1340, 870], to = [1990, 838];
@@ -636,12 +696,16 @@ function maengTroughRoute() {
   MAENG_TROUGH = {near: near, far: far, nearLong: long(near), farLong: long(far)};
   return MAENG_TROUGH;
 }
+// x in pixels of the sheet; gives back [x, y], y on the trough's line there. e.g. var y = maengTroughAt(1500)[1] - 8;
 function maengTroughAt(x) {                         // the ground under the trough at x: where someone works beside it
   var route = maengTroughRoute(), points = x < MAENG_TROUGH_TURN ? route.near : route.far;
   for (var k = 1; k < points.length - 1 && points[k][0] < x; k++) { }
   var a = points[k - 1], b = points[k], u = clamp((x - a[0]) / ((b[0] - a[0]) || 1));
   return [x, mix(a[1], b[1], u)];
 }
+// The trough of the yard, one part of it: built 0 to 1 (how much of the whole is laid, near part first); part "near"
+// or "far"; tint as linKham() takes it, or left out. Gives back nothing: it draws with pen.
+// e.g. maengYardTrough(1, "far"); maengGarden(t, 6, 0, null); maengYardTrough(1, "near");
 function maengYardTrough(built, part, tint) {
   var route = maengTroughRoute(), all = built * (route.nearLong + route.farLong);
   if (part === "far") { linKham(pen, route.far, clamp((all - route.nearLong) / route.farLong), {size: 0.9, tint: tint}); }
@@ -651,6 +715,9 @@ function maengYardTrough(built, part, tint) {
 // ---------- the narration ----------
 // A scene names its lines as [from, to, id] on its own clock; the words are MAENG_WORDS (words.js). The line
 // of second t, if there is one, is put under the picture: the Kam Mueang, and the English under it.
+// t: seconds of the scene's clock; lines: a scene's LINES (S02_LINES, ...). Gives back nothing: it writes with
+// subtitle(). The film's pages call it for each scene, so a scene never does.
+// e.g. maengSubtitles(t, S02_LINES);
 function maengSubtitles(t, lines) {
   lines.forEach(function (line) {
     if (t >= line[0] && t < line[1]) { subtitle(MAENG_WORDS[line[2]][1], MAENG_WORDS[line[2]][2]); }
@@ -666,6 +733,7 @@ function maengSubtitles(t, lines) {
 
 var FIELD_ROWS = 6;
 var FIELD_TOP = 812;
+// r: 0 (the far row) to FIELD_ROWS - 1. Gives back [top, depth] in pixels of the sheet. e.g. var row = fieldRow(3);
 function fieldRow(r) {                             // a row of plots: its top and its depth, nearer rows deeper
   return [FIELD_TOP + r * 16 + r * r * 1.6, 16 + r * 4];
 }
@@ -682,6 +750,8 @@ var FIELD_PLOTS = [
 var FIELD_PLOUGH = [1, 780, 1230];                 // the row and the stretch the buffalo ploughs, back and forth
 var FIELD_PLANTERS = [[3, 1060], [3, 1180], [3, 1320]];   // women planting rice in the flooded plot, bent over
 
+// The plots of FIELD_PLOTS and their bunds, painted with brush (a 2D context: the yard's far sheet). Gives back
+// nothing. e.g. maengFields(back.getContext("2d"));
 function maengFields(brush) {
   var n, k;
   FIELD_PLOTS.forEach(function (p, i) {
@@ -739,6 +809,9 @@ function maengFields(brush) {
   });
 }
 
+// What moves in the fields at second t: the buffalo ploughing FIELD_PLOUGH, the farmer, the egrets (one flies off
+// every 24 s), the women planting at FIELD_PLANTERS. Gives back nothing: it draws with pen (maengYardAt() calls it).
+// e.g. maengFieldLife(t);
 function maengFieldLife(t) {
   var row = fieldRow(FIELD_PLOUGH[0]), y = row[0] + row[1] - 2, span = FIELD_PLOUGH[2] - FIELD_PLOUGH[1];
   var lap = (t * 9) % (2 * span), going = lap < span, along = going ? lap : 2 * span - lap;

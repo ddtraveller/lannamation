@@ -48,6 +48,8 @@ var S04_LIFE = [
    calls: [[36.0, "tokay", 0.5]]}
 ];
 
+// Gives back a canvas, WIDE by 1080, painted on the first call and kept in S04_ROOM after.
+// e.g. pen.drawImage(s04Room(), 0, 0);
 function s04Room() {                                // the inside of the hut, painted once: the wall, the floor, the door
   if (S04_ROOM) { return S04_ROOM; }
   var paper = document.createElement("canvas");
@@ -126,6 +128,8 @@ function s04Room() {                                // the inside of the hut, pa
   return paper;
 }
 
+// x, y: its middle, in pixels of the sheet; size: 1 as drawn. Gives back nothing: it draws with pen.
+// e.g. s04Blanket(770, 905, 1.25);
 function s04Blanket(x, y, size) {                   // a cloth of faded checks over the father's knees
   pen.save();
   pen.translate(x, y);
@@ -150,6 +154,11 @@ function s04Blanket(x, y, size) {                   // a cloth of faded checks o
   pen.restore();
 }
 
+// Scene 4, the entry the film calls (SCENES): t, its own second, 0 to S04_LONG (60 s): the father speaks (S04_SPEAKS,
+// 10 s to 35.6 s), the boy holds his hand from 37.5 s, the lamp goes out 46 s to 50.5 s, black from 55 s. Gives back
+// nothing: it draws the whole sheet with pen. From sets.js: MAENG_HUT_THINGS, maengPerson() with MAENG_FATHER and
+// MAENG_LAD. Its life is S04_LIFE; its words S04_LINES (M015 to M023), written under it by the page.
+// e.g. sceneWish(25);
 function sceneWish(t) {
   var flame = 1 - between(t, 46, 50.5);             // the lamp burns low, and goes out
   pen.drawImage(s04Room(), 0, 0);
