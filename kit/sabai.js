@@ -77,7 +77,8 @@ function paintWith(brush, action, at) {
 }
 
 // A tile from a painter: the picture is drawn once on a scratch sheet and
-// measured, then drawn again to fit the tile, at each moment of its cycle.
+// measured, then drawn again to fit the tile, at each moment of its cycle. A figure whose later moments reach past
+// its first (and would be cut at the tile's edge) is measured at every moment, and fitted to them all.
 // painter: a function (brush, u): it draws standing on (0, 0) of the pen's frame (pen is brush while
 // it runs), u 0 to 1 its walk; one that takes fewer than two arguments stands still. side: the
 // tile's side in pixels (SABAI_TILE, 384, when left out). Returns a list of canvases, side by side
@@ -88,34 +89,80 @@ function sabaiTile(painter, side) {
   scratch.width = 800;
   scratch.height = 800;
   var probe = scratch.getContext("2d");
-  probe.save();
-  probe.translate(400, 520);
-  paintWith(probe, function () { painter(probe, 0); });
-  probe.restore();
-  var data = probe.getImageData(0, 0, 800, 800).data, left = 800, top = 800, right = 0, bottom = 0;
-  for (var y = 0; y < 800; y += 2) {
-    for (var x = 0; x < 800; x += 2) {
-      if (data[(y * 800 + x) * 4 + 3] > 40) {
-        if (x < left) { left = x; } if (x > right) { right = x; } if (y < top) { top = y; } if (y > bottom) { bottom = y; }
+  var left = 800, top = 800, right = 0, bottom = 0;
+  function measure(u) {                              // the box widened to hold the picture at moment u
+    probe.setTransform(1, 0, 0, 1, 0, 0);
+    probe.clearRect(0, 0, 800, 800);
+    probe.save();
+    probe.translate(400, 520);
+    paintWith(probe, function () { painter(probe, u); }, u);
+    probe.restore();
+    var data = probe.getImageData(0, 0, 800, 800).data;
+    for (var y = 0; y < 800; y += 2) {
+      for (var x = 0; x < 800; x += 2) {
+        if (data[(y * 800 + x) * 4 + 3] > 40) {
+          if (x < left) { left = x; } if (x > right) { right = x; } if (y < top) { top = y; } if (y > bottom) { bottom = y; }
+        }
       }
     }
   }
   side = side || SABAI_TILE;
-  var wide = Math.max(8, right - left), tall = Math.max(8, bottom - top), fit = (side * 0.86) / Math.max(wide, tall);
-  var frames = [], count = painter.length >= 2 ? SABAI_FRAMES : 1;   // a painter that takes "u" moves; the rest stand
-  for (var n = 0; n < count; n++) {
-    var sheet = document.createElement("canvas");
-    sheet.width = side;
-    sheet.height = side;
-    var brush = sheet.getContext("2d");
-    brush.translate(side / 2 - ((left + right) / 2 - 400) * fit, side / 2 - ((top + bottom) / 2 - 520) * fit);
-    brush.scale(fit, fit);
-    var u = n / SABAI_FRAMES;
-    paintWith(brush, (function (b, moment) { return function () { painter(b, moment); }; })(brush, u), u);
-    frames.push(sheet);
+  var count = painter.length >= 2 ? SABAI_FRAMES : 1;   // a painter that takes "u" moves; the rest stand
+  function paint() {                                 // each moment of its cycle, the box fitted to the tile
+    var wide = Math.max(8, right - left), tall = Math.max(8, bottom - top), fit = (side * 0.86) / Math.max(wide, tall);
+    var frames = [];
+    for (var n = 0; n < count; n++) {
+      var sheet = document.createElement("canvas");
+      sheet.width = side;
+      sheet.height = side;
+      var brush = sheet.getContext("2d");
+      brush.translate(side / 2 - ((left + right) / 2 - 400) * fit, side / 2 - ((top + bottom) / 2 - 520) * fit);
+      brush.scale(fit, fit);
+      var u = n / SABAI_FRAMES;
+      paintWith(brush, (function (b, moment) { return function () { painter(b, moment); }; })(brush, u), u);
+      frames.push(sheet);
+    }
+    return frames;
+  }
+  var edges = document.createElement("canvas");     // the tile's four edges are copied here and read: reading a frame
+  edges.width = side;                                // itself can turn its sheet to the processor's drawing, and its
+  edges.height = 4;                                  // pixels came out a shade apart (a 1 in 255, on 20 pixels a frame)
+  var strip = edges.getContext("2d", {willReadFrequently: true});
+  function cut(sheet) {                              // does the picture reach the tile's edge?
+    strip.clearRect(0, 0, side, 4);
+    strip.drawImage(sheet, 0, 0, side, 1, 0, 0, side, 1);                 // the top,
+    strip.drawImage(sheet, 0, side - 1, side, 1, 0, 1, side, 1);          // the bottom,
+    strip.save();
+    strip.setTransform(0, 1, 1, 0, 0, 2);                                 // and the two sides, laid along a row
+    strip.drawImage(sheet, 0, 0, 1, side, 0, 0, 1, side);
+    strip.setTransform(0, 1, 1, 0, 0, 3);
+    strip.drawImage(sheet, side - 1, 0, 1, side, 0, 0, 1, side);
+    strip.restore();
+    var d = strip.getImageData(0, 0, side, 4).data;
+    for (var i = 3; i < d.length; i += 4) { if (d[i] > 40) { return true; } }
+    return false;
+  }
+  measure(0);                                        // the box of its first moment, as a tile has always been sized
+  var frames = paint();
+  if (count > 1 && frames.some(cut)) {               // a later moment reaches past it (an egret's head raised, a wing beat
+    // down): the box of every moment, so nothing is cut (2026-10-21; a tile that fits keeps its size exactly). The
+    // moments are measured and painted from rest, with what the kit remembers from frame to frame set aside and put
+    // back after (the film's own figures keep theirs): measured one after another, they left a paper doll's chains
+    // and arms where the last measure had them, and his first frame was drawn with them.
+    var kept = [FOLLOWS, BENDS, DRAWN, DRAWN_AT, SIGHTS.whole], dolls = typeof DOLLS !== "undefined" ? [DOLLS, DOLLS_DRAWN, DOLLS_AT] : null;
+    try {
+      forget();
+      for (var k = 0; k < count; k++) { measure(k / SABAI_FRAMES); }
+      forget();
+      frames = paint();
+    } finally {
+      FOLLOWS = kept[0]; BENDS = kept[1]; DRAWN = kept[2]; DRAWN_AT = kept[3]; SIGHTS.whole = kept[4];
+      if (dolls) { DOLLS = dolls[0]; DOLLS_DRAWN = dolls[1]; DOLLS_AT = dolls[2]; }
+    }
   }
   return frames;
 }
+
 
 // The twelve rows the sash film weaves, top to bottom: what Thai life is made
 // of, and in every row the people and the animals that live among those things.
