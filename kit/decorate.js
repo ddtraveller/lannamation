@@ -21,8 +21,10 @@
 // "front" (after them), and calls its sounds: [[second, sound, loudness], ...], a sound of sounds.py's by name
 // (the film's sound is mixed from them when its scenes are joined); a fourth number makes it a bed, laid end to end
 // under the scene for that many seconds (cicadas, crickets, frogs: maeng/feelings.py's bed()). decorate(t, life, layer) draws every one of that layer at second t.
+// A scene that draws by the kit's drawByZ() takes its life from lifeSprites() instead, which reads z (the band, as
+// zOf() takes it; left out for its kind's own) and not layer: a bird, which can be anywhere, must then be given one.
 var LIFE_KEYS = {};
-["name", "kind", "look", "course", "layer", "calls"].forEach(function (name) { LIFE_KEYS[name] = true; });
+["name", "kind", "look", "course", "layer", "calls", "z"].forEach(function (name) { LIFE_KEYS[name] = true; });
 
 // courseAt(t, course) gives back where an animal on a course of stops is at second t:
 // {on: false} before the first stop's second and after the last's; else {on, x, y, face, moving,
@@ -141,18 +143,43 @@ function decorate(t, life, layer) {
     checkNames("A scene's life", one, LIFE_KEYS);
     if ((one.layer || "front") !== layer) { return; }
     var at = courseAt(t, one.course);
-    if (!at.on) { return; }
-    checkName("A kind of life", one.kind, LIFE_KINDS);
-    var box = LIFE_KINDS[one.kind](at, one.look || {}, t);
-    if (box) {                                       // where it is, for eyes that watch (SIGHTS, oldcartoon.js)
-      var mid = pen.getTransform().transformPoint(new DOMPoint((box[0] + box[2]) / 2, (box[1] + box[3]) / 2));
-      sighted(mid.x, mid.y);
-    }
-    if (window.LIFE_SEEN && box) {                   // a check is watching: where it was, and in what measure
-      var m = pen.getTransform(), a = m.transformPoint(new DOMPoint(box[0], box[1])), b = m.transformPoint(new DOMPoint(box[2], box[3]));
-      window.LIFE_SEEN.push({name: one.name, kind: one.kind, t: t, box: [a.x / PIX, a.y / PIX, b.x / PIX, b.y / PIX]});
-    }
+    if (at.on) { lifeDrawn(t, one, at); }
   });
+}
+
+// lifeSprites(t, life) gives back the animals of a scene's life that are out at second t as sprites for the kit's
+// drawByZ(): [{name, kind, z, x, y, draw}, ...], x and y where its feet are (its course's), z its own (the life's z key)
+// or left out for its kind's (Z_KINDS). Its layer is not read: the band and the feet say where it goes.
+//   t     the time in seconds
+//   life  as decorate() takes it
+// Changes nothing until a sprite's draw() is called, which draws it as decorate() does.
+// e.g. drawByZ(people.concat(lifeSprites(t, S11_LIFE)));
+function lifeSprites(t, life) {
+  var out = [];
+  life.forEach(function (one) {
+    checkNames("A scene's life", one, LIFE_KEYS);
+    var at = courseAt(t, one.course);
+    if (at.on) { out.push({name: one.name, kind: one.kind, z: one.z, x: at.x, y: at.y, draw: function () { lifeDrawn(t, one, at); }}); }
+  });
+  return out;
+}
+
+// lifeDrawn(t, one, at) draws one animal of a scene's life where courseAt() has it, for decorate() and lifeSprites().
+//   t: the time in seconds; one: an entry of the life; at: courseAt(t, one.course), out (at.on)
+// Returns nothing: it draws with pen, tells the kit where it is (sighted()) and pushes it onto window.LIFE_SEEN
+// when a check has set that list.
+// e.g. lifeDrawn(t, S11_LIFE[2], courseAt(t, S11_LIFE[2].course));
+function lifeDrawn(t, one, at) {
+  checkName("A kind of life", one.kind, LIFE_KINDS);
+  var box = LIFE_KINDS[one.kind](at, one.look || {}, t);
+  if (box) {                                       // where it is, for eyes that watch (SIGHTS, oldcartoon.js)
+    var mid = pen.getTransform().transformPoint(new DOMPoint((box[0] + box[2]) / 2, (box[1] + box[3]) / 2));
+    sighted(mid.x, mid.y);
+  }
+  if (window.LIFE_SEEN && box) {                   // a check is watching: where it was, and in what measure
+    var m = pen.getTransform(), a = m.transformPoint(new DOMPoint(box[0], box[1])), b = m.transformPoint(new DOMPoint(box[2], box[3]));
+    window.LIFE_SEEN.push({name: one.name, kind: one.kind, t: t, box: [a.x / PIX, a.y / PIX, b.x / PIX, b.y / PIX]});
+  }
 }
 
 // ---------- things: what a place has ----------

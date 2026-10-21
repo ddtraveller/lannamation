@@ -15,12 +15,13 @@ var S11_CAMERA = [1234, 690, 1.4];                  // the last shot, close on t
 // Its life: the blue magpie back on the palace roof's finial as the king wakes; by the hut the rooster crowing, it
 // is morning, as the king's man follows the trough there; hens in the garden.
 var S11_LIFE = [
-  {name: "blue magpie", kind: "magpie", layer: "back", look: {size: 0.6},
+  {name: "blue magpie", kind: "magpie", layer: "back", z: "set", look: {size: 0.6},     // perched on the palace: of the set
    course: [[0, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [13.5, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4]]},
-  {name: "rooster", kind: "rooster", layer: "back", look: {feel: "happy"}, course: [[13.5, 250, 958], [26.5, 250, 958]]},
-  // The hen pecks in front of the trough (nearer than it): drawn after its near side (owner, 2026-10-20: "fix the
-  // chickens in the story re their z layer"; she was drawn between the trough's far and near sides, under it).
-  {name: "hen", kind: "hen", layer: "front", course: [[26.5, 700, 966, "peck"], [32.0, 700, 966], [34.0, 780, 968, "peck"], [40.0, 780, 968]]}
+  {name: "rooster", kind: "rooster", look: {feel: "happy"}, course: [[13.5, 250, 958], [26.5, 250, 958]]},
+  // The hen pecks in front of the trough (nearer than it): her feet are lower than its nearest point, so drawByZ draws
+  // her after it (owner, 2026-10-20: "fix the chickens in the story re their z layer"; she was once drawn between the
+  // trough's far and near sides, under it).
+  {name: "hen", kind: "hen", course: [[26.5, 700, 966, "peck"], [32.0, 700, 966], [34.0, 780, 968, "peck"], [40.0, 780, 968]]}
 ];
 
 // Scene 11, the entry the film calls (SCENES): t, its own second, 0 to S11_LONG (40 s), in three shots cut through
@@ -79,32 +80,51 @@ function s11Palace(t) {                             // the king wakes, and the t
   }
 }
 
+// The z plan of the yard's two shots, drawn by the kit's drawByZ() (oldcartoon.js, Z): the set first, as painted (the
+// yard's sheets, the trough's far part across the fields, the garden); then, in the band "people", by their feet:
+// the pen (with the creature in it) at its foot, 930; the lad, the king's man, the rooster and the hen at theirs;
+// and the trough's near part, a long thing, by its line, s11TroughLine(): drawn before whoever stands in front of
+// it where they stand (the king's man on the path, the lad, the hen), after the pen behind it.
+// x in pixels of the sheet; gives back the y of the trough's near part there, or null where it does not reach.
+// e.g. s11TroughLine(700)   // about 960
+function s11TroughLine(x) {
+  return x < maengTroughRoute().near[0][0] || x > MAENG_TROUGH_TURN ? null : maengTroughAt(x)[1];
+}
+
+// The pen of the yard with the creature in it, its back, the creature and its front: one sprite of the yard's z plan.
+// feel: the creature's feeling. Gives back nothing: it draws with pen. e.g. s11Pen("happy");
+function s11Pen(feel) {
+  var k = MAENG_PEN;
+  kok(pen, k[0], k[1], k[2], 1, {part: "back"});
+  maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: feel});
+  kok(pen, k[0], k[1], k[2], 1, {part: "front"});
+}
+
 // The second shot (t, the scene's second, 13.5 s to 26.5 s): the king's man walks in along the path to the hut.
 // Gives back nothing: it draws with pen. From sets.js: maengYardAt(), maengYardTrough(), maengGarden(), MAENG_PEN,
 // maengWay(), maengPerson() with MAENG_LAD and MAENG_HERALD. e.g. s11Follow(20);
 function s11Follow(t) {                             // the yard by day: the king's man follows the trough to the hut
-  var k = MAENG_PEN;
   maengYardAt(t, 0, 0);
   maengYardTrough(1, "far");
   maengGarden(t, 6, 0, null);
-  decorate(t, S11_LIFE, "back");
-  kok(pen, k[0], k[1], k[2], 1, {part: "back"});
-  maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: "happy"});
-  kok(pen, k[0], k[1], k[2], 1, {part: "front"});
-  maengYardTrough(1, "near");
   var lad = maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: t > 21 ? "surprised" : "happy"});
-  person(640, 962, lad);
   var man = stroll(t, 2050, 820, S11_SHOTS[0] + 0.3, maengPerson("fellow", MAENG_HERALD, {id: "herald", feel: "concerned",
                                                                                            at: [600, 900]}));
   if (t > man.arrives) { man.look.feel = "surprised"; }
-  person(man.x, maengWay(man.x) + 18, man.look);
+  var walks = maengWay(man.x) + 18;
+  drawByZ(lifeSprites(t, S11_LIFE).concat([
+    {name: "pen", kind: "kok", x: MAENG_PEN[0], y: MAENG_PEN[1], draw: function () { s11Pen("happy"); }},
+    {name: "trough", kind: "trough", line: s11TroughLine, draw: function () { maengYardTrough(1, "near"); }},
+    {name: "lad", kind: "person", x: 640, y: 962, draw: function () { person(640, 962, lad); }},
+    {name: "herald", kind: "person", x: man.x, y: walks, draw: function () { person(man.x, walks, man.look); }}
+  ]));
 }
 
 // The last shot (t, the scene's second, 26.5 s to 40 s), under the camera S11_CAMERA: he speaks (S11_LAD) and points
 // to the garden 30.5 s to 34 s. Gives back nothing: it draws with pen. From sets.js: maengYardAt(), maengYardTrough(),
 // maengGarden(), MAENG_PEN, MAENG_GARDEN, maengPerson() with MAENG_LAD and MAENG_HERALD. e.g. s11Garden(31);
 function s11Garden(t) {                             // "I built it, and there is more gold in my garden"
-  var k = MAENG_PEN, speaks = t > S11_LAD[0] && t < S11_LAD[1];
+  var speaks = t > S11_LAD[0] && t < S11_LAD[1];
   pen.save();
   pen.translate(WIDE / 2, 540);
   pen.scale(S11_CAMERA[2], S11_CAMERA[2]);
@@ -112,14 +132,16 @@ function s11Garden(t) {                             // "I built it, and there is
   maengYardAt(t, 0, 0);
   maengYardTrough(1, "far");
   maengGarden(t, 6, 0, null);                       // new mounds: the creature's gold, every day since
-  decorate(t, S11_LIFE, "back");
-  kok(pen, k[0], k[1], k[2], 1, {part: "back"});
-  maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: speaks ? "satiated" : "happy"});
-  kok(pen, k[0], k[1], k[2], 1, {part: "front"});
-  maengYardTrough(1, "near");
-  person(MAENG_GARDEN[0] + 60, 948, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: "happy", mouth: s11Speaking(t, S11_LAD),
-                                                                    reachA: t > 30.5 && t < 34 ? [MAENG_GARDEN[0] + 200, 860] : undefined}));
-  person(1820, 958, maengPerson("fellow", MAENG_HERALD, {id: "herald", face: -1, feel: t > 31 ? "surprised" : "happy"}));
-  decorate(t, S11_LIFE, "front");                   // the hen, in front of the trough
+  drawByZ(lifeSprites(t, S11_LIFE).concat([          // the yard's z plan (above s11TroughLine): the hen in front of the trough
+    {name: "pen", kind: "kok", x: MAENG_PEN[0], y: MAENG_PEN[1], draw: function () { s11Pen(speaks ? "satiated" : "happy"); }},
+    {name: "trough", kind: "trough", line: s11TroughLine, draw: function () { maengYardTrough(1, "near"); }},
+    {name: "lad", kind: "person", x: MAENG_GARDEN[0] + 60, y: 948, draw: function () {
+      person(MAENG_GARDEN[0] + 60, 948, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: "happy", mouth: s11Speaking(t, S11_LAD),
+                                                                        reachA: t > 30.5 && t < 34 ? [MAENG_GARDEN[0] + 200, 860] : undefined}));
+    }},
+    {name: "herald", kind: "person", x: 1820, y: 958, draw: function () {
+      person(1820, 958, maengPerson("fellow", MAENG_HERALD, {id: "herald", face: -1, feel: t > 31 ? "surprised" : "happy"}));
+    }}
+  ]));
   pen.restore();
 }

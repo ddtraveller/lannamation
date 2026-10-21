@@ -99,6 +99,78 @@ function checkNames(what, given, known) {
   for (var name in given) { checkName(what, name, known); }
 }
 
+// ---------- z: what is drawn over what ----------
+// A frame is painted from the back to the front: what is drawn later covers what was drawn before. Z names the
+// bands a scene's sprites are drawn in, nearer the bigger the number; within one band, the one whose feet are lower
+// on the sheet (nearer us) is drawn later. Every kind stands in "people" unless Z_KINDS says otherwise, so a hen, a
+// dog and a tree are sorted with the people by their feet, and a hen walking from behind the boy to before him
+// passes in front of him on the way.
+var Z = {sky: 0, far: 1, set: 2, back: 3, people: 5, front: 7, near: 9};
+
+// The kinds whose band is not "people": a name of Z; "*" for one that flies toward us or away (its band from its
+// depth, each frame: far 1 at depth 0 to front 7 at depth 1; "people" when it is given no depth); or null for one
+// that can be anywhere (in the sky, on a perch, past the lens, in a pond behind the lotus), whose z must then be
+// given where it is drawn: a null kind drawn without one is warned of, and drawn among the people.
+var Z_KINDS = {
+  sun: "sky", moon: "sky", cloud: "sky",
+  dragon: "*", naga: "*", luang: "*", lantern: "*",
+  birds: null, flock: null, magpie: null, hornbill: null, sunbird: null, egret: null, owl: null, bats: null, moth: null,
+  fireflies: null, khom: null, khomphat: null, khomdao: null, khombua: null,
+  gourami: null, barb: null, flyingbarb: null, snakehead: null, tokay: null, gecko: null
+};
+
+// zOf(kind, z, depth): the band, a number, one of that kind is drawn in.
+//   kind   its kind's name ("hen", "dragon", "person"); one not in Z_KINDS is "people"
+//   z      optional: a name of Z, a number, or "*"; left out (undefined) for its kind's own
+//   depth  optional: 0 far to 1 near, read when the z is "*" (motion.js's where() gives it fifth)
+// Changes nothing, but may warn() once: a null kind given no z, or a z that is not a name of Z.
+// e.g. zOf("hen")              // 5
+//      zOf("dragon", "*", 1)   // 7
+//      zOf("magpie", "sky")    // 0
+function zOf(kind, z, depth) {
+  if (z === undefined) {
+    z = kind in Z_KINDS ? Z_KINDS[kind] : "people";
+    if (z === null) {
+      warn('a ' + kind + ' can be anywhere, so the z it is drawn at must be given (a name of Z, a number, or "*")');
+      z = "people";
+    }
+  }
+  if (z === "*") { return typeof depth === "number" ? Z.far + (Z.front - Z.far) * clamp(depth) : Z.people; }
+  if (typeof z === "string") { checkName("The z", z, Z); return z in Z ? Z[z] : Z.people; }
+  return z;
+}
+
+// drawByZ(sprites) draws a scene's sprites from the back to the front: by band (zOf), then by feet (y, lower is
+// nearer), then in the order they are listed. A long thing on the ground (a trough, a fence, a row of pots along a
+// path) has no one y: it gives line instead, its own y at an x, and is drawn just before the first sprite of its
+// band that stands in front of it where that sprite stands (its x), or after its band when none does. (Sorted by one
+// y, a man walking along a trough's near side was drawn under it where the trough came nearer than his feet.)
+//   sprites  [{kind, z, depth, y, x, line, draw, name}, ...]: kind, z, depth as zOf() takes them; y the sheet's y of
+//            its feet (or the point it hangs from); x where it stands, read against a long thing's line; line, for a
+//            long thing, a function (x) giving its y there, or null where it does not reach; draw a function that
+//            draws it; name, optional, for a check
+// Returns nothing: each draw() draws with pen. When a check has set window.Z_SEEN to a list, it pushes
+// {name, kind, z, y} onto it for each sprite, in the order drawn.
+// e.g. drawByZ([{kind: "person", y: 950, draw: function () { person(700, 950, cast("boy")); }},
+//               {kind: "hen", y: 980, draw: function () { hen(pen, 760, 980, 1, t); }}]);   // the hen in front
+function drawByZ(sprites) {
+  var all = sprites.map(function (one, n) { return {one: one, n: n, z: zOf(one.kind || "person", one.z, one.depth)}; });
+  var order = all.filter(function (s) { return !s.one.line; })
+    .sort(function (a, b) { return a.z - b.z || (a.one.y || 0) - (b.one.y || 0) || a.n - b.n; });
+  all.filter(function (s) { return s.one.line; }).forEach(function (long) {
+    var at = order.length;
+    for (var k = 0; k < order.length; k++) {
+      var s = order[k], there = s.z === long.z && typeof s.one.x === "number" ? long.one.line(s.one.x) : null;
+      if (s.z > long.z || (there !== null && there !== undefined && s.one.y > there)) { at = k; break; }
+    }
+    order.splice(at, 0, long);
+  });
+  order.forEach(function (s) {
+    if (window.Z_SEEN) { window.Z_SEEN.push({name: s.one.name || s.one.kind, kind: s.one.kind, z: s.z, y: s.one.y}); }
+    s.one.draw();
+  });
+}
+
 // ---------- the style sheet ----------
 // Every number and colour that gives the look its name is here, so that a
 // film can change the look without touching the kit: before it loads this

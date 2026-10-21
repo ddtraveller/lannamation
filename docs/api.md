@@ -44,6 +44,37 @@ the same for every key of an object, such as a look
 e.g. checkNames("The look's name", look, LOOK_KEYS);
 ```
 
+### `zOf(kind, z, depth)`
+
+```
+zOf(kind, z, depth): the band, a number, one of that kind is drawn in.
+  kind   its kind's name ("hen", "dragon", "person"); one not in Z_KINDS is "people"
+  z      optional: a name of Z, a number, or "*"; left out (undefined) for its kind's own
+  depth  optional: 0 far to 1 near, read when the z is "*" (motion.js's where() gives it fifth)
+Changes nothing, but may warn() once: a null kind given no z, or a z that is not a name of Z.
+e.g. zOf("hen")              // 5
+     zOf("dragon", "*", 1)   // 7
+     zOf("magpie", "sky")    // 0
+```
+
+### `drawByZ(sprites)`
+
+```
+drawByZ(sprites) draws a scene's sprites from the back to the front: by band (zOf), then by feet (y, lower is
+nearer), then in the order they are listed. A long thing on the ground (a trough, a fence, a row of pots along a
+path) has no one y: it gives line instead, its own y at an x, and is drawn just before the first sprite of its
+band that stands in front of it where that sprite stands (its x), or after its band when none does. (Sorted by one
+y, a man walking along a trough's near side was drawn under it where the trough came nearer than his feet.)
+  sprites  [{kind, z, depth, y, x, line, draw, name}, ...]: kind, z, depth as zOf() takes them; y the sheet's y of
+           its feet (or the point it hangs from); x where it stands, read against a long thing's line; line, for a
+           long thing, a function (x) giving its y there, or null where it does not reach; draw a function that
+           draws it; name, optional, for a check
+Returns nothing: each draw() draws with pen. When a check has set window.Z_SEEN to a list, it pushes
+{name, kind, z, y} onto it for each sprite, in the order drawn.
+e.g. drawByZ([{kind: "person", y: 950, draw: function () { person(700, 950, cast("boy")); }},
+              {kind: "hen", y: 980, draw: function () { hen(pen, 760, 980, 1, t); }}]);   // the hen in front
+```
+
 ### `lipOf(red)`
 
 ```
@@ -4779,6 +4810,28 @@ checkName(). It tells the kit where each one is (sighted(), for eyes that watch)
 e.g. decorate(t, [{name: "mouse", kind: "mouse", course: [[1, 200, 950], [5, 600, 950, "sniff"], [7, 600, 950]]}], "front");
 ```
 
+### `lifeSprites(t, life)`
+
+```
+lifeSprites(t, life) gives back the animals of a scene's life that are out at second t as sprites for the kit's
+drawByZ(): [{name, kind, z, x, y, draw}, ...], x and y where its feet are (its course's), z its own (the life's z key)
+or left out for its kind's (Z_KINDS). Its layer is not read: the band and the feet say where it goes.
+  t     the time in seconds
+  life  as decorate() takes it
+Changes nothing until a sprite's draw() is called, which draws it as decorate() does.
+e.g. drawByZ(people.concat(lifeSprites(t, S11_LIFE)));
+```
+
+### `lifeDrawn(t, one, at)`
+
+```
+lifeDrawn(t, one, at) draws one animal of a scene's life where courseAt() has it, for decorate() and lifeSprites().
+  t: the time in seconds; one: an entry of the life; at: courseAt(t, one.course), out (at.on)
+Returns nothing: it draws with pen, tells the kit where it is (sighted()) and pushes it onto window.LIFE_SEEN
+when a check has set that list.
+e.g. lifeDrawn(t, S11_LIFE[2], courseAt(t, S11_LIFE[2].course));
+```
+
 ### `dress(t, things, layer, tint)`
 
 ```
@@ -7754,6 +7807,28 @@ there, and one wholly past it failed).
 
 - `frame(browser, page_file, kit, second)`: The page's sheet at second, come to by a jump from elsewhere with rendering off: a PIL image.
 - `main()`: The command line: where_differ.py OTHER_KIT PAGE SECOND OUT: print the boxes that differ, save the largest.
+
+## kit/checks/z_check.py
+
+```
+z_check.py - is anything on the ground drawn over what stands in front of it?
+
+    python checks/z_check.py maeng/s11.html                # every second of the page
+    python checks/z_check.py sash.html --from 35 --to 53    # a part of it
+    python checks/z_check.py village.html --every 0.5
+
+A frame is painted from the back to the front, so what stands nearer us (its feet lower on the sheet) must be drawn
+after what it overlaps. This check watches the page draw, as render.py draws it, and notes each person (person())
+and each animal of a scene's life (decorate.js's kinds) with its box and its feet, in the order drawn. Where two
+boxes overlap and the one drawn later has its feet further back than the other's by more than SLACK, it reports
+them: the later is drawn over the nearer. Some are meant (one sits on a cart, one rides an elephant, a bird flies
+over the yard): read them, and give what is meant a z (oldcartoon.js, drawByZ()). It needs Google Chrome (Playwright).
+
+It reads the page only: it writes nothing. It prints each pair once, with the seconds it was seen at, and ends with
+exit code 0 when there is none, 1 when there is one or more, or when the page reported an error.
+```
+
+- `main()`: The command line: watch the page draw each sampled second and print what is drawn over what is nearer.
 
 ## maker/cartoon_maker_assets/film.py
 

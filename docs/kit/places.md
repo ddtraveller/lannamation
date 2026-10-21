@@ -703,10 +703,54 @@ The rules the first round taught:
 - **One thing does one thing.** A bird perched on a finial flies at the gong; a mouse bolts at "crunch, crunch!".
 - **A course is a row of stops** [second, x, y, what]; "hide" keeps it unseen until the next stop, and a stop that
   hides through a gap (a scene's days going by) gives its own place again, or it is drawn moving between them.
-- **A layer must be one the scene draws.** An entry with no layer is "front": a scene that calls only
+- **A layer must be one the scene draws** (a scene drawn by `drawByZ` reads `z` instead: below). An entry with no layer is "front": a scene that calls only
   `decorate(t, life, "back")` never draws it (the first hornbill and sunbird were lost that way).
 - **What a scene's camera does not show is not decorated**: scene 7's close shot never shows the hut's wall,
   so its tokay was left out there.
+
+## What is drawn over what: z (2026-10-21)
+
+The owner: "One thing that constantly bites the QA process is the Z layer for the creatures. Go through and set a
+z-layer default and set the value to None for sprites that could potentially be anywhere. Then, per scene plan the
+z-layer for each sprite or item in the canvas. Set a special * value for sprites that move towards/away from the
+screen." Tried first on two scenes and the maker, as a test; landed for new work, and a scene is converted when it
+is next touched or QA finds an order fault in it, each checked frame by frame against the film as it was.
+
+A frame is painted from the back to the front. `oldcartoon.js` names the bands, nearer the bigger:
+`Z = {sky: 0, far: 1, set: 2, back: 3, people: 5, front: 7, near: 9}`. `drawByZ(sprites)` draws a scene's sprites
+by band, then by feet (y, lower is nearer), then in the order listed; `zOf(kind, z, depth)` gives a sprite's band.
+
+| Kind | Default band | Why |
+|---|---|---|
+| a person, and everything on the ground (a hen, a dog, a tree, the pen) | `people` | sorted by feet, so a hen that walks from behind the boy to before him passes in front of him on the way, which `decorate()`'s "back" and "front" could not say |
+| the sun, the moon, a cloud | `sky` | |
+| the dragon, the naga, the luang, the khom loi | `*` | its band from its depth each frame: far 1 at depth 0 to front 7 at depth 1; `people` when it has no depth |
+| a bird (a flock, the magpie, hornbill, sunbird, egret, owl), bats, a moth, fireflies, a hanging khom, a fish, the tokay | `null` | it can be anywhere: in the sky, on a perch, past the lens, in a pond behind the lotus. Its z must be given where it is drawn; drawn without one the kit warns (and `kit_check.py` fails) and draws it among the people |
+
+A sprite is `{name, kind, z, depth, y, x, line, draw}`; `lifeSprites(t, life)` (decorate.js) gives a scene's
+animals as sprites, with the life's `z` key. A scene's plan is written above the call, what goes in each band and
+why (`maeng/s11_morning.js` above `s11TroughLine()`, the pond of `sash.html`). The maker writes its films with
+`drawByZ`, and an item there may carry `z` (a name of `Z` or `*`); a `null` kind given none is drawn among the
+people by its height, as before.
+
+What the test taught, each found by comparing every frame with the film as it was (the pond of `sash.html`: 0 of
+540 frames differ; scene 11: only faint edges of the pen's rails, where the rooster is drawn after the pen now):
+
+- **A long thing has no one y.** Sorted at the nearest point of the trough, the king's man walking the path beside
+  it was drawn under it. A trough, a fence, a row of pots gives `line(x)`, its own y at an x, and is drawn just
+  before the first sprite that stands in front of it where that sprite stands (its `x`).
+- **Every person drawn by `drawByZ` has an id.** One with none is known by the order the people are drawn in,
+  and their own time (`ownTime()`: the blink, the feeling's beat) and what hangs from them go with that name; drawn
+  in another order, they move otherwise. A scene that was passed without ids keeps the names its order gave them
+  (the pond's maiden and fellow are `n0` and `n1`).
+- **Feet are not always nearness.** A fish's y on the sheet is not its depth in the pond: the pond's fish are
+  `back` and a step deeper or shallower within it (3, 3.1, 3.2, 3.3), a school at one y so it keeps its order,
+  and the lotus and reeds at 4, over every fish and behind the people on the bank (by feet alone the right lotus,
+  whose foot is lower, came in front of the fellow). A band may be any number.
+- **`null` makes the choice be made.** Every fish and bird of the two scenes had to be given a place, and was.
+
+`checks/z_check.py PAGE` watches a page draw and reports what on the ground is drawn over what stands nearer
+(people, and a scene's animals by `decorate.js`); set pieces drawn by a scene's own code are not seen by it.
 
 ## What hangs, sways (2026-10-16)
 
