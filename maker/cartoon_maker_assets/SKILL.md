@@ -173,5 +173,7 @@ teaches, and renders with `render.py`.
 
 `cartoon_maker.html` is the same maker a child uses with a mouse; `film.py`
 runs it headless and calls its functions, so your JSON is checked by the same
-code and rendered by the same generator. The page's own help (the ❓ button)
+code and rendered by the same generator. A page `film.py` writes carries the
+kit inside it (about 1.2 MB), so it plays with no internet and draws the same
+for good; `page --local` writes one that loads the kit's files beside it. The page's own help (the ❓ button)
 and `lanna_cartoon.html` explain the kit and how films are written by hand.

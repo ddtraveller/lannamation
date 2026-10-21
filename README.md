@@ -317,7 +317,8 @@ Things a page must get right:
 
 The page loads the kit from beside it. A page elsewhere can load the same files from
 `https://krueng.ai/js_animation_assets/` (`oldcartoon.js`, `motion.js`, `backdrops.js` ...), as the
-maker's exported films do.
+code the maker shows does. The page the maker downloads, and the one `film.py` writes, carries the kit
+inside it instead (about 1.2 MB), so the film plays with no internet and draws the same for good.
 
 ## By AI
 
@@ -368,8 +369,9 @@ A film, as JSON:
 A girl walks along the river under a hanging lantern, stops and waves as a naga flies past, and
 walks on. Any model can write the JSON: `film.py write "the story" film.json --base
 http://127.0.0.1:11434/v1 --model qwen2.5:3b` asks a local Ollama, and `--base` with `--key` asks
-any OpenAI-compatible server. `film.py` uses the maker on krueng.ai unless it is given this
-repository's: `--maker http://127.0.0.1:8000/maker/cartoon_maker.html` before the command.
+any OpenAI-compatible server. `film.py` uses the maker beside it, this repository's, and the
+kit's `render.py`; a `film.py` downloaded on its own uses the maker on krueng.ai (`--maker URL` before
+the command gives another).
 
 ### 2. A film page written by the agent
 

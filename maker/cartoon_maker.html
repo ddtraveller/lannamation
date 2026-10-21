@@ -344,7 +344,10 @@
 <div class="sheet" id="codeSheet">
   <div>
     <div class="hint">โค้ดของหนังเรื่องนี้ทั้งหน้า: บันทึกเป็นไฟล์ .html แล้วเปิดในเบราว์เซอร์ก็เล่นได้ หรือใช้ <code>render.py</code> ของชุดวาดทำเป็นไฟล์วิดีโอ
-      <span class="en">The whole film as one page. Save it as .html and open it; or render it with the kit's render.py.</span></div>
+ไฟล์ที่ดาวน์โหลดมีชุดวาดอยู่ข้างในด้วย จึงเล่นได้โดยไม่ต้องใช้อินเทอร์เน็ต และวาดเหมือนเดิมตลอดไป
+      <span class="en">The whole film as one page. Save it as .html and open it; or render it with the kit's render.py.
+      The downloaded file carries the kit inside it, so it plays with no internet and draws the same for good;
+      the code shown here loads the kit from the site.</span></div>
     <textarea id="codeBox" spellcheck="false"></textarea>
     <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
       <button id="downloadBtn">💾 ดาวน์โหลด .html</button>
@@ -1001,34 +1004,53 @@ function filmCode() {
   return lines.join("\n");
 }
 
-// the whole page, as a film of the kit is: the exported file
-function pageCode() {
+// The kit's scripts are the ones this page loads, its script tags at the top: the one list. The exported film loads
+// the same ones, from the site, or carries them inside it.
+var KIT_SITE = "https://krueng.ai/js_animation_assets/";
+
+function kitScripts() { return Array.prototype.slice.call(document.querySelectorAll("script[src]")); }
+
+function kitName(script) { return script.getAttribute("src").split("/").pop(); }
+
+// The kit's scripts' text, read from where this page loaded them, to done(); done(null) when the browser will not
+// read them (a page opened as a file, unless Chrome is told that files may read files).
+function kitSources(done) {
+  var scripts = kitScripts(), texts = [], left = scripts.length;
+  function settle(k, text) {
+    if (texts[k] !== undefined) { return; }
+    texts[k] = text;
+    if (--left === 0) {
+      done(texts.indexOf(null) >= 0 ? null : scripts.map(function (script, n) { return {name: kitName(script), text: texts[n]}; }));
+    }
+  }
+  scripts.forEach(function (script, k) {
+    var ask = new XMLHttpRequest();
+    ask.onload = function () { settle(k, ask.status === 200 || (ask.status === 0 && ask.responseText) ? ask.responseText : null); };
+    ask.onerror = function () { settle(k, null); };
+    try { ask.open("GET", script.src); ask.send(); } catch (error) { settle(k, null); }
+  });
+}
+
+// the whole page, as a film of the kit is: the exported file. Given the kit's sources (kitSources), the page carries
+// the kit inside it, and draws the same for good, with no internet; without them it loads the kit from the site.
+function pageCode(sources) {
   var title = (movie.texts.filter(function (x) { return x.kind === "card"; })[0] || {}).big || "my cartoon";
+  var kit = sources
+    ? ['<!-- the Lanna cartoon kit, inside this page: github.com/ddtraveller/lannamation, MIT License, Copyright (c) 2026 David Dockhorn -->']
+        .concat(sources.map(function (s) {     // a closing tag in the kit's own text (its comments show how a page loads it) is written "<\/"
+          return '<script>// ' + s.name + '\n' + s.text.replace(/<\/(script)/gi, "<\\/$1") + '\n<\/script>';
+        }))
+    : ['<!-- the Lanna cartoon kit; for render.py, copy this file next to oldcartoon.js and use src="oldcartoon.js" -->']
+        .concat(kitScripts().map(function (script) { return '<script src="' + KIT_SITE + kitName(script) + '"><\/script>'; }));
   return ['<!doctype html>', '<html>', '<head>', '<meta charset="utf-8">', '<title>' + title.replace(/</g, "&lt;") + '</title>',
           '<style>', '  html, body { margin: 0; background: #111; }',
           '  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }', '</style>', '</head>', '<body>',
-          '<canvas id="stage" width="1920" height="1080"></canvas>',
-          '<!-- the Lanna cartoon kit; for render.py, copy this file next to oldcartoon.js and use src="oldcartoon.js" -->',
-          '<script src="https://krueng.ai/js_animation_assets/oldcartoon.js"><\/script>',
-          '<script src="https://krueng.ai/js_animation_assets/naga.js"><\/script>',
-          '<script src="https://krueng.ai/js_animation_assets/dragon.js"><\/script>',
-          '<script src="https://krueng.ai/js_animation_assets/beasts.js"><\/script>',
-          '<script src="https://krueng.ai/js_animation_assets/myth.js"><\/script>',
-          '<script src="https://krueng.ai/js_animation_assets/flora.js"><\/script>',
-          '<script src="https://krueng.ai/js_animation_assets/khom.js"><\/script>',
-          '<script src="https://krueng.ai/js_animation_assets/motion.js"><\/script>',
-          '<script src="https://krueng.ai/js_animation_assets/cumulus.js"><\/script>',
-          '<script src="https://krueng.ai/js_animation_assets/sabai.js"><\/script>',
-          '<script src="https://krueng.ai/js_animation_assets/backdrops.js"><\/script>',
-          '<script src="https://krueng.ai/js_animation_assets/pieces.js"><\/script>',
-          '<script src="https://krueng.ai/js_animation_assets/highlands.js"><\/script>',
-          '<script src="https://krueng.ai/js_animation_assets/band.js"><\/script>',
-          '<script src="https://krueng.ai/js_animation_assets/northbirds.js"><\/script>', '<script>',
+          '<canvas id="stage" width="1920" height="1080"></canvas>'].concat(kit, ['<script>',
           '// Made with krueng.ai/cartoon_maker.html. draw(t) paints second t of the film from nothing.',
           filmCode(), '',
           '// In a browser the film plays by the clock. render.py sets "rendering" and asks for each frame itself.',
           'var rendering = false;', 'function play(now) {', '  if (!rendering) { draw((now / 1000) % DURATION); }',
-          '  requestAnimationFrame(play);', '}', 'requestAnimationFrame(play);', '<\/script>', '</body>', '</html>', ''].join("\n");
+          '  requestAnimationFrame(play);', '}', 'requestAnimationFrame(play);', '<\/script>', '</body>', '</html>', '']).join("\n");
 }
 
 // ---------- running the film's code ----------
@@ -2416,10 +2438,12 @@ byId("pathDone").onclick = function () { endPath(); };
 byId("closeHelp").onclick = function () { byId("helpSheet").className = "sheet"; };
 byId("copyBtn").onclick = function () { byId("codeBox").select(); document.execCommand("copy"); };
 byId("downloadBtn").onclick = function () {
-  var blob = new Blob([pageCode()], {type: "text/html"}), a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "my_cartoon.html";
-  a.click();
+  kitSources(function (sources) {          // the kit inside the file where the browser can read it; else from the site
+    var blob = new Blob([pageCode(sources)], {type: "text/html"}), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "my_cartoon.html";
+    a.click();
+  });
 };
 
 // ---------- a video ----------

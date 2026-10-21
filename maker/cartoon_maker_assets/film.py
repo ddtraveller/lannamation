@@ -11,8 +11,13 @@
 The JSON is the same data that krueng.ai/cartoon_maker.html makes with its
 palette, and this program uses that page itself, open in a browser with no
 window, to check the film and to write its code. So the page and this program
-can never disagree. The page loads from the site; --maker gives another
-address, such as a copy served on your own computer.
+can never disagree. The page is the one beside this program when there is one
+(in a copy of the lannamation repository, or of the site), else the site's;
+--maker gives another address.
+
+A page it writes carries the kit inside it, so the film draws the same for
+good and plays with no internet; --local writes one that loads the kit from
+files beside it instead.
 
 Needs: Python 3, playwright (pip install playwright) with Chrome installed,
 and ffmpeg on the PATH for a video.
@@ -24,16 +29,20 @@ import subprocess
 import sys
 import urllib.request
 
-MAKER = "https://krueng.ai/cartoon_maker.html"
 SITE = "https://krueng.ai/js_animation_assets/"
 HERE = pathlib.Path(__file__).resolve().parent
+# the maker beside this program (maker/ in lannamation, the site's folder in a copy of it), else the site's
+BESIDE = HERE.parent / "cartoon_maker.html"
+MAKER = BESIDE.as_uri() if BESIDE.exists() else "https://krueng.ai/cartoon_maker.html"
 
 
 def open_maker(url):
     """The maker page in a browser with no window: its functions are ours to call."""
     from playwright.sync_api import sync_playwright
     playwright = sync_playwright().start()
-    browser = playwright.chromium.launch(channel="chrome", headless=True)
+    # a maker opened as a file reads the kit's scripts, to carry them inside the page it writes, only when Chrome is
+    # told that files may read files; nothing else about it changes
+    browser = playwright.chromium.launch(channel="chrome", headless=True, args=["--allow-file-access-from-files"])
     page = browser.new_page(viewport={"width": 1300, "height": 800})
     page.goto(url, wait_until="load")
     page.wait_for_function("() => typeof pageCode === 'function' && typeof takeFilm === 'function'")
@@ -68,9 +77,11 @@ def read_film(path):
 
 
 def page_code(page, local):
-    code = page.evaluate("() => pageCode()")
     if local:                           # the kit's files beside the page, for render.py without the site
-        code = code.replace('src="' + SITE, 'src="')
+        return page.evaluate("() => pageCode()").replace('src="' + SITE, 'src="')
+    code = page.evaluate("() => new Promise(done => kitSources(sources => done(sources && pageCode(sources))))")
+    if not code:
+        raise SystemExit("the maker could not read the kit's scripts to put them inside the page")
     return code
 
 
@@ -113,10 +124,11 @@ def stills(args):
 
 
 def find_render():
-    """The kit's render.py: beside the kit in this repository, or fetched from the site once."""
-    beside = HERE.parent / "js_animation_assets" / "render.py"
-    if beside.exists():
-        return beside
+    """The kit's render.py: beside the kit (kit/ in lannamation, js_animation_assets/ in the site's folder), or
+    fetched from the site once."""
+    for beside in (HERE.parent.parent / "kit" / "render.py", HERE.parent / "js_animation_assets" / "render.py"):
+        if beside.exists():
+            return beside
     cached = HERE / "tools" / "render.py"
     if not cached.exists():
         cached.parent.mkdir(exist_ok=True)
@@ -191,7 +203,7 @@ def skill(args):
 
 def main():
     parser = argparse.ArgumentParser(description="a cartoon from the command line, on the Lanna cartoon kit")
-    parser.add_argument("--maker", default=MAKER, help="the maker page to use (default: the one on the site)")
+    parser.add_argument("--maker", default=MAKER, help="the maker page to use (default: the one beside this program, else the site's)")
     commands = parser.add_subparsers(dest="command", required=True)
 
     commands.add_parser("vocabulary", help="the names, the JSON shape and the rules").set_defaults(run=vocabulary)
@@ -199,7 +211,7 @@ def main():
     one = commands.add_parser("page", help="the film as a page of the kit")
     one.add_argument("film")
     one.add_argument("out")
-    one.add_argument("--local", action="store_true", help="load the kit from files beside the page, not from the site")
+    one.add_argument("--local", action="store_true", help="load the kit from files beside the page, not carry it inside")
     one.set_defaults(run=make_page)
 
     two = commands.add_parser("stills", help="one picture per second named")
