@@ -1636,15 +1636,12 @@ function save() {
   try { localStorage.setItem("cartoon_maker", JSON.stringify(movie)); } catch (error) { /* a browser that keeps nothing */ }
 }
 
+// The film this browser kept, checked as a film from anywhere is (adoptFilm): a name this page no longer has is
+// dropped, and a film kept before scenes, a camera or feelings comes in as today's.
 function load() {
   try {
     var kept = JSON.parse(localStorage.getItem("cartoon_maker"));
-    if (kept && kept.items) { movie = kept; }
-    if (!BACKS.some(function (b) { return b[0] === movie.backdrop; })) { movie.backdrop = "day"; }   // a backdrop this page does not have
-    movie.cuts = (movie.cuts || []).filter(function (c) { return c && BACKS.some(function (b) { return b[0] === c.backdrop; }); });   // a film kept before there were scenes or a camera
-    movie.camera = (movie.camera || []).filter(function (c) { return Array.isArray(c) && c.length === 4; });
-    movie.items = movie.items.filter(function (item) { return labelOf(item) !== item.name; });         // and a thing it does not offer
-    movie.items.forEach(function (item) { item.feel = feelOf(item.feel, item.smile); delete item.smile; });   // a film kept when a person had a smile, not a feeling
+    if (kept && kept.items) { movie = adoptFilm(kept).film; }
   } catch (error) { /* nothing kept, or not ours */ }
 }
 
@@ -2544,7 +2541,19 @@ function secondOf(value, after, since, marks, unknown) {
   return base + (m[3] ? Number(m[3]) : 0);
 }
 
-// the model's answer as this page's film, with every name and number checked
+// How much of a film is taken: far more than a child makes by hand, so that a film saved here comes back whole, and
+// still a bound on a model that runs on. What is past it is said, in "dropped" (until 2026-10-21 these were 20 items,
+// 60 texts, 8 cuts and 20 camera points, and a bigger film saved here lost the rest without a word when loaded back).
+var TAKE = {items: 200, texts: 400, cuts: 40, camera: 200};
+
+function taken(list, what, dropped) {
+  list = Array.isArray(list) ? list : [];
+  if (list.length > TAKE[what]) { dropped.push((list.length - TAKE[what]) + " " + what + " past the first " + TAKE[what]); }
+  return list.slice(0, TAKE[what]);
+}
+
+// a film as this page's film, with every name and number checked: a model's answer, a film saved as JSON, or the
+// film this browser kept
 function adoptFilm(data) {
   var film = freshFilm(), dropped = [], marks = {};
   Object.keys(data.marks && typeof data.marks === "object" ? data.marks : {}).forEach(function (name) {
@@ -2554,7 +2563,7 @@ function adoptFilm(data) {
   film.backdrop = BACKS.some(function (b) { return b[0] === data.backdrop; }) ? data.backdrop : "day";
   film.bounce = data.bounce === true;   // the 1930s bounce, off unless a film asks for it
   var byRaw = {}, byRawId = {};          // each item taken, by its place in the JSON's items, and by the id a film this page saved gave it
-  (data.items || []).slice(0, 20).forEach(function (raw, index) {
+  taken(data.items, "items", dropped).forEach(function (raw, index) {
     var kind = raw.kind, name = String(raw.name || "");
     var known = kind === "person" ? CASTS.some(function (c) { return c[0] === name; }) && !!CAST[name] : kind === "thing" ? THINGS.concat(FLORAS).some(function (t) { return t[0] === name; })
               : kind === "piece" ? PIECES.concat(TREES).some(function (p) { return p[0] === name; }) : false;
@@ -2605,7 +2614,7 @@ function adoptFilm(data) {
   });
   // the cuts: {at, backdrop}, the seconds going up, inside the film, none within half a second of another
   var lastCut = 0;
-  (Array.isArray(data.cuts) ? data.cuts : []).slice(0, 8).forEach(function (raw) {
+  taken(data.cuts, "cuts", dropped).forEach(function (raw) {
     if (!raw || typeof raw !== "object") { return; }
     var at = round2(clean(secondOf(raw.at, lastCut, lastCut, marks, dropped), 0.5, film.duration - 0.5, NaN));
     if (isNaN(at) || at < lastCut + 0.5) { dropped.push("cut at " + JSON.stringify(raw.at)); return; }
@@ -2616,7 +2625,7 @@ function adoptFilm(data) {
   });
   // the camera: [second, x, y, zoom], the seconds going up; the frame is kept on the sheet
   var lastCam = -1;
-  (Array.isArray(data.camera) ? data.camera : []).slice(0, 20).forEach(function (raw) {
+  taken(data.camera, "camera", dropped).forEach(function (raw) {
     if (!Array.isArray(raw) || raw.length < 4) { return; }
     var at = round2(clean(secondOf(raw[0], Math.max(lastCam, 0), Math.max(lastCam, 0), marks, dropped), 0, film.duration, NaN));
     if (isNaN(at) || at <= lastCam) { dropped.push("camera at " + JSON.stringify(raw[0])); return; }
@@ -2624,7 +2633,7 @@ function adoptFilm(data) {
     lastCam = at;
   });
   var lastFrom = 0, lastTo = 0;
-  (data.texts || []).slice(0, 60).forEach(function (raw) {
+  taken(data.texts, "texts", dropped).forEach(function (raw) {
     if (raw.kind !== "card" && raw.kind !== "subtitle" && !TALKS[raw.kind]) { return; }
     var speaker = null;
     if (TALKS[raw.kind]) {              // a bubble's person: their id in a film this page saved, or their place in items, or their name
@@ -2650,7 +2659,7 @@ function takeFilm(data) {
   selected = null; pathing = null; time = 0;
   byId("durationBox").value = movie.duration; byId("bounceBox").checked = !!movie.bounce;
   markBackdrop(); rebuild(); show(); panel();
-  return got.film.items.length + " items, " + got.film.texts.length + " texts" + (got.dropped.length ? "; dropped unknown: " + got.dropped.join(", ") : "");
+  return got.film.items.length + " items, " + got.film.texts.length + " texts" + (got.dropped.length ? "; dropped: " + got.dropped.join(", ") : "");
 }
 
 function askModel(story, settings, strict) {
