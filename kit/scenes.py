@@ -3,6 +3,7 @@
     python scenes.py sash.html sash.mp4 --audio sash_voice.wav            # every scene not made yet, then the film
     python scenes.py sash.html sash.mp4 --audio sash_voice.wav --scene 3  # scene 3 again, then the film
     python scenes.py sash.html --list                                     # the scenes and their videos
+    python scenes.py sash.html sash.mp4 --all --jobs 3                    # three scenes at a time
 
 A page that lists its scenes in SCENES ([from, to, scene], as the kit's
 film() takes them) is rendered one scene at a time, each scene into a video
@@ -22,8 +23,17 @@ clock to the scene's first second, as a still is (the kit's settled() lets
 what hangs and swings come to rest first). The scenes are joined without
 encoding them again, and the sound is laid over the whole film at once, so
 it has no seam where the scenes meet.
+
+With --jobs, that many scenes are rendered at once, each by render.py in a
+process and a Chrome of its own: about that many times sooner, while the
+computer has the cores and the memory (a Chrome drawing the hero film holds
+1 to 2 GB). Each scene is rendered as it is alone. (A scene that starts
+part-way into a film does not come out bit for bit the same from one render
+to the next, alone or not: village.html's second scene, twice, differed in
+225 of 300 frames, at 42 dB or more. --jobs adds nothing to that.)
 """
 import argparse
+import concurrent.futures
 import re
 import shutil
 import subprocess
@@ -90,6 +100,15 @@ def join(clips, video, audio, folder):
     print("%s: joined from %d scenes" % (video, len(clips)))
 
 
+def render_scene(page_file, part, start, end, fast):
+    """One scene into its file, in a process of its own (--jobs): what went wrong, or None."""
+    try:
+        render.render(page_file, part, None, start, end, fast)
+    except SystemExit as stop:          # render.py ends by SystemExit when ffmpeg or the page fails
+        return "render.py stopped: %s" % stop
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("page")
@@ -99,6 +118,7 @@ def main():
     parser.add_argument("--all", action="store_true", help="render every scene again")
     parser.add_argument("--list", action="store_true", help="show the scenes and their videos, and render nothing")
     parser.add_argument("--fast", action="store_true", help="as render.py --fast; its scenes go in a folder of their own")
+    parser.add_argument("--jobs", type=int, default=1, help="render this many scenes at once, each in a Chrome of its own")
     args = parser.parse_args()
     page_file = Path(args.page)
     if not page_file.exists():
@@ -122,15 +142,32 @@ def main():
         if not 1 <= number <= len(scenes):
             raise SystemExit("there is no scene %d: the page has %d" % (number, len(scenes)))
 
-    for number, (scene, clip) in enumerate(zip(scenes, clips), 1):
-        if clip.exists() and not args.all and number not in args.scene:
-            continue
-        start, end, name = scene
-        print("scene %d (%s), %g to %g s:" % (number, name, start, end))
-        # into a file of another name first, so a render that stops half way leaves no scene behind it
-        part = clip.with_name(clip.stem + ".part.mp4")
-        render.render(str(page_file), str(part), None, start, end, args.fast)
-        part.replace(clip)
+    wanted = [(number, scene, clip) for number, (scene, clip) in enumerate(zip(scenes, clips), 1)
+              if args.all or number in args.scene or not clip.exists()]
+    # each into a file of another name first, so a render that stops half way leaves no scene behind it
+    if args.jobs <= 1:
+        for number, (start, end, name), clip in wanted:
+            print("scene %d (%s), %g to %g s:" % (number, name, start, end))
+            part = clip.with_name(clip.stem + ".part.mp4")
+            render.render(str(page_file), str(part), None, start, end, args.fast)
+            part.replace(clip)
+    else:
+        failed = []
+        with concurrent.futures.ProcessPoolExecutor(max_workers=args.jobs) as pool:
+            running = {pool.submit(render_scene, str(page_file), str(clip.with_name(clip.stem + ".part.mp4")),
+                                   start, end, args.fast): (number, name, clip)
+                       for number, (start, end, name), clip in wanted}
+            print("%d scenes, %d at a time" % (len(running), args.jobs))
+            for done in concurrent.futures.as_completed(running):
+                number, name, clip = running[done]
+                trouble = done.result()
+                if trouble:
+                    failed.append("scene %d (%s): %s" % (number, name, trouble))
+                    continue
+                clip.with_name(clip.stem + ".part.mp4").replace(clip)
+                print("scene %d (%s) made" % (number, name))
+        if failed:
+            raise SystemExit("not every scene was made, and the film was not joined:\n  " + "\n  ".join(failed))
     join(clips, Path(args.video), args.audio, folder)
 
 
