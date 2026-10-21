@@ -3626,7 +3626,44 @@ var PERSON_LAYER = null, PERSON_LAYERED = false;
 // at the size of the sheet it goes onto.
 var WAI_LAYER = null;
 
+// person() draws by personDrawn(), below. Should that fail part-way, what it had set is put back before the error
+// goes on: the pen on the sheet (not on her layer, where every later frame would be drawn unseen), the usual skin,
+// hair and body, and her layers with nothing left open on them. A page that keeps drawing after an error, as the
+// cartoon maker does, then draws its next frame as it would have.
 function person(x, y, look) {
+  var sheetPen = pen;
+  try {
+    return personDrawn(x, y, look);
+  } catch (error) {
+    pen = sheetPen;
+    PERSON_LAYERED = false;
+    [PERSON_LAYER, WAI_LAYER].forEach(function (layer) { if (layer) { unwound(layer); } });
+    personDone();
+    throw error;
+  }
+}
+
+// What person() sets for one person, back as it is for whatever is drawn next.
+function personDone() {
+  FINE = 1;
+  LINE = STYLE.line;
+  SKIN = STYLE.skin;
+  HAIR = STYLE.hair;
+  HAIR_LINE = "#7a5640";
+  PAINTED = true;
+  NORTH_FACE = null;
+  EYE_LIDS = null;
+  EYE_TEARS = 0;
+  BODY = BODIES.slim;
+}
+
+// Every save() of a sheet put back, after an error left some open; restore() with none open does nothing, and no
+// drawing nests anywhere near this deep.
+function unwound(brush) {
+  for (var k = 0; k < 64; k++) { brush.restore(); }
+}
+
+function personDrawn(x, y, look) {
   checkNames("The look's name", look, LOOK_KEYS);
   if (clock !== DRAWN_AT) { DRAWN = 0; DRAWN_AT = clock; }     // the n-th person drawn in a frame is the same person in the next
   var who = look.id || "n" + (DRAWN++);
@@ -5557,16 +5594,7 @@ function person(x, y, look) {
       pen.restore();
     }
   }
-  FINE = 1;                                         // the usual pen and skin again, for whatever is drawn next
-  LINE = STYLE.line;
-  SKIN = STYLE.skin;
-  HAIR = STYLE.hair;
-  HAIR_LINE = "#7a5640";
-  PAINTED = true;
-  NORTH_FACE = null;
-  EYE_LIDS = null;
-  EYE_TEARS = 0;
-  BODY = BODIES.slim;
+  personDone();                                     // the usual pen and skin again, for whatever is drawn next
   if (joints.crown && joints.chin) { sighted((joints.crown[0] + joints.chin[0]) / 2, (joints.crown[1] + joints.chin[1]) / 2); }
   return joints;
 }
@@ -9314,7 +9342,13 @@ function filmFrameOnce(t, scenes) {
 // through black at the cuts, then send the sheet to the screen through the lens.
 function film(t, scenes) {
   var frame = Math.round(t * 30);
-  settled(t, function (at) { filmFrame(at, scenes); });
+  try {
+    settled(t, function (at) { filmFrame(at, scenes); });
+  } catch (error) {                                // a fault in a scene: what it left open on the sheet (a save, a clip) goes with this frame
+    unwound(pen);
+    SIGHTS.on = false;
+    throw error;
+  }
   // Old film. The sheet goes to the screen a little soft and a little brown,
   // with black bars left and right, and it shakes by a pixel or two in the gate.
   var wear = STYLE.film;                           // how much of the old print shows
