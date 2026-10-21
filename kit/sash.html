@@ -127,10 +127,13 @@ ROWS = sabaiUnique(ROWS, 24, SHOWN, [WOMAN_ROW, 8]);   // dealt outward from whe
 var WOMAN_AT = 8;
 ROWS[WOMAN_ROW].splice(WOMAN_AT, 0, ROWS[WOMAN_ROW].splice(3, 1)[0]);
 // Two places to her right the oil lamp (pratheep), a flame on its dish, read as a campfire at the size it is woven: a
-// naga there instead (owner, 2026-10-21: "replace the camp fire icon in the sash with the naga"), the golden one with
-// five heads, so it is not a copy of the three-headed naga of the rows.
+// naga there instead (owner, 2026-10-21: "replace the camp fire icon in the sash with the naga"); then the tattooed man
+// beside it (pu man) flickered red rectangles as the camera pulled back, so a temple and a yak giant in their places
+// (owner, 2026-10-21: "Try swapping them for a temple and a yak giant").
 ROWS[WOMAN_ROW] = ROWS[WOMAN_ROW].map(function (painter) {
-  return painter.key !== "pratheep" ? painter : function (b, u) { naga(0, -60, {size: 0.5, heads: 5, body: "#d9a441", crest: "#3a2418"}); };
+  if (painter.key === "pratheep") { return function (b) { temple(b, 0, 0); }; }
+  if (painter.key === "pu man") { return function (b) { yak(b, 0, 0, 1); }; }
+  return painter;
 });
 
 // The rows flow and the figures walk when the music begins; the rows the film opens on are woven fine, the rest at half.
