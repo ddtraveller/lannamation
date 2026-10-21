@@ -69,12 +69,15 @@ def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=()):
 
         ffmpeg = subprocess.Popen(ffmpeg_command(video, audio, first / FPS, fast),
                                   stdin=subprocess.PIPE)
-        for number in range(first, last):
-            page.evaluate("draw(%f)" % (number / FPS))
-            # each picture goes to ffmpeg as it was drawn: a JPEG, even at quality 95,
-            # softens every ink line before the encoder sees it. --fast keeps the JPEG.
-            ffmpeg.stdin.write(page.screenshot(type="jpeg", quality=95) if fast else page.screenshot(type="png"))
-        ffmpeg.stdin.close()
+        try:
+            for number in range(first, last):
+                page.evaluate("draw(%f)" % (number / FPS))
+                # each picture goes to ffmpeg as it was drawn: a JPEG, even at quality 95,
+                # softens every ink line before the encoder sees it. --fast keeps the JPEG.
+                ffmpeg.stdin.write(page.screenshot(type="jpeg", quality=95) if fast else page.screenshot(type="png"))
+            ffmpeg.stdin.close()
+        except BrokenPipeError:
+            pass                          # ffmpeg stopped part-way, and has said why above: told below
         failed = ffmpeg.wait() != 0
         warnings = page.evaluate("typeof WARNINGS === 'undefined' ? [] : WARNINGS.slice()")
         browser.close()

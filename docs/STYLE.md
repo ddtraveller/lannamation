@@ -1,7 +1,5 @@
 # The 1930s cartoon style, in JavaScript — how to make the next film
 
-> 🗺️ **Video docs:** part of the video doc set — see the [doc map](README.md) for all related strategy / packaging / pipeline / reference files.
-
 **Why this file exists.** On 2026-10-11 the owner gave a 1935 cartoon as a reference and asked for
 a film about a northern Thai village in its manner, then for round after round of matching: the
 bodies, the bottom of a dress, the hair, the eyes, lips and noses, the hands and feet. Then: *"Focus
