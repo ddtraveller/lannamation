@@ -18,6 +18,9 @@ Two checks (the idea from HyperFrames' seekable timelines, 2026-10-19; nothing o
          by a run; this comes back to one, which is where a creature that remembers where it was goes wrong.
 Each item is written down, PASS or FAIL (or SKIP), in out/checks/seek_check.txt (report.py). With --changed, a page
 is come back to only when it or a script it loads has changed since it last passed. Exits 1 if either finds anything.
+
+It needs Google Chrome (through Playwright), numpy, scipy and Pillow. Pages are named from the kit's folder
+(kit/). It runs main() as it is loaded: do not import it.
 """
 import re
 import sys
@@ -35,7 +38,10 @@ CLOCKS = re.compile(r"\bDate\.now\s*\(|\bnew\s+Date\s*\(|\bperformance\.now\s*\(
 
 
 def without_play(text):
-    """A page's script with its play() taken out (the one place that is given the computer's time)."""
+    """A page's script with its play() taken out (the one place that is given the computer's time).
+
+    text: a page's script. Gives back the text with "function play(" ... its closing brace cut out, or the
+    text as it was when it has no play(). e.g. without_play(script)"""
     start = text.find("function play(")
     if start < 0:
         return text
@@ -48,6 +54,10 @@ def without_play(text):
 
 
 def lint():
+    """Every line of the kit's scripts and pages that reads the computer's clock (CLOCKS), a page's play() let off.
+
+    Gives back a list of "path:line  the line" strings; [] when there are none.
+    e.g. found = lint()"""
     found = []
     scripts = [p for p in list(KIT.glob("*.js")) + list(KIT.glob("*/*.js")) if "node_modules" not in p.parts]
     pages = [p for p in list(KIT.glob("*.html")) + list(KIT.glob("*/*.html")) if "node_modules" not in p.parts]
@@ -62,12 +72,20 @@ def lint():
 
 
 def page_files(page_file):
-    """A page and every script it loads: what its back test depends on."""
+    """A page and every script it loads: what its back test depends on.
+
+    page_file: the page, a Path. Gives back a list of Paths (frames.py among them, since the test uses it).
+    e.g. fingerprint(page_files(KIT / "maeng" / "s04.html"))"""
     names = re.findall(r'<script src="([^":]+)"', page_file.read_text(encoding="utf-8"))
     return [page_file] + [page_file.parent / name for name in names] + [KIT / "checks" / "frames.py"]
 
 
 def back(browser, page_file):
+    """The back test on one page: draw 0.3 of its length, then 0.85, then 0.3 again, and compare the two pictures.
+
+    browser: a Playwright browser. page_file: the page, a Path. Gives back ((differ, counted), errors): differ()'s
+    two counts, and the page's errors.
+    e.g. (apart, counted), errors = back(browser, KIT / "maeng" / "s04.html")"""
     errors = []
     page = open_page(browser, page_file, errors)
     long = page.evaluate("DURATION")
@@ -79,6 +97,7 @@ def back(browser, page_file):
 
 
 def main():
+    """The command line: seek_check.py [PAGE ...] [--changed]: run the lint, then the back test on each page."""
     names = [a for a in sys.argv[1:] if a.endswith(".html")]
     changed = "--changed" in sys.argv
     report = Report("seek_check")

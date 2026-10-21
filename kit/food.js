@@ -32,6 +32,11 @@ var FOOD_WHITE = "#f4efe2", FOOD_LEAF = "#5f9a4a", FOOD_RICE = "#fbf6e8", FOOD_R
 // "wide" to each side, "deep" above the ground. "band" is the colour of the
 // line painted under the rim, or nothing. "inside" paints what is in it: it
 // is called with the pen kept to the rim, and (0, 0) at the rim's middle.
+// wide, deep: pixels of the pen's frame (the dish's own frame, before food()'s size); colour, band:
+// "#rrggbb" (band may be left out); inside(wide, flat): a function that paints the bowl's contents.
+// Returns nothing: it draws with pen at (0, 0), the ground under the bowl's middle, and leaves pen's
+// fill and line as shape() leaves them.
+// e.g. foodBowl(52, 40, FOOD_WHITE, "#b23a3a", function (wide, flat) { pen.fillStyle = "#9db656"; pen.fillRect(-wide, -flat, wide * 2, flat * 2); });
 function foodBowl(wide, deep, colour, band, inside) {
   var flat = wide * 0.3;
   pen.beginPath();                                  // the foot
@@ -67,6 +72,9 @@ function foodBowl(wide, deep, colour, band, inside) {
 }
 
 // A plate: a rim "wide" to each side, and a well in it.
+// wide: pixels of the pen's frame; colour: "#rrggbb". Returns nothing: it draws with pen, its middle
+// on (0, 0).
+// e.g. foodPlate(64, FOOD_WHITE);
 function foodPlate(wide, colour) {
   pen.beginPath();
   pen.ellipse(0, -6, wide, wide * 0.3, 0, 0, 7);
@@ -78,6 +86,9 @@ function foodPlate(wide, colour) {
 }
 
 // A piece of banana leaf to lay food on: green, with its rib and its veins.
+// wide, deep: pixels of the pen's frame, to each side and up and down from (0, 0). Returns nothing:
+// it draws with pen, and leaves its strokeStyle and lineWidth set.
+// e.g. foodLeaf(74, 34);
 function foodLeaf(wide, deep) {
   pen.beginPath();
   pen.moveTo(-wide, -deep * 0.4);
@@ -101,6 +112,10 @@ function foodLeaf(wide, deep) {
 }
 
 // Steam over a hot dish: three wisps that rise, fade, and begin again.
+// x, y: the foot of the steam, pixels of the pen's frame; look: the dish's look (look.steam false
+// draws none); seed: a number that sets the wisps apart from another dish's. Reads the kit's clock.
+// Returns nothing: it draws with pen, and leaves its line set (round caps).
+// e.g. foodSteam(0, -84, {}, 0.5);
 function foodSteam(x, y, look, seed) {
   if (look.steam === false) { return; }
   pen.lineCap = "round";
@@ -120,6 +135,9 @@ function foodSteam(x, y, look, seed) {
 }
 
 // A wedge of lime: a half circle of rind, and the pale flesh in it.
+// x, y: pixels of the pen's frame; turn: radians. Returns nothing: it draws with pen, and leaves pen
+// as it found it.
+// e.g. foodLime(-42, -46, 2.6);
 function foodLime(x, y, turn) {
   pen.save();
   pen.translate(x, y);
@@ -137,6 +155,9 @@ function foodLime(x, y, turn) {
 }
 
 // A cooked prawn: a curled body in bands, a fan of a tail.
+// x, y: pixels of the pen's frame; turn: radians; scale: its size (1 is 60 long). Returns nothing:
+// it draws with pen, and leaves pen as it found it.
+// e.g. foodPrawn(-4, -56, -0.2, 0.8);
 function foodPrawn(x, y, turn, scale) {
   pen.save();
   pen.translate(x, y);
@@ -169,6 +190,10 @@ function foodPrawn(x, y, turn, scale) {
 
 // Sticky rice in its basket (a kratip): woven bamboo on a small foot, the lid
 // lifted on one side so that the rice shows, and a cord to carry it by.
+// One of FOODS' painters ("stickyrice"): food() calls it with the pen moved to the dish's foot and scaled.
+// look: food()'s look (not read); seed: a number for the steam (food() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0) and may leave pen's fill, line changed: call food() instead.
+// e.g. food("stickyrice", 700, 900, {size: 1.5});
 function foodStickyRice(look, seed) {
   var cane = "#dcb673", dark = "#a9803c";
   pen.beginPath();                                  // the foot
@@ -249,6 +274,10 @@ function foodStickyRice(look, seed) {
 
 // Khao soi: a bowl of curry broth with a nest of crisp noodles on it, a leg
 // of chicken, shallot, a wedge of lime, and chopsticks across the rim.
+// One of FOODS' painters ("khaosoi"): food() calls it with the pen moved to the dish's foot and scaled.
+// look: food()'s look (look.steam false: no steam); seed: a number for the steam (food() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0) and may leave pen's fill, line changed: call food() instead.
+// e.g. food("khaosoi", 700, 900, {size: 1.5});
 function foodKhaoSoi(look, seed) {
   foodBowl(52, 44, FOOD_WHITE, "#3d5f9a", function (wide, flat) {
     pen.fillStyle = "#e39a2e";
@@ -294,6 +323,10 @@ function foodKhaoSoi(look, seed) {
 
 // Som tam: a clay mortar heaped with shreds of green papaya, tomato, long
 // beans, chilli and peanuts, with the wooden pestle standing in it.
+// One of FOODS' painters ("somtam"): food() calls it with the pen moved to the dish's foot and scaled.
+// look: food()'s look (not read); seed: a number for the steam (food() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0) and may leave pen's fill, line changed: call food() instead.
+// e.g. food("somtam", 700, 900, {size: 1.5});
 function foodSomTam(look, seed) {
   hose(14, -86, 60, -156, 0, 12, "#b98a54");        // the pestle, behind the heap
   oval(62, -160, 9, 7, "#b98a54", -0.6);
@@ -345,6 +378,10 @@ function foodSomTam(look, seed) {
 
 // Mango and sticky rice: slices of ripe mango laid in a fan, a mound of
 // rice with coconut cream over it and yellow beans on the cream.
+// One of FOODS' painters ("mangorice"): food() calls it with the pen moved to the dish's foot and scaled.
+// look: food()'s look (not read); seed: a number for the steam (food() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0) and may leave pen's fill, line changed: call food() instead.
+// e.g. food("mangorice", 700, 900, {size: 1.5});
 function foodMangoRice(look, seed) {
   foodPlate(64, FOOD_WHITE);
   pen.beginPath();                                  // the rice
@@ -384,6 +421,10 @@ function foodMangoRice(look, seed) {
 
 // Sai ua: the sausage of the north, in a coil on a banana leaf, flecked with
 // herbs and chilli, and two slices cut from its end.
+// One of FOODS' painters ("saiua"): food() calls it with the pen moved to the dish's foot and scaled.
+// look: food()'s look (not read); seed: a number for the steam (food() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0) and may leave pen's fill, line changed: call food() instead.
+// e.g. food("saiua", 700, 900, {size: 1.5});
 function foodSaiUa(look, seed) {
   foodLeaf(74, 34);
   function coil() {
@@ -429,6 +470,10 @@ function foodSaiUa(look, seed) {
 // Nam phrik num: a small bowl of green chilli dip on a plate, with what is
 // eaten with it: slices of cucumber, a wedge of cabbage, long beans, and
 // pieces of pork crackling.
+// One of FOODS' painters ("namphrik"): food() calls it with the pen moved to the dish's foot and scaled.
+// look: food()'s look (not read); seed: a number for the steam (food() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0) and may leave pen's fill, line changed: call food() instead.
+// e.g. food("namphrik", 700, 900, {size: 1.5});
 function foodNamPhrik(look, seed) {
   foodPlate(68, FOOD_WHITE);
   pen.beginPath();                                  // the cabbage, at the back
@@ -482,6 +527,10 @@ function foodNamPhrik(look, seed) {
 
 // A curry: a bowl of it, green unless its colour is told, with coconut cream
 // turned through it, round eggplants, slices of red chilli and leaves of basil.
+// One of FOODS' painters ("curry"): food() calls it with the pen moved to the dish's foot and scaled.
+// look: food()'s look (look.colour: the curry's colour, green when left out; look.steam false: no steam); seed: a number for the steam (food() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0) and may leave pen's fill, line changed: call food() instead.
+// e.g. food("curry", 700, 900, {size: 1.5});
 function foodCurry(look, seed) {
   var curry = look.colour || "#9db656";
   foodBowl(52, 40, FOOD_WHITE, "#b23a3a", function (wide, flat) {
@@ -516,6 +565,10 @@ function foodCurry(look, seed) {
 
 // Tom yam kung: a bowl of red broth with prawns, straw mushrooms, a stalk of
 // lemongrass and lime leaves.
+// One of FOODS' painters ("tomyum"): food() calls it with the pen moved to the dish's foot and scaled.
+// look: food()'s look (look.steam false: no steam); seed: a number for the steam (food() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0) and may leave pen's fill, line changed: call food() instead.
+// e.g. food("tomyum", 700, 900, {size: 1.5});
 function foodTomYum(look, seed) {
   foodBowl(54, 46, FOOD_WHITE, "#e0902e", function (wide, flat) {
     pen.fillStyle = "#e0622c";
@@ -557,6 +610,10 @@ function foodTomYum(look, seed) {
 
 // Phat thai: a plate of fried noodles with a prawn on them, bean sprouts and
 // chives beside, crushed peanuts, and a wedge of lime.
+// One of FOODS' painters ("padthai"): food() calls it with the pen moved to the dish's foot and scaled.
+// look: food()'s look (not read); seed: a number for the steam (food() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0) and may leave pen's fill, line changed: call food() instead.
+// e.g. food("padthai", 700, 900, {size: 1.5});
 function foodPadThai(look, seed) {
   foodPlate(66, FOOD_WHITE);
   pen.beginPath();                                  // the noodles
@@ -604,6 +661,10 @@ function foodPadThai(look, seed) {
 
 // Mu ping: pork grilled on skewers of bamboo, three of them on a leaf, each
 // piece glazed and marked by the fire.
+// One of FOODS' painters ("muping"): food() calls it with the pen moved to the dish's foot and scaled.
+// look: food()'s look (not read); seed: a number for the steam (food() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0) and may leave pen's fill, line changed: call food() instead.
+// e.g. food("muping", 700, 900, {size: 1.5});
 function foodMuPing(look, seed) {
   foodLeaf(74, 34);
   for (var k = 2; k >= 0; k--) {                    // the one at the back first
@@ -643,6 +704,10 @@ function foodMuPing(look, seed) {
 
 // Khanom khrok: small cakes of coconut cream, cooked in the round iron pan
 // with seven hollows, each white with a browned edge and a little green onion.
+// One of FOODS' painters ("khanomkrok"): food() calls it with the pen moved to the dish's foot and scaled.
+// look: food()'s look (look.steam false: no steam); seed: a number for the steam (food() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0) and may leave pen's fill, line changed: call food() instead.
+// e.g. food("khanomkrok", 700, 900, {size: 1.5});
 function foodKhanomKrok(look, seed) {
   var iron = "#4a4a50";
   hose(-64, -18, -82, -22, 0, 7, iron);             // the pan's two ears
@@ -671,6 +736,10 @@ function foodKhanomKrok(look, seed) {
 
 // A khantok: the low round table of the north, red lacquer on a ring of
 // turned legs, set with small bowls and a basket of sticky rice.
+// One of FOODS' painters ("khantoke"): food() calls it with the pen moved to the dish's foot and scaled.
+// look: food()'s look (passed to the basket); seed: a number for the steam (food() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0) and may leave pen's fill, line and scale changed: call food() instead.
+// e.g. food("khantoke", 700, 900, {size: 1.5});
 function foodKhantoke(look, seed) {
   var lac = "#a9302a", deep = "#7a1f1a";
   pen.scale(1.35, 1.35);                            // a khantok is more than twice as wide as a bowl
@@ -733,6 +802,14 @@ var FOODS = {
 };
 
 // One dish, standing on (x, y). "name" is a key of FOODS.
+// food(name, x, y, look) draws one dish with a soft shadow under it.
+//   name   a key of FOODS: stickyrice, khaosoi, somtam, mangorice, saiua, namphrik, curry, tomyum,
+//          padthai, muping, khanomkrok, khantoke; another name is reported by checkName() and nothing is drawn
+//   x, y   the middle of what it stands on, pixels of the sheet
+//   look   optional; its keys: FOOD_KEYS above (size 1, colour for the curry, steam false)
+// Returns nothing: it draws with pen, and leaves pen as it found it. It sets the kit's LINE and FINE
+// while it draws, and puts them back to STYLE.line and 1 after.
+// e.g. food("khaosoi", 700, 900, {size: 2});
 function food(name, x, y, look) {
   look = look || {};
   checkNames("The food's name", look, FOOD_KEYS);

@@ -45,6 +45,8 @@ var EGRET_KEYS = {size: true, face: true, peck: true, fly: true, seed: true};   
 
 // A bird's eye at (x, y), r across: the dot it always was, or with a feeling (e), a small eye of that colour
 // under a lid of the head's colour ("skin").
+// "colour" is the eye's; e a feeling (creatureFeel()) or null. Returns nothing: it draws with pen.
+// e.g. nbEye(45, -104, 1.6, "#141414", null, "#d8302a")
 function nbEye(x, y, r, colour, e, skin) {
   if (!e) {
     nbOval(x, y, r, r);
@@ -56,6 +58,10 @@ function nbEye(x, y, r, colour, e, skin) {
 
 // ---------- shared ----------
 
+// Begins drawing a bird: saves pen and moves it to (x, y), scaled by look.size (1) and turned by look.face
+// (1 right, -1 left), lineCap and lineJoin "round", and sets the kit's LINE so the line is STYLE.line times
+// "fine" (1) on the sheet at any size. Returns the LINE it found: hand it to nbEnd() when the bird is drawn.
+// e.g. var keep = nbBegin(x, y, look, 0.45);  /* the bird */  nbEnd(keep);
 function nbBegin(x, y, look, fine) {               // the pen at the bird, facing its way, at its size; "fine", a thinner pen for a small bird
   var size = look.size || 1, keep = LINE;
   pen.save();
@@ -67,12 +73,18 @@ function nbBegin(x, y, look, fine) {               // the pen at the bird, facin
   return keep;
 }
 
+// Ends a bird begun with nbBegin(): puts LINE back to "keep", turns the heavy side of the line off (light())
+// and restores pen. Returns nothing.
+// e.g. nbEnd(keep)   // keep as nbBegin() returned it
 function nbEnd(keep) {
   LINE = keep;
   light();
   pen.restore();
 }
 
+// Fills pen's current path with "paint" (a colour or a gradient; "colour" when left out) and inks its edge
+// in inkFor(colour), LINE wide. Returns nothing; it leaves pen's fill and stroke set.
+// e.g. nbOval(0, -66, 28, 40); nbPaint("#fbf5ea");
 function nbPaint(colour, paint) {                   // the kit's shape(): the paint inside, and a line of the colour's own ink round it
   var ink = inkFor(colour);
   pen.fillStyle = paint || colour;
@@ -84,12 +96,20 @@ function nbPaint(colour, paint) {                   // the kit's shape(): the pa
   light();
 }
 
+// It squashes pen's frame up and down by "lift" (never thinner than 0.08 of it), so a wing drawn pointing
+// up beats. Call it inside pen.save() and pen.restore(). Returns nothing.
+// e.g. pen.save(); nbLift(Math.cos(clock * 6)); /* the wing */ pen.restore();
 function nbLift(lift) {                             // a wing drawn pointing up, seen from the side as it beats: 1 up, 0 edge on, -1 down
   pen.scale(1, Math.abs(lift) < 0.08 ? (lift < 0 ? -0.08 : 0.08) : lift);
 }
 
+// Fills pen's current path with "colour", with no line. Returns nothing.
+// e.g. nbOval(3, -2, 1.5, 1.5); nbFill("#101010");
 function nbFill(colour) { pen.fillStyle = colour; pen.fill(); }
 
+// A straight gradient from colour a at (x0, y0) to colour b at (x1, y1), in pen's frame. Returns the
+// gradient, for nbPaint()'s "paint" or pen.fillStyle. Draws nothing.
+// e.g. nbPaint("#3a64b8", nbGrad(0, -40, 0, -14, "#6a90d8", "#f4f4ef"))
 function nbGrad(x0, y0, x1, y1, a, b) {
   var g = pen.createLinearGradient(x0, y0, x1, y1);
   g.addColorStop(0, a);
@@ -97,11 +117,17 @@ function nbGrad(x0, y0, x1, y1, a, b) {
   return g;
 }
 
+// Begins a new path on pen: an ellipse about (cx, cy), rx by ry, turned "turn" radians (0). It neither
+// fills nor strokes it: nbPaint() or nbFill() does. Returns nothing.
+// e.g. nbOval(0, -26, 22, 21); nbPaint("#d8a458");
 function nbOval(cx, cy, rx, ry, turn) {
   pen.beginPath();
   pen.ellipse(cx, cy, rx, ry, turn || 0, 0, 2 * Math.PI);
 }
 
+// "points" is a list of [x, y] (two or more), "width" the leg's width, in pixels of pen's frame. Returns
+// nothing: it strokes with pen, and leaves pen's stroke colour and line width set.
+// e.g. nbLimb([[-4, -12], [-6, 0]], 3, "#e8452a")
 function nbLimb(points, width, colour) {           // a leg as a hose is inked: the ink wider, then its colour
   pen.beginPath();
   points.forEach(function (p, i) { if (i) { pen.lineTo(p[0], p[1]); } else { pen.moveTo(p[0], p[1]); } });
@@ -113,6 +139,9 @@ function nbLimb(points, width, colour) {           // a leg as a hose is inked: 
   pen.stroke();
 }
 
+// rows by cols half-circles, the first about (x0, y0), dx apart across and dy down, r in radius, stroked in
+// "colour", LINE * 0.7 wide. Returns nothing: it strokes with pen (clip first, or they spill out).
+// e.g. pen.save(); nbOval(0, -128, 54, 31); pen.clip(); nbScales(6, 12, -60, -150, 10, 8, 4, "#1d5e48"); pen.restore();
 function nbScales(rows, cols, x0, y0, dx, dy, r, colour) {   // the edges of small feathers in rows, each row set half a feather on: call inside a clip
   pen.strokeStyle = colour;
   pen.lineWidth = LINE * 0.7;
@@ -127,10 +156,15 @@ function nbScales(rows, cols, x0, y0, dx, dy, r, colour) {   // the edges of sma
   pen.stroke();
 }
 
+// a, b and c are [x, y]; s 0 to 1. Returns [x, y]. Draws nothing.
+// e.g. nbQuad([0, 0], [50, -40], [100, 0], 0.5)   // [50, -20]
 function nbQuad(a, b, c, s) {                       // a point s of the way along a quadratic curve from a by b to c
   return [(1 - s) * (1 - s) * a[0] + 2 * (1 - s) * s * b[0] + s * s * c[0], (1 - s) * (1 - s) * a[1] + 2 * (1 - s) * s * b[1] + s * s * c[1]];
 }
 
+// a, b, c are [x, y] (the curve from a by b to c); w0 and w1 widths in pixels of pen's frame; from and to,
+// 0 to 1. Begins a new closed path on pen and neither fills nor strokes it. Returns nothing.
+// e.g. nbStrip([0, 0], [-60, 10], [-120, 0], 6, 8, 0, 1); nbPaint("#8090c0");
 function nbStrip(a, b, c, w0, w1, from, to) {       // the outline of a band along a curve, w0 wide at its start and w1 at its end, from "from" to "to" of the way
   var left = [], right = [], n;
   for (n = 0; n <= 16; n++) {
@@ -173,6 +207,9 @@ var PEAFOWL = {neck: "#2f8f5a", neckLight: "#46a874", scale: "#1d5e48", bronze: 
                wing: "#3d8a58", primaries: "#c8844a", crest: "#2a5a8a", crestTip: "#3f8ab0", cheek: "#f2d24a", eyeskin: "#5aa0d8", bill: "#8a8478",
                leg: "#8a8a86", quill: "#7a6a3a", vane: "#3f8a4a", eyeBlue: "#2a5ab8", eyeHeart: "#10203a"};
 
+// r is its half-width in pixels of pen's frame; "gleam" 0 to 1 lights its blue (0 when left out).
+// Returns nothing: it draws with pen.
+// e.g. peafowlEye(-300, -40, 8, 0.5)
 function peafowlEye(x, y, r, gleam) {               // rule 6: the eye at a train feather's end
   nbOval(x, y, r, r * 1.25);
   nbPaint(PEAFOWL.bronze);
@@ -184,6 +221,10 @@ function peafowlEye(x, y, r, gleam) {               // rule 6: the eye at a trai
   nbFill(PEAFOWL.eyeHeart);
 }
 
+// One feather of the train, from "base" by "mid" to "tip" (each [x, y], pen's frame): its vane in
+// "colour", its shaft, and an eye "eye" across at the tip, lit by "gleam" (0 to 1).
+// Returns nothing: it draws with pen, and leaves pen's stroke colour and line width set.
+// e.g. peafowlFeather([-52, -112], [-150, -60], [-330, -20], 8, 0, "#3f8a4a")
 function peafowlFeather(base, mid, tip, eye, gleam, colour) {
   nbStrip(base, mid, tip, eye * 0.6, eye * 2.3, 0.2, 0.95);    // the vane, widening toward the eye
   pen.fillStyle = colour;
@@ -200,6 +241,10 @@ function peafowlFeather(base, mid, tip, eye, gleam, colour) {
   peafowlEye(tip[0], tip[1], eye, gleam);
 }
 
+// The green peafowl (rules above), its feet on (x, y), in pixels of the sheet, at second t.
+//   look   PEAFOWL_KEYS: size, face, step, peck, display, shiver, call, feel (said above); it may be left out
+// Returns nothing: it draws with pen (nbBegin() and nbEnd(): pen and LINE as they were).
+// e.g. peafowl(600, GROUND, clock, {display: between(clock, 2, 4), shiver: 1, size: 0.8})
 function peafowl(x, y, t, look) {
   look = look || {};
   var mood = look.feel !== undefined ? creatureFeel(look, t) : null;   // a feeling: the eye, and where it has them the head and the bill
@@ -326,6 +371,10 @@ var PHEASANT = {body: "#8a2e24", deep: "#5a1e22", scale: "#3a1418", bar: "#f4f0e
                 face: "#d8302a", bill: "#e8e2c8", leg: "#9a9a94", tail: "#d8d4ca", band: "#3a3430", edge: "#8a3a24",
                 hen: "#9a7a52", henDeep: "#6a5236", henMark: "#4a3624", henTail: "#b89a6a"};
 
+// Mrs Hume's pheasant (rules above), its feet on (x, y), in pixels of the sheet, at second t.
+//   look   PHEASANT_KEYS: size, face, step, peck, hen, feel (said above); it may be left out
+// Returns nothing: it draws with pen (nbBegin() and nbEnd(): pen and LINE as they were).
+// e.g. pheasant(420, GROUND, clock, {step: clock * 1.5, face: -1})
 function pheasant(x, y, t, look) {
   look = look || {};
   var e = look.feel !== undefined ? creatureFeel(look, t) : null;   // a feeling: the eye, and where it has them the head and the bill
@@ -433,6 +482,9 @@ function pheasant(x, y, t, look) {
 
 var SUNBIRD = {head: "#2a8a8a", gloss: "#3a5ab8", red: "#e8562a", yellow: "#f2c230", back: "#6a7a3a", wing: "#4a5a2a", tail: "#2a5a4a", bill: "#1a1a1a", leg: "#3a3a3a"};
 
+// "alpha" 0 to 1: how much of it shows (a blurred wing is drawn faint). Returns nothing: it draws with
+// pen; pen is restored.
+// e.g. sunbirdWing(undefined, 1)   // folded
 function sunbirdWing(lift, alpha) {                  // one wing, pointed, olive: "lift" undefined, folded on its side; else beating, from 1 up to -1 down
   pen.save();
   pen.globalAlpha *= alpha;
@@ -453,6 +505,11 @@ function sunbirdWing(lift, alpha) {                  // one wing, pointed, olive
   pen.restore();
 }
 
+// The green-tailed sunbird (rules above), its feet on (x, y), in pixels of the sheet, at second t (hovering,
+// (x, y) is where its feet would be).
+//   look   SUNBIRD_KEYS: size, face, hover, sip, feel (said above); it may be left out
+// Returns nothing: it draws with pen (nbBegin() and nbEnd(): pen and LINE as they were).
+// e.g. sunbird(880, 520, clock, {hover: 1, sip: 0.6, size: 1.5})
 function sunbird(x, y, t, look) {
   look = look || {};
   var e = look.feel !== undefined ? creatureFeel(look, t) : null;   // a feeling: the eye, and where it has them the head and the bill
@@ -520,6 +577,9 @@ function sunbird(x, y, t, look) {
 
 var MAGPIE = {blue: "#3a64b8", light: "#6a90d8", black: "#151820", white: "#f4f4ef", nape: "#dfe8f4", red: "#e8452a", tail: "#8090c0"};
 
+// From "root" [x, y], the way "angle" (radians), the longest feather "long" pixels of pen's frame; t the
+// second, for its sway. Returns nothing: it draws with pen.
+// e.g. magpieTail([-20, -20], 1.95, 118, clock)
 function magpieTail(root, angle, long, t) {          // rule 4: the graduated tail, the outer feathers first
   for (var k = 4; k >= 0; k--) {
     for (var side = -1; side <= 1; side += 2) {
@@ -537,6 +597,9 @@ function magpieTail(root, angle, long, t) {          // rule 4: the graduated ta
   }
 }
 
+// The magpie's head about (x, y), its bill to the right; e a feeling (creatureFeel()) or null.
+// Returns nothing: it draws with pen.
+// e.g. magpieHead(25, -5, null)
 function magpieHead(x, y, e) {                      // rules 1 and 2
   nbOval(x, y, 10, 9.5);
   nbPaint(MAGPIE.black);
@@ -551,6 +614,11 @@ function magpieHead(x, y, e) {                      // rules 1 and 2
   nbPaint(MAGPIE.red);
 }
 
+// The red-billed blue magpie (rules above), its feet on (x, y) on a branch, or flying with (x, y) the middle
+// of its body; in pixels of the sheet, at second t.
+//   look   MAGPIE_KEYS: size, face, fly, bob, feel (said above); it may be left out
+// Returns nothing: it draws with pen (nbBegin() and nbEnd(): pen and LINE as they were).
+// e.g. blueMagpie(300 + 200 * clock, 260, clock, {fly: true, size: 1.2})
 function blueMagpie(x, y, t, look) {
   look = look || {};
   var e = look.feel !== undefined ? creatureFeel(look, t) : null;   // a feeling: the eye, and where it has them the head and the bill
@@ -635,6 +703,9 @@ function blueMagpie(x, y, t, look) {
 var HORNBILL = {black: "#1c1c1e", blackLight: "#34343c", cream: "#efe2a8", creamDeep: "#d8c070", bill: "#f2c230", billPale: "#f8e6a0",
                 band: "#f0e6b8", white: "#f6f4ee", eye: "#d8302a", leg: "#3a3a3a"};
 
+// e a feeling (creatureFeel()) or null. Returns nothing: it draws with pen, and leaves pen's stroke colour
+// and line width set.
+// e.g. hornbillHead(70, -4, null)
 function hornbillHead(x, y, e) {                        // rules 2 and 3: the head, the bill and the casque, about (x, y)
   pen.beginPath();                                   // the bill, curved down
   pen.moveTo(x + 10, y - 8);
@@ -667,6 +738,8 @@ function hornbillHead(x, y, e) {                        // rules 2 and 3: the he
   nbFill("#101010");
 }
 
+// "colour" is the wing's (the hornbill's black). Returns nothing: it draws with pen; pen is restored.
+// e.g. hornbillWing(Math.cos(clock * 2), "#1c1c1e")
 function hornbillWing(lift, colour) {               // rules 4 and 6: one broad wing up from the shoulder, fingered at the tip; "lift" from 1, up, to -1, down
   pen.save();
   pen.translate(10, -10);
@@ -700,6 +773,11 @@ function hornbillWing(lift, colour) {               // rules 4 and 6: one broad 
   pen.restore();
 }
 
+// The great hornbill (rules above), its feet on (x, y) on a branch, or flying with (x, y) the middle of its
+// body; in pixels of the sheet, at second t.
+//   look   HORNBILL_KEYS: size, face, fly, turn, feel (said above); it may be left out
+// Returns nothing: it draws with pen (nbBegin() and nbEnd(): pen and LINE as they were).
+// e.g. hornbill(700, 380, clock, {turn: 0.4, face: -1})
 function hornbill(x, y, t, look) {
   look = look || {};
   var e = look.feel !== undefined ? creatureFeel(look, t) : null;   // a feeling: the eye, and where it has them the head and the bill
@@ -793,6 +871,9 @@ function hornbill(x, y, t, look) {
 // drawn for the tale's fields, 2026-10-20: "a crane should fly off from the fields", owner: "Egret"). White, a
 // yellow beak, dark legs; standing, look.peck (0 to 1) dips its head to the mud; flying (look.fly), its wings beat
 // with t, look.seed setting where in the beat. Its feet on (x, y), or the middle of its body in flight; look.face.
+// x, y in pixels of the sheet; t the second; look EGRET_KEYS (size, face, peck, fly, seed), and it may be
+// left out. Returns nothing: it draws with pen; pen is restored (it does not use nbBegin(): LINE is not touched).
+// e.g. egret(1100, GROUND - 10, clock, {peck: 0.5 + 0.5 * Math.sin(clock * 3)})
 function egret(x, y, t, look) {
   look = look || {};
   checkNames("The egret's name", look, EGRET_KEYS);

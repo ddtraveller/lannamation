@@ -67,6 +67,13 @@ var FINGER_DRESSES = {
 // FINGER_DRESSES' names; "more" is any of a person's look keys (size, face, id ...), over the dance's.
 // "late" is seconds added to her clock, so a troupe is together but not one figure copied.
 // Gives back where person() drew her joints.
+//   x, y   where her feet stand, pixels of the sheet
+//   dress  "blue", "pink" or "cream" (FINGER_DRESSES); anything else is "blue"
+//   more   look keys over the dance's own (the pose, step, sit, sway): size, id, face ...; or nothing
+//   late   seconds, 0 when left out; the dance goes round every 32 seconds
+// Returns person()'s joints ({shoulderA, wristA, hip, kneeA, ...}, pixels of the film). She is the
+// kit's "dancer" cast member, not a paperdoll: it needs only oldcartoon.js. A troupe needs an id each.
+// e.g. fingerDancer(400, 900, "pink", {size: 1.2, id: "dancer-0-1"}, -0.05);
 function fingerDancer(x, y, dress, more, late) {
   var t = clock + (late || 0);
   var pose = poseAt(t, FINGER_DANCE, 0.35);

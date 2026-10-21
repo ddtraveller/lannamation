@@ -270,6 +270,8 @@ var APSARA_DOLL = {
 // to mid-thigh and curls up and outward at its end, as the painting folds it,
 // with a gold edge along both sides and a fold down its middle. "face" is the
 // way she faces, so the curl turns away from her body.
+// P: the "tongue" chain's points, sheet pixels; s: doll.scale; line: lineOf(doll). Draws with pen.
+// e.g. tongue(doll.chains.tongue.points, doll.scale, lineOf(doll), 1);
 function tongue(P, s, line, face) {
   var count = P.length, drawn = P.slice(), n;
   var a = angleTo(P[count - 2], P[count - 1]), side = face < 0 ? -1 : 1;
@@ -293,4 +295,16 @@ function tongue(P, s, line, face) {
   });
 }
 
+// apsara(x, y, more) draws the celestial dancer of the Siamese stage (not Lanna) standing on (x, y), at
+// the clock's second: crown, bodice, chain belt; the two ends of her sabai, the white hip cloth and the
+// six bead strands from the crown move on their own.
+//   x, y   where her feet stand, pixels of the sheet
+//   more   any of person()'s look keys (the list above person() in oldcartoon.js), over CAST.apsara
+//          (size 1.3, turn 0.4, tilt -0.05, sit 0.25, smile 0.5 when left out): size, step, at (where
+//          she looks), handA, handB, turn, mouth, id, or a pose from poseAt() (TRACK in dance_track.js).
+//          She has no keys of her own. Nothing when left out: she stands as CAST.apsara is.
+// Returns nothing: it draws with pen. It keeps her chains and joints in DOLLS[id] from frame to frame
+// (id: more.id, or "apsara" and her number among the paperdolls drawn this frame, from 0), so draw her
+// every frame, in the same order or with an id. Needs oldcartoon.js and paperdoll.js loaded first.
+// e.g. apsara(760, 820, Object.assign({size: 1.85, at: [560, 120]}, poseAt(t + 20, TRACK, 0)));
 function apsara(x, y, more) { paperdoll(APSARA_DOLL, x, y, more); }

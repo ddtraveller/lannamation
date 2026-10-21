@@ -57,6 +57,9 @@ var KHOM_RED = "#b8362f", KHOM_BLUE = "#2d5da6", KHOM_GREEN = "#2f8a46", KHOM_GO
 
 // A gold ribbon along the path the pen holds: a fine dark line, the gold
 // over it, and teeth of gold along both its edges.
+// gold: "#rrggbb". Returns nothing: it strokes the path pen holds three times, and leaves pen's
+// strokeStyle, lineWidth, lineJoin and lineCap as it set them (the line dash back to none).
+// e.g. pen.beginPath(); pen.moveTo(0, 0); pen.lineTo(0, 40); khomRibbon(KHOM_GOLD);
 function khomRibbon(gold) {
   pen.lineJoin = "round";
   pen.lineCap = "round";
@@ -74,6 +77,10 @@ function khomRibbon(gold) {
 
 // A gold flower: eight petals round a hole where the paper shows through.
 // "across" squashes it sideways, for a panel seen aslant; "turn" tilts it.
+// cx, cy, long (the petals' length): pixels of the pen's frame; gold, hole: "#rrggbb" (hole is the
+// paper's colour); across: 0 to 1, 1 when left out; turn: radians, 0 when left out.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. khomFlower(0, 120, 13, KHOM_GOLD, KHOM_RED, 1, 0);
 function khomFlower(cx, cy, long, gold, hole, across, turn) {
   pen.save();
   pen.translate(cx, cy);
@@ -102,6 +109,9 @@ function khomFlower(cx, cy, long, gold, hole, across, turn) {
 }
 
 // The diamond frame round the front panel's flower, with a dot in each corner.
+// cx, cy, half (its half-height): pixels of the pen's frame; gold: "#rrggbb"; across: 0 to 1 (must
+// be given). Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. khomDiamond(0, 130, 22, KHOM_GOLD, 1);
 function khomDiamond(cx, cy, half, gold, across) {
   pen.save();
   pen.translate(cx, cy);
@@ -127,6 +137,8 @@ function khomDiamond(cx, cy, half, gold, across) {
 
 // The breeze at second t: a slow pressure that comes and goes, never twice
 // alike, between about -1.7 and 1.7.
+// t: seconds. Returns a number, about -1.7 to 1.7. Changes nothing.
+// e.g. var drift = 18 * khomBreeze(clock);
 function khomBreeze(t) {
   return Math.sin(t * 0.9) + 0.5 * Math.sin(t * 1.7 + 1.1) + 0.25 * Math.sin(t * 2.9 + 0.4);
 }
@@ -138,6 +150,14 @@ function khomBreeze(t) {
 // "end" is "point" for a streamer or "fish" for the tail's three points. It
 // gives back the places of its middle every twelfth of the way, for the
 // flowers.
+//   cx, top, half, long   pixels of the pen's frame
+//   colour, gold          "#rrggbb"
+//   wind                  0 to 1 (how far it sways)
+//   at                    seconds
+//   end                   "point" or "fish"
+// Returns a list of 13 [x, y, angle] (angle in radians, its lean there), from root to end.
+// It draws with pen and leaves its fill and line set (khomRibbon()).
+// e.g. var mids = khomStrip(0, 196, 24, 214, KHOM_RED, KHOM_GOLD, 1, clock, "fish");
 function khomStrip(cx, top, half, long, colour, gold, wind, at, end) {
   var N = 12, left = [], right = [], mids = [], n, v, off;
   function sideways(v) {
@@ -169,6 +189,12 @@ function khomStrip(cx, top, half, long, colour, gold, wind, at, end) {
   return mids;
 }
 
+// khom(x, y, look) draws the hanging khom of Yi Peng, its string tied at (x, y), pixels of the sheet,
+// the lantern below it, at the kit's second (clock + look.late). look: optional; its keys are KHOM_KEYS,
+// listed at the top of this file (defaults: size 1, colour KHOM_RED, gold KHOM_GOLD, lit 0, sway 1,
+// spin 1, wind 1, lean 0, late 0, tail true). A name it does not know is reported by checkNames().
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. khom(640, 120, {colour: KHOM_BLUE, lit: 1, late: 0.7});
 function khom(x, y, look) {
   look = look || {};
   checkNames("The khom's name", look, KHOM_KEYS);
@@ -324,6 +350,8 @@ function khom(x, y, look) {
 // khomThue's (x, y) is where a hand holds its handle: draw it after the one
 // who carries it, so the handle goes up through the fist (person() gives
 // back the hand as joints.handA).
+// names: a list of strings. Returns {name: true, ...}, a key list for checkNames().
+// e.g. var KEYS = khomKeys(["size", "lit"]);
 function khomKeys(names) {
   var keys = {};
   names.forEach(function (name) { keys[name] = true; });
@@ -341,6 +369,9 @@ var KHOM_DAO_KEYS = khomKeys(["size", "colour", "gold", "lit", "sway", "spin", "
 var KHOM_BUA_KEYS = khomKeys(["size", "colour", "gold", "lit", "sway", "wind", "lean", "late", "tail"]);
 
 // The candle's soft light round a lantern, centred on (0, cy) of the pen.
+// cy, radius: pixels of the pen's frame; lit: 0 to 1; flicker: about 0.6 to 1 (khomFlickerAt()).
+// Returns nothing: it fills a square of light with pen, and leaves pen's fillStyle set to the glow.
+// e.g. khomGlow(140, 300, 1, khomFlickerAt(clock, x));
 function khomGlow(cy, radius, lit, flicker) {
   var glow = pen.createRadialGradient(0, cy, 0, 0, cy, radius);
   glow.addColorStop(0, "rgba(255, 210, 120, " + (0.5 * lit * flicker) + ")");
@@ -351,10 +382,17 @@ function khomGlow(cy, radius, lit, flicker) {
   pen.fillRect(-radius, cy - radius, 2 * radius, 2 * radius);
 }
 
+// khomFlickerAt(t, x) gives back the candle's flicker at second t, 0.6 to 1; x (any number, the
+// lantern's x) sets lanterns apart.
+// e.g. var flicker = khomFlickerAt(clock, 640);
 function khomFlickerAt(t, x) { return 0.8 + 0.2 * Math.sin(t * 23 + x) * Math.sin(t * 7.3 + x * 0.5); }
 
 // One figure cut from black paper, for the khom phat, standing on (0, 0) and
 // facing right, about 44 tall; "step" swings its legs.
+// kind: "elephant", "rider", "deer", "carrier", "buffalo", anything else a dancer (KHOM_CUTOUTS);
+// step: radians of the legs' swing (khomPhat() passes 5 a second). Draws in the colour pen's
+// fillStyle and strokeStyle already hold. Returns nothing; it leaves pen's lineWidth and lineCap set.
+// e.g. pen.fillStyle = pen.strokeStyle = "#1a120c"; khomCutout("elephant", clock * 5);
 function khomCutout(kind, step) {
   var leg = 5 * Math.sin(step), k;
   function legs(xs, top, long) {
@@ -486,6 +524,12 @@ var KHOM_CUTOUTS = ["elephant", "rider", "deer", "carrier", "buffalo", "dancer"]
 
 // The spinning lantern, hung by its string from (x, y): 150 wide and about
 // 245 from the tie to the foot of its fringe, at size 1.
+// x, y: the tie, pixels of the sheet. look: optional; its keys are KHOM_PHAT_KEYS (the list above:
+// size 1, colour KHOM_RED, gold KHOM_GOLD, lit 0, sway 1, spin 1, lean 0, late 0, turn, figures,
+// light). Returns nothing: it draws with pen, and leaves pen as it found it. With look.light it
+// makes KHOM_LAYER (a sheet as large as pen's canvas) the first time and draws the figures there.
+// A figure function is called with pen pointing at that layer while it draws.
+// e.g. khomPhat(900, 100, {lit: 1, light: true, spin: 0.6});
 function khomPhat(x, y, look) {
   look = look || {};
   checkNames("The khom phat's name", look, KHOM_PHAT_KEYS);
@@ -642,6 +686,10 @@ function khomPhat(x, y, look) {
 
 // The front of a small lantern of six sides, upright, from its foot at
 // (0, foot) up to the point of its crown; "R" its half-width at the middle.
+// foot, R: pixels of the pen's frame; colour, gold: "#rrggbb"; lit: 0 to 1; flicker: khomFlickerAt()'s.
+// About 110 tall from its foot to the crown's point at R 34. Returns nothing: it draws with pen at
+// x 0, and leaves its fill and line set.
+// e.g. khomUpright(-104, 34, KHOM_BLUE, KHOM_GOLD, 1, 0.9);
 function khomUpright(foot, R, colour, gold, lit, flicker) {
   var r = R * 0.45, LOW = foot - 18, HIGH = LOW - 44, TOP = HIGH - 18;
   var faces = [[-1, -0.5, 0.62], [-0.5, 0.5, 1], [0.5, 1, 0.72]];     // three faces seen: from x, to x, how much they face us
@@ -677,6 +725,10 @@ function khomUpright(foot, R, colour, gold, lit, flicker) {
 
 // The handheld lantern, its handle held at (x, y): the lantern stands 104
 // above the hand and the handle goes 64 below it, at size 1.
+// x, y: the hand, pixels of the sheet. look: optional; its keys are KHOM_THUE_KEYS (size 1, colour
+// KHOM_BLUE, gold KHOM_GOLD, lit 0, lean 0, late 0). Returns nothing: it draws with pen, and leaves
+// pen as it found it.
+// e.g. var j = person(500, 950, cast("girl")); khomThue(j.handA[0], j.handA[1], {lit: 1});
 function khomThue(x, y, look) {
   look = look || {};
   checkNames("The khom thue's name", look, KHOM_THUE_KEYS);
@@ -723,6 +775,10 @@ function khomThue(x, y, look) {
 
 // The star lantern, hung by its string from (x, y): 150 across its points,
 // the star 145 tall below a string of 30, at size 1.
+// x, y: the tie, pixels of the sheet. look: optional; its keys are KHOM_DAO_KEYS (size 1, colour
+// KHOM_RED, gold KHOM_GOLD, lit 0, sway 1, spin 1, wind 1, lean 0, late 0, tail true).
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. khomDao(300, 80, {colour: KHOM_GREEN, lit: 0.8});
 function khomDao(x, y, look) {
   look = look || {};
   checkNames("The khom dao's name", look, KHOM_DAO_KEYS);
@@ -782,6 +838,10 @@ function khomDao(x, y, look) {
 
 // The lotus lantern, hung by its strings from (x, y): the flower 150 across
 // its open petals, its foot 150 below the tie, at size 1.
+// x, y: the tie, pixels of the sheet. look: optional; its keys are KHOM_BUA_KEYS (size 1, colour
+// "#e98aa8", gold KHOM_GOLD, lit 0, sway 1, wind 1, lean 0, late 0, tail true).
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. khomBua(1200, 90, {lit: 1});
 function khomBua(x, y, look) {
   look = look || {};
   checkNames("The khom bua's name", look, KHOM_BUA_KEYS);

@@ -9,6 +9,9 @@ sheet by more than their own height, then calls draw(t) across the film and
 prints, per second, the frame's milliseconds, the share spent in figures, and
 the figures drawn and off the sheet. Run it before and after a speed change:
 the numbers are the reason for the change, or the reason not to make it.
+
+It needs Google Chrome (through Playwright). The page must have DURATION. It writes nothing, and ends with
+exit code 0; the times are of this computer's Chrome, so compare runs on one computer only.
 """
 import sys
 from pathlib import Path
@@ -55,6 +58,11 @@ TIME_ONE = """
 
 
 def measure(page_file, step):
+    """Time the page's frames: one row for each second drawn, [second, frame ms, figures ms, crowd ms, figures, off].
+
+    page_file: the page. step: the seconds between frames timed (1.0 one a second). Each frame is drawn after the
+    frame before it, so settled() does not pre-roll; person() and crowd() are wrapped to time them.
+    e.g. rows = measure("lanna.html", 0.5)"""
     rows = []
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome")
@@ -74,6 +82,7 @@ def measure(page_file, step):
 
 
 def main():
+    """The command line: frame_time.py PAGE [--step S]: print each frame's times and the means."""
     page_file = sys.argv[1]
     step = float(sys.argv[sys.argv.index("--step") + 1]) if "--step" in sys.argv else 1.0
     rows = measure(page_file, step)

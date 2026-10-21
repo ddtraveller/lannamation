@@ -27,6 +27,11 @@ Each frame gives the joints of the dancer. From them, for the kit's person():
 With a face model as well (face_landmarker.task, from the same place), the eyes: where the
 irises look, blinks, raised brows, a smile, an open mouth, read from a crop round the face.
 Also a few frames with the joints and irises drawn on them, to check the tracking by eye.
+
+It needs opencv-python, mediapipe and numpy; run it with python -P, as above (-P keeps this folder off
+the module path). Arguments: VIDEO POSE_MODEL OUT.js FPS [FACE_MODEL [HAND_MODEL]] (FPS: the frames a second
+read from the video). It writes OUT.js, and check_N.jpg and face_N.jpg (frames marked to check by eye) in the
+folder it is run from. It ends with exit code 0, or 1 when no dancer is found in any frame.
 """
 import json
 import math
@@ -46,7 +51,9 @@ L_HIP, R_HIP, L_KNEE, R_KNEE, L_ANK, R_ANK = 23, 24, 25, 26, 27, 28
 
 
 def angle(a, b, c):
-    """the angle at b, in degrees"""
+    """the angle at b, in degrees
+
+    a, b, c: points, numpy arrays (x, y). e.g. angle(pts[L_HIP], pts[L_KNEE], pts[L_ANK])"""
     ba, bc = a - b, c - b
     cos = float(np.dot(ba, bc) / ((np.linalg.norm(ba) * np.linalg.norm(bc)) or 1e-6))
     return math.degrees(math.acos(max(-1, min(1, cos))))
@@ -57,14 +64,22 @@ def line_tip(pts, left, right, shoulder_max):
     right is the lower one. "left" and "right" are the joints at its two ends, as the picture shows
     them. A body turned side-on has the two joints nearly one behind the other, and then a small
     difference in height would read as a steep line: so the line is never taken to be shorter
-    across than half the widest the shoulders get."""
+    across than half the widest the shoulders get.
+
+    pts: the frame's landmarks (x, y in pixels). shoulder_max: the widest the shoulders get, in pixels.
+    e.g. line_tip(pts, R_SH, L_SH, shoulder_max)"""
     across = max(abs(float(pts[right][0] - pts[left][0])), 0.5 * shoulder_max)
     down = float(pts[right][1] - pts[left][1])
     return round(max(-0.35, min(0.35, math.atan2(down, across))), 3)
 
 
 def pose_of(pts, width, height, shoulder_max):
-    """the kit's pose from one frame's landmarks (x, y in pixels)"""
+    """the kit's pose from one frame's landmarks (x, y in pixels)
+
+    pts: the 33 landmarks, an array (33, 2). width, height: the frame's (not used). shoulder_max: the widest
+    the shoulders get, in pixels. Gives back a dict: handA, handB, bend, tilt, sit, turn, shoulders, and raise
+    when one foot is up (the keys in this file's docstring).
+    e.g. pose_of(smooth[i], width, height, shoulder_max)"""
     sh = (pts[L_SH] + pts[R_SH]) / 2
     hip = (pts[L_HIP] + pts[R_HIP]) / 2
     torso = float(np.linalg.norm(sh - hip)) or 1.0
@@ -109,7 +124,10 @@ FINGERS = [[5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16], [17, 18, 19, 20], [1
 
 
 def curl_of(pts, chain, full):
-    """0 straight to 1 curled: the bends at the two outer joints, added"""
+    """0 straight to 1 curled: the bends at the two outer joints, added
+
+    pts: a hand's 21 points. chain: four point numbers up one finger (FINGERS). full: the bend, in degrees,
+    that counts as fully curled. e.g. curl_of(hand, FINGERS[0], 135.0)"""
     a, b, c, d = (pts[i] for i in chain)
     bent = (180 - angle(a, b, c)) + (180 - angle(b, c, d))
     return max(0.0, min(1.0, bent / full))
@@ -118,7 +136,10 @@ def curl_of(pts, chain, full):
 def hands_of(hander, frame, pts, width, height):
     """the curls of each hand: {"A": [...] or None, "B": [...] or None}. A hand is small in a
     full-body frame, so each is looked for in a crop round its wrist, pushed on past the wrist the
-    way the forearm points, and scaled up, as the face is."""
+    way the forearm points, and scaled up, as the face is.
+
+    hander: a MediaPipe HandLandmarker. frame: the video frame (BGR). pts: the pose's landmarks in pixels.
+    width, height: the frame's. e.g. hands_of(hander, frame, pts, width, height)"""
     found = {"A": None, "B": None}
     for name, elbow, wrist in (("A", L_EL, L_WR), ("B", R_EL, R_WR)):   # A: her left hand, on the picture's right
         forearm = pts[wrist] - pts[elbow]
@@ -154,7 +175,9 @@ def hands_of(hander, frame, pts, width, height):
 # the kit's glance [across, down], blink, wonder, smile, and the mouth.
 
 def face_box(pts, width, height):
-    """a square round the face, from the pose's nose and ears"""
+    """a square round the face, from the pose's nose and ears
+
+    Gives back (x0, y0, x1, y1) in pixels, inside the frame. e.g. face_box(pts, width, height)"""
     ears = float(np.linalg.norm(pts[L_EAR] - pts[R_EAR])) or 20.0
     size = max(60.0, ears * 3.2)
     cx, cy = float(pts[NOSE][0]), float(pts[NOSE][1]) - size * 0.1
@@ -164,7 +187,12 @@ def face_box(pts, width, height):
 
 
 def face_of(facer, frame, box):
-    """the kit's face fields from one frame, or None when no face is found"""
+    """the kit's face fields from one frame, or None when no face is found
+
+    facer: a MediaPipe FaceLandmarker. frame: the video frame (BGR). box: (x0, y0, x1, y1), as face_box()
+    gives. The dict has glance, blink, wonder, smile, mouth when it is open, and "_iris" (the two irises in
+    pixels, for marking the check frames; not written to the track).
+    e.g. face_of(facer, frame, face_box(pts, width, height))"""
     x0, y0, x1, y1 = box
     crop = frame[y0:y1, x0:x1]
     if crop.size == 0:
@@ -193,6 +221,8 @@ def face_of(facer, frame, box):
 
 
 def main():
+    """The command line (see this file's docstring): track the dancer frame by frame, smooth the joints over
+    five frames, and write TRACK to the .js file. Fails with SystemExit when no dancer is found."""
     video, model, out, fps = sys.argv[1], sys.argv[2], Path(sys.argv[3]), float(sys.argv[4])
     face_model = sys.argv[5] if len(sys.argv) > 5 else None
     hand_model = sys.argv[6] if len(sys.argv) > 6 else None

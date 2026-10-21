@@ -105,6 +105,9 @@ function floorOf(doll, below) {
 }
 
 // a point as [x, y], whichever way it was given
+// p: [x, y], or {x, y} (as person()'s joints are), or nothing. Returns a new [x, y], or null when p is
+// missing or neither shape.
+// e.g. var hip = xy(doll.joints.hip);
 function xy(p) {
   if (!p) { return null; }
   if (p.length === 2) { return [p[0], p[1]]; }
@@ -112,15 +115,25 @@ function xy(p) {
 }
 
 // the kit's pen for this figure, on the sheet
+// doll: a doll that has been drawn once (doll.scale is set by the arm wrapper, below; before that the
+// answer is NaN). Returns the pen's width in pixels of the sheet: STYLE.line, thinner for a larger
+// figure as person() makes FINE, times the doll's scale.
+// e.g. scarfEnd(doll.chains.scarf.points, doll.scale, lineOf(doll), FONLEP_CLOTH);
 function lineOf(doll) {
   return STYLE.line * Math.min(1, Math.pow((doll.look.size || 1) / 1.3, -0.7)) * doll.scale;
 }
 
+// Where a point of the pen's frame now is on the sheet. lx, ly: pixels in the pen's current frame (the
+// waist's or the head's, inside a style). Returns [x, y], pixels of the sheet.
+// e.g. doll.tailLead = onScreen(26, 8);
 function onScreen(lx, ly) {
   var p = pen.getTransform().transformPoint(new DOMPoint(lx, ly));
   return [p.x, p.y];
 }
 
+// How large the pen's current frame draws: how many pixels of the sheet one pixel of the frame is (the
+// square root of the frame's area scale, so a turn or a lean does not change it). Takes nothing.
+// e.g. doll.scale = scaleNow();
 function scaleNow() {
   var m = pen.getTransform();
   return Math.sqrt(Math.abs(m.a * m.d - m.b * m.c));
@@ -130,6 +143,12 @@ function scaleNow() {
 
 // The far arm is drawn first, so the clothes on her body go on before either
 // arm; each arm is then handed to the style with its joints.
+// The kit's arm() with the same arguments and the same answer ([wristX, wristY, elbowX, elbowY] in
+// the pen's frame); person() calls it, a page does not. When the arm is a doll's ("key" is her id plus
+// "/armA" or "/armB"), it paints a bare arm in SKIN for arms: "skin", and sets on the doll: scale,
+// rootA/rootB and wristA/B, elbowA/B (pixels of the sheet), rootAlocal/rootBlocal (the waist's
+// frame); it calls the style's costume() before the far arm and onArm() after each.
+// e.g. arm(root[0], root[1], hand, outward, sleeve, doll.id + "/armA")   (as person() calls it)
 arm = function (shoulderX, shoulderY, hand, outward, colour, key) {
   var doll = DOLL, side = doll && (key === doll.id + "/armA" ? "A" : key === doll.id + "/armB" ? "B" : null);
   if (side === "B") {
@@ -155,6 +174,10 @@ arm = function (shoulderX, shoulderY, hand, outward, colour, key) {
 
 // The kit asks follow() where the pin strands hang from, in the head's own
 // frame, before it draws the head and the hair: an ornament goes there.
+// The kit's follow() with the same arguments and the same answer (the lag, [dx, dy] in the head's
+// frame); for a doll's "/pins" key it then calls the style's ornament(doll). Called by person(), not
+// by a page.
+// e.g. follow(doll.id + "/pins", -36, -340, 120, 7, 10)   (as person() calls it)
 follow = function (key, lx, ly, stiff, damp, most) {
   var out = KIT.follow(key, lx, ly, stiff, damp, most);
   if (DOLL && key === DOLL.id + "/pins" && DOLL.style.ornament) { DOLL.style.ornament(DOLL); }
@@ -163,11 +186,16 @@ follow = function (key, lx, ly, stiff, damp, most) {
 
 // After the face, still in the head's frame: what sits on the head. Every
 // argument is passed on, however many the kit's face takes.
+// The kit's ladyFace(), then the style's onFace(doll, V) while a doll is drawn. Returns nothing.
+// Called by person(), not by a page.
+// e.g. ladyFace(shut, mouth, glance, V, feel)   (as person() calls it)
 ladyFace = function (shut, mouth, glance, V, feel) {
   KIT.ladyFace.apply(null, arguments);
   if (DOLL && DOLL.style.onFace) { DOLL.style.onFace(DOLL, V); }
 };
 
+// The same for a man's face (the pu man's knot is drawn here): the kit's manFace(), then onFace().
+// e.g. manFace(shut, mouth, glance, V, feel)   (as person() calls it)
 manFace = function (shut, mouth, glance, V, feel) {
   KIT.manFace.apply(null, arguments);
   if (DOLL && DOLL.style.onFace) { DOLL.style.onFace(DOLL, V); }
@@ -175,6 +203,10 @@ manFace = function (shut, mouth, glance, V, feel) {
 
 // the near shoulder in the waist's frame, as costume() needs it: where it
 // was, measured from the far one, in the frame before
+// doll: the doll; farX, farY: the far shoulder, in the waist's frame (costume()'s own arguments).
+// Returns [x, y] in the waist's frame; in her first frame, before both shoulders are known, 80 to the
+// right of the far one.
+// e.g. var near = nearShoulder(doll, farX, farY);
 function nearShoulder(doll, farX, farY) {
   if (doll.rootAlocal && doll.rootBlocal) {
     return [farX + doll.rootAlocal[0] - doll.rootBlocal[0], farY + doll.rootAlocal[1] - doll.rootBlocal[1]];
@@ -184,13 +216,21 @@ function nearShoulder(doll, farX, farY) {
 
 // ---------- the chain, from the procedural animation page ----------
 
+// how far apart two points [x, y] are, in their own pixels
+// e.g. var far = dist(doll.rootB, doll.leave);
 function dist(a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1]); }
 
+// the direction from one point [x, y] to another, in radians (0 to the right, PI / 2 straight down)
+// e.g. var a = angleTo(wrist, elbow);
 function angleTo(start, end) { return Math.atan2(end[1] - start[1], end[0] - start[0]); }
 
+// the point "far" pixels from "start" [x, y] in the direction "angle" (radians): a new [x, y]
+// e.g. var leave = walk(wrist, angleTo(wrist, elbow), 30 * doll.scale);
 function walk(start, angle, far) { return [start[0] + Math.cos(angle) * far, start[1] + Math.sin(angle) * far]; }
 
 // an angle kept within "most" of "middle", the short way round
+// All three in radians. Returns "angle" when it is near enough, else middle + most or middle - most.
+// e.g. a = limit(a, chain.angles[n - 1], Math.PI / 7);
 function limit(angle, middle, most) {
   var full = 2 * Math.PI;
   var away = ((angle - middle + Math.PI) % full + full) % full - Math.PI;
@@ -212,6 +252,15 @@ function chainOf(doll, name, count, gap, bend, sink, keep) {
 // "keep" of its speed, sinks "sink" pixels a second, and is then put back one
 // gap behind the point before it, bent no more than "bend" from that one's
 // direction. A cut, or the clock gone back, hangs it again from the lead.
+//   chain   what chainOf() gives back (its count, gap and sink in pixels of the sheet, bend in radians,
+//           keep 0 to 1)
+//   lead    [x, y], pixels of the sheet: where the first point is this frame
+//   dt      seconds since the last frame (paperdoll() hands it to advance()); 0, below 0 or over a
+//           quarter of a second hangs the chain straight down from the lead
+//   floor   y on the sheet no point goes below: floorOf(doll), or floorOf(doll, 2)
+// Returns nothing. It moves chain.points (and fills chain.points, chain.was and chain.angles the
+// first time), so the style's behind() draws them the next frame.
+// e.g. chainStep(chainOf(doll, "scarf", 17, 14 * s, Math.PI / 7, 220 * s, 0.9), doll.leave, dt, floorOf(doll, 2));
 function chainStep(chain, lead, dt, floor) {
   var P = chain.points, n;
   if (!P || dt <= 0 || dt > 0.25) {
@@ -241,6 +290,8 @@ function chainStep(chain, lead, dt, floor) {
 }
 
 // the direction of the cloth at each point: between the gap before and the gap after
+// P: two or more points [x, y]. Returns a list of angles in radians, one for each point.
+// e.g. var A = headings(chain.points);
 function headings(P) {
   var A = [], n;
   for (n = 0; n < P.length; n++) {
@@ -252,6 +303,10 @@ function headings(P) {
 }
 
 // a path through points, bending between them, in the current pen path
+// points: two or more [x, y]; closeTo: [x, y] to end the path with a straight line to, or nothing.
+// Returns nothing and draws nothing: it adds to the pen's path (moveTo first), for the caller to fill
+// or stroke. Call pen.beginPath() before it.
+// e.g. pen.beginPath(); through(strand.points); pen.stroke();
 function through(points, closeTo) {
   var n;
   pen.moveTo(points[0][0], points[0][1]);
@@ -270,6 +325,13 @@ function through(points, closeTo) {
 // shade (a flat darker band on the inside of each bend, with a crease line),
 // then the gold work, then the dark line round the whole.
 //   decorate(left, right, P, A)   draws the pattern and the gold, given both edges
+//   P                    the strip's middle line: two or more [x, y], pixels of the pen's frame
+//   wide                 its half-width at each point, one number for each, in the same pixels
+//   colour, fold, crease the cloth, its shade and its crease lines (CSS colours)
+//   line                 the pen's width for the outline (lineOf(doll)); the crease is 0.8 of it
+//   decorate             as above, or nothing; drawn clipped to the cloth
+// Returns nothing: it draws with pen, and leaves its fill, stroke, width, cap and join as it set them.
+// e.g. clothStrip(P, wide, FONLEP.scarf, FONLEP.fold, FONLEP.crease, line);
 function clothStrip(P, wide, colour, fold, crease, line, decorate) {
   var A = headings(P), left = [], right = [], n;
   for (n = 0; n < P.length; n++) {
@@ -329,6 +391,11 @@ function clothStrip(P, wide, colour, fold, crease, line, decorate) {
 }
 
 // a flat darker band along one edge of a strip: the side away from the light
+// edge: the strip's left or right edge, as decorate() is given them; P, A, wide: its middle line, its
+// headings and its half-widths; from, to: the points it runs between (to not included); colour: the
+// shade; side: 1 to lay the band inward from a left edge, -1 from a right one. The band is 0.3 of the
+// half-width deep. Returns nothing: it fills with pen. Used inside a decorate(), where it is clipped.
+// e.g. shadeEdge(left, Q, A, wide, 1, count - 2, cloth.fold, 1);
 function shadeEdge(edge, P, A, wide, from, to, colour, side) {
   pen.fillStyle = colour;
   pen.beginPath();
@@ -345,6 +412,10 @@ function shadeEdge(edge, P, A, wide, from, to, colour, side) {
 //   tip                     "flame": narrowing to a point that curls outward; "fringe": cut straight, with threads
 //   pattern(left, right, Q, A, wide, s, line, panelAt)   its own pattern, drawn inside the cloth
 //   panel                   {colour, dark} for a panel of another cloth over the last six points, or nothing
+// P: a chain's points (chain.points, at least four; six with a panel), pixels of the sheet; s: the doll's scale
+// (doll.scale); line: lineOf(doll). The cloth ripples with the clock. Returns nothing: it draws with
+// pen, on the sheet (call it with the pen's frame set to the sheet, as behind() is).
+// e.g. scarfEnd(doll.chains.scarf.points, s, line, FONLEP_CLOTH);
 function scarfEnd(P, s, line, cloth) {
   var n, count = P.length;
   var full = cloth.wide || 23, panelAt = cloth.panel ? count - 6 : count;
@@ -413,6 +484,10 @@ function scarfEnd(P, s, line, cloth) {
 // points part it pulls straight. "arch" is how its slack hangs: 1 sags down,
 // as cloth left alone does; -1 rises in a loop, as the paintings draw cloth
 // thrown over a raised arm; between, between.
+// from, to: [x, y], pixels of the sheet; s: the doll's scale; line: lineOf(doll); cloth: as scarfEnd()
+// takes it (only colour, fold and crease are read); arch: 1 when left out. Returns nothing: it draws
+// with pen, through clothStrip().
+// e.g. drape(doll.rootB, doll.leave, 300, s, line, FONLEP_CLOTH, -0.5);
 function drape(from, to, long, s, line, cloth, arch) {
   var far = dist(from, to);
   var slack = Math.max(0, long * s - far);
@@ -430,6 +505,9 @@ function drape(from, to, long, s, line, cloth, arch) {
 
 // A strand of beads from a chain: a thread with a bead at every point and
 // between, and a tassel at the end.
+// P: a chain's points (two or more), pixels of the sheet; s: the doll's scale; line: lineOf(doll);
+// gold: the beads; dark: the thread and the tassel. Returns nothing: it draws with pen.
+// e.g. beads(doll.chains.bead0.points, s, line, FONLEP.gold, FONLEP.goldDark);
 function beads(P, s, line, gold, dark) {
   var n;
   pen.strokeStyle = dark;
@@ -462,6 +540,9 @@ function beads(P, s, line, gold, dark) {
 }
 
 // the point where a cloth leaves a forearm, "up" units above the wrist
+// doll: a doll drawn at least once; side: "A" (the near arm) or "B" (the far one); up: the kit's
+// units, toward the elbow. Returns [x, y], pixels of the sheet, or null before the arm is known.
+// e.g. doll.leave = leaveOf(doll, "A", 30);
 function leaveOf(doll, side, up) {
   var wrist = doll["wrist" + side], elbow = doll["elbow" + side];
   if (!wrist || !elbow) { return null; }
@@ -471,6 +552,10 @@ function leaveOf(doll, side, up) {
 // ---------- pieces of costume, in the waist's and the head's frames ----------
 
 // a band of trim between two lines of another colour
+// From (x1, y1) to (x2, y2) in the pen's frame; colour: the band; edge: its two lines (1.7 FINE wide);
+// width: the band's width, in the same pixels. Returns nothing: it strokes with pen. No doll in the kit
+// calls it yet.
+// e.g. trim(-30, 40, 30, 40, FONLEP.gold, FONLEP.goldDark, 6);
 function trim(x1, y1, x2, y2, colour, edge, width) {
   var a = angleTo([x1, y1], [x2, y2]), nx = -Math.sin(a) * width * 0.4, ny = Math.cos(a) * width * 0.4;
   pen.lineCap = "round";
@@ -492,6 +577,10 @@ function trim(x1, y1, x2, y2, colour, edge, width) {
 
 // The hips' line and the skirt's sway, as person() and tier() find them, so
 // that a band drawn on the skirt lies on the cloth: [phase, hipTip]
+// doll: the doll being drawn (doll.look, doll.x and the clock are read). Returns [phase, hipTip]:
+// the skirt's sway in radians, for bandCorners() and band(), and the slant of the hips' line, for
+// pen.transform(1, hipTip, 0, 1, 0, 0). It must be kept to person()'s own sums when those change.
+// e.g. var hips = hipsOf(doll); pen.save(); pen.transform(1, hips[1], 0, 1, 0, 0); fonlepSilverBelt(hips); pen.restore();
 function hipsOf(doll) {
   var look = doll.look, x = doll.x;
   var phase = clock * Math.PI / BEAT + x * 0.01;
@@ -506,6 +595,10 @@ function hipsOf(doll) {
 // the corners of a band across the skirt from "top" to "bottom" below the
 // waist: at a fraction u down the cloth the edge drifts -36 * u^1.3 *
 // sin(phase - 1.6u), and one side swells 0.16 * u * cos while the other tucks in
+// top, bottom: below the waist, in the waist's frame (the skirt is 158 long); halfTop, halfBottom:
+// half the band's width at each; phase: hipsOf(doll)[0]. Returns {tl, tr, bl, br} (each [x, y]) and
+// driftTop, driftBottom (how far each edge has drifted sideways), all in the waist's frame.
+// e.g. var c = bandCorners(4, 10, 36, 38, hips[0]);
 function bandCorners(top, bottom, halfTop, halfBottom, phase) {
   function edge(y, half) {
     var u = Math.max(0, y) / 158, late = phase - 1.6 * u;
@@ -518,6 +611,11 @@ function bandCorners(top, bottom, halfTop, halfBottom, phase) {
 
 // A band across the hips, filled, then handed to "pattern(corners, middle,
 // wide)" inside its own clip, and outlined.
+// top, bottom, halfTop, halfBottom, phase: as bandCorners() takes them; colour: the band's;
+// pattern(corners, middle, wide): bandCorners()' answer, the band's middle y, and a half-width to
+// draw out to; or nothing. In the waist's frame, slanted by hipsOf(). Returns nothing: it draws with
+// pen (outlined in 0.9 LINE before the pattern goes on).
+// e.g. band(-4, 8, 28, 36, hips[0], FONLEP.silver, null);
 function band(top, bottom, halfTop, halfBottom, phase, colour, pattern) {
   var c = bandCorners(top, bottom, halfTop, halfBottom, phase);
   pen.beginPath();
@@ -537,6 +635,10 @@ function band(top, bottom, halfTop, halfBottom, phase, colour, pattern) {
 }
 
 // a band round a forearm, "from" to "to" units above the wrist (wx, wy), toward the elbow (ex, ey)
+// The four points are onArm()'s, in the waist's frame; halfFrom, halfTo: half its width at each end;
+// colour: its fill; swell: how far its sides curve out (bone()'s, 0.5 when left out). Returns [ux, uy],
+// the unit step from the wrist toward the elbow, to place more on the band; it draws with pen.
+// e.g. var u = sleeveBand(ex, ey, wx, wy, 5, 19, 9.4, 10.2, FONLEP.green);
 function sleeveBand(ex, ey, wx, wy, from, to, halfFrom, halfTo, colour, swell) {
   var a = angleTo([wx, wy], [ex, ey]), ux = Math.cos(a), uy = Math.sin(a);
   bone(wx + ux * from, wy + uy * from, wx + ux * to, wy + uy * to, halfFrom, halfTo, swell || 0.5);
@@ -545,6 +647,9 @@ function sleeveBand(ex, ey, wx, wy, from, to, halfFrom, halfTo, colour, swell) {
 }
 
 // a gold leaf from (x, y), pointing the way "angle" says
+// In the pen's frame; angle in radians; long: its length; wide: half its width at the belly; gold: its
+// fill; dark: its vein. Returns nothing: it draws with pen. No doll in the kit calls it yet.
+// e.g. leaf(0, -380, -Math.PI / 2, 30, 6, FONLEP.gold, FONLEP.goldDark);
 function leaf(x, y, angle, long, wide, gold, dark) {
   var tip = walk([x, y], angle, long), belly = walk([x, y], angle, long * 0.38);
   var l = walk(belly, angle - Math.PI / 2, wide), r = walk(belly, angle + Math.PI / 2, wide);

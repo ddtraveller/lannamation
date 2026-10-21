@@ -6,6 +6,10 @@ A look's reachA or reachB sends a wrist to a point. The page keeps, in MISSED, h
 rest from its point in the frame just drawn, and whether the point was within the arm's length. Every frame of
 the page is drawn. For each reach it prints the worst miss while the point was within reach, and the worst
 while it was not. A wrist more than LIMIT pixels from a point it could reach is a failure (exit code 1).
+
+It needs Google Chrome (through Playwright). The page is named from the kit's folder (kit/), not from the
+folder it is run in, and must keep MISSED. It prints one line a reach; a kit warning or a page error is a
+failure too.
 """
 import sys
 from pathlib import Path
@@ -32,6 +36,9 @@ EVERY_FRAME = """() => {
 
 
 def main():
+    """The command line: reach_check.py [PAGE]: draw every frame, print each reach's worst miss.
+
+    Fails with SystemExit(1) when a wrist misses a point it can reach by more than LIMIT, or the page warns or errs."""
     name = sys.argv[1] if len(sys.argv) > 1 else "together.html"
     errors = []
     with sync_playwright() as playwright:

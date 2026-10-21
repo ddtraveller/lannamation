@@ -114,6 +114,15 @@ var DRAGON_KEYS = {};
 // grows with the time makes the hair stream.
 var DRAGON_AIR = {wave: 1, turn: 1};               // how the locks of the dragon being drawn wave and stream: set by its flight
 
+// dragonLock() is that lock of hair (described just above).
+//   long, wide  its length and its width at the root, in pixels of pen's frame
+//   wave        how far it swings to each side, in the same pixels
+//   turn        where in its swing it is, in radians (clock * 3 makes it stream)
+//   colour      its fill; the line down its middle is that colour darkened
+// Both wave and turn are multiplied by DRAGON_AIR, which dragon() sets for
+// its flight. Returns nothing: it draws with pen, and leaves pen's stroke
+// colour and line width set.
+// e.g. dragonLock(190, 26, 20, clock * 3, "#d9a441")
 function dragonLock(long, wide, wave, turn, colour) {
   var middle = [], n;
   wave *= DRAGON_AIR.wave;
@@ -135,7 +144,10 @@ function dragonLock(long, wide, wave, turn, colour) {
 }
 
 // A flame that waves: a lock in the flame's colour, with a shorter one of
-// the fire's own colour inside it.
+// the fire's own colour inside it. long, wide, wave and turn are as
+// dragonLock() takes them; c.crest is the flame's colour and c.fire the inside.
+// Returns nothing: it draws with pen out along x from (0, 0).
+// e.g. dragonFire(300, 46, 22, clock * 6, {crest: "#e8632c", fire: "#f6c445"})
 function dragonFire(long, wide, wave, turn, c) {
   dragonLock(long, wide, wave, turn, c.crest);
   pen.save();
@@ -154,7 +166,10 @@ function dragonFire(long, wide, wave, turn, c) {
   pen.restore();
 }
 
-// A pearl: a pale ball with a spiral on it.
+// A pearl: a pale ball with a spiral on it, about (x, y), of radius r (in
+// pixels of pen's frame), filled with "colour". Returns nothing: it draws
+// with pen, and leaves pen's stroke colour and line width set.
+// e.g. dragonPearl(120, -40, 30, "#dfe6f2")
 function dragonPearl(x, y, r, colour) {
   pen.beginPath();
   pen.arc(x, y, r, 0, 7);
@@ -175,6 +190,12 @@ function dragonPearl(x, y, r, colour) {
 // A Chinese dragon's leg is longer in the bone, bent hard at the elbow, and
 // ends in an eagle's foot ("claws" of them); a tuft streams from the elbow.
 // It gives back where the foot is, in the dragon's own drawing.
+//   c       the dragon's colours (mane for the tufts, spots, pearl)
+//   pearls  true: the paw holds a pearl
+//   china   true: the Chinese dragon's leg, elbow tuft and eagle's foot
+//   claws   that foot's claws, 3 to 5 (4 when left out)
+// Returns [x, y], the foot, in pen's frame. It draws with pen.
+// e.g. dragonLeg(0, 20, 34, 116, -1, "#dcb47c", c, true, false)   // c as dragon() makes it
 function dragonLeg(sx, sy, px, py, knee, skin, c, pearls, china, claws) {
   for (var lock = 0; lock < 3; lock++) {            // the tuft at the shoulder streams back
     pen.save();
@@ -235,7 +256,12 @@ function dragonLeg(sx, sy, px, py, knee, skin, c, pearls, china, claws) {
 // round, more a lion's than a snake's, with a high skull, a short muzzle
 // that steps down from the brow, a pink nose, an ear, and two horns. "open"
 // is how far the mouth is open and "breath" how much flame it breathes,
-// both 0 to 1.
+// both 0 to 1. "c" is the dragon's colours (body, spots, belly, mane, crest,
+// fire); "e" a feeling (creatureFeel()), or null. The head is about 160
+// across without its mane and whiskers, in pen's frame.
+// Returns nothing: it draws with pen, and leaves pen's colours, line width
+// and lineCap as it last set them.
+// e.g. dragonHead(0.4, 0, c, null)   // c as dragon() makes it
 function dragonHead(open, breath, c, e) {
   var blink = Math.sin(clock * 0.8 + 1.3) > 0.985, n, horn = "#f1e3c0";
   function antler(x, y) {                           // one horn: a beam that sweeps back, and a tine that stands on it
@@ -408,7 +434,10 @@ function dragonHead(open, breath, c, e) {
 
 // An eagle's foot at (x, y), the shin coming in at the angle "down": "claws"
 // toes spread like a bird's, all but one forward and that one turned back,
-// each a short bone and a long curved talon.
+// each a short bone and a long curved talon. "down" is in radians; "claws"
+// 3 to 5 (4 when left out); "skin" the colour of the palm and the toes.
+// Returns nothing: it draws with pen; pen's frame is kept.
+// e.g. dragonTalons(34, 116, Math.PI / 2, 5, "#e0b24a")
 function dragonTalons(x, y, down, claws, skin) {
   var count = Math.max(3, Math.min(5, claws || 4)), n;
   pen.save();
@@ -435,6 +464,10 @@ function dragonTalons(x, y, down, claws, skin) {
 // the tail, about a sixth of the body's width, kept off the belly's plates
 // and inside the body's own line. The body's edges are found as nagaStrip
 // finds them: the back to the right of the way to the tail.
+//   line, wide  the body's middle and half-width, as nagaStrip() takes them
+//   c           the colours: c.spots draws the scales
+// Returns nothing: it draws with pen over a body nagaStrip() has painted.
+// e.g. dragonScales(line, wide, c)   // as dragon() calls it, after nagaStrip(line, wide, c, [])
 function dragonScales(line, wide, c) {
   var last = line.length - 1, at = [], n, k;
   for (n = 0; n <= last; n++) {
@@ -466,7 +499,10 @@ function dragonScales(line, wide, c) {
 }
 
 // The flaming pearl a Chinese dragon chases: a pearl ringed with flames that
-// lick round it, at (x, y).
+// lick round it, at (x, y). "r" is the pearl's radius in pixels of pen's
+// frame (the flames reach about twice that past it); c.crest and c.fire
+// colour the flames, c.pearl the pearl. Returns nothing: it draws with pen.
+// e.g. dragonChasedPearl(168, -40, 30, {crest: "#c9552a", fire: "#f6c445", pearl: "#f2f4f8"})
 function dragonChasedPearl(x, y, r, c) {
   var n;
   for (n = 0; n < 5; n++) {
@@ -485,6 +521,9 @@ function dragonChasedPearl(x, y, r, c) {
 // bulbous nose, the mouth open on a row of teeth, round bulging eyes under
 // bushy brows, the lump on the crown, a cow's ear, branched antlers, long
 // curling whiskers, a beard, and the mane streaming back.
+// open, breath, c and e are as dragonHead() takes them. Returns nothing: it
+// draws with pen, and leaves pen's colours, line width and lineCap set.
+// e.g. dragonHeadChina(0.6, 0.3, c, null)   // c as dragon() makes it for kind: "chinese"
 function dragonHeadChina(open, breath, c, e) {
   var blink = Math.sin(clock * 0.8 + 1.3) > 0.985, n, horn = "#f1e3c0";
   function antler(x, y) {                           // a stag's: a beam that sweeps back, with two tines that stand up from it
@@ -683,6 +722,14 @@ var DRAGON_FLIGHT = {
 // through it (or they shear it). It starts behind the mane and runs off the
 // tip in 3.6 s, every "when" seconds (8 if unsaid) or at the moments "when"
 // lists; "seed" keeps two dragons on the same period from looping together.
+//   line   the body's middle, a dense list of [x, y], the head first
+//   air    one of DRAGON_FLIGHT's manners (above)
+//   when   look.corkscrew: seconds between corkscrews, or a list of the clock's
+//          seconds at which one starts (8 seconds apart when left out)
+//   seed   seconds added to the clock for the corkscrew's timing
+// Returns a new list of [x, y], as many as "line", moved. It reads the
+// film's clock and draws nothing.
+// e.g. dragonFlight(nagaLine(spine, 4), DRAGON_FLIGHT.glide, undefined, 0)
 function dragonFlight(line, air, when, seed) {
   var last = line.length - 1, out = [], cork = null, p = -1, n;
   if (air.cork) {
@@ -722,6 +769,17 @@ function dragonFlight(line, air, when, seed) {
 // DRAGON_KEYS above). It gives back {claw, size}: where its near front foot
 // is, in the points of the frame it was drawn in, so a film can put something
 // in that claw; and how large it was drawn, depth and all.
+//   x, y   where the head is, in pixels of the sheet; the body runs back from
+//          it (to the left when it faces right), about 1080 long at size 1.
+//          With look.trail, (x, y) should be where trail(clock) puts the head
+//   look   an object, never left out ({} gives the thangka's tan dragon at
+//          size 1, gliding, facing right, holding pearls): its keys are
+//          DRAGON_KEYS above, and naming another warns (checkNames)
+// Returns {claw: [x, y], size: number}. It draws with pen at the film's
+// clock. It sets the kit's FINE and LINE, and DRAGON_AIR, while it draws,
+// and leaves them at 1, STYLE.line and {wave: 1, turn: 1}; pen is restored.
+// e.g. var d = dragon(900, 260, {size: 0.5, face: -1, fly: "glide", breath: 0.4, feel: "angry"});
+//      // then draw a pearl or a lamp at d.claw
 function dragon(x, y, look) {
   checkNames("The dragon's name", look, DRAGON_KEYS);
   var scene = pen.getTransform(), claw = null;

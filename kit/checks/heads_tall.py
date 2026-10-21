@@ -6,6 +6,9 @@
 A figure's height is measured in its own heads: from the ground to the crown of the skull, over the crown to the
 chin. person() gives back where the crown and the chin came to. Each of the cast is drawn standing straight
 (up: 1), with each build in turn, on build.html, which needs nothing but the kit.
+
+It needs Google Chrome (through Playwright) and build.html in the kit's folder. It prints a table, one row
+for each of CAST, and ends with exit code 0.
 """
 import sys
 from pathlib import Path
@@ -26,6 +29,7 @@ MEASURE = """([builds]) => {
 
 
 def main():
+    """The command line: heads_tall.py [BUILD ...]: draw each of the cast at each build and print how many heads tall."""
     builds = [float(word) for word in sys.argv[1:]] or [0, 0.5, 1]
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome")

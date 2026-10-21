@@ -34,6 +34,8 @@
 // upright (dice() decides).
 
 // A colour "#rrggbb" as rgba() at the opacity a.
+// colour: "#rrggbb"; a: 0 to 1. Returns a string "rgba(r, g, b, a)". Changes nothing.
+// e.g. brush.strokeStyle = hlTint("#34521f", 0.8);
 function hlTint(colour, a) {
   var c = parseInt(colour.slice(1), 16);
   return "rgba(" + ((c >> 16) & 255) + ", " + ((c >> 8) & 255) + ", " + (c & 255) + ", " + a + ")";
@@ -71,6 +73,15 @@ var TERRACE_SEASONS = {
 // stands on), trees (false: no trees at the ends of the benches).
 // It gives back lip(k, x): the height of bench k's lip at x, for a film that
 // stands someone on a terrace (bench 0 is the highest, count the lowest).
+// terraces(brush, x, top, wide, tall, look) paints a patch of rice terraces and gives back {count, lip}.
+//   brush       a canvas 2D context (a set's sheet, painted once)
+//   x, top      the middle of the patch's top, pixels of the sheet
+//   wide, tall  the patch's size, pixels of the sheet
+//   look        optional; the names listed just above (season "green", count from tall / 24 and at
+//               least 4, bow 1, seed 1, hut off, trees on)
+// Returns {count, lip}: lip(k, x) is the y, pixels of the sheet, of bench k's lip at x.
+// It leaves brush's fill and line set as it last set them.
+// e.g. var field = terraces(pen, 960, 420, 1100, 380, {season: "gold", hut: true}); person(700, field.lip(5, 700), cast("boy"));
 function terraces(brush, x, top, wide, tall, look) {
   look = look || {};
   var season = TERRACE_SEASONS[look.season || "green"] || TERRACE_SEASONS.green, seed = look.seed || 1;
@@ -160,6 +171,9 @@ function terraces(brush, x, top, wide, tall, look) {
 // The hut of the fields: a floor of split bamboo raised on four posts, open
 // on every side, under a hipped roof of thatch; as tall as a person at size 1
 // (its foot at (x, base)).
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: 1 is about 80 tall (as tall as a
+// person). Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. fieldHut(pen, 640, 820, 1.2);
 function fieldHut(brush, x, base, size) {
   brush.save();
   brush.translate(x, base);
@@ -227,6 +241,14 @@ var FOREST_HAZE = "#c9dcd8";                                         // what a f
 
 // One crown: lobes on a dome, the whole clump inked, lit at the top. "plain"
 // is a crown far off (rule 6): no lines inside, and a faint outline.
+//   brush   a canvas 2D context
+//   x, y    the middle of the clump's dome, pixels of the sheet
+//   r       its radius in pixels (the clump is about 2.4 r wide)
+//   colour  "#rrggbb", such as one of FOREST_GREENS
+//   seed    a number: the same seed draws the same crown
+//   plain   true for a far crown
+// Returns nothing: it draws with brush, and leaves its fillStyle (and line, when it inks inside) set.
+// e.g. crown(pen, 400, 600, 40, FOREST_GREENS[2], 7);
 function crown(brush, x, y, r, colour, seed, plain) {
   var lobes = [[x, y, r * 0.6]], n, count = 6 + Math.floor(dice(seed * 3) * 3);
   for (n = 0; n < count; n++) {                    // round the top of the dome, left to right
@@ -271,6 +293,9 @@ function crown(brush, x, y, r, colour, seed, plain) {
 
 // A bough or a culm, inked as the kit inks a hose: the line wider in ink,
 // then the line again in its own colour.
+// brush: a canvas 2D context; from, bend, to: [x, y] in pixels (a quadratic curve); width: pixels;
+// colour, ink: CSS colours. Returns nothing: it draws with brush, and leaves its line set.
+// e.g. hlHose(pen, [100, 800], [110, 600], [160, 420], 4, "#9fb85a", "rgba(32, 52, 24, 0.88)");
 function hlHose(brush, from, bend, to, width, colour, ink) {
   brush.beginPath();
   brush.moveTo(from[0], from[1]);
@@ -288,6 +313,10 @@ function hlHose(brush, from, bend, to, width, colour, ink) {
 // flares at its foot and bends a little, three boughs that leave it near the
 // top, each at a height of its own, and a wide, flat crown of clumps at
 // their ends; about 420 tall at size 1, its foot at (x, base).
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: 1 when about 420 tall (needed);
+// colour: the crown's "#rrggbb"; seed: 1 when left out. Returns nothing: it draws with brush, and
+// leaves its fill and line set.
+// e.g. tallTree(pen, 820, 700, 0.8, FOREST_GREENS[0], 3);
 function tallTree(brush, x, base, size, colour, seed) {
   seed = seed || 1;
   var high = 320 * size, lean = (dice(seed * 3) - 0.5) * 30 * size, wide = 10 * size, top = [x + lean, base - high], wave = 6 * size;
@@ -326,6 +355,9 @@ function tallTree(brush, x, base, size, colour, seed) {
 }
 
 // A clump of bamboo (rule 4), its foot at (x, base); about 330 tall at size 1.
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: 1 when about 330 tall (needed);
+// seed: 1 when left out. Returns nothing: it draws with brush, and leaves its fill and line set.
+// e.g. bamboo(pen, 300, 900, 0.9, 5);
 function bamboo(brush, x, base, size, seed) {
   seed = seed || 1;
   var count = 9 + Math.floor(dice(seed * 3) * 6), lean = (dice(seed * 3 + 1) - 0.5) * 0.5, culms = [], n, s;
@@ -373,6 +405,9 @@ function bamboo(brush, x, base, size, seed) {
 }
 
 // An areca palm (rule 5), its foot at (x, base); about 330 tall at size 1.
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: 1 when about 330 tall (needed);
+// seed: 1 when left out. Returns nothing: it draws with brush, and leaves its fill and line set.
+// e.g. areca(pen, 1500, 880, 1, 2);
 function areca(brush, x, base, size, seed) {
   seed = seed || 1;
   var high = (290 + 60 * dice(seed * 3)) * size, lean = (dice(seed * 3 + 1) - 0.5) * 30 * size, w = 4 * size, n;
@@ -447,6 +482,10 @@ function areca(brush, x, base, size, seed) {
 // fades toward), ground (a function x -> y, for ground that is not level),
 // bamboo, palms, trees (how many of each to a thousand pixels: 3, 2 and 2 if
 // left out), front (false: no bananas at its foot).
+// brush: a canvas 2D context (a set's sheet); left, right, base: pixels of the sheet; look: optional,
+// the names just above. It also draws the kit's banana() (oldcartoon.js) at its foot when near.
+// Returns nothing: it draws with brush, and leaves its fill and line set.
+// e.g. forest(pen, 0, WIDE, 760, {tall: 260, seed: 4});  forest(pen, 0, WIDE, 560, {far: 0.7, tall: 150});
 function forest(brush, left, right, base, look) {
   look = look || {};
   var tall = look.tall || 220, far = look.far || 0, seed = look.seed || 1, haze = look.haze || FOREST_HAZE, x, n;
@@ -510,6 +549,11 @@ function forest(brush, left, right, base, look) {
 // row of them along the ridge. The look's names: far (0 near to 1 far), seed,
 // haze, small and large (a crown's size at the ridge and at the foot: 7 and
 // 26).
+// brush: a canvas 2D context; ridge: a function x -> y, pixels of the sheet; left, right, foot: pixels
+// of the sheet; look: optional, the names just above (far 0, seed 1, haze FOREST_HAZE, small 7,
+// large 26). It draws up to 5000 crowns: paint it once on a sheet, not every frame.
+// Returns nothing: it draws with brush, and leaves its fill and line set.
+// e.g. forestSlope(pen, function (x) { return 420 + 120 * Math.cos(x / 300); }, 0, WIDE, 900, {far: 0.3});
 function forestSlope(brush, ridge, left, right, foot, look) {
   look = look || {};
   var far = look.far || 0, seed = look.seed || 1, haze = look.haze || FOREST_HAZE, small = look.small || 7, large = look.large || 26;
@@ -586,6 +630,15 @@ var MIST_PEN = MIST_SHEET.getContext("2d");
 // larger, then the fill, then the inner arcs (rule 7); then faded from solid
 // at "solid" to gone at "gone" down the frame (rule 3), and laid on brush at
 // "alpha" inside the box [left, top, right, bottom] of the picture.
+//   brush            the canvas 2D context the mist goes onto
+//   puffs            [[x, y, rx, ry, number], ...] in the frame's pixels
+//   body             a function (b, grow) that adds a path to b, or null
+//   frame            a function (b) that moves b's frame, or null (the sheet's own pixels)
+//   box              [left, top, right, bottom], pixels of the sheet: where on MIST_SHEET it is drawn
+//   look             colour ("#ffffff"), shade ("#8fa2b8"), glow (optional "#rrggbb")
+//   alpha            0 to 1; solid, gone: y in the frame's pixels
+// Returns nothing: it draws on brush through MIST_SHEET (left clear after), and leaves brush as it found it.
+// e.g. mistLay(pen, [[600, 700, 120, 14]], null, null, [400, 660, 800, 760], {}, 0.8, 690, 760);
 function mistLay(brush, puffs, body, frame, box, look, alpha, solid, gone) {
   var b = MIST_PEN, line = 1.6, colour = look.colour || "#ffffff", shade = look.shade || "#8fa2b8";
   var top = look.glow ? blend(colour, look.glow, 0.45) : colour;
@@ -646,6 +699,10 @@ function mistLay(brush, puffs, body, frame, box, look, alpha, solid, gone) {
 // thinnest, rule 4; give 1 to lay one between two ranges, calling it once
 // for each, the furthest first), colour ("#ffffff"), glow (the sky's colour
 // on its top, at sunrise), shade (its line and its grey), seed, alpha.
+// brush: a canvas 2D context to lay the mist on, every frame; t: the time in seconds; look: optional,
+// the names just above (level 700, left 0, right WIDE; all y and x in pixels of the sheet).
+// Returns nothing: it draws on brush (through MIST_SHEET), and leaves brush as it found it.
+// e.g. mistSea(pen, t, {level: 640, layers: 1, glow: "#f3b27a"});   // between the far range's sheet and the near one's
 function mistSea(brush, t, look) {
   look = look || {};
   var level = look.level === undefined ? 700 : look.level, left = look.left || 0, right = look.right === undefined ? WIDE : look.right;
@@ -667,6 +724,10 @@ function mistSea(brush, t, look) {
 // One band of mist across a slope, its middle at (x, y), "wide" long (rule
 // 5). The look's names: tall (how high it swells: wide * 0.07), tilt (radians,
 // to lie along a slope), colour, shade, glow, seed, alpha (0.8).
+// brush: a canvas 2D context; x, y, wide: pixels of the sheet; t: the time in seconds; look: optional,
+// the names just above. Returns nothing: it draws on brush (through MIST_SHEET), and leaves brush as
+// it found it.
+// e.g. mistBand(pen, 900, 520, 420, t, {tilt: -0.12});
 function mistBand(brush, x, y, wide, t, look) {
   look = look || {};
   var seed = look.seed || 1, tall = look.tall || wide * 0.07, tilt = look.tilt || 0;
@@ -695,6 +756,10 @@ function mistBand(brush, x, y, wide, t, look) {
 // look's names: left, right, top, bottom, count (5), wide (a near band's
 // length: 380), drift (a near band's pixels a second: 9), tilt, seed, colour,
 // shade, glow, alpha.
+// brush: a canvas 2D context; t: the time in seconds; look: optional, the names just above (left 0,
+// right WIDE, top 300, bottom 700, pixels of the sheet). Returns nothing: it draws on brush (through
+// MIST_SHEET), and leaves brush as it found it.
+// e.g. mistDrift(pen, t, {top: 360, bottom: 620, count: 4});
 function mistDrift(brush, t, look) {
   look = look || {};
   var left = look.left || 0, right = look.right === undefined ? WIDE : look.right, top = look.top === undefined ? 300 : look.top;
@@ -717,6 +782,12 @@ function mistDrift(brush, t, look) {
 // that stir (look.t, the second). 250 wide and 135 high at size 1, the opening 120 by 92.
 // look: t; rock (the stone's colour); dark (the inside's); tint, [colour, amount]: every colour of it
 // blended that far toward one light (a dawn's blue, a dusk's red), as a set painted by day and tinted is.
+//   brush   a canvas 2D context
+//   x, y    the middle of its foot, pixels of the sheet
+//   size    1 is 250 wide (needed)
+//   look    optional: t (seconds, 0), rock ("#7d7266"), dark ("#0f0b0a", not tinted), tint
+// Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. caveMouth(pen, 1100, 640, 1.4, {t: t, tint: ["#3a4a7a", 0.3]});
 function caveMouth(brush, x, y, size, look) {
   look = look || {};
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }

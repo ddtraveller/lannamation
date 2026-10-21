@@ -39,6 +39,10 @@ var FLORA_TWIG = "#6b4a2e", FLORA_STEM = "#6f9a52", FLORA_LEAF = "#3f7c4c", FLOR
 var FLORA_LINE = "rgba(28, 58, 36, 0.85)", FLORA_WHITE = "#fbf7ea";
 
 // The kit's shape(), with a gradient as the paint and the ink taken from "colour".
+// colour: "#rrggbb" (the ink is the kit's inkFor() of it); paint: a gradient or colour to fill with
+// (colour when left out). Returns nothing: it fills and inks the path pen holds, and leaves pen's
+// fill and line as it set them.
+// e.g. pen.beginPath(); pen.ellipse(0, -40, 34, 40, 0, 0, 7); floraPaint("#d8306e");
 function floraPaint(colour, paint) {
   var ink = inkFor(colour);
   pen.fillStyle = paint || colour;
@@ -52,6 +56,9 @@ function floraPaint(colour, paint) {
 }
 
 // A leaf growing from (x, y), "long" and "wide", turned by "turn" from straight up.
+// x, y, long, wide: pixels of the pen's frame; turn: radians, 0 straight up; deep, pale: the leaf's two greens
+// (FLORA_LEAF and FLORA_PALE when left out). Returns nothing: it draws with pen (the kit's paintLeaf()).
+// e.g. floraLeaf(-40, -14, 40, 14, -1.1);
 function floraLeaf(x, y, long, wide, turn, deep, pale) {
   pen.save();
   pen.translate(x, y);
@@ -61,6 +68,8 @@ function floraLeaf(x, y, long, wide, turn, deep, pale) {
 }
 
 // A round fruit or bud of radius r, with a light on its upper left unless told not.
+// x, y, r: pixels of the pen's frame; colour: "#rrggbb"; shine: false for no light. Returns nothing: it draws with pen.
+// e.g. floraBall(-24, -46, 46, "#c9d66a");
 function floraBall(x, y, r, colour, shine) {
   pen.beginPath();
   pen.arc(x, y, r, 0, 7);
@@ -75,6 +84,9 @@ function floraBall(x, y, r, colour, shine) {
 
 // "count" petals round (x, y), each an ellipse "long" out from the heart and
 // "wide" across; pale toward "rim" if a rim colour is given; a heart of "heart".
+// x, y, long, wide: pixels of the pen's frame; count: how many; colour, heart, rim: "#rrggbb" (heart and rim may be
+// left out); turn: radians, 0 when left out. Returns nothing: it draws with pen.
+// e.g. floraPetals(0, -90, 6, 9, 5.4, FLORA_WHITE, "#f2e4a0", 0.3);
 function floraPetals(x, y, count, long, wide, colour, heart, turn, rim) {
   var n, a, fade;
   for (n = 0; n < count; n++) {
@@ -101,6 +113,9 @@ function floraPetals(x, y, count, long, wide, colour, heart, turn, rim) {
 // A bunch that hangs from (x, y): "count" stalks to round fruits of radius r
 // below, the lowest drawn last so that it lies in front. "dot" marks each
 // with a dark speck, "bumps" with the short arcs of a lychee's skin.
+// x, y, r, spread: pixels of the pen's frame; count: how many fruits; colour: "#rrggbb"; seed: a number; dot, bumps:
+// true or false. Returns nothing: it draws with pen.
+// e.g. floraBunch(0, -108, 13, 8, "#c9a060", 4, 68, true, false);
 function floraBunch(x, y, count, r, colour, seed, spread, dot, bumps) {
   var n, balls = [];
   for (n = 0; n < count; n++) {
@@ -135,6 +150,9 @@ function floraBunch(x, y, count, r, colour, seed, spread, dot, bumps) {
 
 // Ratchaphruek, the golden shower: a raceme of small yellow five-petal
 // flowers that hangs "long" from (x, y), the buds at its tip.
+// x, y, long: pixels of the pen's frame; seed: a number.
+// Returns nothing: it draws with pen.
+// e.g. floraRaceme(-8, -104, 92, 3);
 function floraRaceme(x, y, long, seed) {
   var tipX = x + 12 + 10 * dice(seed), tipY = y + long;
   hose(x, y, tipX, tipY, 0.08, 2.4, "#8aa84a");
@@ -149,6 +167,10 @@ function floraRaceme(x, y, long, seed) {
 }
 
 // A sprig of it: a twig with its leaves in a fan, and two racemes hanging.
+// FLORA.ratchaphruek.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("ratchaphruek", 700, 900, {size: 1.5});
 function floraRatchaphruek(look, seed) {
   hose(0, 0, 4, -120, 0.05, 6, FLORA_TWIG);
   [[-26, -112, -0.9], [30, -108, 0.95], [6, -138, 0.1], [-14, -128, -0.45], [22, -126, 0.5]].forEach(function (leaf) {
@@ -161,6 +183,9 @@ function floraRatchaphruek(look, seed) {
 // Thong kwao, the flame of the forest: one flower is a curved keel like a
 // parrot's beak, orange-red, in a dark velvet calyx; they stand in clusters
 // on a bare twig, because the tree flowers before it has leaves.
+// x, y: pixels of the pen's frame; turn: radians; colour: "#rrggbb".
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. floraFlame(0, 0, -1.2, "#f0581e");
 function floraFlame(x, y, turn, colour) {
   pen.save();
   pen.translate(x, y);
@@ -183,6 +208,10 @@ function floraFlame(x, y, turn, colour) {
   pen.restore();
 }
 
+// Draws one cluster of six flames round (x, y).
+// x, y: pixels of the pen's frame; colour: "#rrggbb"; seed: a number.
+// Returns nothing: it draws with pen.
+// e.g. floraFlameCluster(12, -118, "#f0581e", 2);
 function floraFlameCluster(x, y, colour, seed) {
   for (var n = 0; n < 6; n++) {
     var a = -0.3 + n * 0.5 + (dice(seed + n) - 0.5) * 0.3;
@@ -190,6 +219,10 @@ function floraFlameCluster(x, y, colour, seed) {
   }
 }
 
+// FLORA.thongkwao.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (look.colour is the flower's colour); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("thongkwao", 700, 900, {size: 1.5});
 function floraThongkwao(look, seed) {
   var colour = look.colour || "#f0581e";
   hose(0, 0, 12, -110, -0.1, 6, "#4a3326");
@@ -202,6 +235,9 @@ function floraThongkwao(look, seed) {
 
 // Frangipani (leelawadee): five petals that overlap like a pinwheel, each
 // wider at its tip, white (or the colour told) going to yellow at the heart.
+// x, y, r: pixels of the pen's frame; colour: "#rrggbb"; turn: radians (needed).
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. floraFrangipaniBloom(-18, -108, 22, FLORA_WHITE, 0.2);
 function floraFrangipaniBloom(x, y, r, colour, turn) {
   for (var n = 0; n < 5; n++) {
     pen.save();
@@ -222,6 +258,10 @@ function floraFrangipaniBloom(x, y, r, colour, turn) {
 }
 
 // A sprig: a thick grey-green twig, long leaves, three blooms and a bud.
+// FLORA.frangipani.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (look.colour is the flower's colour); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("frangipani", 700, 900, {size: 1.5});
 function floraFrangipani(look, seed) {
   var colour = look.colour || FLORA_WHITE;
   hose(0, 0, 2, -84, 0.03, 11, "#9aa07a");
@@ -234,6 +274,9 @@ function floraFrangipani(look, seed) {
   floraFrangipaniBloom(2, -134, 20, colour, 2.0);
 }
 
+// FLORA.frangipani.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+// seed: a number; colour: "#rrggbb" (FLORA.frangipani.hang passes FLORA_WHITE when it is given none). Returns nothing: it draws with pen.
+// e.g. floraTree(pen, 240, 900, 1.0, "frangipani", 1);
 function floraFrangipaniHang(seed, colour) {
   floraLeaf(0, 0, 50, 15, 2.6, "#3b7a4a", "#86b86a");
   floraLeaf(0, 0, 50, 15, -2.5, "#3b7a4a", "#86b86a");
@@ -243,6 +286,9 @@ function floraFrangipaniHang(seed, colour) {
 
 // An orchid: five petals, pale at their rims, and a darker lip below with a
 // yellow throat; the blooms stand along an arching spray over strap leaves.
+// x, y, r: pixels of the pen's frame; colour: "#rrggbb"; turn: radians.
+// Returns nothing: it draws with pen.
+// e.g. floraOrchidBloom(12, -80, 15, "#b64fb3", 0.6);
 function floraOrchidBloom(x, y, r, colour, turn) {
   floraPetals(x, y, 5, r, r * 0.55, colour, null, turn, blend(colour, "#ffffff", 0.45));
   pen.beginPath();
@@ -254,6 +300,10 @@ function floraOrchidBloom(x, y, r, colour, turn) {
   pen.fill();
 }
 
+// FLORA.orchid.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (look.colour is the flower's colour); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("orchid", 700, 900, {size: 1.5});
 function floraOrchid(look, seed) {
   var colour = look.colour || "#b64fb3", n, u, p;
   for (n = 0; n < 3; n++) { floraLeaf(0, 0, 70 + n * 10, 12, -0.5 + n * 0.5, "#2f6a48", FLORA_PALE); }
@@ -267,6 +317,9 @@ function floraOrchid(look, seed) {
 
 // Hibiscus (chaba): one big flower of five broad petals, paler at their rims,
 // with a long column from its heart carrying the pollen and five red tips.
+// x, y, r: pixels of the pen's frame; colour: "#rrggbb"; turn: radians.
+// Returns nothing: it draws with pen.
+// e.g. floraHibiscusBloom(10, -118, 34, "#d93a2e", 0.3);
 function floraHibiscusBloom(x, y, r, colour, turn) {
   floraPetals(x, y, 5, r, r * 0.8, colour, null, turn, blend(colour, "#ffffff", 0.35));
   pen.fillStyle = blend(colour, "#3a0a10", 0.5);
@@ -288,6 +341,10 @@ function floraHibiscusBloom(x, y, r, colour, turn) {
   }
 }
 
+// FLORA.hibiscus.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (look.colour is the flower's colour); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("hibiscus", 700, 900, {size: 1.5});
 function floraHibiscus(look, seed) {
   var colour = look.colour || "#d93a2e";
   hose(0, 0, 6, -96, 0.04, 5, "#4f6a3a");
@@ -305,6 +362,9 @@ function floraHibiscus(look, seed) {
 
 // Bougainvillea (fueang fa): what shows is three papery bracts, magenta,
 // round a few tiny white flowers; they crowd a thorny woody twig.
+// x, y, long: pixels of the pen's frame; turn: radians; colour: "#rrggbb".
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. floraBract(0, 0, 22, 1, "#d8338a");
 function floraBract(x, y, long, turn, colour) {
   pen.save();
   pen.translate(x, y);
@@ -320,6 +380,10 @@ function floraBract(x, y, long, turn, colour) {
   pen.restore();
 }
 
+// Draws three bracts and their white flowers round (x, y).
+// x, y: pixels of the pen's frame; colour: "#rrggbb"; seed: a number.
+// Returns nothing: it draws with pen.
+// e.g. floraBractCluster(50, -122, "#d8338a", 1);
 function floraBractCluster(x, y, colour, seed) {
   for (var n = 0; n < 3; n++) { floraBract(x, y, 22, 1 + n * 2.1 + dice(seed + n) * 0.4, colour); }
   pen.fillStyle = FLORA_WHITE;
@@ -330,6 +394,10 @@ function floraBractCluster(x, y, colour, seed) {
   pen.fill();
 }
 
+// FLORA.bougainvillea.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (look.colour is the flower's colour); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("bougainvillea", 700, 900, {size: 1.5});
 function floraBougainvillea(look, seed) {
   var colour = look.colour || "#d8338a";
   hose(0, 0, 50, -120, 0.18, 4.5, FLORA_TWIG);
@@ -345,10 +413,18 @@ function floraBougainvillea(look, seed) {
 
 // Jasmine (mali): small white flowers of rounded petals, and buds like
 // white grains in a green cup, on thin stems with small dark leaves in pairs.
+// Draws one jasmine flower of six petals.
+// x, y, r: pixels of the pen's frame; turn: radians.
+// Returns nothing: it draws with pen.
+// e.g. floraJasmineBloom(6, -92, 9, 0.3);
 function floraJasmineBloom(x, y, r, turn) {
   floraPetals(x, y, 6, r, r * 0.6, FLORA_WHITE, "#f2e4a0", turn);
 }
 
+// Draws a jasmine bud standing from its cup at (x, y).
+// x, y: pixels of the pen's frame; turn: radians.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. floraJasmineBud(18, -84, 0.4);
 function floraJasmineBud(x, y, turn) {
   pen.save();
   pen.translate(x, y);
@@ -362,6 +438,10 @@ function floraJasmineBud(x, y, turn) {
   pen.restore();
 }
 
+// FLORA.jasmine.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("jasmine", 700, 900, {size: 1.5});
 function floraJasmine(look, seed) {
   hose(0, 0, 6, -80, 0.05, 3, FLORA_STEM);
   hose(3, -40, -30, -84, -0.15, 2.4, FLORA_STEM);
@@ -380,6 +460,9 @@ function floraJasmine(look, seed) {
 
 // Marigold (dao rueang): a pompom of many short ruffled petals, orange
 // outside and lighter at the heart, on a stem with ferny leaves.
+// x, y, r: pixels of the pen's frame; outer, inner: "#rrggbb".
+// Returns nothing: it draws with pen.
+// e.g. floraPompom(-12, -118, 26, "#f08a1e", "#f8b44c");
 function floraPompom(x, y, r, outer, inner) {
   for (var ring = 3; ring >= 0; ring--) {
     var rr = r * (0.4 + ring * 0.2), count = 6 + ring * 4, colour = blend(inner, outer, ring / 3);
@@ -392,6 +475,10 @@ function floraPompom(x, y, r, outer, inner) {
   }
 }
 
+// FLORA.marigold.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (look.colour is the flower's colour); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("marigold", 700, 900, {size: 1.5});
 function floraMarigold(look, seed) {
   var colour = look.colour || "#f08a1e", light = blend(colour, "#ffe27a", 0.45);
   hose(0, 0, -10, -100, -0.05, 4, FLORA_STEM);
@@ -409,6 +496,9 @@ function floraMarigold(look, seed) {
 
 // A mango: a kidney shape with a beak at one end, green at the stem going to
 // yellow and a blush of orange, lying on its side, with a leaf.
+// x, y: its middle, pixels of the pen's frame; size: 1 is 68 long; turn: radians.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. floraMango(0, -14, 1, -0.15);
 function floraMango(x, y, size, turn) {
   pen.save();
   pen.translate(x, y);
@@ -433,11 +523,18 @@ function floraMango(x, y, size, turn) {
   pen.restore();
 }
 
+// FLORA.mango.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("mango", 700, 900, {size: 1.5});
 function fruitMango(look, seed) {
   floraMango(0, -14, 1, -0.15);
   floraLeaf(-40, -14, 40, 14, -1.1);
 }
 
+// FLORA.mango.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+// seed: a number. Returns nothing: it draws with pen.
+// e.g. floraTree(pen, 240, 900, 1.0, "mango", 1);
 function fruitMangoHang(seed) {
   hose(0, 0, 2, 22, 0, 2.5, FLORA_TWIG);
   floraMango(6, 46, 0.8, 1.3);
@@ -445,6 +542,9 @@ function fruitMangoHang(seed) {
 
 // A durian: a big oval in a coat of spikes, green going to brown, a thick
 // stem at one end; the spikes on its face are marks like small tents.
+// x, y: its middle, pixels of the pen's frame; size: 1 is about 130 long; turn: radians; seed: a number.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. floraDurian(0, -54, 1, 0.1, 2);
 function floraDurian(x, y, size, turn, seed) {
   var n;
   pen.save();
@@ -477,10 +577,17 @@ function floraDurian(x, y, size, turn, seed) {
   pen.restore();
 }
 
+// FLORA.durian.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("durian", 700, 900, {size: 1.5});
 function fruitDurian(look, seed) {
   floraDurian(0, -54, 1, 0.1, seed);
 }
 
+// FLORA.durian.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+// seed: a number. Returns nothing: it draws with pen.
+// e.g. floraTree(pen, 240, 900, 1.0, "durian", 1);
 function fruitDurianHang(seed) {
   hose(0, 0, 0, 24, 0, 5, "#7a5a3a");
   floraDurian(0, 78, 0.62, -Math.PI / 2, seed);
@@ -489,6 +596,9 @@ function fruitDurianHang(seed) {
 // A mangosteen: a round fruit of deep purple with a cap of four thick green
 // lobes round its stem, and a rosette of marks on its underside; beside it,
 // the lower half of one opened, its white segments in the pink of the rind.
+// x, y: its foot, pixels of the pen's frame; size: 1 is 44 across.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. floraMangosteen(-20, 0, 1);
 function floraMangosteen(x, y, size) {
   pen.save();
   pen.translate(x, y);
@@ -512,6 +622,10 @@ function floraMangosteen(x, y, size) {
   pen.restore();
 }
 
+// Draws the opened half of a mangosteen.
+// x, y: its foot, pixels of the pen's frame; size: 1 is 40 across.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. floraMangosteenHalf(26, 0, 1);
 function floraMangosteenHalf(x, y, size) {
   pen.save();
   pen.translate(x, y);
@@ -532,11 +646,18 @@ function floraMangosteenHalf(x, y, size) {
   pen.restore();
 }
 
+// FLORA.mangosteen.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("mangosteen", 700, 900, {size: 1.5});
 function fruitMangosteen(look, seed) {
   floraMangosteen(-20, 0, 1);
   floraMangosteenHalf(26, 0, 1);
 }
 
+// FLORA.mangosteen.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+// seed: a number. Returns nothing: it draws with pen.
+// e.g. floraTree(pen, 240, 900, 1.0, "mangosteen", 1);
 function fruitMangosteenHang(seed) {
   hose(0, 0, 0, 14, 0, 2.5, FLORA_TWIG);
   floraMangosteen(0, 64, 1);
@@ -544,6 +665,9 @@ function fruitMangosteenHang(seed) {
 
 // A rambutan: a red ball in a coat of soft hairs that turn green at their
 // tips; three on a twig, with a leaf.
+// x, y, r: its middle and radius, pixels of the pen's frame; seed: a number.
+// Returns nothing: it draws with pen.
+// e.g. floraRambutan(-2, -50, 15, 6);
 function floraRambutan(x, y, r, seed) {
   for (var n = 0; n < 18; n++) {
     var a = n / 18 * Math.PI * 2 + dice(seed + n) * 0.3, len = r * (0.5 + 0.3 * dice(seed + n + 7));
@@ -555,6 +679,10 @@ function floraRambutan(x, y, r, seed) {
   floraBall(x, y, r, "#d8352e");
 }
 
+// FLORA.rambutan.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("rambutan", 700, 900, {size: 1.5});
 function fruitRambutan(look, seed) {
   hose(-30, -72, 34, -64, 0.05, 3.5, FLORA_TWIG);
   floraLeaf(30, -66, 40, 13, 1.2);
@@ -563,6 +691,9 @@ function fruitRambutan(look, seed) {
   floraRambutan(14, -20, 18, seed + 3);
 }
 
+// FLORA.rambutan.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+// seed: a number. Returns nothing: it draws with pen.
+// e.g. floraTree(pen, 240, 900, 1.0, "rambutan", 1);
 function fruitRambutanHang(seed) {
   hose(0, 0, 0, 20, 0, 2.5, FLORA_TWIG);
   floraRambutan(-10, 38, 16, seed);
@@ -572,6 +703,10 @@ function fruitRambutanHang(seed) {
 // Longan (lamyai), the orchard crop of Lamphun and Chiang Mai: a bunch of
 // small round fruits in thin brown skins hanging from a twig with two
 // leaves, and one peeled, white, with its black seed showing.
+// FLORA.longan.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("longan", 700, 900, {size: 1.5});
 function fruitLongan(look, seed) {
   hose(-40, -110, 40, -106, 0.05, 3.5, FLORA_TWIG);
   floraLeaf(-30, -108, 46, 12, -1.3);
@@ -584,6 +719,9 @@ function fruitLongan(look, seed) {
   pen.fill();
 }
 
+// FLORA.longan.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+// seed: a number. Returns nothing: it draws with pen.
+// e.g. floraTree(pen, 240, 900, 1.0, "longan", 1);
 function fruitLonganHang(seed) {
   floraLeaf(0, 0, 36, 10, 2.5);
   floraLeaf(0, 0, 36, 10, -2.6);
@@ -592,6 +730,10 @@ function fruitLonganHang(seed) {
 
 // Lychee (linchi): a bunch of red fruits with a bumpy skin, on a twig with
 // leaves, and one peeled to its white flesh.
+// FLORA.lychee.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("lychee", 700, 900, {size: 1.5});
 function fruitLychee(look, seed) {
   hose(-40, -104, 40, -100, 0.05, 3.5, FLORA_TWIG);
   floraLeaf(-30, -102, 46, 12, -1.3);
@@ -604,6 +746,9 @@ function fruitLychee(look, seed) {
   pen.fill();
 }
 
+// FLORA.lychee.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+// seed: a number. Returns nothing: it draws with pen.
+// e.g. floraTree(pen, 240, 900, 1.0, "lychee", 1);
 function fruitLycheeHang(seed) {
   floraLeaf(0, 0, 36, 10, 2.5);
   floraLeaf(0, 0, 36, 10, -2.6);
@@ -613,6 +758,9 @@ function fruitLycheeHang(seed) {
 // A papaya: long, narrow at the stem and full at the far end, green going to
 // orange, with faint ridges along it; and one cut lengthwise, its orange
 // flesh round a boat of black seeds.
+// x, y: its middle, pixels of the pen's frame; size: 1 is about 120 long; turn: radians.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. floraPapaya(-22, -34, 0.9, -0.08);
 function floraPapaya(x, y, size, turn) {
   pen.save();
   pen.translate(x, y);
@@ -642,6 +790,10 @@ function floraPapaya(x, y, size, turn) {
   pen.restore();
 }
 
+// Draws a papaya cut lengthwise.
+// x, y: its middle, pixels of the pen's frame; size: 1 is about 120 long.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. floraPapayaHalf(44, -12, 0.55);
 function floraPapayaHalf(x, y, size) {
   pen.save();
   pen.translate(x, y);
@@ -666,17 +818,28 @@ function floraPapayaHalf(x, y, size) {
   pen.restore();
 }
 
+// FLORA.papaya.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("papaya", 700, 900, {size: 1.5});
 function fruitPapaya(look, seed) {
   floraPapaya(-22, -34, 0.9, -0.08);
   floraPapayaHalf(44, -12, 0.55);
 }
 
+// FLORA.papaya.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+// seed: a number. Returns nothing: it draws with pen.
+// e.g. floraTree(pen, 240, 900, 1.0, "papaya", 1);
 function fruitPapayaHang(seed) {
   floraPapaya(0, 58, 1, Math.PI / 2);
 }
 
 // A young coconut as the street sells it: the green husk trimmed to a peak
 // of flat cuts, with a pale cut at the top to drink from.
+// FLORA.coconut.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("coconut", 700, 900, {size: 1.5});
 function fruitCoconut(look, seed) {
   pen.beginPath();
   pen.moveTo(-40, -8);
@@ -701,6 +864,10 @@ function fruitCoconut(look, seed) {
 
 // A pineapple: a crown of stiff leaves on a body netted in diamonds, each
 // with a dark eye, orange going to brown at its foot.
+// FLORA.pineapple.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("pineapple", 700, 900, {size: 1.5});
 function fruitPineapple(look, seed) {
   var n;
   for (n = 0; n < 9; n++) {
@@ -746,6 +913,9 @@ function fruitPineapple(look, seed) {
 
 // A jackfruit: a great oblong, green-yellow, all over small bumps, with a
 // short thick stem; it grows from the trunk of its tree.
+// x, y: its middle, pixels of the pen's frame; size: 1 is 148 long; turn: radians; seed: a number.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. floraJackfruit(0, -54, 1, 0.12, 3);
 function floraJackfruit(x, y, size, turn, seed) {
   pen.save();
   pen.translate(x, y);
@@ -771,10 +941,17 @@ function floraJackfruit(x, y, size, turn, seed) {
   pen.restore();
 }
 
+// FLORA.jackfruit.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("jackfruit", 700, 900, {size: 1.5});
 function fruitJackfruit(look, seed) {
   floraJackfruit(0, -54, 1, 0.12, seed);
 }
 
+// FLORA.jackfruit.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+// seed: a number. Returns nothing: it draws with pen.
+// e.g. floraTree(pen, 240, 900, 1.0, "jackfruit", 1);
 function fruitJackfruitHang(seed) {
   hose(0, 0, 0, 16, 0, 6, "#7a5a3a");
   floraJackfruit(10, 70, 0.6, 1.2, seed);
@@ -782,6 +959,10 @@ function fruitJackfruitHang(seed) {
 
 // A dragon fruit: an oval of magenta in a coat of scales, each a flap that
 // turns green at its tip.
+// FLORA.dragonfruit.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("dragonfruit", 700, 900, {size: 1.5});
 function fruitDragonfruit(look, seed) {
   pen.beginPath();
   pen.ellipse(0, -40, 34, 40, 0, 0, 7);
@@ -805,6 +986,10 @@ function fruitDragonfruit(look, seed) {
 
 // A pomelo: a big round fruit of pale green-yellow with a nub at the top
 // and the pores of its rind; beside it a segment peeled to its pink pulp.
+// FLORA.pomelo.draw: flora() calls it with the pen moved to the foot and scaled by look.size.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("pomelo", 700, 900, {size: 1.5});
 function fruitPomelo(look, seed) {
   floraBall(-24, -46, 46, "#c9d66a");
   pen.beginPath();
@@ -873,6 +1058,15 @@ var FLORA_TREES = {};
 Object.keys(FLORA).forEach(function (name) { if (FLORA[name].hang) { FLORA_TREES[name] = true; } });
 
 // One flower or fruit at (x, y). "name" is a key of FLORA.
+// flora(name, x, y, look) draws one flower or fruit, with a soft shadow under it unless look.ground is false.
+//   name   a key of FLORA: ratchaphruek, thongkwao, frangipani, orchid, hibiscus, bougainvillea, jasmine,
+//          marigold, mango, durian, mangosteen, rambutan, longan, lychee, papaya, coconut, pineapple,
+//          jackfruit, dragonfruit, pomelo; another is reported by checkName() and nothing is drawn
+//   x, y   the foot of the stem, or the ground the fruit lies on, pixels of the sheet
+//   look   optional; its keys: FLORA_KEYS, at the top of this file (size 1, colour, ground)
+// Returns nothing: it draws with pen, and leaves pen as it found it. It sets the kit's LINE and FINE
+// while it draws, and puts them back to STYLE.line and 1 after.
+// e.g. flora("orchid", 300, 1000, {colour: "#e86fb0"});
 function flora(name, x, y, look) {
   look = look || {};
   checkNames("The flora's name", look, FLORA_KEYS);
@@ -898,6 +1092,10 @@ function flora(name, x, y, look) {
 // A papaya tree: a slim straight trunk, grey-green, marked where leaves
 // have fallen, its fruit crowded under a crown of big lobed leaves on long
 // stalks. Drawn with the pen at (x, base), scaled by size.
+// x, base: its foot, pixels of the pen's frame; size: 1 is about 400 tall; seed: a number.
+// Returns nothing: it draws with pen, and leaves pen as it found it. floraTree(brush, ..., "papaya")
+// calls it with pen pointed at the brush.
+// e.g. floraTree(pen, 300, 900, 1, "papaya", 2);
 function floraPapayaTree(x, base, size, seed) {
   var n, a;
   pen.save();
@@ -939,6 +1137,15 @@ function floraPapayaTree(x, base, size, seed) {
 // set's sheet ("brush") as tree() is. Eight hang in the canopy, a jackfruit
 // on the trunk; a papaya has a tree of its own; a coconut is on the kit's
 // palm already, and a pineapple grows on the ground.
+//   brush    a canvas 2D context: a set's sheet, painted once
+//   x, base  its foot, pixels of the sheet; size: as the kit's tree() takes it
+//   name     a key of FLORA that has a hang (FLORA_TREES): ratchaphruek, thongkwao, frangipani,
+//            bougainvillea, mango, durian, mangosteen, rambutan, longan, lychee, papaya, jackfruit;
+//            another is reported by checkName() and nothing is drawn
+//   seed     a number, 0 when left out; colour: the flower's "#rrggbb", for the ones that take one
+// Returns nothing: it draws with brush. It points pen at brush while it draws and puts pen and LINE
+// back after; FINE is left at 1.
+// e.g. floraTree(pen, 240, 900, 1.0, "mango", 1);
 function floraTree(brush, x, base, size, name, seed, colour) {
   seed = seed || 0;
   var what = FLORA[name], n;

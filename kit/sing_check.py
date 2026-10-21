@@ -13,6 +13,12 @@ lays both voices on their own, and both over the band, and then:
     read the side by side, and trust a difference more than a number);
   - measures the pitch of every sung syllable against its note, in cents.
 It writes the four sound files, so the owner can listen as well.
+
+It needs what lanna_sing.py needs, and faster-whisper. Run it in the folder that holds lanna.wav. It
+writes voice_old.wav, voice_new.wav, song_old.wav and song_new.wav into --out, and what it printed into
+sing_check_output.txt in the folder it is run from. It reads lanna_sing.LINES, which lanna_sing.py no longer
+has (it reads the song's lines from lanna.html's CUES since then): as it stands it stops with an
+AttributeError (2026-10-21).
 """
 import argparse
 import time
@@ -29,7 +35,10 @@ from lanna_music import BEAT, RATE, add, save
 def sung_old(syllable, frequency):
     """The old tuning, kept here as the "before": librosa's pitch_shift to the
     note and time_stretch to the beat, as lanna_sing.sung did until the song
-    switched to singer.sing (2026-10-12)."""
+    switched to singer.sing (2026-10-12).
+
+    syllable: Thai text. frequency: the note, in hz. Gives back the samples, BEAT * 0.95 seconds, peaking at 0.6.
+    e.g. sung_old("บ้าน", 293.66)"""
     sound = lanna_sing.spoken(syllable)
     pitches, _, _ = librosa.pyin(sound, fmin=90, fmax=500, sr=RATE)
     heard = pitches[~numpy.isnan(pitches)]
@@ -45,7 +54,10 @@ def sung_old(syllable, frequency):
 
 
 def character_error(written, heard):
-    """The share of the written characters that are wrong in what was heard."""
+    """The share of the written characters that are wrong in what was heard.
+
+    written, heard: Thai text (spaces left out). Gives back 0 (all right) and up; 0.0 when nothing is written.
+    e.g. character_error("ไป เที่ยว", "ไปเทียว")"""
     a, b = written.replace(" ", ""), heard.replace(" ", "")
     if not a:
         return 0.0
@@ -59,7 +71,10 @@ def character_error(written, heard):
 
 
 def cents_off(sound, frequency):
-    """How far the sung pitch is from the note, in cents, by its median."""
+    """How far the sung pitch is from the note, in cents, by its median.
+
+    sound: samples at RATE. frequency: the note, in hz. Gives back cents (100 a semitone), or nan when no
+    pitch is heard. e.g. cents_off(sound, 293.66)"""
     pitches, _, _ = librosa.pyin(sound, fmin=90, fmax=500, sr=RATE)
     heard = pitches[~numpy.isnan(pitches)]
     if not len(heard):
@@ -69,7 +84,10 @@ def cents_off(sound, frequency):
 
 def build(method, length):
     """The voice alone, as long as the band, and the cents off for each
-    syllable: method is "old" or "new"."""
+    syllable: method is "old" or "new".
+
+    length: the band's length in samples. Gives back (voice, offs): the samples, and a numpy array of cents.
+    e.g. voice, offs = build("new", len(band))"""
     voice = numpy.zeros(length)
     offs = []
     for start, words in lanna_sing.LINES:
@@ -87,6 +105,10 @@ def build(method, length):
 
 
 def hear(model, sound, start, stop):
+    """What the listener hears in one stretch of a sound: the Thai text it writes down.
+
+    model: a faster-whisper WhisperModel. sound: samples at RATE. start, stop: the stretch, in seconds.
+    e.g. hear(model, voices["new"], 3.85, 8.4)"""
     piece = sound[int(start * RATE):int(stop * RATE)]
     piece = librosa.resample(piece, orig_sr=RATE, target_sr=16000).astype(numpy.float32)
     segments, _ = model.transcribe(piece, language="th", beam_size=5, vad_filter=False)
@@ -97,11 +119,15 @@ SAID = []                    # every line printed, for sing_check_output.txt
 
 
 def say(line):
+    """Print line and keep it in SAID, for sing_check_output.txt. Gives back nothing.
+
+    e.g. say("old voice: 40 syllables")"""
     print(line)
     SAID.append(line)
 
 
 def main():
+    """The command line: make --out, run the check, and write sing_check_output.txt even when it fails."""
     import sys
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")   # Thai on a Windows console
     parser = argparse.ArgumentParser()
@@ -117,6 +143,9 @@ def main():
 
 
 def run(args, out):
+    """Build both voices, save the four sound files into out, then hear each line of each and print the share wrong.
+
+    args: the parsed arguments (args.model names the listener). out: the folder, a Path. Gives back nothing."""
     import wave
     with wave.open("lanna.wav", "rb") as file:
         band = numpy.frombuffer(file.readframes(file.getnframes()), numpy.int16) / 32767

@@ -7,6 +7,10 @@ neck came to on the sheet in the frame just drawn. Every frame of the page is dr
 far each of the three travelled over the page, in pixels of the sheet: the hips and the knee should hardly move,
 and the neck should, because the beat moves what is above the seat. Hips that travel more than SEAT pixels, a
 knee that travels more than KNEE, or a neck that travels less than the hips, is a failure (exit code 1).
+
+It needs Google Chrome (through Playwright). The page is named from the kit's folder (kit/), not from the
+folder it is run in, and must keep SEATS. It prints one line a figure; a kit warning or a page error is a
+failure too.
 """
 import sys
 from pathlib import Path
@@ -35,10 +39,16 @@ EVERY_FRAME = """() => {
 
 
 def travel(b):
+    """How far a point travelled over the page: the larger side of its box [min x, min y, max x, max y], in pixels.
+
+    e.g. travel([100, 400, 104, 401])     # 4"""
     return max(b[2] - b[0], b[3] - b[1])
 
 
 def main():
+    """The command line: floor_check.py [PAGE]: draw every frame, print how far each figure's seat travelled.
+
+    Fails with SystemExit(1) when any figure fails, or the page warns or errs."""
     name = sys.argv[1] if len(sys.argv) > 1 else "floor.html"
     errors = []
     with sync_playwright() as playwright:

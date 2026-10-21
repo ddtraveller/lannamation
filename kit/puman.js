@@ -66,6 +66,9 @@ var PUMAN_CLOTH = {
 // a thigh's tattoo: the dark ground along the bone, pale scrolls inside it, and the band above the knee.
 // "reach" is "long" for the sak kha yao, from the waist to the knee and a little below; otherwise the
 // sak kha kom, which stops short of the knee
+// from: the thigh's top, to: the knee, each [x, y] in pixels of the sheet (the pen's frame must be the
+// sheet's); s: the doll's scale; line: lineOf(doll). Returns nothing: it draws with pen.
+// e.g. thighTattoo([hip[0] + 20 * s, hip[1]], xy(J.kneeA), s, line, "long");
 function thighTattoo(from, to, s, line, reach) {
   var a = angleTo(from, to), long = dist(from, to);
   var end = walk(from, a, reach === "long" ? long + 4 * s : long - 10 * s);
@@ -161,4 +164,18 @@ var PUMAN_DOLL = {
   }
 };
 
+// puman(x, y, more) draws the pu man, the whisperer of the Wat Phumin mural, standing on (x, y), at the
+// clock's second, with his shoulder cloth and the red cloth end at his hip moving on their own.
+//   x, y   where his feet stand, pixels of the sheet
+//   more   any of person()'s look keys (the list above person() in oldcartoon.js), over CAST.puman
+//          (size 1.35, smile 0.7, turn 0.3, tilt -0.04 when left out): size, step (walking), at (where
+//          he looks), handA, handB, turn, smile, mouth, id, or a pose from poseAt(); and his own key
+//          tattoo   "long": the tattoo to the knee and a little below (sak kha yao); left out, to
+//                   mid-thigh (sak kha kom)
+//          Nothing when left out: he stands as CAST.puman is.
+// Returns nothing: it draws with pen. It keeps his chains and joints in DOLLS[id] from frame to frame
+// (id: more.id, or "puman" and his number among the paperdolls drawn this frame, from 0), so draw him
+// every frame, in the same order or with an id; a cut (the clock jumping) hangs the cloth again.
+// Needs oldcartoon.js and paperdoll.js loaded before this file.
+// e.g. puman(760, 820, {size: 1.85, step: t * 1.1, at: [1400, 300], smile: 0.5, tattoo: "long"});
 function puman(x, y, more) { paperdoll(PUMAN_DOLL, x, y, more); }

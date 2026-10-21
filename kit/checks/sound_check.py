@@ -8,6 +8,11 @@ not clip (its peak between 0.5 and 0.95); it is not silent through its middle; a
 other sound (two moods that sound alike are one mood too many). Prints one line a sound, writes each down, PASS or
 FAIL, in out/checks/sound_check.txt (report.py), and exits 1 if any fails. With --changed, it is left out when
 sounds.py and howl.py have not changed since it passed.
+
+It needs numpy and scipy, and imports howl.py and sounds.py from the kit's folder. It runs main() as it is
+loaded: do not import it. It makes each sound by howl.py from its outline; the sounds sounds.py makes from
+numbers (MADE: crickets, mouse-squeak, wind) give no outline, and as it stands it stops on the first of them
+with an AttributeError (2026-10-21).
 """
 import sys
 from pathlib import Path
@@ -21,13 +26,17 @@ from report import Report, fingerprint  # noqa: E402
 
 
 def longest(outline):
-    """How long a sound may be: its latest voice's end, and the echo's ring after it."""
+    """How long a sound may be: its latest voice's end, and the echo's ring after it.
+
+    outline: one voice, or {"voices": [...], "cave": ...}. Gives back (the end of its latest voice, that end plus
+    the cave's ring), in seconds. e.g. longest(SOUNDS["maeng-sad"][0]())"""
     voices = outline.get("voices", [outline])
     end = max(v.get("at", 0) + v["seconds"] for v in voices)
     return end, end + outline.get("cave", [1.5])[0]
 
 
 def main():
+    """The command line: sound_check.py [--changed]: make and check every sound, exit 1 if any fails."""
     report = Report("sound_check")
     kit = Path(__file__).resolve().parent.parent
     mark = fingerprint([kit / "sounds.py", kit / "howl.py", Path(__file__)])

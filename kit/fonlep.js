@@ -108,6 +108,8 @@ var FONLEP_CLOTH = {
 };
 
 // the painting's belt and hip band, in the waist's frame, on the stage dress
+// hips: hipsOf(doll), with the pen already slanted by it. Returns nothing: it draws with pen.
+// e.g. fonlepStageBelt(hipsOf(doll));
 function fonlepStageBelt(hips) {
   band(-6, 10, 28, 38, hips[0], FONLEP.green, function (c, middle, wide) {   // gold diamonds along the belt, with dots between
     var k;
@@ -160,6 +162,8 @@ function fonlepStageBelt(hips) {
 
 // a silver plate belt (tai aeo), as Lanna women wore over the sin's head:
 // square links hooked one to the next, in the waist's frame
+// hips: hipsOf(doll), with the pen already slanted by it. Returns nothing: it draws with pen.
+// e.g. fonlepSilverBelt(hipsOf(doll));
 function fonlepSilverBelt(hips) {
   band(-4, 8, 28, 36, hips[0], FONLEP.silver, function (c, middle, wide) {
     var k;
@@ -184,6 +188,9 @@ function fonlepSilverBelt(hips) {
 // a tube sleeve over the forearm: from 4 above the wrist (the bangles show) to
 // the elbow, 10 wide all the way; filled, then lined along its edges and its
 // hem only, so no seam crosses the elbow
+// (ex, ey) the elbow and (wx, wy) the wrist, as onArm() is given them, in the waist's frame. Returns
+// nothing: it draws with pen.
+// e.g. fonlepTube(ex, ey, wx, wy);
 function fonlepTube(ex, ey, wx, wy) {
   var a = angleTo([wx, wy], [ex, ey]), ux = Math.cos(a), uy = Math.sin(a), half = 10;
   var from = 4, to = dist([wx, wy], [ex, ey]) + 2;
@@ -284,6 +291,23 @@ var FONLEP_DOLL = {
 };
 
 // stage: true dresses her as the painting does, over the cast member and under the scene's own keys
+// fonlep(x, y, more) draws the fon lep dancer standing on (x, y), at the clock's second: in profile,
+// the long brass nails, the bun ringed with flowers, tube sleeves and a silver plate belt; on the
+// stage dress, the scarf, the bead strands and the belt move on their own.
+//   x, y   where her feet stand, pixels of the sheet
+//   more   any of person()'s look keys (the list above person() in oldcartoon.js), over CAST.fonlep
+//          (size 1.3, turn -1, tilt -0.45, smile 0.6 when left out): size, step, at (where she
+//          looks), handA, handB, wristA, wristB, turn, tilt, mouth, id, or a pose from poseAt()
+//          (TRACK in dance_track.js, FINGER_DANCE in finger_dance.js); and her own key
+//          stage  true: the painting's dress (FONLEP_STAGE, above) laid over the cast member before
+//                 "more": the long scarf from the forearm, green cuffs, bead strands, the hair tail,
+//                 the black skirt with its belt and hip band. Left out, the dress the sources give
+//          Nothing when left out: she stands as CAST.fonlep is.
+// Returns nothing: it draws with pen. It keeps her chains and joints in DOLLS[id] from frame to frame
+// (id: more.id, or "fonlep" and her number among the paperdolls drawn this frame, from 0), so draw her
+// every frame, in the same order or with an id. "more" is not changed. Needs oldcartoon.js and
+// paperdoll.js loaded before this file.
+// e.g. fonlep(300, 820, Object.assign({size: 1.85, at: [700, 60], stage: true}, poseAt(t, TRACK, 0)));
 function fonlep(x, y, more) {
   if (more && more.stage) { more = Object.assign({}, FONLEP_STAGE, more); }
   paperdoll(FONLEP_DOLL, x, y, more);

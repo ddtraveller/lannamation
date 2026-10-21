@@ -70,6 +70,11 @@ var NAGA_PATH = [[20, -135], [12, -60], [-28, -7], [-117, 0], [-214, -48], [-290
                  [-317, -324], [-393, -345], [-455, -380]];
 
 // Points every "step" along a line that is given as a list of points.
+//   dense   the line, a list of [x, y], close together
+//   step    the gap wanted between the points given back, in pixels of the sheet
+// Returns a new list of [x, y], the first point of "dense" first; the last
+// piece, shorter than a step, is left off. Draws nothing.
+// e.g. nagaWalk([[0, 0], [100, 0]], 10)   // 11 points, 10 apart
 function nagaWalk(dense, step) {
   var out = [dense[0]], left = step;
   for (var n = 1; n < dense.length; n++) {
@@ -87,6 +92,10 @@ function nagaWalk(dense, step) {
 
 // A smooth line through a list of points (each piece is a Catmull-Rom
 // curve), as points every "step" along it.
+//   points  the points it passes through, a list of [x, y] (two or more)
+//   step    the gap between the points given back, in pixels of the sheet
+// Returns a list of [x, y] (nagaWalk() of the curve). Draws nothing.
+// e.g. nagaLine(NAGA_PATH, 9)   // the middle of the body as naga() lays it
 function nagaLine(points, step) {
   var dense = [];
   for (var n = 0; n < points.length - 1; n++) {
@@ -112,6 +121,13 @@ function nagaLine(points, step) {
 // is laid out straight as it was ten seconds ago and led along "trail" from
 // then until now, in every frame. The points are given as naga() draws them:
 // measured from the chest at (x, y), as if looking right.
+//   trail   a function of the time in seconds that gives [x, y], where the chest
+//           is then, in pixels of the sheet (look.trail)
+//   x, y    where the chest is now, in pixels of the sheet
+//   size    the Naga's size (look.size); face 1 looks right, -1 left
+// Returns a list of 96 [x, y], the chest first, 14 apart, unscaled. It reads
+// the film's clock and calls trail() some 300 times; it draws nothing.
+// e.g. nagaChain(function (t) { return [100 + 60 * t, 400]; }, x, y, 0.5, 1)
 function nagaChain(trail, x, y, size, face) {
   var GAP = 14, BEND = Math.PI / 14, COUNT = 96, STEPS = 300;
   function was(ago) {                               // where the chest was, so many thirtieths of a second ago
@@ -149,6 +165,12 @@ function nagaChain(trail, x, y, size, face) {
 //            dragon.js wants it: dots for scales (c.spots), a band of the crest's colour
 //            down the back with taller points, and a belly of plates
 //   belts    how far along (0 to 1) a band crosses it; a number below 0 is a round flower there
+//            (none when left out)
+// Returns nothing: it draws with pen, in pen's own frame, inked as FINE and
+// LINE say. It leaves pen's colours, line width, lineJoin and lineCap as it
+// last set them. dragon.js draws its body with it too.
+// e.g. nagaStrip(nagaLine(NAGA_PATH, 9), function (u) { return mix(37, 11, u); },
+//                {body: "#2f7d5c", belly: "#f1dfa0", bars: "#b23a2a", crest: STYLE.gold}, [0.2, -0.5])
 function nagaStrip(line, wide, c, belts) {
   var dots = c.skin === "dots";
   var last = line.length - 1, at = [], n, k;
@@ -293,7 +315,11 @@ function nagaStrip(line, wide, c, belts) {
 }
 
 // One tongue of flame, from (0, 0) out along x: "long" to its tip, "wide"
-// at its foot, and "curl" is how far its tip is bent to one side.
+// at its foot, and "curl" is how far its tip is bent to one side (all in
+// pixels of pen's frame; a curl below 0 bends it up). "colour" fills it;
+// "line", a width, inks its edge too (shape()), and without it it is only filled.
+// Returns nothing: it draws with pen, and leaves pen's fillStyle set.
+// e.g. nagaTongue(60, 20, -8, STYLE.gold, 1.6)
 function nagaTongue(long, wide, curl, colour, line) {
   pen.beginPath();
   pen.moveTo(0, -wide / 2);
@@ -309,6 +335,14 @@ function nagaTongue(long, wide, curl, colour, line) {
 
 // A flame of several tongues, fanned about the way x points: a crest, a
 // beard, or the end of the tail. It flickers with the film's clock.
+//   long, wide  the longest tongue's length and every tongue's width at its foot,
+//               in pixels of pen's frame
+//   tongues     a list of [turn, length, curl]: its angle from x in radians, its
+//               length as a part of "long" (0 to 1), and its bend (-1 to 1)
+//   seed        any number, so that flames side by side do not flicker together
+//   c           the colours: c.crest outside, c.fire inside
+// Returns nothing: it draws with pen about (0, 0); pen's frame is kept.
+// e.g. nagaFlame(96, 26, [[-0.3, 0.8, -1], [0, 1, 1], [0.3, 0.8, 1]], 5, {crest: STYLE.gold, fire: "#c8382c"})
 function nagaFlame(long, wide, tongues, seed, c) {
   for (var k = 0; k < tongues.length; k++) {
     var flick = Math.sin(clock * 7 + seed * 1.7 + k * 2.1);
@@ -323,6 +357,12 @@ function nagaFlame(long, wide, tongues, seed, c) {
 
 // A Naga's head in profile, looking along x, its neck joining at (0, 0).
 // "open" is how far the mouth is open, 0 to 1; "e" a feeling (creatureFeel()), or none.
+// "seed" is any number (naga() gives the head's place), so heads blink and
+// flicker apart; "c" the colours (body, crest, fire). Drawn at a size about
+// 140 high with its crest, in pen's frame.
+// Returns nothing: it draws with pen, and leaves pen's colours and line width
+// as it last set them.
+// e.g. nagaHead(0.5, 2, {body: "#2f7d5c", crest: STYLE.gold, fire: "#c8382c"}, null)
 function nagaHead(open, seed, c, e) {
   var blink = Math.sin(clock * 0.9 + seed * 2.3) > 0.985;
   pen.save();                                       // the crest: a tall flame that leans back, with smaller tongues behind it
@@ -432,6 +472,15 @@ function nagaHead(open, seed, c, e) {
 
 // A Naga, its chest standing on (x, y). Everything about it is in "look"
 // (see NAGA_KEYS above).
+//   x, y   where the chest stands, in pixels of the sheet; with look.trail
+//          it is the chest itself, where trail(clock) puts it
+//   look   an object, never left out ({} gives the green, five-headed Naga
+//          at size 1, facing right): its keys are NAGA_KEYS above, and
+//          naming another warns (checkNames)
+// Returns nothing: it draws with pen at the film's clock (call it from a
+// scene's draw, every frame). It sets the kit's FINE and LINE while it
+// draws and leaves them at 1 and STYLE.line; pen's frame is restored.
+// e.g. naga(640, 560, {size: 0.6, face: -1, heads: 5, late: 0.2, feel: "happy"})
 function naga(x, y, look) {
   checkNames("The naga's name", look, NAGA_KEYS);
   var size = look.size || 1, count = look.heads || 5;

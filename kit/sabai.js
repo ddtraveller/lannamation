@@ -59,6 +59,10 @@ var SABAI_TILE = 384;                   // a tile's side: large enough for a cam
 var SABAI_FRAMES = 6;                   // moments of a walk in one tile's cycle
 
 // Run a painter that draws with the kit's "pen" on another sheet, at second "at".
+// brush: a canvas 2D context; action: a function of no arguments that draws with pen; at: the second
+// to set the kit's clock to while it runs (0 when left out). Returns nothing. It sets the globals pen
+// and clock for the while and puts them back after (not if action throws).
+// e.g. var sheet = document.createElement("canvas"); paintWith(sheet.getContext("2d"), function () { person(150, 280, cast("boy")); }, 2.5);
 function paintWith(brush, action, at) {
   var keep = pen, was = clock;
   pen = brush;
@@ -70,6 +74,11 @@ function paintWith(brush, action, at) {
 
 // A tile from a painter: the picture is drawn once on a scratch sheet and
 // measured, then drawn again to fit the tile, at each moment of its cycle.
+// painter: a function (brush, u): it draws standing on (0, 0) of the pen's frame (pen is brush while
+// it runs), u 0 to 1 its walk; one that takes fewer than two arguments stands still. side: the
+// tile's side in pixels (SABAI_TILE, 384, when left out). Returns a list of canvases, side by side
+// pixels: SABAI_FRAMES (6) of them for a painter that walks, else 1. Slow: make tiles once, not per frame.
+// e.g. var frames = sabaiTile(function (b, u) { person(0, 0, cast("boy", {step: u})); }, 192);
 function sabaiTile(painter, side) {
   var scratch = document.createElement("canvas");
   scratch.width = 800;
@@ -136,6 +145,9 @@ function sabaiTile(painter, side) {
 // two plain blossoms are a thong kwao flower and a krathong of Yi Peng. A film
 // made before this that loads no northbirds.js weaves a gourami, a barb and the dog (the kit's native fish:
 // owner, 2026-10-20, "Replace any of the old style fish on the sash").
+// sabaiBird(painter, before) gives back a painter (b, u) that runs painter when northbirds.js is
+// loaded (sunbird() is a function), and before when it is not. Both are painters as sabaiTile() takes.
+// e.g. sabaiBird(function (b, u) { sunbird(0, 0, u / 13, {size: 2.4, hover: 1}); }, function (b) { dog(0, 0, 0); })
 function sabaiBird(painter, before) {    // a tile of northbirds.js, or what was woven there before it
   return function (b, u) { if (typeof sunbird === "function") { painter(b, u); } else { before(b, u); } };
 }
@@ -224,6 +236,11 @@ var SABAI_COMMON = ["house", "bamboo house", "field hut", "hut", "granary", "bas
                     "firewood", "huad", "grass", "bananas", "gold", "fire stick", "pen", "gong", "snare", "cave", "namton",
                     "lotus leaf", "tree", "palm", "banana", "bamboo", "areca"];   // the band's players, as the maker has them
 
+// sabaiPool() gives back the painters the cloth may weave, a list of functions (b, u), each with a
+// .key string ("villager walk", "khom dao", "khaosoi"): every item first, by SABAI_LANNA's order,
+// then the rest, then SABAI_COMMON's, then the people's other ways. Only painters whose script the
+// page loaded are in it. Changes nothing outside itself.
+// e.g. var keys = sabaiPool().map(function (p) { return p.key; });
 function sabaiPool() {
   var people = [];
   Object.keys(SABAI_WAYS).forEach(function (way) {
@@ -358,6 +375,12 @@ function sabaiPool() {
 // whose key is in "shown". A row that has more than "count" painters already is left as it is.
 // With "centre" ([row, slot]: where the film opens, the figure it follows), the places nearest it, in its row and the
 // rows beside it, are dealt first, so the pool's first (the mythical and the exotic) are what is seen there.
+//   rows    a list of rows, each a list of painters (SABAI_ROWS or a film's own); not changed
+//   count   how many figures each row should hold
+//   shown   optional: a list of keys (sabaiPool()'s) not to weave again
+//   centre  optional: [row, slot], where the film opens
+// Returns a new list of rows. It warns (the kit's warn()) when the pool is too small and painters come twice.
+// e.g. var ROWS = sabaiUnique(SABAI_ROWS, 24, [], [4, 8]);  var CLOTH = {rows: ROWS, row: 4, follow: 8};
 function sabaiUnique(rows, count, shown, centre) {
   var pool = sabaiPool().filter(function (painter) { return !(shown || []).some(function (k) { return k === painter.key; }); });
   var out = rows.map(function (row) { return row.slice(); }), need = 0, n = 0;
@@ -388,6 +411,9 @@ var SABAI_FLEETING = ["step", "late", "spring", "at", "glance", "blink", "mouth"
 // The look with the arms hanging, under an id of its own, so that the cloth
 // does not move when the arms do (a wai, a wave), and the drawing that is
 // measured keeps its own swing apart from the person's.
+// look: a person's look; id: a string. Returns a copy of look with that id and without the keys of
+// SABAI_ARMS. Changes nothing outside itself.
+// e.g. var still = sabaiHanging(cast("lady", {sabai: false}), "lady/sabai");
 function sabaiHanging(look, id) {
   var still = Object.assign({}, look, {id: id});
   SABAI_ARMS.forEach(function (name) { delete still[name]; });
@@ -442,6 +468,12 @@ function sabaiHanging(look, id) {
 // which the cloth is tucked away; and the back of the cloth, {outer, hem,
 // inner}: the outer edge's points from the shoulder down, the hem's from
 // the outer edge's foot to the inner edge, and the inner edge's top.
+//   t      the time in seconds
+//   x, y   where the person stands, pixels of the sheet, as person(x, y, look) takes them
+//   look   the person's look (needed; its keys: person()'s, in oldcartoon.js); give it sabai: false
+// It draws the person twice on SABAI_SCRATCH (a sheet it makes the first time) and fills
+// SABAI_SLEEVE, a cache by build (emptied past 200). It does not draw on pen.
+// e.g. var where = sabaiOf(t, 720, 1010, cast("lady", {sabai: false}));
 function sabaiOf(t, x, y, look) {
   if (!SABAI_SCRATCH) {
     SABAI_SCRATCH = document.createElement("canvas");
@@ -556,6 +588,10 @@ function sabaiOf(t, x, y, look) {
 // cloth's shoulder, so that upper arm is under the cloth and its forearm over
 // it (owner, 2026-10-16). It draws the front of the cloth in the frame the pen
 // has now, the scene's, so call it where the person is drawn, inside the camera.
+//   look    the person's look; t: seconds; where: sabaiOf()'s answer for that person and frame
+//   cloth   the cloth's names (SABAI_KEYS, at the top of this file), as sabai() takes them
+// Returns a new look for person(); it reads pen's frame now, when it is called.
+// e.g. person(720, 1010, sabaiWorn(look, t, where, {from: 3}));
 function sabaiWorn(look, t, where, cloth) {
   var frame = pen.getTransform();
   return Object.assign({}, look, {worn: function () { pen.setTransform(frame); sabai(t, where, cloth, "front"); }});
@@ -563,6 +599,9 @@ function sabaiWorn(look, t, where, cloth) {
 
 // A point of the cloth: "along" is the distance from the hip end, "across" the
 // offset from the middle line; gives [x, y, heading].
+// where: sabaiOf()'s answer; along, across: pixels of the sheet (along held to 0 .. where.length).
+// Returns [x, y, heading] (heading in radians). Changes nothing.
+// e.g. var p = sabaiAt(where, where.length * 0.4, 0);
 function sabaiAt(where, along, across) {
   var u = where.uAt(along), p = where.at(u), ang = where.angle(u);
   across *= where.squeeze(along);                      // narrower where the cloth gathers over the shoulder
@@ -572,11 +611,18 @@ function sabaiAt(where, along, across) {
 // A point of the cloth as sabaiAt() gives it, also beyond either end of the
 // middle line: there the line runs on straight along the end's heading, so a
 // row of figures goes on into a slanted cut or a rounded end, which clip it.
+// where: sabaiOf()'s answer; along (any, even past the ends), across: pixels of the sheet.
+// Returns [x, y, heading]. Changes nothing.
+// e.g. var q = sabaiOn(where, -20, 10);
 function sabaiOn(where, along, across) {
   var end = Math.max(0, Math.min(where.length, along)), q = sabaiAt(where, end, across), past = along - end;
   return [q[0] + Math.cos(q[2]) * past, q[1] + Math.sin(q[2]) * past, q[2]];
 }
 
+// sabaiEdge(where, across, from, to, joined) adds one edge of the cloth to pen's path: 25 points at
+// offset across, from distance from to distance to along (pixels of the sheet). joined: true goes on
+// from the open path, false starts with a moveTo. Returns nothing.
+// e.g. pen.beginPath(); sabaiEdge(where, -36, 0, where.length, false); pen.stroke();
 function sabaiEdge(where, across, from, to, joined) {   // one edge of the cloth, or of a row, from one end to the other
   for (var n = 0; n <= 24; n++) {                         // "joined": continue the path that is open, instead of starting one
     var q = sabaiAt(where, mix(from, to, n / 24), across);
@@ -584,6 +630,10 @@ function sabaiEdge(where, across, from, to, joined) {   // one edge of the cloth
   }
 }
 
+// sabaiBand(where, inner, outer, from, to) sets pen's path to the closed shape between offsets inner
+// and outer, from distance from to distance to (pixels of the sheet). Returns nothing; fill or
+// stroke it after.
+// e.g. sabaiBand(where, -36, 36, 0, where.length); pen.fillStyle = "#8a2a3a"; pen.fill();
 function sabaiBand(where, inner, outer, from, to) {  // the shape between two offsets, from one distance along to another: one closed path
   pen.beginPath();
   sabaiEdge(where, inner, from, to, false);
@@ -591,6 +641,10 @@ function sabaiBand(where, inner, outer, from, to) {  // the shape between two of
   pen.closePath();
 }
 
+// sabaiTiles(cloth) gives back the cloth's tiles, a list of rows, each a list of sabaiTile() frame
+// lists. cloth: the cloth's names (rows, row, fine). Made the first time and kept on cloth.tiles,
+// so pass the same cloth object every frame.
+// e.g. var tiles = sabaiTiles(CLOTH);
 function sabaiTiles(cloth) {                         // the cloth's tiles, made once from its rows
   if (!cloth.tiles) {
     var near = cloth.row === undefined ? 4 : cloth.row;
@@ -605,6 +659,10 @@ function sabaiTiles(cloth) {                         // the cloth's tiles, made 
 // How far along the cloth's middle line figure k of a row is at second t: the row holds a whole number of its patterns,
 // evenly spaced, flowing along the cloth (each row the other way from its neighbour) from second cloth.from on, the
 // figure walking off one end coming on at the other. sabai() lays its figures by it, and sabaiCamera() follows one.
+// sabaiAlong(where, cloth, row, k, t) gives back the distance along the middle line, pixels of the
+// sheet, of figure k of a row at second t. where: sabaiOf()'s; cloth: the cloth's names; row: its
+// index; k: the figure's place (any whole number). Makes the cloth's tiles if they are not made yet.
+// e.g. var along = sabaiAlong(where, CLOTH, 4, 8, t);
 function sabaiAlong(where, cloth, row, k, t) {
   var wide = cloth.wide || 72, tiles = sabaiTiles(cloth), rowTall = (wide - 6) / tiles.length, step = rowTall * 0.92 * 1.15;
   var flow = cloth.flow === undefined ? 2.5 : cloth.flow, dancing = Math.max(0, t - (cloth.from || 0));
@@ -627,6 +685,14 @@ function sabaiAlong(where, cloth, row, k, t) {
 // as a folded ribbon does. "part" is which of it to draw: "front", all but
 // the tail, over the person; "back" (or nothing), all of it, before the
 // person, so the tail hangs behind the arm.
+//   t      the time in seconds
+//   where  sabaiOf()'s answer for the person, this frame
+//   cloth  optional; its keys: SABAI_KEYS, at the top of this file (wide 72, rows SABAI_ROWS,
+//          cloth "#8a2a3a", flow 2.5, from 0, row 4, fine, follow, tiles). Keep one object for the
+//          film: the tiles are made into it on the first call (slow) and kept
+//   part   "back" before the person, "front" over them (sabaiWorn() does that one)
+// Returns nothing: it draws with pen, and leaves its line set (gold, 3 wide).
+// e.g. sabai(t, where, CLOTH, "back");
 function sabai(t, where, cloth, part) {
   cloth = cloth || {};
   checkNames("The sabai's name", cloth, SABAI_KEYS);
@@ -812,6 +878,11 @@ function sabai(t, where, cloth, part) {
 // makes one steady pull-back, with no pause, from the row to the whole cloth to
 // the person to the whole stage, turning upright as it goes. Call it inside
 // pen.save() ... pen.restore(), before the scene is drawn.
+//   t           the time in seconds; start, end: the seconds of the pull-back
+//   where       sabaiOf()'s answer; cloth: the cloth's names (wide, rows or tiles, row, follow)
+// Returns nothing. It moves pen's frame (translate, rotate, scale) and leaves it moved: the caller's
+// pen.restore() undoes it.
+// e.g. pen.save(); sabaiCamera(t, where, CLOTH, 6, 20); /* draw the scene */ pen.restore();
 function sabaiCamera(t, where, cloth, start, end) {
   cloth = cloth || {};
   var wide = cloth.wide || 72, rows = (cloth.tiles || cloth.rows || SABAI_ROWS).length, row = cloth.row === undefined ? 4 : cloth.row;

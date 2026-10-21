@@ -24,6 +24,14 @@
 var LIFE_KEYS = {};
 ["name", "kind", "look", "course", "layer", "calls"].forEach(function (name) { LIFE_KEYS[name] = true; });
 
+// courseAt(t, course) gives back where an animal on a course of stops is at second t:
+// {on: false} before the first stop's second and after the last's; else {on, x, y, face, moving,
+// along, what, points, speed}: on is false while it hides; x, y in pixels of the scene; face 1
+// (right) or -1; moving true or false; along the pixels it has come; what the stop's word while it
+// stands (else null); points the route [[x, y], ...]; speed in pixels a second.
+// course: [[second, x, y, what], ...] in order of the seconds (see the top of this file).
+// Changes nothing outside itself.
+// e.g. var at = courseAt(t, [[2, 300, 900], [6, 700, 900, "sniff"], [8, 700, 900]]);
 function courseAt(t, course) {
   // where an animal is at t along its course: {on, x, y, face, moving, along, what, points, speed}
   var n = course.length, k, along = 0, face = 1;
@@ -97,10 +105,18 @@ var LIFE_KINDS = {
   }
 };
 
+// lifePeck(at, t) gives back a peck, 0 to 1 (down and up twice a second), when at.what is "peck",
+// and undefined otherwise. at: what courseAt() gives back; t: seconds.
+// e.g. var at = courseAt(t, [[0, 300, 950, "peck"], [9, 300, 950]]); rooster(at.x, at.y, t, {peck: lifePeck(at, t)});
 function lifePeck(at, t) {                           // a peck: down and up again, twice a second, at a stop marked "peck"
   return at.what === "peck" ? Math.max(0, Math.sin(t * Math.PI * 4)) : undefined;
 }
 
+// lifeFowl(at, look, t, hen) draws the kit's rooster (hen true: a hen) where courseAt() has it,
+// walking as far as it goes and pecking at a "peck" stop. at: courseAt()'s answer; look: the
+// rooster's look (look.size, 1 when left out, sizes only the box and the stride: the kit's rooster
+// has one size); t: seconds. Returns the box it was drawn in, [left, top, right, bottom], pixels of the scene.
+// e.g. var box = lifeFowl(courseAt(t, [[1, 300, 950], [5, 700, 950]]), {}, t, true);   // a hen, as LIFE_KINDS.hen draws one
 function lifeFowl(at, look, t, hen) {
   var size = look.size || 1;
   var own = Object.assign({}, look);
@@ -110,6 +126,16 @@ function lifeFowl(at, look, t, hen) {
   return [at.x - 90 * size, at.y - 150 * size, at.x + 90 * size, at.y];
 }
 
+// decorate(t, life, layer) draws every animal of a scene's life in that layer at second t.
+//   t      the time in seconds
+//   life   [{name, kind, look, course, layer, calls}, ...]: its keys are LIFE_KEYS, kind one of LIFE_KINDS
+//          (above), course courseAt()'s, layer "back" or "front" ("front" when left out); calls is read
+//          by the film's sound tools, not here
+//   layer  "back" (call it before the people) or "front" (after them)
+// Returns nothing: it draws with pen. An unknown key or kind is reported by the kit's checkNames() and
+// checkName(). It tells the kit where each one is (sighted(), for eyes that watch), and pushes
+// {name, kind, t, box} onto window.LIFE_SEEN when a check has set that list.
+// e.g. decorate(t, [{name: "mouse", kind: "mouse", course: [[1, 200, 950], [5, 600, 950, "sniff"], [7, 600, 950]]}], "front");
 function decorate(t, life, layer) {
   life.forEach(function (one) {
     checkNames("A scene's life", one, LIFE_KEYS);
@@ -148,6 +174,16 @@ var THING_KINDS = {
   khom: function (one, look) { khom(one.x, one.base, Object.assign({size: one.size || 1}, look)); }   // hung from (x, base)
 };
 
+// dress(t, things, layer, tint) draws one layer of a place's things at second t.
+//   t       the time in seconds
+//   things  [{name, kind, x, base, size, look, layer, from, to}, ...]: its keys are THING_KEYS, kind one of
+//           THING_KINDS (above); x, base in pixels of the scene (base: the ground it stands on, or the
+//           point a khom hangs from); size 1 when left out; layer "back" ("back" when left out) or "front";
+//           from, to: the seconds it is there, always when left out
+//   layer   "back" or "front"
+//   tint    optional: a set's [colour, amount], laid over every thing except the namton and the khom
+// Returns nothing: it draws with pen.
+// e.g. dress(t, [{name: "jar", kind: "namton", x: 820, base: 940}], "back");
 function dress(t, things, layer, tint) {
   things.forEach(function (one) {
     checkNames("A place's thing", one, THING_KEYS);

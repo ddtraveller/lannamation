@@ -15,6 +15,12 @@ The creature with four ears and five eyes (myth.js, the film in maeng/) has one 
 higher and smoother, that start with it, follow its rise and fall a few notes above, and keep a little out of step
 with it and with one another, so that they sound as one wild voice and not as wolves answering. Its moods are the
 story's: the night on the mountain, the snare, the crowd, the pen at night, the embers, the way home.
+
+It needs numpy, scipy and soundfile; the internet, for a fetched sound not downloaded yet (each is kept
+in out/sounds/ after); ffmpeg, for one soundfile cannot read (m4a, mpga). It writes into out/sounds/ beside this
+file: NAME.wav (mono, 16-bit, 44.1 kHz) for each sound, NAME.json for each made by howl.py, all.wav (every sound,
+1.2 s apart, only when no name is given) and list.js (SOUND_LIST, read by sounds.html). It ends with exit code 0,
+or 1 with a message for a name it does not know; a download or ffmpeg that fails stops it with an exception.
 """
 import json
 import subprocess
@@ -38,6 +44,11 @@ THROATS = [(1.5, 0.42, 0.03), (1.78, 0.34, 0.08), (2.24, 0.28, 0.05), (2.67, 0.2
 
 
 def creature(seconds, pitch, loud, vowel, **more):
+    """One outline of the creature's own voice (CREATURE's growl, breath, wobble and size), for howl.py.
+
+    seconds: how long. pitch, loud, vowel: [[second, value], ...] as howl.py takes them. more: any other outline
+    keys (seed, at, gain, or one of CREATURE's to change it). Gives back the outline, a new dict.
+    e.g. creature(2.0, [[0, 150], [1, 300], [2, 120]], [[0, 0], [0.4, 1], [2, 0]], [[0, 0.2], [2, 0.6]], seed=3)"""
     voice = dict(CREATURE, seconds=seconds, pitch=pitch, loud=loud, vowel=vowel)
     voice.update(more)
     return voice
@@ -46,7 +57,11 @@ def creature(seconds, pitch, loud, vowel, **more):
 def many(lead, pack=1.0, rough=0.3):
     """One voice of many throats: the creature's own (lead), and the pack's within it, each following the lead's
     pitch a few notes higher, its loudness and its mouth, a little late, smoother (rough: how much of the growl
-    they keep), and "pack" of their loudness (0 leaves the creature alone)."""
+    they keep), and "pack" of their loudness (0 leaves the creature alone).
+
+    lead: an outline, as creature() gives. pack: default 1.0. rough: 0 to 1, default 0.3. Gives back a list of
+    outlines, the lead first, for chorus()'s "voices".
+    e.g. {"voices": many(maeng_base()["voices"][0], pack=0.8), "cave": [2.0, 0.4]}"""
     voices = [dict(lead)]
     wobble = lead.get("wobble", [5, 0.3])
     for n, (above, gain, late) in enumerate(THROATS):
@@ -58,6 +73,9 @@ def many(lead, pack=1.0, rough=0.3):
 
 
 def maeng_base():
+    """The creature's howl on the night mountain: a chorus outline (for howl.chorus), 4.6 s.
+
+    e.g. chorus(maeng_base())"""
     lead = creature(4.6, [[0, 150], [0.5, 230], [1.2, 330], [2.4, 350], [3.2, 300], [4.0, 170], [4.6, 120]],
                     [[0, 0], [0.3, 0.6], [1.0, 1], [2.8, 0.95], [3.8, 0.5], [4.6, 0]],
                     [[0, 0.1], [1.0, 0.85], [2.6, 0.9], [3.6, 0.3], [4.6, 0]], seed=3, at=0, gain=1.0)
@@ -65,7 +83,11 @@ def maeng_base():
 
 
 def maeng_angry():
+    """Caught in the snare: three short roars, the last the biggest: a chorus outline.
+
+    e.g. chorus(maeng_angry())"""
     def roar(at, gain, top, long, seed):
+        """One roar's outline: at (its first second), gain (0 to 1), top (its highest pitch, hz), long (seconds), seed."""
         return creature(long, [[0, 110], [0.12, top], [long * 0.6, top * 0.92], [long, 90]],
                         [[0, 0], [0.06, 1], [long * 0.7, 0.85], [long, 0]], [[0, 0.6], [0.1, 1], [long, 0.4]],
                         growl=0.95, breath=0.35, wobble=[9, 0.8], size=1.2, seed=seed, at=at, gain=gain)
@@ -74,7 +96,11 @@ def maeng_angry():
 
 
 def maeng_afraid():
+    """The crowd round its pen: four yelps breaking upward, then a thin wavering cry: a chorus outline.
+
+    e.g. chorus(maeng_afraid())"""
     def yelp(at, gain, low, high, seed):
+        """One yelp's outline, 0.34 s: at (its first second), gain (0 to 1), low and high (its pitches, hz), seed."""
         return {"seconds": 0.34, "pitch": [[0, low], [0.1, high], [0.34, low * 1.2]], "loud": [[0, 0], [0.04, 1], [0.34, 0]],
                 "vowel": [[0, 0.5], [0.1, 0.8], [0.34, 0.2]], "growl": 0.1, "breath": 0.25, "wobble": [11, 0.5], "size": 1.05,
                 "seed": seed, "at": at, "gain": gain}
@@ -85,6 +111,9 @@ def maeng_afraid():
 
 
 def maeng_sad():
+    """Alone in the pen at night: a slow falling howl that catches like a sob: a chorus outline, 5.4 s.
+
+    e.g. chorus(maeng_sad())"""
     lead = creature(5.4, [[0, 260], [0.7, 300], [1.6, 270], [2.4, 230], [3.4, 200], [4.4, 160], [5.4, 120]],
                     [[0, 0], [0.5, 0.8], [1.3, 0.55], [1.5, 0.85], [2.6, 0.5], [2.8, 0.75], [3.9, 0.4], [4.1, 0.55], [5.4, 0]],
                     [[0, 0.15], [0.8, 0.5], [2.4, 0.35], [5.4, 0]], growl=0.2, breath=0.3, wobble=[3.6, 0.5], size=1.3, seed=41)
@@ -92,7 +121,11 @@ def maeng_sad():
 
 
 def maeng_happy():
+    """Eating the embers: three quick bouncing howls that rise at the end: a chorus outline.
+
+    e.g. chorus(maeng_happy())"""
     def woo(at, low, high, seed):
+        """One rising howl's outline, 0.7 s: at (its first second), low and high (its pitches, hz), seed."""
         return creature(0.7, [[0, low], [0.25, low * 0.9], [0.7, high]], [[0, 0], [0.08, 0.9], [0.55, 1], [0.7, 0]],
                         [[0, 0.1], [0.3, 0.6], [0.7, 0.9]], growl=0.05, breath=0.1, wobble=[6, 0.3], size=1.25,
                         seed=seed, at=at, gain=1.0)
@@ -101,6 +134,9 @@ def maeng_happy():
 
 
 def maeng_home():
+    """Running home into its cave: one long howl that starts low and lifts: a chorus outline, 6 s.
+
+    e.g. chorus(maeng_home())"""
     lead = creature(6.0, [[0, 180], [0.8, 230], [1.8, 210], [2.8, 260], [3.8, 340], [5.0, 330], [6.0, 160]],
                     [[0, 0], [0.5, 0.7], [1.8, 0.6], [3.6, 1], [5.0, 0.9], [6.0, 0]],
                     [[0, 0.2], [1.8, 0.4], [3.6, 0.9], [5.2, 0.7], [6.0, 0]], growl=0.35, breath=0.15, seed=61, at=0, gain=1.0)
@@ -112,7 +148,10 @@ def maeng_home():
 def crickets():
     """Field crickets in the grass at night, a chorus of seven: each sings chirps of three or four pulses (a pulse
     16 ms of a tone near 4.6 kHz, one every 34 ms), two or three chirps a second, at its own pitch, pace and
-    distance, a little unsteady; 20 s, so a scene can lay it end to end."""
+    distance, a little unsteady; 20 s, so a scene can lay it end to end.
+
+    Gives back the samples (a numpy array at RATE), peaking at 0.5; the same every time.
+    e.g. crickets()"""
     seconds, rng = 20.0, np.random.default_rng(11)
     out = np.zeros(int(seconds * RATE))
     for n in range(7):
@@ -132,7 +171,10 @@ def crickets():
 def wind():
     """Wind high on a mountain at dawn: noise made soft and low (through low-passes at 350 Hz and 1100 Hz, mixed
     by the gust), swelling and falling in slow gusts, never quite still; 20 s, so a scene can lay it end to end
-    (owner, 2026-10-21, for the studio's card high over the mountains: "wind and birdsong")."""
+    (owner, 2026-10-21, for the studio's card high over the mountains: "wind and birdsong").
+
+    Gives back the samples (a numpy array at RATE), peaking at 0.6; the same every time.
+    e.g. wind()"""
     from scipy.signal import butter, sosfilt
     seconds, rng = 20.0, np.random.default_rng(23)
     n = int(seconds * RATE)
@@ -146,7 +188,10 @@ def wind():
 
 
 def mouse_squeak():
-    """A mouse's squeaks: three short whistles, each rising then falling between 3.5 and 6.5 kHz, 50 to 80 ms."""
+    """A mouse's squeaks: three short whistles, each rising then falling between 3.5 and 6.5 kHz, 50 to 80 ms.
+
+    Gives back the samples, 0.9 s at RATE, peaking at 0.89.
+    e.g. mouse_squeak()"""
     rng = np.random.default_rng(5)
     out = np.zeros(int(0.9 * RATE))
     for at, long, low, high in [(0.05, 0.06, 3800, 6200), (0.22, 0.05, 4200, 6500), (0.5, 0.08, 3500, 5600)]:
@@ -245,7 +290,12 @@ FETCHED.update({
 
 
 def fetch(name, out):
-    """A fetched sound: the recording downloaded once (kept in out/sounds/ under its own name), cut, as a WAV."""
+    """A fetched sound: the recording downloaded once (kept in out/sounds/ under its own name), cut, as a WAV.
+
+    name: a key of FETCHED. out: the folder, a Path. It writes out/NAME.wav (mono, at RATE, faded 0.05 s at each
+    end; a bed brought to its "rms" level, the others to a peak of 0.89) and gives back its samples.
+    Fails with urllib's errors when the download fails, CalledProcessError when ffmpeg cannot read it.
+    e.g. fetch("tokay", OUT)"""
     one = FETCHED[name]
     source = out / one["url"].rsplit("/", 1)[1].replace("%28", "(").replace("%29", ")")
     if not source.exists():
@@ -275,6 +325,11 @@ def fetch(name, out):
 
 
 def make(name, out):
+    """Make one sound by its name and write it into out: its samples, a numpy array at RATE.
+
+    name: a key of SOUNDS or FETCHED. out: the folder, a Path. It writes out/NAME.wav, and out/NAME.json (the
+    outline) for a sound howl.py makes. A name in neither is a KeyError.
+    e.g. make("maeng-sad", OUT)"""
     if name in FETCHED:
         return fetch(name, out)
     outline = SOUNDS[name][0]()
@@ -288,6 +343,8 @@ def make(name, out):
 
 
 def main():
+    """The command line: sounds.py [NAME...] | --list. Makes the sounds named (every one when none is), writes
+    all.wav when none is named, and list.js. Fails with SystemExit for a name it does not know."""
     args = sys.argv[1:]
     every = dict({n: what for n, (_, what) in SOUNDS.items()}, **{n: f["what"] for n, f in FETCHED.items()})
     if "--list" in args:

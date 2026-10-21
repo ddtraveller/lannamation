@@ -45,6 +45,11 @@
 //              long pole with a small wheel at its end, a gold finial.
 var PIECES_KIT = ["hong", "namton", "chediSai", "pratheep", "pratheepRow", "krathong", "oxcart", "drumCart"];
 
+// hong(brush, x, y, size, colour) draws the golden hamsa (see the list above), about 70 long and 66 tall
+// at size 1. brush: a canvas 2D context (pen, or a set's sheet); x, y: its feet, pixels of the sheet;
+// size: 1 when left out; colour: its gold ("#e0b23a" when left out). Returns nothing: it draws with
+// brush, and leaves brush as it found it.
+// e.g. hong(pen, 600, 400, 1.2);
 function hong(brush, x, y, size, colour) {        // standing on (x, y), facing right
   var gold = colour || "#e0b23a", line = "#7a5218";
   brush.save();
@@ -125,6 +130,10 @@ function hong(brush, x, y, size, colour) {        // standing on (x, y), facing 
   brush.restore();
 }
 
+// namton(brush, x, base, size) draws the water jar on its stand, about 60 wide and 116 tall at size 1.
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: 1 when left out. Returns nothing:
+// it draws with brush, and leaves brush as it found it.
+// e.g. namton(pen, 820, 940, 1.2);
 function namton(brush, x, base, size) {          // standing on (x, base)
   var s = size || 1;
   brush.save();
@@ -185,6 +194,11 @@ function namton(brush, x, base, size) {          // standing on (x, base)
   brush.restore();
 }
 
+// chediSai(brush, x, base, size, t, seed) draws a sand pagoda with five flags, 92 wide and about 110
+// tall at size 1. brush: a canvas 2D context; x, base: pixels of the sheet; size: 1 when left out;
+// t: seconds (0 when left out: still flags); seed: a whole number that sets the flags (0). Returns
+// nothing: it draws with brush, and leaves brush as it found it.
+// e.g. chediSai(pen, 700, 920, 1, t, 2);
 function chediSai(brush, x, base, size, t, seed) { // standing on (x, base); the flags flutter with t
   var s = size || 1, n, clock = t || 0, k = seed || 0;
   var colours = ["#d8423a", "#f28c28", "#f4c542", "#3f8f5a", "#2f6fb5", "#f2ead8"];
@@ -230,6 +244,11 @@ function chediSai(brush, x, base, size, t, seed) { // standing on (x, base); the
   brush.restore();
 }
 
+// pratheep(brush, x, y, size, t, seed, look) draws one clay lamp, 20 across, its flame about 17 tall at
+// size 1. brush: a canvas 2D context; x, y: pixels of the sheet; size: 1 when left out; t: seconds
+// (0); seed: a number that sets this flame apart (0); look: optional, {glow: false} for no light.
+// Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. pratheep(pen, 400, 900, 1.5, t, 3);
 function pratheep(brush, x, y, size, t, seed, look) {   // the dish on (x, y); the flame flickers with t; look.glow false: no light on the ground
   var s = size || 1, clock = t || 0, k = seed || 0, lit = !(look && look.glow === false);
   var flick = 1 + 0.25 * Math.sin(clock * 11 + k * 1.7) * Math.sin(clock * 7.3 + k), lean = Math.sin(clock * 4 + k * 2.1) * 2;
@@ -275,10 +294,17 @@ function pratheep(brush, x, y, size, t, seed, look) {   // the dish on (x, y); t
   brush.restore();
 }
 
+// pratheepRow(brush, x, y, count, gap, size, t) draws count lamps, gap pixels apart, the first at
+// (x, y), pixels of the sheet, each with its own flicker. Returns nothing: it draws with brush.
+// e.g. pratheepRow(pen, 200, 900, 12, 60, 1, t);
 function pratheepRow(brush, x, y, count, gap, size, t) {   // a row of lamps from (x, y) to the right
   for (var n = 0; n < count; n++) { pratheep(brush, x + n * gap, y, size, t, n); }
 }
 
+// krathong(brush, x, y, size, t, afloat) draws a krathong, 52 wide and about 60 tall with its flame
+// at size 1. brush: a canvas 2D context; x, y: pixels of the sheet; size: 1 when left out; t:
+// seconds (0); afloat: true to bob. Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. krathong(pen, 640, 880, 1.4, t, true);
 function krathong(brush, x, y, size, t, afloat) { // set at (x, y), the middle of its base; afloat, it bobs on the water
   var s = size || 1, clock = t || 0, bob = afloat ? Math.sin(clock * 1.7) * 2 : 0, tilt = afloat ? Math.sin(clock * 1.3) * 0.05 : 0, n;
   brush.save();
@@ -350,6 +376,13 @@ function krathong(brush, x, y, size, t, afloat) { // set at (x, y), the middle o
   brush.restore();
 }
 
+// oxcart(brush, x, base, size, turn, facing, yoke) draws the kwian, its wheels 124 across and its
+// rail's horns 206 above base at size 1, its shaft out about 260 ahead of the axle.
+//   brush    a canvas 2D context; x, base: pixels of the sheet; size: 1 when left out
+//   turn     the wheels' turn, radians (0); the ground covered divided by 62 x size rolls them true
+//   facing   1 (right, the default) or -1; yoke: optional [x, y], pixels of the sheet
+// Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. oxcart(pen, 500, 940, 1, t * 120 / 62, 1, [760, 820]);   // rolling 120 pixels a second
 function oxcart(brush, x, base, size, turn, facing, yoke) {   // the axle over (x, base), the wheels' feet on base; facing 1 goes right
   var s = size || 1, f = facing || 1, R = 62, spin = turn || 0, n;
   var wood = "#8a7156", dark = "#4e3b2a", iron = "#5a4a40";
@@ -429,6 +462,11 @@ function oxcart(brush, x, base, size, turn, facing, yoke) {   // the axle over (
   brush.restore();
 }
 
+// drumCart(brush, x, base, size, facing) draws the great drum on its cart, about 450 long and 240
+// tall at size 1. brush: a canvas 2D context; x, base: pixels of the sheet; size: 1 when left out;
+// facing: 1 (the head to the right, the default) or -1. Returns nothing: it draws with brush, and
+// leaves brush as it found it.
+// e.g. drumCart(pen, 900, 940, 0.6, -1);
 function drumCart(brush, x, base, size, facing) { // the axle over (x, base); the drum's head toward the way it faces
   var s = size || 1, f = facing || 1, n;
   brush.save();
@@ -575,6 +613,9 @@ function drumCart(brush, x, base, size, facing) { // the axle over (x, base); th
 //              twist 1 to face us): the side hides their legs.
 PIECES_KIT.push("sawian", "longKhao", "tungSaiMu", "tungYai", "rotDaeng");
 
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: 1 when left out. Returns nothing:
+// it draws with brush, and leaves brush as it found it.
+// e.g. sawian(pen, 300, 920, 1.2);
 function sawian(brush, x, base, size) {          // standing on (x, base): 64 wide, 76 tall at size 1
   var s = size || 1;
   function outline() {                             // a path is not kept by save(): made again for the line
@@ -619,6 +660,10 @@ function sawian(brush, x, base, size) {          // standing on (x, base): 64 wi
   brush.restore();
 }
 
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: 1 when left out; walls: true for
+// walls of boards, else open with two sawian inside. Returns nothing: it draws with brush, and leaves
+// brush as it found it.
+// e.g. longKhao(pen, 1100, 900, 0.8, true);
 function longKhao(brush, x, base, size, walls) { // standing on (x, base): 250 across its eaves, 270 to its ridge at size 1
   var s = size || 1, n;
   brush.save();
@@ -729,6 +774,10 @@ function longKhao(brush, x, base, size, walls) { // standing on (x, base): 250 a
 // The cluster tung, planted at (x, base): a stick 170 tall at size 1, "tiers"
 // (5 or 7) of small triangular flags on its upper part, widest at the
 // bottom; every flag flutters with t.
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: 1 when left out; t: seconds, or left
+// out for still flags; seed: a whole number (0); tiers: how many rows, 2 or more (7). Returns nothing:
+// it draws with brush, and leaves brush as it found it.
+// e.g. tungSaiMu(pen, 700, 860, 1.3, t, 2, 5);
 function tungSaiMu(brush, x, base, size, t, seed, tiers) {
   var s = size || 1, rows = tiers || 7, colours = ["#d8423a", "#f4c542", "#3f8f7a", "#2d5da6", "#e98aa8", "#f08a2a", "#f2ead8"];
   brush.save();
@@ -770,6 +819,10 @@ function tungSaiMu(brush, x, base, size, t, seed, tiers) {
 // pole 470 tall at size 1, the tung hanging from its top, five cells of
 // woven thread between six strips of bamboo, a frill and a flower at each
 // strip's ends; it sways in the breeze with t, more toward its foot.
+// brush: a canvas 2D context; x, base: the pole's foot, pixels of the sheet; size: 1 when left out;
+// t: seconds, or left out for a still tung; colour: the thread's CSS colour ("#c8402e"). Returns
+// nothing: it draws with brush, and leaves brush as it found it.
+// e.g. tungYai(pen, 300, 940, 0.8, t, "#f2ead8");
 function tungYai(brush, x, base, size, t, colour) {   // "colour": the thread's (red unless given; white shows at night)
   var s = size || 1, thread = colour || "#c8402e", cells = 5, CELL = 52, HALF = 26;
   brush.save();
@@ -844,6 +897,13 @@ function tungYai(brush, x, base, size, t, colour) {   // "colour": the thread's 
 // 1; facing 1 drives to the right. "turn" rolls the wheels; "inside" is
 // called with the far bench's seats (see above). Draw it on "pen" to seat
 // people: a set painted once has nobody in it.
+//   brush    a canvas 2D context (pen, to seat people); x, base: pixels of the sheet; size: 1 when left out
+//   turn     the wheels' turn, radians (0: still, and the body does not ride)
+//   facing   1 (the default) or -1
+//   inside   optional: a function (seats), seats a list of 4 [x, y], pixels of the sheet, called with
+//            brush back in the caller's frame
+// Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. rotDaeng(pen, 720, 960, 1, t * 200 / 46, 1, function (seats) { person(seats[0][0], seats[0][1], cast("boy", {floor: "cross", size: 0.66, twist: 1})); });
 function rotDaeng(brush, x, base, size, turn, facing, inside) {
   var s = size || 1, f = facing || 1, spin = turn || 0, R = 46;
   var red = "#c8262a", dark = "#8e1a1e", trim = "#e8e2d6";
@@ -1011,6 +1071,10 @@ function rotDaeng(brush, x, base, size, turn, facing, inside) {
 // thatch, its eaves ragged with straw. 250 wide and 225 high at size 1.
 // look: glow, 0 to 1: a lamp's light in the doorway and on the ground before it, at night; tint, [colour,
 // amount]: every colour blended toward one light, as caveMouth()'s.
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: needed (1 is 250 wide); look:
+// optional, glow and tint as above. Returns nothing: it draws with brush (the lamp's pool of light
+// on the ground too, when glow is over 0.01), and leaves its fill and line set.
+// e.g. tub(pen, 900, 900, 1.2, {glow: 0.8, tint: ["#2a3a6a", 0.35]});
 function tub(brush, x, base, size, look) {
   look = look || {};
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
@@ -1133,6 +1197,10 @@ function tub(brush, x, base, size, look) {
 // A bundle of firewood, its middle at (x, y): "count" sticks (7 unless told) 120 long at size 1, their cut ends
 // pale, bound round in two places with a vine; look.turn turns it (radians, 0 lying along x); look.loose: the
 // sticks lie apart on the ground, not yet bound; look.tint as the hut's.
+// brush: a canvas 2D context; x, y: its middle, pixels of the sheet; size: needed (1 is 120 long);
+// look: optional, count (7), turn (radians, 0), loose (true or false), tint. Returns nothing: it
+// draws with brush, and leaves brush as it found it.
+// e.g. firewood(pen, 400, 930, 1, {turn: 0.2});
 function firewood(brush, x, y, size, look) {
   look = look || {};
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
@@ -1194,6 +1262,11 @@ PIECES_KIT.push("tub", "firewood", "kok", "snare", "campfire", "ember", "emberFl
 // posts at its corners and along its sides, two rails of split bamboo round it, bound at each post. A pen is
 // drawn in two parts, so that what is kept in it stands inside: look.part "back" (the far fence, before the
 // animal) and "front" (the near fence, after it). 110 high at size 1. look.tint as the hut's.
+// brush: a canvas 2D context; x, base: the front's middle, pixels of the sheet; wide: pixels of the
+// sheet (not scaled by size); size: the posts' and the rails' scale (1 is 110 high); look: part
+// ("back" when left out, or "front"), tint. Returns nothing: it draws with brush, and leaves its
+// fill and line set.
+// e.g. kok(pen, 700, 930, 380, 1, {part: "back"}); pig(700, 900, {}); kok(pen, 700, 930, 380, 1, {part: "front"});
 function kok(brush, x, base, wide, size, look) {
   look = look || {};
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
@@ -1240,6 +1313,10 @@ function kok(brush, x, base, wide, size, look) {
 // stronger"; of the snare as it was and this, "Stout, 1.3x larger"): a thick pole, a cord of twisted rattan, a
 // thick noose, a trigger of a hooked peg and a crossbar under the hook, and a stake at the pole's root, lashed to it.
 // About 210 wide and 260 high at size 1.
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: needed (drawn 1.3 times it); look:
+// optional, sprung (0 to 1), caught ([x, y], pixels of the sheet), t (seconds), tint. Returns nothing:
+// it draws with brush, and leaves brush as it found it.
+// e.g. snare(pen, 900, 940, 0.8, {sprung: between(t, 4, 4.4), t: t});
 function snare(brush, x, base, size, look) {
   look = look || {};
   size *= 1.3;
@@ -1338,6 +1415,10 @@ function snare(brush, x, base, size, look) {
 // charred at their ends, flames that leap and flicker with t (the second), coals glowing red under them, and
 // a warm light round it. look.low (0 to 1) burns it down to coals; look.light (0 to 1, 1 unless told) is how
 // strong the light round it is. 150 wide and, with its flames, 170 high at size 1.
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: needed (1 is 150 wide); t: seconds
+// (needed); look: optional, low (0 to 1, 0), light (0 to 1, 1). Returns nothing: it draws with brush,
+// and leaves brush as it found it.
+// e.g. campfire(pen, 720, 960, 1, t, {low: 0.3});
 function campfire(brush, x, base, size, t, look) {
   look = look || {};
   var low = clamp(look.low || 0), light = look.light === undefined ? 1 : look.light, n;
@@ -1404,6 +1485,9 @@ function campfire(brush, x, base, size, t, look) {
 
 // An ember, a coal red-hot, its middle on (x, y): dark red with a bright core and a glow about it, sparks
 // leaving it. "t" flickers it. 10 across at size 1.
+// brush: a canvas 2D context; x, y: pixels of the sheet; size: needed; t: seconds. Returns nothing:
+// it draws with brush, and leaves brush as it found it.
+// e.g. ember(pen, 700, 940, 1.2, t);
 function ember(brush, x, y, size, t) {
   brush.save();
   brush.translate(x, y);
@@ -1426,6 +1510,10 @@ function ember(brush, x, y, size, t) {
 
 // An ember flying from "from" to "to" (points of the scene) on an arc "high" above the straight line, u of
 // the way (0 to 1), with a few sparks trailing behind it.
+// brush: a canvas 2D context; from, to: [x, y], pixels of the sheet; u: 0 to 1 (nothing is drawn at 0
+// or 1 and outside); size: the ember's; high: pixels the arc rises; t: seconds. Returns nothing: it
+// draws with brush, and leaves its fillStyle set.
+// e.g. emberFlight(pen, [700, 940], [980, 820], between(t, 5, 6.2), 1, 140, t);
 function emberFlight(brush, from, to, u, size, high, t) {
   if (u <= 0 || u >= 1) { return; }
   function at(v) { return [mix(from[0], to[0], v), mix(from[1], to[1], v) - high * 4 * v * (1 - v)]; }
@@ -1443,6 +1531,9 @@ function emberFlight(brush, from, to, u, size, high, t) {
 // A nugget of gold, its middle on (x, y): a lump of no shape, gold lit from the upper left with a bright edge,
 // and now and then a star of light that twinkles on it (t, the second; look.shine 0 to 1, 1 unless told).
 // 16 across at size 1.
+// brush: a canvas 2D context; x, y: pixels of the sheet; size: needed; t: seconds; look: optional,
+// shine (0 to 1, 1), seed (1). Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. goldNugget(pen, 760, 930, 1.5, t, {seed: 2});
 function goldNugget(brush, x, y, size, t, look) {
   look = look || {};
   var shine = look.shine === undefined ? 1 : look.shine, seed = (look.seed || 1) * 1.7;
@@ -1490,9 +1581,17 @@ function goldNugget(brush, x, y, size, t, look) {
 // the dais's top 190 (hoKhamFloor() and hoKhamDais() give where). look.tint as the hut's. look.pediment "peacock":
 // a peacock carved in the gable among leaf scrolls, as the Lanna halls' gables have it (the household notebook's
 // sources: the pediment of the old Ho Kham at Wat Phan Tao, "a peacock surrounded by foliate ornament").
+// hoKhamFloor(base, size) gives back the y, pixels of the sheet, of the hall's floor: base - 150 x size.
+// e.g. person(560, hoKhamFloor(980, 0.9), cast("noble"));
 function hoKhamFloor(base, size) { return base - 150 * size; }
+// hoKhamDais(base, size) gives back the y, pixels of the sheet, of the dais's top: base - 190 x size.
+// e.g. person(720, hoKhamDais(980, 0.9), cast("noble", {floor: "cross"}));
 function hoKhamDais(base, size) { return base - 190 * size; }
 
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: needed; look: part ("back" when left
+// out, or "front"), pediment ("peacock" or none), tint. Returns nothing: it draws with brush, and
+// leaves brush as it found it.
+// e.g. hoKham(pen, 720, 980, 0.9, {part: "back"}); person(720, hoKhamDais(980, 0.9), cast("noble")); hoKham(pen, 720, 980, 0.9, {part: "front"});
 function hoKham(brush, x, base, size, look) {
   look = look || {};
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
@@ -1646,8 +1745,14 @@ function hoKham(brush, x, base, size, look) {
 // bronze hanging from the beam by a cord, a raised boss in its middle. look.struck: the seconds since it was struck
 // (it swings a little and rings: rings of sound go out from it for a second and a half). 110 wide, 170 high at
 // size 1; gongAt() gives the boss's middle, where a mallet strikes.
+// gongAt(x, base, size) gives back [x, y], pixels of the sheet: the boss's middle, where a mallet strikes.
+// e.g. var boss = gongAt(900, 940, 1);
 function gongAt(x, base, size) { return [x, base - 96 * size]; }
 
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: needed; look: optional, struck
+// (seconds since the stroke; left out, it hangs still and silent). Returns nothing: it draws with
+// brush, and leaves brush as it found it.
+// e.g. gong(pen, 900, 940, 1, {struck: 0.4});   // struck 0.4 seconds ago
 function gong(brush, x, base, size, look) {
   look = look || {};
   var since = look.struck === undefined ? 99 : look.struck, swing = since < 2 ? 0.08 * Math.sin(since * 9) * (1 - since / 2) : 0;
@@ -1710,6 +1815,10 @@ function gong(brush, x, base, size, look) {
 // and is drawn only "built" of the way along it (0 to 1): a trough as it grows. look.sag: [where (0 to 1 of
 // the way), how far (px)] for a trough that bends down in its middle; look.size scales its width and its posts;
 // look.tint as the hut's.
+// brush: a canvas 2D context; ground: a list of two or more [x, y], pixels of the sheet; built: 0 to 1;
+// look: optional, high (46), gap (80), sag ([where, pixels]), size (1), tint. Returns nothing: it
+// draws with brush, and leaves its fill and line set.
+// e.g. linKham(pen, [[200, 940], [700, 930], [1100, 945]], between(t, 2, 12), {sag: [0.5, 12]});
 function linKham(brush, ground, built, look) {
   look = look || {};
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
@@ -1775,8 +1884,14 @@ function linKham(brush, ground, built, look) {
 //                                          second: it is pounded, up and down, as the second runs)
 //   taLaew(brush, x, base, size, look)    the ta laew, a star of woven bamboo strips on a post, at a yard's way in,
 //                                          against bad fortune: look.points 6 (or 8, the great one)
+// thingTone(look) gives back a function (colour) -> colour: "#rrggbb" blended toward look.tint[0] by
+// look.tint[1], or the colour as it is when look or look.tint is missing.
+// e.g. var tone = thingTone({tint: ["#2a3a6a", 0.3]}); brush.fillStyle = tone("#8a4a2e");
 function thingTone(look) { return function (c) { return look && look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }; }
 
+// brush: a canvas 2D context holding a path; colour: "#rrggbb"; line: pixels (1.8 when left out).
+// Returns nothing; it leaves brush's fill and line set.
+// e.g. brush.beginPath(); brush.rect(-16, -14, 32, 14); thingFill(brush, "#8a6a3a");
 function thingFill(brush, colour, line) {           // the kit's manner: flat colour inside a fine dark line
   brush.fillStyle = colour;
   brush.fill();
@@ -1786,6 +1901,9 @@ function thingFill(brush, colour, line) {           // the kit's manner: flat co
   brush.stroke();
 }
 
+// brush: a canvas 2D context; left, top, wide, high, step: pixels of the brush's frame; colour: a CSS
+// colour. Returns nothing; it leaves brush's line set.
+// e.g. brush.save(); brush.clip(); thingWeave(brush, -40, -78, 80, 66, "rgba(110, 78, 36, 0.5)", 5); brush.restore();
 function thingWeave(brush, left, top, wide, high, colour, step) {   // a plain weave of strips, clipped by the caller
   brush.strokeStyle = colour;
   brush.lineWidth = 1.2;
@@ -1795,6 +1913,11 @@ function thingWeave(brush, left, top, wide, high, colour, step) {   // a plain w
   }
 }
 
+// huad(brush, x, base, size, t, look) draws the sticky-rice steamer on its pot and stones (see the list
+// above), about 90 wide and 146 tall at size 1. brush: a canvas 2D context; x, base: pixels of the
+// sheet; size: needed; t: seconds; look: optional, fire (0 to 1, 0), tint. Returns nothing: it draws
+// with brush, and leaves brush as it found it.
+// e.g. huad(pen, 640, 940, 1, t, {fire: 1});
 function huad(brush, x, base, size, t, look) {
   look = look || {};
   var tone = thingTone(look), fire = clamp(look.fire || 0), n;
@@ -1858,6 +1981,10 @@ function huad(brush, x, base, size, t, look) {
   brush.restore();
 }
 
+// kongKhao(brush, x, base, size, look) draws the lidded rice basket, about 60 wide and 100 tall at size
+// 1. brush: a canvas 2D context; x, base: pixels of the sheet; size: needed; look: optional, tint.
+// Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. kongKhao(pen, 560, 930, 1.1);
 function kongKhao(brush, x, base, size, look) {
   var tone = thingTone(look);
   brush.save();
@@ -1890,6 +2017,10 @@ function kongKhao(brush, x, base, size, look) {
   brush.restore();
 }
 
+// krabung(brush, x, base, size, look) draws an open basket, 68 wide and 54 tall at size 1. brush: a
+// canvas 2D context; x, base: pixels of the sheet; size: needed; look: optional, tint. Returns
+// nothing: it draws with brush, and leaves brush as it found it.
+// e.g. krabung(pen, 480, 930, 1.1);
 function krabung(brush, x, base, size, look) {
   var tone = thingTone(look);
   brush.save();
@@ -1912,6 +2043,11 @@ function krabung(brush, x, base, size, look) {
   brush.restore();
 }
 
+// mortar(brush, x, base, size, look) draws the wooden mortar and its pestle, the block 56 wide and 60
+// tall at size 1. brush: a canvas 2D context; x, base: pixels of the sheet; size: needed; look:
+// optional, pound (seconds: pounding), tint. Returns nothing: it draws with brush, and leaves brush
+// as it found it.
+// e.g. mortar(pen, 820, 940, 1.1, {pound: t});
 function mortar(brush, x, base, size, look) {
   look = look || {};
   var tone = thingTone(look), lift = look.pound === undefined ? 0 : 40 * Math.max(0, Math.sin(look.pound * Math.PI * 2.4));
@@ -1938,6 +2074,10 @@ function mortar(brush, x, base, size, look) {
   brush.restore();
 }
 
+// taLaew(brush, x, base, size, look) draws the ta laew on its post, about 210 tall at size 1. brush:
+// a canvas 2D context; x, base: pixels of the sheet; size: needed; look: optional, points (6), tint.
+// Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. taLaew(pen, 200, 940, 1.1, {points: 8});
 function taLaew(brush, x, base, size, look) {
   look = look || {};
   var tone = thingTone(look), points = look.points || 6, r = 30, k;
@@ -1994,6 +2134,10 @@ PIECES_KIT.push("huad", "kongKhao", "krabung", "mortar", "taLaew");
 // twisted grass round the middle, the blades fanned above and below it; false: loose blades, drooping);
 // bananas() a hand of short, plump bananas (kluai nam wa, the north's everyday banana), look.count (1 to 6),
 // look.ripe (0 green to 1 yellow, brown-flecked), look.angle. Each about 90 long at size 1.
+// brush: a canvas 2D context; x, y: its middle, pixels of the sheet; size: needed; look: optional,
+// tied (true), angle (radians, 0), tint. Returns nothing: it draws with brush, and leaves brush as it
+// found it.
+// e.g. var j = person(600, 950, cast("boy")); grassBundle(pen, j.handA[0], j.handA[1], 1, {angle: -0.4});
 function grassBundle(brush, x, y, size, look) {
   look = look || {};
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
@@ -2034,6 +2178,10 @@ function grassBundle(brush, x, y, size, look) {
   }
   brush.restore();
 }
+// brush: a canvas 2D context; x, y: the crown where they meet, pixels of the sheet; size: needed;
+// look: optional, count (1 to 6, 1), ripe (0 to 1, 1), angle (radians, 0), tint. Returns nothing:
+// it draws with brush, and leaves brush as it found it.
+// e.g. bananas(pen, 640, 900, 1, {count: 4, ripe: 0.8});
 function bananas(brush, x, y, size, look) {
   look = look || {};
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
@@ -2089,6 +2237,10 @@ PIECES_KIT.push("grassBundle", "bananas");
 // A tuft of grass growing (owner, 2026-10-21: "Add some grass tufts", for the buffalo to eat): blades from one root at
 // (x, y), the ground, up and out, swaying a little with look.t (the second); look.eaten (0 to 1) crops them short, as a
 // buffalo leaves a tuft; look.tint as a set's pieces take it. About 50 tall at size 1.
+// brush: a canvas 2D context; x, y: its root, pixels of the sheet; size: needed; look: optional, t
+// (seconds, 0), eaten (0 to 1, 0), tint. Returns nothing: it draws with brush, and leaves brush as it
+// found it.
+// e.g. grassTuft(pen, 520, 960, 1, {t: t, eaten: between(t, 3, 8)});
 function grassTuft(brush, x, y, size, look) {
   look = look || {};
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
@@ -2114,6 +2266,9 @@ PIECES_KIT.push("grassTuft");
 // thin length of split bamboo from a hand (from) out to its far end (to), the far end charred, and glowing while it
 // is in the fire (look.hot, 0 to 1). Pass a person's hand joint as from, and the point in the coals, or up in the
 // air at the top of a flick, as to; emberFlight() then throws the ember from the stick's end.
+// brush: a canvas 2D context; from, to: [x, y], pixels of the sheet; look: optional, hot (0 to 1, 0),
+// tint. Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. fireStick(pen, person(600, 950, cast("boy")).handA, [760, 930], {hot: 0.6});
 function fireStick(brush, from, to, look) {
   look = look || {};
   var hot = clamp(look.hot || 0), cane = look.tint ? blend("#b0904a", look.tint[0], look.tint[1]) : "#b0904a";
@@ -2155,6 +2310,9 @@ PIECES_KIT.push("fireStick");
 // ruenPhuk(brush, x, base, size, look): standing on (x, base); about 290 wide and 240 high at size 1; the door at the
 // right, the veranda and the ladder right of it, where the tub's door and ladder were. look: glow (0 to 1, a lamp in
 // the doorway at night), tint ([colour, amount]).
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: needed; look: optional, glow (0 to
+// 1, 0), tint. Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. ruenPhuk(pen, 900, 900, 1.2, {glow: 0.7});
 function ruenPhuk(brush, x, base, size, look) {
   look = look || {};
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }

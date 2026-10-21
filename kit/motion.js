@@ -61,16 +61,26 @@ var SPRING_EASE = {seconds: 1, bounce: 0.4};
 // last at the end), and "bezier .4 0 .2 1" is the cubic Bezier curve of CSS, by its two
 // handles (x1 y1 x2 y2). Without numbers: "spring" is SPRING_EASE, "steps" is 4 drawings,
 // "bezier" is the CSS "ease".
+// springCurve(look) gives back an ease curve, a function of u (0 to 1) to 0 to 1: the spring's whole
+// swing (springAt with that look) squeezed into u, and exactly 1 at u = 1. look is springAt's.
+// Changes nothing outside itself.
+// e.g. var curve = springCurve({seconds: 0.8, bounce: 0.5}); curve(0.5)
 function springCurve(look) {
   var whole = springTime(look);
   return function (u) { return u >= 1 ? 1 : springAt(u * whole, look); };
 }
 
+// stepsCurve(count) gives back an ease curve that moves in count held drawings (rounded, at least 1;
+// 4 when left out): u = 0.5 with 4 steps gives 0.5, u = 0.6 gives 0.5 too.
+// e.g. stepsCurve(4)(0.6)
 function stepsCurve(count) {
   count = Math.max(1, Math.round(count || 4));
   return function (u) { return Math.min(1, Math.floor(u * count) / count); };
 }
 
+// bezierCurve(x1, y1, x2, y2) gives back an ease curve: the cubic Bezier of CSS's cubic-bezier(),
+// by its two handles (x from 0 to 1, y any number). The curve gives 0 at u <= 0 and 1 at u >= 1.
+// e.g. bezierCurve(0.4, 0, 0.2, 1)(0.5)
 function bezierCurve(x1, y1, x2, y2) {   // the point at s along a cubic Bezier from (0,0) through the handles to (1,1); find the s whose x is u, then read y
   function along(s, a, b) { return 3 * a * s * (1 - s) * (1 - s) + 3 * b * s * s * (1 - s) + s * s * s; }
   return function (u) {
@@ -105,9 +115,18 @@ var MADE = {
 var SHAPES = {in: "in", out: "out", back: "out", bounce: "out", elastic: "out", spring: "out", steps: "out"};
 var CURVES = {};
 
+// reversed(curve) gives back that ease curve turned round: 1 - curve(1 - u). "back" made "back in".
+// e.g. reversed(EASES.back)(0.2)
 function reversed(curve) { return function (u) { return 1 - curve(1 - u); }; }
+// mirrored(curve) gives back an "inout" curve: curve over the first half of u, its mirror over the second.
+// e.g. mirrored(EASES.in)(0.25)
 function mirrored(curve) { return function (u) { return u < 0.5 ? curve(2 * u) / 2 : 1 - curve(2 - 2 * u) / 2; }; }
 
+// curveOf(name) gives back the curve, a function of u (0 to 1), for an ease name such as "smooth",
+// "back in", "spring 0.8 0.5", "steps 4" or "bezier .4 0 .2 1" (the names: the top of this file).
+// An unknown name warns and gives "smooth"; an unknown form warns and uses the ease as it is.
+// Fills CURVES, the cache of curves by name.
+// e.g. curveOf("bounce out")(0.7)
 function curveOf(name) {
   if (CURVES[name]) { return CURVES[name]; }
   var words = String(name).trim().split(/\s+/), base = EASES[words[0]], shape = SHAPES[words[0]], form, numbers = [], curve;
@@ -123,20 +142,35 @@ function curveOf(name) {
   return curve;
 }
 
+// ease(name, u) gives back how far along a move is, usually 0 to 1 ("back" and "elastic" go past),
+// u of the way along in time (0 to 1, held there outside). name: an ease name (see curveOf).
+// e.g. var x = 100 + 400 * ease("back out", (t - 2) / 1.5);
 function ease(name, u) {
   return curveOf(name)(clamp(u));
 }
 
+// ramp(t, a, b, name) gives back 0 before second a, 1 after second b and the eased way between.
+// t: the film's time in seconds; name: an ease name ("smooth" when left out). a must not equal b.
+// e.g. pen.globalAlpha = ramp(t, 4, 5.5, "out");
 function ramp(t, a, b, name) {           // 0 before second a, 1 after second b, eased between
   return ease(name || "smooth", (t - a) / (b - a));
 }
 
+// mixOf(a, b, u) gives back the value u of the way (0 to 1, or past) from a to b: numbers, colours
+// "#rrggbb" (mixed by the kit's blend()) or lists of numbers of one length.
+// e.g. mixOf([0, 0], [100, 40], 0.5)
 function mixOf(a, b, u) {                // u of the way from a to b: a number, a colour "#rrggbb" (the kit's blend), or a list of numbers
   if (typeof a === "number") { return a + (b - a) * u; }
   if (typeof a === "string") { return blend(a, b, u); }
   return a.map(function (v, j) { return v + (b[j] - v) * u; });
 }
 
+// tween(t, points, name) gives back a value through points in time.
+// t: the time in seconds. points: [[second, value], ...] in order of the seconds, at least one;
+// the values all numbers, all colours "#rrggbb" or all lists of numbers of one length.
+// name: one ease name for every step ("smooth" when left out), or a list of names, one for
+// each step between two points. Returns the value now. Changes nothing outside itself.
+// e.g. var x = tween(t, [[2, 160], [5, 620], [8, 620]], "smooth");  var sky = tween(t, [[0, "#9ad0e8"], [20, "#e8a070"]]);
 function tween(t, points, name) {        // a value through points in time, [[second, value], ...]: the first value before
   var last = points.length - 1, i = 0;    // its second, eased between neighbours, the last value after; name is one ease or one a step
   if (t <= points[0][0]) { return points[0][1]; }
@@ -152,6 +186,11 @@ function tween(t, points, name) {        // a value through points in time, [[se
 // (springAt) for every change, each started at its own second; no frame depends on
 // the one before. The look is springAt's (stiffness, damping, mass, velocity; or
 // seconds and bounce). A lantern tugged along a line, a kite, a held thing that lags.
+// springTween(t, points, look) gives back a number through points in time, on a spring.
+// t: the time in seconds. points: [[second, number], ...] in order, at least one. look: springAt's
+// ({seconds: 0.6, bounce: 0.4}, or stiffness, damping, mass, velocity; 80, 10, 1, 0 when left out).
+// Returns the number now: the first value before the second point's second. Changes nothing outside.
+// e.g. var lean = springTween(t, [[0, 0], [3, 0.3], [6, 0]], {seconds: 0.8, bounce: 0.5});
 function springTween(t, points, look) {
   var x = points[0][1];
   for (var i = 1; i < points.length; i++) { x += (points[i][1] - points[i - 1][1]) * springAt(t - points[i][0], look); }
@@ -164,6 +203,11 @@ function springTween(t, points, look) {
 // up is as quick as the bounce down). look.ease bends each run (linear); look.rest
 // is a pause in seconds at the end of each run, held there; look.from is the second
 // the first run begins (0, and before it the answer is 0). A wing beat, a flag, a bob.
+// cycle(t, seconds, look) gives back where a repeat is now, 0 to 1.
+// t: the time in seconds; seconds: how long one run takes. look (all optional): kind "loop",
+// "reverse" or "mirror"; ease (an ease name, "linear"); rest (seconds held at each run's end, 0);
+// from (the second the first run starts, 0). Returns 0 to 1 (0 before look.from).
+// e.g. var flap = cycle(t, 0.4, {kind: "mirror", ease: "smooth"});
 function cycle(t, seconds, look) {
   look = look || {};
   var kind = look.kind || "loop", rest = look.rest || 0, span = seconds + rest, gone = t - (look.from || 0);
@@ -179,6 +223,11 @@ function cycle(t, seconds, look) {
 // "how much of this for that much of that" asked once instead of with arithmetic:
 // a lean that grows with the speed, a lantern's glow with the dark, a blush with
 // the smile. to may be two numbers, two colours, or two lists.
+// span(v, from, to, name) gives back v read from one range into another.
+// v: the value read; from: [low, high] of its range; to: [first, second], two numbers, colours
+// "#rrggbb" or lists; name: an ease name ("linear" when left out). Returns the value in to's range,
+// held at to[0] below from[0] and at to[1] above from[1]. Changes nothing outside itself.
+// e.g. var bend = span(240, [0, 400], [0, 0.15]);   // the lean for a speed of 240 pixels a second
 function span(v, from, to, name) {
   return mixOf(to[0], to[1], ease(name || "linear", (v - from[0]) / (from[1] - from[0])));
 }
@@ -191,6 +240,10 @@ function span(v, from, to, name) {
 // bounds it stops at, a wall or the ground. Written as a formula of the time, so
 // a frame does not depend on the one before. A takraw kicked and rolling, a top
 // slowing, a boat pushed off.
+// glide(t, from, speed, look) gives back where a thing let go is at time t.
+// t: seconds since it was let go (from is held before 0); from: where it starts, any unit; speed:
+// that unit a second, any sign; look (all optional): seconds (1), min, max. Returns where it is now.
+// e.g. var x = glide(t - 4, 300, 500, {seconds: 0.8, max: 1700});
 function glide(t, from, speed, look) {
   look = look || {};
   var tau = look.seconds || 1, x = t <= 0 ? from : from + speed * tau * (1 - Math.exp(-t / tau));
@@ -199,6 +252,9 @@ function glide(t, from, speed, look) {
   return x;
 }
 
+// held(t, frames) gives back the time t (seconds) held to a drawing that lasts that many frames of
+// a 30-a-second film: 2 is "on twos", 3 "on threes". Pass the result as the time to a drawing.
+// e.g. var tt = held(t, 2);
 function held(t, frames) {               // a cartoon drawn on twos holds each drawing for two frames (of 30 a second)
   return Math.floor(t * 30 / frames) * frames / 30;
 }
@@ -216,6 +272,11 @@ function held(t, frames) {               // a cartoon drawn on twos holds each d
 //   look.seconds     about how long the move takes (the swing after it may go on a little)
 //   look.bounce      how bouncy, 0 to 1: 0 just stops, 0.3 a small overshoot, 1 swings for a long while;
 //                    below 0 it creeps in without any swing (-1 very slowly)
+// springOf(look) gives back the spring's numbers for a look.
+// look: springAt's look, or nothing. Returns {k, c, m, push}: stiffness, damping, mass and the
+// start push in units a second (from look.seconds and look.bounce when they are given and
+// stiffness and damping are not). Changes nothing outside itself.
+// e.g. springOf({seconds: 0.6, bounce: 0.3}).k
 function springOf(look) {                // the spring's stiffness, damping and mass, from whichever words the look uses
   look = look || {};
   if (look.stiffness || look.damping || !look.seconds) {
@@ -227,6 +288,11 @@ function springOf(look) {                // the spring's stiffness, damping and 
   return {k: w * w * m, c: 2 * z * w * m, m: m, push: look.velocity || 0};
 }
 
+// springAt(t, look) gives back where the spring is at second t (0 before, then toward 1, past it
+// and back): a number, 1 once settled. look: the keys listed above (stiffness, damping, mass,
+// velocity; or seconds and bounce); left out it is stiffness 80, damping 10.
+// Changes nothing outside itself.
+// e.g. var pop = springAt(t - 3, {seconds: 0.5, bounce: 0.6});  var size = 0.8 + 0.4 * pop;
 function springAt(t, look) {
   var sp = springOf(look), k = sp.k, c = sp.c, m = sp.m, push = sp.push;
   if (t <= 0) { return 0; }
@@ -243,6 +309,10 @@ function springAt(t, look) {
   return 1 + x;
 }
 
+// springTime(look) gives back the second by which a spring has settled.
+// look: springAt's look. Returns seconds, a number: how long after its start the spring's swing
+// has died to a hundredth of the first. Changes nothing outside itself.
+// e.g. var done = 3 + springTime({seconds: 0.5, bounce: 0.6});
 function springTime(look) {              // when the swing has died to a hundredth
   var sp = springOf(look), k = sp.k, c = sp.c, m = sp.m, push = sp.push;
   var w = Math.sqrt(k / m), z = c / (2 * Math.sqrt(k * m));
@@ -261,6 +331,11 @@ function springTime(look) {              // when the swing has died to a hundred
 // spreading from the "first" (the default), the "last", the "centre", or a number, the
 // index it spreads from. An ease name bends the spread: "in" bunches the near ones,
 // "out" the far ones.
+// stagger(n, count, look) gives back how late the n-th of a crowd starts.
+// n: which one (0 is the first); count: how many in all; look (all optional): gap (seconds, 0.3),
+// from ("first", "last", "centre" or "center", or an index), ease (an ease name). Returns seconds,
+// a number of 0 or more, to take from that one's time. Changes nothing outside itself.
+// e.g. for (var n = 0; n < 5; n++) { var u = ramp(t - stagger(n, 5, {gap: 0.2, from: "centre"}), 2, 3); }
 function stagger(n, count, look) {
   look = look || {};
   var gap = look.gap === undefined ? 0.3 : look.gap, from = look.from === undefined ? "first" : look.from;
@@ -290,6 +365,11 @@ function stagger(n, count, look) {
 // The Naga or the dragon takes the course itself as its "trail":
 //   dragon(p[0], p[1], {depth: p[4], trail: function (tt) { return where(KEYS, tt); }})
 
+// spline(p0, p1, p2, p3, u) gives back the point u of the way along the curve from p1 to p2.
+// p0, p1, p2, p3: points [x, y] (more numbers are ignored), in pixels of the sheet; u: 0 to 1.
+// Returns [x, y, dx, dy]: dx and dy are the change over the whole step from p1 to p2 (pixels per
+// whole step, not per second). Changes nothing outside itself.
+// e.g. spline([0, 0], [100, 0], [200, 50], [300, 50], 0.5)
 function spline(p0, p1, p2, p3, u) {
   // One step of a centripetal Catmull-Rom curve: the point u of the way (0..1) from
   // p1 to p2, bent by p0 before and p3 after, and the direction it is going: [x, y, dx, dy].
@@ -313,6 +393,11 @@ function spline(p0, p1, p2, p3, u) {
   return out;
 }
 
+// leg(keys, i) gives back the i-th step of a course and the points that bend it.
+// keys: a course (see "a course" above); i: the index of a step, 0 to keys.length - 2.
+// Returns {a, b, first, end, before, after}: the two keys, whether the step starts or ends a walk,
+// and the made-up or real points [x, y] behind and ahead. Changes nothing outside itself.
+// e.g. leg([[0, 100, 900], [4, 500, 900]], 0).first
 function leg(keys, i) {
   // The i-th step of a course, from keys[i] to keys[i + 1]: the point behind and the
   // point ahead that bend its curve (made up straight behind or ahead where a walk
@@ -330,6 +415,11 @@ function leg(keys, i) {
 // before. For each step: the length so far at each sample, 0 for a wait in place.
 var SAMPLES = 24, COURSES = {}, COURSES_KEPT = 0;
 
+// lengthsOf(keys) gives back how long each step of a course is, measured along its curve.
+// keys: a course. Returns a list, one entry for each step: the length so far, in pixels of the
+// sheet, at each of SAMPLES + 1 points along it ([0] for a wait in place). Fills COURSES, a cache
+// by the course's numbers, and empties it when 64 courses are kept.
+// e.g. var whole = lengthsOf([[0, 100, 900], [4, 500, 900]])[0][SAMPLES];   // 400, the first step's length
 function lengthsOf(keys) {
   var name = keys.join(","), table = COURSES[name], i, k, l, p, q, run, sofar;
   if (table) { return table; }
@@ -350,6 +440,12 @@ function lengthsOf(keys) {
   return table;
 }
 
+// where(keys, t) gives back where a thing on a course is at second t, as a list of 9 numbers:
+// [x, y, moving, facing, depth, angle, distance, reached, speed] (the comment inside says each;
+// p[8], the speed, is pixels of the sheet a second, 0 while it stands). keys: [[second, x, y], ...] or [[second, x, y, depth], ...], in order of the seconds,
+// at least one; x and y in pixels of the sheet; t: the time in seconds. Before the first second
+// it is at the first key, after the last at the last. Fills the COURSES cache (lengthsOf).
+// e.g. var p = where([[3, 160, 960], [9, 620, 950]], t);  person(p[0], p[1], cast("boy", {face: p[3], step: p[2] ? p[6] / 130 : 0}));
 function where(keys, t) {
   // Where something on a course is at second t, which way it goes, how near the screen
   // it is, its heading, how far along the curve it has come, and which key it has

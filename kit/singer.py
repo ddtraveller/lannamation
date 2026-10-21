@@ -46,7 +46,10 @@ RELEASE = 6                  # frames (30 ms) of its end that keep theirs
 
 def analyse(sound):
     """A syllable as WORLD hears it: the pitch of each frame (0 where there is
-    none), the mouth's shape and the breath."""
+    none), the mouth's shape and the breath.
+
+    sound: the samples at RATE. Gives back (f0, spectral envelope, aperiodicity): numpy arrays, one row a
+    frame of FRAME milliseconds. e.g. f0, sp, ap = analyse(sound)"""
     x = numpy.ascontiguousarray(sound, dtype=numpy.float64)
     f0, t = pyworld.harvest(x, RATE, f0_floor=90.0, f0_ceil=500.0, frame_period=FRAME)
     f0 = pyworld.stonemask(x, f0, t, RATE)
@@ -54,7 +57,10 @@ def analyse(sound):
 
 
 def between(frames, positions):
-    """Frames read at fractional positions, each a mix of the two it lies between."""
+    """Frames read at fractional positions, each a mix of the two it lies between.
+
+    frames: a numpy array, one row a frame. positions: fractional frame numbers, a numpy array.
+    Gives back one row for each position. e.g. between(sp, numpy.linspace(0, len(sp) - 1, 120))"""
     low = numpy.floor(positions).astype(int)
     high = numpy.minimum(low + 1, len(frames) - 1)
     weight = (positions - low)[:, None]
@@ -72,7 +78,10 @@ def sing(sound, frequency, seconds, tone=0.3, vibrato=0.12, glide_from=None, rel
     glide_from; the first candidate they heard was vibrato=0.25 at 5.5 Hz
     with no glide_from. (Until that day a local variable shadowed "release",
     so every syllable fell whatever the caller asked: that is the sound the
-    owner chose, and so it is now what the default says.)"""
+    owner chose, and so it is now what the default says.)
+
+    sound: the spoken syllable's samples at RATE. Gives back a numpy array exactly "seconds" long.
+    e.g. sing(sound, 293.66, 0.475, glide_from=261.63)"""
     f0, sp, ap = analyse(sound)
     count = len(f0)
     voiced = numpy.where(f0 > 0)[0]

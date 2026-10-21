@@ -41,6 +41,9 @@ var NIGHT_SHADE = "#1e2440";                         // what an unlit thing goes
 var NIGHT_BLACK = "#0b0c14";                         // a thing against the moon
 
 // A palette's every colour taken toward the night by (1 - lit), or all of it black for a silhouette.
+// "colours" is a palette, an object of name: "#rrggbb" (OWL, MOTH); "lit" 0 to 1; "black" true for the
+// silhouette. Returns a new object with the same names. Draws nothing.
+// e.g. nightPalette(OWL, 0.4)
 function nightPalette(colours, lit, black) {
   var out = {};
   Object.keys(colours).forEach(function (k) {
@@ -50,6 +53,10 @@ function nightPalette(colours, lit, black) {
 }
 
 // ---------- the moon ----------
+// The full moon about (x, y), r in radius, in pixels of the sheet, with its glow out to 4.5 r and its grey
+// seas. Returns {x, y, r}: hand it to barnOwl() as look.moon and to moonLight(). It draws with pen, and leaves
+// pen's fillStyle set.
+// e.g. var moon = nightMoon(1500, 220, 70);
 function nightMoon(x, y, r) {
   var glow = pen.createRadialGradient(x, y, r * 0.9, x, y, r * 4.5);
   glow.addColorStop(0, "rgba(255, 246, 214, 0.35)");
@@ -72,12 +79,18 @@ function nightMoon(x, y, r) {
   return {x: x, y: y, r: r};
 }
 
+// "moon" is what nightMoon() returned. Returns a number, 0.3 to 1: 1 within two moon-radii of its middle,
+// falling to 0.3 at nine and beyond; for look.lit. Draws nothing.
+// e.g. barnOwl(ox, oy, clock, {fly: "side", lit: moonLight(ox, oy, moon), moon: moon})
 function moonLight(x, y, moon) {
   var d = Math.hypot(x - moon.x, y - moon.y) / moon.r;
   return 0.3 + 0.7 * (1 - between(d, 2, 9));
 }
 
 // ---------- the eastern barn owl ----------
+// About (0, 0), r its half-width in pixels of pen's frame; P the owl's palette (OWL, through nightPalette()).
+// Returns nothing: it draws with pen.
+// e.g. owlFace(26, nightPalette(OWL, 1))
 function owlFace(r, P) {                             // the heart-shaped white disc, rimmed, its dark eyes and pale beak
   pen.beginPath();
   pen.moveTo(0, -r * 0.72);
@@ -111,6 +124,9 @@ function owlFace(r, P) {                             // the heart-shaped white d
   nbPaint(P.beak);
 }
 
+// t the second; P the palette; look.turn and look.seed turn the head. Drawn in the frame nbBegin() made.
+// Returns nothing: it draws with pen.
+// e.g. owlPerched(clock, nightPalette(OWL, 1), {turn: 0.3})
 function owlPerched(t, P, look) {                    // on a branch at (0, 0), facing us three-quarter, the head turning
   [-1, 1].forEach(function (s) {                     // long legs, feathered white, dark talons
     nbLimb([[s * 9, -34], [s * 10, -4]], 7, P.belly);
@@ -142,6 +158,9 @@ function owlPerched(t, P, look) {                    // on a branch at (0, 0), f
   pen.restore();
 }
 
+// "lift" from 1, raised, to -1, lowered (nbLift()); P the palette. Returns nothing: it draws with pen;
+// pen is restored.
+// e.g. owlWingSide(Math.cos(clock * 7), nightPalette(OWL, 1))
 function owlWingSide(lift, P) {                      // one broad round wing, from the shoulder, as it beats seen from the side
   pen.save();
   nbLift(lift);
@@ -170,6 +189,9 @@ function owlWingSide(lift, P) {                      // one broad round wing, fr
   pen.restore();
 }
 
+// t the second (a beat every 0.9 s); P the palette. It moves pen's frame up and down with the beat and
+// does not restore it: call it inside nbBegin() and nbEnd(), as barnOwl() does. Returns nothing.
+// e.g. owlSide(clock, nightPalette(OWL, 1))
 function owlSide(t, P) {                             // flying past, slow deep beats, the face turned to us; (0, 0) the body
   var phase = t * Math.PI * 2 / 0.9, lift = 0.1 + 0.9 * Math.cos(phase);
   pen.translate(0, -5 * Math.sin(phase));
@@ -196,6 +218,8 @@ function owlSide(t, P) {                             // flying past, slow deep b
   owlWingSide(lift, P);
 }
 
+// t the second (a beat every 1.6 s); P the palette. Returns nothing: it draws with pen.
+// e.g. owlFront(clock, nightPalette(OWL, 1))
 function owlFront(t, P) {                            // gliding toward us, wings wide, a slow beat now and then; (0, 0) the body
   var beat = Math.sin(t * Math.PI * 2 / 1.6), tip = -26 * beat;
   [-1, 1].forEach(function (s) {
@@ -230,6 +254,14 @@ function owlFront(t, P) {                            // gliding toward us, wings
   pen.restore();
 }
 
+// The eastern barn owl, at second t: perched with its feet on (x, y) (a branch), or flying with (x, y) the
+// middle of its body; in pixels of the sheet.
+//   look   OWL_KEYS, and it may be left out: size (1), face (1 right, -1 left), fly ("side": flying past;
+//          "front": gliding toward us; else perched), turn (perched: the head turns half of it, in radians),
+//          lit (0 to 1, 1 when left out: the light on it), moon (nightMoon()'s: a silhouette where it
+//          crosses the disc), seed (seconds added to its beat, so two do not beat together)
+// Returns nothing: it draws with pen; pen and LINE are as they were after.
+// e.g. barnOwl(300 + 150 * clock, 260, clock, {fly: "side", size: 1.3, lit: 0.5, moon: moon})
 function barnOwl(x, y, t, look) {
   look = look || {};
   checkNames("The barn owl's name", look, OWL_KEYS);
@@ -253,6 +285,9 @@ function barnOwl(x, y, t, look) {
 }
 
 // ---------- the atlas moth ----------
+// P the moth's palette (MOTH, through nightPalette()). Returns nothing: it draws with pen, and leaves pen's
+// colours and line width set.
+// e.g. mothWings(nightPalette(MOTH, 1))
 function mothWings(P) {                              // the right wings, seen from above; drawn again mirrored for the left
   pen.beginPath();                                   // the hind wing, round
   pen.moveTo(6, 6);
@@ -290,6 +325,11 @@ function mothWings(P) {                              // the right wings, seen fr
 }
 
 // (x, y) the middle of its body; look.turn tilts it (radians); look.flutter, how often its wings beat in a second (2.2)
+// The atlas moth seen from above, at second t, (x, y) in pixels of the sheet.
+//   look   MOTH_KEYS, and it may be left out: size (1: about 380 across, wings open), face, turn, lit (0 to
+//          1, 1 when left out), flutter
+// Returns nothing: it draws with pen; pen and LINE are as they were after.
+// e.g. atlasMoth(900, 420, clock, {size: 0.6, turn: 0.2, lit: 0.8})
 function atlasMoth(x, y, t, look) {
   look = look || {};
   checkNames("The atlas moth's name", look, MOTH_KEYS);
@@ -322,6 +362,9 @@ function atlasMoth(x, y, t, look) {
 // size (at the start, 1), far (its size at the end, 0.25), spread (how wide the stream is, 60), colour ("#16131c",
 // near black: a lighter one, moonlit, shows against a dark sky). Each bat is a
 // flapping "m", dark against the sky, smaller and fainter as it goes; one drawn before a hill's sheet goes behind it.
+// t the second. look must be given, with from and to; the rest as said above. Returns nothing: it draws
+// with pen; pen is restored (its globalAlpha too).
+// e.g. batStream(clock, {from: [300, 700], to: [1400, 240], start: 1, count: 30, colour: "#2a2636"})
 function batStream(t, look) {
   var from = look.from, to = look.to, long = look.long || 14, every = look.every || 0.25, count = look.count || 40;
   var size = look.size || 1, far = look.far || 0.25, spread = look.spread || 60, start = look.start || 0;
@@ -351,6 +394,9 @@ function batStream(t, look) {
 // Far away a firefly is a point, not a glow: a short flash (about a third of a second) that brightens fast and dies
 // slower, then dark for two to five seconds, each in its own time, drifting a little, and dimmer the farther (higher
 // on the sheet, nearer the hills). look: box ([x0, y0, x1, y1], where they are), count (60), seed.
+// t the second. look must be given, with box (pixels of the sheet). Returns nothing: it draws with pen,
+// and leaves pen's fillStyle set.
+// e.g. farFireflies(clock, {box: [0, 640, 1920, 900], count: 80})
 function farFireflies(t, look) {
   var box = look.box, count = look.count || 60, seed = look.seed || 0;
   for (var n = 0; n < count; n++) {

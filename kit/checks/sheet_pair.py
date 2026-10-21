@@ -2,6 +2,10 @@
 
 The frame is come to by a jump with the page being rendered, as a still is. The box is the part of the 1440 x 1080
 sheet to keep (all of it unless told).
+
+It needs Google Chrome (through Playwright) and Pillow. The other kit is named from the folder it is run in;
+the page from the kit's folder (kit/). It writes out.png (the two crops side by side, 8 pixels apart) and
+prints its size; exit code 0. The default box is 1440 wide: give the box for a page whose sheet is 1920.
 """
 import base64
 import io
@@ -15,6 +19,11 @@ ASSETS = Path(__file__).resolve().parent.parent      # the folder the kit and it
 
 
 def frame(browser, page_file, kit, second):
+    """The page's sheet at second, come to by a jump with rendering on: a PIL image (the sheet's own size).
+
+    browser: a Playwright browser. page_file: the page, a Path. kit: another oldcartoon.js to load in place of the
+    page's own, or None. A page error is printed, not raised.
+    e.g. frame(browser, ASSETS / "lanna.html", None, 12.5)"""
     page = browser.new_page(viewport={"width": 1920, "height": 1080})
     page.on("pageerror", lambda error: print("PAGE ERROR", error))
     if kit:
@@ -28,6 +37,7 @@ def frame(browser, page_file, kit, second):
 
 
 def main():
+    """The command line: sheet_pair.py OTHER_KIT OUT PAGE SECOND [X Y W H]: save the frame with both kits side by side."""
     kit, out, name, second = sys.argv[1], sys.argv[2], sys.argv[3], float(sys.argv[4])
     box = [int(v) for v in sys.argv[5:9]] if len(sys.argv) > 8 else [0, 0, 1440, 1080]
     with sync_playwright() as playwright:

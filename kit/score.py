@@ -29,6 +29,9 @@ A = 220.0
 
 
 def hz(semitones):                                  # a note, in semitones from the A below middle C
+    """A note's frequency in hz, from semitones above (or below, when less than 0) the A of 220 hz.
+
+    e.g. hz(3)          # 261.63, the C above it"""
     return A * 2 ** (semitones / 12)
 
 
@@ -87,12 +90,20 @@ CHORDS = {"hero": [[-12, -5, 0, 3], [-9, -2, 3, 7], [-19, -7, 3, 7], [-14, -2, 3
 
 
 def chords(notes):
-    """A set's four chords, as frequencies."""
+    """A set's four chords, as frequencies.
+
+    notes: a key of SETS and CHORDS ("hero", "glad" ...). Gives back four lists of hz, the bass first.
+    e.g. chords("sad")"""
     return [[hz(s) for s in row] for row in CHORDS[notes]]
 
 
 def feeling_music(name, seconds, seed):
-    """One feeling's music, "seconds" long: a stereo track, its tune, chords and drum by the feeling's rules."""
+    """One feeling's music, "seconds" long: a stereo track, its tune, chords and drum by the feeling's rules.
+
+    name: a key of FEELINGS. seconds: how long the tune plays. seed: its chooser (the same seed, the same music).
+    Gives back a numpy array (2, samples), 3.5 s longer than "seconds" for the notes to ring out, at the
+    feeling's loudness. A name not in FEELINGS is a KeyError.
+    e.g. feeling_music("joy", 10, 1)"""
     f = FEELINGS[name]
     track = numpy.zeros((2, int((seconds + 3.5) * RATE)))
     steps = SETS[f["notes"]]
@@ -145,7 +156,11 @@ def feeling_music(name, seconds, seed):
 def compose(cues, seconds, seed=1):
     """The music of a stretch of film "seconds" long whose feelings are "cues" ([[second, feeling], ...], each
     until the next): each feeling's music, crossed over to the next from EARLY before its cue, over CROSS
-    seconds; then the hero film's echo and room over all of it, and a fade at the end. Stereo, peaking at 0.8."""
+    seconds; then the hero film's echo and room over all of it, and a fade at the end. Stereo, peaking at 0.8.
+
+    seed: default 1. Gives back a numpy array (2, samples), 2 s longer than "seconds". Fails with ValueError
+    for a feeling not in FEELINGS. The first cue's music starts at second 0, wherever that cue is.
+    e.g. compose([[0, "wonder"], [9.4, "sad"], [21.0, "joy"]], seconds=30)"""
     cues = sorted(cues)
     track = numpy.zeros((2, int((seconds + 4) * RATE)))
     for n, (at, name) in enumerate(cues):

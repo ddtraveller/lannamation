@@ -21,6 +21,12 @@ showing where it differs, to look at. With --exact, a moment changes when any pi
 for a change that should move nothing, such as person() taken apart into its stages, on the same computer and
 Chrome as the stills were saved with. Each moment compared is written down, PASS or FAIL, in out/checks/
 snapshot.txt (report.py). Exits 1 if anything changed, or a still is missing.
+
+It needs Google Chrome (through Playwright), numpy, scipy and Pillow. Pages are named from the kit's folder
+(kit/). Each page's stills are in out/snapshots/PATH__NAME/ (000.05.png ... and moments.json). The report is
+written as out/checks/snapshot_save.txt or snapshot_compare.txt, one for each. save ends with exit code 0
+even when a page errs; with neither save nor compare it prints this and ends with exit code 1. It runs
+main() as it is loaded: do not import it.
 """
 import json
 import sys
@@ -53,14 +59,21 @@ MOMENTS = """() => {
 
 
 def half(picture):
+    """A picture (height, width, 3) at half of 1920 x 1080: 960 x 540, as a numpy array of int16.
+
+    e.g. half(frame_at(page, 2.0))"""
     return np.asarray(Image.fromarray(picture.astype(np.uint8)).resize((960, 540), Image.LANCZOS)).astype(np.int16)
 
 
 def folder_of(page_file):
+    """Where a page's stills are kept: out/snapshots/ and its path from the kit's folder, "/" as "__" (a Path).
+
+    e.g. folder_of(KIT / "maeng" / "s04.html")     # out/snapshots/maeng__s04"""
     return OUT / page_file.relative_to(KIT).with_suffix("").as_posix().replace("/", "__")
 
 
 def main():
+    """The command line: snapshot.py save|compare [--exact] [PAGE ...] (see this file's docstring)."""
     if len(sys.argv) < 2 or sys.argv[1] not in ("save", "compare"):
         sys.exit(__doc__)
     doing, names = sys.argv[1], [n for n in sys.argv[2:] if n != "--exact"]

@@ -38,6 +38,14 @@ first, then applied linearly) and written 24-bit stereo. Needs soundfile, soxr a
 
 The model folder is model/ in the extension (krueng.ai/downloads/kammuang_voice_chrome.zip,
 unzipped); say.mjs needs "npm install" in this folder first.
+
+What it writes: the mix where --out says (default sash_voice.wav beside this file: 24-bit stereo, 44.1 kHz,
+-14 LUFS), each new line's take in spoken_km/ (or spoken_km_assistant/) beside this file, and prints a table of
+the lines: when each starts, how long the voice takes, and "fits" or "TOO LONG by". It needs Google Chrome
+(through Playwright) to read WORDS; node for say.mjs, or torch and transformers for --voice assistant;
+faster-whisper for --takes above 1. It ends with exit code 0; 1 with a message when a --spoken file is missing;
+2 when neither a model folder nor --voice assistant (nor --spoken) is given; ffmpeg or node failing stops it
+with a CalledProcessError.
 """
 import argparse
 import difflib
@@ -68,7 +76,12 @@ FADE = 2.0           # seconds of the music's fade at the end
 
 
 def words_of(page_file, sets=()):
-    """The film's lines and its length, asked of the page itself; given the values render.py --set gave it."""
+    """The film's lines and its length, asked of the page itself; given the values render.py --set gave it.
+
+    page_file: the page. sets: (name, value) pairs set on window before WORDS is read.
+    Gives back (WORDS, seconds): each line [from, shown until, said, written, ...], and the page's LENGTH or
+    DURATION. Opens the page in Chrome with no window; waits up to 180 s for it.
+    e.g. words, seconds = words_of("sash.html")"""
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome")
         page = browser.new_page()
@@ -86,7 +99,11 @@ VOICE_CHAIN = ("highpass=f=75,equalizer=f=260:t=q:w=1:g=-2.5,equalizer=f=3200:t=
 
 
 def voice_line(path, scratch):
-    """One spoken line at 44.1 kHz, through VOICE_CHAIN, with a touch of the room, peaking at VOICE."""
+    """One spoken line at 44.1 kHz, through VOICE_CHAIN, with a touch of the room, peaking at VOICE.
+
+    path: the spoken line's file. scratch: a folder for ffmpeg's files. Gives back mono samples at RATE.
+    Fails with CalledProcessError when ffmpeg stops.
+    e.g. voice_line(file_of(text), scratch.name)"""
     sound, rate = soundfile.read(str(path), dtype="float64", always_2d=True)
     sound = soxr.resample(sound[:, 0], rate, RATE, quality="VHQ")
     raw, done = Path(scratch) / "line.wav", Path(scratch) / "line_chain.wav"
@@ -99,7 +116,11 @@ def voice_line(path, scratch):
 
 
 def master(track, out, scratch):
-    """-14 LUFS integrated, true peaks under -1 dBTP: ffmpeg loudnorm, measured first, then applied linearly."""
+    """-14 LUFS integrated, true peaks under -1 dBTP: ffmpeg loudnorm, measured first, then applied linearly.
+
+    track: a numpy array (2, samples) at RATE. out: the file to write (24-bit stereo WAV). scratch: a folder
+    for the unmastered mix. Gives back nothing. Fails with CalledProcessError when ffmpeg stops.
+    e.g. master(music * gain + voice, "sash_voice.wav", scratch.name)"""
     raw = Path(scratch) / "mix.wav"
     soundfile.write(str(raw), track.T, RATE, subtype="FLOAT")
     want = "I=-14:TP=-1.0:LRA=11"
@@ -113,18 +134,28 @@ def master(track, out, scratch):
 
 
 def file_of(text):
+    """Where a line's kept take is: SPOKEN/ the first 12 letters of the SHA-1 of its words .wav (a Path; makes nothing).
+
+    e.g. file_of("ปิ๊กบ้านเน้อ").exists()"""
     return SPOKEN / (hashlib.sha1(text.encode("utf-8")).hexdigest()[:12] + ".wav")
 
 
 def heard(text, sound_file, listener):
-    """how much of a line's letters the recogniser hears back, 0 to 1"""
+    """how much of a line's letters the recogniser hears back, 0 to 1
+
+    text: the words written. sound_file: the take. listener: a faster-whisper WhisperModel.
+    e.g. heard(text, take, WhisperModel("medium", device="cpu", compute_type="int8"))"""
     said = "".join(part.text for part in listener.transcribe(str(sound_file), language="th", beam_size=5)[0])
     return difflib.SequenceMatcher(None, re.sub(r"[\sๆ]", "", text), re.sub(r"[\sๆ]", "", said)).ratio()
 
 
 def say_as_assistant(jobs):
     """Each [name, text] spoken as the Kam Mueang assistant speaks (its server.py, speak()): MMS Northern Thai in
-    PyTorch, the text in pieces of up to 150 letters, a quarter of a second of silence between them; to SPOKEN/name.wav."""
+    PyTorch, the text in pieces of up to 150 letters, a quarter of a second of silence between them; to SPOKEN/name.wav.
+
+    jobs: a list of [name, text]. Gives back nothing; writes 16-bit WAVs at the model's rate (16 kHz).
+    It downloads the model from Hugging Face the first time.
+    e.g. say_as_assistant([["line_0", "สวัสดีเจ้า"]])"""
     import torch
     from transformers import AutoTokenizer, VitsModel
     tokenizer, voice = AutoTokenizer.from_pretrained(ASSISTANT_VOICE), VitsModel.from_pretrained(ASSISTANT_VOICE).eval()
@@ -151,7 +182,11 @@ def say_as_assistant(jobs):
 
 
 def say(jobs, model):
-    """[name, text] jobs, each spoken to SPOKEN/name.wav: by say.mjs in one run, or the assistant's way."""
+    """[name, text] jobs, each spoken to SPOKEN/name.wav: by say.mjs in one run, or the assistant's way.
+
+    model: "assistant", or the extension's model folder for say.mjs (node, in this folder). Gives back
+    nothing. Fails with CalledProcessError when say.mjs stops.
+    e.g. say([["line_0", "สวัสดีเจ้า"]], "assistant")"""
     if model == "assistant":
         say_as_assistant(jobs)
     else:
@@ -162,11 +197,17 @@ def say(jobs, model):
 
 
 def line_id(line, n):
-    """A line's name for --spoken: its id, WORDS' sixth item, or for a page whose WORDS have none its number, 01 on."""
+    """A line's name for --spoken: its id, WORDS' sixth item, or for a page whose WORDS have none its number, 01 on.
+
+    line: one of WORDS. n: its place in WORDS, 0 the first. Gives back a string.
+    e.g. line_id(words[0], 0)"""
     return line[5] if len(line) > 5 else "%02d" % (n + 1)
 
 
 def seconds_of(sound_file):
+    """How long a sound file lasts, in seconds (read from its header).
+
+    e.g. seconds_of(file_of(text))"""
     info = soundfile.info(str(sound_file))
     return info.frames / info.samplerate
 
@@ -175,7 +216,12 @@ def speak(lines, model, takes, fit=False):
     """Every line not spoken yet, "takes" times; the clearest take is kept. lines: [text, room], room the seconds
     from its start until its words leave the screen or the next line begins. With fit, the clearest take that
     ends inside its room is kept; if none of them does, as many takes again are spoken, once, and the choice
-    made again (the voice's timing is drawn from noise: one take can be half a second shorter than another)."""
+    made again (the voice's timing is drawn from noise: one take can be half a second shorter than another).
+
+    model: "assistant" or the extension's model folder, as say() takes. takes: how many takes of each new
+    line (1: no listener is loaded). fit: default False. Gives back nothing: each line's kept take is written
+    to file_of(its words), the other takes deleted; prints the takes' scores when it listens.
+    e.g. speak([["สวัสดีเจ้า", 2.4]], "assistant", 4, fit=True)"""
     room = dict(lines)
     missing = [text for text, _ in lines if not file_of(text).exists()]
     if not missing:
@@ -205,6 +251,10 @@ def speak(lines, model, takes, fit=False):
 
 
 def main():
+    """The command line: read the page's WORDS, speak the lines not spoken yet (or take them from --spoken),
+    lay them over the music with the music dipped under each, master the mix and write it to --out.
+
+    It sets the global SPOKEN to spoken_km_assistant/ for --voice assistant."""
     global SPOKEN
     parser = argparse.ArgumentParser()
     parser.add_argument("model", nargs="?", help="the extension's model folder (or --voice assistant)")

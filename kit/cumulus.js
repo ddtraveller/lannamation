@@ -36,6 +36,15 @@ CUMULUS_SHEET.width = WIDE;
 CUMULUS_SHEET.height = 1080;
 var CUMULUS_PEN = CUMULUS_SHEET.getContext("2d");
 
+// cumulus(brush, t, look) draws one frame of drifting cumulus clouds over the whole sheet (WIDE x 1080).
+//   brush   a canvas 2D context to draw on (pen, or a sheet's own context)
+//   t       the time in seconds: it alone says where each cloud is
+//   look    CLOUD_LOOKS.day, .dusk or .night, or one of your own with the same keys:
+//           count (how many clouds), lit and shade ("#rrggbb" tones), below (true: lit from below, at dusk),
+//           ink (optional: the colour of the line; the kit's inkFor(lit) when left out)
+// Returns nothing: it draws with brush. It leaves brush.globalAlpha at 1, whatever it was before,
+// and uses CUMULUS_SHEET as scratch (left clear).
+// e.g. cumulus(pen, t, CLOUD_LOOKS.dusk);
 function cumulus(brush, t, look) {
   var ink = look.ink || inkFor(look.lit), mid = blend(look.shade, look.lit, 0.55), b = CUMULUS_PEN;
   for (var n = 0; n < look.count; n++) {

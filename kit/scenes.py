@@ -33,6 +33,12 @@ forget()), so a scene comes out the same each time it is rendered, alone or
 not, but for Chrome's own drawing on the graphics card, which now and then
 puts a dozen pixels of a frame a shade apart (village.html, 2026-10-21: 5 of
 120 frames, 1 to 12 pixels each; before, 225 of 300 frames differed).
+
+It needs Google Chrome and ffmpeg, as render.py does. It writes each scene's video in the folder
+beside the page (PAGE_scenes/, or PAGE_scenes_fast/ with --fast, named NN_scene_FROM-TO.mp4), a list
+scenes.txt for ffmpeg there, and the film where it is named. It ends with exit code 0, or 1 with a
+message when the page has no SCENES, a scene number is not one of them, a scene was not made, or
+ffmpeg could not join them.
 """
 import argparse
 import concurrent.futures
@@ -50,6 +56,10 @@ SCENES_OF = "SCENES.map(function (s) { return [s[0], s[1], s[2].name || 'scene']
 
 
 def scenes_of(page_file):
+    """The page's scenes, each [from, to, the name of its function] (seconds): opens the page in Chrome.
+
+    page_file: the page, a Path. Fails with SystemExit when the page lists no SCENES.
+    e.g. scenes_of(Path("sash.html"))"""
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome")
         page = browser.new_page()
@@ -64,19 +74,31 @@ def scenes_of(page_file):
 
 
 def clip_of(folder, number, scene):
+    """The Path of one scene's video in folder: NN_name_FROM-TO.mp4 (makes nothing).
+
+    folder: the scenes' folder, a Path. number: the scene's number, 1 the first. scene: [from, to, name].
+    e.g. clip_of(Path("sash_scenes"), 3, [24, 40, "lamp"])"""
     # the scene's seconds are in the name, so a scene that is moved or made longer gets a new video
     start, end, name = scene
     return folder / ("%02d_%s_%g-%g.mp4" % (number, name, start, end))
 
 
 def last_changed(page_file):
-    """When the page, or a script file it loads, last changed."""
+    """When the page, or a script file it loads, last changed: the latest modification time, in seconds
+    since 1970, of the page and each <script src> beside it that is there.
+
+    e.g. last_changed(Path("sash.html"))"""
     names = re.findall(r'<script src="([^":]+)"', page_file.read_text(encoding="utf-8"))
     files = [page_file] + [page_file.parent / name for name in names]
     return max(f.stat().st_mtime for f in files if f.exists())
 
 
 def show(scenes, clips, changed):
+    """Print one line for each scene: its number, name, seconds, video and whether that video is made, or made
+    before the page last changed. Gives back nothing.
+
+    scenes: as scenes_of() gives them. clips: each scene's video, a Path. changed: the time last_changed() gives.
+    e.g. show(scenes, clips, last_changed(page_file))"""
     for number, (scene, clip) in enumerate(zip(scenes, clips), 1):
         start, end, name = scene
         if not clip.exists():
@@ -89,6 +111,13 @@ def show(scenes, clips, changed):
 
 
 def join(clips, video, audio, folder):
+    """Join the scenes' videos into one film without encoding the pictures again, the sound laid over the
+    whole: gives back nothing.
+
+    clips: the scenes' videos (Paths, in folder), in order. video: the film to write. audio: a sound file, or
+    None. folder: where the clips are; scenes.txt (ffmpeg's list of them) is written there.
+    Fails with SystemExit when ffmpeg stops.
+    e.g. join(clips, Path("sash.mp4"), "sash_voice.wav", Path("sash_scenes"))"""
     # ffmpeg's concat list: one line for each scene's video, in order
     listing = folder / "scenes.txt"
     listing.write_text("".join("file '%s'\n" % clip.name for clip in clips), encoding="utf-8")
@@ -103,7 +132,10 @@ def join(clips, video, audio, folder):
 
 
 def render_scene(page_file, part, start, end, fast):
-    """One scene into its file, in a process of its own (--jobs): what went wrong, or None."""
+    """One scene into its file, in a process of its own (--jobs): what went wrong, or None.
+
+    page_file, part: the page and the file to write (strings). start, end: the scene's seconds. fast: as render.py --fast.
+    e.g. render_scene("sash.html", "sash_scenes/03_lamp_24-40.part.mp4", 24, 40, False)"""
     try:
         render.render(page_file, part, None, start, end, fast)
     except SystemExit as stop:          # render.py ends by SystemExit when ffmpeg or the page fails
@@ -112,6 +144,10 @@ def render_scene(page_file, part, start, end, fast):
 
 
 def main():
+    """The command line: list the scenes, or render those wanted and join the film.
+
+    Fails with SystemExit (a message, exit code 1) when the page or the sound file is not there, no film is
+    named, ffmpeg is missing, a --scene number is not a scene, or a scene was not made."""
     parser = argparse.ArgumentParser()
     parser.add_argument("page")
     parser.add_argument("video", nargs="?", help="the film to join the scenes into")

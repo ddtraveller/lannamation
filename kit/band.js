@@ -64,6 +64,9 @@ var BAND_WOOD = "#6e2f1f", BAND_DARK = "#3e1d12", BAND_SHELL = "#5a3a22", BAND_P
     BAND_STRING = "rgba(235, 232, 220, 0.9)", BAND_BAMBOO = "#cfa95c", BAND_GOLD = "#e0b23a";
 
 // Fill the path the pen holds, and ink it in a darker line of its own colour.
+// colour: "#rrggbb"; width: the line in pixels of the pen's frame (1.6 when left out).
+// Returns nothing. It leaves pen's fillStyle, strokeStyle, lineWidth and lineJoin set as it set them.
+// e.g. pen.beginPath(); pen.arc(0, 0, 10, 0, 7); bandFill(BAND_SHELL, 1.4);
 function bandFill(colour, width) {
   pen.fillStyle = colour;
   pen.fill();
@@ -75,6 +78,10 @@ function bandFill(colour, width) {
 
 // A turned piece: a solid of round section along u, from u0 to u1, with the
 // half-widths "halves" spread evenly along it (a spike, a spire, a peg).
+// u0, u1 and the halves are in pixels of the pen's frame (an instrument's frame, along its length);
+// halves: a list of two or more half-widths; colour: "#rrggbb". Returns nothing: it draws with pen
+// (and leaves pen's fill and line set, as bandFill() does).
+// e.g. bandTurned(0, 22, [0.6, 2, 2.6, 4.2], BAND_DARK);
 function bandTurned(u0, u1, halves, colour) {
   var n = halves.length - 1, k;
   pen.beginPath();
@@ -85,6 +92,9 @@ function bandTurned(u0, u1, halves, colour) {
 }
 
 // Strings: "count" fine lines from u0 to u1, "gap" apart about the middle.
+// u0, u1, gap: pixels of the pen's frame; count: how many strings. Returns nothing: it draws with pen
+// and leaves its strokeStyle and lineWidth set.
+// e.g. bandStrings(35, 172, 2, 2.2);
 function bandStrings(u0, u1, count, gap) {
   pen.strokeStyle = BAND_STRING;
   pen.lineWidth = 0.9;
@@ -97,6 +107,10 @@ function bandStrings(u0, u1, count, gap) {
   pen.stroke();
 }
 
+// bandFrame(x, y, size, angle) saves pen and moves its frame to (x, y), turned by angle (radians,
+// 0 when left out) and scaled by size (1 when left out). Returns nothing. It leaves pen saved and
+// moved: the caller must pen.restore() when the instrument is drawn.
+// e.g. bandFrame(400, 900, 1, -Math.PI / 2); bandTurned(0, 22, [1, 3], BAND_DARK); pen.restore();
 function bandFrame(x, y, size, angle) {
   pen.save();
   pen.translate(x, y);
@@ -105,6 +119,9 @@ function bandFrame(x, y, size, angle) {
 }
 
 // The salo, from the tip of its spike at (x, y) along "angle"; 214 long at size 1.
+// x, y: pixels of the sheet; size: 1 when left out; angle: radians, 0 (pointing right) when left out.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. salo(600, 900, 1, -Math.PI / 2);   // standing on its spike
 function salo(x, y, size, angle) {
   bandFrame(x, y, size, angle);
   bandTurned(0, 22, [0.6, 2, 2.6, 4.2, 3, 4.6, 5], BAND_DARK);           // the spike, turned, with two beads
@@ -156,6 +173,9 @@ function salo(x, y, size, angle) {
 
 // The salo's bow, from its frog at (x, y) along "angle"; 190 long. The stick
 // arches to the side of +90 degrees from "angle", the hair runs straight.
+// x, y: pixels of the sheet; size: 1 when left out; angle: radians, 0 when left out.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. saloBow(560, 840, 1, 0.05);
 function saloBow(x, y, size, angle) {
   bandFrame(x, y, size, angle);
   pen.lineCap = "round";
@@ -183,6 +203,9 @@ function saloBow(x, y, size, angle) {
 
 // The sueng, with the middle of its round body at (x, y) and its neck along
 // "angle"; 190 long, the body 60 across, at size 1.
+// x, y: pixels of the sheet; size: 1 when left out; angle: radians, 0 (neck to the right) when left out.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. sueng(700, 880, 1, -0.4);
 function sueng(x, y, size, angle) {
   bandFrame(x, y, size, angle);
   pen.beginPath();                                                      // the neck and the carved head
@@ -247,6 +270,9 @@ function sueng(x, y, size, angle) {
 }
 
 // The sueng's pick, a long thin blade of horn, held at (x, y) along "angle".
+// 26 long at size 1. x, y: pixels of the sheet; size: 1 when left out; angle: radians, 0 when left out.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. suengPick(720, 860, 1, 2.5);
 function suengPick(x, y, size, angle) {
   bandFrame(x, y, size, angle);
   pen.beginPath();
@@ -262,6 +288,9 @@ function suengPick(x, y, size, angle) {
 
 // The pi chum, from the end that goes in the mouth at (x, y) along "angle";
 // 126 long at size 1 (the middle of its five sizes; size scales it).
+// x, y: pixels of the sheet; size: 1 when left out; angle: radians, 0 when left out.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. piChum(500, 760, 1, 1.03);
 function piChum(x, y, size, angle) {
   bandFrame(x, y, size, angle);
   pen.beginPath();                                                      // the pipe of bamboo, a little wider below
@@ -298,6 +327,9 @@ function piChum(x, y, size, angle) {
 // the pegs, 170 before it to the curl. The coconut hangs on the side of +90
 // degrees from "angle" (under the stick when it lies to the right), the
 // other side when "flip" is true.
+// x, y: pixels of the sheet; size: 1 when left out; angle: radians, 0 when left out; flip: true or false.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. phinPhia(800, 800, 1, 0.8, true);
 function phinPhia(x, y, size, angle, flip) {
   bandFrame(x, y, size, angle);
   if (flip) { pen.scale(1, -1); }
@@ -357,6 +389,11 @@ function phinPhia(x, y, size, angle, flip) {
 //   a, b        where the wrist of the near arm (A) and of the far arm (B) goes
 //   bow         the salo's bow: its frog and its angle
 //   fingers     the curls of the fingers on the instrument, as person() takes them
+// bandHold(kind, p) gives back how a player holds one instrument at beat p.
+// kind: "salo", "sueng", "pichum" or anything else (the phin phia); p: the beat, a number of beats
+// (seconds / BEAT). Returns {at, angle, a, b} and, by kind: bow [x, y, angle] (salo), pick [x, y,
+// angle] (sueng), flip (phin phia), grip or fingers (true). Changes nothing outside itself.
+// e.g. var hold = bandHold("sueng", clock / BEAT);
 function bandHold(kind, p) {
   var beat = Math.sin(Math.PI * p), twice = Math.sin(2 * Math.PI * p);
   if (kind === "salo") {                       // upright before the body, its spike on the floor; the near hand
@@ -386,6 +423,14 @@ function bandHold(kind, p) {
 // parasol from the hands. The phin phia is played on the bare chest: its
 // player has no shirt and no cloth over the shoulder. "late" is seconds added to its clock,
 // so two players do not move as one. Gives back the joints person() gives.
+//   x, y   where the player sits on the floor, pixels of the sheet (person()'s (x, y), with floor "cross")
+//   kind   "salo", "sueng", "pichum" or "phinphia"; another name is reported by checkName() and plays the salo
+//   look   a person's look (its keys: person()'s, in oldcartoon.js); its own floor is kept, else "cross";
+//          size and face also place the instrument. Left out: {}
+//   late   seconds added to the kit's clock (0 when left out)
+// It reads the globals clock and BEAT (the film's seconds a beat). Returns what person() returns,
+// the joints it drew; it draws with pen through person(), and leaves pen as person() does.
+// e.g. musician(760, 940, "salo", cast("fellow", {face: -1}), 0.25);
 function musician(x, y, kind, look, late) {
   if (BAND_KINDS.indexOf(kind) < 0) {
     checkName("The musician's instrument", kind, {salo: 1, sueng: 1, pichum: 1, phinphia: 1});

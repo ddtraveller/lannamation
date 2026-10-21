@@ -73,6 +73,10 @@ var BACKDROP_SETS = {};
 
 // The sky: "high" at the top, "low" at the horizon, and a glow of another
 // colour just above the horizon if one is given.
+// brush: a canvas 2D context (a set's sheet, WIDE x 1080); horizon: y in pixels of the sheet; high,
+// low, glow: CSS colours (glow may be left out). It fills the whole sheet. Returns nothing; it leaves
+// brush's fillStyle set.
+// e.g. bdSky(brush, 520, "#234f9a", "#d6e8f4", "#f3b27a");
 function bdSky(brush, horizon, high, low, glow) {
   var fade = brush.createLinearGradient(0, 0, 0, horizon);
   fade.addColorStop(0, high);
@@ -86,6 +90,10 @@ function bdSky(brush, horizon, high, low, glow) {
 
 // The sun, at the right, and the moon, at the left, near the top corners.
 // "crescent" makes the moon a crescent with three stars by it.
+// brush: a canvas 2D context; crescent: true for the crescent and its stars, else a full white moon.
+// The sun is at (WIDE - 150, 112), the moon at (150, 112), pixels of the sheet. Returns nothing; it
+// leaves brush's fill and line set.
+// e.g. bdSunMoon(brush, true);
 function bdSunMoon(brush, crescent) {
   brush.lineWidth = 2;
   brush.beginPath();                                // the sun: a disc with a ring round it
@@ -128,6 +136,12 @@ function bdSunMoon(brush, crescent) {
 // behind hills, and where those dip its level foot would show, with the sky
 // under it: every range in this file gives the base of its first hills less
 // its own base, and 10 more, so that the foot is always behind the ridge.
+//   brush          a canvas 2D context
+//   x, base        the middle of the range's foot, pixels of the sheet
+//   wide, tall     its size in pixels (one peak for every 150 of wide, at least 3)
+//   seed           a number; under: pixels the sides run on below base (0 or left out: none)
+// Returns nothing: it draws with brush, and leaves its fill and line set (round joins and caps).
+// e.g. bdSnow(brush, 720, 520, 1500, 300, 1, 90);
 function bdSnow(brush, x, base, wide, tall, seed, under) {
   var count = Math.max(3, Math.round(wide / 150)), order = [], n;
   for (n = 0; n < count; n++) { order.push(n); }
@@ -173,6 +187,10 @@ function bdSnow(brush, x, base, wide, tall, seed, under) {
 // A formation of crags: angular stones that stand up, each with a blue outer
 // zone and a green inner one, darker at the edge, and a line of gold. A
 // stone here and there is brown.
+// brush: a canvas 2D context; x, base: the middle of the formation's foot, pixels of the sheet;
+// size: 1 is stones 170 to 360 tall; seed: a number; count: how many stones (4 when left out).
+// Returns nothing: it draws with brush, and leaves its fill and line set.
+// e.g. bdCrags(brush, 300, 900, 1.2, 2, 5);
 function bdCrags(brush, x, base, size, seed, count) {
   var shapeOf = [[-0.5, 0], [-0.42, -0.3], [-0.56, -0.35], [-0.3, -0.68], [-0.38, -0.74], [-0.08, -1], [0.14, -0.9], [0.3, -0.6],
                  [0.2, -0.55], [0.46, -0.26], [0.5, 0]];
@@ -208,6 +226,10 @@ function bdCrags(brush, x, base, size, seed, count) {
 
 // Water, as a thangka paints it: zones divided by wavy white lines, each
 // zone darkest at the front. The box (x, y, wide, tall) holds it.
+// brush: a canvas 2D context; x, y, wide, tall: the box, pixels of the sheet; colour: the deep
+// "#rrggbb" ("#2f6fa8" when left out). Returns nothing: it draws with brush, clipped to the box,
+// and leaves brush as it found it.
+// e.g. bdWater(brush, 0, 860, WIDE, 220, "#3f7fb8");
 function bdWater(brush, x, y, wide, tall, colour) {
   var zones = Math.max(2, Math.round(tall / 30)), deep = colour || "#2f6fa8", n, at;
   brush.save();
@@ -238,6 +260,10 @@ function bdWater(brush, x, y, wide, tall, colour) {
 
 // A cascade: it falls from (x, top) to "bottom", a little wider as it goes,
 // its lines following the fall, and ends in a splash (the kit's foam).
+// brush: a canvas 2D context; x, top, bottom, wide: pixels of the sheet (wide: its width at the
+// foot is about 1.2 times it). Returns nothing: it draws with brush (and the kit's foam()), and
+// leaves its fill and line set.
+// e.g. bdCascade(brush, 700, 300, 860, 80);
 function bdCascade(brush, x, top, bottom, wide) {
   brush.beginPath();
   brush.moveTo(x - wide * 0.3, top);
@@ -265,6 +291,10 @@ function bdCascade(brush, x, top, bottom, wide) {
 
 // A layered cloud, for high in the sky: thin bars of several colours, one
 // under another, joined by short necks.
+// brush: a canvas 2D context; x, y: the middle of the top bar, pixels of the sheet; wide: the
+// longest bar, pixels; colours: a list of CSS colours, one bar each, 22 apart; seed: a number.
+// Returns nothing: it draws with brush, and leaves its fill and line set.
+// e.g. bdLayers(brush, 900, 160, 360, ["#f4d6d6", "#d6e4f4", "#f6eebc"], 3);
 function bdLayers(brush, x, y, wide, colours, seed) {
   brush.lineJoin = "round";
   for (var n = 0; n < colours.length; n++) {
@@ -285,6 +315,9 @@ function bdLayers(brush, x, y, wide, colours, seed) {
 }
 
 // A smooth line through a list of points, as points close together.
+// points: a list of two or more [x, y]. Returns a new list of [x, y], 14 to each step and the last
+// point, on a smooth curve through them. Changes nothing.
+// e.g. var line = bdCurve([[100, 400], [300, 250], [500, 330]]);
 function bdCurve(points) {
   var out = [];
   for (var n = 0; n < points.length - 1; n++) {
@@ -305,6 +338,11 @@ function bdCurve(points) {
 // A rainbow, as a thangka has one: a ribbon of stripes along a line that
 // twists and ends in the middle of the air. It is "wideA" across at its
 // start and "wideB" at its end.
+// brush: a canvas 2D context; points: [x, y] list the rainbow runs along (bdCurve() smooths it),
+// pixels of the sheet; wideA, wideB: its width in pixels at the start and the end; colours: the
+// stripes, a list of CSS colours (five from red to blue when left out). Returns nothing: it draws
+// with brush, and leaves its fill and line set.
+// e.g. bdRainbow(brush, [[200, 500], [420, 260], [700, 300], [760, 420]], 40, 12);
 function bdRainbow(brush, points, wideA, wideB, colours) {
   var line = bdCurve(points), last = line.length - 1, n, k;
   var stripes = colours || ["#d9453a", "#f0a23a", "#f6dc5a", "#4f9a5a", "#3f6fb8"];
@@ -333,6 +371,10 @@ function bdRainbow(brush, points, wideA, wideB, colours) {
 
 // A jewel tree: a small tree whose leaves are each drawn, in rings about its
 // middle, with fruit at the heart, and strings of gems hanging from it.
+// brush: a canvas 2D context; x, base: its foot, pixels of the sheet; size: 1 is about 240 tall;
+// seed: a number; leaf: the green "#rrggbb" ("#2f7a4a" when left out). Returns nothing: it draws
+// with brush, and leaves brush as it found it.
+// e.g. bdJewelTree(brush, 200, 800, 1.1, 1);
 function bdJewelTree(brush, x, base, size, seed, leaf) {
   var n, colour = leaf || "#2f7a4a";
   brush.save();
@@ -391,6 +433,10 @@ function bdJewelTree(brush, x, base, size, seed, leaf) {
 
 // A hall of the Himalaya: walls that lean in, a dark red band under a flat
 // roof, dark windows, and a gilded roof on top if "gilded" is true.
+// brush: a canvas 2D context; x, base: the middle of its foot, pixels of the sheet; wide, tall: the
+// walls' size in pixels (the gilded roof adds 0.7 of tall above); gilded: true or false.
+// Returns nothing: it draws with brush, and leaves its fill and line set.
+// e.g. bdHall(brush, 720, 860, 420, 220, true);
 function bdHall(brush, x, base, wide, tall, gilded) {
   brush.lineJoin = "round";
   brush.beginPath();
@@ -509,6 +555,9 @@ function bdHall(brush, x, base, wide, tall, gilded) {
 
 // A stupa: steps, a white dome, a square, a gilded spire of rings, and a sun
 // and moon at its top.
+// brush: a canvas 2D context; x, base: the middle of its foot, pixels of the sheet; size: 1 is about
+// 260 tall. Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. bdStupa(brush, 980, 620, 0.8);
 function bdStupa(brush, x, base, size) {
   brush.save();
   brush.translate(x, base);
@@ -569,6 +618,10 @@ function bdStupa(brush, x, base, size) {
 // white, red, green and yellow, over and over. Given the second t, the line
 // breathes a little in the breeze and each flag swings from it, its foot
 // moving, each a little behind the one before; without t it hangs still.
+// brush: a canvas 2D context; x1, y1, x2, y2: the two ends, pixels of the sheet; t: seconds, or
+// left out for still flags. One flag to every 26 pixels across. Returns nothing: it draws with
+// brush, and leaves its fill and line set. A backdrop's sway: backdropSway("monastery", t).
+// e.g. bdFlags(pen, 880, 600, 1180, 530, t);
 function bdFlags(brush, x1, y1, x2, y2, t) {
   var colours = ["#3f6fb8", "#f6f1e6", "#c8382c", "#3f8f5a", "#f0c23a"], count = Math.round(Math.abs(x2 - x1) / 26);
   var sag = t === undefined ? 34 : 34 + 3 * Math.sin(t * 0.8);
@@ -595,6 +648,10 @@ function bdFlags(brush, x1, y1, x2, y2, t) {
 
 // A crane, standing: white, with a black neck, a red crown and long legs.
 // "facing" is 1 or -1.
+// brush: a canvas 2D context; x, base: its feet, pixels of the sheet; size: 1 is about 150 tall;
+// facing: 1 (bill to the right) or -1. Returns nothing: it draws with brush, and leaves brush as it
+// found it.
+// e.g. bdCrane(brush, 1100, 900, 0.9, -1);
 function bdCrane(brush, x, base, size, facing) {
   brush.save();
   brush.translate(x, base);
@@ -657,6 +714,9 @@ function bdCrane(brush, x, base, size, facing) {
 // picture's own colours left in it ("keep", 0 to 1), as a black thangka may
 // be darkly tinted. A black or a red thangka has light lines on a dark
 // ground; a gold one has dark lines on a light ground.
+// set: a canvas (not a context) already painted; ground, line: "#rrggbb"; keep: 0 to 1. It reads and
+// writes every pixel of set in place (slow: once, when the set is made). Returns nothing.
+// e.g. bdOneGround(set, "#121012", "#e0b23a", 0.08);
 function bdOneGround(set, ground, line, keep) {
   var wide = set.width, high = set.height, brush = set.getContext("2d");
   var picture = brush.getImageData(0, 0, wide, high), data = picture.data, light = new Float32Array(wide * high), n;
@@ -688,6 +748,9 @@ function bdOneGround(set, ground, line, keep) {
 
 // The ground people stand on, from "top" to the foot of the sheet: "far" is
 // its colour at the top and "near" at the foot.
+// brush: a canvas 2D context; top: y in pixels of the sheet; far, near: CSS colours. It fills from
+// top to the foot of the sheet. Returns nothing; it leaves brush's fillStyle set.
+// e.g. bdFloor(brush, 860, "#9ab868", "#6f9a4a");
 function bdFloor(brush, top, far, near) {
   var fade = brush.createLinearGradient(0, top, 0, 1080);
   fade.addColorStop(0, far);
@@ -698,6 +761,10 @@ function bdFloor(brush, top, far, near) {
 
 // Tufts of grass scattered between two heights, with a small flower on one
 // in three. A tuft is three blades, each a leaf of the kit's with its line.
+// brush: a canvas 2D context; top, bottom: y in pixels of the sheet; count: how many tufts, across
+// the whole width; seed: a number. Returns nothing: it draws with brush (the kit's paintLeaf() and
+// blossom()).
+// e.g. bdTufts(brush, 880, 1060, 60, 4);
 function bdTufts(brush, top, bottom, count, seed) {
   var petals = ["#f28fa8", "#f4c542", "#ffffff", "#e86f6f"];
   for (var n = 0; n < count; n++) {
@@ -716,6 +783,9 @@ function bdTufts(brush, top, bottom, count, seed) {
 
 // Something of the kit's at another size, for what stands far off: "paint"
 // draws it standing at (0, 0), and it is put at (x, base), "size" times as big.
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: a scale; paint: a function of no
+// arguments that draws on brush standing on (0, 0). Returns nothing; it leaves brush as it found it.
+// e.g. bdSized(brush, 1200, 640, 0.4, function () { house(brush, 0, 0, 1); });
 function bdSized(brush, x, base, size, paint) {
   brush.save();
   brush.translate(x, base);
@@ -726,6 +796,9 @@ function bdSized(brush, x, base, size, paint) {
 
 // A line of trees far off: the tops of their crowns side by side along a
 // height, each a pad of leaves of the kit's, no two the same size.
+// brush: a canvas 2D context; left, right, y: pixels of the sheet; r: a pad's radius in pixels;
+// colour: "#rrggbb"; seed: a number. Returns nothing: it draws with brush (the kit's leafPad()).
+// e.g. bdTreeLine(brush, 0, WIDE, 640, 30, "#5f8a54", 2);
 function bdTreeLine(brush, left, right, y, r, colour, seed) {
   for (var x = left, n = 0; x < right; n++) {
     var size = r * (0.75 + 0.5 * dice(seed * 41 + n));
@@ -736,6 +809,9 @@ function bdTreeLine(brush, left, right, y, r, colour, seed) {
 
 // A field hut, where a farmer rests at noon: a floor on four posts, open on
 // every side, under a roof of thatch.
+// brush: a canvas 2D context; x, base: the middle of its foot, pixels of the sheet; size: 1 is 214
+// tall and 252 wide. Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. bdHut(brush, 1100, 860, 0.7);
 function bdHut(brush, x, base, size) {
   function roof() {
     brush.beginPath();
@@ -785,6 +861,9 @@ function bdHut(brush, x, base, size) {
 // A long boat of the river, seen from the side: a hull that rises at both
 // ends and a roof of matting over its middle. "facing" is 1 or -1: the way
 // its prow points.
+// brush: a canvas 2D context; x, y: the waterline under its middle, pixels of the sheet; size: 1 is
+// about 400 long; facing: 1 or -1. Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. bdBoat(brush, 600, 760, 0.8, 1);
 function bdBoat(brush, x, y, size, facing) {
   brush.save();
   brush.translate(x, y);
@@ -846,6 +925,9 @@ function bdBoat(brush, x, y, size, facing) {
 // A chedi of the north, gilded: a foot of white stone in three steps, a
 // square body with a niche in it, a bell, a spire of rings and an umbrella
 // at the top. It is lit down one side and in shade down the other.
+// brush: a canvas 2D context; x, base: the middle of its foot, pixels of the sheet; size: 1 is about
+// 300 tall. Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. bdChedi(brush, 980, 520, 0.5);
 function bdChedi(brush, x, base, size) {
   var gold = "#e0b23a", line = "rgba(110, 70, 20, 0.8)", n;
   function turn(left, top, wide, tall) {            // what is round or square is lit on the left and in shade on the right
@@ -928,6 +1010,9 @@ function bdChedi(brush, x, base, size) {
 
 // A haystack: rice straw heaped round a pole after the harvest, in layers
 // that lie over one another as a roof's do.
+// brush: a canvas 2D context; x, base: the middle of its foot, pixels of the sheet; size: 1 is about
+// 250 tall with its pole. Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. bdHaystack(brush, 1250, 880, 0.8);
 function bdHaystack(brush, x, base, size) {
   function heap() {
     brush.beginPath();
@@ -963,6 +1048,10 @@ function bdHaystack(brush, x, base, size) {
 // A paper lantern of the north, the kind that hangs: a body of eight sides,
 // wider at its middle, a band of gold at its top and its foot, and three
 // tails of paper under it. (x, y) is where its string is tied.
+// brush: a canvas 2D context; x, y: the tie, pixels of the sheet; size: 1 is about 106 from the tie
+// to the longest tail; colour: the paper's "#rrggbb" (needed). Returns nothing: it draws with brush,
+// and leaves brush as it found it. (khom.js has the kit's full lantern, khom().)
+// e.g. bdKhom(brush, 400, 340, 1.15, "#e86f6f");
 function bdKhom(brush, x, y, size, colour) {
   var pale = blend(colour, "#fff6e0", 0.45), n;
   brush.save();
@@ -1025,6 +1114,10 @@ function bdKhom(brush, x, y, size, colour) {
 // A market stall: a table of goods heaped in baskets, under a cloth in
 // stripes held up on four bamboo poles. "wide" is how wide its table is and
 // "cloth" the colour of the stripes; "seed" changes what it sells.
+// brush: a canvas 2D context; x, base: the middle of its foot, pixels of the sheet; wide: its table
+// in pixels (the stall stands 300 tall); cloth: the stripes' "#rrggbb"; seed: a whole number.
+// Returns nothing: it draws with brush, and leaves its fill and line set.
+// e.g. bdStall(brush, 400, 900, 300, "#d8423a", 1);
 function bdStall(brush, x, base, wide, cloth, seed) {
   var half = wide / 2, fruits = ["#f08a2c", "#f4c542", "#8fc45a", "#d8423a", "#7a4a7a", "#c9a06a"], n, k;
   var count = Math.max(2, Math.round(wide / 84)), stripes = Math.max(4, Math.round(wide / 62) * 2);
@@ -1151,6 +1244,9 @@ function bdStall(brush, x, base, wide, cloth, seed) {
 
 // The green ground every one of the thangka's twelve ends in, for people to stand on: two
 // low hills and the field before them.
+// brush: a canvas 2D context; colour: the near hill's "#rrggbb"; shape: a number, the kit's hills()'s.
+// Returns nothing: it draws two rows of hills with brush, at y 900 and 1010.
+// e.g. bdGround(brush, "#6aa350", 3.1);
 function bdGround(brush, colour, shape) {
   hills(brush, WIDE, 900, 70, shape, colour);
   hills(brush, WIDE, 1010, 60, shape + 1.3, blend(colour, "#2f5a2a", 0.25));
@@ -1885,6 +1981,13 @@ var BACKDROP_HANGING = {
 // The backdrop called "name", painted the first time it is asked for and kept.
 // With "live" true, it leaves out what hangs in it (BACKDROP_HANGING), for a
 // film that draws that swaying with backdropSway().
+//   name   one of BACKDROPS' names (above): paddy, river, doi, waterfall, village, market, yipeng, meadow,
+//          crags, lake, sky, midnight, vermilion, golden, hermitage, longlife, garden, monastery, valley;
+//          another warns and gives the meadow
+//   live   true: the set without what hangs in it (market, monastery), for backdropSway()
+// Returns a canvas, WIDE x 1080 pixels. The first call for a name paints it (slow) and keeps it in
+// BACKDROP_SETS; later calls give the same canvas.
+// e.g. pen.drawImage(backdrop("market", true), 0, 0); backdropSway("market", t);
 function backdrop(name, live) {
   if (!BACKDROP_PAINTERS[name]) {
     warn('backdrops.js: there is no backdrop called "' + name + '". They are: '
@@ -1904,6 +2007,9 @@ function backdrop(name, live) {
 
 // What hangs in the backdrop "name", swaying at the second t, drawn on the
 // kit's sheet "pen"; nothing for a backdrop with nothing hanging in it.
+// name: a backdrop's name; t: the time in seconds. Returns nothing: it draws with pen, and only for
+// "market" and "monastery" (BACKDROP_HANGING); any other name draws nothing.
+// e.g. backdropSway("monastery", t);
 function backdropSway(name, t) {
   if (BACKDROP_HANGING[name]) { BACKDROP_HANGING[name](pen, t); }
 }

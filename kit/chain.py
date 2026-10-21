@@ -18,6 +18,11 @@ rendered, without rendering them again; or one frame put right, with the frame a
 last SECONDS of the one before fade out, picture and sound, and the first SECONDS of the one after fade in (owner,
 2026-10-20: "When switching from the intro to the SLS scene fade out and back in over a second or two to give the
 scenes a transition"). The fades are taken from the films' own ends, so nothing in the joined film moves.
+
+It needs ffmpeg and ffprobe on the PATH. It writes the joined film where it is named, and prints the
+second each film starts at in it. It ends with exit code 0; 1 with a message when ffmpeg stops; with
+fewer than two films it prints this and ends with exit code 1. ffprobe failing on a
+film stops it with a CalledProcessError.
 """
 import json
 import subprocess
@@ -28,12 +33,17 @@ import render
 
 
 def probe(path, what):
+    """What ffprobe says of a file, as a dict: path, and what the list of ffprobe's words what asks for.
+
+    Fails with subprocess.CalledProcessError when ffprobe cannot read the file.
+    e.g. probe("a.mp4", ["-show_entries", "format=duration"])["format"]["duration"]"""
     found = subprocess.run(["ffprobe", "-v", "error"] + what + ["-of", "json", path], capture_output=True, text=True,
                            check=True)
     return json.loads(found.stdout)
 
 
 def main():
+    """The command line: chain.py OUT FILM [FILM...] [--over PICTURE,FROM,TO[,FADE]] [--fade JOIN,SECONDS]."""
     if len(sys.argv) < 4:
         raise SystemExit(__doc__)
     args = sys.argv[1:]

@@ -5,6 +5,11 @@
 Each second named is drawn (the page pre-rolls the cloth itself), the box
 (x y w h, screen pixels) is cut out at full size, and all the cuts stand in a
 row after the reference, scaled to the same height.
+
+It needs Google Chrome (through Playwright) and Pillow. --box is x y w h in screen pixels of the
+1920 x 1080 picture (default 340 60 460 720); --ref-box crops the reference first. It writes one JPEG
+where it is named and prints its size and the page's errors; exit code 0 even when the page reported an
+error. It waits 30 s for the page to load, which is too short for the hero film.
 """
 import argparse
 import io
@@ -15,6 +20,11 @@ from playwright.sync_api import sync_playwright
 
 
 def shots(page_file, seconds, box):
+    """The box cut from the page's picture at each second named: (cuts, errors).
+
+    page_file: the page. seconds: a list of seconds. box: [x, y, w, h] in screen pixels. cuts are PIL images,
+    w x h each; errors are what the page reported.
+    e.g. shots("fonlep.html", [1, 3.2], [340, 60, 460, 720])"""
     cuts, errors = [], []
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome")
@@ -31,6 +41,7 @@ def shots(page_file, seconds, box):
 
 
 def main():
+    """The command line: peek.py PAGE OUT [--box X Y W H] [--ref FILE [--ref-box X Y W H]] SECONDS..."""
     parser = argparse.ArgumentParser()
     parser.add_argument("page")
     parser.add_argument("out")

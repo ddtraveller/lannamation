@@ -29,6 +29,12 @@ FONTS = "Promise.all(Array.from(document.fonts).map(function (f) { return f.load
 
 
 def open_page(browser, page_file, errors=None):
+    """A new tab in browser with the kit page loaded as the checks load it: the page (Playwright's).
+
+    browser: a Playwright browser. page_file: the page, a Path. errors: a list the page's errors are added
+    to as they come, or None to keep none. The tab is 1920 x 1080; the page's web fonts are loaded and
+    rendering is on, so the page draws only when asked. Waits up to 180 s for it to load.
+    e.g. page = open_page(browser, Path("village.html"), errors)"""
     page = browser.new_page(viewport={"width": 1920, "height": 1080})
     if errors is not None:
         page.on("pageerror", lambda error: errors.append(str(error)))
@@ -39,7 +45,11 @@ def open_page(browser, page_file, errors=None):
 
 
 def frame_at(page, t):
-    """Second t of the page, as the film's sheet shows it, at the picture's size."""
+    """Second t of the page, as the film's sheet shows it, at the picture's size.
+
+    page: from open_page(). t: the second. Gives back a numpy array (height, width, 3) of int16, the colours
+    0 to 255. Draws the page at t (it leaves the page at that second).
+    e.g. frame_at(page, 2.5)"""
     data = page.evaluate(SHEET, [t])
     picture = Image.open(io.BytesIO(base64.b64decode(data.split(",", 1)[1]))).convert("RGB")
     wide = page.evaluate("WIDE")
@@ -49,9 +59,13 @@ def frame_at(page, t):
 
 
 def differ(a, b):
-    """(how many pixels differ by more than 24 in a colour, how many of those a shift of one pixel does not explain)."""
+    """(how many pixels differ by more than 24 in a colour, how many of those a shift of one pixel does not explain).
+
+    a, b: two pictures of one size, as frame_at() gives them.
+    e.g. differ(frame_at(page, 1), frame_at(page, 1))"""
     apart = (np.abs(a - b) > 24).any(axis=2)
     def outside(one, other):
+        """Where one has a colour more than 24 outside what other has within one pixel round it: a mask (height, width)."""
         low = minimum_filter(other, size=(3, 3, 1), mode="nearest")
         high = maximum_filter(other, size=(3, 3, 1), mode="nearest")
         return ((one < low - 24) | (one > high + 24)).any(axis=2)

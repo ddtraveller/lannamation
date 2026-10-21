@@ -8,6 +8,13 @@ It opens the page in Chrome with no window, asks for one frame at a time,
 takes a picture of each, and hands the pictures to ffmpeg. Then it says
 what the page said: an error, or a warning from the kit (a name it does
 not know, which changes nothing).
+
+It needs Google Chrome (Playwright drives it: channel "chrome") and ffmpeg on the PATH. The page must
+have draw(t), the switch rendering, and LENGTH or DURATION (the film's seconds), as every kit page does.
+It writes the video where it is named, 1920 x 1080 at 30 frames a second (H.264; AAC sound with --audio),
+and prints how many frames it made and how long that took. It ends with exit code 0; 1 when the page
+reported an error (the video is made all the same) or when ffmpeg stopped (no video); 2 for arguments
+argparse does not take. From Python: render.render(page, video, audio, start, end, fast, sets).
 """
 import argparse
 import json
@@ -25,6 +32,13 @@ HEIGHT = 1080
 
 
 def ffmpeg_command(video, audio, start=0, fast=False):
+    """The ffmpeg command that reads frames on its stdin and encodes them as render.py does: a list of words.
+
+    video: the file to write. audio: a sound file to lay under the pictures, or None for none.
+    start: the second of the sound the first frame stands at (for a part of a film; default 0).
+    fast: True for the encoder's usual settings (quicker, softer); False (the default) for clean ink lines.
+    Changes nothing; chain.py takes its picture settings from it as well.
+    e.g. ffmpeg_command("hello.mp4", None)"""
     # ffmpeg reads the pictures from this program, one after another
     command = ["ffmpeg", "-y", "-loglevel", "error",
                "-f", "image2pipe", "-framerate", str(FPS), "-i", "-"]
@@ -47,6 +61,16 @@ def ffmpeg_command(video, audio, start=0, fast=False):
 
 
 def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=()):
+    """Render a kit page to a video file, frame by frame, in Chrome with no window: gives back nothing.
+
+    page_file: the page (a path). video: the file to write. audio: a sound file, or None.
+    start, end: the seconds to render from and to (default 0 to the page's LENGTH; end is held to LENGTH).
+    fast: JPEG frames and the encoder's usual settings. sets: (name, value) pairs set on window before
+    the first frame (render.py --set).
+    It prints the frames made, the time it took, the kit's warnings and the page's errors.
+    It fails with SystemExit (a message) when ffmpeg stops, and SystemExit(1) when the page reported an
+    error; then the video is written all the same. scenes.py calls it once for each scene.
+    e.g. render("hello.html", "hello.mp4", None, 0.0, 5.0)"""
     started = time.time()
     errors = []
     with sync_playwright() as playwright:
@@ -96,6 +120,10 @@ def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=()):
 
 
 def main():
+    """The command line: read the arguments, check that ffmpeg and the sound file are there, render.
+
+    Fails with SystemExit (a message, exit code 1) when ffmpeg is missing, the sound file is not there,
+    or --to does not come after --from."""
     parser = argparse.ArgumentParser()
     parser.add_argument("page")
     parser.add_argument("video")

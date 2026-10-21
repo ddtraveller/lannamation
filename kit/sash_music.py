@@ -17,6 +17,9 @@ sueng's paired strings are; the chord a soft bowed tone with overtones and a slo
 skin as well as a body; the ching is inharmonic partials that ring and fade. In stereo, with the echo bounced
 between the ears and a room (noise dying away, darker as it dies). The notes and beats are the old ones.
 Needs numpy, scipy and soundfile. sash.wav is 32-bit float, so sash_narrate.py mixes it without rounding.
+
+It writes sash.wav in the folder it is run from (stereo, 32-bit float, 44.1 kHz), prints its length,
+and ends with exit code 0. score.py imports its instruments (string, pad, drum, ching, room, place, lowpass).
 """
 import random
 
@@ -36,11 +39,20 @@ CHORDS = [[110.0, 164.81, 220.0, 261.63],
 
 
 def lowpass(x, hz, order=2):
+    """x with what is above hz taken away (a Butterworth low-pass of the given order): a numpy array.
+
+    x: samples at RATE. hz: where it cuts. order: how steeply (default 2).
+    e.g. lowpass(noise, 1400)"""
     return sosfilt(butter(order, hz, "low", fs=RATE, output="sos"), x)
 
 
 def string(frequency, seconds=1.8, brightness=5000, decay=0.996, seed=0):
-    """A plucked string (Karplus-Strong): a burst of noise going round a delay line that averages as it goes."""
+    """A plucked string (Karplus-Strong): a burst of noise going round a delay line that averages as it goes.
+
+    frequency: in hz. seconds: how long (default 1.8). brightness: the burst's low-pass, in hz (default 5000).
+    decay: how much of the sound each trip round keeps (0 to 1, default 0.996). seed: the burst's noise.
+    Gives back the samples, a numpy array.
+    e.g. string(220.0, seconds=2.4, seed=3)"""
     period = max(2, int(round(RATE / frequency - 0.5)))
     rng = numpy.random.default_rng(seed)
     block = lowpass(rng.uniform(-1, 1, period), brightness)
@@ -57,14 +69,21 @@ def string(frequency, seconds=1.8, brightness=5000, decay=0.996, seed=0):
 
 
 def pluck(frequency, seed):
-    """One note of the tune, on two strings a few cents apart."""
+    """One note of the tune, on two strings a few cents apart.
+
+    frequency: in hz. seed: the first string's noise (the second takes seed + 1). Gives back the samples, 1.8 s.
+    e.g. pluck(TUNE_NOTES[3], 12)"""
     a = string(frequency, seed=seed)
     b = string(frequency * 1.0035, seed=seed + 1)
     return (a + 0.7 * b) * 0.32
 
 
 def pad(frequency, seconds, detune):
-    """A soft bowed tone with overtones and a slow vibrato, swelling in and out."""
+    """A soft bowed tone with overtones and a slow vibrato, swelling in and out.
+
+    frequency: in hz. seconds: how long. detune: how far off the note, as a fraction (0.002 is about 3 cents).
+    Gives back the samples, a numpy array.
+    e.g. pad(110.0, BEAT * 9, -0.002)"""
     t = numpy.arange(int(seconds * RATE)) / RATE
     vibrato = 1 + 0.003 * numpy.sin(2 * numpy.pi * 4.8 * t)
     phase = 2 * numpy.pi * frequency * (1 + detune) * numpy.cumsum(vibrato) / RATE
@@ -74,7 +93,9 @@ def pad(frequency, seconds, detune):
 
 
 def drum():
-    """A low drum: a body falling in pitch, and the slap of its skin."""
+    """A low drum: a body falling in pitch, and the slap of its skin. The samples, 0.45 s.
+
+    e.g. drum() * 0.6"""
     t = numpy.arange(int(0.45 * RATE)) / RATE
     body = numpy.sin(2 * numpy.pi * (65 + 55 * numpy.exp(-t * 28)) * t) * numpy.exp(-t * 11)
     body += 0.35 * numpy.sin(2 * numpy.pi * (104 + 80 * numpy.exp(-t * 30)) * t) * numpy.exp(-t * 16)
@@ -83,7 +104,9 @@ def drum():
 
 
 def ching():
-    """The small cymbals: inharmonic partials that ring and fade."""
+    """The small cymbals: inharmonic partials that ring and fade. The samples, 0.9 s.
+
+    e.g. ching()"""
     t = numpy.arange(int(0.9 * RATE)) / RATE
     partials = [(3150, 1.0), (4220, 0.7), (5380, 0.55), (6960, 0.4), (8830, 0.3), (11200, 0.2)]
     ring = sum(a * numpy.sin(2 * numpy.pi * f * t + f) for f, a in partials) * numpy.exp(-t * 7)
@@ -92,7 +115,11 @@ def ching():
 
 
 def room(seconds=1.4, seed=5):
-    """A room: noise dying away, darker as it dies, one impulse response per ear (sash_narrate.py uses it too)."""
+    """A room: noise dying away, darker as it dies, one impulse response per ear (sash_narrate.py uses it too).
+
+    seconds: how long it rings (default 1.4). seed: its noise. Gives back [left, right], two numpy arrays, each
+    scaled to an energy of 1.
+    e.g. left, right = room()"""
     t = numpy.arange(int(seconds * RATE)) / RATE
     rng = numpy.random.default_rng(seed)
     ears = []
@@ -104,7 +131,11 @@ def room(seconds=1.4, seed=5):
 
 
 def place(track, sound, at_second, pan=0.0):
-    """Add a mono sound to a stereo track at a second, panned from -1 (left) to 1 (right)."""
+    """Add a mono sound to a stereo track at a second, panned from -1 (left) to 1 (right).
+
+    track: a numpy array (2, samples); it is changed. sound: mono samples. at_second: where it starts (cut where the
+    track ends). pan: default 0, the middle. Gives back nothing.
+    e.g. place(track, ching(), 23.0, 0.45)"""
     start = int(at_second * RATE)
     end = min(track.shape[1], start + len(sound))
     if end <= start:
@@ -117,7 +148,10 @@ def place(track, sound, at_second, pan=0.0):
 def tune():
     """The tune, beat by beat, from one seeded chooser: for each beat, the
     note (an index into TUNE_NOTES), whether it is plucked on this beat, and
-    whether its octave is plucked half a beat after."""
+    whether its octave is plucked half a beat after.
+
+    Gives back a list of BEATS (note, plucked, octave) tuples, the same every time.
+    e.g. note, plucked, octave = tune()[0]"""
     chooser = random.Random(11)
     note = 3
     beats = []
@@ -131,7 +165,10 @@ def tune():
 
 
 def compose():
-    """The music as two rows, left and right, peaking at 0.8."""
+    """The music as two rows, left and right, peaking at 0.8.
+
+    Gives back a numpy array (2, samples): SILENCE, BEATS beats, then 2 s more for the echo and the fade.
+    e.g. track = compose()"""
     track = numpy.zeros((2, int((SILENCE + BEATS * BEAT + 2) * RATE)))
     for beat, (note, plucked, octave) in enumerate(tune()):
         at = SILENCE + beat * BEAT
@@ -161,6 +198,7 @@ def compose():
 
 
 def main():
+    """The command line: compose the music and write it as sash.wav (32-bit float), print its length."""
     track = compose()
     soundfile.write("sash.wav", track.T, RATE, subtype="FLOAT")
     print("sash.wav: %.1f seconds, stereo, music from %.1f s, %d beats of %.1f s"

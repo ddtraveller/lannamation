@@ -47,6 +47,9 @@ var GROUND = 900;
 // render.py and stills.py look for it.
 var WARNINGS = [];
 
+// warn(message): message, a sentence. Says it once in the browser's console, after "oldcartoon.js: ", and keeps it
+// in WARNINGS; the same message again says nothing. Returns nothing.
+// e.g. warn('the scene "dusk" has no clock');
 function warn(message) {
   if (WARNINGS.indexOf(message) >= 0) { return; }   // once is enough: draw() runs 30 times a second
   WARNINGS.push(message);
@@ -54,6 +57,8 @@ function warn(message) {
 }
 
 // how many letters must change to turn one name into the other
+// a, b: two names (capitals count). Returns a whole number: 0 when they are the same.
+// e.g. lettersApart("handa", "handB")   // 1
 function lettersApart(a, b) {
   var row = [], i, j, last, next;
   for (j = 0; j <= b.length; j++) { row.push(j); }
@@ -71,6 +76,11 @@ function lettersApart(a, b) {
 
 // Warn if "name" is not a name in "known", and offer the known name nearest
 // to it: one that differs only in capitals, or by one or two letters.
+//   what    the words that begin the warning, for the kind of name ("The look's name")
+//   name    the name given
+//   known   an object whose keys are the names the kit knows (LOOK_KEYS, STYLE ...)
+// Returns nothing; it may warn() once.
+// e.g. checkName("The feeling", "hapy", FEELINGS);
 function checkName(what, name, known) {
   if (name in known) { return; }
   var near = null, best = 3;
@@ -83,6 +93,8 @@ function checkName(what, name, known) {
 }
 
 // the same for every key of an object, such as a look
+// "given" is the object whose keys are checked; "what" and "known" are checkName()'s. Returns nothing.
+// e.g. checkNames("The look's name", look, LOOK_KEYS);
 function checkNames(what, given, known) {
   for (var name in given) { checkName(what, name, known); }
 }
@@ -129,6 +141,9 @@ var HAIR = STYLE.hair, HAIR_LINE = "#7a5640";
 // lady's mouth asks for, or else the colour of her own lips.
 var PAINTED = true;
 
+// red: the colour a painted mouth asks for, "#rrggbb". Returns red while PAINTED, else her own lips' colour (from
+// SKIN).
+// e.g. pen.fillStyle = lipOf("#c8343a");
 function lipOf(red) {
   return PAINTED ? red : blend(SKIN, "#a8504a", 0.5);
 }
@@ -156,15 +171,24 @@ var clock = 0;                          // the second being drawn; draw(t) sets 
 
 // ---------- numbers ----------
 
+// x held between 0 and 1.
+// e.g. clamp(1.4)   // 1
 function clamp(x) { return Math.max(0, Math.min(1, x)); }
 
+// t, a, b: one unit, mostly seconds. Gives 0 before a, 1 after b, and an eased S-curve from 0 to 1 between them.
+// e.g. var come = between(t, 2, 3.5);   // 0 until 2 s, 1 from 3.5 s
 function between(t, a, b) {
   var x = clamp((t - a) / (b - a));
   return x * x * (3 - 2 * x);
 }
 
+// a number "amount" of the way from a to b: amount 0 gives a, 1 gives b (beyond 0 to 1 it goes past them).
+// e.g. mix(100, 300, 0.25)   // 150
 function mix(a, b, amount) { return a + (b - a) * amount; }
 
+// A number from 0 to (just under) 1 that looks random but is always the same for the same n: the kit's dice, so a
+// frame can be drawn again alike. n: any number (a seed, a count).
+// e.g. var gap = 40 + dice(n * 3 + 1) * 20;
 function dice(n) {
   var x = Math.sin(n * 127.1) * 43758.5453;
   return x - Math.floor(x);
@@ -178,6 +202,10 @@ function dice(n) {
 // slowing; the hold is the pause. (Owner, 2026-10-11.)
 var HOLD = STYLE.hold;
 
+//   t      seconds of the film (or of the scene's clock)
+//   late   beats to shift the hop by, default 0 (0.5: down while the others are up)
+// Returns 0 to 1. Reads BEAT and HOLD (STYLE.hold).
+// e.g. var lift = hop(t, 0.25) * 12;
 function hop(t, late) {
   var beats = t / BEAT + (late || 0);
   var frac = beats - Math.floor(beats);
@@ -188,6 +216,9 @@ function hop(t, late) {
 // Eyes do not drift. They hold on a spot, then jump to another in a twentieth
 // of a second (a saccade), after a hold of half a second to a few seconds.
 // The spots and the holds come from dice, so no two people look alike.
+// t: seconds (add a person's own time, so no two look alike). Returns [across, down]: where the eyes look, in face
+// pixels, across -3 to 3 and down -1.2 to 1.2.
+// e.g. var glance = saccade(t + ownTime("noi"));
 function saccade(t) {
   var cell = Math.floor(t / 0.55), here = cell, before;
   while (here > cell - 8 && dice(here * 7 + 3) > 0.45) { here--; }         // the cell in which the eyes last jumped
@@ -264,6 +295,10 @@ var CHEST_MAN_F = [[-34, 2],
 
 // an outline (a list as CHEST_LADY is) for a turn t, blended through its
 // profile, three-quarter and full-face lists as blend3() blends a number
+//   t         the turn: -1 profile, 0 three-quarter, 1 full face
+//   P, Q, F   the profile, three-quarter and full-face lists, alike point for point
+// Returns a new list (Q itself when t is 0).
+// e.g. outline(blendOutline(0.5, CHEST_LADY_P, CHEST_LADY, CHEST_LADY_F), function (x, y) { return [x, y]; });
 function blendOutline(t, P, Q, F) {
   if (!t) { return Q; }
   var out = [[blend3(t, P[0][0], Q[0][0], F[0][0]), blend3(t, P[0][1], Q[0][1], F[0][1])]];
@@ -309,6 +344,9 @@ var CHEST_LADY_FAT = [[-50, 2],
                       [[0, 16], [-50, 2]]];
 // A three-quarter chest seen in profile and from the front: in profile the back comes in to the spine and the front
 // stays out (a belly is seen most from the side); from the front both sides are alike, as wide as the wider side.
+// q: a three-quarter chest list (as CHEST_MAN_FAT). Returns [profile, q, full face], the three lists BODIES[..].chest
+// takes; q itself is not changed.
+// e.g. var turns = chestTurns(CHEST_LADY_FAT);
 function chestTurns(q) {
   function each(f) {
     return q.map(function (seg, n) {
@@ -330,6 +368,11 @@ var BODY = BODIES.slim;                             // the body being drawn now:
 
 // the path of such a list, with every point put where put(x, y) says it
 // goes: a drawing bent along a curve, and tipped, and still drawn only once
+//   points   a list as CHEST_LADY is: a start [x, y], then curves of three points or two
+//   put      put(x, y) gives [x, y]: where that point goes, in pen's pixels
+// Returns nothing. It begins a new path on pen and closes it, but neither fills nor inks it: the caller does
+// (shape(), pen.clip() ...).
+// e.g. outline(CHEST_LADY, function (x, y) { return [x, y - 20]; }); shape("#c0392b");
 function outline(points, put) {
   var at = put(points[0][0], points[0][1]);
   pen.beginPath();
@@ -352,6 +395,12 @@ function outline(points, put) {
 // rig.js (var RIG = {...}), calls rigImages(RIG, "folder/") once, and then
 // person(x, y, {rig: RIG, ...}) moves the drawing instead of drawing the
 // kit's own shapes: the same hops, steps, poses and lags, on a drawn body.
+//   rig      the rig's RIG object, from its rig.js (parts, neck, hip, ankle)
+//   folder   where its images are, ending in "/"
+// Returns the same rig, which it changes: it adds byName, images, scale (kit units per picture pixel) and upper,
+// lower and legs (bone lengths, in kit units). The images load in the background; part() draws nothing until they
+// have.
+// e.g. rigImages(RIG, "rig_lady/");
 function rigImages(rig, folder) {
   rig.byName = {};
   rig.images = {};
@@ -375,6 +424,12 @@ function rigImages(rig, folder) {
 // One part, drawn so that its joints land on (ax, ay) and (bx, by): turned
 // to the bone's direction, scaled alike both ways by the rig's scale, and,
 // with "stretch", stretched along the bone to reach the far joint.
+//   rig              a rig after rigImages()
+//   name             one of its parts' names ("armL_upper")
+//   ax, ay, bx, by   where its two joints land, in pen's pixels
+//   stretch          true to stretch it along the bone so it reaches (bx, by); else it keeps its length
+// Returns nothing: it draws with pen (nothing while the image has not loaded, or for a name the rig lacks).
+// e.g. part(RIG, "armL_upper", 0, -140, 24, -80, true);
 function part(rig, name, ax, ay, bx, by, stretch) {
   var p = rig.byName[name], img = rig.images[name];
   if (!p || !img.complete || !img.naturalWidth) { return; }
@@ -394,6 +449,12 @@ function part(rig, name, ax, ay, bx, by, stretch) {
 // the elbow is found from the rig's own bone lengths. "names" are the upper
 // arm, the forearm and the hand; "bend" is the wrist's bend. Returns the
 // wrist and the elbow, as limb() does.
+//   rig       a rig after rigImages()
+//   sx, sy    the shoulder, in pen's pixels
+//   hand      [across, down]: where the hand reaches from the shoulder, in pen's pixels
+//   outward   1 or -1: which way the elbow points, as armJoints() takes it
+//   bend      the wrist's bend, in radians
+// e.g. var wrist = rigArm(RIG, ["armL_upper", "armL_lower", "handL"], 20, -140, [36, 70], 1, 0.2);
 function rigArm(rig, names, sx, sy, hand, outward, bend) {
   var far = Math.sqrt(hand[0] * hand[0] + hand[1] * hand[1]) || 1;
   var reach = Math.max(0.62, Math.min(0.97, far * 1.3 / 120)) * (rig.upper + rig.lower);
@@ -419,6 +480,14 @@ function rigArm(rig, names, sx, sy, hand, outward, bend) {
 // backward or stops for longer than a moment, starts again at rest.
 var FOLLOWS = {}, DRAWN = 0, DRAWN_AT = -1;
 
+//   key        a name for this hanging thing, kept across frames: the person's id and the thing ("noi/earring")
+//   lx, ly     its pivot, in pen's local pixels now
+//   stiff      the spring: 40 to 320 (stiffer comes back sooner)
+//   damp       the slowing: 5 to 9
+//   limit      the most it may lag, in screen pixels
+// Returns [across, down] in local pixels. Reads clock; keeps its state in FOLLOWS[key], so call it once a frame
+// for each key.
+// e.g. var lag = follow("noi/earring", 50, -272, 200, 8, 10);
 function follow(key, lx, ly, stiff, damp, limit) {
   var m = pen.getTransform();
   var p = m.transformPoint(new DOMPoint(lx, ly));   // the pivot, on the screen
@@ -455,6 +524,9 @@ function follow(key, lx, ly, stiff, damp, limit) {
 
 // [beat, "syllable syllable ..."] lines, as in village_sing.py, to a flat
 // list of [beat, syllable]
+// lines: the song's rows, [beat, "syllable syllable ..."] (CUES does). Returns [[beat, syllable], ...], one beat for
+// each syllable, for mouthAt().
+// e.g. var SUNG = sungBeats(CUES);
 function sungBeats(lines) {
   var out = [];
   for (var n = 0; n < lines.length; n++) {
@@ -465,6 +537,8 @@ function sungBeats(lines) {
 }
 
 // the shape of the mouth for a syllable: how wide and how round, 0 to 1
+// syllable: one Thai syllable. Returns {wide: 0 or 1, round: 0 or 1}.
+// e.g. vowelOf("จัง")   // {wide: 0, round: 0}
 function vowelOf(syllable) {
   var round = /[โอูุ]/.test(syllable) && !/เ/.test(syllable);
   if (!round && !/[ะาัิีึืุูเแโใไำ]/.test(syllable)) { round = true; }   // no vowel written: a short "o"
@@ -478,6 +552,8 @@ function vowelOf(syllable) {
 // teeth), "hiss" for ส ซ ศ ษ (the teeth near, the lips wide), and nothing
 // for the rest, which start open. A written vowel before the consonant
 // (เ แ โ ใ ไ) and a silent ห or อ leading it are passed over.
+// syllable: one Thai syllable. Returns "lips", "teeth", "tongue", "hiss" or "".
+// e.g. onsetOf("บ้าน")   // "lips"
 function onsetOf(syllable) {
   var letters = syllable.replace(/^[เแโใไ]+/, "");
   if (/^[หอ][^ะาัิีึืุูเแโใไำ]/.test(letters)) { letters = letters.slice(1); }
@@ -496,6 +572,9 @@ var ONSETS = {lips: {open: 0.02, wide: 0.2, round: 0}, teeth: {open: 0.16, wide:
 // syllable lasts one beat: for its first 0.08 s the mouth makes the
 // consonant it starts with, then opens fast into the vowel, holds, and
 // shuts before the next.
+// sung: the list sungBeats() gives. Reads clock and BEAT. Returns {open, wide, round} (0 to 1 each), with teeth and
+// tongue (true or false) while a consonant shows; or null. The page passes it to person() as look.mouth.
+// e.g. person(700, GROUND, {lady: true, mouth: mouthAt(SUNG)});
 function mouthAt(sung) {
   for (var n = 0; n < sung.length; n++) {
     var since = clock - sung[n][0] * BEAT;
@@ -531,6 +610,9 @@ function mouthAt(sung) {
 // The line being sung at second t of the film: its number in the list (-1
 // before the first line), the seconds since it began, and the beats it is
 // sung for. A line stays "the line" until the next one begins.
+// t: seconds of the film; cues: the cue sheet (CUES). Returns {line: its number, -1 before the first; since:
+// seconds since it began; beats: how many syllables it has}.
+// e.g. if (cueAt(t, CUES).line === 2) { wave = 1; }
 function cueAt(t, cues) {
   var line = -1;
   for (var n = 0; n < cues.length; n++) {
@@ -542,6 +624,9 @@ function cueAt(t, cues) {
 
 // The words of the line being sung, under the picture: from its first beat
 // until half a beat after its last syllable.
+// t: seconds of the film; cues: the cue sheet (CUES). Returns nothing: it draws the line with subtitle(), or
+// nothing between lines.
+// e.g. words(t, CUES);
 function words(t, cues) {
   var cue = cueAt(t, cues);
   if (cue.line >= 0 && cue.since < (cue.beats + 0.5) * BEAT && cues[cue.line][2]) {
@@ -564,6 +649,9 @@ var LINE = STYLE.line;
 // figure. person() sets it, and LINE with it, while it draws.
 var FINE = 1;
 
+// The ink for a line round paint of this colour: mostly INK, a little of the paint. colour: "#rrggbb"; any other
+// form ("red", "rgb(...)") gets INK itself. Returns a CSS colour.
+// e.g. pen.strokeStyle = inkFor("#c0392b");
 function inkFor(colour) {
   if (!/^#[0-9a-f]{6}$/i.test(colour)) { return INK; }
   var paint = parseInt(colour.slice(1), 16);
@@ -574,18 +662,27 @@ function inkFor(colour) {
 
 // From here on, whatever is drawn in "ink" is drawn a second time, one step
 // down and to the left: that is the heavier side of the line.
+// ink: a CSS colour. Sets pen's shadow to it, offset (-1.1, 1.1) pixels; it stays set until light().
+// Returns nothing.
+// e.g. heavy(INK); pen.stroke(); light();
 function heavy(ink) {
   pen.shadowColor = ink;
   pen.shadowOffsetX = -1.1;
   pen.shadowOffsetY = 1.1;
 }
 
+// Ends heavy(): pen's shadow off. Returns nothing.
+// e.g. light();
 function light() {
   pen.shadowColor = "transparent";
   pen.shadowOffsetX = 0;
   pen.shadowOffsetY = 0;
 }
 
+// Fills the path pen holds now with "colour" and inks its line (inkFor(colour), the heavy side below and to the
+// left). colour: a CSS colour; width: the line's width in pixels, default LINE. Returns nothing; leaves pen's
+// fillStyle, strokeStyle, lineWidth and lineJoin as it set them.
+// e.g. pen.beginPath(); pen.arc(0, -40, 20, 0, 7); shape("#c0392b");
 function shape(colour, width) {
   var ink = inkFor(colour);
   pen.fillStyle = colour;
@@ -601,6 +698,9 @@ function shape(colour, width) {
 // Ink the line of one shape, but not where it runs inside another. Two shapes
 // that overlap, each inked this way against the other, read as one shape
 // with one line round it.
+// path, other: Path2D objects in pen's pixels. Inks path with pen's strokeStyle and lineWidth as they are, except
+// inside other. Returns nothing; pen's clip is put back as it was.
+// e.g. pen.strokeStyle = INK; strokeOutside(sleeve, body); strokeOutside(body, sleeve);
 function strokeOutside(path, other) {
   var rest = new Path2D();
   rest.rect(-4000, -4000, 8000, 8000);
@@ -611,6 +711,9 @@ function strokeOutside(path, other) {
   pen.restore();
 }
 
+// A filled ellipse with its ink line: middle (x, y), half-widths rx and ry, in pen's pixels; colour a CSS colour;
+// turn in radians, default 0. Returns nothing.
+// e.g. oval(0, -40, 12, 8, "#f4d6b8");
 function oval(x, y, rx, ry, colour, turn) {
   pen.beginPath();
   pen.ellipse(x, y, rx, ry, turn || 0, 0, 7);
@@ -619,6 +722,13 @@ function oval(x, y, rx, ry, colour, turn) {
 
 // A rubber hose: one curved line, drawn fat in ink and then thinner in
 // colour. Arms, legs, tails and necks are all hoses.
+//   x1, y1, x2, y2   its two ends, in pen's pixels
+//   bend             how far its middle bows out, as a share of its length: 0 straight, 0.2 a good bow (the sign
+//                    picks the side)
+//   width            its width in pixels, without the ink
+//   colour           a CSS colour
+// Returns nothing; leaves pen's lineCap "round".
+// e.g. hose(0, -140, 30, -60, 0.15, 12, SKIN);
 function hose(x1, y1, x2, y2, bend, width, colour) {
   var middleX = (x1 + x2) / 2 - (y2 - y1) * bend;
   var middleY = (y1 + y2) / 2 + (x2 - x1) * bend;
@@ -642,6 +752,8 @@ function hose(x1, y1, x2, y2, bend, width, colour) {
 // for a checked cloth, bars across it in the border's colour. "bend" is the
 // hose's; "width" its width at the root; "border" the colour of the bars, or
 // nothing for a plain cloth.
+// Units are pen's pixels. Returns nothing.
+// e.g. ribbon(-28, 2, -40, 70, 0.15, 14, "#a33a2a", "#e0b23a");
 function ribbon(x1, y1, x2, y2, bend, width, colour, border) {
   var middleX = (x1 + x2) / 2 - (y2 - y1) * bend, middleY = (y1 + y2) / 2 + (x2 - x1) * bend;
   var left = [], right = [], n, u, px, py, tx, ty, tl, w;
@@ -690,6 +802,9 @@ function ribbon(x1, y1, x2, y2, bend, width, colour, border) {
 
 // The eye of a 1930s cartoon: a tall black oval with a slice cut out of it.
 // Now and then it blinks: for a moment it is only a curved line.
+// x, y: the eye's middle, in pen's pixels (it is 14 wide and 26 tall); shut: true draws the blink, a curved line.
+// Returns nothing.
+// e.g. pieEye(20, -300, hop(t) > 0.9);
 function pieEye(x, y, shut) {
   if (shut) {
     pen.strokeStyle = INK;
@@ -743,6 +858,8 @@ var FEELING_WAS = {calm: "neutral", joy: "happy", surprise: "surprised", anger: 
 
 // A time of its own for each person, from their name (see "id" above
 // person()), so that a crowd of sleepers do not nod and yawn as one.
+// who: the person's id, a string. Returns seconds, 0 to 13, the same each time for the same name.
+// e.g. var at = clock + ownTime("yai");
 function ownTime(who) {
   var sum = 0;
   for (var n = 0; n < who.length; n++) { sum = (sum * 31 + who.charCodeAt(n)) % 9973; }
@@ -759,6 +876,12 @@ function ownTime(who) {
 // eyes shut, the mouth opens on each "ha", four and a half a second, and
 // the head and the shoulders shake with it, in bursts of two seconds with a
 // breath of half a second between.
+//   f    the feeling's numbers, as feelingOf() builds them: it reads sleepy, full and laugh (0 to 1) and adds to
+//        bend and tilt
+//   at   the person's own time, in seconds
+// Returns f itself, changed: lids (0 to 1), browUp (pixels), ha (-1 to 1) set, bend and tilt added to, and open
+// set during a yawn or a laugh.
+// e.g. var f = feelingOverTime({sleepy: 1, full: 0, laugh: 0, bend: 0, tilt: 0}, clock);
 function feelingOverTime(f, at) {
   var nod = (at % 7 + 7) % 7, gape = ((at + 4.5) % 11 + 11) % 11, rest = (at % 6 + 6) % 6;
   var yawn = gape < 0.7 ? Math.sin(gape / 0.7 * Math.PI / 2) : gape < 1.5 ? 1 : gape < 2.4 ? 0.5 + 0.5 * Math.cos((gape - 1.5) / 0.9 * Math.PI) : 0;
@@ -788,6 +911,12 @@ function feelingOverTime(f, at) {
 
 // The feeling a look asks for, as the numbers the face and the body read.
 // "at" is the person's own time (ownTime() added to the clock).
+//   look   the look: it reads feel (a name of FEELINGS, or one of FEELING_WAS) and the numbers wonder, smile,
+//          fear, anger, sad, sleepy, full, worry, laugh (0 to 1, each beating the name's own), eyes and lips
+//   at     the person's own time in seconds, default clock
+// Returns {wonder, smile, fear, anger, sad, sleepy, full, worry, laugh, open, bend, tilt, eyes, lips} and what
+// feelingOverTime() adds (lids, browUp, ha). It warns once for a feeling's name it does not know.
+// e.g. var f = feelingOf({feel: "sleepy"}, clock + ownTime("yai"));
 function feelingOf(look, at) {
   var name = FEELING_WAS[look.feel] || look.feel;
   if (look.feel !== undefined) { checkName("The feeling", name, FEELINGS); }
@@ -830,6 +959,9 @@ function feelingOf(look, at) {
 //          yawn back, a laugh's toss)
 //   startle  0 to 1: a fright, for a creature that has one of its own
 //   jaw(usual)  how far a jaw opens, given how far it would otherwise
+// look: the creature's look (feel and the numbers, as feelingOf() reads them); at: its own time in seconds,
+// default clock. Returns the object above.
+// e.g. var e = creatureFeel({feel: "angry"}, clock + ownTime("dog"));
 function creatureFeel(look, at) {
   var f = feelingOf(look, at);
   var frown = clamp(f.sad + 0.6 * f.anger + 0.45 * f.worry);
@@ -859,6 +991,9 @@ function creatureFeel(look, at) {
 // how.ball: an eye coloured all through (a cat's, a pig's) in place of the
 // white and the iris, with only a pupil (how.pupil; how.slit, a slit) and a light. Shut (a blink, how.shut,
 // or a lid down past 0.9) it is a line bowed down; laughing, bowed up.
+// x, y, rx, ry are in pen's pixels (ry is made taller by e.wide); e needs lid, wide, bowed and slant. how.skin is
+// the lid's colour: give it unless no lid comes down. Returns nothing.
+// e.g. creatureEye(40, -20, 6, 7, creatureFeel({feel: "sleepy"}, clock), {skin: "#c98d4e", iris: "#5a3a1a"});
 function creatureEye(x, y, rx, ry, e, how) {
   var ink = how.ink || INK, closed = Math.max(e.lid, how.shut ? 1 : 0);
   ry *= e.wide;
@@ -926,6 +1061,9 @@ function creatureEye(x, y, rx, ry, e, how) {
 
 // A pose reached with a snap: first a small move the other way (the
 // anticipation), then fast to the pose and a little past it, then settling.
+// u: 0 to 1, how far through the move (between() gives one). Returns about -0.1 at first, a little past 1 in the
+// middle, and 1 at u = 1: multiply the move by it.
+// e.g. var reach = snap(clamp((t - 2) / 0.4)) * 30;
 function snap(u) {
   if (u < 0.22) { return -0.1 * Math.sin(Math.PI * u / 0.22); }
   var v = (u - 0.22) / 0.78;
@@ -941,10 +1079,16 @@ function snap(u) {
 // to the camera they spread and come to the middle; as it turns away they
 // crowd to the front, the far eye goes behind the nose, and the nose
 // becomes part of the outline.
+// t: the turn, -1 to 1. Returns the number on the curve that passes atProfile at -1, atQuarter at 0 and atFront
+// at 1.
+// e.g. blend3(0.5, 30, 2, -19)
 function blend3(t, atProfile, atQuarter, atFront) {
   return atQuarter + t * (atFront - atProfile) / 2 + t * t * (atFront - 2 * atQuarter + atProfile) / 2;
 }
 
+// t: the turn, -1 to 1; P, Q, F: lists of [x, y], alike in length. Returns a new list: each point blended as
+// blend3() blends a number.
+// e.g. var head = blendPoints(0.5, HEAD_P, HEAD_Q, HEAD_F);
 function blendPoints(t, P, Q, F) {
   var out = [];
   for (var n = 0; n < Q.length; n++) {
@@ -996,6 +1140,8 @@ var NOSE_TIP = {lady: 74, man: 71};                 // where V.tip is in profile
 //   side    how far the profile has taken over (until it has, the chin is kept up inside the jaw)
 //   drop    how far the jaw has dropped to open the mouth
 //   lady    true for a lady's piece, false for a fellow's
+// Returns a Path2D in the head's pixels; it draws nothing.
+// e.g. var V = view(-1, true, null); pen.fill(profilePiece(V.tip, V.side, 0, true));
 function profilePiece(tip, side, drop, lady) {
   var piece = new Path2D(), dx = tip - (lady ? NOSE_TIP.lady : NOSE_TIP.man);
   var under = (lady ? -226.8 : -226.2) - 5 * (1 - side) + drop;
@@ -1038,6 +1184,12 @@ function profilePiece(tip, side, drop, lady) {
 
 // "lady" is true for a head with a lady's face: her profile's measure, or a fellow's.
 // "north" is a face of the north (northFace(), from look.north): its cheekbones, jaw and chin reshape the outline.
+// Where every feature of a head goes at a turn. turn: -1 (profile) to 1 (full face), default 0. Returns V, in the
+// head's pixels: the eyes (near, nearW, far, farW), the nose (nose, tip), the mouth (mouth, mouthW), the cheeks
+// (cheek, farCheek, farCheekR), the ears (ear, farEar 0 to 1), hairShift, the knots (bun, crown, nape: [x, y]),
+// the outlines (head, hairLady, hairMan: points for HEAD_Q's order), and how far it has turned (t, toProfile,
+// toFront, side: 0 to 1).
+// e.g. var V = view(0.5, true, null);
 function view(turn, lady, north) {
   var t = Math.max(-1, Math.min(1, turn || 0));
   var away = Math.max(0, -t), side = away * away * (3 - 2 * away);
@@ -1157,6 +1309,11 @@ var EYE_TEARS = 0;
 // What a figure's face of the north is, from its look (null when it has none):
 // its shape's numbers and every one of NORTH. A child keeps a child's measure:
 // half of each change, a rounder jaw and a fuller chin.
+// look: the figure's look; it reads north (a name of NORTH_FACES; an unknown name warns and draws "round") and
+// build (below 0 a child). Returns {cheek, jaw, chin, wide, tilt, eyes, apart, lid, lidMan, browLow, browLowMan,
+// noseLow, fold, browArch, browHeavy, noseWide, lipsWide, lipsFull, eyeSmall}, or null. person() keeps it in
+// NORTH_FACE.
+// e.g. var north = northFace({north: "thai", build: -0.5});
 function northFace(look) {
   if (!look.north) { return null; }
   if (typeof look.north === "string") { checkName("A face of the north", look.north, NORTH_FACES); }
@@ -1184,6 +1341,9 @@ function northFace(look) {
 // the near eye, one under each eye, the fold from beside the nose down past
 // each corner of the mouth, and the hollow of the cheek. "age" is 0 to 1:
 // the lines are firmer the older the face.
+// V: the head's view (view()), with V.face, the face's Path2D, to keep the lines on it. Returns nothing: it draws
+// with pen, in the head's pixels.
+// e.g. ageLines(0.7, view(0.2, false, null));
 function ageLines(age, V) {
   var n, middle = (V.near + V.far) / 2, corner = V.near - V.nearW - 3;
   pen.save();
@@ -1221,6 +1381,9 @@ function ageLines(age, V) {
 // A beard, over a face: a moustache that droops from under the nose past
 // each corner of the mouth, and a tuft that hangs from the chin. "drop" is
 // how far the jaw has dropped: the tuft goes down with it.
+// colour: the beard's CSS colour; V: the head's view (view()); drop: pixels the jaw has dropped, 0 when shut.
+// Returns nothing: it draws with pen, in the head's pixels.
+// e.g. beard("#d8d0c4", view(0.2, false, null), 0);
 function beard(colour, V, drop) {
   for (var half = -1; half <= 1; half += 2) {       // the two halves of the moustache, the far one first
     var out = half < 0 ? 15 : -21;                  // how far its end is from the middle of the mouth
@@ -1253,6 +1416,11 @@ function beard(colour, V, drop) {
 //                at the outer corner (sadness, worry). It reads where no brow can be seen,
 //                as under a head-cloth, and on a creature's eye
 //   bowed        true: shut, the eye bows up (^), as a laugh pushes the cheeks up under it
+//   x, y     the eye's middle, between its corners, in pen's pixels
+//   shut     true, false, or 0 to 1
+// Reads EYE_LIDS (the heavy lid of a face of the north, or the folded eye) and EYE_TEARS, which person() sets:
+// outside person() they are as the last figure left them. Returns nothing: it draws with pen.
+// e.g. eye(30, -277, 9, 4.6, false, [1, 0], -1, 1, 0, false);
 function eye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed) {
   var gx = glance.length ? glance[0] : glance, gy = glance.length ? glance[1] : 0;
   // "shut" may be 0 to 1: the upper lid comes down that far, and past 0.9 the eye is shut.
@@ -1402,6 +1570,9 @@ function eye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed) {
 // Tears from one eye (see EYE_TEARS): the lower lid brims with water, and a drop gathers at its middle toward the
 // outer corner, grows, and now and then lets go and runs down the cheek. They move with the clock, so a still frame
 // catches them on the way; the two eyes are out of step.
+// x, y, wide, tall, outer, shut: as eye() was given them. Reads EYE_TEARS (0 to 1) and clock. Returns nothing:
+// it draws with pen. eye() calls it.
+// e.g. EYE_TEARS = 0.8; tearsFrom(30, -277, 9, 4.6, -1, false);
 function tearsFrom(x, y, wide, tall, outer, shut) {
   var much = EYE_TEARS, start = [x + outer * wide * 0.25, y + tall * 0.75], fall = tall * 7 * (0.6 + 0.4 * much);
   var phase = (clock * 0.9 + (outer > 0 ? 0.37 : 0)) % 1;
@@ -1435,6 +1606,9 @@ function tearsFrom(x, y, wide, tall, outer, shut) {
 // The part of an eye left open under a slanted lid (see eye()): a Path2D
 // below a straight line from the outer corner to the inner, each end as high
 // as the slant leaves it ("peak": how high the lid's arch stands), and the line.
+// x, y, wide, outer, slant: as eye() takes them; peak in pixels. Returns {open: a Path2D, line: [x1, y1, x2, y2]};
+// it draws nothing.
+// e.g. var below = slantedLid(30, -277, 9, 8, -1, 0.6);
 function slantedLid(x, y, wide, peak, outer, slant) {
   var a = Math.max(0, slant), s = Math.max(0, -slant);
   var ox = x + outer * wide, oy = y - peak * (1.25 - 0.35 * a - s);
@@ -1451,6 +1625,9 @@ function slantedLid(x, y, wide, peak, outer, slant) {
 // The fold or two that brows drawn together leave between them, in worry
 // and in anger: two short lines from the brows' height "y" down toward the
 // nose, either side of "x". Gone toward profile.
+// x, y in the head's pixels; feel: feelingOf()'s numbers (it reads worry and anger); V: the head's view (it reads
+// toProfile). Returns nothing: it draws with pen, or nothing when there is no fold.
+// e.g. frownFold(28, -293, feelingOf({feel: "concerned"}), view(0.2, true, null));
 function frownFold(x, y, feel, V) {
   var fold = clamp(1.25 * Math.max(feel.worry, feel.anger) - 0.25) * (1 - V.toProfile);
   if (fold <= 0) { return; }
@@ -1469,6 +1646,9 @@ function frownFold(x, y, feel, V) {
 
 // a brow: thick where it starts, by the nose, and thin at its far end
 // "tilt" turns it about its middle: the inner end down for anger, up for sadness
+// x, y: its middle; wide: half its length; arch: how high its middle rises; heavy: how thick; all in pixels.
+// tilt in radians, default 0. Returns nothing: it draws in INK with pen.
+// e.g. brow(30, -292, 12, 9, 1.1, 0.2);
 function brow(x, y, wide, arch, heavy, tilt) {
   pen.save();
   pen.translate(x, y);
@@ -1485,6 +1665,8 @@ function brow(x, y, wide, arch, heavy, tilt) {
 }
 
 // colour in a cheek: strongest in the middle ("strength", 0.42 unless told), gone at the edge, with no line
+// x, y: its middle; r: its radius, in pixels; strength: 0 to 1. Returns nothing: it draws with pen.
+// e.g. blush(-10, -250, 15);
 function blush(x, y, r, strength) {
   var pink = pen.createRadialGradient(x, y, 0, x, y, r);
   pink.addColorStop(0, "rgba(236, 110, 110, " + (strength === undefined ? 0.42 : strength) + ")");
@@ -1500,6 +1682,9 @@ function blush(x, y, r, strength) {
 // broad round tip, a wing flaring each side and a nostril under it, and a soft
 // shadow under the base. The far wing shows more as the face comes round; in
 // profile it all fades, as the kit's noses do, because there the nose is the outline.
+// V: the head's view (view()); lady: true for her measure. Reads NORTH_FACE, which must be set (person() sets it).
+// Returns nothing: it draws with pen, in the head's pixels.
+// e.g. NORTH_FACE = northFace({north: "round"}); northNose(view(0.3, true, NORTH_FACE), true);
 function northNose(V, lady) {
   var north = NORTH_FACE, low = north.noseLow, broad = north.noseWide, back = 1 - V.toFront;
   pen.save();
@@ -1537,8 +1722,17 @@ function northNose(V, lady) {
   pen.restore();
 }
 
+// A lady's face, drawn in the head's pixels (middle (0, -286)): eyes, brows, nose, rouge, mouth.
 //   V      the view of the head for its turn (see view()): where each feature sits
 //   feel   {wonder, smile}, each 0 to 1
+//   shut     true, false, or 0 to 1: how far the lids are down
+//   mouth    mouthAt()'s shape, or null for a shut mouth
+//   glance   where the irises look: across, or [across, down], in pixels (saccade() gives one)
+//   feel     in full, feelingOf()'s numbers: it reads wonder, smile, fear, anger, sad, worry, laugh, full, browUp,
+//            eyes and lips
+// V.face (a Path2D of the face, which personHead() adds) keeps the far eye, the cheek and the mouth on the face.
+// Reads NORTH_FACE. Returns nothing: it draws with pen. person() calls it; a page draws a person instead.
+// e.g. ladyFace(false, null, saccade(t), view(0.3, true, null), feelingOf({feel: "happy"}));
 function ladyFace(shut, mouth, glance, V, feel) {
   var lift = (mouth ? 5 * mouth.open : 0) + 7 * feel.wonder + 6 * feel.fear - 4 * feel.anger + feel.browUp + 2 * feel.worry
            - 2 * (shut === true ? 1 : shut || 0);                 // the brows drop a little in a blink
@@ -1707,6 +1901,9 @@ function ladyFace(shut, mouth, glance, V, feel) {
   pen.restore();
 }
 
+// A fellow's face, drawn as ladyFace() draws hers, with the same arguments (shut, mouth, glance, V, feel). Reads
+// NORTH_FACE. Returns nothing: it draws with pen. person() calls it.
+// e.g. manFace(false, mouthAt(SUNG), 0, view(0, false, null), feelingOf({}));
 function manFace(shut, mouth, glance, V, feel) {
   var lift = (mouth ? 6 * mouth.open : 0) + 8 * feel.wonder + 7 * feel.fear - 5 * feel.anger + feel.browUp + 2 * feel.worry
            - 2 * (shut === true ? 1 : shut || 0);                 // the brows drop a little in a blink
@@ -1841,6 +2038,11 @@ function manFace(shut, mouth, glance, V, feel) {
 // "kind" is nothing (a line), "zigzag", "diamonds", "dots", "braid" or
 // "roundels". What stands up from the band stands across it, whichever way
 // the band runs: (ux, uy) is the way along it, and (-uy, ux) the way across.
+//   left, mid, right   [x, y] in pen's pixels: the band's two ends and the point it bows toward
+//   colour, width      a CSS colour, and the line's width in pixels (for "checks" and "checks-odd", the squares' side)
+//   kind               also "checks" or "checks-odd": every other square; the two stacked make a check
+// Returns nothing: it draws with pen, and leaves its strokeStyle, fillStyle, lineWidth and lineJoin as it set them.
+// e.g. stripe([-30, 40], [0, 46], [30, 40], STYLE.gold, 3, "diamonds");
 function stripe(left, mid, right, colour, width, kind) {
   var far = Math.sqrt((right[0] - left[0]) * (right[0] - left[0]) + (right[1] - left[1]) * (right[1] - left[1])) || 1;
   var ux = (right[0] - left[0]) / far, uy = (right[1] - left[1]) / far;
@@ -1945,6 +2147,12 @@ function stripe(left, mid, right, colour, width, kind) {
 //                they bend with the cloth, and sag a little across it
 //   pushes       [x, y, reach] points under the cloth, such as knees, measured from
 //                the waist: an edge within "reach" of one moves out to cover it
+//   phase        radians: the rock's phase (a beat's 2 pi gives one swing a beat)
+//   colour       a CSS colour
+//   stripes      (kind may also be "checks" or "checks-odd": see stripe())
+// All lengths are in pen's pixels, with the waist at (0, 0). Reads BODY (its waist and hem) and clock. Returns
+// nothing: it draws with pen.
+// e.g. tier(120, 50, 10, clock * Math.PI * 2 / BEAT, "#a33a2a", 4, [[0.85, STYLE.gold, 3, "diamonds"]]);
 function tier(long, wide, reach, phase, colour, deep, stripes, pushes) {
   var waist = BODY.waist;                           // the body's waist, where the cloth hangs from (BODIES); its hem wider with it
   wide += BODY.hem;
@@ -2018,6 +2226,8 @@ function tier(long, wide, reach, phase, colour, deep, stripes, pushes) {
 }
 
 // one rolled curl of hair, with the light on it
+// x, y: its middle; r: its radius, in pixels. Drawn in the kit's dark hair colour, not HAIR. Returns nothing.
+// e.g. curl(-40, -330, 8);
 function curl(x, y, r) {
   pen.beginPath();
   pen.ellipse(x, y, r, r * 0.86, 0, 0, 7);
@@ -2040,6 +2250,10 @@ function curl(x, y, r) {
 //   long, wide   the length of the lock, and half its width
 //   swing        how far the tip swings to each side
 //   shove        [across, down]: a lag for the tip, from follow()
+//   phase        radians: where the swing is (tier()'s phase)
+//   plain        true: a straight lock that narrows to its tip, with no curl
+// Units are pen's pixels; drawn in the kit's dark hair colour, not HAIR. Returns nothing.
+// e.g. lock(-40, -338, 150, 11, 6, clock * 3, true, follow("noi/tail", -40, -338, 50, 6, 40));
 function lock(x, y, long, wide, swing, phase, plain, shove) {
   var parts = 8, left = [], right = [], middles = [], n;
   for (n = 0; n <= parts; n++) {
@@ -2081,6 +2295,9 @@ function lock(x, y, long, wide, swing, phase, plain, shove) {
 }
 
 // the lines a comb leaves in hair: each is [fromX, fromY, bendX, bendY, toX, toY]
+// lines: a list of such lines, in pen's pixels; they are drawn in HAIR_LINE and a light by turns. Returns nothing;
+// leaves pen's lineCap "round".
+// e.g. combed([[-30, -330, 0, -352, 34, -336], [-24, -322, 4, -344, 38, -326]]);
 function combed(lines) {
   pen.lineCap = "round";
   for (var n = 0; n < lines.length; n++) {
@@ -2111,6 +2328,11 @@ function combed(lines) {
 //            one, then the thumb): each finger then curls its own way. A hand
 //            model reads them from a video; REST_A and REST_B are a hand at
 //            rest. Below 0 a finger bends the other way, away from the thumb's side
+//   x, y     the wrist, in pen's pixels
+//   angle    in radians: 0 points along +x
+// Reads SKIN and clock (each finger moves a little by itself). Returns nothing: it draws with pen. It is the flat
+// hand (STYLE.hands "flat"); hand() is the one drawn in the round.
+// e.g. glove(40, -60, 1.2, 1, true, 0.6, false);
 function glove(x, y, angle, thumb, bare, open, nails, curls) {
   var colour = bare ? SKIN : "#ffffff";
   var count = bare ? 4 : 3;
@@ -2318,6 +2540,10 @@ var GESTURES = {
 // part of the way from one to the other; gives back the form, the wrist's
 // bend and the turn, mixed. A hand goes from one form to the next joint by
 // joint, and the thumb's pinch closes or opens with it.
+// gesture: a name of GESTURES ("jeeb"), or {from: name, to: name, u: 0 to 1}. Returns {curls, spread, arch: four
+// numbers, pinch, wrist, palm, down}: its curls, spread, arch and pinch are hand()'s pose, wrist the bend in
+// radians. An unknown name warns and gives "wong".
+// e.g. var g = gestureOf({from: "wong", to: "jeeb", u: 0.5});
 function gestureOf(gesture) {
   function one(name) {
     var g = GESTURES[name];
@@ -2339,6 +2565,9 @@ function gestureOf(gesture) {
 // jeeb, as Thai dancers hold them, changing over every eight seconds, each
 // hand going from one form to the other in the first 1.2 s of the eight,
 // slowly, as a Lanna dancer's hands do (owner's reference, 2026-10-16).
+// near: true for the near hand (the two are out of step); t: seconds. Returns a name of GESTURES, or {from, to,
+// u} while it changes: what gestureOf() takes.
+// e.g. var g = gestureOf(danceHand(true, t));
 function danceHand(near, t) {
   var period = Math.floor(t / 8), u = clamp((t - period * 8) / 1.2);
   var now = (period + (near ? 0 : 1)) % 2 ? "jeeb" : "wong", before = now === "jeeb" ? "wong" : "jeeb";
@@ -2353,6 +2582,10 @@ function danceHand(near, t) {
 // well in front of the palm, out of reach of a root left at the wrist).
 // "amount" takes it there from where it was (t0, t1, t2), so a hand can
 // close into the pinch. It gives back the thumb's three points.
+// t0, t1, t2: the thumb's root, joint and tip, [x, y, z] in the hand's frame; tip: [point, way, back, across],
+// each [x, y, z]; amount: 0 to 1. Returns [root, joint, tip], each [x, y, z]. hand() calls it.
+// e.g. var thumb = pinchThumb([-4, 5.7, -1], [3, 15, -3], [5, 23, -6],
+//                         [[24, 8, -4], [1, 0, 0], [0, 0, 1], [0, 1, 0]], 0.8);
 function pinchThumb(t0, t1, t2, tip, amount) {
   var root = [t0[0] + 2 * amount, t0[1], t0[2] - 5 * amount];
   var goal = [0, 1, 2].map(function (i) { return tip[0][i] - tip[2][i] * HAND.fat * 0.9; });   // the pad, under the fingertip's back
@@ -2370,6 +2603,10 @@ function pinchThumb(t0, t1, t2, tip, amount) {
   return [root, t1.map(function (v, i) { return mix(v, joint[i], amount); }), t2.map(function (v, i) { return mix(v, end[i], amount); })];
 }
 
+// A bare hand drawn in the round. x, y, angle and pose are listed at the top of this section (pixels and radians,
+// as glove() takes them). Reads clock (a little life in the fingers, unless pose.still). Returns nothing: it draws
+// with pen.
+// e.g. hand(40, -60, 1.2, {curls: REST, thumb: 1, palm: 0.2});
 function hand(x, y, angle, pose) {
   var curls = pose.curls || REST, spread = pose.spread === undefined ? 0.15 : pose.spread;
   var arches = [0, 1, 2, 3].map(function (f) { return Array.isArray(pose.arch) ? pose.arch[f] : pose.arch || 0; });   // each finger's bend back, or one for all
@@ -2566,6 +2803,9 @@ function hand(x, y, angle, pose) {
 // its toes pointing the way the person faces. The top of the foot slopes
 // down from the ankle to the toes; the big toe is the first of four bumps.
 // A lifted foot points its toes down, as a real ankle lets it.
+// x, y: the heel, in pen's pixels; lifted: 0 on the ground to 1 lifted (the toes tip down by up to 0.45
+// radians); small: true for a child's foot. Returns nothing: it draws with pen in SKIN.
+// e.g. foot(-6, 0, 0, false);
 function foot(x, y, lifted, small) {
   var long = small ? 40 : 48, tall = small ? 11 : 13;
   pen.save();
@@ -2603,6 +2843,9 @@ function foot(x, y, lifted, small) {
 
 // A shoe, with its heel at (x, y) and its toe pointing the way the person
 // faces. A lifted foot tips its toe down, as a real ankle lets it.
+// x, y: the heel, in pen's pixels; lifted: 0 on the ground to 1 lifted; small: true for a child's. Returns nothing:
+// it draws a brown shoe with pen.
+// e.g. shoe(-6, 0, 0.3, false);
 function shoe(x, y, lifted, small) {
   var long = small ? 50 : 66, tall = small ? 22 : 30;
   pen.save();
@@ -2644,6 +2887,9 @@ function shoe(x, y, lifted, small) {
 
 // the outline of one bone, from (ax, ay) to (bx, by): half as wide as
 // "wideA" at its start and "wideB" at its end, round at both ends
+// Points and widths are in pen's pixels; swell: how far the sides bow out beyond the ends, in pixels. Returns
+// nothing: it begins a new path on pen and closes it, but neither fills nor inks it.
+// e.g. bone(0, -100, 10, -40, 12, 9, 2); shape(SKIN);
 function bone(ax, ay, bx, by, wideA, wideB, swell) {
   var angle = Math.atan2(by - ay, bx - ax);
   var nx = -Math.sin(angle), ny = Math.cos(angle);  // the way across the bone
@@ -2661,6 +2907,8 @@ function bone(ax, ay, bx, by, wideA, wideB, swell) {
 // One bone, painted: its colour, and a shadow down the side that is away
 // from the light. The shadow is what is left when the same shape is painted
 // again a little toward the light, inside the first one.
+// Points and widths are in pen's pixels; colour a CSS colour. It is not inked. Returns nothing.
+// e.g. paintBone(0, -100, 10, -40, 12, 9, SKIN);
 function paintBone(ax, ay, bx, by, wideA, wideB, colour) {
   var toLight = wideA * 0.4;
   bone(ax, ay, bx, by, wideA, wideB, 3);
@@ -2705,6 +2953,9 @@ var BENDS = {};
 // it keeps the elbow it has unless the other is better by a clear margin,
 // and a change takes a fifth of a second. A cut (no memory, or the clock
 // gone back, or stopped a while) takes the better elbow at once.
+// key: a name for the arm ("noi/armA"), or nothing for no memory; gain: a number, above 0 when the first elbow
+// is better. Returns -1 to 1. Reads clock; keeps its state in BENDS[key].
+// e.g. var side = bendOf("noi/armA", 5);
 function bendOf(key, gain) {
   var s = key && BENDS[key], dt = s ? clock - s.t : -1;
   if (!s || dt < 0 || dt > 0.25) {
@@ -2735,6 +2986,9 @@ function bendOf(key, gain) {
 //                  that brings it there wins over the one the arm likes
 //                  better, and the wrist is there at once while the elbow
 //                  comes round
+//   wx, wy         the wrist asked for, from the shoulder, in pixels (down is +y)
+// Changes BENDS[key] when a key is given (bendOf(), and the way it points).
+// e.g. var at = armJoints(30, 100, 62, 58, 1, "noi/armA", 1);
 function armJoints(wx, wy, upper, lower, outward, key, sure) {
   var must = sure > 1;
   var far = Math.sqrt(wx * wx + wy * wy) || 1, reach = Math.min(far, upper + lower - 1);
@@ -2798,6 +3052,11 @@ function armJoints(wx, wy, upper, lower, outward, key, sure) {
 //   open           how much of the first bone, from its start, has no ink line
 //                  (0 to 1). An arm is open at the shoulder: a line there would
 //                  draw a ball on the chest, and the ball would turn like a wheel.
+//   x1, y1, x2, y2   the root and the end asked for, in pen's pixels
+//   colour           a CSS colour
+//   prefer           function (point) giving a number, or the joint itself as [x, y]
+// Returns [endX, endY, jointX, jointY], in pen's pixels. It draws with pen.
+// e.g. limb(20, -190, 30, -22, 106, 102, BODY.leg, "#3d4f78", function (knee) { return knee[0]; });
 function limb(x1, y1, x2, y2, upper, lower, wide, colour, prefer, open) {
   var far = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) || 1;
   var reach = Math.min(far, upper + lower - 1);
@@ -2848,6 +3107,13 @@ function limb(x1, y1, x2, y2, upper, lower, wide, colour, prefer, open) {
 // an arm that reaches forward lets it drop. "hand" is the way the hand lies;
 // "key" names the arm, so that it remembers its bend from frame to frame.
 // Where the joints go is armJoints(), with its two rules.
+//   shoulderX, shoulderY   the shoulder, in pen's pixels
+//   hand                   [across, down] from the shoulder, in pixels; or handFor()'s [x, y, 1]
+//   outward                1 or -1: which side of the body the arm is on
+//   colour                 the sleeve's or the skin's CSS colour
+// Draws the arm, not the hand, as thick as BODY.arm. Returns [wristX, wristY, elbowX, elbowY], in pen's pixels.
+// Changes BENDS[key].
+// e.g. var wrist = arm(44, -112, [14, 82], 1, SKIN, "noi/armA");
 function arm(shoulderX, shoulderY, hand, outward, colour, key) {
   var far = Math.sqrt(hand[0] * hand[0] + hand[1] * hand[1]) || 1;
   // How far the wrist reaches. A hand given 92 or more from the shoulder is
@@ -2869,6 +3135,9 @@ function arm(shoulderX, shoulderY, hand, outward, colour, key) {
 // rule turned round, for a wrist that has to be at a place: on a rope, in a
 // friend's hand, against the other wrist. A wrist can be 32 to 119 from its
 // shoulder.
+// dx, dy: where the wrist must be, from the shoulder, in pixels. Returns [x, y, 1], to pass to arm() (or as a
+// look's handA, handB).
+// e.g. arm(44, -112, handFor(30, 60), 1, SKIN, "noi/armA");
 function handFor(dx, dy) {
   var far = Math.sqrt(dx * dx + dy * dy) || 1;
   var long = Math.max(32, Math.min(119, far));
@@ -2878,6 +3147,11 @@ function handFor(dx, dy) {
 
 // A leg from a hip to an ankle: a thigh, a knee and a shin. A knee bends
 // forward, the way the person faces, and never back.
+//   hipX, hipY, ankleX, ankleY   in pen's pixels
+//   thin                         true under a skirt: shorter, thinner bones (BODY.legThin; else BODY.leg)
+//   colour                       a CSS colour
+// Returns [ankleX, ankleY, kneeX, kneeY], as limb() does. It draws with pen.
+// e.g. legOf(20, -190, 30, -16, false, "#3d4f78", leggyOf(0));
 function legOf(hipX, hipY, ankleX, ankleY, thin, colour, longer) {
   // under a skirt the bones are a little shorter, so the knees stay inside the cloth;
   // "longer" is how much longer than the cartoon's the legs are (1 unless a build is given)
@@ -2892,6 +3166,9 @@ function legOf(hipX, hipY, ankleX, ankleY, thin, colour, longer) {
 //   bands      as tier() takes them, or nothing
 //   from, to   how far down the whole cloth this length begins and ends (0 is the waist, 1 the hem)
 //   open       how much of it, from its start, has no line (0 to 1)
+// Points and widths are in pen's pixels (widths are half-widths, as bone() takes them); colour a CSS colour.
+// Returns nothing: it draws with pen.
+// e.g. wrap(4, -54, 92, -21, 24, 17, "#2f3f6e", SINS[0][1], 0.1, 0.5, 0.35);
 function wrap(ax, ay, bx, by, wideA, wideB, colour, bands, from, to, open) {
   var ink = inkFor(colour), part = open || 0;
   heavy(ink);
@@ -2925,6 +3202,11 @@ function wrap(ax, ay, bx, by, wideA, wideB, colour, bands, from, to, open) {
 //   slight   a lady's smaller feet
 //   longer   how much longer than the cartoon's the legs are (1 unless a build is given)
 // It gives back where the joints are: [knee B, knee A, ankle B, ankle A].
+//   kind     also "astride": one who rides, the near leg hanging down the animal's side (in cloth, both legs, as
+//            side-saddle)
+//   hipY     the hips' height, in pen's pixels: below 0, above the ground
+// It draws in pen's frame as it is (the caller has moved pen to the person's place on the ground).
+// e.g. var joints = seated("cross", -60, "#3d4f78", null, false, 1);
 function seated(kind, hipY, colour, bands, slight, longer) {
   function toes(x, y, way, turn) {                  // a foot with its heel at (x, y), its toes pointing along x (way 1) or back (-1)
     pen.save();
@@ -3013,6 +3295,8 @@ function seated(kind, hipY, colour, bands, slight, longer) {
 
 // How much longer than the cartoon's a figure's legs are, for its build: up
 // to 1.3 times at build 1, and down to 0.85 at -1, a child's (see person()).
+// build: -1 to 1, default 0. Returns 0.85 to 1.3.
+// e.g. leggyOf(-1)   // 0.85
 function leggyOf(build) {
   var b = Math.max(-1, Math.min(1, build || 0));
   return 1 + (b < 0 ? 0.15 : 0.3) * b;
@@ -3034,6 +3318,8 @@ var WAI = [0, 0, 0, 0, 0.3];                        // the hands of a wai: four 
 // reads from a few steps off. It is drawn under the cloth, so only what the
 // cloth leaves bare shows: nothing under a cloth to the ankle, a hand's width
 // under one to the knee, the whole thigh under one hitched up for work.
+// Points in pen's pixels. Returns nothing: it draws with pen.
+// e.g. tattoo(10, -190, 30, -100);
 function tattoo(ax, ay, bx, by) {
   var far = Math.sqrt((bx - ax) * (bx - ax) + (by - ay) * (by - ay)) || 1;
   var ux = (bx - ax) / far, uy = (by - ay) / far;
@@ -3049,6 +3335,9 @@ function tattoo(ax, ay, bx, by) {
 }
 
 // gold rings round a wrist, drawn across the forearm: "angle" is the way the arm points
+// Drawn about pen's origin, which is the wrist: count + 1 rings in STYLE.gold, from the wrist up the forearm.
+// count: a whole number. Returns nothing.
+// e.g. pen.translate(wristX, wristY); bangles(1.2, 2);
 function bangles(angle, count) {
   pen.save();
   pen.rotate(angle);
@@ -3142,6 +3431,9 @@ var CAST = {
             lips: 0.9, north: "round", smile: 1, bangles: 1}
 };
 
+// name: a name of CAST ("lady"; an unknown one warns and gives a bare figure); more: the look's keys to change,
+// or nothing. Returns a new look; CAST is not changed.
+// e.g. person(700, GROUND, cast("lady", {late: 0.5}));
 function cast(name, more) {
   checkName("The cast member", name, CAST);       // otherwise the figure comes out bare
   return Object.assign({}, CAST[name], more || {});
@@ -3175,6 +3467,9 @@ var SINS = [
 // bands of squares as close as the squares are wide, every other row shifted,
 // make the check. "rows" squares down a cloth "long" pixels long at size 1: a
 // cloth to the knee is about 112 long, to the ankle about 196.
+// rows: how many rows of squares; long: the cloth's length in pixels at size 1. Returns a list of bands, as tier()
+// and look.sarong take them ([colour, bands]).
+// e.g. var look = cast("farmer", {sarong: ["#efe6d2", takong(9, 112)]});
 function takong(rows, long) {
   var bands = [];
   for (var row = 0; row < rows; row++) { bands.push([(row + 0.5) / rows, "#1f1a1a", long / rows, row % 2 ? "checks-odd" : "checks"]); }
@@ -3222,6 +3517,12 @@ var WEAVES = [
 // numbers are eased; anything else is taken from the key being held. A key
 // [time, look, "snap"] is reached the way a cartoon hits a pose: a small move
 // the other way first, then fast, a little past, and settling.
+//   t      seconds; past the last key's time it starts again from the first (the keys loop)
+//   keys   [[time, look], [time, look, "snap"], ...]: at least two, the times rising
+//   hold   0 to 1, default 0.5
+// Returns a new look; the keys are not changed.
+// e.g. var keys = [[0, {handA: [30, -80]}], [2, {handA: [60, 20]}], [4, {handA: [30, -80]}]];
+//      person(700, GROUND, Object.assign(cast("dancer"), poseAt(t, keys)));
 function poseAt(t, keys, hold) {
   hold = hold === undefined ? 0.5 : hold;
   var last = keys[keys.length - 1][0];
@@ -3257,6 +3558,8 @@ function poseAt(t, keys, hold) {
 
 // where the joint of two bones lies, from (x1, y1) toward (x2, y2); the
 // same answer limb() draws, so a stick figure and a person agree
+// Points and lengths in pixels; prefer: function (point) giving a number, the higher one wins. Returns [x, y].
+// e.g. var knee = jointOf(20, -190, 30, -22, 92, 90, function (k) { return k[0]; });
 function jointOf(x1, y1, x2, y2, upper, lower, prefer) {
   var far = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) || 1;
   var reach = Math.min(far, upper + lower - 1);
@@ -3270,6 +3573,9 @@ function jointOf(x1, y1, x2, y2, upper, lower, prefer) {
 
 // A stick figure standing on (x, y), in the same pose a person would take
 // from the same look: the movement guide, drawn as joints and bones.
+// x, y: where it stands, in pen's pixels; look: a person's look (it reads size, sit, handA, handB, raise, bend,
+// tilt, turn, glance, dance, face, and warns about names LOOK_KEYS lacks). Returns nothing: it draws with pen.
+// e.g. stick(700, GROUND, {handA: [30, -80], bend: 0.1, size: 1.3});
 function stick(x, y, look) {
   checkNames("The look's name", look, LOOK_KEYS);
   var size = (look.size || 1) * 0.82, sit = look.sit || 0;
@@ -3366,6 +3672,8 @@ function stick(x, y, look) {
 //     person(walk.x, GROUND, walk.look);
 var STROLL = {skirt: 1.2, trousers: 1.8};
 
+// It reads BEAT and the look's size, stride, skirt, sin, sarong and patoi; the look given is not changed.
+// e.g. var walk = stroll(t, 200, 1100, 2, cast("lady")); person(walk.x, GROUND, walk.look);
 function stroll(t, from, to, start, look) {
   var size = (look.size || 1) * 0.82, far = Math.abs(to - from), way = to < from ? -1 : 1;
   var long = look.stride || ((look.skirt || look.sin !== undefined || look.sarong) && !look.patoi ? STROLL.skirt : STROLL.trousers);
@@ -5713,6 +6021,10 @@ function personArms(fig) {
 // the canvas to paint on; "fill" and "line" its colours. "foot" is the colour
 // that gathers toward its underside: a pale blue unless told, and a thangka
 // gives an ochre cloud a green one.
+// brush: a 2D context (pen, or a set's hidden sheet); x, y: its middle, in that canvas's pixels;
+// size: 1 is about 300 wide; fill, line, foot: CSS colours, foot "#rrggbb". Returns nothing; brush is left as it
+// was found.
+// e.g. scrollCloud(pen, 400, 160, 0.8, "#f6f1e6", "rgba(120, 130, 150, 0.65)");
 function scrollCloud(brush, x, y, size, fill, line, foot) {
   var lobes = [[-128, -4, 26], [-84, -24, 34], [-34, -38, 40], [22, -32, 38], [74, -20, 32], [118, -4, 26]];
   var crown = [[-40, -60, 22], [4, -68, 26], [46, -56, 20]], n;
@@ -5771,6 +6083,9 @@ function scrollCloud(brush, x, y, size, fill, line, foot) {
 
 // A cloud drawn live, so it can drift. STYLE.clouds is "scroll" (a thangka's
 // cloud) or "soft" (three blurred blobs). "dark" is an evening colour.
+// x, y: its middle, in the sheet's pixels; size: 1 is about 300 wide; dark: a CSS colour for an evening cloud,
+// or nothing. Reads STYLE.clouds. Returns nothing: it draws with pen.
+// e.g. cloud(300 + t * 8, 180, 0.9);
 function cloud(x, y, size, dark) {
   if (STYLE.clouds === "soft") {
     pen.save();
@@ -5806,6 +6121,8 @@ function cloud(x, y, size, dark) {
 // channel is mixed as light (its square), not as the number written, so the
 // middle of a blend between two unlike colours keeps its brightness instead of
 // going grey or dark the way plain averaging does.
+// a, b: "#rrggbb" colours (no other form); amount: 0 gives a, 1 gives b. Returns "#rrggbb".
+// e.g. blend("#5f9a4e", "#f6f2a4", 0.3)
 function blend(a, b, amount) {
   var pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16), out = 0, ca, cb;
   for (var shift = 16; shift >= 0; shift -= 8) {
@@ -5818,6 +6135,9 @@ function blend(a, b, amount) {
 
 // The shape a petal and a leaf share: pointed, widest below its middle, from
 // its foot at (0, 0) to its tip "long" above. "bow" bends the tip to one side.
+// brush: a 2D context; long and wide in its pixels (wide is about its half-width); bow: a share of long,
+// default 0. Returns nothing: it begins a new path on brush and closes it, unfilled.
+// e.g. leafPath(pen, 40, 10, 0.2); pen.fill();
 function leafPath(brush, long, wide, bow) {
   var tip = (bow || 0) * long;
   brush.beginPath();
@@ -5829,6 +6149,9 @@ function leafPath(brush, long, wide, bow) {
 
 // One petal: pale at its foot and its colour at the tip, fine veins that fan
 // toward the tip, and a thin line round it.
+// brush: a 2D context, its origin at the petal's foot; long, wide, bow: leafPath()'s; pale, deep, line: CSS
+// colours. Returns nothing; leaves brush's strokeStyle, fillStyle, lineWidth and lineJoin as it set them.
+// e.g. paintPetal(pen, 34, 11, 0.1, "#fff6ea", "#f28fa8", "rgba(120, 40, 60, 0.8)");
 function paintPetal(brush, long, wide, bow, pale, deep, line) {
   var tip = (bow || 0) * long;
   leafPath(brush, long, wide, bow);
@@ -5859,6 +6182,9 @@ function paintPetal(brush, long, wide, bow, pale, deep, line) {
 
 // One leaf: deep at its foot and lighter at the tip, a rib up its middle,
 // and a line round it.
+// brush: a 2D context, its origin at the leaf's foot; long, wide, bow: leafPath()'s; deep, pale, line, rib: CSS
+// colours, rib a pale gold unless told. Returns nothing.
+// e.g. paintLeaf(pen, 50, 12, 0.22, "#1f5a48", "#6fb268", "rgba(20, 50, 40, 0.85)");
 function paintLeaf(brush, long, wide, bow, deep, pale, line, rib) {
   var tip = (bow || 0) * long;
   leafPath(brush, long, wide, bow);
@@ -5884,6 +6210,9 @@ function paintLeaf(brush, long, wide, bow, deep, pale, line, rib) {
 // shut. Each petal is pale at its foot and "colour" at its tip. "open" runs
 // from 0, a bud, to 1, the flower full out. Thai and Tibetan painting put
 // one wherever there is room, and in the hand of anyone holy.
+// brush: a 2D context; x, y: the cup at its foot; size: 1 is about 70 across; colour: the tips', "#f28fa8"
+// unless told; open: 0 to 1, default 1. Returns nothing; brush is left as it was found.
+// e.g. lotus(pen, 820, 700, 1.4, "#f28fa8", 0.8);
 function lotus(brush, x, y, size, colour, open) {
   colour = colour || "#f28fa8";
   open = open === undefined ? 1 : open;
@@ -5918,6 +6247,9 @@ function lotus(brush, x, y, size, colour, open) {
 // shallow cup. We see its underside, deep green, with veins running down to
 // the stem, and over the near rim a slice of the top, lighter, with a wavy
 // edge. The stem joins it at (x, y); "tilt" leans it.
+// brush: a 2D context; size: 1 is about 104 across; tilt: radians, default 0; colour: "#rrggbb", "#5f9a4e"
+// unless told. Returns nothing; brush is left as it was found.
+// e.g. lotusLeaf(pen, 760, 720, 1, -0.2);
 function lotusLeaf(brush, x, y, size, tilt, colour) {
   colour = colour || "#5f9a4e";
   var line = "rgba(35, 65, 40, 0.85)", half = 52, rim = -30, n, p;
@@ -5981,6 +6313,8 @@ function lotusLeaf(brush, x, y, size, tilt, colour) {
 // A point on a stem: u is 0 at its root (x0, y0) and 1 at its top (x1, y1).
 // "bow" swings the lower half to one side and the upper half back, so the
 // stem is a long S.
+// All in pixels; u: 0 to 1. Returns [x, y]: the same curve stemOf() draws.
+// e.g. var p = stemPoint(0, 0, 40, -200, 30, 0.5);
 function stemPoint(x0, y0, x1, y1, bow, u) {
   var ax = x0 + bow, ay = mix(y0, y1, 0.35), bx = x1 - bow * 0.7, by = mix(y0, y1, 0.7), v = 1 - u;
   return [v * v * v * x0 + 3 * v * v * u * ax + 3 * v * u * u * bx + u * u * u * x1,
@@ -5989,6 +6323,9 @@ function stemPoint(x0, y0, x1, y1, bow, u) {
 
 // A stem: one long curve, lighter than the leaves, with a line of its own.
 // A lotus stem carries small prickles.
+// brush: a 2D context; from (x0, y0) to (x1, y1), with stemPoint()'s bow, in pixels; colour: a CSS colour;
+// prickles: true for a lotus stem. Returns nothing; leaves brush's lineCap "round".
+// e.g. stemOf(pen, 700, 900, 740, 700, 40, "#b7cf86", true);
 function stemOf(brush, x0, y0, x1, y1, bow, colour, prickles) {
   brush.lineCap = "round";
   brush.beginPath();
@@ -6020,6 +6357,9 @@ function stemOf(brush, x0, y0, x1, y1, bow, colour, prickles) {
 // different pace (the taller the stem, the further), the stem bending with it rather
 // than sliding; the leaves rock on the water; and an open flower breathes, its petals
 // closing a little and opening again.
+// brush: a 2D context; size: 1 is about 260 tall; seed: a whole number, default 0; colour: the flowers', as
+// lotus() takes it; t: seconds, or nothing for a clump that stands still. Returns nothing.
+// e.g. lotusClump(pen, 900, 930, 0.8, 3, "#f28fa8", t);
 function lotusClump(brush, x, base, size, seed, colour, t) {
   seed = seed || 0;
   var stir = typeof t === "number";
@@ -6074,6 +6414,9 @@ function lotusClump(brush, x, base, size, seed, colour, t) {
 // set by how far off it is (the far rows slowly, the near rows faster, as a camera
 // passing would show them), every arc rides two swells of different length that
 // cross at different speeds, and a few glints along the far water brighten and fade.
+// brush: a 2D context; x, y, wide, tall: the box it fills, in pixels; colour: a CSS colour, a pale white unless
+// told; t: seconds, or nothing for still water. Returns nothing; brush is left as it was found.
+// e.g. waves(pen, 0, 780, WIDE, 200, "rgba(255, 250, 230, 0.6)", t);
 function waves(brush, x, y, wide, tall, colour, t) {
   var rows = Math.max(1, Math.round(tall / 20)), moving = typeof t === "number";
   brush.save();
@@ -6115,6 +6458,9 @@ function waves(brush, x, y, wide, tall, colour, t) {
 // Drops on the water: rings is [[x, y, at], ...], and from second "at" a ring
 // spreads from (x, y) for 2.5 seconds, a second ring behind it, fading as it
 // widens. The film says when a fish rose or a drop fell, so nothing is remembered.
+// brush: a 2D context; rings: [[x, y, at], ...], x and y in pixels, at in seconds; t: seconds, on the same clock.
+// Returns nothing; brush is left as it was found.
+// e.g. ripples(pen, [[700, 860, 4], [920, 880, 6.5]], t);
 function ripples(brush, rings, t) {
   brush.save();
   brush.strokeStyle = "rgba(255, 250, 230, 0.9)";
@@ -6139,6 +6485,9 @@ function ripples(brush, rings, t) {
 // bottom of the box, and its far bank curves across the top.
 // A pool with a bank line. Given flow.t the water moves (see waves), and
 // flow.rings are drops on it (see ripples).
+// brush: a 2D context; x, y, wide, tall: in pixels; flow: {t: seconds, rings: as ripples() takes them}, or
+// nothing for still water. Returns nothing; brush is left as it was found.
+// e.g. pond(pen, 300, 760, 900, 220, {t: t, rings: [[700, 860, 4]]});
 function pond(brush, x, y, wide, tall, flow) {
   flow = flow || {};
   brush.save();
@@ -6166,6 +6515,9 @@ function pond(brush, x, y, wide, tall, flow) {
 // "remove the orange fish from the kit or update their look to be more consistent with the kit style") one of the
 // kit's native fish of a Lanna pond (nativeFish, below), as big as the old one was: a warm colour asks for the mud
 // barb, whose fins are red, any other for the gourami. Its tail sweeps on the kit's clock.
+// brush: a 2D context; x, y: its middle; size: 1 is the old fish's size; facing: 1 right or -1 left, default 1;
+// colour: "#rrggbb" or nothing. Reads clock. Returns nothing.
+// e.g. fish(pen, 640, 840, 1, -1, "#e8873a");
 function fish(brush, x, y, size, facing, colour) {
   var warm = !colour || /^#(e|f|d)/i.test(colour);
   nativeFish(brush, x, y, size * 1.25, facing || 1, warm ? "barb" : "gourami", clock);
@@ -6199,6 +6551,9 @@ var NATIVE_FISH = {
   snakehead: {beat: 1.6, body: ["#3f3a26", "#7a7050", "#e6dcc0"], fin: "rgba(110, 100, 70, 0.8)", ray: "rgba(50, 44, 28, 0.6)", line: "#2e2a1c"}
 };
 
+// kind: one of NATIVE_FISH (an unknown kind is drawn as a gourami); t: seconds, default 0. Returns nothing;
+// brush is left as it was found.
+// e.g. nativeFish(pen, 640, 850, 1, 1, "snakehead", t);
 function nativeFish(brush, x, y, size, facing, kind, t) {
   t = t || 0;
   var F = NATIVE_FISH[kind] || NATIVE_FISH.gourami, unit = (kind === "snakehead" ? 60 / 260 : 46 / 200) * size;
@@ -6375,6 +6730,9 @@ function nativeFish(brush, x, y, size, facing, kind, t) {
 }
 
 // A small flower of five round petals, pale at their rims, with a gold heart
+// brush: a 2D context; x, y: its heart; r: its radius in pixels; colour: the petals' heart, a CSS colour.
+// Returns nothing.
+// e.g. blossom(pen, 400, 600, 8, "#f28fa8");
 function blossom(brush, x, y, r, colour) {
   var fade = brush.createRadialGradient(x, y, r * 0.1, x, y, r * 1.15);
   fade.addColorStop(0, colour);
@@ -6399,6 +6757,9 @@ function blossom(brush, x, y, r, colour) {
 // on both sides (deep green, lighter at the tip, with a pale rib), and at
 // its top a round flower of three rings of petals, each ring pale at its
 // rim and "colour" toward the heart. "seed" changes the plant.
+// brush: a 2D context; x, base: its root on the ground; size: 1 is 150 to 220 tall; colour: a "#rrggbb", "#f08a5c"
+// unless told; seed: a whole number, default 0. Returns nothing; brush is left as it was found.
+// e.g. flowerSpray(pen, 200, GROUND, 0.9, "#f08a5c", 2);
 function flowerSpray(brush, x, base, size, colour, seed) {
   seed = seed || 0;
   colour = colour || "#f08a5c";
@@ -6447,6 +6808,9 @@ function flowerSpray(brush, x, base, size, colour, seed) {
 // A pad of leaves: a cluster of round lobes with one line round the whole
 // cluster, deep green at its heart and lighter at its rim, and small leaves
 // marked on it. A tree's foliage is pads, not one blob.
+// brush: a 2D context; x, y: its middle; r: its radius in pixels; colour: "#rrggbb"; seed: any number (give one:
+// it turns the lobes). Returns nothing.
+// e.g. leafPad(pen, 300, 500, 60, "#3f7a4a", 4);
 function leafPad(brush, x, y, r, colour, seed) {
   var lobes = [[x, y, r * 0.62]], n;
   for (n = 0; n < 7; n++) {
@@ -6488,6 +6852,9 @@ function leafPad(brush, x, y, r, colour, seed) {
 
 // A flock of birds, far off: each is two strokes that flap, and they fly
 // in a loose line, each a little behind the one before.
+// t: seconds; x, y: the first bird, the rest behind it to the left, in the sheet's pixels. Returns nothing: it
+// draws six birds in INK with pen.
+// e.g. birds(t, 900 + t * 40, 220);
 function birds(t, x, y) {
   pen.strokeStyle = INK;
   pen.lineWidth = 2.5;
@@ -6508,6 +6875,11 @@ function birds(t, x, y) {
 // picture and smaller, and even the furthest face has eyes and a mouth.
 // Every so often one holds up a red paper umbrella, or carries a gong.
 //   lanterns   true in the evening: some hold a lantern
+//   t        seconds: they bob on the beat (hop()) and wave
+//   y        the foot of the nearest row, in the sheet's pixels; the others stand higher
+//   slide    pixels the rows have slid to the left (the camera passing), 0 for none
+// Returns nothing: it draws three rows across the sheet with pen.
+// e.g. crowd(t, 820, t * 30, false);
 function crowd(t, y, slide, lanterns) {
   var coats = ["#c4654f", "#4a6797", "#f2ead8", "#5a9686", "#e6a7b6", "#e9c45c", "#9a7bb0"];
   var sarongs = ["#3d4f78", "#b2455a", "#814a77", "#3d4f78", "#b2455a", "#5a9686", "#3d4f78"];
@@ -6649,6 +7021,9 @@ function crowd(t, y, slide, lanterns) {
 // how: {feel: a feeling, as a person's (creatureFeel())}: its head is carried
 // high or low, its ears go up or back, its tail wags or droops, its brows
 // and its mouth show it, and its eyes close, slant or go wide.
+// x, y: where its feet stand, in the sheet's pixels; it faces right and is about 140 long. t: seconds (it
+// trots on the beat). how: {feel}, or nothing; another name warns. Returns nothing: it draws with pen.
+// e.g. dog(500, GROUND, t, {feel: "happy"});
 function dog(x, y, t, how) {
   how = how || {};
   checkNames("The dog's name", how, {feel: true});
@@ -6753,6 +7128,8 @@ function dog(x, y, t, how) {
 // (0.35 folded; more lifts it up over the back, less lowers it): a few
 // feathered curves, as rooster() draws it. "open", 0 to 1, spreads it, longer
 // and broader, as a wing that beats or is held out is.
+// x, y, in pen's pixels; angle in radians; colour a CSS colour; open 0 to 1, default 0. Returns nothing.
+// e.g. roosterWing(-6, -38, 0.35, "#f0dcc0", 0);
 function roosterWing(x, y, angle, colour, open) {
   pen.save();
   pen.translate(x, y);
@@ -6821,6 +7198,9 @@ var ROOSTER_KEYS = {};
 //          tail; a brow shows anger, sadness and worry, a laugh gapes the
 //          beak on each "ha"; only a happy, a neutral or an angry rooster crows
 // roosterBolt() puts them together into a whole fright and flight.
+// x, y: where its feet stand, in the sheet's pixels; t: seconds (it crows on the beat); bird: its look, as above,
+// or nothing (other names warn). Returns nothing: it draws with pen (and a note of music while it crows).
+// e.g. rooster(600, GROUND, t, {hen: true, peck: roosterForage(t, 2)});
 function rooster(x, y, t, bird) {
   bird = bird || {};
   checkNames("The rooster's name", bird, ROOSTER_KEYS);
@@ -6984,6 +7364,8 @@ function rooster(x, y, t, bird) {
 // looking, now and then a peck or a few quick pecks at the ground, each down
 // in a tenth of a second and up in a fifth, and now and then its head up a
 // while, looking about. "seed" gives each bird its own.
+// t: seconds; seed: any number, default 0. Returns 0 to 1: the peck to give rooster().
+// e.g. rooster(600, GROUND, t, {peck: roosterForage(t, 1)});
 function roosterForage(t, seed) {
   var cell = Math.floor(t / 0.3), u = t / 0.3 - cell;
   var jab = dice(cell * 5 + (seed || 0) * 17 + 1) > 0.5 ? (u < 0.3 ? Math.sin(u / 0.3 * Math.PI / 2) : Math.cos((u - 0.3) / 0.7 * Math.PI / 2)) : 0;
@@ -7011,6 +7393,8 @@ var BOLT = {run: 0.35, hop: 1.1, top: 1.475, land: 1.85, high: 130};
 // true for a hen}. It gives back {x, y, look}: how far it has gone from where
 // it stood (x the way it runs; y up from the ground, so below 0) and the look
 // for rooster(). Before the fright (s below 0) it stands.
+// s: seconds since the fright (below 0: before it). Returns {x, y, look}, x and y in pixels.
+// e.g. var b = roosterBolt(t - 3, {face: -1}); rooster(600 + b.x, GROUND + b.y, t, b.look);
 function roosterBolt(s, plan) {
   plan = plan || {};
   var face = plan.face || 1, B = BOLT, bird = {face: face, alarm: 0};
@@ -7056,6 +7440,8 @@ function roosterBolt(s, plan) {
 
 // A feather: a quill and a soft vane, "long" from end to end, its middle at
 // (x, y), turned by "turn" (0: the root at the left, the tip at the right).
+// x, y, long in pen's pixels; turn in radians; colour a CSS colour. Returns nothing.
+// e.g. feather(600, 800, 0.3, 22, "#fff6e6");
 function feather(x, y, turn, long, colour) {
   var h = long / 2;
   pen.save();
@@ -7086,6 +7472,10 @@ function feather(x, y, turn, long, colour) {
 // it swings back; it carries on "drift" the way it was going before the air
 // stops it; it lands, lies flat a moment and fades. "seed" gives each its own
 // swing. Nothing is drawn before it comes loose or after it has gone.
+// x, y, ground in the sheet's pixels; age and drift: seconds, and pixels it carries sideways (default 0); seed:
+// any number; colour: a CSS colour, the rooster's white unless told. Returns nothing: it draws with pen, or
+// nothing at all.
+// e.g. fallingFeather(620, 760, GROUND, t - 4.2, 1, "#c98b4e", 40);
 function fallingFeather(x, y, ground, age, seed, colour, drift) {
   if (age < 0) { return; }
   var swing = 1.1 + 0.3 * dice(seed * 3 + 1), wide = 20 + 12 * dice(seed * 3 + 2), sink = 50 + 15 * dice(seed * 3 + 3);
@@ -7110,6 +7500,9 @@ function fallingFeather(x, y, ground, age, seed, colour, drift) {
 // of a thangka, which turn and swell on the beat) or "face" (the smiling sun
 // of a 1930s cartoon). how: {feel: a feeling (creatureFeel())}, for the face:
 // its pie eyes under their lids, a brow over each, the smile turned or opened.
+// x, y: its middle, in the sheet's pixels (the disc is about 150 across); t: seconds (it swells on the beat and
+// its flames turn); how: {feel}, or nothing; another name warns, for the face. Returns nothing: it draws with pen.
+// e.g. sun(1200, 200, t);
 function sun(x, y, t, how) {
   var big = 74 + hop(t, 0) * 7;
   if (STYLE.sun === "face") {
@@ -7212,6 +7605,9 @@ function sun(x, y, t, how) {
 // paper is brightest low down, by the flame, and darker toward the closed
 // top. Thin bamboo hoops show through it. It leans a little one way and
 // then the other as it climbs, and its flame never holds still.
+// x, y: its middle, in the sheet's pixels; size: its width in pixels (it was drawn 40 wide), the glow round it
+// about seven times that. Reads clock. Returns nothing: it draws with pen.
+// e.g. lantern(600, 400 - t * 30, 40);
 function lantern(x, y, size) {
   var flicker = 0.85 + 0.15 * Math.sin(clock * 23 + x) * Math.sin(clock * 7.3 + x * 0.5);
   var light = pen.createRadialGradient(x, y + size * 0.3, 0, x, y + size * 0.3, size * 3.4);
@@ -7288,6 +7684,9 @@ function lantern(x, y, size) {
 
 // A big tree with a round canopy, as the murals paint one: a trunk that
 // forks, drawn as a shape with a line round it, and its leaves in pads.
+// brush: a 2D context; x, base: the foot of its trunk; size: 1 is about 470 tall and 400 across. Returns nothing;
+// brush is left as it was found.
+// e.g. tree(pen, 1200, GROUND, 0.9);
 function tree(brush, x, base, size) {
   brush.save();
   brush.translate(x, base);
@@ -7327,6 +7726,8 @@ function tree(brush, x, base, size) {
 }
 
 // a clump of leaves at the edge of the path, each leaf outlined, as a mural draws foliage
+// brush: a 2D context; x, base: its root; size: 1 is five leaves about 90 long. Returns nothing.
+// e.g. leafClump(pen, 140, GROUND + 20, 0.7);
 function leafClump(brush, x, base, size) {
   brush.save();
   brush.translate(x, base);
@@ -7355,6 +7756,13 @@ function leafClump(brush, x, base, size) {
 // A range of hills across the picture: one ridge, graded from deep along
 // the top to pale at the foot, with a firm line and tufts of grass. A film
 // lays three or four, the furthest first.
+//   brush    a 2D context
+//   wide     how far across it runs, from x = 0, in pixels (WIDE for the whole sheet)
+//   base     the foot of the range, y in pixels; tall: how high its ridge rises above it
+//   shape    any number: another number, another ridge
+//   colour   "#rrggbb" for the graded hill; any other CSS colour is laid flat
+// Returns nothing; leaves brush's fillStyle, strokeStyle, lineWidth, lineJoin and lineCap as it set them.
+// e.g. hills(pen, WIDE, 760, 220, 1.3, "#7fa86a");
 function hills(brush, wide, base, tall, shape, colour) {
   var x, plain = !/^#[0-9a-f]{6}$/i.test(colour);
   function ridge(at) {
@@ -7402,6 +7810,9 @@ function hills(brush, wide, base, tall, shape, colour) {
 //   wide, tall  how far the heap spreads, and how high its tallest peak stands
 //   colour      "#rrggbb"
 //   seed        which heap it is: another number, another heap
+// brush: a 2D context; x, base, wide and tall in its pixels. Returns nothing; leaves brush's line settings and
+// paint as it set them.
+// e.g. peaks(pen, 700, 640, 900, 360, "#6f9a7a", 2);
 function peaks(brush, x, base, wide, tall, colour, seed) {
   var line = blend(colour, "#2a1a10", 0.72), rows = [[5, 1], [6, 0.72], [5, 0.46]];
   brush.lineJoin = "round";
@@ -7445,6 +7856,9 @@ function peaks(brush, x, base, wide, tall, colour, seed) {
 // its hills with: the leaves at the sides lie low and are drawn first, the
 // ones in the middle stand and lie over them. Each is a leaf of the kit's
 // (paintLeaf): deep at its foot, lighter at its tip, a pale rib, a fine line.
+// brush: a 2D context; x, base: its root; size: 1 is leaves about 76 long; colour: "#rrggbb"; seed: any number,
+// default 0. Returns nothing; brush is left as it was found.
+// e.g. fanPlant(pen, 260, GROUND, 0.8, "#3f7a4a", 5);
 function fanPlant(brush, x, base, size, colour, seed) {
   var count = 9 + Math.floor(dice((seed || 0) + 3) * 5), line = blend(colour, "#16281c", 0.7), leaves = [], n;
   for (n = 0; n < count; n++) { leaves.push((n / (count - 1) * 2 - 1) * 1.25 + (dice((seed || 0) * 7 + n) - 0.5) * 0.14); }
@@ -7467,6 +7881,9 @@ function fanPlant(brush, x, base, size, colour, seed) {
 // A tree as a thangka paints one: a trunk that leans, and a crown of round
 // dark clumps, each carrying one pale tassel: a small arc with lines that
 // hang from it and meet. The clumps further back are drawn first.
+// brush: a 2D context; x, base: the foot of its trunk; size: 1 is about 230 tall; colour: the crown's, "#rrggbb";
+// seed: any number, default 0. Returns nothing; brush is left as it was found.
+// e.g. tasselTree(pen, 980, 700, 1, "#2f5a3a", 3);
 function tasselTree(brush, x, base, size, colour, seed) {
   var k = (seed || 0) * 13, lean = (dice(k) - 0.5) * 36, n;
   brush.save();
@@ -7520,6 +7937,9 @@ function tasselTree(brush, x, base, size, colour, seed) {
 // Rocks, as a thangka paints them: round boulders piled one before another,
 // each banded in layers: lines inside it that arch the way its top does, one
 // under another. A boulder is deep at its heart and its colour at its rim.
+// brush: a 2D context; x, base: the middle of the pile, on the ground; size: 1 is about 300 across; colour:
+// "#rrggbb"; seed: any number, default 0. Returns nothing; brush is left as it was found.
+// e.g. rocks(pen, 400, GROUND, 0.6, "#9a8a70", 1);
 function rocks(brush, x, base, size, colour, seed) {
   var k = (seed || 0) * 17, piles = [[-58, 0.95], [44, 1.1], [-8, 1.3], [-92, 0.62], [84, 0.7], [18, 0.74]], n;
   brush.save();
@@ -7560,6 +7980,9 @@ function rocks(brush, x, base, size, colour, seed) {
 // crest curls over, white at the crest and the water's colour at the foot,
 // with two lines inside it that follow its back. The rows further off are
 // drawn first, and each row sits between the waves of the one behind.
+// brush: a 2D context; x, y, wide, tall: the box, in pixels; colour: "#rrggbb", "#6f8fb0" unless told; seed: any
+// number, default 0. Returns nothing; brush is left as it was found.
+// e.g. foam(pen, 0, 820, WIDE, 120, "#6f8fb0", 2);
 function foam(brush, x, y, wide, tall, colour, seed) {
   var rows = Math.max(1, Math.round(tall / 26)), line = blend(colour || "#6f8fb0", "#16243a", 0.7);
   brush.save();
@@ -7606,6 +8029,10 @@ function foam(brush, x, y, wide, tall, colour, seed) {
 //   tile                       how wide a tile is; a row is 0.75 of that high
 //   colour                     the tiles' colour, or a function of (x, y) that gives one, for a roof in bands
 //   end                        how a tile ends: "round" (scales), "point" or "square"
+// brush: a 2D context, already clipped to the roof; the box and tile in pixels; colour "#rrggbb" or a function
+// (x, y) giving one. Returns nothing; leaves brush's paint and line as it set them.
+// e.g. pen.save(); pen.beginPath(); pen.rect(-200, -330, 400, 100); pen.clip();
+//      roofTiles(pen, -200, 200, -330, -230, 22, "#9a3a2a", "round"); pen.restore();
 function roofTiles(brush, left, right, top, bottom, tile, colour, end) {
   var high = tile * 0.75, rows = Math.ceil((bottom - top) / high) + 1;
   for (var row = 0; row < rows; row++) {            // from the eave up, so that each row lies over the one below
@@ -7651,6 +8078,9 @@ function roofTiles(brush, left, right, top, bottom, tile, colour, end) {
 // of more than one brown, with their grain; a window set into the wall,
 // with a sill; a roof of tiles in rows with a board along its eave; and the
 // shade the eave throws on the wall.
+// brush: a 2D context; x, base: the middle of its foot, on the ground; size: 1 is about 380 across and 440 tall.
+// Returns nothing; brush is left as it was found.
+// e.g. house(pen, 900, GROUND, 0.8);
 function house(brush, x, base, size) {
   var n, tone;
   brush.save();
@@ -7824,6 +8254,10 @@ function house(brush, x, base, size) {
   brush.restore();
 }
 
+// A coconut palm: a ringed trunk that curves out to one side and back, a crown of fronds, three coconuts.
+// brush: a 2D context; x, base: the foot of its trunk; tall: the trunk's height in pixels. Returns nothing; leaves
+// brush's paint and line settings as it set them.
+// e.g. palm(pen, 1300, GROUND, 360);
 function palm(brush, x, base, tall) {
   var line = "rgba(55, 35, 22, 0.85)";
   brush.beginPath();                                // the trunk: a shape that leans
@@ -7885,6 +8319,10 @@ function palm(brush, x, base, tall) {
 // a tung: the long woven flag that hangs from a bamboo pole at a festival
 // With "crowned", a hong (pieces.js) stands on the top of the pole, as the
 // hamsa crowns the tall tung poles of a northern temple.
+// brush: a 2D context; x, base: the foot of its pole (the pole leans to the right, its top 70 across and 470 up,
+// in pixels); t: seconds, or nothing for a flag that hangs still; crowned: true for a hong on the top (pieces.js
+// must be loaded, or none is drawn). Returns nothing; leaves brush's paint and line settings as it set them.
+// e.g. tung(pen, 300, GROUND, t, true);
 function tung(brush, x, base, t, crowned) {
   if (crowned && typeof hong === "function") { hong(brush, x + 70, base - 466, 0.7); }
   brush.strokeStyle = "#8a6a4a";
@@ -7933,6 +8371,8 @@ function tung(brush, x, base, t, crowned) {
 // The caller draws the handle with a gap where the fist is.
 var GRIP_AT = 16;
 
+// x, y: the wrist, in pen's pixels; angle in radians. Reads SKIN. Returns nothing: it draws with pen.
+// e.g. gripHand(0, 0, -1.4);
 function gripHand(x, y, angle) {
   var colour = SKIN, ink = inkFor(colour), line = LINE, n;
   var fingers = [[12, -8.5, 29, -7.5, 3.3, 3.0], [12, -3, 30, -2, 3.3, 3.0], [12, 2.5, 29, 3.5, 3.2, 2.9], [12, 8, 26, 9, 2.9, 2.6]];   // first to little
@@ -8012,6 +8452,8 @@ var PARASOL = {radius: 120, dome: 38, handle: 150, gold: "#e0b23a",
 // from the handle: closed they lie 5 degrees from it, open 72. Each rib is
 // as long as the open parasol's slant, so the canopy's radius and height
 // are that length's sine and cosine, as parts of the open radius.
+// open: 0 furled to 1 open, default 1. Returns {radius, dome}, as shares of PARASOL.radius.
+// e.g. var R = PARASOL.radius * parasolShape(0.5).radius;
 function parasolShape(open) {
   var slant = Math.sqrt(1 + Math.pow(PARASOL.dome / PARASOL.radius, 2)), wide = Math.atan2(1, PARASOL.dome / PARASOL.radius);
   var u = clamp(open === undefined ? 1 : open), angle = 0.09 + (wide - 0.09) * u * u * (3 - 2 * u);
@@ -8044,6 +8486,9 @@ function parasolShape(open) {
 // left out), "yantra" or "buddha"; "colour" its paper, if not the kind's own.
 // Give it as the look's parasol:
 // cast("lady", {parasol: parasolAt(t, 4, "buddha", undefined, "bloom")}).
+// t, start: seconds; kind and colour as said; show: one of the shows above, "twirl" when left out. Returns
+// {tilt: 0 to 2, spin: radians, open: 0 to 1, hang: 0 to 1, busy: 0 to 1, kind, colour}.
+// e.g. person(800, GROUND, cast("lady", {parasol: parasolAt(t, 4, "lai", undefined, "twirl")}));
 function parasolAt(t, start, kind, colour, show) {
   var d = t - start, tilt = 0, spin = 0, open = 1, hang = 0, busy = 0;
   function smooth(u) { u = clamp(u); return u * u * (3 - 2 * u); }
@@ -8085,16 +8530,23 @@ function parasolAt(t, start, kind, colour, show) {
 // the top of the fist and out at the bottom. (The picture's hold, the handle
 // over the shoulder and the canopy behind the head, was tried the same day
 // and taken out: "modify how the hand is, not the positions".)
+// tilt: 0 to 2, default 0; hang: 0 to 1, default 0. Returns [across, down] from the shoulder, in pixels: a hand
+// for arm().
+// e.g. var handA = parasolHand(1, 0);
 function parasolHand(tilt, hang) {                 // where the near hand holds the handle: forward at shoulder height when upright (the forearm rises at a shallow angle to the fist), before the chest when tipped, lowered to her side when it points down (tilt 2), at the side when carried
   var up = [46 - 14 * (tilt || 0), -12 + 42 * (tilt || 0)], h = hang || 0;
   return [up[0] + (16 - up[0]) * h, up[1] + (64 - up[1]) * h];
 }
 
+// tilt: 0 to 2; hang: 0 to 1, default 0. Returns radians.
+// e.g. var axis = -Math.PI / 2 + parasolSwing(2, 1);
 function parasolSwing(tilt, hang) {                // the turn of the parasol about the fist: upright held, down behind her carried, leaning back so the hanging forearm meets the fist without a sharp wrist
   if (tilt > 1) { return 0.9 * (hang || 0); }      // pointing at the ground (tilt 2), it swings back only that far: the same carried parasol, reached without passing through her
   return -(Math.PI - 0.9) * (hang || 0);
 }
 
+// given: the look's parasol. Returns an object with at least tilt and spin (the object itself, when given one).
+// e.g. var p = parasolOf("yantra");   // {tilt: 0, spin: 0, kind: "yantra"}
 function parasolOf(given) {                        // the look's parasol as {tilt, spin, kind, colour}: true, a kind, a colour, or parasolAt()'s object
   if (typeof given === "object") { return given; }
   if (typeof given === "string") { return given.charAt(0) === "#" ? {tilt: 0, spin: 0, colour: given} : {tilt: 0, spin: 0, kind: given}; }
@@ -8108,6 +8560,10 @@ function parasolOf(given) {                        // the look's parasol as {til
 // crown by the cone's height. The rings are drawn from the hem inward, each
 // band's ground painted over the far side of the band outside it, so the far
 // side of the dome is hidden as it should be, and the front shows every ring.
+// brush: a 2D context; x, y, R in its pixels (R the open radius: PARASOL.radius); tilt 0 to 2; spin in radians;
+// colour: the paper's CSS colour, or nothing for the kind's own; kind: "lai" (or anything else), "yantra" or
+// "buddha"; open: 0 to 1, default 1. The handle is not drawn: person() draws it. Returns nothing.
+// e.g. parasol(pen, 700, 400, PARASOL.radius, 1, t * 2, undefined, "buddha", 1);
 function parasol(brush, x, y, R, tilt, spin, colour, kind, open) {
   var a = tilt * Math.PI / 2, cosA = Math.cos(a), k = 0.18 + 0.82 * Math.sin(a), shape = parasolShape(open), H = R * shape.dome;
   var paper = PARASOL.kinds[kind] || PARASOL.kinds.lai, ground = colour || paper.ground, ink = paper.ink, line = paper.line, i, s;
@@ -8476,6 +8932,9 @@ function parasol(brush, x, y, R, tilt, spin, colour, kind, open) {
 // each wrist; a jewelled sash hangs before the hips to the knees; only the face,
 // neck, arms, hands and shins show green. They stand in pairs, one each side of
 // the gate.
+// brush: a 2D context; x, base: where he stands, on the ground; facing: 1 or -1, which mirrors him (give it: it
+// is not defaulted). He is about 230 tall. Returns nothing; brush is left as it was found.
+// e.g. yak(pen, 500, GROUND, 1);
 function yak(brush, x, base, facing) {
   var green = "#2f7f4e", gold = "#e0b23a", gilt = "#a8781e", blue = "#3a5fae", red = "#c8452f", white = "#ffffff", s, i, w, top;
   brush.save();
@@ -8741,6 +9200,9 @@ function yak(brush, x, base, facing) {
 // under it; four pillars before the white wall; a door set into it under a
 // gold arch, with studs; a window each side; a foot of stone and steps; and
 // the two chedis are round: each is in shade down one side.
+// brush: a 2D context; x, base: the middle of the hall's foot, on the ground. It spreads from about x - 345 to
+// x + 410 and stands about 525 high, its two guardians (yak()) at x - 205 and x + 205. Returns nothing.
+// e.g. temple(pen, 700, GROUND);
 function temple(brush, x, base) {
   var i, n, roofs = [[210, 220, "#c8452f"], [160, 290, "#d9573a"], [110, 350, "#c8452f"]], gold = "#e0b23a", shade = "rgba(90, 70, 50, 0.28)";
   function slope(w, low, top) {                     // one roof: its two slopes sag a little, as a temple's do
@@ -9004,6 +9466,9 @@ function temple(brush, x, base) {
 }
 
 // soft white clouds, and the uneven wash of watercolour over the whole sheet
+// brush: a 2D context (a set's sheet, painted once); wide: the sheet's width in pixels. Reads STYLE.clouds.
+// Returns nothing.
+// e.g. clouds(paper.getContext("2d"), WIDE);   // paper: the set's hidden canvas, WIDE x 1080
 function clouds(brush, wide) {
   for (var n = 0; n * 520 < wide; n++) {
     var x = 200 + n * 520, y = 150 + (n % 3) * 70;
@@ -9022,6 +9487,10 @@ function clouds(brush, wide) {
   }
 }
 
+// The wash of watercolour over a whole sheet, 1080 high: soft blots, long strokes of a wide brush and the
+// tooth of the paper, light and dark. brush: a 2D context (a set's sheet, painted once: it is slow); wide: the
+// sheet's width in pixels. Returns nothing; leaves brush's lineCap "round".
+// e.g. wash(paper.getContext("2d"), WIDE);
 function wash(brush, wide) {
   brush.filter = "blur(26px)";
   for (var n = 0; n < wide / 9; n++) {
@@ -9054,6 +9523,9 @@ function wash(brush, wide) {
 // The edge of the path: a fence at the back, flowers and stones along it.
 // "part" is "back" (the fence and what grows behind the people), "front"
 // (only what grows in front of them) or nothing, for all of it at once.
+// brush: a 2D context of a sheet 1080 high (the fence stands at y 800 to 852, the plants down to 1075); wide: its
+// width in pixels. "front" first clears the whole sheet. Returns nothing.
+// e.g. pathside(paper.getContext("2d"), WIDE);
 function pathside(brush, wide, part) {
   if (part === "front") { brush.clearRect(0, 0, wide, 1080); }
   else {
@@ -9097,6 +9569,9 @@ function pathside(brush, wide, part) {
 }
 
 // a banana tree: a short green stem and wide leaves, torn along their edges
+// brush: a 2D context; x, base: the foot of its stem; about 270 tall. Returns nothing; leaves brush's paint and
+// line settings as it set them.
+// e.g. banana(pen, 1250, GROUND);
 function banana(brush, x, base) {
   var line = "rgba(28, 58, 36, 0.85)";
   brush.beginPath();                                // the stem, wider at its foot
@@ -9137,6 +9612,9 @@ function banana(brush, x, base) {
 }
 
 // three sheets of film grain, used one after another
+// n: which sheet (any number). Returns a new canvas, the sheet's size at device pixels (WIDE x 1080, times PIX),
+// with specks of light and dark on it. GRAIN holds three of them.
+// e.g. var grain = makeGrain(4);
 function makeGrain(n) {
   var paper = document.createElement("canvas");
   paper.width = WIDE * PIX;                       // at the device pixels, so the grain stays fine
@@ -9154,6 +9632,10 @@ var GRAIN = [makeGrain(1), makeGrain(2), makeGrain(3)];
 
 // ---------- the scenes ----------
 
+// A title card: the whole sheet in cream, a red double border, "big" in a large serif and "small" (Thai is fine)
+// under it, a lotus in each lower corner and a scroll cloud in each upper. big, small: strings. Returns nothing:
+// it draws with pen over everything.
+// e.g. card("A Lanna Girl", "สาวล้านนา");
 function card(big, small) {
   pen.fillStyle = "#f3e6c4";
   pen.fillRect(0, 0, WIDE, 1080);
@@ -9177,6 +9659,9 @@ function card(big, small) {
 // Words under the picture: the line being sung, and what it means. They
 // are drawn on the screen after the film's lens, grain and dust, so they
 // stay sharp and still while the picture behind them shakes.
+// big: the line (Thai is fine), small: what it means, or nothing. It draws on "screen", so call it from draw(t)
+// after film(t, SCENES): drawn inside a scene, film() paints over it. Returns nothing.
+// e.g. function draw(t) { film(t, SCENES); subtitle("สนุกจัง", "What fun"); }
 function subtitle(big, small) {
   screen.save();
   screen.textAlign = "center";
@@ -9216,6 +9701,8 @@ function subtitle(big, small) {
 //   how    {kind: "say" (the default) or "think", side: 1 or -1 (which way it
 //          leans; unless given, the way the person faces), age: the seconds
 //          since it came (it pops in), size: 1}
+// Returns nothing: it draws with pen, in the scene's frame as pen has it.
+// e.g. var joints = person(700, GROUND, cast("girl")); bubble(joints, ["สวัสดี", "Hello"], {age: t - 2});
 function bubble(at, words, how) {
   how = how || {};
   var back = pen.getTransform().inverse(), tip = at, side = how.side, still = at;
@@ -9302,6 +9789,9 @@ function bubble(at, words, how) {
 // A bubble's words in lines no wider than "most": broken between words (Thai
 // has no spaces: the browser's word segmenter finds its words); a word wider
 // than a line is left whole.
+// text: the words; font: a CSS font; most: the widest line, in pixels. Returns a list of strings (at least
+// one, "" for no words). Leaves pen.font set to font.
+// e.g. var rows = bubbleLines("สวัสดีเจ้า", "bold 40px Tahoma", 420);
 function bubbleLines(text, font, most) {
   pen.font = font;
   var pieces = typeof Intl !== "undefined" && Intl.Segmenter
@@ -9317,6 +9807,8 @@ function bubbleLines(text, font, most) {
 }
 
 // a red stage curtain. "open" runs from 0, shut, to 1, gone to the sides.
+// open: 0 to 1. It covers the whole sheet when shut. Returns nothing: it draws with pen.
+// e.g. curtain(between(t, 1, 3));
 function curtain(open) {
   for (var half = -1; half <= 1; half += 2) {
     var edge = WIDE / 2 + half * open * 760;        // where this half ends
@@ -9334,6 +9826,8 @@ function curtain(open) {
 
 // the iris: black everywhere but a round hole, which closes on a scene
 // and opens on the next one
+// open: 0 (shut: all black) to 1 (the hole is wider than the sheet). Returns nothing: it draws with pen.
+// e.g. iris(1 - between(t, 7.5, 8));
 function iris(open) {
   pen.fillStyle = "#000000";
   pen.beginPath();
@@ -9351,6 +9845,9 @@ function iris(open) {
 // CUT_FADE of the next, eased, as chain.py fades where two films meet. It took the place of the iris at the cuts,
 // whose quick 0.5 s close read as a hard cut beside that fade. "dark" is 0 (none) to 1 (black).
 var CUT_FADE = 0.75;
+// dark: a number; 0 or less draws nothing, 1 or more is black. Returns nothing: it draws over the whole sheet
+// with pen. filmFrameOnce() calls it at every cut.
+// e.g. cutFade(between(t, 9, 10));
 function cutFade(dark) {
   if (dark <= 0) { return; }
   pen.fillStyle = "rgba(0, 0, 0, " + Math.min(1, dark).toFixed(3) + ")";
@@ -9421,10 +9918,16 @@ function settled(t, paint) {
 // it sees is the second's own, as everything in a frame is. Only while a film's frame is drawn (SIGHTS.on).
 var SIGHTS = {on: false, seen: [], whole: null, watched: false};
 
+// x, y: in the sheet's pixels. Returns nothing; while a film's frame is drawn it adds [x, y] to SIGHTS.seen,
+// else it does nothing. person() and decorate.js call it.
+// e.g. sighted(700, 560);
 function sighted(x, y) {                           // one seen at (x, y) in the sheet's pixels
   if (SIGHTS.on) { SIGHTS.seen.push([x, y]); }
 }
 
+// Returns [[x, y], ...]: everyone noted in this frame (empty outside a film's frame). Calling it marks the frame
+// watched (SIGHTS.watched), so filmFrame() draws it a second time.
+// e.g. var seen = sightsNow();   // [[700, 560], [1100, 540]]
 function sightsNow() {                             // what a watcher can see in this frame, in the sheet's pixels
   if (!SIGHTS.on) { return []; }
   SIGHTS.watched = true;
@@ -9434,6 +9937,11 @@ function sightsNow() {                             // what a watcher can see in 
 // one frame of a film on the film's own sheet: the scene of that second,
 // with the camera's slow move in, and the iris at a cut; drawn again when
 // something in it watched (SIGHTS, above)
+// (Since 2026-10-21 a cut fades through black, cutFade(), in place of the iris.)
+//   t        seconds of the film
+//   scenes   [[from, to, scene], ...]: seconds, and a function of the scene's own clock (t - from)
+// Returns nothing. Sets clock to t; changes SIGHTS; draws on pen (the sheet), not on the screen.
+// e.g. filmFrame(12.5, SCENES);
 function filmFrame(t, scenes) {
   SIGHTS.on = true;
   SIGHTS.seen = [];
@@ -9449,6 +9957,10 @@ function filmFrame(t, scenes) {
   SIGHTS.on = false;
 }
 
+// One pass of filmFrame(): sets clock, puts pen at the sheet's base scale, draws the scene whose [from, to)
+// holds t with the camera's push in (6 per cent over the scene), and the fade at a cut. t: seconds; scenes: as
+// filmFrame() takes them. Returns nothing.
+// e.g. filmFrameOnce(12.5, SCENES);
 function filmFrameOnce(t, scenes) {
   clock = t;
   pen.setTransform(PIX, 0, 0, PIX, 0, 0);          // the sheet's base scale: film pixels to device pixels

@@ -2,6 +2,11 @@
 
 Draws the frame (a jump from elsewhere, as a page watched live) with the repo's kit and with the other kit, prints the
 boxes that hold the pixels which differ, and saves the two versions of the largest box side by side, three times size.
+
+It needs Google Chrome (through Playwright), numpy, scipy and Pillow. The other kit is named from the folder
+it is run in; the page from the kit's folder (kit/). It writes out.png only when some pixel differs, and ends
+with exit code 0. The box saved is held inside 1440 x 1080: for a sheet 1920 wide, a box past x 1440 is cut
+there (and one wholly past it fails).
 """
 import base64
 import io
@@ -26,6 +31,11 @@ DRAW = """([t]) => {
 
 
 def frame(browser, page_file, kit, second):
+    """The page's sheet at second, come to by a jump from elsewhere with rendering off: a PIL image.
+
+    browser: a Playwright browser. page_file: the page, a Path. kit: another oldcartoon.js to load in place of the
+    page's own, or None. A page error is printed, not raised.
+    e.g. frame(browser, ASSETS / "lanna.html", "../old/oldcartoon.js", 12.5)"""
     page = browser.new_page(viewport={"width": 1920, "height": 1080})
     page.on("pageerror", lambda error: print("PAGE ERROR", error))
     if kit:
@@ -38,6 +48,7 @@ def frame(browser, page_file, kit, second):
 
 
 def main():
+    """The command line: where_differ.py OTHER_KIT PAGE SECOND OUT: print the boxes that differ, save the largest."""
     kit, name, second, out = sys.argv[1], sys.argv[2], float(sys.argv[3]), sys.argv[4]
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome", args=["--allow-file-access-from-files"])

@@ -452,6 +452,9 @@ var STYLES = {
   body: [["", "ผอม <small>slim</small>"], ["fat", "อ้วน <small>fat</small>"]]
 };
 var STYLE_LABELS = {face: "หน้า <small>face</small>", hair: "ผม <small>hair</small>", body: "รูปร่าง <small>body</small>"};
+//   item  a person of movie.items: reads item.style {face, hair, body} and, for a new hair, the cast's own bun (CAST).
+// Returns a list of strings, empty when nothing is chosen. Changes nothing.
+// e.g. styleCode({name: "inta", style: {face: "thai", body: "fat"}}) gives ['north: "thai"', 'body: "fat"']
 function styleCode(item) {              // the person's chosen face, hair and body, as entries of their look
   var st = item.style || {}, out = [];
   if (st.face === "thai") { out.push('north: "thai"'); }
@@ -473,16 +476,25 @@ var FEELING_THINGS = {dog: true, rooster: true, naga: true, dragon: true, mom: t
                       elephant: true, tiger: true, cat: true, pig: true, horse: true, maeng: true,
                       peafowl: true, pheasant: true, sunbird: true, magpie: true, hornbill: true,
                       hen: true, blackrooster: true, blackhen: true};   // the rooster's feelings, the hens' too
+// Whether an item has feelings: a person, or a thing named in FEELING_THINGS. Returns true or false.
+// e.g. feels({kind: "thing", name: "dog"}) is true
 function feels(item) { return item.kind === "person" || (item.kind === "thing" && !!FEELING_THINGS[item.name]); }
 
 // A feeling of FEELS from a film's word for it (the kit's first names, such as "joy", too), or null.
+//   given  a word for a feeling: a name of FEELS, or one of the kit's first names (FEELING_WAS: "joy" is "happy").
+// e.g. feelName("joy") is "happy"; feelName("cross") is null
 function feelName(given) {
   given = FEELING_WAS[given] || given;
   return FEELS.some(function (f) { return f[0] === given; }) ? given : null;
 }
 // A person's own feeling, or else the one from the smile (0 to 1) that films had before there were feelings.
+//   given  a feeling's word, as feelName takes it; smile  0 to 1, read only when given is no feeling
+// Returns a name of FEELS: "happy" when neither says otherwise.
+// e.g. feelOf(undefined, 0.2) is "neutral"
 function feelOf(given, smile) { return feelName(given) || (typeof smile === "number" && smile < 0.5 ? "neutral" : "happy"); }
 // The options of a feeling dropdown, "chosen" selected; "same" puts "the same as before" first, for a point.
+// Returns the option elements as one string of HTML, to put in a select; changes nothing.
+// e.g. byId("barFeel").innerHTML = feelOptions("sad", false);
 function feelOptions(chosen, same) {
   return (same ? "<option value=''" + (chosen ? "" : " selected") + ">〰 เหมือนเดิม · same</option>" : "") +
          FEELS.map(function (f) { return "<option value='" + f[0] + "'" + (f[0] === chosen ? " selected" : "") + ">" + f[1] + "</option>"; }).join("");
@@ -523,29 +535,61 @@ var rendering = false;                  // the kit's settled() looks for it
 // ---------- the film, as data ----------
 // item: {id, kind: "person" | "thing" | "piece", name, keys: [[second, x, y] ...], size, feel (one of FEELS), pose, sabai (a person in the woven cloth)}
 // text: {id, kind: "card" | "subtitle" | "say" | "think", big, small, from, to, who (a bubble's person: their id)}
+// movie, the film this page edits, saves and exports: plain data, JSON as it stands (saveJson writes it as it is).
+//   {duration   seconds, 3 to 90
+//    backdrop   the first scene's backdrop: a name of BACKS ("day", "dusk", "night", or a picture of backdrops.js)
+//    bounce     true: everyone hops on the beat (the kit's STYLE.hop); false or missing: off
+//    items      the movers and the set pieces, each an item as above, drawn in this order only where they stand alike
+//    texts      the title cards, subtitles and bubbles, each a text as above; from and to in seconds, from before to
+//    cuts       [{at: second, backdrop: name}, ...]: a new scene from that second on (cutsOf() keeps them sorted)
+//    camera     [[second, x, y, zoom], ...]: the centre shown, in pixels of the sheet, and 1 to 3 times closer
+//    next}      the id the next item or text gets: items and texts share one count, from 1
+// An item's keys are its course, the seconds going up: [second, x, y] in pixels of the sheet (1440 wide, 1080 high, y
+// going down; people and pieces stand at y 880 to 1040). After those three: a dragon's fourth number is its depth, 0
+// far to 1 near; a person's fourth is a pose of POSES (or null), the fifth a size 0.5 to 2 reached by that key (or
+// null), the sixth a feeling of FEELS (or null); a creature of FEELING_THINGS has its feeling sixth too (null, null
+// before it; the dragon's depth stays fourth). A piece has one key, and its second says which scene it stands in.
+// An item may also carry: size (1.2 is as the kit draws it; 0.5 to 2), colours {part: "#rrggbb"} (the parts of
+// PARTS), style {face, hair, body} (STYLES), parasol (PARASOLS), candle "on" or "off" (CANDLES). A say or think
+// text's who is its person's id. A film from outside comes in through takeFilm() (adoptFilm checks it); whatever
+// changes movie calls rebuild() after, which writes the film's code again and saves movie in this browser.
 var movie = freshFilm();
 var time = 0, playing = false, selected = null, playedAt = null;
 var pathing = null, pathStep = 2;       // the mover whose course is being charted by taps, and the seconds between taps
 var picked = [];                        // the points ticked in the panel's list, to delete together: each is a [second, x, y] of the selected mover
 var scripting = false;                  // the panel shows the script: every passage of text in time order
 
+// An empty film, the shape of movie: 12 seconds on the day hills, no bounce, nothing in it, ids from 1.
+// Takes nothing; returns a new object at each call; changes nothing (resetAll and adoptFilm put it into movie).
+// e.g. movie = freshFilm(); rebuild(); show(); panel();
 function freshFilm() { return {duration: 12, backdrop: "day", bounce: false, items: [], texts: [], cuts: [], camera: [], next: 1}; }
 
 // A cut, {at, backdrop}, begins a new scene at that second; the camera is a course of
 // [second, x, y, zoom] (the centre shown, 1 to 3 times closer). Both are kept sorted.
+// Both give back the film's list, sorted in place by second (and made [] when missing): cutsOf() movie.cuts,
+// cameraOf() movie.camera. They change only that order.
+// e.g. cutsOf().push({at: 6, backdrop: "night"}); rebuild(); show();
 function cutsOf() { movie.cuts = (movie.cuts || []).sort(function (a, b) { return a.at - b.at; }); return movie.cuts; }
 function cameraOf() { movie.camera = (movie.camera || []).sort(function (a, b) { return a[0] - b[0]; }); return movie.camera; }
+//   t  seconds; a camera point within 0.05 s of it counts. Sorts movie.camera (cameraOf), else changes nothing.
+// e.g. if (cameraAt(time) >= 0) { movie.camera[cameraAt(time)][3] = 2; }
 function cameraAt(t) {                    // the index of the camera point at second t, or -1
   var cam = cameraOf();
   for (var i = 0; i < cam.length; i++) { if (Math.abs(cam[i][0] - t) < 0.05) { return i; } }
   return -1;
 }
+//   c  a camera point [second, x, y, zoom], changed in place: the zoom pulled into 1 to 3, x and y rounded and held
+//      so that the frame (1440 by 1080 over the zoom) stays on the sheet. Returns c.
+// e.g. aimCamera([2, 100, 900, 2]) gives [2, 360, 810, 2]
 function aimCamera(c) {                   // keep the frame on the sheet: the centre may not come nearer an edge than half the frame
   c[3] = Math.max(1, Math.min(3, c[3]));
   c[1] = Math.round(Math.max(720 / c[3], Math.min(1440 - 720 / c[3], c[1])));
   c[2] = Math.round(Math.max(540 / c[3], Math.min(1080 - 540 / c[3], c[2])));
   return c;
 }
+// Returns [x, y, zoom] at second time, eased between the camera points ("smooth"), or null with no camera; it only
+// sorts movie.camera (cameraOf). paintMarks draws the frame from it.
+// e.g. var cam = cameraNow();
 function cameraNow() {                    // the camera at the current time, as the film has it, or null
   var cam = cameraOf();
   if (!cam.length) { return null; }
@@ -559,6 +603,10 @@ function cameraNow() {                    // the camera at the current time, as 
 var folded = {};
 try { folded = JSON.parse(localStorage.getItem("cartoon_maker_folds")) || {}; } catch (error) { /* nothing kept */ }
 
+// Makes every heading with class "fold" and a data-fold name, under the element root, fold away what follows it and
+// open it again when tapped, starting folded or not as this browser kept it. Changes the headings' class and their
+// onclick, and localStorage "cartoon_maker_folds" on each tap. Returns nothing.
+// e.g. wireFolds(document.querySelector(".palette"));
 function wireFolds(root) {
   root.querySelectorAll(".fold[data-fold]").forEach(function (head) {
     var name = head.getAttribute("data-fold");
@@ -571,6 +619,8 @@ function wireFolds(root) {
   });
 }
 
+// The element of this page with that id, or null.
+// e.g. byId("durationBox").value = movie.duration;
 function byId(id) { return document.getElementById(id); }
 
 // "stage", the film's canvas, is the kit's own (oldcartoon.js): a second "var stage" here would replace it
@@ -627,8 +677,13 @@ var LAND_CODE = {
 // A value as JavaScript. The exported page carries this code inside a script element, and a typed text that
 // closes that element would end the film's code early and run what follows it; "<" is the same "<" to
 // JavaScript and nothing to HTML.
+//   value  anything JSON can write. Returns its JSON text with every "<" as \u003c; changes nothing.
+// e.g. js({big: "hello"}) gives '{"big":"hello"}'
 function js(value) { return JSON.stringify(value).replace(/</g, "\\u003c"); }
 
+//   item  a mover of movie.items. Returns its keys as code: seconds to two places, x and y rounded, a fourth entry
+//         kept only when it is a number (a depth); a pose, a size or a feeling is left out.
+// e.g. keysCode({keys: [[0, 300, 950], [6, 1100, 950, "wave"]]}) gives "[[0.00, 300, 950], [6.00, 1100, 950]]"
 function keysCode(item) {                 // the course as where() reads it: a key's fourth number is a depth; a person's pose at a key is written elsewhere
   return "[" + item.keys.map(function (k) {
     return "[" + k[0].toFixed(2) + ", " + Math.round(k[1]) + ", " + Math.round(k[2]) + (typeof k[3] === "number" ? ", " + k[3].toFixed(2) : "") + "]";
@@ -638,6 +693,8 @@ function keysCode(item) {                 // the course as where() reads it: a k
 // The pose a person holds from each key on: a key may carry a pose name as its fourth
 // entry ("wave" when she reaches the tree); without one, the pose before carries on,
 // and before any, the person's own pose.
+// Returns a list with one pose name a key; changes nothing.
+// e.g. posesOf({pose: "walk", keys: [[0, 300, 950], [4, 900, 950, "wave"]]}) gives ["walk", "wave"]
 function posesOf(item) {
   var pose = item.pose, out = [];
   item.keys.forEach(function (k) { if (typeof k[3] === "string") { pose = k[3]; } out.push(pose); });
@@ -646,6 +703,8 @@ function posesOf(item) {
 
 // The size a person has reached at each key: a key may carry a size as its fifth entry
 // (bigger as she comes nearer); it is reached on arriving, growing along the way.
+// Returns a list with one size a key; changes nothing.
+// e.g. sizesOf({size: 1.2, keys: [[0, 300, 950], [4, 900, 950, null, 1.6]]}) gives [1.2, 1.6]
 function sizesOf(item) {
   var size = item.size, out = [];
   item.keys.forEach(function (k) { if (typeof k[4] === "number") { size = k[4]; } out.push(size); });
@@ -655,6 +714,8 @@ function sizesOf(item) {
 // The feeling a person has from each key on: a key may carry one as its sixth entry ("surprised"
 // when the dragon flies past); without one, the feeling before carries on, and before any, the
 // person's own (item.feel, which the panel, the bar over the sprite and the guide set).
+// Returns a list with one name of FEELS a key; changes nothing.
+// e.g. feelsOf({feel: "happy", keys: [[0, 300, 950], [4, 900, 950, null, null, "sad"]]}) gives ["happy", "sad"]
 function feelsOf(item) {
   var feel = feelOf(item.feel), out = [];
   item.keys.forEach(function (k) { if (feelName(k[5])) { feel = feelName(k[5]); } out.push(feel); });
@@ -662,14 +723,23 @@ function feelsOf(item) {
 }
 
 // A person's key: [second, x, y, pose or null, size or null, feeling or null]; what is not set is dropped from the end.
+//   k  a key, changed in place: null or undefined entries at its end are taken off, never below its three numbers.
+// Returns nothing.
+// e.g. trimKey(movie.items[0].keys[1]);
 function trimKey(k) { while (k.length > 3 && (k[k.length - 1] === null || k[k.length - 1] === undefined)) { k.length -= 1; } }
 
+//   k     a key of a person or a creature, changed in place: padded with null to its sixth entry, then trimmed
+//   feel  a feeling's word (feelName); "" or null takes it away. Returns nothing; call rebuild() after.
+// e.g. setKeyFeel(movie.items[0].keys[1], "surprised"); rebuild(); show();
 function setKeyFeel(k, feel) {           // a key's feeling from it on; "" or null: the one before carries on
   while (k.length < 5) { k.push(null); }
   k[5] = feelName(feel);
   trimKey(k);
 }
 
+// sizeValue gives back the code text of a person's size; sizeCode the same as a look entry, "size: ..."; both read
+// item.size and the keys' fifth entries, and change nothing.
+// e.g. sizeCode({size: 1.2, keys: [[0, 300, 950]]}) gives "size: 1.2"
 function sizeValue(item) {                // a person's size as code: one number, or a tween through the keys' sizes
   var sizes = sizesOf(item);
   if (sizes.every(function (s) { return s === sizes[0]; })) { return String(item.size); }
@@ -678,6 +748,11 @@ function sizeValue(item) {                // a person's size as code: one number
 
 function sizeCode(item) { return "size: " + sizeValue(item); }
 
+//   pose    a name of POSES; late  the person's lateness on the beat, as code text ("0.3"), for the wave's hop
+//   second  the second its key is reached: a parasol show (twirl, spin, fold, open, close, bloom) begins then
+//   item    the person, for which parasol (item.parasol, "lai" when left out)
+// Returns a list of look entries as code strings; changes nothing.
+// e.g. poseLook("wai", "0.0", 0, null) gives ["wai: true"]
 function poseLook(pose, late, second, item) {   // the look entries of a pose; "walk" has none; "second" is when its key is reached
   var kind = js((item && item.parasol) || "lai");
   if (pose === "wave") { return ["handA: [36, -70 - hop(t, " + late + ") * 20]"]; }
@@ -698,10 +773,18 @@ function poseLook(pose, late, second, item) {   // the look entries of a pose; "
 // about its foot point, or hands the scale to a painter that takes a size.
 var SIZE_AS_DRAWN = 1.2;
 
+// The scale an item is drawn at: its size over SIZE_AS_DRAWN (1.2), to two places; 1 when it has no size.
+// e.g. scaleOf({size: 1.8}) is 1.5
 function scaleOf(item) { return Math.round((item.size || SIZE_AS_DRAWN) / SIZE_AS_DRAWN * 100) / 100; }
 
+// A number as code text, rounded to two places.
+// e.g. num(1 / 3) is "0.33"
 function num(v) { return String(Math.round(v * 100) / 100); }
 
+// One line of code that paints a set piece on its scene's sheet (brush), standing on its key's (x, y), scaled about
+// its foot by scaleOf(item); a name of the house, tree ... firestick, else a name ending in Tree: that tree of
+// flora.js in flower or fruit. Returns the line, two spaces in front and ";" at its end; changes nothing.
+// e.g. pieceCode({id: 1, kind: "piece", name: "house", keys: [[0, 1150, 905]], size: 1.2}) gives "  house(brush, 1150, 905, 1);"
 function pieceCode(item) {
   var x = Math.round(item.keys[0][1]), base = Math.round(item.keys[0][2]), s = scaleOf(item);
   var calls = {house: "house(brush, X, Y, 1)", tree: "tree(brush, X, Y, 1.1)", palm: "palm(brush, X, Y, 400)",
@@ -728,17 +811,27 @@ function pieceCode(item) {
 // by where it stands, not painted once on the scene's sheet; it has one key all the same.
 var SWAYS = {tung: true};
 
+// The code that draws a set piece that sways (SWAYS: the tung) on the pen at second t, every frame, scaled about its
+// foot. Returns the call as text, without ";"; changes nothing.
+// e.g. swayCode({name: "tung", keys: [[0, 600, 920]], size: 1.2}) gives "tung(pen, 600, 920, t, true)"
 function swayCode(item) {
   var x = Math.round(item.keys[0][1]), base = Math.round(item.keys[0][2]), s = scaleOf(item);
   var call = {tung: "tung(pen, " + x + ", " + base + ", t, true)"}[item.name];   // the kit's tung, its cloth swaying from the top of the pole
   return s === 1 ? call : "pen.save(); pen.translate(" + x + ", " + base + "); pen.scale(" + num(s) + ", " + num(s) + "); pen.translate(" + (-x) + ", " + (-base) + "); " + call + "; pen.restore()";
 }
 
+// Returns true or false; changes nothing.
+// e.g. grounded({kind: "thing", name: "sun"}) is false
 function grounded(item) {               // what stands on the ground: people, pieces, flowers and fruits (the rest may fly)
   return item.kind !== "thing" || !!(window.FLORA && FLORA[item.name]);
 }
 
 // the look of one person at this moment: what the child chose, and the walk the course gives
+//   item  a person of movie.items; n  its place among the movers (not pieces): its place at second t is the code's
+//         variable p + n (where()'s list), and its lateness on the beat n * 0.3 s
+// Returns the call that draws them, person(...), as code text (with the woven sabai, a function called at once);
+// changes nothing. filmCode puts it into its scene.
+// e.g. personCode({id: 4, kind: "person", name: "boy", keys: [[0, 160, 960]], size: 1, feel: "happy", pose: "wave"}, 0)
 function personCode(item, n) {
   // The steps are counted from the ground covered (p[6], the distance along the course): one stride
   // cycle each 112 pixels at size 1 in the kit's walk, so the feet keep to the ground on a slow leg
@@ -761,11 +854,20 @@ function personCode(item, n) {
 }
 
 // the colours the child chose for an item, as entries of its look: shirt: "#e9c45c"
+// Returns a list of strings, one a part; changes nothing.
+// e.g. colourCode({colours: {shirt: "#e9c45c"}}) gives ['shirt: "#e9c45c"']
 function colourCode(item) {
   var chosen = item.colours || {};
   return Object.keys(chosen).map(function (part) { return part + ": " + js(chosen[part]); });
 }
 
+// The code that draws one thing at second t, at its place p + n: the kit's own call for its name (a creature, a
+// lantern, a player of the band, the red truck, a bird, a fish, a festival thing), or a flower or fruit of flora.js.
+//   item  a thing of movie.items (its size, colours, feelings, candle); n  its place among the movers, as personCode's
+//   sc    the scene it is drawn in ({backdrop}): a lantern's candle and a campfire's light go by its hour; when left
+//         out, movie.backdrop
+// Returns the call as code text, without ";"; changes nothing.
+// e.g. thingCode({id: 3, kind: "thing", name: "sun", keys: [[0, 1200, 170]], size: 1.2}, 0) gives "sun(p0[0], p0[1], t)"
 function thingCode(item, n, sc) {
   var p = "p" + n, s = scaleOf(item);
   var fs = feelsOf(item), felt = !FEELING_THINGS[item.name] ? "" : ", feel: " + (fs.every(function (f) { return f === fs[0]; }) ? js(fs[0]) : js(fs) + "[P[7]]");   // a creature's feeling
@@ -880,6 +982,9 @@ function thingCode(item, n, sc) {
 // smoothly between its points. In the page the camera is off while a child edits
 // (the marks must lie on the picture) and on while the film plays; an exported
 // page has it on.
+// Reads movie.cuts (a sorted copy: the film is not changed). Each scene's start and end are seconds; the last ends
+// at movie.duration.
+// e.g. scenesOf().length is the number of scenes
 function scenesOf() {                     // [{start, end, backdrop}, ...] in order
   var cuts = (movie.cuts || []).slice().sort(function (a, b) { return a.at - b.at; }), out = [], start = 0, backdrop = movie.backdrop;
   cuts.forEach(function (c) { out.push({start: start, end: c.at, backdrop: backdrop}); start = c.at; backdrop = c.backdrop; });
@@ -887,6 +992,8 @@ function scenesOf() {                     // [{start, end, backdrop}, ...] in or
   return out;
 }
 
+//   t  seconds. Returns {start, end, backdrop, k}, k the scene's place (0 the first); changes nothing.
+// e.g. sceneAt(time).backdrop
 function sceneAt(t) {                     // the scene the second t is in, with its index k
   var all = scenesOf(), k = 0;
   while (k < all.length - 1 && t >= all[k + 1].start) { k++; }
@@ -894,17 +1001,25 @@ function sceneAt(t) {                     // the scene the second t is in, with 
   return all[k];
 }
 
+//   item  a mover; sc  a scene of scenesOf(). Returns true or false.
+// e.g. inScene(movie.items[0], sceneAt(time))
 function inScene(item, sc) {              // a mover is in a scene its course overlaps, or begins in
   var first = item.keys[0][0], last = item.keys[item.keys.length - 1][0];
   return first < sc.end && (last > sc.start || first >= sc.start);
 }
 
+// Reads a sorted copy of movie.camera: [[second, [x, y, zoom]], ...] as code, for motion.js's tween. Changes nothing.
+// e.g. cameraCode() gives "[[0.00, [720, 540, 1.00]], [4.00, [600, 700, 2.00]]]" for a camera of two points
 function cameraCode() {                   // the camera's course as a tween list, or "" when there is none
   var cam = (movie.camera || []).slice().sort(function (a, b) { return a[0] - b[0]; });
   if (!cam.length) { return ""; }
   return "[" + cam.map(function (c) { return "[" + c[0].toFixed(2) + ", [" + Math.round(c[1]) + ", " + Math.round(c[2]) + ", " + c[3].toFixed(2) + "]]"; }).join(", ") + "]";
 }
 
+//   name  the variable the sheet is kept in ("SHEET0"); sc  a scene of scenesOf(); k  its place (its sky is SKY + k)
+// A backdrop of HOURS gets its sky and land painted here; a picture of backdrops.js only its pieces, on a clear
+// sheet. The pieces are painted from the back (smaller y) to the front. Returns a list of lines; changes nothing.
+// e.g. sheetCode("SHEET0", scenesOf()[0], 0).join("\n")
 function sheetCode(name, sc, k) {         // the code that paints one scene's sky (an hour) and its land and set pieces, once
   var lines = [], picture = !SKY_CODE[sc.backdrop];
   if (!picture) {
@@ -923,6 +1038,16 @@ function sheetCode(name, sc, k) {         // the code that paints one scene's sk
   return lines;
 }
 
+// The film as JavaScript, written the way the kit's films are written by hand, from movie as it is now:
+// DURATION and BEAT, STYLE.hop (the bounce), SABAI_CLOTH when someone wears the woven cloth, CAMERA (and CAMERA_ON,
+// which the page's MAKER_CAMERA turns off while a child edits) when the film has a camera, a sheet painted once per
+// scene (sheetCode), a function sceneN(tt) per scene that shows its card, or draws its backdrop and clouds, then its
+// movers and swaying pieces from the back of the picture to the front, then the bubbles over them, and last
+// draw(t), which hands SCENES to the kit's film() (the iris at each cut) and lays the subtitles over.
+// Takes nothing. Reads movie and the kit's tables (CAST, GAITS, BACKDROP_HANGING); changes nothing.
+// Returns the code as one string, "\n" between its lines. rebuild() runs it here; pageCode() writes it into the page;
+// the code button shows it in a page.
+// e.g. var draw = new Function(filmCode() + "\nreturn draw;")(); draw(2.5);
 function filmCode() {
   var lines = [], scenes = scenesOf(), camera = cameraCode();
   lines.push("var DURATION = " + movie.duration + ";", "", "var BEAT = 0.5;", "",
@@ -1008,12 +1133,24 @@ function filmCode() {
 // the same ones, from the site, or carries them inside it.
 var KIT_SITE = "https://krueng.ai/js_animation_assets/";
 
+// The kit's script tags at the top of this page: every script with a src that is not a tool's (data-tool: the
+// video's mp4-muxer). Returns an array of elements, in the page's order.
+// e.g. kitScripts().length
 function kitScripts() { return Array.prototype.slice.call(document.querySelectorAll("script[src]:not([data-tool])")); }
 
+// The file name of a script tag's src.
+// e.g. kitName(kitScripts()[0]) is "oldcartoon.js"
 function kitName(script) { return script.getAttribute("src").split("/").pop(); }
 
 // The kit's scripts' text, read from where this page loaded them, to done(); done(null) when the browser will not
 // read them (a page opened as a file, unless Chrome is told that files may read files).
+//   done  a function, called once, when every script has answered (XMLHttpRequest, one a script, so the call itself
+//         returns at once and gives back nothing): given [{name: "oldcartoon.js", text: "..."}, ...] in the page's
+//         order (kitScripts()), or null when any one could not be read. A maker opened as a file (file://) reads
+//         them only in a Chrome started with --allow-file-access-from-files, as film.py starts it.
+// Changes nothing. What it hands on is for pageCode(), so that the exported page carries the kit inside it.
+// film.py: page.evaluate("() => new Promise(done => kitSources(sources => done(sources && pageCode(sources))))")
+// e.g. kitSources(function (sources) { var html = sources ? pageCode(sources) : pageCode(); });
 function kitSources(done) {
   var scripts = kitScripts(), texts = [], left = scripts.length;
   function settle(k, text) {
@@ -1033,6 +1170,15 @@ function kitSources(done) {
 
 // the whole page, as a film of the kit is: the exported file. Given the kit's sources (kitSources), the page carries
 // the kit inside it, and draws the same for good, with no internet; without them it loads the kit from the site.
+//   sources  the kit's scripts' text as kitSources() hands it, [{name, text}, ...]: each goes into the page in its own
+//            script element (a closing tag inside it written with a backslash), after the kit's MIT notice. Left out or
+//            null: script tags that load the kit from KIT_SITE (krueng.ai), so the page needs the internet.
+// Returns the page as one string, "\n" between its lines: the doctype, a title (the first card's big line, else "my
+// cartoon"), a 1920 by 1080 canvas "stage", the kit, filmCode(), "var rendering = false" and a play loop that draws
+// (now in seconds) modulo DURATION while rendering is false. render.py sets rendering and calls draw(t) itself.
+// Changes nothing; it reads movie and this page's script tags. The download button saves it as my_cartoon.html;
+// film.py writes it ("python film.py page film.json out.html", --local turning the site's addresses into file names).
+// e.g. kitSources(function (sources) { var html = pageCode(sources); });
 function pageCode(sources) {
   var title = (movie.texts.filter(function (x) { return x.kind === "card"; })[0] || {}).big || "my cartoon";
   var kit = sources
@@ -1054,8 +1200,13 @@ function pageCode(sources) {
 }
 
 // ---------- running the film's code ----------
+// the film's draw(t), made by rebuild() from filmCode(); show() calls it with the second being looked at
 var drawFilm = function () {};
 
+// Makes drawFilm again from filmCode(), then saves movie in this browser (save(): localStorage "cartoon_maker").
+// Call it after every change to movie, then show() to see it (and panel() for the panel). Code that does not run is
+// said in the console, and the drawFilm before is kept. Takes nothing, returns nothing.
+// e.g. movie.duration = 20; rebuild(); show(); panel();
 function rebuild() {
   var code = filmCode();
   try {
@@ -1066,6 +1217,12 @@ function rebuild() {
   save();
 }
 
+// Draws the film at second time on the stage (drawFilm), then the marks over it (paintMarks), the time bar
+// (paintRuler), the time label, the stage's cursor, the bar over a sprite (placeBar) and the words of path mode.
+// Takes nothing, returns nothing. Changes: time, pulled into 0 to movie.duration; window.MAKER_CAMERA, set to
+// playing (the camera moves only while the film plays). A warning the kit raises while it draws goes into the kit's
+// WARNINGS list: film.py sets time to each second a film names and calls show(), then reads WARNINGS.
+// e.g. time = 4; show();
 function show() {
   time = Math.max(0, Math.min(movie.duration, time));
   window.MAKER_CAMERA = playing;          // the camera moves only while the film plays (or records): edited, the marks must lie on the picture
@@ -1085,11 +1242,14 @@ function show() {
 
 // The second the next tap's point goes to: the time bar's second if it was moved
 // past the last point, otherwise one step after the last point.
+// Reads pathing (the mover in path mode), time and pathStep; returns seconds, at most movie.duration. Changes nothing.
 function nextPathTime() {
   var last = pathing.keys[pathing.keys.length - 1][0];
   return Math.min(movie.duration, Math.max(round2(time), round2(last + pathStep)));
 }
 
+// Turns path mode on for item (a mover): each tap on the stage adds the next point of its course. Changes pathing,
+// selected and time (to its last point's second), then redraws the stage and the panel.
 function startPath(item) {
   pathing = item;
   selected = item;
@@ -1098,12 +1258,16 @@ function startPath(item) {
   panel();
 }
 
+// Turns path mode off (pathing null) and redraws the stage and the panel.
 function endPath() {
   pathing = null;
   show();
   panel();
 }
 
+// The page's clock, called by the browser each frame (requestAnimationFrame), now in milliseconds. While playing it
+// moves time on, reads aloud what comes due, ends a live recording at the end and starts again at 0, and calls show();
+// it asks for the next frame whether playing or not. Changes time, playedAt and READ.last.
 function tick(now) {
   if (playing) {
     if (playedAt === null) { playedAt = now - time * 1000; }
@@ -1130,12 +1294,17 @@ function tick(now) {
 // a story is read a little slow, never fast. The box and the voice are this browser's, not the film's.
 var READ = {on: false, voice: "", last: 0};
 try { var keptRead = JSON.parse(localStorage.getItem("cartoon_maker_read")); if (keptRead) { READ.on = !!keptRead.on; READ.voice = keptRead.voice || ""; } } catch (error) { /* nothing kept */ }
+// keepRead keeps the read-aloud box and voice (READ.on, READ.voice) in localStorage "cartoon_maker_read".
+// readingVoices gives back the browser's voices that read Thai, best first: a Kam Mueang voice, Google's Thai, any
+// Thai; [] with no speechSynthesis. Neither changes the film.
 function keepRead() { try { localStorage.setItem("cartoon_maker_read", JSON.stringify({on: READ.on, voice: READ.voice})); } catch (error) { /* a browser that keeps nothing */ } }
 function readingVoices() {
   if (!window.speechSynthesis) { return []; }
   var score = function (v) { return /^kam mueang/i.test(v.name) ? 3 : /^th/i.test(v.lang) && /google/i.test(v.name) ? 2 : /^(th|nod)/i.test(v.lang) ? 1 : 0; };
   return speechSynthesis.getVoices().filter(function (v) { return score(v) > 0; }).sort(function (a, b) { return score(b) - score(a); });
 }
+// Fills the voice dropdown (voiceSel) with readingVoices(), the kept voice chosen; with none kept, or it gone, sets
+// READ.voice to the first voice (or ""). Changes the dropdown and READ.voice.
 function fillVoices() {
   var sel = byId("voiceSel"), voices = readingVoices();
   sel.innerHTML = voices.length ? voices.map(function (v) { return "<option>" + v.name.replace(/</g, "&lt;") + "</option>"; }).join("")
@@ -1143,6 +1312,9 @@ function fillVoices() {
   if (voices.some(function (v) { return v.name === READ.voice; })) { sel.value = READ.voice; }
   else { READ.voice = voices.length ? voices[0].name : ""; }
 }
+//   from, to  seconds of the film: a subtitle or say bubble whose from is at or after "from" and before "to" is read.
+// Speaks with speechSynthesis in READ.voice at 0.9 of its pace, only when READ.on and that voice exists. Returns
+// nothing; changes nothing in the film.
 function readAloud(from, to) {          // every subtitle and speech bubble whose time comes between the two seconds
   if (!READ.on || !window.speechSynthesis) { return; }
   var voice = speechSynthesis.getVoices().filter(function (v) { return v.name === READ.voice; })[0];
@@ -1157,6 +1329,9 @@ function readAloud(from, to) {          // every subtitle and speech bubble whos
     });
 }
 
+//   on  true plays the film, false pauses it (and stops a voice reading). Changes playing, playedAt, READ.last and
+//       the play button's words; tick() does the playing. Returns nothing.
+// e.g. time = 0; setPlaying(true);
 function setPlaying(on) {
   playing = on;
   playedAt = null;
@@ -1168,19 +1343,28 @@ function setPlaying(on) {
 // ---------- the film's geometry on the screen ----------
 // The sheet is WIDE (1440) wide and sits at x = 240 on the 1920 screen, and the camera
 // pushes in slowly through the film; the marks follow the same move.
+// push gives the preview's slow push-in at second time: 1 at a scene's start to 1.06 at its end. toScreen turns a
+// point of the sheet (x, y, pixels) into a pixel of the 1920 by 1080 stage, the sheet at x 240 and the push-in
+// included; toSheet turns a stage pixel back. Each returns [x, y] (push a number) and changes nothing.
+// e.g. var spot = toSheet(960, 540);
 function push() { var sc = sceneAt(time); return 1 + 0.06 * (time - sc.start) / Math.max(0.01, sc.end - sc.start); }   // the kit pushes in once a scene
 function toScreen(x, y) { var k = push(); return [240 + 720 + (x - 720) * k, 620 + (y - 620) * k]; }
 function toSheet(sx, sy) { var k = push(); return [720 + (sx - 240 - 720) / k, 620 + (sy - 620) / k]; }
 
+//   event  a pointer event. Returns [x, y] in pixels of the 1920 by 1080 stage, zoom and pan included.
 function pointerOnStage(event) {        // the screen pixel under the pointer
   var box = marks.getBoundingClientRect();
   return [(event.clientX - box.left) * 1920 / box.width, (event.clientY - box.top) * 1080 / box.height];
 }
 
+//   item  a mover or a piece. Returns where()'s list at second time; changes nothing.
+// e.g. whereNow(movie.items[0])[0] is its x now
 function whereNow(item) {               // the item's place on the sheet at the current time: [x, y, ...], as the film has it
   return where(item.keys, time);
 }
 
+//   item  a mover or a piece. Returns {up, side, down}, pixels of the sheet from its foot point, scaled with its
+//         size (down undefined for most: hit() then allows 30). hit(), the size handle and the selection box use it.
 function reach(item) {                  // how far from its foot point a click still means this item
   if (item.kind === "person") { return {up: 440 * item.size, side: 90 * item.size}; }
   var s = scaleOf(item), r = item.kind === "piece" ? {up: 320, side: 160}
@@ -1200,11 +1384,16 @@ function reach(item) {                  // how far from its foot point a click s
 // with it). Alt and the wheel over the stage do the same in steps.
 var scaling = null;
 
+//   item  the selected sprite. Returns [x, y] on the 1920 by 1080 stage: the top-right corner of its reach.
 function scaleHandle(item) {            // where the handle is on the screen
   var at = whereNow(item), r = reach(item);
   return toScreen(at[0] + r.side, at[1] - r.up);
 }
 
+//   item      a mover or piece, changed in place: its size set to size, rounded to 0.05 and held in 0.5 to 2
+//   keySizes  for a person, the sizes of its keys before (their fifth entries), scaled by as much; null for none
+// Also writes the size box in the panel when it is there. Returns nothing; call rebuild() after.
+// e.g. setSize(movie.items[0], 1.5, null); rebuild(); show();
 function setSize(item, size, keySizes) {
   size = Math.max(0.5, Math.min(2, Math.round(size * 20) / 20));
   var f = size / (item.size || SIZE_AS_DRAWN);
@@ -1217,6 +1406,7 @@ function setSize(item, size, keySizes) {
   if (byId("sizeBox")) { byId("sizeBox").value = size; }
 }
 
+//   sx, sy  a pixel of the stage. Returns the item whose reach holds that point, the nearest of them, or null.
 function hit(sx, sy) {                  // the topmost item under a screen point, or null
   var p = toSheet(sx, sy), found = null, best = Infinity;
   movie.items.forEach(function (item) {
@@ -1230,6 +1420,9 @@ function hit(sx, sy) {                  // the topmost item under a screen point
 }
 
 // ---------- the marks over the picture ----------
+// Draws on the marks canvas over the picture: each mover's course (dashed), its points (the one at time in gold), the
+// selected one's size handle, numbers, ticks and box, and the camera's frame when the film is not playing. Takes
+// nothing, returns nothing; changes only that canvas.
 function paintMarks() {
   marker.clearRect(0, 0, 1920, 1080);
   movie.items.forEach(function (item) {
@@ -1328,9 +1521,12 @@ function paintMarks() {
 // ---------- the timeline ----------
 var ROW0 = 34, ROW = 14;
 
+// rulerX turns a second into an x on the time bar's canvas; rulerT turns an x back into a second, 0 to the duration.
 function rulerX(t) { return 12 + (ruler.width - 24) * t / movie.duration; }
 function rulerT(x) { return Math.max(0, Math.min(movie.duration, (x - 12) / (ruler.width - 24) * movie.duration)); }
 
+// Draws the time bar: the seconds, a row of each text, a row of points for each mover, the cuts, the camera points and
+// the red line at time. Its height grows with the movers. Changes only the ruler canvas, and its size.
 function paintRuler() {
   ruler.width = ruler.clientWidth * 2 || 1200;
   var rows = movie.items.filter(function (i) { return i.kind !== "piece"; }).length;   // one row per mover; the ruler grows with them
@@ -1383,6 +1579,9 @@ function paintRuler() {
   g.fill();
 }
 
+//   item  an item of movie.items. Returns what a child sees for it: its palette label (an emoji and a Thai name), or
+//         its kit name when the palette has none. Changes nothing.
+// e.g. labelOf({kind: "thing", name: "dog"})
 function labelOf(item) {
   var list = item.kind === "person" ? CASTS : item.kind === "thing" ? THINGS.concat(FLORAS) : PIECES.concat(TREES);
   for (var i = 0; i < list.length; i++) { if (list[i][0] === item.name) { return list[i][1]; } }
@@ -1390,6 +1589,14 @@ function labelOf(item) {
 }
 
 // ---------- changing the film ----------
+// Puts a new item in the film and returns it: {id, kind, name, keys: [[second, x, y]], size, feel: "happy", pose:
+// "walk"}, at the time bar's second (rounded to 0.01 s), or for a piece the start of the scene the time bar is in.
+//   kind  "person", "thing" or "piece"; name  a kit name of CASTS, THINGS or FLORAS, or PIECES or TREES
+//   x, y  pixels of the sheet; quiet  true: the guide adds it, nothing is selected, no bar and no time box open
+// A dragon's key gets a depth of 0.5; the boy and the girl a size of 0.95, the rest 1.2. Changes movie.items and
+// movie.next, selected (unless quiet), rebuilds and saves, redraws the stage and the panel, and, unless quiet, opens
+// the bar over it and, for a mover, the time box that asks its start second.
+// e.g. addItem("person", "girl", 300, 950, true);
 function addItem(kind, name, x, y, quiet) {   // quiet: the guide adds it, and nothing is selected or opened
   var small = name === "boy" || name === "girl";
   var key = [kind === "piece" ? sceneAt(time).start : round2(time), x, y];   // a set piece stands in the scene the time bar is in
@@ -1414,6 +1621,8 @@ function addItem(kind, name, x, y, quiet) {   // quiet: the guide adds it, and n
 // film plays, and goes when something else is picked.
 var barItem = null, barToolWas = null;
 
+// Opens the bar of move, smaller, bigger and done over item, selects it, and turns the move tool on (keeping the tool
+// before, for closeBar). Changes barItem, barToolWas, selected and the tool; placeBar() puts the bar on the screen.
 function openBar(item) {
   barItem = item;
   selected = item;
@@ -1421,6 +1630,7 @@ function openBar(item) {
   if (tool !== "move") { setTool("move"); }      // a drag now carries it
 }
 
+// Puts the bar away and gives back the tool that was on before it opened. Changes barItem, barToolWas and the tool.
 function closeBar() {
   if (!barItem) { return; }
   barItem = null;
@@ -1430,6 +1640,8 @@ function closeBar() {
   if (was && was !== tool) { setTool(was); }
 }
 
+// Moves the bar to the item picked, or closes it when nothing is picked or it was taken away; hidden while playing.
+// Shows the feeling box only for an item with feelings. Changes the bar's place, class and boxes, and barItem.
 function placeBar() {                            // called by show(): the bar over its sprite, or away
   var bar = byId("itemBar");
   if (barItem && selected && selected !== barItem && selected.keys && movie.items.indexOf(selected) >= 0) { barItem = selected; }   // another sprite picked: the bar goes to it
@@ -1468,12 +1680,19 @@ byId("barFeel").onchange = function () {
 // ---------- points ----------
 // A course is points in time order, and the order never changes: a point's time
 // stays between its neighbours', and a new point always comes after the last.
+//   item  a mover; i  one of its keys; t  seconds (NaN gives the lowest). Returns t held at least 0.5 s after the
+//         key before and 0.5 s before the key after (0 and the duration at the ends), rounded to 0.01. Changes nothing.
 function clampTime(item, i, t) {
   var low = i > 0 ? item.keys[i - 1][0] + 0.5 : 0;
   var high = i < item.keys.length - 1 ? item.keys[i + 1][0] - 0.5 : movie.duration;
   return round2(Math.max(low, Math.min(high, isNaN(t) ? low : t)));
 }
 
+//   item  a mover, changed in place: a key [second, x, y] added at its end (a depth carries on from the key before)
+//   x, y  pixels of the sheet; t  seconds, when left out the last key's second plus pathStep
+// The second is at least 0.5 after the last key's and at most movie.duration. Returns the new key's index; call
+// rebuild() after.
+// e.g. addPoint(movie.items[0], 900, 950, 6); rebuild(); show();
 function addPoint(item, x, y, t) {        // a new point after the last one, at second t (or one step on)
   var before = item.keys[item.keys.length - 1], last = before[0];
   var when = t === undefined ? last + pathStep : t;
@@ -1481,11 +1700,14 @@ function addPoint(item, x, y, t) {        // a new point after the last one, at 
   return item.keys.length - 1;
 }
 
+//   item  a mover; t  seconds. Returns the index of its key within 0.05 s of t, or -1.
 function pointAt(item, t) {               // the index of the point at second t, or -1
   for (var i = 0; i < item.keys.length; i++) { if (Math.abs(item.keys[i][0] - t) < 0.05) { return i; } }
   return -1;
 }
 
+// Takes key i out of item's course (never its only key), sets time to the key now in that place, rebuilds and saves,
+// and redraws the stage and the panel.
 function removePoint(item, i) {
   if (item.keys.length < 2) { return; }
   item.keys.splice(i, 1);
@@ -1497,6 +1719,8 @@ function removePoint(item, i) {
 
 // The ticked points go together. A mover has to be somewhere, so if every
 // point is ticked the first one stays.
+// Takes the ticked points (picked) out of item's course, keeping the first when all are ticked; closes the time box if
+// it was asking about this item; empties picked; rebuilds and saves, and redraws the stage and the panel.
 function removePicked(item) {
   var keep = item.keys.filter(function (k) { return picked.indexOf(k) < 0; });
   if (keep.length === item.keys.length) { return; }
@@ -1512,6 +1736,9 @@ function removePicked(item) {
 // button keeps the number, clamped to the order; Escape keeps what was there.
 var popItem = null, popIndex = -1;
 
+// Opens the time box beside key i of item, asking its second (why "start": the first point, else "arrive"), and for
+// a person or creature its feeling from there. Changes popItem, popIndex and the box. closeTimePop(true) keeps the
+// number typed (clampTime), sets time to it, closes the box, rebuilds and redraws; closeTimePop(false) only closes.
 function openTimePop(item, i, why) {
   popItem = item;
   popIndex = i;
@@ -1556,6 +1783,8 @@ byId("timePopBox").onkeydown = function (event) {
   event.stopPropagation();
 };
 
+// A number of seconds rounded to 0.01.
+// e.g. round2(2.456) is 2.46
 function round2(t) { return Math.round(t * 100) / 100; }
 
 
@@ -1568,6 +1797,12 @@ var TEXT_COLOURS = {card: "#e0b23a", subtitle: "#8fc0cf", say: "#e79bb0", think:
 
 // A bubble for a person ("who", or else the first person in the film), at second "from", for "seconds"; null
 // when there is nobody to say it.
+//   kind     "say" or "think"; who  a person of movie.items (anything else: the first person in the film)
+//   from     seconds (time when left out); seconds  how long it shows (3); big, small  its two lines ("hello" ones
+//            when left out)
+// Returns the new text, its who the person's id, as addText makes it; null with nobody to say it or past the end.
+// Changes movie.texts and movie.next; call rebuild() after.
+// e.g. addBubble("say", movie.items[0], 2, 3, "sawatdi chao", "hello"); rebuild(); show();
 function addBubble(kind, who, from, seconds, big, small) {
   if (!who || who.kind !== "person") { who = movie.items.filter(function (i) { return i.kind === "person"; })[0]; }
   if (!who) { return null; }
@@ -1576,6 +1811,11 @@ function addBubble(kind, who, from, seconds, big, small) {
   return text;
 }
 
+//   kind  "card", "subtitle", "say" or "think" (a bubble also needs a who: addBubble gives it one)
+//   big, small  its two lines; left out, a card says "my story" and the rest "hello", under a Thai line
+// Returns the new text {id, kind, big, small, from, to}, its to held at movie.duration; null when it would begin at
+// or after the film's end. Changes movie.texts and movie.next; call rebuild() after.
+// e.g. addText("subtitle", 2, 3, "sawatdi chao", "hello"); rebuild(); show();
 function addText(kind, from, seconds, big, small) {     // a passage: at second "from" (the second being looked at), for "seconds" (3)
   from = round2(from === undefined ? time : from);
   var text = {id: movie.next++, kind: kind, big: big || (kind === "card" ? "เรื่องของฉัน" : "สวัสดี"), small: small || (kind === "card" ? "my story" : "hello"),
@@ -1585,14 +1825,18 @@ function addText(kind, from, seconds, big, small) {     // a passage: at second 
   return text;
 }
 
+// Returns a sorted copy of movie.texts: by from, then by id. Changes nothing.
 function passages() {                   // every text, in the order it shows
   return movie.texts.slice().sort(function (a, b) { return a.from - b.from || a.id - b.id; });
 }
 
+// Returns seconds; changes nothing.
 function lastEnd() {                    // the second the last passage ends, or the second being looked at if that is later
   return movie.texts.reduce(function (end, x) { return Math.max(end, x.to); }, round2(time));
 }
 
+//   kind  a text kind; after  a text (left out: after the last one). Selects the new passage, sets time to its from,
+//         closes the script view, rebuilds and saves, and redraws the stage and the panel. Returns nothing.
 function nextPassage(kind, after) {     // a new passage right after "after" (or after the last one), 3 seconds; after a bubble, the same person's next
   var from = after ? after.to : lastEnd();
   var text = TALKS[kind] ? addBubble(kind, after && movie.items.filter(function (i) { return i.id === after.who; })[0], from, 3) : addText(kind, from, 3);
@@ -1605,6 +1849,10 @@ function nextPassage(kind, after) {     // a new passage right after "after" (or
 // Many passages at once, from lines typed in a box: one passage a line, "big | small",
 // each "seconds" long, one after another from second "from". A line that begins with
 // "=" is a title card. Gives back how many were made.
+//   lines  the text of the box, "\n" between lines; from  seconds; seconds  how long each passage shows
+// Each line's two halves are cut to 80 characters; a passage that would begin past the end is not made. Changes
+// movie.texts and movie.next; call rebuild() after.
+// e.g. makePassages("= The lantern | a tale\nhello | sawatdi", 0, 3); rebuild(); show();
 function makePassages(lines, from, seconds) {
   var at = from, made = 0;
   lines.split("\n").forEach(function (line) {
@@ -1621,6 +1869,9 @@ function makePassages(lines, from, seconds) {
   return made;
 }
 
+// Takes an item or a text out of the film; a person's bubbles go with them. Ends path mode and closes the time box if
+// they were about it, unselects it, rebuilds and saves, and redraws the stage and the panel. Returns nothing.
+// e.g. remove(movie.items[0]);
 function remove(thing) {
   if (pathing === thing) { pathing = null; }
   if (popItem === thing) { byId("timePop").className = "time-pop"; popItem = null; }
@@ -1632,12 +1883,15 @@ function remove(thing) {
   panel();
 }
 
+// Keeps movie in this browser, as JSON in localStorage "cartoon_maker" (nothing when the browser keeps nothing).
+// rebuild() calls it; load() reads it back when the page opens. film.py empties it when it opens the page.
 function save() {
   try { localStorage.setItem("cartoon_maker", JSON.stringify(movie)); } catch (error) { /* a browser that keeps nothing */ }
 }
 
 // The film this browser kept, checked as a film from anywhere is (adoptFilm): a name this page no longer has is
 // dropped, and a film kept before scenes, a camera or feelings comes in as today's.
+// Takes nothing, returns nothing; sets movie when a film was kept, else leaves it as it was.
 function load() {
   try {
     var kept = JSON.parse(localStorage.getItem("cartoon_maker"));
@@ -1646,6 +1900,11 @@ function load() {
 }
 
 // ---------- the panel on the right ----------
+// Redraws the panel on the right for what is selected: the script (every passage in order) when scripting and nothing
+// is selected; with nothing selected, the how-to, the scenes and the camera; a text's lines, seconds and person; or
+// a mover's or piece's size, feeling, pose, style, colours and the points of its course. Wires every control in it.
+// Changes the panel's HTML, drops ticks (picked) that are not the selected mover's, and turns scripting off when
+// something is selected. Takes nothing, returns nothing.
 function panel() {
   var p = byId("panel"), h = [];
   // A tick belongs to a point of the selected mover: any other tick is dropped.
@@ -1959,6 +2218,8 @@ function panel() {
   if (byId("dropPicked")) { byId("dropPicked").onclick = function () { removePicked(that); }; }
 }
 
+// Sets item.colours[colourPart] (the part chosen in the panel) to colour, "#rrggbb", then rebuilds and saves, and
+// redraws the stage and the panel.
 function paint(item, colour) {         // give the chosen part of the item this colour
   item.colours = item.colours || {};
   item.colours[colourPart] = colour;
@@ -1967,11 +2228,15 @@ function paint(item, colour) {         // give the chosen part of the item this 
   panel();
 }
 
+// A text made safe inside an HTML attribute in single quotes, or as an element's text: and-signs, single quotes and
+// less-than signs written as entities.
 function attr(s) { return String(s).replace(/&/g, "&amp;").replace(/'/g, "&#39;").replace(/</g, "&lt;"); }
 
 // ---------- dragging from the palette ----------
 var ghost = byId("ghost"), dragging = null;
 
+// Puts a button in the palette row rowId for each entry [name, label] of list; dragged from there and let go over the
+// stage, it adds that item (addItem, of kind) at that spot. Changes the row and, while dragging, the ghost label.
 function fillRow(rowId, list, kind) {
   var row = byId(rowId);
   list.forEach(function (entry) {
@@ -2034,6 +2299,8 @@ BACKS.forEach(function (entry) {
   byId("backdropRow").appendChild(b);
 });
 
+// Lights the backdrop button of the scene at time, and lets go of the kit's painted backdrop sheets the film does not
+// use (letGo). Changes those buttons' class and BACKDROP_SETS.
 function markBackdrop() {
   var now = sceneAt(time).backdrop;
   document.querySelectorAll("[data-backdrop]").forEach(function (b) { b.className = b.getAttribute("data-backdrop") === now ? "on" : ""; });
@@ -2042,11 +2309,14 @@ function markBackdrop() {
 
 // The kit keeps every picture it has painted, a sheet of 1440 x 1080 each. This page keeps only the film's
 // own (one a scene): a child who tries them all would otherwise fill a phone's memory with sheets.
+// Takes nothing, returns nothing; deletes from the kit's BACKDROP_SETS every picture no scene of the film has.
 function letGo() {
   var keep = scenesOf().map(function (sc) { return sc.backdrop; });
   Object.keys(window.BACKDROP_SETS || {}).forEach(function (name) { if (keep.indexOf(name) < 0) { delete BACKDROP_SETS[name]; } });
 }
 
+// Paints the next small picture of a backdrop button (smalls), lets go of its big sheet, and calls itself again after
+// 40 ms until none are left. Changes those canvases and the list smalls.
 function paintSmalls() {
   var next = smalls.shift();
   if (!next) { return; }
@@ -2061,6 +2331,8 @@ function paintSmalls() {
 // whole course with it, so a child can place things without making points.
 var tool = "course";
 
+//   name  "move" (a drag carries a sprite, course and all) or "course" (a drag makes or moves a point). Changes tool,
+//         the two buttons and the hint under them, then redraws the stage.
 function setTool(name) {
   tool = name;
   byId("toolMove").className = name === "move" ? "on" : "";
@@ -2092,6 +2364,8 @@ try { var keptSides = JSON.parse(localStorage.getItem("cartoon_maker_sides")); i
 
 var NARROW = window.matchMedia("(max-width: 900px)");   // the stylesheet's one column, for a phone
 
+// Holds the palette's and the panel's widths (sides, pixels) in 56 to 480 and sets the page's three columns from
+// them, except on a narrow screen; keeps them in localStorage "cartoon_maker_sides"; then fits the zoom and redraws.
 function applySides() {
   sides = sides.map(function (w) { return Math.max(SIDE_LEAST, Math.min(SIDE_MOST, Math.round(w))); });
   // the sides' widths only where the three columns stand side by side: written into the page's own style, they
@@ -2121,6 +2395,8 @@ function applySides() {
 applySides();
 NARROW.addEventListener("change", applySides);           // a phone turned, or a window made narrow or wide
 
+// Holds the pan so the zoomed picture covers its box (or centres it when smaller), and moves and scales the stage and
+// the marks canvases by CSS. Changes pan, the canvases' transform and the zoom label.
 function applyZoom() {
   var box = byId("stageBox"), w = box.clientWidth, h = box.clientHeight;
   if (zoom >= 1) {                                  // the picture covers the box: no gap at any edge
@@ -2134,6 +2410,7 @@ function applyZoom() {
   byId("zoomLabel").textContent = Math.round(zoom * 100) + "%";
 }
 
+//   z  the zoom, held in 0.5 to 4; atX, atY  pixels of the box (its middle when left out). Changes zoom and pan.
 function zoomTo(z, atX, atY) {                      // to z, keeping the stage point under the box point (atX, atY) where it is
   var box = byId("stageBox");
   z = Math.max(0.5, Math.min(4, z));
@@ -2144,6 +2421,7 @@ function zoomTo(z, atX, atY) {                      // to z, keeping the stage p
   applyZoom();
 }
 
+//   s  [x, y], pixels of the 1920 by 1080 stage. Returns [left, top] in percent of the stage's box; changes nothing.
 function onBox(s) {                                 // a stage pixel as a percent of the box, zoom and pan included
   var box = byId("stageBox");
   return [(s[0] / 1920 * box.clientWidth * zoom + pan[0]) / box.clientWidth * 100,
@@ -2170,6 +2448,9 @@ window.addEventListener("resize", applyZoom);
 
 // Carry a sprite by (dx, dy): every point of its course moves together, and the move
 // is held back so that no point leaves the picture (anything may stand anywhere in it).
+//   item  a mover or piece, changed in place; dx, dy  pixels of the sheet (dy held back as said). Returns nothing;
+//         call rebuild() after.
+// e.g. shiftItem(movie.items[0], 100, 0); rebuild(); show();
 function shiftItem(item, dx, dy) {
   var low = 40, high = 1040;
   item.keys.forEach(function (k) { dy = Math.max(low - k[2], Math.min(high - k[2], dy)); });
@@ -2379,6 +2660,10 @@ var AI_STORY_FIRST = byId("aiStory").value;   // the model's story as the page f
 // Everything back to how the page first opened: the film, the time, what is selected,
 // the path mode, the tool and the zoom; and the panel, the colour part, the path step,
 // the ticked points, a held drag, the sheets and what was typed in them.
+// Stops playing and recording, closes the guide and the bar, sets movie to freshFilm() (rebuilt and saved over the
+// film kept in this browser), and puts the panel, the sheets, the boxes, the tool and the zoom as they first were.
+// Takes nothing, returns nothing. The reset button calls it after asking twice.
+// e.g. resetAll();
 function resetAll() {
   setPlaying(false);
   if (recorder) { stopRecording(); }
@@ -2471,6 +2756,8 @@ byId("videoBtn").onclick = function () {
 };
 
 // mp4-muxer, the first time a video is made; not one of the kit's scripts, so an exported film does not carry it
+//   done  a function given true when window.Mp4Muxer is ready, false when the script would not load. Adds the script
+//         tag (data-tool "video", so kitScripts() leaves it out) the first time. Returns nothing.
 function loadMuxer(done) {
   if (window.Mp4Muxer) { done(true); return; }
   var tag = document.createElement("script");
@@ -2481,6 +2768,7 @@ function loadMuxer(done) {
   document.head.appendChild(tag);
 }
 
+// Saves blob as a file named name, by the browser's download; its object URL is let go after a minute.
 function saveFile(blob, name) {
   var a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -2489,6 +2777,10 @@ function saveFile(blob, name) {
   setTimeout(function () { URL.revokeObjectURL(a.href); }, 60000);
 }
 
+//   config  the encoder's settings: VIDEO with the stage's width and height. Draws every frame of the film, a
+//           framerate-th of a second apart, into an H.264 encoder (WebCodecs) and mp4-muxer, and saves my_cartoon.mp4.
+// It runs a frame at a time (setTimeout) and returns at once; pressing the video button again stops it (the frames
+// made so far are saved). Changes recording, time, selected and the video button's words; pauses the film first.
 function recordFrames(config) {
   var frames = Math.round(movie.duration * config.framerate), n = 0, failed = null;
   var muxer = new Mp4Muxer.Muxer({target: new Mp4Muxer.ArrayBufferTarget(), fastStart: "in-memory",
@@ -2534,6 +2826,7 @@ function recordFrames(config) {
 }
 
 // The film plays once from the start while the browser records what the stage shows: a browser without WebCodecs.
+// Takes nothing, returns nothing. Changes recorder, recorded, time, selected, the video button's words, and plays.
 function recordLive() {
   if (!window.MediaRecorder || !stage.captureStream) { byId("videoBtn").textContent = "เบราว์เซอร์นี้บันทึกไม่ได้"; return; }
   var kind = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
@@ -2552,6 +2845,8 @@ function recordLive() {
   setPlaying(true);
 }
 
+// Stops a live recording (recordLive): pauses the film and stops the recorder, whose onstop saves the .webm.
+// Changes recorder.
 function stopRecording() {
   if (!recorder) { return; }
   setPlaying(false);
@@ -2565,6 +2860,8 @@ function stopRecording() {
 // the same data the palette makes. What comes back is checked name by name
 // and number by number before it is shown: an unknown name is dropped, a
 // number out of range is pulled in, and the seconds of a course only go up.
+//   save  true: also keeps the address and the model (and the key, only when its box is ticked) in localStorage
+//         "cartoon_maker_ai". Returns {base, model, key} as typed in the boxes of the model's sheet.
 function aiSettings(save) {
   var keep = {base: byId("aiBase").value.trim(), model: byId("aiModel").value.trim(), key: byId("aiKey").value.trim()};
   if (save) {
@@ -2576,6 +2873,13 @@ function aiSettings(save) {
   return keep;
 }
 
+// Returns the instructions a model needs to write a film, one string of lines in English: the JSON shape, every name
+// the page and the kit know (the cast, the things, the flowers, the pieces, the backdrops, the poses, the feelings,
+// the parasols), the sheet's coordinates and the rules of a course, of the pieces and of the scenes. The names are read
+// from this page's lists (and the kit's CAST) at the call, so it never names what takeFilm() would drop. Takes nothing;
+// changes nothing. film.py prints it ("python film.py vocabulary") and sends it as the system message ("python film.py
+// write"); the page's "a model writes the film" sheet sends it (askModel) and copies it, for a model elsewhere.
+// e.g. var prompt = filmPrompt();
 function filmPrompt() {
   var people = CASTS.filter(function (c) { return CAST[c[0]]; }).map(function (c) { return c[0]; });
   return [
@@ -2594,6 +2898,9 @@ function filmPrompt() {
   ].join("\n");
 }
 
+//   text  a model's answer. Returns the object: the whole text as JSON, else what lies from its first "{" to its last
+//         "}". Throws an Error ("no JSON in the answer", or JSON.parse's own) when neither reads.
+// e.g. parseJson("Here it is: {\"duration\": 8}").duration is 8
 function parseJson(text) {
   try { return JSON.parse(text); } catch (error) { /* the model wrapped it in words or a fence */ }
   var start = text.indexOf("{"), end = text.lastIndexOf("}");
@@ -2601,6 +2908,9 @@ function parseJson(text) {
   return JSON.parse(text.slice(start, end + 1));
 }
 
+//   value  anything; low, high  the range; fallback  given back when value is not a number. Returns Number(value)
+//          held in low to high. (The fallback is given back as it is, not held in the range.)
+// e.g. clean("7", 0, 5, 1) is 5
 function clean(value, low, high, fallback) {
   var n = Number(value);
   return isNaN(n) ? fallback : Math.max(low, Math.min(high, n));
@@ -2612,6 +2922,11 @@ function clean(value, low, high, fallback) {
 // the previous text's start and "<+1" a second after it, and a name is a mark the
 // film's "marks" object gives a second ("dance", "dance+2", "dance-1"). The words
 // are resolved here, once, so the page's data stays numbers.
+//   value   a number (given back as it is) or a word as above
+//   after   the second "+2" counts from; since  the second "<" counts from; marks  {name: second}
+//   unknown a list: a mark that is not in marks is pushed to it ("mark dance"), and NaN given back
+// Returns seconds, or NaN when the word does not read. Changes only unknown.
+// e.g. secondOf("dance+2", 0, 0, {dance: 5}, []) is 7
 function secondOf(value, after, since, marks, unknown) {
   if (typeof value === "number") { return value; }
   var m = /^(<)?([A-Za-z_]\w*)?([+-]?\d+(?:\.\d+)?)?$/.exec(String(value === undefined || value === null ? "" : value).trim()), base;
@@ -2627,6 +2942,8 @@ function secondOf(value, after, since, marks, unknown) {
 // 60 texts, 8 cuts and 20 camera points, and a bigger film saved here lost the rest without a word when loaded back).
 var TAKE = {items: 200, texts: 400, cuts: 40, camera: 200};
 
+//   list  what the film gave (anything that is not an array counts as []); what  "items", "texts", "cuts" or "camera"
+//   dropped  a list, given a line when there are more than TAKE allows. Returns the first TAKE[what] of list.
 function taken(list, what, dropped) {
   list = Array.isArray(list) ? list : [];
   if (list.length > TAKE[what]) { dropped.push((list.length - TAKE[what]) + " " + what + " past the first " + TAKE[what]); }
@@ -2635,6 +2952,33 @@ function taken(list, what, dropped) {
 
 // a film as this page's film, with every name and number checked: a model's answer, a film saved as JSON, or the
 // film this browser kept
+// It is the one check every film passes, from takeFilm() (a model, a JSON file, film.py) and from load(). It
+// changes nothing: what it gives back goes into movie there.
+//   data  {duration, backdrop, bounce, items, texts, cuts, camera, marks}, each one optional:
+//     duration  seconds, rounded, held in 3 to 90 (12 when missing); backdrop  a name of BACKS, else "day";
+//     bounce    true turns the bounce on, anything else leaves it off
+//     items     the first TAKE.items (200); one whose kind and name the page does not offer is dropped. Its keys,
+//               [second, x, y, ...], x held in -400 to 1840 and y in 40 to 1040 (pixels of the sheet), the seconds
+//               going up by at least 0.5 and none past the duration (a key after it is dropped); a dragon's fourth a
+//               depth 0 to 1 (0.5); a person's fourth a pose of POSES, fifth a size 0.5 to 2, sixth a feeling; a
+//               creature of FEELING_THINGS its sixth a feeling. With no key: one at 0, at (720, 920) on the ground or
+//               (720, 400) in the air. A piece keeps its first key only. size 0.5 to 2 (0.95 for the boy and the girl,
+//               else 1.2); feel a feeling (or the old smile, 0 to 1); pose of POSES ("walk"); and, kept only when the
+//               page knows them: sabai true, style (STYLES), parasol (PARASOLS), candle "on" or "off" (CANDLES),
+//               colours "#rrggbb" for the parts of PARTS (written in small letters)
+//     texts     the first TAKE.texts: kind "card", "subtitle", "say" or "think" (another kind is passed over);
+//               big and small cut to 80 characters; from and to seconds held in the film (to missing: from + 3); a
+//               say or think needs who: the id an item had in a film this page saved, else its place in items (0 the
+//               first), else a person's name; a bubble with nobody to say it is dropped
+//     cuts      the first TAKE.cuts of {at, backdrop}: at held 0.5 s inside the film, 0.5 s or more after the cut
+//               before, and a backdrop of BACKS, else the cut is dropped
+//     camera    the first TAKE.camera of [second, x, y, zoom]: the seconds going up, zoom 1 to 3, the frame kept on
+//               the sheet (aimCamera)
+//     marks     {name: second}: any second above may be a word, "+2", "<", "<+1", "dance+2" (see secondOf)
+// Returns {film, dropped}: film the shape of movie (its ids numbered afresh from 1, a bubble's who changed to match);
+// dropped a list of short lines of what was left out ("thing unicorn", "say by 7", "3 items past the first 200").
+// Throws a TypeError when data, or an item or a text in it, is null.
+// e.g. adoptFilm({backdrop: "dusk", items: [{kind: "thing", name: "dog", keys: [[0, 200, 980], ["+3", 900, 980]]}]}).film
 function adoptFilm(data) {
   var film = freshFilm(), dropped = [], marks = {};
   Object.keys(data.marks && typeof data.marks === "object" ? data.marks : {}).forEach(function (name) {
@@ -2733,6 +3077,18 @@ function adoptFilm(data) {
   return {film: film, dropped: dropped};
 }
 
+// Takes a film from anywhere as the page's film and shows it: the one door an agent comes in by. film.py calls it as
+// page.evaluate("data => takeFilm(data)", film), and the model's sheet calls it with the answer (parseJson).
+//   data  a film as an object, the JSON shape filmPrompt() describes and saveJson() writes; adoptFilm() checks every
+//         name and number in it (what it drops, and what it holds in range, is said there)
+// Returns a line for a person: "5 items, 2 texts", with "; dropped: thing unicorn, mark dance" when something was left
+// out. Throws an Error, "the answer had no character, thing or piece the kit knows", when no item is left, and then
+// changes nothing.
+// Changes: movie (the checked film), selected and pathing (null), time (0), the duration and bounce boxes and the
+// backdrop buttons; it rebuilds the film's code (drawFilm), saves the film in this browser (localStorage
+// "cartoon_maker"), and redraws the stage and the panel. After it, film.py reads movie back (the film as kept) and
+// sets time and calls show() to gather the kit's WARNINGS.
+// e.g. takeFilm({duration: 8, backdrop: "day", items: [{kind: "person", name: "girl", keys: [[0, 300, 950], [6, 1100, 950]]}]})
 function takeFilm(data) {
   var got = adoptFilm(data);
   if (!got.film.items.length) { throw new Error("the answer had no character, thing or piece the kit knows"); }
@@ -2743,6 +3099,13 @@ function takeFilm(data) {
   return got.film.items.length + " items, " + got.film.texts.length + " texts" + (got.dropped.length ? "; dropped: " + got.dropped.join(", ") : "");
 }
 
+// Asks a model on a server that speaks OpenAI's chat completions for the film of a story, with filmPrompt() as the
+// system message, and gives back a Promise of the answer's text (give it to parseJson, then takeFilm).
+//   story  the story, as the child tells it; settings  {base, model, key} (aiSettings()); the key is sent as a
+//          Bearer token when there is one
+//   strict  true asks for a JSON object (response_format); a 400 then asks once more without it
+// The Promise fails with an Error, "the server said 401: ...", when the server says no. Changes nothing in the page.
+// e.g. askModel("a girl meets a dragon", {base: "http://127.0.0.1:11434/v1", model: "qwen2.5:3b", key: ""}, true).then(function (text) { takeFilm(parseJson(text)); });
 function askModel(story, settings, strict) {
   var headers = {"Content-Type": "application/json"};
   if (settings.key) { headers.Authorization = "Bearer " + settings.key; }
@@ -2809,6 +3172,7 @@ var GUIDE_HOW = [["say", "💬 พูด", "ฟองคำพูดเหนื
 var guideTap = null;                    // while the guide waits for a tap on the stage: what to do with the spot
 var TURN = 4;                           // the seconds of one person's turn: a walk, and their words
 
+// A list of palette entries [name, label] with kind added to each: [name, label, kind], for the guide's choices.
 function withKind(list, kind) { return list.map(function (entry) { return [entry[0], entry[1], kind]; }); }
 
 var GUIDE = [
@@ -2828,6 +3192,8 @@ var GUIDE_PLAY = 6;                     // the step "skip all" goes to
 // high what hangs (the hanging lanterns), and in the air what flies (the dragon, the Luang).
 var GUIDE_SKY = {sun: true, birds: true, lantern: true}, GUIDE_HANGS = {khom: true, khomphat: true, khomdao: true, khombua: true},
     GUIDE_FLIES = {dragon: true, luang: true};
+//   kind  "person", "thing" or "piece"; name  its kit name. Returns [x, y], pixels of the sheet, from how many items
+//         the film has; changes nothing.
 function guideSpot(kind, name) {
   var n = movie.items.length, x = 180 + (n * 263) % 1080;
   if (GUIDE_SKY[name]) { return [x, 260]; }
@@ -2837,6 +3203,8 @@ function guideSpot(kind, name) {
   return [x, 960 + (n % 3) * 30];
 }
 
+// A y, pixels of the sheet, held in 40 to 1040. turnStart gives the second this person's turn begins in the guide
+// (1 + guideTurn * TURN). guideRoom makes movie.duration long enough for that turn (at most 90 s), and the box.
 function onStage(y) { return Math.max(40, Math.min(1040, y)); }     // anywhere in the picture (owner, 2026-10-17: "Allow placement of any item anywhere for children")
 var guidePlacing = null;                // the choice the child picked, waiting for a tap on the picture to say where
 function turnStart() { return 1 + guideTurn * TURN; }
@@ -2845,6 +3213,8 @@ function guideRoom() {                  // the film long enough for this person'
   if (movie.duration < need) { movie.duration = need; byId("durationBox").value = need; }
 }
 
+// Opens the guide at its first step: pauses, closes the time box, ends path mode, unselects, time to 0. Changes
+// those and the guide's state (guideGo); redraws the stage and the panel.
 function guideOpen() {
   setPlaying(false);
   if (popItem) { closeTimePop(true); }
@@ -2856,6 +3226,8 @@ function guideOpen() {
   panel();
 }
 
+// Closes the guide: guideAt -1, no tap or choice waiting, the bar closed, nothing selected; redraws the stage and the
+// panel.
 function guideClose() {
   guideAt = -1;
   guideTap = null;
@@ -2868,6 +3240,8 @@ function guideClose() {
   panel();
 }
 
+//   at  a step of GUIDE, 0 to 7. Starts it afresh: the people's turns from the first, at "each"; the film playing from
+//       0, at "play". Changes guideAt and the guide's state, then draws the step (guideShow).
 function guideGo(at) {                  // to step "at"
   guideTap = null;
   guidePlacing = null;
@@ -2886,6 +3260,7 @@ function guideGo(at) {                  // to step "at"
   guideShow();
 }
 
+// Changes guideTurn and the turn's state, and selected (null).
 function guideNextPerson() {            // this person's turn is over: the next one, or the next step
   selected = null;
   guideTurn += 1;
@@ -2896,6 +3271,9 @@ function guideNextPerson() {            // this person's turn is over: the next 
   if (guideTurn >= guideWho.length) { guideGo(guideAt + 1); } else { guideShow(); }
 }
 
+// (The words go in a bubble over this person, said or thought, or under the picture, as guideHow says; the big box
+// first, else the small one; nothing when both are empty.) Changes movie.texts, maybe movie.duration; rebuilds and
+// saves; then the next person's turn.
 function guideSay() {                   // the words this person says, at their turn, under the picture
   var big = byId("guideBig").value.trim(), small = byId("guideSmall").value.trim(), t0 = turnStart();
   guideRoom();
@@ -2908,6 +3286,8 @@ function guideSay() {                   // the words this person says, at their 
   guideNextPerson();
 }
 
+//   x, y  pixels of the sheet. Adds the choice the child picked (guidePlacing) there (addItem, quiet), keeps it in
+//         guideMade (for "take away"), opens its bar, and draws the step again.
 function guidePut(x, y) {               // one of the picked thing, standing at (x, y), then picked up, to move and size
   var item = addItem(guidePlacing[2], guidePlacing[0], Math.round(x), Math.round(y), true);
   guideMade.push(item);
@@ -2916,12 +3296,18 @@ function guidePut(x, y) {               // one of the picked thing, standing at 
   guideShow();
 }
 
+// (All nine of FEELS, in fact.) chosen  the name lit; what  the data-g of each button ("feel" or "feelthere").
+// Returns the buttons as one string of HTML.
 function feelChoices(chosen, what) {    // the eight feelings as the guide's big buttons; "what" is what a tap on one does
   return "<div class='choices'>" + FEELS.map(function (f, n) {
     return "<button data-g='" + what + "' data-n='" + n + "'" + (f[0] === chosen ? " class='on'" : "") + ">" + f[1] + "</button>";
   }).join("") + "</div>";
 }
 
+// Draws the guide's card for the step it is on (guideAt): its words, its choices and its buttons, and what a tap on
+// the picture does now (guideTap). The person's step asks, in turn, where they start, how they feel, where they walk
+// to, how they feel there, and what they say. Changes the card's HTML, guideTap and selected (the person whose turn
+// it is), and time for the feeling steps; then redraws the stage.
 function guideShow() {
   var box = byId("guide"), step = GUIDE[guideAt], html = [], go = [];
   guideTap = null;                      // each step below says if it waits for a tap
@@ -3061,6 +3447,11 @@ byId("guide").onclick = function (event) {
 // The film as a file: the page's own data, as film.py reads it ("python film.py render my_cartoon.json
 // out.mp4") and as "a model writes it" takes it back when it is pasted there (owner, 2026-10-17: "give a
 // button to save the information for the video into json").
+// Takes nothing, returns nothing, and changes nothing in the film: it saves movie exactly as it is (JSON.stringify,
+// an indent of 1) by the browser's download, named my_cartoon.json; the object URL is let go after 2 seconds. That
+// file is what takeFilm() takes back and film.py reads ("python film.py page my_cartoon.json out.html"). An agent with
+// the page open can read the same data at once: JSON.stringify(movie).
+// e.g. saveJson();
 function saveJson() {
   var blob = new Blob([JSON.stringify(movie, null, 1)], {type: "application/json"}), a = document.createElement("a");
   a.href = URL.createObjectURL(blob);

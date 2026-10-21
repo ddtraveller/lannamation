@@ -12,6 +12,11 @@ nothing of its code). A scene decorated with life (decorate.js) also has each an
 its own colour: a dot where it was at each second drawn, the seconds written at every fourth, and its name.
 A scene whose camera moves over the stretch has no picture behind that holds still: it says so, and the ghosts
 are of everything. Keep the stretch short there, or within one shot.
+
+It needs Google Chrome (through Playwright), numpy and Pillow. The page is named from the folder it is run
+in. It writes the PNG named (the box cut from it with --box: x y w h in pixels of the picture), prints how
+many moments and courses it drew and the first page error, and ends with exit code 0. It runs main() as it
+is loaded: do not import it.
 """
 import argparse
 import sys
@@ -28,6 +33,8 @@ COLOURS = [(220, 60, 60), (40, 120, 220), (40, 160, 70), (210, 140, 20), (150, 6
 
 
 def main():
+    """The command line (see this file's docstring): draw the stretch, find the picture behind, lay the ghosts and
+    the animals' courses over it, and save it."""
     ask = argparse.ArgumentParser()
     ask.add_argument("page")
     ask.add_argument("out")

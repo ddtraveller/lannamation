@@ -9,6 +9,10 @@ subtitles. Given more than two lines, every line but the last is a big one, stac
 (a line in each of three languages: Kam Mueang, Chinese, then English small under them), and the last is the small
 one. chain.py --over lays it over the joined film from one second to another, fading in and out, as the films are
 encoded again: nothing of the film is rendered again.
+
+It needs Google Chrome (through Playwright). It writes the PNG where it is named (clear but for the
+words) and a page out/caption_page.html beside this file while it draws, removed after. It ends with
+exit code 0; with fewer than two arguments it prints this and ends with exit code 1.
 """
 import base64
 import sys
@@ -23,6 +27,7 @@ PAGE = """<!doctype html><html><head><meta charset="utf-8"></head><body>
 
 
 def main():
+    """The command line: caption.py OUT LINE [LINE...]: draws the lines with the kit's subtitle() and saves them."""
     if len(sys.argv) < 3:
         raise SystemExit(__doc__)
     out, lines = sys.argv[1], sys.argv[2:]

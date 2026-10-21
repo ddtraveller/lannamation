@@ -86,6 +86,12 @@ var BEAST_KEYS = {};
 // Where a walking foot is in its stride: [how far forward of its joint, how
 // high off the ground]. "s" is how far through the stride it is; it is on
 // the ground for the first 0.62 of it.
+//   s      strides: look.step plus the leg's own offset (only its fraction counts)
+//   reach  how far the foot goes back along the ground in one stride, in pixels
+//          of the beast's own drawing (GAITS' second number)
+//   lift   how high the foot rises in the air, in the same pixels
+// Returns [forward, up]. Draws nothing.
+// e.g. beastFoot(clock / BEAT / 3, 84, 24)
 function beastFoot(s, reach, lift) {
   var u = s - Math.floor(s);
   if (u < 0.62) { return [reach * (0.5 - u / 0.62), 0]; }
@@ -105,6 +111,16 @@ function beastFoot(s, reach, lift) {
 // ahead reach lower or higher than the legs behind, the body staying level
 // as a walking animal's does; and each foot is pitched to the ground, toes
 // down a fall and up a climb.
+//   legs    the rows above, in the beast's own drawing (the ground at y = 0)
+//   far     true: draw the far legs (before the body); false: the near ones
+//   look    the beast's look: step and slope are read from it
+//   bones   [the upper bone's length, the lower's, how high the ankle stands]
+//   wide    the leg's half-widths, as limb() takes them: [top, joint, ankle]
+//   colour  the hide; a far leg is drawn a little darker
+//   reach, lift  as beastFoot() takes them
+//   foot    foot(ankleX, ankleY, skin, lifted, kneeX, kneeY, hipX, hipY, turn)
+// Returns nothing: it draws with pen in the beast's own frame.
+// e.g. beastLegs(legs, true, look, [92, 86, 14], [27, 18, 15], colour, GAITS.buffalo[1], 24, foot)   // as buffalo() does
 function beastLegs(legs, far, look, bones, wide, colour, reach, lift, foot) {
   var tilt = Math.tan(look.slope || 0);
   for (var n = 0; n < legs.length; n++) {
@@ -125,6 +141,10 @@ function beastLegs(legs, far, look, bones, wide, colour, reach, lift, foot) {
 
 // The two edges of a tube that runs along a row of points and narrows, as a
 // trunk does. "wideAt" gives its half-width from 0 (the first point) to 1.
+// "points" is a list of [x, y]. Returns [edge, edge]: two lists of [x, y], one
+// point on each for every point given, the first on the right of the way the
+// row runs, as the sheet shows it (y down). Draws nothing.
+// e.g. beastTube([[0, 0], [0, 100], [20, 180]], function (u) { return mix(50, 15, u); })
 function beastTube(points, wideAt) {
   var edges = [[], []], last = points.length - 1;
   for (var n = 0; n <= last; n++) {
@@ -142,6 +162,13 @@ function beastTube(points, wideAt) {
 // its root: it grows out of the face it is drawn on. true is that and no
 // more; a number is how many points of its first edge, counted from the
 // root, have no line either (the side of the trunk that is under the cheek).
+//   points  the trunk's middle, a list of [x, y] from the face to the tip (two or more)
+//   wide    its half-width at the face, thin its half-width at the tip, in pixels
+//           of pen's frame
+//   colour  the hide
+// Returns nothing: it draws with pen, and leaves pen's stroke colour, line
+// width and lineCap set.
+// e.g. elephantTrunk(trunk, 57, 15, colour, true)   // as elephantFront() does
 function elephantTrunk(points, wide, thin, colour, open) {
   var last = points.length - 1, edges = beastTube(points, function (u) { return mix(wide, thin, Math.pow(u, 0.8)); }), n;
   var way = Math.atan2(points[last][1] - points[last - 1][1], points[last][0] - points[last - 1][0]);
@@ -189,7 +216,11 @@ function elephantTrunk(points, wide, thin, colour, open) {
 // An elephant's eye, about (0, 0), looking along x: small and dark under a
 // heavy lid, with lashes and the folds of old skin round it. "shut" is true
 // in a blink. "e", a feeling (creatureFeel()), in the colour "skin": its lid,
-// and the fold of the brow raised or turned.
+// and the fold of the brow raised or turned. "ink" is the colour of its lines
+// (inkFor(skin)). The eye is about 22 across, in pen's frame.
+// Returns nothing: it draws with pen, and leaves pen's stroke colour, line
+// width and lineCap set.
+// e.g. elephantEye(inkFor("#8e9098"), false, null, "#8e9098")
 function elephantEye(ink, shut, e, skin) {
   if (e) {
     creatureEye(0, 0, 11, 7.5, e, {turn: -0.12, skin: skin, iris: "#3a2418", ink: ink, shut: shut});
@@ -246,6 +277,9 @@ function elephantEye(ink, shut, e, skin) {
 
 // Two bands of gold across a tusk: the tusk's shape is the pen's path when
 // this is called, and each band is a line [x1, y1, x2, y2] across it.
+// Returns nothing: it draws with pen in STYLE.gold, clipped to that path;
+// pen is restored after.
+// e.g. elephantRings([[60, -318, 110, -330], [68, -292, 114, -300]])   // after drawing the tusk's path
 function elephantRings(bands) {
   pen.save();
   pen.clip();
@@ -263,6 +297,12 @@ function elephantRings(bands) {
 // An elephant seen from the front, coming toward us: drawn about the middle
 // of the pen's frame, the ground at y = 0. It gives back how high its head
 // stands, for a rider. (elephant() calls it for a look with front: true.)
+//   look    the elephant's look (sit, step, late, trunk, mouth, feel, tusks,
+//           cloth, howdah are read)
+//   colour  the hide
+// Returns a number: the head's height above the ground, in pixels of pen's
+// frame (about 606 standing). It draws with pen.
+// e.g. var tall = elephantFront({front: true, trunk: 0.5}, "#8e9098");
 function elephantFront(look, colour) {
   var ink = inkFor(colour), lying = !!look.sit, walk = look.step !== undefined && !lying, turn = (look.step || 0) * Math.PI * 2, n, side;
   var liftL = walk ? Math.max(0, Math.sin(turn)) : 0, liftR = walk ? Math.max(0, -Math.sin(turn)) : 0;
@@ -521,6 +561,11 @@ function elephantFront(look, colour) {
 
 // A water buffalo seen from the front, coming toward us, drawn the same way.
 // (buffalo() calls it for a look with front: true.)
+//   look    the buffalo's look (step, late, feel, rope are read)
+//   colour  the hide
+// Returns a number: the head's height above the ground, in pixels of pen's
+// frame (about 346). It draws with pen.
+// e.g. var tall = buffaloFront({front: true, rope: true}, "#55565f");
 function buffaloFront(look, colour) {
   var ink = inkFor(colour), walk = look.step !== undefined, turn = (look.step || 0) * Math.PI * 2, n, side;
   var liftL = walk ? Math.max(0, Math.sin(turn)) : 0, liftR = walk ? Math.max(0, -Math.sin(turn)) : 0;
@@ -640,6 +685,16 @@ function buffaloFront(look, colour) {
 // mouth opens with it (or by "mouth"). It blinks, and in a walk its head
 // nods and its trunk swings with the steps. "sit" lays it down with its legs
 // folded, so that someone can climb on.
+//   x, y   the ground under its middle, in pixels of the sheet
+//   look   an object, never left out ({} gives a grey tusker standing, size 1,
+//          facing right): its keys are BEAST_KEYS above (the elephant reads
+//          size, face, ground, step, colour, late, front, trunk, tusks, cloth,
+//          howdah, sit, mouth, feel, and slope: radians, as beastLegs() says)
+// Returns {seat: [x, y], head: [x, y]}, points of the sheet. It draws with
+// pen at the film's clock; it sets the kit's FINE and LINE while it draws
+// and leaves them at 1 and STYLE.line.
+// e.g. var e = elephant(700, GROUND, {size: 0.6, step: clock / BEAT / 4, trunk: 0.4, cloth: "#b23a2a"});
+//      person(e.seat[0], e.seat[1], cast("boy", {floor: "astride"}));
 function elephant(x, y, look) {
   checkNames("The elephant's name", look, BEAST_KEYS);
   var size = (look.size || 1) * GAITS.elephant[0], face = look.face || 1, colour = look.colour || "#8e9098", ink = inkFor(colour), n;
@@ -1017,6 +1072,15 @@ function elephant(x, y, look) {
 // A water buffalo, standing on (x, y). Everything about it is in "look"
 // (see BEAST_KEYS above). It gives back {seat, head}: where a rider sits on
 // its back, and the top of its head, in the scene.
+//   x, y   the ground under its middle, in pixels of the sheet
+//   look   an object, never left out ({} gives a slate-grey buffalo standing,
+//          size 1, facing right): its keys are BEAST_KEYS above (the buffalo
+//          reads size, face, step, colour, late, front, rope, graze, feel,
+//          slope)
+// Returns {seat: [x, y], head: [x, y]}, points of the sheet. It draws with
+// pen at the film's clock; it sets FINE and LINE while it draws and leaves
+// them at 1 and STYLE.line.
+// e.g. var b = buffalo(600, GROUND, {size: 0.7, face: -1, graze: 1, rope: true});
 function buffalo(x, y, look) {
   checkNames("The buffalo's name", look, BEAST_KEYS);
   var size = (look.size || 1) * GAITS.buffalo[0], face = look.face || 1, colour = look.colour || "#55565f", ink = inkFor(colour), n;
@@ -1256,12 +1320,18 @@ var FELINES = {
 };
 
 // A colour that can be seen through: "alpha" of it, 0 to 1.
+// "colour" must be written "#rrggbb" (six hex digits; a name or "#rgb" gives
+// a wrong colour). Returns the colour as an "rgba(r, g, b, alpha)" string.
+// e.g. beastSheer("#e2892b", 0.4)   // "rgba(226, 137, 43, 0.4)"
 function beastSheer(colour, alpha) {
   var paint = parseInt(colour.slice(1), 16);
   return "rgba(" + ((paint >> 16) & 255) + ", " + ((paint >> 8) & 255) + ", " + (paint & 255) + ", " + alpha + ")";
 }
 
 // One tuft like a small flame: three points that lean the way x goes.
+// Its root at (x, y), turned "turn" radians, "size" long, in pixels of pen's
+// frame, filled with "colour" and inked. Returns nothing: it draws with pen.
+// e.g. beastTuft(150, -250, Math.PI + 0.5, 54, "#f6c445")   // a tiger's tuft at a joint
 function beastTuft(x, y, turn, size, colour) {
   pen.save();
   pen.translate(x, y);
@@ -1282,6 +1352,11 @@ function beastTuft(x, y, turn, size, colour) {
 
 // A feline's head in profile, looking along x, about its middle. "open" is
 // how far the mouth is open; "c" the colours; "m" the measures (FELINES).
+// "kind" is "cat" or "tiger"; "open" 0 to 1; "seed" any number, so two
+// heads blink apart; "e" a feeling (creatureFeel()), or null.
+// Returns nothing: it draws with pen, and leaves pen's colours and line
+// width as it last set them.
+// e.g. felineHead("cat", 0.3, c, FELINES.cat, 1, null)   // c as cat() makes it
 function felineHead(kind, open, c, m, seed, e) {
   var blink = Math.sin(clock * 0.9 + seed) > 0.985, twitch = 0.08 * Math.sin(clock * 3.1 + seed), n;
   if (e) { twitch += 0.6 * Math.min(0, e.ears) + 0.12 * Math.max(0, e.ears); }   // a feeling lays the ears back (anger, fear, sadness) or pricks them
@@ -1439,6 +1514,13 @@ function felineHead(kind, open, c, m, seed, e) {
 
 // A feline: a cat or a tiger, standing on (x, y). "kind" is "cat" or
 // "tiger"; "c" its colours. It gives back {seat, head}, points of the scene.
+// A page calls cat() or tiger(), which check the look's names and make "c":
+// {body, points, eye, pale, stripes, tuft}. (x, y) is the ground under its
+// middle, in pixels of the sheet; look's keys are BEAST_KEYS above.
+// Returns {seat: [x, y], head: [x, y]}. It draws with pen; it sets FINE and
+// LINE while it draws and leaves them at 1 and STYLE.line.
+// e.g. feline("tiger", 500, GROUND, {step: 1.5}, {body: "#e2892b", points: "#e2892b", eye: "#f0c23a",
+//                                               pale: "#f6ead0", stripes: "#1f1a1a", tuft: "#f6c445"})
 function feline(kind, x, y, look, c) {
   var m = FELINES[kind], size = (look.size || 1) * m.scale, face = look.face || 1, L = m.long, n;
   var walk = look.step !== undefined && !look.sit, bob = walk ? 5 * Math.abs(Math.sin(look.step * Math.PI * 2)) : 0;
@@ -1689,6 +1771,13 @@ function feline(kind, x, y, look, c) {
 }
 
 // A cat, standing on (x, y): the Siamese unless its colours are told.
+//   x, y   the ground under its middle, in pixels of the sheet
+//   look   an object, never left out: its keys are BEAST_KEYS above (a cat
+//          reads size, face, step, colour, points, eyes, late, sit, mouth, feel,
+//          slope); at size 1 it is a house cat beside the cast
+// Returns {seat: [x, y], head: [x, y]}, points of the sheet (feline()). It
+// draws with pen; FINE and LINE are left at 1 and STYLE.line.
+// e.g. cat(820, GROUND, {sit: true, face: -1, feel: "sleepy"})
 function cat(x, y, look) {
   checkNames("The cat's name", look, BEAST_KEYS);
   var body = look.colour || "#efe2c8";
@@ -1697,6 +1786,14 @@ function cat(x, y, look) {
 }
 
 // A tiger, standing on (x, y).
+//   x, y   the ground under its middle, in pixels of the sheet
+//   look   an object, never left out: its keys are BEAST_KEYS above (a tiger
+//          reads size, face, step, colour, stripes, tufts, eyes, late, sit,
+//          mouth, feel, slope)
+// Returns {seat: [x, y], head: [x, y]}, points of the sheet (feline()). It
+// draws with pen; FINE and LINE are left at 1 and STYLE.line.
+// e.g. var walk = amble("tiger", clock, 100, 1300, 2, {size: 0.8});
+//      tiger(walk.x, GROUND, walk.look);
 function tiger(x, y, look) {
   checkNames("The tiger's name", look, BEAST_KEYS);
   return feline("tiger", x, y, look, {body: look.colour || "#e2892b", points: look.colour || "#e2892b", eye: look.eyes || "#f0c23a",
@@ -1711,6 +1808,13 @@ function tiger(x, y, look) {
 // colour of patches on its back. It walks (step), keeps the beat with its
 // ears and tail (late), and opens its mouth (mouth, 0 to 1). It gives back
 // {seat, head}, points of the scene, as the other animals do.
+//   x, y   the ground under its middle, in pixels of the sheet
+//   look   an object, never left out: its keys are BEAST_KEYS above (a pig
+//          reads size, face, step, colour, points, eyes, late, mouth, feel,
+//          slope)
+// Returns {seat: [x, y], head: [x, y]}. It draws with pen; it sets FINE and
+// LINE while it draws and leaves them at 1 and STYLE.line.
+// e.g. pig(400, GROUND, {colour: "#3a3436", step: clock / BEAT / 2})
 function pig(x, y, look) {
   checkNames("The pig's name", look, BEAST_KEYS);
   var size = (look.size || 1) * GAITS.pig[0], face = look.face || 1, colour = look.colour || "#eeb2a6", ink = inkFor(colour), n;
@@ -1937,6 +2041,12 @@ var GAITS = {elephant: [1.35, 120, 4], buffalo: [1.25, 84, 3],
 // It gives back {x, look, arrives}: where the animal is at t; the look to
 // draw it with, which is the one given with face set, and step while it
 // walks; and the second it arrives.
+// The look given is not changed (a copy is given back). t and start are in
+// seconds, from and to in pixels of the sheet. "kind" must be a key of GAITS
+// (myth.js adds "mom", "hatsadiling" and "maengSiHuHaTa"; a mouse has no
+// gait). Draws nothing.
+// e.g. var walk = amble("buffalo", clock, 1400, 300, 1, {size: 0.7, rope: true});
+//      buffalo(walk.x, GROUND, walk.look);
 function amble(kind, t, from, to, start, look) {
   var gait = GAITS[kind], far = Math.abs(to - from), way = to < from ? -1 : 1;
   var pace = gait[1] / 0.62 * gait[0] * (look.size || 1);   // how far one stride takes it
@@ -1955,6 +2065,14 @@ function amble(kind, t, from, to, start, look) {
 // look.pack: a pack saddle of wood on its back, with a load lashed on each side: true, or the colour of the load's
 // cloth. About 330 high at the withers at size 1. It gives back {seat, head, nose, load}: the top of the load; the
 // head and the nose (where the halter's rope ties) in the film's own pixels, as the buffalo's head.
+//   x, y   the ground under its middle, in pixels of the sheet
+//   look   an object, never left out: its keys are BEAST_KEYS above (a horse
+//          reads size, face, step, colour, mane, pack, feel, slope)
+// Returns {seat: [x, y], head: [x, y], nose: [x, y], load: [x, y] or null}: seat
+// is on its back, where a rider sits; load is the top of the load, null with
+// no pack. It draws with pen; it sets FINE and LINE while it draws and leaves
+// them at 1 and STYLE.line.
+// e.g. var h = horse(900, GROUND, {pack: "#6a4a8a", step: clock / BEAT / 2, face: -1});
 function horse(x, y, look) {
   checkNames("The horse's name", look, BEAST_KEYS);
   var size = (look.size || 1) * GAITS.horse[0], face = look.face || 1, colour = look.colour || "#8a5a3a";
@@ -2171,6 +2289,16 @@ var MICE = {house: {fur: "#8c8892", belly: "#bdb6bc", ear: 8.5, inner: "#e8a8b0"
             field: {fur: "#b08a5a", belly: "#f1e9da", ear: 6, inner: "#d89a8a", eye: 2.8, tail: "#efe4d2", tailTop: "#6a4a2e",
                     stripe: "#7a5a36", long: 1.2}};
 
+// mouse(x, y, look): one of the two mice above, standing or running on (x, y).
+//   x, y   the ground under it, in pixels of the sheet
+//   look   its look, as listed above (kind, size, face, step, sniff, up,
+//          tint); it may be left out (a grey house mouse, size 1, facing
+//          right). Its names are not checked: a wrong one changes nothing,
+//          silently
+// Returns {nose: [x, y]}, a point of the sheet. It draws with pen; it sets
+// LINE while it draws and puts it back as it was; it leaves pen's lineJoin
+// and lineCap at "round".
+// e.g. mouse(520, GROUND, {kind: "field", step: clock * 3, size: 1.2})
 function mouse(x, y, look) {
   look = look || {};
   var kind = MICE[look.kind || "house"], size = look.size || 1, face = look.face || 1;
@@ -2332,6 +2460,12 @@ var GECKO_GAP = 9, GECKO_STEP = 30, GECKO_REACH = 27;   // a tokay's legs splay 
 // itself"). A route that turns gently draws as it did.
 var GECKO_BEND = 0.5;
 
+// "route" is a list of [x, y] in pixels of the sheet. Returns a list of
+// numbers, one for each point: how far along the route it is, in pixels.
+// It keeps that list on the route itself (route.marks) the first time and
+// gives it back after, so a route changed after its first use keeps its old
+// distances: make a new list for a new route. Draws nothing.
+// e.g. geckoRoute([[100, 800], [100, 200]])   // [0, 600]
 function geckoRoute(route) {                        // the distance along a route at each of its points, kept with it
   if (!route.marks) {
     route.marks = [0];
@@ -2342,6 +2476,11 @@ function geckoRoute(route) {                        // the distance along a rout
   return route.marks;
 }
 
+// "route" as geckoRoute() takes it (two points or more); "d" a distance along
+// it in pixels (below 0 is on back past its first point; past its end, on
+// along its last stretch). Returns [x, y, angle]: the point, in pixels of the
+// sheet, and the way the route runs there, in radians. Draws nothing.
+// e.g. geckoAt([[100, 800], [100, 200]], 150)   // [100, 650, -Math.PI / 2]
 function geckoAt(route, d) {                        // the point a distance along a route, and the way it runs there
   var marks = geckoRoute(route), last = route.length - 1, k;
   if (d <= 0 || last < 1) {                         // before its start: on back along its first stretch
@@ -2353,6 +2492,18 @@ function geckoAt(route, d) {                        // the point a distance alon
   return [mix(route[k - 1][0], route[k][0], u), mix(route[k - 1][1], route[k][1], u), a];
 }
 
+// gecko(route, along, look): the tokay, its head "along" pixels of the way
+// along "route" (see above).
+//   route  a list of [x, y], points of the sheet, two or more; keep the same
+//          list from frame to frame (geckoRoute() keeps its distances on it)
+//   along  pixels from the route's first point to the head; let it grow with
+//          the time and the tokay crawls
+//   look   size, colour, spots, tint, t, as listed above; it may be left out.
+//          Its names are not checked
+// Returns {head: [x, y], angle}: the head, a point of the sheet, and the way
+// it faces in radians. It draws with pen, seen from above.
+// e.g. var wall = [[300, 850], [300, 300], [520, 240]];
+//      gecko(wall, 40 * clock, {size: 1.4});
 function gecko(route, along, look) {
   look = look || {};
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }

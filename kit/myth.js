@@ -137,6 +137,12 @@ GAITS.maengSiHuHaTa = [1, 60, 2];
 // Scales, inside the shape that "shapeOf" makes: rows of small round scales,
 // each row sitting between the scales of the row above, their round edges
 // downward. They are all one colour and one stroke.
+//   shapeOf   a function that makes the shape's path on pen (it need not fill it)
+//   left, top, right, bottom   the box the scales are laid in, in pixels of pen's frame
+//   r         a scale's radius, in the same pixels
+//   colour    the scales' line
+// Returns nothing: it draws with pen, clipped to the shape; pen is restored.
+// e.g. mythScales(function () { pen.beginPath(); pen.ellipse(0, -150, 120, 60, 0, 0, 7); }, -120, -210, 120, -90, 9, "#e0b23a")
 function mythScales(shapeOf, left, top, right, bottom, r, colour) {
   pen.save();
   shapeOf();
@@ -156,7 +162,11 @@ function mythScales(shapeOf, left, top, right, bottom, r, colour) {
 
 // One great feather of a wing or a tail, from (0, 0) out along x: a flame of
 // a leaf with a border of another colour and a rib. "curl" is how far its
-// tip is bent to one side.
+// tip is bent to one side. long, wide and curl are in pixels of pen's frame;
+// "colour" fills the middle and "border" the edge round it.
+// Returns nothing: it draws with pen, and leaves pen's stroke colour, line
+// width and lineCap set.
+// e.g. mythFeather(176, 36, -8, "#f6dc8a", "#e0b23a")
 function mythFeather(long, wide, curl, colour, border) {
   function leaf() {
     pen.beginPath();
@@ -185,6 +195,10 @@ function mythFeather(long, wide, curl, colour, border) {
 
 // A tube along a row of points, as a tail or a neck: wide at its first point
 // and "thin" at its last, with one line round it.
+// "points" is a list of [x, y]; wide and thin are half-widths, in pixels of
+// pen's frame; "colour" fills it. Returns its two edges, as beastTube()
+// gives them. It draws with pen.
+// e.g. mythTube([[0, 0], [-60, -20], [-110, -80]], 22, 6, "#8d6f9b")
 function mythTube(points, wide, thin, colour) {
   var edges = beastTube(points, function (u) { return mix(wide, thin, u); }), last = points.length - 1, n;
   pen.beginPath();
@@ -198,6 +212,14 @@ function mythTube(points, wide, thin, colour) {
 // ---------- the Mom ----------
 // A Mom, standing on (x, y): see the top of this file. It gives back
 // {seat, head}, points of the scene, as the kit's beasts do.
+//   x, y   the ground under its middle, in pixels of the sheet
+//   look   an object, never left out ({} gives a purple Mom standing, size 1,
+//          facing right): its keys are MYTH_KEYS above (the Mom reads size,
+//          face, colour, gold, belly, eyes, step, late, mouth, feel)
+// Returns {seat: [x, y], head: [x, y]}, points of the sheet. It draws with
+// pen; it sets FINE and LINE while it draws and leaves them at 1 and STYLE.line.
+// e.g. var walk = amble("mom", clock, 200, 900, 1, {size: 0.8});
+//      mom(walk.x, GROUND, walk.look);
 function mom(x, y, look) {
   checkNames("The Mom's name", look, MYTH_KEYS);
   var size = (look.size || 1) * GAITS.mom[0], face = look.face || 1, seed = x * 0.013, n, k;
@@ -490,7 +512,11 @@ function mom(x, y, look) {
 // ---------- the Luang ----------
 // One leg of a Luang, from the shoulder (sx, sy) to the foot at (px, py): a
 // horse's leg, with a tuft over a dark hoof. "knee" is 1 for a leg whose
-// joint points forward and -1 for one whose joint points back.
+// joint points forward and -1 for one whose joint points back. All in
+// pixels of pen's frame; "skin" is the leg's colour, "c" the Luang's colours
+// (crest and fire, for the tuft).
+// Returns nothing (unlike dragonLeg()): it draws with pen.
+// e.g. luangLeg(0, 20, 30, 112, -1, "#2f8f6a", {crest: "#e0b23a", fire: "#e8632c"})
 function luangLeg(sx, sy, px, py, knee, skin, c) {
   var leg = limb(sx, sy, px, py, 62, 56, [22, 15, 10], skin, function (joint) { return knee * joint[0]; }, 0.25);
   pen.save();
@@ -513,6 +539,10 @@ function luangLeg(sx, sy, px, py, knee, skin, c) {
 
 // A Luang's head in profile, looking along x, its neck joining at (0, 0).
 // "open" is how far the mouth is open, 0 to 1.
+// "c" the Luang's colours (body, belly, crest, fire, horn, edge, as luang()
+// makes them); "e" a feeling (creatureFeel()), or null.
+// Returns nothing: it draws with pen, and leaves pen's colours and line width set.
+// e.g. luangHead(0.4, c, null)   // c as luang() makes it
 function luangHead(open, c, e) {
   var ink = inkFor(c.body), n, k;
   function skull() {                                // the skull, and a snout whose tip turns up as a trunk's does. No chin: the jaw is its own piece
@@ -679,6 +709,15 @@ function luangHead(open, c, e) {
 
 // A Luang, its head at (x, y). Everything about it is in "look" (see
 // MYTH_KEYS above). Without a trail it hangs in the air and its body waves.
+//   x, y   where its head is, in pixels of the sheet; the body runs back from
+//          it, about 900 long at size 1. With look.trail, (x, y) should be
+//          where trail(clock) puts the head
+//   look   an object, never left out ({} gives a green Luang at size 1,
+//          facing right): the Luang reads size, face, colour, gold, belly,
+//          horns, wings, trail, depth, late, sing, mouth, feel
+// Returns nothing (unlike the dragon). It draws with pen at the film's clock;
+// it sets FINE and LINE while it draws and leaves them at 1 and STYLE.line.
+// e.g. luang(760, 300, {size: 0.5, face: -1, trail: function (t) { return [1400 - 120 * t, 300 + 40 * Math.sin(t)]; }})
 function luang(x, y, look) {
   checkNames("The Luang's name", look, MYTH_KEYS);
   var size = (look.size || 1) * (look.depth === undefined ? 1 : 0.35 + 1.25 * look.depth), face = look.face || 1, n;
@@ -759,6 +798,14 @@ function luang(x, y, look) {
 // A Hatsadiling bird, standing on (x, y): see the top of this file. It gives
 // back {seat, head}, points of the scene, as the kit's beasts do. One that
 // flies has (x, y) under it as one that stands has: the place it would stand.
+//   x, y   the ground under it, in pixels of the sheet
+//   look   an object, never left out ({} gives a blue bird with a dark
+//          elephant's head, standing, size 1, facing right): it reads size,
+//          face, colour, gold, belly, head, wings, step, fly, trunk, late, feel
+//          (MYTH_KEYS above)
+// Returns {seat: [x, y], head: [x, y]}, points of the sheet. It draws with
+// pen; it sets FINE and LINE while it draws and leaves them at 1 and STYLE.line.
+// e.g. hatsadiling(640, GROUND - 200, {fly: true, size: 0.7, trunk: 0.6})
 function hatsadiling(x, y, look) {
   checkNames("The bird's name", look, MYTH_KEYS);
   var size = (look.size || 1) * GAITS.hatsadiling[0], face = look.face || 1, seed = x * 0.011, n, k;
@@ -970,6 +1017,8 @@ function hatsadiling(x, y, look) {
 
 // ---------- the creature with four ears and five eyes ----------
 // Its outline as points: from "start", along cubic curves [c1x, c1y, c2x, c2y, x, y], "steps" points each.
+// "start" is [x, y]. Returns a list of [x, y]: start, then steps points for each curve. Draws nothing.
+// e.g. maengOutline([0, 0], [[20, -40, 80, -40, 100, 0]], 12)   // 13 points
 function maengOutline(start, curves, steps) {
   var points = [start], at = start;
   curves.forEach(function (c) {
@@ -984,6 +1033,10 @@ function maengOutline(start, curves, steps) {
 }
 
 // The outline as a path; with "shag" each stretch of it bows out from "middle" a little, a tuft of fur.
+// "points" as maengOutline() gives them; "shag" 0 (straight) to about 1, a tuft then about 7 to 11 pixels;
+// "middle" [x, y], the point the tufts bow away from; "seed" any number, so two outlines tuft apart.
+// Returns nothing: it makes a closed path on pen (pen.beginPath() first) and neither fills nor strokes it.
+// e.g. maengPath(body, 0.45, [0, -154], seed); shape("#46424c");
 function maengPath(points, shag, middle, seed) {
   pen.beginPath();
   pen.moveTo(points[0][0], points[0][1]);
@@ -998,6 +1051,9 @@ function maengPath(points, shag, middle, seed) {
 }
 
 // A paw too big for it, at the ankle (ax, ay): broad, with four long pale claws hooked down to the ground.
+// "skin" is the fur's colour. It is the "foot" beastLegs() is given (the other arguments it passes are not
+// used). Returns nothing: it draws with pen; pen's frame is kept.
+// e.g. maengPaw(92, -12, "#46424c")
 function maengPaw(ax, ay, skin) {
   pen.save();
   pen.translate(ax, ay);
@@ -1026,6 +1082,11 @@ function maengPaw(ax, ay, skin) {
 // feeling (e, from creatureFeel()) brings the lid down, low at the corner by the nose in anger, at the outer
 // corner in sadness; shut, or laughing, the eye is a line, bowed up in a laugh. "glow" lights the iris and the
 // air about it. "gaze" [-1 to 1, -1 to 1] is where it looks: [0, 0] out at the viewer, 1 to the eye's edge.
+// e must be given (an object with lid, wide, slant, bowed: creatureFeel()'s, or maengSiHuHaTa()'s calm one);
+// "c" the colours: c.eyes the iris, c.fur and c.lit the skin round it; "shut" true for a blink; "glow" 0 to 1;
+// gaze null looks straight out. r and (x, y) are in pixels of pen's frame (the head's own).
+// Returns nothing: it draws with pen.
+// e.g. maengEye(0, -54, 14.4, e, {fur: "#46424c", lit: "#6a6672", eyes: "#7cc25a"}, false, 0.5, [0.3, 0])
 function maengEye(x, y, r, e, c, shut, glow, gaze) {
   var gx = gaze ? gaze[0] * r * 0.36 : 0, gy = gaze ? gaze[1] * r * 0.3 : 0;
   var closed = Math.max(e.lid, shut ? 1 : 0), ry = r * e.wide, inward = x < -1 ? 1 : x > 1 ? -1 : 0;
@@ -1093,6 +1154,15 @@ function maengEye(x, y, r, e, c, shut, glow, gaze) {
 
 // The face, turned to the viewer, about its middle: 172 across the cheeks. "open" is how far the jaw has dropped;
 // e the feeling (creatureFeel()).
+//   c      the colours, {fur, lit, eyes}, as maengSiHuHaTa() makes them
+//   e      must be given (ears, grin, lid, wide, slant, bowed are read)
+//   open   0 to 1; shut true for a blink of all five; glow 0 to 1
+//   seed   any number, for the fur's tufts
+//   wake   0 to 5: how many eyes are open (MAENG_EYES gives the order)
+//   eyes   what maengEyes() gives, one for each eye; null: all five have e
+//          and look straight out
+// Returns nothing: it draws with pen about (0, 0).
+// e.g. maengFace(c, e, 0.3, false, 0, 1, 5, null)   // c and e as maengSiHuHaTa() makes them
 function maengFace(c, e, open, shut, glow, seed, wake, eyes) {
   var ears = e.ears, low = Math.max(0, -ears) * 14, up = Math.max(0, ears) * 6, flat = 1 - 0.3 * Math.max(0, -ears);
   [[-50, -70, 23], [50, -70, 23], [-80, -34, 20], [80, -34, 20]].forEach(function (one) {   // the four round ears, behind the head
@@ -1188,13 +1258,22 @@ var MAENG_EYE_TURN = 10;                           // seconds before the staring
 var MAENG_EYE_FEEL = {neutral: "concerned", happy: "surprised", laughing: "happy", sad: "concerned", concerned: "fear",
                       angry: "concerned", sleepy: "neutral", satiated: "sleepy", surprised: "happy", fear: "concerned"};
 
+// A number from 0 to 1 that stays the same for the same whole number n (the kit's dice()): the creature's
+// own choices, made again the same in every frame.
+// e.g. maengHash(12)
 function maengHash(n) { return dice(Math.floor(n) * 7.31 + 3.7); }
 
-// What each of its five eyes does at second t, as a list of {role, e, narrow, sees}: three watch the nearest one
+// What each of its five eyes does at second t, as a list of {role, e, narrow, look}: three watch the nearest one
 // in the frame (SIGHTS, oldcartoon.js), one stares out at the viewer and then scans slowly from side to side,
 // narrowed in suspicion, and one wanders; every MAENG_EYE_TURN seconds the staring one and the wandering one
 // change to two others. Three eyes, chosen once for this creature, have its own feeling and the other two a
 // second (look.eyeFeel, or MAENG_EYE_FEEL's). From the second alone, as everything in a frame is.
+//   look   the creature's look (id, feel, eyeFeel and the feeling's numbers are read)
+//   at     the creature's own time in seconds, for the second feeling (the turns go by the film's clock)
+//   own    the creature's own feeling, as creatureFeel() gives it
+// Returns five {role: "watch", "stare" or "wander", e: a feeling, narrow: 0 to 1, look: [x, y] or null (a
+// watcher: maengGaze() finds where)}, in the order of MAENG_EYES. Draws nothing.
+// e.g. maengEyes({feel: "happy"}, clock, creatureFeel({feel: "happy"}, clock))
 function maengEyes(look, at, own) {
   var id = 0, key = look.id || "maeng", n;
   for (n = 0; n < key.length; n++) { id = (id * 31 + key.charCodeAt(n)) % 997; }
@@ -1220,6 +1299,10 @@ function maengEyes(look, at, own) {
 
 // Where one eye looks, in its own -1 to 1: the nearest one in the frame for a watcher (the sheet's pixels, brought
 // into the head's own), straight out when there is none, or what maengEyes() gave it.
+// "place" is the eye's [x, y] in the head's own pixels (a row of MAENG_EYES); "eye" one of maengEyes()'s. It
+// reads pen's frame as it is now, so call it with pen in the head's frame. Returns [x, y], each -1 to 1, as
+// maengEye() takes "gaze". Draws nothing.
+// e.g. maengGaze(MAENG_EYES[0], eyes[0])   // eyes from maengEyes()
 function maengGaze(place, eye) {
   if (eye.look) { return eye.look; }
   var m = pen.getTransform(), here = m.transformPoint(new DOMPoint(place[0], place[1])), best = null, far = Infinity;
@@ -1234,6 +1317,15 @@ function maengGaze(place, eye) {
   return [dx / long * reach, dy / long * reach * 0.8];
 }
 
+// maengSiHuHaTa(x, y, look): the creature with four ears and five eyes (described above, before "its eyes").
+//   x, y   the ground under its middle, in pixels of the sheet
+//   look   an object, never left out ({} gives the dark grey creature standing, size 1, facing right, five eyes
+//          open and watching): it reads size, face, colour, eyes, step, mouth, glow, wake, watch, eyeFeel, id,
+//          feel (MYTH_KEYS above)
+// Returns {head, mouth, paw, neck}, each [x, y], points of the sheet. It draws with pen at the film's clock;
+// it sets FINE and LINE while it draws and leaves them at 1 and STYLE.line. Its watching eyes look at what
+// the film has drawn in the frame (sightsNow() in the kit).
+// e.g. var m = maengSiHuHaTa(700, GROUND, {size: 0.9, glow: 0.6, wake: 3.5, feel: "happy"});
 function maengSiHuHaTa(x, y, look) {
   checkNames("The name of the creature with four ears and five eyes", look, MYTH_KEYS);
   var size = (look.size || 1) * GAITS.maengSiHuHaTa[0], face = look.face || 1, seed = x * 0.013;

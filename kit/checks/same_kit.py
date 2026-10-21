@@ -9,6 +9,10 @@ does not draw the same picture twice: the kit against an exact copy of itself di
 (measured 2026-10-13: 7,000 to 12,000 pixels a frame on apsara.html), and it still does when each frame is come to
 through the kit's settled(). For those pages use kit_check.py, whose "same" allows for a line that lies a part of
 a pixel aside.
+
+It needs Google Chrome (through Playwright), numpy and Pillow. The other kit is named from the folder it is
+run in; the pages from the kit's folder (kit/). It prints one line a page and ends with exit code 0 whatever
+it finds: read the lines.
 """
 import base64
 import io
@@ -33,6 +37,11 @@ DRAW = """([k]) => {
 
 
 def frames(browser, page_file, kit):
+    """The page's twelve frames as PNG data URLs, each come to by a jump from elsewhere, as a page watched live.
+
+    browser: a Playwright browser. page_file: the page, a Path. kit: another oldcartoon.js to load in place of
+    the page's own, or None for the page's own. A page error is printed, not raised.
+    e.g. frames(browser, ASSETS / "lanna.html", "../old/oldcartoon.js")"""
     page = browser.new_page(viewport={"width": 1920, "height": 1080})
     page.on("pageerror", lambda error: print("PAGE ERROR", error))
     if kit:
@@ -45,10 +54,14 @@ def frames(browser, page_file, kit):
 
 
 def pixels(url):
+    """A PNG data URL as a numpy array (height, width, 3) of int16.
+
+    e.g. pixels(frames(browser, page_file, None)[0])"""
     return np.asarray(Image.open(io.BytesIO(base64.b64decode(url.split(",", 1)[1]))).convert("RGB"), dtype=np.int16)
 
 
 def main():
+    """The command line: same_kit.py OTHER_KIT PAGE [PAGE ...]: print how many of each page's twelve frames differ."""
     kit = sys.argv[1]
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome", args=["--allow-file-access-from-files"])

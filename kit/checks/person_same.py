@@ -21,6 +21,11 @@ change of one number in the kit made 631 of them differ. A planted change is how
 
 Prints each case that differs (up to five), writes PASS or FAIL in out/checks/person_same.txt (report.py), and
 exits 1 if any differs.
+
+It needs Google Chrome (through Playwright) and git (the old oldcartoon.js is read with git show). It writes
+out/checks/person_looks.json (the looks, once), and while it runs person_same_old.js and two pages in
+out/checks/, removed after. It stops with exit code 1 and a message when git has no oldcartoon.js at REV or
+a kit's page throws an error of its own.
 """
 import argparse
 import json
@@ -73,7 +78,12 @@ DRAW = """(cases) => {
 
 
 def harvest(browser):
-    """The looks the kit's pages give person(), and for each key the values seen (only what JSON can carry)."""
+    """The looks the kit's pages give person(), and for each key the values seen (only what JSON can carry).
+
+    browser: a Playwright browser. It opens every film scene (*/s*.html) and every page kit_check.py checks,
+    draws each at six moments with person() listening, and writes the looks and the values of each key to
+    out/checks/person_looks.json. Gives back nothing.
+    e.g. harvest(browser)"""
     pages = sorted(p for p in KIT.glob("*/s[0-9]*.html") if "node_modules" not in p.parts) + pages_of([])
     looks, values = [], {}
     for page_file in pages:
@@ -109,6 +119,12 @@ def harvest(browser):
 
 
 def cases_of(count):
+    """count cases for person(), the same every time (seeded): each a look from person_looks.json, perhaps with
+    one to four keys changed, at a random second and place.
+
+    Gives back a list of {"look": JSON text, "t": second, "x", "y": pixels of the sheet}. Fails with
+    FileNotFoundError when person_looks.json is not made yet (main() makes it first).
+    e.g. cases = cases_of(1500)"""
     data = json.loads(LOOKS.read_text(encoding="utf-8"))
     looks, values, rng = data["looks"], data["values"], random.Random(20261021)
     cases = []
@@ -124,7 +140,13 @@ def cases_of(count):
 
 
 def drawn(browser, kit_file, cases):
-    """Each case's answer, drawn with this oldcartoon.js and the maker's modules beside the kit."""
+    """Each case's answer, drawn with this oldcartoon.js and the maker's modules beside the kit.
+
+    browser: a Playwright browser (with --allow-file-access-from-files). kit_file: an oldcartoon.js, a Path.
+    cases: as cases_of() gives them. Gives back one string for each case: the sheet's hash, what person() gave
+    back (or its error), the warnings, and what it put back after itself. It writes and removes a page in
+    out/checks/. Fails with SystemExit when the page throws an error of its own.
+    e.g. before = drawn(browser, OUT / "person_same_old.js", cases)"""
     page_file = OUT / ("person_same_%s.html" % kit_file.stem)
     scripts = [kit_file.as_uri()] + [(KIT / m).as_uri() for m in MODULES]
     page_file.write_text('<!doctype html><html><body><canvas id="stage" width="1920" height="1080"></canvas>\n' +
@@ -145,6 +167,8 @@ def drawn(browser, kit_file, cases):
 
 
 def main():
+    """The command line: person_same.py [--against REV] [--cases N] [--harvest]: draw the cases with both kits,
+    print those that differ, write out/checks/person_same.txt, and exit 1 if any differs."""
     parser = argparse.ArgumentParser(description="person() before and after a change, drawn alike")
     parser.add_argument("--against", default="HEAD", help="the commit whose oldcartoon.js is compared (default HEAD)")
     parser.add_argument("--cases", type=int, default=1500)

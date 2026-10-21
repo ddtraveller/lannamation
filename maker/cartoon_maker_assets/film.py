@@ -21,6 +21,11 @@ files beside it instead.
 
 Needs: Python 3, playwright (pip install playwright) with Chrome installed,
 and ffmpeg on the PATH for a video.
+
+Each command prints what the maker kept of the film and the kit's warnings. It ends with exit code 0;
+1 with a message when the maker refuses the film or the model's server answers with an error; render ends
+with render.py's own exit code. page writes OUT; stills and render write FILM.html beside the film's JSON
+first, and stills its pictures into --folder (default stills/).
 """
 import argparse
 import json
@@ -37,7 +42,11 @@ MAKER = BESIDE.as_uri() if BESIDE.exists() else "https://krueng.ai/cartoon_maker
 
 
 def open_maker(url):
-    """The maker page in a browser with no window: its functions are ours to call."""
+    """The maker page in a browser with no window: its functions are ours to call.
+
+    url: the maker's address (a file:// address or the site's). Gives back (playwright, browser, page): close
+    them with close_maker() when done. The maker's saved film in the browser's storage is cleared first.
+    e.g. playwright, browser, page = open_maker(MAKER)"""
     from playwright.sync_api import sync_playwright
     playwright = sync_playwright().start()
     # a maker opened as a file reads the kit's scripts, to carry them inside the page it writes, only when Chrome is
@@ -51,12 +60,20 @@ def open_maker(url):
 
 
 def close_maker(playwright, browser):
+    """Close the browser and stop Playwright, as open_maker() started them. Gives back nothing.
+
+    e.g. close_maker(playwright, browser)"""
     browser.close()
     playwright.stop()
 
 
 def take(page, film):
-    """Hand the film to the page: it checks every name and number, and says what it kept."""
+    """Hand the film to the page: it checks every name and number, and says what it kept.
+
+    page: the maker, from open_maker(). film: the film, a dict (the JSON). Gives back (summary, warnings): what
+    the page says it kept, and the kit's warnings while it drew each second a key or a text starts at. It changes
+    the page's film (movie). Fails with SystemExit when the page refuses the film.
+    e.g. summary, warnings = take(page, read_film("film.json"))"""
     summary = page.evaluate("data => { try { return takeFilm(data); } catch (error) { return 'ERROR ' + error.message; } }", film)
     if summary.startswith("ERROR"):
         raise SystemExit("the page refused the film: " + summary[6:])
@@ -67,16 +84,28 @@ def take(page, film):
 
 
 def vocabulary(args):
+    """film.py vocabulary: print the maker's own instructions (filmPrompt()): the names, the JSON shape, the rules.
+
+    args: the parsed arguments (args.maker). Gives back nothing."""
     playwright, browser, page = open_maker(args.maker)
     print(page.evaluate("() => filmPrompt()"))
     close_maker(playwright, browser)
 
 
 def read_film(path):
+    """The film's JSON file at path, as a dict. Fails with json's error when it is not JSON.
+
+    e.g. read_film("film.json")"""
     return json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
 
 
 def page_code(page, local):
+    """The page of the film the maker holds, as HTML text: the kit inside it, or loaded from files beside it.
+
+    page: the maker. local: True for a page that loads the kit's scripts from files beside it (render.py
+    without the site); False for one that carries them inside. Fails with SystemExit when the maker cannot
+    read the kit's scripts.
+    e.g. page_code(page, False)"""
     if local:                           # the kit's files beside the page, for render.py without the site
         return page.evaluate("() => pageCode()").replace('src="' + SITE, 'src="')
     code = page.evaluate("() => new Promise(done => kitSources(sources => done(sources && pageCode(sources))))")
@@ -86,6 +115,9 @@ def page_code(page, local):
 
 
 def make_page(args):
+    """film.py page FILM OUT [--local]: write the film as a page of the kit. Gives back nothing.
+
+    args: the parsed arguments (film, out, local, maker)."""
     playwright, browser, page = open_maker(args.maker)
     summary, warnings = take(page, read_film(args.film))
     pathlib.Path(args.out).write_text(page_code(page, args.local), encoding="utf-8")
@@ -94,6 +126,10 @@ def make_page(args):
 
 
 def report(what, summary, warnings):
+    """Print what was made, what the maker kept of the film, and the kit's warnings (or that there were none).
+
+    what: the file made. summary, warnings: as take() gives them. Gives back nothing.
+    e.g. report("out.html", summary, warnings)"""
     print(what + ": " + summary)
     for warning in warnings:
         print("the kit warns: " + warning)
@@ -102,7 +138,10 @@ def report(what, summary, warnings):
 
 
 def stills(args):
-    """One picture per second named, from the film's own page: draw(t), then a photograph of the stage."""
+    """One picture per second named, from the film's own page: draw(t), then a photograph of the stage.
+
+    film.py stills FILM SECONDS... [--folder F]: writes FILM.html beside the film and one PNG a second named,
+    FOLDER/FILM_2.0s.png (1920 x 1080). args: the parsed arguments. Gives back nothing."""
     playwright, browser, page = open_maker(args.maker)
     summary, warnings = take(page, read_film(args.film))
     html = pathlib.Path(args.film).with_suffix(".html")
@@ -125,7 +164,10 @@ def stills(args):
 
 def find_render():
     """The kit's render.py: beside the kit (kit/ in lannamation, js_animation_assets/ in the site's folder), or
-    fetched from the site once."""
+    fetched from the site once.
+
+    Gives back its Path; a fetched one is kept in tools/ beside this file. Fails with urllib's error when it
+    must fetch it and cannot. e.g. find_render()"""
     for beside in (HERE.parent.parent / "kit" / "render.py", HERE.parent / "js_animation_assets" / "render.py"):
         if beside.exists():
             return beside
@@ -139,6 +181,10 @@ def find_render():
 
 
 def render(args):
+    """film.py render FILM OUT [--from S] [--to S] [--audio WAV]: write FILM.html beside the film, then run
+    render.py on it.
+
+    args: the parsed arguments. It does not come back: it ends the program by SystemExit with render.py's exit code."""
     playwright, browser, page = open_maker(args.maker)
     summary, warnings = take(page, read_film(args.film))
     html = pathlib.Path(args.film).with_suffix(".html")
@@ -154,7 +200,12 @@ def render(args):
 
 
 def write(args):
-    """Ask a model for the film, with the page's own instructions, and keep what the page accepts."""
+    """Ask a model for the film, with the page's own instructions, and keep what the page accepts.
+
+    film.py write STORY OUT [--base URL] [--model NAME] [--key KEY]: an OpenAI-style /chat/completions server
+    (Ollama's /v1 works) writes the JSON; OUT gets the film as the maker kept it. args: the parsed arguments.
+    Gives back nothing. Fails with SystemExit when the server answers with an error, json's error when the
+    answer holds no JSON, SystemExit when the maker refuses it."""
     playwright, browser, page = open_maker(args.maker)
     prompt = page.evaluate("() => filmPrompt()")
     body = {"model": args.model, "temperature": 0.7,
@@ -186,7 +237,10 @@ SKILL_FOLDERS = {"claude_code": "~/.claude/skills", "codex": "~/.agents/skills",
 
 
 def skill(args):
-    """Put SKILL.md where the agent finds it, so that "make a cartoon of ..." reaches this tool."""
+    """Put SKILL.md where the agent finds it, so that "make a cartoon of ..." reaches this tool.
+
+    film.py skill AGENT (claude_code, codex or opencode): writes ~/.claude/skills/lanna-cartoon/SKILL.md (or
+    ~/.agents/skills/...), fetching SKILL.md from the site first when it is not beside this file. Gives back nothing."""
     source = HERE / "SKILL.md"
     if not source.exists():                       # film.py alone was downloaded: fetch its skill from the site
         with urllib.request.urlopen("https://krueng.ai/cartoon_maker_assets/SKILL.md") as reply:
@@ -202,6 +256,7 @@ def skill(args):
 
 
 def main():
+    """The command line: film.py [--maker URL] COMMAND ...; each command's function does the work."""
     parser = argparse.ArgumentParser(description="a cartoon from the command line, on the Lanna cartoon kit")
     parser.add_argument("--maker", default=MAKER, help="the maker page to use (default: the one beside this program, else the site's)")
     commands = parser.add_subparsers(dest="command", required=True)

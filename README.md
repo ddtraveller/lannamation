@@ -407,6 +407,7 @@ kit/              the kit and everything that uses it, side by side
 maker/            the cartoon maker, its film.py and its skill for agents
 docs/STYLE.md     the rules with their numbers, the framework, the checks, what is not done
 docs/kit/         how each part was built, a file for each: figures, feelings, creatures, places ...
+docs/api.md       every function and tool, as its comments describe it (kit/api_index.py makes it): for an agent
 ```
 
 The kit's files sit side by side on purpose: every page loads `oldcartoon.js` and its modules by a

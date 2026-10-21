@@ -36,6 +36,9 @@ for each page, in Chrome with no window:
             entry. One more line is printed under the page's.
 A page that needs a file which is not on this computer (a page's pictures are not kept in git) is left out, and said
 so. It prints one line a page, then what failed, and ends with exit code 1 if anything did.
+
+It needs Google Chrome (through Playwright). Pages are named from the kit's folder (kit/). The time a page
+may take to load is KIT_CHECK_LOAD_SECONDS from the environment (180 unless set).
 """
 import argparse
 import hashlib
@@ -142,7 +145,10 @@ TIME = """([t]) => {
 
 def fingerprint(page_file, quick):
     """What a page's check depends on: the page, every script it loads, and this check's own code; and whether the
-    arms were left out. When none of it has changed, a page that passed would pass again."""
+    arms were left out. When none of it has changed, a page that passed would pass again.
+
+    page_file: the page, a Path. quick: True for a --quick run. Gives back the mark, a hex string.
+    e.g. fingerprint(HERE / "lanna.html", False)"""
     digest = hashlib.sha1(b"quick" if quick else b"full")
     for name in ["checks/kit_check.py", "checks/arms_check.py", "checks/report.py"]:
         digest.update((HERE / name).read_bytes())
@@ -154,7 +160,9 @@ def fingerprint(page_file, quick):
 
 
 def scripts_fingerprint():
-    """Every script beside the kit and in its films' folders: what the look keys and the names are read from."""
+    """Every script beside the kit and in its films' folders: what the look keys and the names are read from.
+
+    Gives back the mark, a hex string. e.g. scripts_fingerprint()"""
     digest = hashlib.sha1()
     for script in sorted(HERE.glob("*.js")) + sorted(q for q in HERE.glob("*/*.js") if q.parent.name != "node_modules"):
         digest.update(script.name.encode("utf-8") + script.read_bytes())
@@ -165,6 +173,10 @@ def scripts_fingerprint():
 
 
 def pages_of(names):
+    """The pages to check: those named (from the kit's folder), or every page beside the kit that loads oldcartoon.js.
+
+    names: a list of page names, or [] for every page. Gives back a list of Paths, sorted when found.
+    e.g. pages_of([])"""
     if names:
         return [HERE / n for n in names]
     return sorted(p for p in HERE.glob("*.html") if 'src="oldcartoon.js"' in p.read_text(encoding="utf-8"))
@@ -172,7 +184,11 @@ def pages_of(names):
 
 def keys_of(kit):
     """The look keys the kit reads, the ones written down in the comment above person(), and the ones in LOOK_KEYS,
-    the list the browser reads to warn about a name it does not know."""
+    the list the browser reads to warn about a name it does not know.
+
+    kit: oldcartoon.js, a Path. Gives back (read, written, listed): three sets of key names. Fails with
+    ValueError when the comment above person() ("// One villager, standing on (x, y)") is not found.
+    e.g. read, written, listed = keys_of(HERE / "oldcartoon.js")"""
     source = kit.read_text(encoding="utf-8")
     read = set(re.findall(r"\blook\.([A-Za-z]\w*)", source))
     start = source.index("// One villager, standing on (x, y)")
@@ -190,7 +206,9 @@ DEFINED = r"^(?:function|var|let|const) ([A-Za-z_]\w*)"
 
 
 def maker_file():
-    """The cartoon maker: maker/ beside the kit in lannamation, the page beside the kit's folder on krueng.ai."""
+    """The cartoon maker: maker/ beside the kit in lannamation, the page beside the kit's folder on krueng.ai.
+
+    Gives back its Path, or None when neither is there. e.g. maker_file()"""
     return next((m for m in (HERE.parent / "maker" / "cartoon_maker.html", HERE.parent / "cartoon_maker.html") if m.exists()), None)
 
 
@@ -198,7 +216,9 @@ def shared_names():
     """Top-level names that two script files beside the kit both define. The files share one page, so the one loaded
     last silently replaces the other's: paperdoll.js's ribbon() replaced the kit's on 2026-10-14 and three sheets
     stopped drawing; puman.js's tattoo() replaced the kit's and nothing said so. The cartoon maker's own script shares
-    the page with the scripts it loads in the same way: its "var held" replaced motion.js's held() until 2026-10-21."""
+    the page with the scripts it loads in the same way: its "var held" replaced motion.js's held() until 2026-10-21.
+
+    Gives back {name: [the files that define it]}; empty when no name is defined twice. e.g. shared_names()"""
     owners = {}
     films = sorted(p for p in HERE.glob("*/*.js") if p.parent.name != "node_modules")   # a film made of scene files keeps them in a folder beside the kit
     for script in sorted(HERE.glob("*.js")) + films:
@@ -218,13 +238,22 @@ def shared_names():
 
 
 def missing_of(page_file):
-    """The script files a page asks for that are not on this computer."""
+    """The script files a page asks for that are not on this computer.
+
+    page_file: the page, a Path. Gives back the names as the page writes them; [] when all are here.
+    e.g. missing_of(HERE / "lanna.html")"""
     asked = re.findall(r'<script src="([^":]+)"', page_file.read_text(encoding="utf-8"))
     return [name for name in asked if not (page_file.parent / name).exists()]
 
 
 def check(browser, page_file, quick, settle=None):
-    """One page: what was found, and a list of what failed."""
+    """One page: what was found, and a list of what failed.
+
+    browser: a Playwright browser (with --allow-file-access-from-files). page_file: the page, a Path.
+    quick: True to leave out the arms. settle: frames painted before a jump (sets the page's SETTLE), or None
+    for the kit's own. Gives back (found, failed): found has long, draws, warnings, differ, past, ms, cues and
+    arms as each was measured, or "skipped" for a page that needs a file not here; failed is a list of lines.
+    e.g. found, failed = check(browser, HERE / "lanna.html", True)"""
     missing = missing_of(page_file)
     if missing:
         return {"skipped": "left out: it needs %s, which is not here" % ", ".join(missing)}, []
@@ -265,7 +294,10 @@ def check(browser, page_file, quick, settle=None):
 
 
 def line_of(name, found):
-    """What was found on one page, as one line of the table."""
+    """What was found on one page, as one line of the table.
+
+    name: the page's name. found: as check() gives it. Gives back the line, text.
+    e.g. print(line_of("lanna.html", found))"""
     arms = found.get("arms")
     told = "not run" if arms is None else "%d, %d, %d" % (len(arms["flips"]), len(arms["inward"]), len(arms["folded"]))
     if name in KNOWN and arms is not None:
@@ -277,6 +309,8 @@ def line_of(name, found):
 
 
 def main():
+    """The command line (see this file's docstring): check the look keys and the names, then each page; write
+    out/checks/kit_check.txt and .json and kit_check_passed.json, and exit 1 if anything failed."""
     parser = argparse.ArgumentParser(description="One check of the kit: every page that uses it still draws, and draws right.")
     parser.add_argument("pages", nargs="*", help="pages to check (every page that loads oldcartoon.js unless told)")
     parser.add_argument("--quick", action="store_true", help="leave out the arms, which take the longest")

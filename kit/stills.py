@@ -5,6 +5,11 @@
 It opens the page in Chrome with no window, asks for the picture of each
 second you name, and saves them all on one sheet. Six frames show most
 mistakes, and they take seconds, not minutes.
+
+It needs Google Chrome (through Playwright) and Pillow. The page must have draw(t) and the switch
+rendering. It writes one JPEG where it is named: two frames a row, each 960 x 540, in the order the
+seconds are given; then prints the kit's warnings and the page's errors. It ends with exit code 0 even
+when the page reported an error: read what it prints.
 """
 import io
 import sys
@@ -18,6 +23,11 @@ TALL = 540
 
 
 def frames(page_file, seconds):
+    """The page's picture at each second named: (pictures, errors, warnings).
+
+    page_file: the page. seconds: a list of seconds. pictures are PIL images, 1920 x 1080, the screen as
+    shown; errors are what the page reported; warnings are the kit's WARNINGS.
+    e.g. frames("village.html", [2, 10.25])"""
     pictures = []
     errors = []
     with sync_playwright() as playwright:
@@ -37,6 +47,9 @@ def frames(page_file, seconds):
 
 
 def sheet(pictures):
+    """One picture with all of pictures on it, two a row, each scaled to 960 x 540: a PIL image.
+
+    e.g. sheet(frames("village.html", [2, 10.25])[0]).save("sheet.jpg")"""
     columns = 2 if len(pictures) > 1 else 1
     rows = (len(pictures) + columns - 1) // columns
     paper = Image.new("RGB", (columns * WIDE, rows * TALL))
@@ -47,6 +60,7 @@ def sheet(pictures):
 
 
 def main():
+    """The command line: stills.py PAGE OUT SECONDS...; saves the sheet and prints what it found."""
     page_file, out = sys.argv[1], sys.argv[2]
     seconds = [float(word) for word in sys.argv[3:]]
     pictures, errors, warnings = frames(page_file, seconds)

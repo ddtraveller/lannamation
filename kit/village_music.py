@@ -6,6 +6,9 @@ The instruments of a small Thai band, each made from sine waves: a ranat
 (a wooden xylophone) plays the tune, small cymbals (ching) keep the time,
 a drum marks the beat, and a low string holds the chord. The tune is written
 out by hand below, one letter for one beat. village_sing.py adds the voice.
+
+It needs numpy. It writes village.wav in the folder it is run from (mono, 16-bit, 44.1 kHz), prints its
+length, and ends with exit code 0.
 """
 import wave
 
@@ -34,11 +37,19 @@ BARS = "GG GG GC GC GG GC GG CG GG"
 
 
 def tone(frequency, seconds):
+    """A sine wave: (the time of each sample in seconds, its value from -1 to 1), as two numpy arrays.
+
+    frequency: in hz. seconds: how long.
+    e.g. time, wave_form = tone(440.0, 0.5)"""
     time = numpy.arange(int(seconds * RATE)) / RATE
     return time, numpy.sin(2 * numpy.pi * frequency * time)
 
 
 def ranat(frequency):
+    """One note of the ranat, the wooden xylophone: a knock and a note that dies within a second.
+
+    frequency: in hz. Gives back the samples, a numpy array 0.9 s long.
+    e.g. ranat(NOTES["G"] * 2)"""
     # a wooden bar hit with a mallet: a knock, and a note that dies quickly
     time, low = tone(frequency, 0.9)
     _, high = tone(frequency * 4, 0.9)
@@ -46,6 +57,10 @@ def ranat(frequency):
 
 
 def ching(open_sound):
+    """One stroke of the small cymbals: a ringing "ching" when open_sound is true, a damped "chap" when not.
+
+    Gives back the samples, a numpy array 0.5 s long.
+    e.g. ching(True)"""
     # two small cymbals: "ching" rings, "chap" is damped at once
     time, bright = tone(3100, 0.5)
     _, brighter = tone(4650, 0.5)
@@ -53,6 +68,9 @@ def ching(open_sound):
 
 
 def string(frequency):
+    """A low plucked string that holds the chord: frequency in hz; the samples, 1.8 beats long.
+
+    e.g. string(98.0)"""
     # a low plucked string that holds the chord
     time, wave_form = tone(frequency, BEAT * 1.8)
     _, octave = tone(frequency * 2, BEAT * 1.8)
@@ -60,6 +78,10 @@ def string(frequency):
 
 
 def drum(noise, deep):
+    """One stroke of the drum: a thump with a little hiss on top of it, 0.22 s.
+
+    noise: a numpy RandomState the hiss is drawn from (it moves on). deep: True for the low drum, False for the high.
+    e.g. drum(numpy.random.RandomState(7), True)"""
     # a drum is a thump with a little hiss on top of it
     time = numpy.arange(int(0.22 * RATE)) / RATE
     start = 130 if deep else 210
@@ -69,12 +91,18 @@ def drum(noise, deep):
 
 
 def add(track, sound, at_second):
+    """Add sound into track from at_second on, cut where the track ends. Changes track; gives back nothing.
+
+    e.g. add(track, ranat(392.0), 4.5)"""
     start = int(at_second * RATE)
     end = min(len(track), start + len(sound))
     track[start:end] += sound[:end - start]
 
 
 def compose():
+    """The whole tune as one numpy array of samples, from TUNE, BARS and CHORDS, faded at the end, peaking at 0.8.
+
+    e.g. track = compose()"""
     tune = TUNE.replace(" ", "")
     bars = BARS.replace(" ", "")
     noise = numpy.random.RandomState(7)          # the same hiss every time
@@ -101,6 +129,9 @@ def compose():
 
 
 def save(track, name):
+    """Write track (samples from -1 to 1) as a mono 16-bit WAV file called name. Gives back nothing.
+
+    e.g. save(compose(), "village.wav")"""
     with wave.open(name, "wb") as file:
         file.setnchannels(1)
         file.setsampwidth(2)
@@ -109,6 +140,7 @@ def save(track, name):
 
 
 def main():
+    """The command line: compose the tune, save it as village.wav, print its length."""
     track = compose()
     save(track, "village.wav")
     print("village.wav: %.1f seconds, %d beats of %.1f seconds"

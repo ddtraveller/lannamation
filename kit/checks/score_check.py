@@ -13,6 +13,9 @@ feeling's colour, under it the set the music was heard in, and the music's loudn
 Each line is written down, PASS or FAIL, in out/checks/score_check.txt (report.py). With --changed, it is left out
 when the music (out/maeng_music/), score.py, feelings.py and the scene files have not changed since it passed.
 Exits 1 if any line's music is heard in another feeling's notes.
+
+It needs numpy and soundfile, and out/maeng_music/ (cues.json and a WAV for each scene, made by
+maeng/feelings.py) and maeng/words.js. It runs main() as it is loaded: do not import it.
 """
 import html
 import json
@@ -40,7 +43,11 @@ def notes_heard(piece, rate):
     1100 Hz scored by its own overtones together (the first five, each counted less the higher it is: a harmonic
     sum), so that a plucked or bowed note outweighs its own overtones (a G's fifth is a B) and a drum, whose body
     sweeps through the low notes without overtones in a row, counts for little. Squared, so the notes played
-    stand out over the rest, and summed over the notes' octaves."""
+    stand out over the rest, and summed over the notes' octaves.
+
+    piece: the samples (one channel, or a row for each channel), at rate samples a second. Gives back twelve
+    shares, A first, adding up to 1 (all 0 when the piece is shorter than 8192 samples).
+    e.g. notes_heard(music[0:44100 * 4], 44100)"""
     mono = piece.mean(axis=1) if piece.ndim > 1 else piece
     window = 8192
     freqs = numpy.fft.rfftfreq(window, 1 / rate)
@@ -65,7 +72,10 @@ def notes_heard(piece, rate):
 
 
 def set_heard(energy):
-    """The set of notes that holds the most of the music's energy, and how much it holds."""
+    """The set of notes that holds the most of the music's energy, and how much it holds.
+
+    energy: the twelve shares notes_heard() gives. Gives back (the set's name, its share 0 to 1, every set's
+    share as a dict). e.g. heard, share, _ = set_heard(notes_heard(piece, rate))"""
     shares = {name: float(sum(energy[s % 12] for s in set(st % 12 for st in steps))) for name, steps in SETS.items()}
     # a set is heard when its notes hold the music's energy AND its notes sound: each of its notes that does not
     # (under 1% of the energy) counts against it, so a set is not heard in music that only shares its other notes
@@ -75,7 +85,10 @@ def set_heard(energy):
 
 
 def busy(piece, rate):
-    """How many notes begin a second: rises in the energy above 300 Hz, in 20 ms steps."""
+    """How many notes begin a second: rises in the energy above 300 Hz, in 20 ms steps.
+
+    piece: the samples, at rate samples a second. Gives back notes a second; 0.0 for under 60 ms of sound.
+    e.g. busy(piece, 44100)"""
     mono = piece.mean(axis=1) if piece.ndim > 1 else piece
     hop = int(0.02 * rate)
     frames = len(mono) // hop
@@ -88,7 +101,10 @@ def busy(piece, rate):
 
 
 def english():
-    """Each line's English, from words.js."""
+    """Each line's English, from words.js.
+
+    Gives back {line id ("M001" ...): its English}, from the lines of words.js that start with an id.
+    e.g. words = english()"""
     text = WORDS.read_text(encoding="utf-8")
     found = {}
     for line in text.splitlines():
@@ -99,6 +115,8 @@ def english():
 
 
 def main():
+    """The command line: score_check.py [--changed]: hear each line's music, print and record each, draw the plot,
+    exit 1 if any line's music is in another feeling's notes."""
     report = Report("score_check")
     depends = sorted(OUT.glob("*.wav")) + [OUT / "cues.json", KIT / "score.py", KIT / "maeng" / "feelings.py", Path(__file__)]
     depends += sorted((KIT / "maeng").glob("s[0-9][0-9]_*.js"))
@@ -148,7 +166,10 @@ def main():
 
 def plot(rows):
     """Every scene a row: its sentences as blocks in their feelings' colours, the set heard under each, and the
-    music's loudness and busyness along the time."""
+    music's loudness and busyness along the time.
+
+    rows: one (scene, its seconds, the lines measured) a scene, as main() makes them. It writes
+    out/maeng_music/plot.html; gives back nothing."""
     wide, out = 1500, []
     out.append("<!doctype html><html><head><meta charset='utf-8'><title>The film's music against its feelings</title>"
                "<style>body{font:15px Georgia,serif;background:#f3ead8;color:#3a2e22;margin:24px}"
