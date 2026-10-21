@@ -4381,6 +4381,27 @@ function personDrawn(x, y, look) {
     poseA = handPose("A", wristA, handA);
     drawHand("A", wristA, poseA);
   }
+  // the person being drawn: each stage below reads from it what it needs, and adds what it worked out
+  var fig = {armBand: armBand, armOf: armOf, arms: arms, behindA: behindA, bodyTurn: bodyTurn, chest: chest,
+    chestTurn: chestTurn, dip: dip, drawHand: drawHand, feel: feel, figureFrame: figureFrame, flex: flex,
+    ground: ground, hairShown: hairShown, handA: handA, handB: handB, handPose: handPose, hipTip: hipTip,
+    inFront: inFront, joints: joints, lady: lady, land: land, layered: layered, leggy: leggy, long: long, look: look,
+    narrow: narrow, neckX: neckX, phase: phase, poseA: poseA, rig: rig, rock: rock, rootA: rootA, rootB: rootB,
+    sabaiLine: sabaiLine, sceneFrame: sceneFrame, seat: seat, sheetPen: sheetPen, shoulderTip: shoulderTip,
+    size: size, sleeve: sleeve, small: small, speed: speed, spine: spine, spot: spot, still: still, sung: sung,
+    swayAt: swayAt, trunk: trunk, umbrellaAt: umbrellaAt, up: up, who: who, wristA: wristA, x: x, y: y};
+  personBody(fig);
+  personHead(fig);
+  return personArms(fig);
+}
+
+// person(), stage 6 of 8: the body painted over the skirt: the torso and its shading, the chest, the cloth, the neck
+function personBody(fig) {
+  // what the stages before this one worked out
+  var chest = fig.chest, chestTurn = fig.chestTurn, ground = fig.ground, hipTip = fig.hipTip, lady = fig.lady,
+      land = fig.land, long = fig.long, look = fig.look, neckX = fig.neckX, phase = fig.phase, rig = fig.rig,
+      sabaiLine = fig.sabaiLine, seat = fig.seat, shoulderTip = fig.shoulderTip, spine = fig.spine, who = fig.who,
+      x = fig.x;
   if (rig) {                                        // the drawn torso, hips to shoulders, slanted to where the spine ends
     pen.save();
     pen.transform(1, 0, -spine(-134) / 134, 1, 0, 0);
@@ -4711,16 +4732,8 @@ function personDrawn(x, y, look) {
     pen.stroke();
   }
   }
-  // the person being drawn: each stage below reads from it what it needs, and adds what it worked out
-  var fig = {armBand: armBand, armOf: armOf, arms: arms, behindA: behindA, bodyTurn: bodyTurn, dip: dip,
-    drawHand: drawHand, feel: feel, figureFrame: figureFrame, flex: flex, ground: ground, hairShown: hairShown,
-    handA: handA, handB: handB, handPose: handPose, inFront: inFront, joints: joints, lady: lady, layered: layered,
-    leggy: leggy, long: long, look: look, narrow: narrow, neckX: neckX, phase: phase, poseA: poseA, rig: rig,
-    rock: rock, rootA: rootA, rootB: rootB, sabaiFront: sabaiFront, sceneFrame: sceneFrame, sheetPen: sheetPen,
-    size: size, sleeve: sleeve, small: small, speed: speed, spot: spot, still: still, sung: sung, swayAt: swayAt,
-    trunk: trunk, umbrellaAt: umbrellaAt, up: up, who: who, wristA: wristA, x: x, y: y};
-  personHead(fig);
-  return personArms(fig);
+  // what the stages after this one use
+  Object.assign(fig, {sabaiFront: sabaiFront});
 }
 
 // person(), stage 7 of 8: the head, in a frame of its own: the knots and ornaments, the brow, cheek, jaw and chin, the hair,
