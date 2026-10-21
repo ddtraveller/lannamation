@@ -4711,6 +4711,27 @@ function personDrawn(x, y, look) {
     pen.stroke();
   }
   }
+  // the person being drawn: each stage below reads from it what it needs, and adds what it worked out
+  var fig = {armBand: armBand, armOf: armOf, arms: arms, behindA: behindA, bodyTurn: bodyTurn, dip: dip,
+    drawHand: drawHand, feel: feel, figureFrame: figureFrame, flex: flex, ground: ground, hairShown: hairShown,
+    handA: handA, handB: handB, handPose: handPose, inFront: inFront, joints: joints, lady: lady, layered: layered,
+    leggy: leggy, long: long, look: look, narrow: narrow, neckX: neckX, phase: phase, poseA: poseA, rig: rig,
+    rock: rock, rootA: rootA, rootB: rootB, sabaiFront: sabaiFront, sceneFrame: sceneFrame, sheetPen: sheetPen,
+    size: size, sleeve: sleeve, small: small, speed: speed, spot: spot, still: still, sung: sung, swayAt: swayAt,
+    trunk: trunk, umbrellaAt: umbrellaAt, up: up, who: who, wristA: wristA, x: x, y: y};
+  personHead(fig);
+  return personArms(fig);
+}
+
+// person(), stage 7 of 8: the head, in a frame of its own: the knots and ornaments, the brow, cheek, jaw and chin, the hair,
+// the ears, the face, and the blink
+function personHead(fig) {
+  // what the stages before this one worked out
+  var bodyTurn = fig.bodyTurn, dip = fig.dip, feel = fig.feel, figureFrame = fig.figureFrame,
+      hairShown = fig.hairShown, joints = fig.joints, lady = fig.lady, leggy = fig.leggy, long = fig.long,
+      look = fig.look, narrow = fig.narrow, neckX = fig.neckX, phase = fig.phase, rig = fig.rig, rock = fig.rock,
+      sceneFrame = fig.sceneFrame, size = fig.size, small = fig.small, speed = fig.speed, spot = fig.spot,
+      still = fig.still, sung = fig.sung, swayAt = fig.swayAt, up = fig.up, who = fig.who, x = fig.x, y = fig.y;
 
   // The head tips against the rock of the body, and settles
   // into the shoulders on the beat.
@@ -5448,12 +5469,8 @@ function personDrawn(x, y, look) {
   if (look.beard) { beard(look.beard, V, drop); }
   }                                                 // end of the kit's own head
   pen.restore();                                  // back at the waist, for the arms
-  // the person being drawn: each stage below reads from it what it needs, and adds what it worked out
-  var fig = {armBand: armBand, armOf: armOf, arms: arms, behindA: behindA, drawHand: drawHand, end: end, flex: flex,
-    ground: ground, handA: handA, handB: handB, handPose: handPose, inFront: inFront, joints: joints,
-    layered: layered, look: look, poseA: poseA, rig: rig, rootA: rootA, rootB: rootB, sabaiFront: sabaiFront,
-    sheetPen: sheetPen, sleeve: sleeve, spot: spot, trunk: trunk, umbrellaAt: umbrellaAt, who: who, wristA: wristA};
-  return personArms(fig);
+  // what the stages after this one use
+  Object.assign(fig, {end: end});
 }
 
 // person(), stage 8 of 8: the arms, drawn last over the body and the head; what the hands hold; her layer put over the
