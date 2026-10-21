@@ -15,7 +15,8 @@ An upper arm drawn shorter than 25 units (its bone is 62) is pointing at us, not
 
 It needs Google Chrome (through Playwright). The page is named from the folder it is run in; "from" and
 "to" are seconds (default the whole page). It prints the counts and up to three of each fault, and ends with
-exit code 0 whatever it finds: read the counts (kit_check.py imports measure() and fails a page on them).
+exit code 1 when a film is not clean (a flip, an inward or a folded arm) or the page reported an error, else 0
+(0 whatever it found, until 2026-10-21; kit_check.py imports measure() and fails a page on its own KNOWN).
 """
 import math
 import sys
@@ -139,6 +140,8 @@ def main():
         found = measure(page, start, end)
         browser.close()
     report(Path(page_file).name, found, errors)
+    if errors or any(found[kind] for kind in ("flips", "inward", "folded")):
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -150,6 +150,8 @@ function dragonLock(long, wide, wave, turn, colour) {
 // e.g. dragonFire(300, 46, 22, clock * 6, {crest: "#e8632c", fire: "#f6c445"})
 function dragonFire(long, wide, wave, turn, c) {
   dragonLock(long, wide, wave, turn, c.crest);
+  wave *= DRAGON_AIR.wave;                          // the inside waves with its edge (dragonLock scales them so): in a
+  turn *= DRAGON_AIR.turn;                          // fast flight it waved apart and could show past it (until 2026-10-21)
   pen.save();
   pen.translate(long * 0.04, 0);
   var middle = [], n;

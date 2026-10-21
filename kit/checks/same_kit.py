@@ -11,8 +11,8 @@ through the kit's settled(). For those pages use kit_check.py, whose "same" allo
 a pixel aside.
 
 It needs Google Chrome (through Playwright), numpy and Pillow. The other kit is named from the folder it is
-run in; the pages from the kit's folder (kit/). It prints one line a page and ends with exit code 0 whatever
-it finds: read the lines.
+run in; the pages from the kit's folder (kit/). It prints one line a page and ends with exit code 1 when a frame
+of a page differs between the two kits, else 0 (0 whatever it found, until 2026-10-21).
 """
 import base64
 import io
@@ -63,13 +63,17 @@ def pixels(url):
 def main():
     """The command line: same_kit.py OTHER_KIT PAGE [PAGE ...]: print how many of each page's twelve frames differ."""
     kit = sys.argv[1]
+    any_differ = False
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome", args=["--allow-file-access-from-files"])
         for name in sys.argv[2:]:
             one, other = frames(browser, ASSETS / name, None), frames(browser, ASSETS / name, kit)
             differ = [(k, int((pixels(a) != pixels(b)).any(axis=2).sum())) for k, (a, b) in enumerate(zip(one, other)) if a != b]
             print("%-14s %d of 12 frames differ%s" % (name, len(differ), ": " + ", ".join("frame %d by %d px" % d for d in differ) if differ else ""))
+            any_differ = any_differ or bool(differ)
         browser.close()
+    if any_differ:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

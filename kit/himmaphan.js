@@ -25,7 +25,7 @@
 // crown, the gilded skin, the patterned cloth whose ends flare back like flames, the pose of flight).
 
 var HIMMA_KEYS = {};
-["size", "face", "seed", "scarves", "gift", "light", "wings", "soar", "beats", "trail"].forEach(function (n) { HIMMA_KEYS[n] = true; });
+["size", "face", "seed", "scarves", "gift", "light", "soar", "beats", "trail"].forEach(function (n) { HIMMA_KEYS[n] = true; });
 
 var HIMMA = {skin: "#e8b860", skinLit: "#f8dc94", skinShade: "#c48a3c", skinLine: "#7a4e1c", gold: "#dca63c", goldLit: "#f6d47a",
              goldLine: "#6e4612", jewel: "#c8303a", jewel2: "#2e8a6a", cloth: "#a8322a", clothDeep: "#6a1c16", clothIn: "#2e6a5a",

@@ -222,8 +222,10 @@ def speak(lines, model, takes, fit=False):
     line (1: no listener is loaded). fit: default False. Gives back nothing: each line's kept take is written
     to file_of(its words), the other takes deleted; prints the takes' scores when it listens.
     e.g. speak([["สวัสดีเจ้า", 2.4]], "assistant", 4, fit=True)"""
-    room = dict(lines)
-    missing = [text for text, _ in lines if not file_of(text).exists()]
+    room = {}                                         # a text said twice is spoken once, fitted to the shorter of its rooms:
+    for text, seconds in lines:                       # the second time round its takes were gone, and it failed (until 2026-10-21)
+        room[text] = min(seconds, room.get(text, seconds))
+    missing = [text for text in room if not file_of(text).exists()]
     if not missing:
         return
     SPOKEN.mkdir(exist_ok=True)

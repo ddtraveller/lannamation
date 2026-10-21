@@ -2293,14 +2293,17 @@ var MICE = {house: {fur: "#8c8892", belly: "#bdb6bc", ear: 8.5, inner: "#e8a8b0"
 //   x, y   the ground under it, in pixels of the sheet
 //   look   its look, as listed above (kind, size, face, step, sniff, up,
 //          tint); it may be left out (a grey house mouse, size 1, facing
-//          right). Its names are not checked: a wrong one changes nothing,
-//          silently
+//          right). A name not in MOUSE_KEYS warns (checkNames)
 // Returns {nose: [x, y]}, a point of the sheet. It draws with pen; it sets
 // LINE while it draws and puts it back as it was; it leaves pen's lineJoin
 // and lineCap at "round".
 // e.g. mouse(520, GROUND, {kind: "field", step: clock * 3, size: 1.2})
+// The names a mouse's look may have: a name not here warns (checkNames), as the other beasts' do (since 2026-10-21).
+var MOUSE_KEYS = {face: true, kind: true, size: true, sniff: true, step: true, tint: true, up: true};
+
 function mouse(x, y, look) {
   look = look || {};
+  checkNames("The mouse's name", look, MOUSE_KEYS);
   var kind = MICE[look.kind || "house"], size = look.size || 1, face = look.face || 1;
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
   var running = look.step !== undefined, phase = running ? look.step * Math.PI * 2 : 0;
@@ -2500,13 +2503,17 @@ function geckoAt(route, d) {                        // the point a distance alon
 //   along  pixels from the route's first point to the head; let it grow with
 //          the time and the tokay crawls
 //   look   size, colour, spots, tint, t, as listed above; it may be left out.
-//          Its names are not checked
+//          A name not in GECKO_KEYS warns (checkNames)
 // Returns {head: [x, y], angle}: the head, a point of the sheet, and the way
 // it faces in radians. It draws with pen, seen from above.
 // e.g. var wall = [[300, 850], [300, 300], [520, 240]];
 //      gecko(wall, 40 * clock, {size: 1.4});
+// The names a tokay's look may have: a name not here warns (checkNames), as the other beasts' do (since 2026-10-21).
+var GECKO_KEYS = {colour: true, size: true, spots: true, t: true, tint: true};
+
 function gecko(route, along, look) {
   look = look || {};
+  checkNames("The tokay's name", look, GECKO_KEYS);
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
   var size = look.size || 1, t = look.t !== undefined ? look.t : clock,   // t: 0 is a second, not "the film's clock"
       skin = tone(look.colour || "#7f93a8"), spot = tone(look.spots || "#e07a3a");
