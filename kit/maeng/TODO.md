@@ -11,6 +11,53 @@ each new look as a sheet of candidates beside its reference (the owner picks, on
 rounds), then the kit check once, then every scene rendered once, then the sound, then the join. Research that
 waits on others starts first and runs while the drawing goes on.
 
+## Next: the owner's list of 2026-10-21 (not started)
+
+The owner, 2026-10-21: "Make a list of changes for the future." Times are of the live film of 12:30 that day
+(`lanna_tales_maeng14.mp4`, 930.7 s: the hero film 0 to 97.75, the card to 109.75, then the tale), so a tale second is
+the film's minus 109.75; each item names its scene. Same way as before: draw and check each in stills (candidates
+beside a reference where it is a new look), then the kit check on a copy, render each changed scene once, join.
+
+1. **A bird that vanishes** (3:07, tale 77.25, s02 the family, about 47 s in): "a bird flying into the sky just
+   disappears. It should continue on to beyond the edge of the screen or go behind something before disappearing."
+   The scene's flock (`S02_LIFE`, decorate.js): its course ends in the open sky. Run it past the frame's edge, or end
+   it behind a tree or the hut.
+2. **The hen of the same scene** (s02): "should switch between 3 behaviors like pecking walking pecking and then
+   walking back the other way." A cycle on the kit's hen: peck (roosterForage), walk, peck, turn and walk back; for the
+   kit, so other films can use it.
+3. **The rope on the buffalo's horns** (3:22, tale 92.25, s03 the work, about 7 s in): "Fix the string around the
+   buffalo's horns so it looks like the way horns are actually tied with a rope by a farmer." Research first (the
+   "Lanna village farming" notebook b60a376b, and photographs of a tethered buffalo), then candidates beside a
+   reference; the nose ring and rope of 2026-10-20 stay.
+4. **A buffalo eating grass** (s03): "Add a buffalo eating grass behavior and show the buffalo eating." A new look key
+   on the kit's buffalo (head down to the ground, the jaw working, a step now and then), shown in s03.
+5. **Grass tufts** (s03): "Add some grass tufts." For the buffalo to eat, and in the kit (beside `grassBundle`).
+6. **The tokay that folds over itself** (s04 the wish, on the hut wall): "Fix the tokay so it can't double back on
+   itself. When it walks up the wall it folds over itself." In the kit's `gecko()` (beasts.js): the body must not turn
+   back on itself along its course (a limit on the bend between segments, or a course that turns wide); check with
+   the s04 course, the "tokay of a house wall" figure on the sash, and the credits' tile.
+7. **Hens that vanish** (7:45, tale 355.25, s08 the gold, about 15 s in): "some chickens disappear. They should walk
+   back to the left."
+8. **The hen and the bamboo pen** (s08): "The remaining chicken needs to be in front of the bamboo cage but looks to be
+   behind it." Draw her after the pen (or the pen's front before her).
+9. **The creature runs off** (11:35, tale 585.25, s13 home, about 15 s in): "have the monster run all the way off the
+   screen."
+10. **The temple on the mountain** (11:50, tale 600.25, s13, about 30 s in): "it shows a temple but half of it is off the
+    mountain so place it so it is fully on the mountain." On the ridge, all of it (`ridgeAt`-style placement).
+11. **Credits, two more roles for the narrator** (s15): "add Writer: Amornrat Jaijar because she is going to rewrite the
+    text properly. Language Research: Amornrat Jaijar for her work on recording and checking and correcting the
+    language model results." Two heads in S15_CREDITS after "Narrator (AI voice)", in Thai and English as the others.
+
+Also open from 2026-10-21: the pond's dragon flying on out of the picture (lannamation 2e8d228) is rendered for the
+owner's look and not yet live; the night creatures are in the kit and the credits but not in the cartoon maker's
+palette; the pu man can go back on the cloth (his red bars were paperdoll.js's chain floor, fixed in cc23bb6), though
+his cloth end still swings out in some frames of his tile.
+
+**Live 2026-10-21:** 11:06, the faces of the hero film each their own, the naga for the oil lamp, scene cuts faded
+through black, the goodbye a wai, the night in the credits (night.js) and the eleventh notebook; 12:30 (930.7 s), the
+pond 3 s longer for the elephants, a different woman at the back of the dance, a temple and a yak giant in place of
+the naga and the pu man.
+
 ## Where it stands (2026-10-20, afternoon)
 
 Drawn and checked in stills: 14 (the fields), 14b (the bamboo house), 15 to 21 (tears, snare, grass and bananas, the
