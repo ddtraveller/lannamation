@@ -1756,7 +1756,9 @@ function gongAt(x, base, size) { return [x, base - 96 * size]; }
 // e.g. gong(pen, 900, 940, 1, {struck: 0.4});   // struck 0.4 seconds ago
 function gong(brush, x, base, size, look) {
   look = look || {};
-  var since = look.struck === undefined ? 99 : look.struck, swing = since < 2 ? 0.08 * Math.sin(since * 9) * (1 - since / 2) : 0;
+  // not yet struck (look.struck below 0, as t - strikeTime is before the stroke): still and silent, as when left out
+  // (a ring of negative size threw, and the swing ran backward, until 2026-10-21)
+  var since = look.struck === undefined || look.struck < 0 ? 99 : look.struck, swing = since < 2 ? 0.08 * Math.sin(since * 9) * (1 - since / 2) : 0;
   brush.save();
   brush.translate(x, base);
   brush.scale(size, size);

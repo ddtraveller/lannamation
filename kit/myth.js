@@ -121,10 +121,12 @@
 //              wanders; every ten seconds the staring and the wandering eye change to others (maengEyes())
 //   eyeFeel    the feeling of two of its eyes, the other three having "feel" (else MAENG_EYE_FEEL's for it)
 //   id         a name of its own, so that which three eyes share its feeling is its own (else "maeng")
+//   slope      the ground under the feet, as the beasts take it (beastLegs() reads it: until 2026-10-21 it worked here
+//              and warned it was not known)
 var MYTH_KEYS = {};
 
 ["size", "face", "late", "mouth", "colour", "gold", "belly", "step", "eyes", "trail", "depth", "sing", "horns", "wings", "fly", "head", "trunk", "feel",
- "glow", "wake", "watch", "eyeFeel", "id"
+ "glow", "wake", "watch", "eyeFeel", "id", "slope"
 ].forEach(function (name) { MYTH_KEYS[name] = true; });
 
 // How the two that walk do it, for amble() of beasts.js: [how large it is

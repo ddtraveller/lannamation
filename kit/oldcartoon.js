@@ -2226,14 +2226,15 @@ function tier(long, wide, reach, phase, colour, deep, stripes, pushes) {
 }
 
 // one rolled curl of hair, with the light on it
-// x, y: its middle; r: its radius, in pixels. Drawn in the kit's dark hair colour, not HAIR. Returns nothing.
+// x, y: its middle; r: its radius, in pixels. Drawn in the person's hair colour, HAIR and HAIR_LINE (until
+// 2026-10-21 always the kit's dark brown, and an elder's white hair had dark curls). Returns nothing.
 // e.g. curl(-40, -330, 8);
 function curl(x, y, r) {
   pen.beginPath();
   pen.ellipse(x, y, r, r * 0.86, 0, 0, 7);
-  pen.fillStyle = "#2a1a12";
+  pen.fillStyle = HAIR;              // the person's hair (an elder's white too), as the rest of it
   pen.fill();
-  pen.strokeStyle = "#7a5640";
+  pen.strokeStyle = HAIR_LINE;
   pen.lineWidth = 2.5 * FINE;
   pen.stroke();
   pen.lineWidth = 2 * FINE;                                // the roll: a spiral, from the middle out
@@ -2252,7 +2253,7 @@ function curl(x, y, r) {
 //   shove        [across, down]: a lag for the tip, from follow()
 //   phase        radians: where the swing is (tier()'s phase)
 //   plain        true: a straight lock that narrows to its tip, with no curl
-// Units are pen's pixels; drawn in the kit's dark hair colour, not HAIR. Returns nothing.
+// Units are pen's pixels; drawn in the person's hair colour, HAIR and HAIR_LINE. Returns nothing.
 // e.g. lock(-40, -338, 150, 11, 6, clock * 3, true, follow("noi/tail", -40, -338, 50, 6, 40));
 function lock(x, y, long, wide, swing, phase, plain, shove) {
   var parts = 8, left = [], right = [], middles = [], n;
@@ -2279,9 +2280,9 @@ function lock(x, y, long, wide, swing, phase, plain, shove) {
                          (right[n][0] + right[n - 1][0]) / 2, (right[n][1] + right[n - 1][1]) / 2);
   }
   pen.closePath();
-  pen.fillStyle = "#2a1a12";
+  pen.fillStyle = HAIR;              // the person's hair (an elder's white too), as the rest of it
   pen.fill();
-  pen.strokeStyle = "#7a5640";
+  pen.strokeStyle = HAIR_LINE;
   pen.lineWidth = 3 * FINE;
   pen.lineJoin = "round";
   pen.stroke();
@@ -3335,13 +3336,14 @@ function tattoo(ax, ay, bx, by) {
 }
 
 // gold rings round a wrist, drawn across the forearm: "angle" is the way the arm points
-// Drawn about pen's origin, which is the wrist: count + 1 rings in STYLE.gold, from the wrist up the forearm.
+// Drawn about pen's origin, which is the wrist: count rings in STYLE.gold, from the wrist up the forearm (until
+// 2026-10-21 it drew count + 1, and every look's count was one less than the rings it showed).
 // count: a whole number. Returns nothing.
 // e.g. pen.translate(wristX, wristY); bangles(1.2, 2);
 function bangles(angle, count) {
   pen.save();
   pen.rotate(angle);
-  for (var ring = 0; ring <= count; ring++) { oval(-8 - ring * (count > 3 ? 3.4 : 4.5), 0, 2.2, 10, STYLE.gold); }
+  for (var ring = 0; ring < count; ring++) { oval(-8 - ring * (count > 4 ? 3.4 : 4.5), 0, 2.2, 10, STYLE.gold); }   // five or more: closer
   pen.restore();
 }
 
@@ -3365,7 +3367,7 @@ var CAST = {
   celestial: {skirt: true, bun: true, dance: true, shirt: "#e9c45c", legs: "#8a2a3a", size: 1.3, weave: 1,
               sabai: ["#e0b23a", "#8a2a3a"], halo: true, holding: "lotus", pins: true, smile: 1},
   dancer: {skirt: true, bun: true, dance: true, shirt: "#d9573a", legs: "#1f1a1a", size: 1.3, weave: 1,
-           sabai: ["#3f8f5a", "#e0b23a"], tail: true, pins: true, nails: "long", fan: true, bangles: 5,
+           sabai: ["#3f8f5a", "#e0b23a"], tail: true, pins: true, nails: "long", fan: true, bangles: 6,
            collar: ["#b23a2a", "#e0b23a"], skin: "#f6e2d0", eyes: 1.06, lips: 0.9},
   // the head-cloth is Tai Yai, Tai Lue or Burmese wear, not Tai Yuan (Manop Manasaem; 2026-10-13): he is a man of those
   // peoples, as the north's villages held them, and not a Chiang Mai farmer
@@ -3378,22 +3380,22 @@ var CAST = {
            tattoo: true, shirt: "#efe6d2", legs: "#3d4f78", size: 1.3, smile: 1, skin: "#d9a878", eyes: 0.94},
   // A noble, from the owner's second picture: the knot set with gold flowers under a patterned red head-cloth, gold earrings, a
   // broad gold collar, gold armbands and bracelets, a jewelled sash across the chest and a jewelled belt, a brocade cloth to the ankle
-  noble: {bare: true, regalia: true, turban: "#b8294a", pins: true, bangles: 4, sarong: ["#8a2a3a", BROCADE], shirt: "#ffffff",
+  noble: {bare: true, regalia: true, turban: "#b8294a", pins: true, bangles: 5, sarong: ["#8a2a3a", BROCADE], shirt: "#ffffff",
           legs: "#3d4f78", size: 1.3, skin: "#f1d2b4", smile: 0.6, eyes: 1.04, lips: 0.95},
   // a Lanna monk's robe is dyed with jackfruit heartwood, an ochre-brown, not Bangkok's orange (it was "#e07a1f" until 2026-10-13)
   monk: {shirt: "#b8732a", legs: "#9a5e20", size: 1.3, sarong: "#b8732a", shaved: true, plain: true, smile: 1, skin: "#e8c09a"},
   // a girl of the village paintings: a white blouse, a shoulder cloth, an indigo sin with a red foot
   maiden: {bun: true, dance: true, shirt: "#f4efe2", sin: 0, sabai: ["#8fc0cf", "#2f4a7a"], size: 1.3, earplug: "#d9b24a",
-           flower: "#fff6ea", collar: ["#2f4a7a", "#e0b23a"], bangles: 3, skin: "#f3d2b0", smile: 1, eyes: 1.08},
+           flower: "#fff6ea", collar: ["#2f4a7a", "#e0b23a"], bangles: 4, skin: "#f3d2b0", smile: 1, eyes: 1.08},
   // an older woman: an indigo blouse buttoned down the front, a green and black sin, a pin in her bun
-  weaver: {bun: true, shirt: "#34507a", sin: 1, size: 1.25, plain: true, bangles: 1, skin: "#e2b68e", smile: 1, eyes: 0.9, lips: 1.12,
+  weaver: {bun: true, shirt: "#34507a", sin: 1, size: 1.25, plain: true, bangles: 2, skin: "#e2b68e", smile: 1, eyes: 0.9, lips: 1.12,
            earplug: "#b8a060"},                     // a village woman's ear plug was a rolled palm leaf; a well-off one's gold
   // a little boy and a little girl: small, with a child's build (a large round head on shorter legs) and large eyes.
   // He wears an indigo shirt and trousers; she a white blouse, a red sin, and a flower in her hair
   boy: {bare: true, turban: "#b8294a", sabai: ["#6fae5a", "#c8486e", "check"], sarong: "#5a3f32", patoi: 0.75,
         shirt: "#3f6a8a", legs: "#34496b", size: 0.8, build: -1, head: 1.06, skin: "#f0c9a2", eyes: 1.3, smile: 1, wonder: 0.3},
   girl: {bun: true, shirt: "#f4efe2", sin: 2, size: 0.78, build: -1, head: 1.08, flower: "#f28fa8", skin: "#f4d3b4", eyes: 1.4,
-         lips: 0.85, smile: 1, bangles: 1},
+         lips: 0.85, smile: 1, bangles: 2},
   // Four old people, each of a different style: white or grey hair, the lines of age, and a stoop.
   // An elder of the village, with a white beard and a stick; an old farmer under his hat;
   // a grandmother, small and bent, in a plum blouse; and an old woman dressed in white for the temple
@@ -3406,7 +3408,7 @@ var CAST = {
               shirt: "#6f8fa8", legs: "#4f4a3a", size: 1.25, hair: "#b8b2a8", age: 0.8, bend: 0.1, skin: "#c98f62",
               eyes: 0.92, lips: 1.15, smile: 1},
   grandmother: {bun: true, shirt: "#6a3f52", sin: 2, size: 1.1, plain: true, hair: "#e8e3da", age: 1, bend: 0.2, skin: "#e0b48c",
-                eyes: 0.85, lips: 0.95, smile: 1, bangles: 1},
+                eyes: 0.85, lips: 0.95, smile: 1, bangles: 2},
   devotee: {bun: true, shirt: "#f6f1e6", sin: 0, sabai: ["#f6f1e6", "#cfc7b4"], size: 1.2, hair: "#a9a39a", age: 0.7, bend: 0.06, earplug: "#d9b24a",
             skin: "#ecc8a2", eyes: 0.9, smile: 1, holding: "lotus", flower: "#fff6ea"},
   // Six people with faces of the north (look.north, from the photograph of about 1909; owner, 2026-10-18: "Add 2 men
@@ -3422,13 +3424,13 @@ var CAST = {
   khammun: {bare: true, turban: "#efe9dc", sabai: ["#c8486e", "#2f4a7a", "check"], sarong: "#6a3a2a", patoi: 0.75, tattoo: true,
             shirt: "#4a6797", legs: "#3d4f78", size: 1.3, skin: "#c99668", north: "broad", smile: 1},
   buakham: {bun: "low", shirt: "#f4efe2", sin: 1, sabai: ["#e6a7b6", "#a8435a"], size: 1.25, earplug: "#d9b24a", flower: "#fff6ea",
-            bangles: 2, skin: "#e8bf98", north: "soft", smile: 1},
-  sinuan: {bun: "wong", shirt: "#2e2f3e", sin: 2, size: 1.25, flower: "#f28fa8", bangles: 3, earplug: "#d9b24a", skin: "#dcae84",
+            bangles: 3, skin: "#e8bf98", north: "soft", smile: 1},
+  sinuan: {bun: "wong", shirt: "#2e2f3e", sin: 2, size: 1.25, flower: "#f28fa8", bangles: 4, earplug: "#d9b24a", skin: "#dcae84",
            north: "round", smile: 1},
   bunma: {bare: true, sabai: ["#e0b23a", "#8a5a2a", "check"], sarong: "#34496b", patoi: 0.75, shirt: "#3f6a8a", legs: "#34496b", size: 0.8, build: -1, head: 1.09,
           skin: "#e2b088", eyes: 1.25, north: "full", smile: 1, wonder: 0.3},
   dokkham: {bun: true, shirt: "#f6e3a1", sin: 0, size: 0.78, build: -1, head: 1.1, flower: "#f28fa8", skin: "#eebf96", eyes: 1.3,
-            lips: 0.9, north: "round", smile: 1, bangles: 1}
+            lips: 0.9, north: "round", smile: 1, bangles: 2}
 };
 
 // name: a name of CAST ("lady"; an unknown one warns and gives a bare figure); more: the look's keys to change,
@@ -3775,7 +3777,7 @@ var LOOK_KEYS = {};
 //   collar          [band colour, pattern colour]: a wrap blouse, with a patterned band down
 //                   its V neck and front edge
 //   fan             true: a fan of gold leaves behind the bun
-//   bangles         how many rings on each wrist (a lady has 2 unless told)
+//   bangles         how many rings on each wrist (a lady has 3 unless told, anyone else 2, one in a coat none)
 //   skin            this figure's own skin colour ("#rrggbb"); otherwise STYLE.skin
 //   eyes, lips      the face's own measure: how large its eyes and how wide its mouth are (1 is the kit's)
 //   head            how wide the head is: 0.9 for a lady unless told (a longer oval, lifted on
@@ -4640,7 +4642,7 @@ function personReach(fig) {
   // Big gloved hands for the fellows, as they drew them, and small bare
   // hands for the ladies.
   var handSize = (look.gloves ? 1.25 : lady ? 0.95 : 1.1) * arms;
-  var rings = look.bangles !== undefined ? look.bangles : lady ? 2 : look.coat ? 0 : 1;
+  var rings = look.bangles !== undefined ? look.bangles : lady ? 3 : look.coat ? 0 : 2;   // a coat's sleeves: none
   // Everything about a hand, from the look and the arm it ends ("A" the
   // near arm, "B" the far one; "given" is where the hand was asked for).
   // A hand points the way its forearm points, from the elbow to the wrist,

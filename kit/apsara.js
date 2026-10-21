@@ -48,7 +48,7 @@ var APSARA = {
 // The cast member. The kit's sabai, in the cloth's maroon, is the sabai where
 // it crosses her body; the chains are its two hanging ends. turn 0.4 is
 // between the three-quarter view and the full face.
-CAST.apsara = {skirt: true, bun: true, dance: true, nails: "long", bangles: 5,
+CAST.apsara = {skirt: true, bun: true, dance: true, nails: "long", bangles: 6,
                shirt: APSARA.bodice, legs: APSARA.sin, weave: 0, sabai: [APSARA.sabai, APSARA.sabai],
                skin: APSARA.skin, lips: 0.9,                    // the kit's eyes are the painting's measure since d7d06d1d
                size: 1.3, smile: 0.5, turn: 0.4, tilt: -0.05, sit: 0.25};

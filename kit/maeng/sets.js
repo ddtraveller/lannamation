@@ -132,7 +132,7 @@ var MAENG_LAD = Object.assign({}, MAENG_BOY, {size: 0.58});   // Thukkhata older
 // colours.
 var MAENG_KING = {turban: null, wrap: "#6a2a5a", sarong: ["#5a2a6a", BROCADE], size: 0.82, age: 0.45, beard: "#2a2220", smile: 0.6};
 var MAENG_SIMA = {skirt: false, sin: 0, sabai: ["#e0b23a", "#8a2a3a"], bun: "ipun", pins: true, flower: "#f2cf5a", dance: false,
-                  bangles: 4, earplug: "#e0b23a", size: 0.78, smile: 0.8};
+                  bangles: 5, earplug: "#e0b23a", size: 0.78, smile: 0.8};
 var MAENG_PRINCES = [{turban: "#2a5a8a", sarong: ["#2a5a8a", BROCADE], size: 0.78},
                      {turban: "#3a7a4a", sarong: ["#3a7a4a", BROCADE], size: 0.8},
                      {turban: "#c8452f", sarong: ["#6a3a7a", BROCADE], size: 0.76}];

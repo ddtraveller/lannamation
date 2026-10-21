@@ -2483,7 +2483,8 @@ function geckoRoute(route) {                        // the distance along a rout
 // e.g. geckoAt([[100, 800], [100, 200]], 150)   // [100, 650, -Math.PI / 2]
 function geckoAt(route, d) {                        // the point a distance along a route, and the way it runs there
   var marks = geckoRoute(route), last = route.length - 1, k;
-  if (d <= 0 || last < 1) {                         // before its start: on back along its first stretch
+  if (last < 1) { return [route[0][0], route[0][1], 0]; }   // one point: it stays there, facing right (it threw, until 2026-10-21)
+  if (d <= 0) {                         // before its start: on back along its first stretch
     var a0 = Math.atan2(route[1][1] - route[0][1], route[1][0] - route[0][0]);
     return [route[0][0] + Math.cos(a0) * d, route[0][1] + Math.sin(a0) * d, a0];
   }
@@ -2507,7 +2508,8 @@ function geckoAt(route, d) {                        // the point a distance alon
 function gecko(route, along, look) {
   look = look || {};
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
-  var size = look.size || 1, t = look.t || clock, skin = tone(look.colour || "#7f93a8"), spot = tone(look.spots || "#e07a3a");
+  var size = look.size || 1, t = look.t !== undefined ? look.t : clock,   // t: 0 is a second, not "the film's clock"
+      skin = tone(look.colour || "#7f93a8"), spot = tone(look.spots || "#e07a3a");
   var gap = GECKO_GAP * size, n, spine = [], bare = [], off = false;
   for (n = 0; n < GECKO_WIDTHS.length; n++) {        // the spine: each joint the gap behind the one before, along the route
     var p = geckoAt(route, along - n * gap);

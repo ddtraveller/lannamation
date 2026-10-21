@@ -56,7 +56,7 @@ var FONLEP = {
 // the round neck; the flower, the jasmine garland and the pins are what rings
 // the bun; the ear plug is the lan hu. turn -1 is the profile; tilt lifts
 // the chin.
-CAST.fonlep = {sin: 2, bun: true, dance: true, nails: "long", bangles: 3, plain: true,
+CAST.fonlep = {sin: 2, bun: true, dance: true, nails: "long", bangles: 4, plain: true,
                shirt: FONLEP.blouse, legs: FONLEP.black, sabai: [FONLEP.scarf, FONLEP.scarf],
                flower: FONLEP.orchid, garland: true, pins: true, earplug: FONLEP.gold, skin: FONLEP.skin,
                size: 1.3, smile: 0.6, turn: -1, tilt: -0.45};

@@ -110,7 +110,7 @@ ROWS[8] = ROWS[8].filter(function (painter, k) { return k !== 1 && k !== 2; });
 var SASH_KING = {turban: null, wrap: "#6a2a5a", sarong: ["#5a2a6a", BROCADE], size: 1.1, age: 0.45, beard: "#2a2220", smile: 0.6};
 var SASH_GROOM = {turban: "#e8d8a0", sarong: ["#2a6a5a", BROCADE], size: 1.1, smile: 0.8};
 var SASH_SIMA = {skirt: false, sin: 0, sabai: ["#e0b23a", "#8a2a3a"], bun: "ipun", pins: true, flower: "#f2cf5a", dance: false,
-                 bangles: 4, earplug: "#e0b23a", size: 1.05, smile: 0.9};
+                 bangles: 5, earplug: "#e0b23a", size: 1.05, smile: 0.9};
 ROWS[3] = ROWS[3].concat([function (b, u) { person(0, 0, cast("noble", Object.assign({step: u, id: "woven-king"}, SASH_KING))); }]);
 ROWS[5] = ROWS[5].concat([function (b, u) {
   person(-45, 0, cast("noble", Object.assign({step: u, id: "woven-groom"}, SASH_GROOM)));

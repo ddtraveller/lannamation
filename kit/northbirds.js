@@ -45,15 +45,21 @@ var EGRET_KEYS = {size: true, face: true, peck: true, fly: true, seed: true};   
 
 // A bird's eye at (x, y), r across: the dot it always was, or with a feeling (e), a small eye of that colour
 // under a lid of the head's colour ("skin").
-// "colour" is the eye's; e a feeling (creatureFeel()) or null. Returns nothing: it draws with pen.
+// "colour" is the eye's; e a feeling (creatureFeel()) or null; pupil, a colour or left out: a pupil in a pale eye
+// (the hornbill's), a little toward the front, under the lid a feeling brings down and not on an eye it shuts.
+// Returns nothing: it draws with pen.
 // e.g. nbEye(45, -104, 1.6, "#141414", null, "#d8302a")
-function nbEye(x, y, r, colour, e, skin) {
+function nbEye(x, y, r, colour, e, skin, pupil) {
   if (!e) {
     nbOval(x, y, r, r);
     nbFill(colour);
+    if (pupil) {
+      nbOval(x + r / 7, y, r * 3 / 7, r * 3 / 7);    // the hornbill's, as it was: 0.5 forward, 1.5 across, in an eye of 3.5
+      nbFill(pupil);
+    }
     return;
   }
-  creatureEye(x, y, r * 1.35, r * 1.35, e, {ball: colour, skin: skin, ink: inkFor(skin)});
+  creatureEye(x, y, r * 1.35, r * 1.35, e, {ball: colour, skin: skin, ink: inkFor(skin), pupil: pupil});
 }
 
 // ---------- shared ----------
@@ -733,9 +739,7 @@ function hornbillHead(x, y, e) {                        // rules 2 and 3: the he
   nbPaint(HORNBILL.cream);
   nbOval(x + 4, y + 1, 10, 9);
   nbFill(HORNBILL.black);
-  nbEye(x + 5, y - 1, 3.5, HORNBILL.eye, e, HORNBILL.black);
-  nbOval(x + 5.5, y - 1, 1.5, 1.5);
-  nbFill("#101010");
+  nbEye(x + 5, y - 1, 3.5, HORNBILL.eye, e, HORNBILL.black, "#101010");   // its pupil with the eye (drawn after it, it showed on a shut eye)
 }
 
 // "colour" is the wing's (the hornbill's black). Returns nothing: it draws with pen; pen is restored.
