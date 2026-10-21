@@ -14,12 +14,16 @@ var S08_DAYS = [15, 22];                            // the days going by: the sk
 // Its life: the rooster and a hen in the yard by morning, and a flock over; nothing while the days go by (they
 // would flicker); after them, as he leads the buffalo out, a hen where it has passed.
 var S08_LIFE = [
+  // The two roosters walk back off to the left before the days go by, where they had vanished on the spot (owner,
+  // 2026-10-21: "some chickens disappear. They should walk back to the left"); x 380 is past the frame's left edge
+  // under S08_CAMERA. The hen stays, walking across the yard while the days go by, in front of the pen (owner: "The
+  // remaining chicken needs to be in front of the bamboo cage but looks to be behind it"): her layer is "front".
   {name: "rooster", kind: "rooster", layer: "back", look: {feel: "satiated"},
-   course: [[0, 620, 958], [5.0, 660, 962, "peck"], [14.8, 660, 962, "hide"], [15.0, 660, 962, "hide"]]},
-  {name: "hen", kind: "hen", layer: "back", course: [[0, 720, 966, "peck"], [6.0, 720, 966], [8.0, 790, 970, "peck"], [14.8, 790, 970, "hide"],
+   course: [[0, 620, 958], [5.0, 660, 962, "peck"], [11.6, 660, 962], [14.6, 380, 962], [14.8, 380, 962, "hide"], [15.0, 380, 962, "hide"]]},
+  {name: "hen", kind: "hen", layer: "front", course: [[0, 720, 966, "peck"], [6.0, 720, 966], [8.0, 790, 970, "peck"], [14.8, 790, 970, "hide"],
                                                     [38.0, 1880, 958, "hide"], [38.4, 1880, 958, "peck"], [40.0, 1880, 958]]},
   {name: "black rooster", kind: "rooster", layer: "back", look: {black: true, feel: "happy"},   // a black-boned rooster (ไก่ดำ)
-   course: [[0, 650, 964], [4.0, 690, 968, "peck"], [14.8, 690, 968, "hide"], [15.0, 690, 968, "hide"]]},
+   course: [[0, 650, 964], [4.0, 690, 968, "peck"], [11.9, 690, 968], [14.7, 400, 968], [14.8, 400, 968, "hide"], [15.0, 400, 968, "hide"]]},
   {name: "flock", kind: "flock", course: [[1.0, 2150, 200], [12.0, -150, 160]]}
 ];
 
@@ -40,6 +44,9 @@ function sceneGold(t) {
   maengSiHuHaTa(MAENG_PEN[0] - 60, MAENG_PEN[1] - 22, {size: 0.45, face: 1, feel: pleased ? "satiated" : t < 6 ? "sleepy" : "happy"});
   if (t < 6.4) { goldNugget(pen, MAENG_PEN[0] + 70, MAENG_PEN[1] - 30, 0.9, t, {seed: 3}); }   // on the pen's floor
   kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {part: "front", tint: tint});
+  if (night > 0) { pen.filter = "brightness(" + (1 - 0.65 * night).toFixed(3) + ") saturate(" + (1 - 0.4 * night).toFixed(3) + ")"; }
+  decorate(t, S08_LIFE, "front");                   // the hen, in front of the pen, as dark as the yard while the nights go by
+  pen.filter = "none";
   var lad = maengPerson("boy", MAENG_LAD, {id: "lad"}), x, y = 948;
   if (t < 11.1) {                                   // at the pen: the gold picked up, held up, a wonder
     x = MAENG_PEN[0] + 240;

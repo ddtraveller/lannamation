@@ -26,6 +26,27 @@ function s03Ox(t) {
   return amble("buffalo", t, s03From(), S03_STAND, 0.5, {size: 0.62, rope: true});
 }
 
+// Tufts of grass on the meadow, [x, y, size], and the buffalo grazing them once it has stopped (owner, 2026-10-21:
+// "Add a buffalo eating grass behavior and show the buffalo eating. Add some grass tufts"): its head goes down a
+// second after it stops, comes up for a moment every 6 s, and the tuft under its muzzle is cropped as the scene goes.
+var S03_TUFTS = [[300, 952, 0.9], [520, 990, 1.1], [1130, 958, 0.8], [1290, 1012, 1.2], [1700, 970, 1.0], [180, 1030, 1.3]];
+function s03Graze(t, ox) {
+  var down = between(t, ox.arrives + 1, ox.arrives + 2.4), cycle = (t - ox.arrives - 2.4) % 6;
+  var lift = t > ox.arrives + 2.4 && cycle > 4.4 ? Math.sin(Math.PI * (cycle - 4.4) / 1.6) : 0;
+  return down * (1 - 0.8 * lift);
+}
+function s03Muzzle(ox) {                             // where its muzzle meets the ground when it grazes
+  return ox.x + 195 * 0.62 * GAITS.buffalo[0] * (ox.look.face || 1);
+}
+function s03Tufts(t, ox, front) {
+  S03_TUFTS.forEach(function (tuft) {
+    if ((tuft[1] > S03_GROUND) === front) { grassTuft(pen, tuft[0], tuft[1], tuft[2], {t: t}); }
+  });
+  if (front && ox) {                                 // the one it eats, over its muzzle
+    grassTuft(pen, s03Muzzle(ox), S03_GROUND - 2, 1.0, {t: t, eaten: between(t, ox.arrives + 2.4, S03_LONG)});
+  }
+}
+
 function sceneWork(t) {
   pen.drawImage(maengSky("day"), 0, 0);
   cumulus(pen, t + 40, MAENG_CLOUDS.day);
@@ -34,11 +55,14 @@ function sceneWork(t) {
   decorate(t, S03_LIFE, "front");                   // on the tree and in the sky: before the buffalo and the lad
   var ox = s03Ox(t), lad = maengPerson("boy", MAENG_LAD, {id: "lad"}), go;
   var gathered = between(t, 16, 21.5);              // how much of the wood he has picked up
+  s03Tufts(t, null, false);
   if (t < ox.arrives + 1) {                         // leading the buffalo: ahead of it at its pace, the rope in his back hand
     maengLead(ox, s03From(), S03_GROUND, lad, 0.62);
+    s03Tufts(t, null, true);
     return;
   }
-  buffalo(ox.x, S03_GROUND - 6, ox.look);           // it grazes where it stopped
+  buffalo(ox.x, S03_GROUND - 6, Object.assign({}, ox.look, {graze: s03Graze(t, ox)}));   // it grazes where it stopped
+  s03Tufts(t, ox, true);
   if (t < 24) {                                     // to the tree, and down to gather the wood
     go = stroll(t, S03_STAND + 380, S03_PILE - 50, ox.arrives + 1.2, lad);
     lad = go.look;

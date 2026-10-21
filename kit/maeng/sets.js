@@ -584,10 +584,15 @@ function maengCity() {
 }
 
 // ---------- a fade, the pen, the Haw traders, the trough in the yard ----------
-// Black over the picture: out to it from "out", back from it by "back" (the scenes' fades to and from black).
+// Black over the picture: out to it from "out" (over 1.2 s, held until "back" when that comes later), and back from it
+// from "back" (the scenes' fades to and from black). It used to take the larger of "going out" and "not yet back",
+// which is already 1 before "back": the picture snapped to black at "out", a scene opened on 1.2 s of black that then
+// cut to the picture, and a call with "back" before "out" drew nothing (owner, 2026-10-21, of the cuts: "Some scenes
+// hard cut but there is one with a smooth transition"; found at the creature's run, s13).
 function maengDark(t, out, back) {
-  var dark = Math.max(between(t, out, out + 1.2), 1 - between(t, back, back + 1.2));
-  if (t < out || t > back + 1.2) { dark = 0; }
+  var going = t >= out && (back <= out || t < back) ? between(t, out, out + 1.2) : 0;
+  var coming = t >= back ? 1 - between(t, back, back + 1.2) : 0;
+  var dark = Math.max(going, coming);
   if (dark > 0) {
     pen.fillStyle = "rgba(0, 0, 0, " + dark.toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);
@@ -748,10 +753,14 @@ function maengFieldLife(t) {
     var ex = fx - face * (14 + k * 12 + 3 * Math.sin(t + k)), peck = 0.5 + 0.5 * Math.sin(t * 2.3 + k * 2);
     egret(ex, y + 1, t, {size: 0.086, peck: peck, face: face});   // northbirds.js
   });
-  var cycle = t % 24;                               // and now and then one flies off, up and away over the hills
+  // and now and then one flies off, up and over to the nearer side of the picture, and out past its edge before the
+  // cycle comes round (owner, 2026-10-21: "a bird flying into the sky just disappears. It should continue on to beyond
+  // the edge of the screen"; it went 300 to one side and was simply not drawn once its 10 s were up)
+  var cycle = t % 24;
   if (cycle > 14) {
-    var u = (cycle - 14) / 10;
-    egret(fx - face * 14 - 300 * u * face, y - 4 - 240 * u - 40 * Math.sin(u * 3), t, {size: (0.32 + 0.2 * u) / 2.8, fly: true, face: -face, seed: 3});
+    var u = (cycle - 14) / 10, start = fx - face * 14, way = start < WIDE / 2 ? -1 : 1;
+    var reach = way < 0 ? start + 120 : WIDE - start + 120;
+    egret(start + way * reach * u, y - 4 - 240 * u - 40 * Math.sin(u * 3), t, {size: (0.32 + 0.2 * u) / 2.8, fly: true, face: way, seed: 3});
   }
   FIELD_PLANTERS.forEach(function (w, k) {          // women planting rice, bent, stepping slowly back along the row
     var r = fieldRow(w[0]), px = w[1] - (t * 2) % 60;

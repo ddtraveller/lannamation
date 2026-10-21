@@ -12,6 +12,7 @@ var S13_LINES = [[1.5, 4.8, "M073"], [5.6, 10.6, "M074"], [16.6, 21.0, "M075"], 
 var S13_SHOTS = [15.5, 30.0];                       // the crowd at the pen; the run home; the mountain today
 var S13_CAMERA = [1234, 690, 1.4];                  // close on the pen, as scene 8's
 var S13_BOLT = 12.4;                                // when it leaps the fence
+var S13_FLEE = 1.1;                                 // and then the seconds it takes to run out of the picture
 // The crowd: who comes, from which side, where each stops, and when it sets off.
 var S13_CROWD = [["inta", 2.0, 2100, 1560, 948], ["sinuan", 2.6, 2150, 1690, 965], ["khammun", 3.6, -200, 760, 950],
                  ["buakham", 4.2, -260, 880, 968], ["bunma", 5.0, 2120, 1460, 975], ["dokkham", 5.6, -300, 980, 980],
@@ -51,8 +52,13 @@ function sceneHome(t) {
     decorate(t, S13_LIFE, "back");
     kok(pen, k[0], k[1], k[2], 1, {part: "back"});
     var leap = between(t, S13_BOLT, S13_BOLT + 1.6), at = [mix(k[0] - 60, k[0] + 520, leap), k[1] - 22 - 120 * Math.sin(Math.PI * Math.min(1, leap * 1.4))];
-    if (leap < 1) {
-      maengSiHuHaTa(at[0], at[1], {size: 0.45, face: 1, feel: t < 5.6 ? "concerned" : "fear", step: leap > 0 ? leap * 6 : undefined,
+    // Landed, it runs on, out of the picture at the right (owner, 2026-10-21: "have the monster run all the way off
+    // the screen"; it vanished where it landed): S13_FLEE seconds from the end of the leap to past the frame's edge.
+    var fled = clamp((t - S13_BOLT - 1.6) / S13_FLEE);
+    if (leap >= 1) { at = [mix(k[0] + 520, k[0] + 1250, fled), k[1] - 22]; }
+    if (fled < 1) {
+      maengSiHuHaTa(at[0], at[1], {size: 0.45, face: 1, feel: t < 5.6 ? "concerned" : "fear",
+                                   step: leap > 0 ? leap * 6 + Math.max(0, t - S13_BOLT - 1.6) * 14 : undefined,
                                    mouth: t > 11.0 && t < 12.2 ? 0.7 : 0});
     }
     kok(pen, k[0], k[1], k[2], 1, {part: "front"});
@@ -83,8 +89,12 @@ function sceneHome(t) {
     pen.drawImage(mountain.back, 0, 0);
     mistDrift(pen, t, {left: 0, right: WIDE, top: 640, bottom: 770, count: 4, drift: 8, seed: 13, alpha: 0.45});
     pen.drawImage(mountain.front, 0, 0);
-    pen.save();                                      // the temple, small and far, on the mountain's shoulder
-    pen.translate(640, maengPeak(640) + 6);
+    // the temple, small and far, on the top of the mountain's shoulder, its base where the ground is lowest under it,
+    // so no side of it stands out over the slope (owner, 2026-10-21: "half of it is off the mountain so place it so it
+    // is fully on the mountain"; it stood at 640, on the shoulder's fall)
+    var templeAt = 560, templeHalf = 90;
+    pen.save();
+    pen.translate(templeAt, Math.max(maengPeak(templeAt - templeHalf), maengPeak(templeAt), maengPeak(templeAt + templeHalf)) + 6);
     pen.scale(0.22, 0.22);
     temple(pen, 0, 0);
     pen.restore();

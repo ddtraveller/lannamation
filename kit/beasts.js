@@ -59,6 +59,8 @@
 // and for the buffalo only:
 //   rope       true: the nose rope, through the nose and looped back behind the horns, the lead
 //              tied on at the side, its end hanging
+//   graze      0 to 1: the head lowered to the grass, the muzzle on the ground at 1, the jaw working
+//              while it is down (owner, 2026-10-21: "Add a buffalo eating grass behavior")
 // and for the cat and the tiger:
 //   sit        true: sitting, the fore legs straight and the tail round the feet. The
 //              elephant's too: it lies down with its legs folded, so that someone
@@ -79,7 +81,7 @@
 //   mane       the colour of its mane, its tail and its lower legs
 var BEAST_KEYS = {};
 
-["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground", "feel", "pack", "mane"].forEach(function (name) { BEAST_KEYS[name] = true; });
+["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground", "feel", "pack", "mane", "graze"].forEach(function (name) { BEAST_KEYS[name] = true; });
 
 // Where a walking foot is in its stride: [how far forward of its joint, how
 // high off the ground]. "s" is how far through the stride it is; it is on
@@ -1080,9 +1082,11 @@ function buffalo(x, y, look) {
   pen.translate(0, -bob);
   var nod = 0.04 * Math.sin(clock * 1.5 + x * 0.01) + 0.06 * beat + (walk ? 0.03 * Math.sin(look.step * Math.PI * 4) : 0)
           + (e ? 0.5 * e.nod - 0.12 * e.raise + 0.04 * e.shake : 0);
-  pen.save();                                       // the neck and the head, carried forward and low
-  pen.translate(150, -262);
-  pen.rotate(nod);
+  var graze = clamp(look.graze || 0), chew = graze > 0.6 ? Math.sin(clock * 7 + x * 0.01) : 0;   // the head down in the grass, chewing
+  var bodyFrame = pen.getTransform();               // the body's frame, for the neck's shade when the head is down
+  pen.save();                                       // the neck and the head, carried forward and low (or down to graze)
+  pen.translate(150 - 20 * graze, -262 + 70 * graze);
+  pen.rotate(nod + 1.05 * graze + 0.03 * chew * graze);
   function horn(dx, dy, pale) {                     // one horn: a crescent that sweeps back and up from the head
     pen.beginPath();
     pen.moveTo(96 + dx, -44 + dy);
@@ -1108,15 +1112,37 @@ function buffalo(x, y, look) {
   pen.closePath();
   pen.fillStyle = colour;
   pen.fill();
+  if (graze > 0) {                                  // lowered, the neck lies across the body: it takes the body's shade, so no
+    pen.save();                                     // lighter wedge shows where its back edge crosses the body
+    pen.clip();
+    pen.setTransform(bodyFrame);
+    var neckShade = pen.createLinearGradient(0, -260, 0, -120);
+    neckShade.addColorStop(0, "rgba(20, 20, 30, 0)");
+    neckShade.addColorStop(1, "rgba(20, 20, 30, " + (0.32 * graze).toFixed(3) + ")");
+    pen.fillStyle = neckShade;
+    pen.fillRect(-240, -340, 600, 360);
+    pen.restore();
+  }
   pen.strokeStyle = ink;                            // then the line along its top and under its throat
   pen.lineWidth = LINE;
   pen.lineCap = "round";
   heavy(ink);
   pen.beginPath();
-  pen.moveTo(-30, -51);
-  pen.quadraticCurveTo(40, -66, 100, -52);
+  if (graze > 0) {                                  // lowered, the first of the neck's top line lies over the body: begun further on
+    var from = 0.75 * graze, cx = mix(-30, 40, from), cy = mix(-51, -66, from);
+    pen.moveTo(mix(cx, mix(40, 100, from), from), mix(cy, mix(-66, -52, from), from));
+    pen.quadraticCurveTo(mix(40, 100, from), mix(-66, -52, from), 100, -52);
+  } else {
+    pen.moveTo(-30, -51);
+    pen.quadraticCurveTo(40, -66, 100, -52);
+  }
   pen.moveTo(96, 40);
-  pen.quadraticCurveTo(30, 72, -30, 82);
+  if (graze > 0) {                                  // and the throat's line ends sooner, before it would cross the body
+    var te = 1 - 0.75 * graze, cxT = mix(96, 30, te), cyT = mix(40, 72, te);
+    pen.quadraticCurveTo(cxT, cyT, mix(cxT, mix(30, -30, te), te), mix(cyT, mix(72, 82, te), te));
+  } else {
+    pen.quadraticCurveTo(30, 72, -30, 82);
+  }
   pen.stroke();
   light();
   pen.strokeStyle = blend(colour, "#e9e2d0", 0.7);  // the pale band under the throat
@@ -1142,7 +1168,7 @@ function buffalo(x, y, look) {
   pen.lineWidth = 2 * FINE;
   pen.beginPath();
   pen.moveTo(176, 54);
-  pen.quadraticCurveTo(196, 62, 214, 50);
+  pen.quadraticCurveTo(196, 62 + 5 * Math.abs(chew) * graze, 214, 50);   // the mouth, working as it chews
   pen.stroke();
   if (e) { creatureEye(136, -22, 8, 7, e, {skin: colour, iris: "#1f1a1a", ink: ink}); }   // a feeling's eye
   else {
@@ -1159,16 +1185,26 @@ function buffalo(x, y, look) {
   pen.closePath();
   shape(blend(colour, "#000000", 0.12));
   pen.restore();
-  horn(0, 0, "#a8a294");                            // the near horn
-  if (look.rope) {                                  // the nose rope (สนตะพาย): through the pierced nose itself, looped back
-    // behind the horns, and the lead tied on at the near side, its end hanging and swinging (the kit's research,
-    // 2026-10-20: no ring; owner: "R2 through the nose")
+  if (look.rope) {                                  // the nose rope (สนตะพาย), as a farmer ties it (owner, 2026-10-21: "Fix the
+    // string around the buffalo's horns so it looks like the way horns are actually tied with a rope by a farmer"; drawn
+    // from Dennis G. Jarvis's photograph of a Thai buffalo, Commons, and the "Lanna village farming" notebook: both ends
+    // of the finger-thick rope through the nose are brought up and looped behind the horns, tied loosely, and kept on
+    // for the animal's working life; the lead is a separate rope tied to one side of it): a thin rope from the pierced nose up each cheek,
+    // under the eye, behind the horn's base between horn and ear, and over the poll behind the horns. The near strand
+    // goes under the near horn (drawn before it); over the poll it shows above the neck between the horns.
     pen.strokeStyle = "#c9a878";
-    pen.lineWidth = 4;
+    pen.lineWidth = 3;
+    pen.lineCap = "round";
     pen.beginPath();
-    pen.moveTo(202, 30);
-    pen.quadraticCurveTo(150, -6, 40, -18);         // up the face, to behind the horns
+    pen.moveTo(200, 32);
+    pen.bezierCurveTo(168, 18, 128, 6, 100, -26);    // up the cheek, under the eye, to behind the horn's base
+    pen.quadraticCurveTo(88, -46, 76, -62);          // on up behind the horn, to the poll
+    pen.quadraticCurveTo(66, -72, 54, -64);          // over the poll, and down the far side behind the head
     pen.stroke();
+  }
+  horn(0, 0, "#a8a294");                            // the near horn
+  if (look.rope) {                                  // where the rope goes through the nose, and the lead tied on at the near
+    // side, its end hanging and swinging (the kit's research, 2026-10-20: no ring; owner: "R2 through the nose")
     pen.strokeStyle = blend("#c9a878", "#000000", 0.25);
     pen.lineWidth = 2;
     pen.beginPath();
@@ -2289,6 +2325,12 @@ function mouse(x, y, look) {
 // Gives back {head, angle}: where its head is in the scene, and which way it faces (radians).
 var GECKO_WIDTHS = [11, 13, 10, 12, 14, 15, 14, 11, 8, 6.5, 5.5, 4.5, 3.8, 3.2, 2.6, 2.1, 1.6];   // the lesson's lizard, its tail longer
 var GECKO_GAP = 9, GECKO_STEP = 30, GECKO_REACH = 27;   // a tokay's legs splay wide
+// The most one joint of the spine turns from the one before (radians). Where a route turns sharper, as it does when
+// an animal goes back the way it came, the joints behind no longer keep to the route: each follows the one before
+// at the gap, turned no more than this, so the body curves round behind the head and never folds over itself
+// (owner, 2026-10-21: "Fix the tokay so it can't double back on itself. When it walks up the wall it folds over
+// itself"). A route that turns gently draws as it did.
+var GECKO_BEND = 0.5;
 
 function geckoRoute(route) {                        // the distance along a route at each of its points, kept with it
   if (!route.marks) {
@@ -2315,9 +2357,18 @@ function gecko(route, along, look) {
   look = look || {};
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
   var size = look.size || 1, t = look.t || clock, skin = tone(look.colour || "#7f93a8"), spot = tone(look.spots || "#e07a3a");
-  var gap = GECKO_GAP * size, n, spine = [];
+  var gap = GECKO_GAP * size, n, spine = [], bare = [], off = false;
   for (n = 0; n < GECKO_WIDTHS.length; n++) {        // the spine: each joint the gap behind the one before, along the route
     var p = geckoAt(route, along - n * gap);
+    if (n > 0) {                                     // ... turned no more than GECKO_BEND from the joint before it
+      var before = bare[n - 1], turn = Math.atan2(Math.sin(p[2] - before[2]), Math.cos(p[2] - before[2]));
+      if (off || Math.abs(turn) > GECKO_BEND) {
+        var a = before[2] + Math.max(-GECKO_BEND, Math.min(GECKO_BEND, turn));
+        p = [before[0] - Math.cos(a) * gap, before[1] - Math.sin(a) * gap, a];
+        off = true;                                  // from here back it follows the joint before, not the route
+      }
+    }
+    bare.push(p);
     var sway = n > 8 ? Math.sin(t * 2.2 - n * 0.5) * (n - 8) * 0.25 * size : 0;   // the tail's tip wavers
     spine.push([p[0] - Math.sin(p[2]) * sway, p[1] + Math.cos(p[2]) * sway, p[2]]);
   }
@@ -2343,6 +2394,8 @@ function gecko(route, along, look) {
       var next = footOn(planted + 1), u = (swing - 0.75) / 0.25;
       foot = [mix(foot[0], next[0], u), mix(foot[1], next[1], u), next[2]];
     }
+    var onRoute = geckoAt(route, along - leg[0] * gap), shift = [bare[leg[0]][0] - onRoute[0], bare[leg[0]][1] - onRoute[1]];
+    foot = [foot[0] + shift[0], foot[1] + shift[1], foot[2]];   // where the body has left the route (GECKO_BEND), the foot goes with its hip
     var hip = spine[leg[0]], knee = [mix(hip[0], foot[0], 0.5) - Math.sin(hip[2]) * leg[1] * 4 * size + Math.cos(hip[2]) * (leg[0] === 7 ? -5 : 5) * size,
                                      mix(hip[1], foot[1], 0.5) + Math.cos(hip[2]) * leg[1] * 4 * size + Math.sin(hip[2]) * (leg[0] === 7 ? -5 : 5) * size];
     pen.strokeStyle = inkFor(skin);

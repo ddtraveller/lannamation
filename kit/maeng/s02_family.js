@@ -21,7 +21,10 @@ var S02_LIFE = [
   // a black-boned hen of the north (ไก่ดำ), pecking under the house (owner, 2026-10-20: "add a black chicken and rooster")
   {name: "black hen", kind: "hen", layer: "back", look: {black: true}, course: [[0, 430, 962, "peck"], [9.0, 430, 962], [11.0, 470, 966, "peck"], [24.5, 470, 966]]},
   {name: "flock", kind: "flock", course: [[2.0, -100, 270], [13.0, 2150, 210]]},
-  {name: "hen, alone", kind: "hen", layer: "back", course: [[39.5, 330, 958, "peck"], [55.0, 330, 958]]}
+  // she pecks, walks a little, pecks, and walks back the other way (owner, 2026-10-21: "should switch between 3
+  // behaviors like pecking walking pecking and then walking back the other way"; she only pecked on one spot)
+  {name: "hen, alone", kind: "hen", layer: "back",
+   course: [[39.5, 330, 958, "peck"], [43.0, 330, 958], [45.5, 440, 962, "peck"], [49.5, 440, 962], [52.0, 330, 958, "peck"], [55.0, 330, 958]]}
 ];
 
 function s02Mist(t) {                               // low over the rice fields behind the hut, thinning as the sun climbs

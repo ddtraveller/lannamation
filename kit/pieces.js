@@ -2086,6 +2086,30 @@ function bananas(brush, x, y, size, look) {
 }
 PIECES_KIT.push("grassBundle", "bananas");
 
+// A tuft of grass growing (owner, 2026-10-21: "Add some grass tufts", for the buffalo to eat): blades from one root at
+// (x, y), the ground, up and out, swaying a little with look.t (the second); look.eaten (0 to 1) crops them short, as a
+// buffalo leaves a tuft; look.tint as a set's pieces take it. About 50 tall at size 1.
+function grassTuft(brush, x, y, size, look) {
+  look = look || {};
+  function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
+  var greens = ["#5f8a34", "#78a23f", "#4f7a2e", "#8db54d"], t = look.t || 0, left = 1 - 0.7 * clamp(look.eaten || 0);
+  brush.save();
+  brush.translate(x, y);
+  brush.scale(size, size);
+  brush.lineCap = "round";
+  for (var n = 0; n < 11; n++) {                    // each blade a curve from the root, leaning out the more the further from the middle
+    var u = n / 10 - 0.5, tall = (36 + 16 * Math.sin(n * 2.1 + 1)) * left, lean = u * 46 + 3 * Math.sin(t * 1.3 + n);
+    brush.strokeStyle = tone(greens[n % greens.length]);
+    brush.lineWidth = 2.6 + (n % 2);
+    brush.beginPath();
+    brush.moveTo(u * 10, 0);
+    brush.quadraticCurveTo(u * 14 + lean * 0.3, -tall * 0.6, u * 10 + lean, -tall);
+    brush.stroke();
+  }
+  brush.restore();
+}
+PIECES_KIT.push("grassTuft");
+
 // A fire stick (owner, 2026-10-20: "When he's feeding the monster coals, have the boy flip them up with a stick"): a
 // thin length of split bamboo from a hand (from) out to its far end (to), the far end charred, and glowing while it
 // is in the fire (look.hot, 0 to 1). Pass a person's hand joint as from, and the point in the coals, or up in the

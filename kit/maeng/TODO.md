@@ -11,7 +11,7 @@ each new look as a sheet of candidates beside its reference (the owner picks, on
 rounds), then the kit check once, then every scene rendered once, then the sound, then the join. Research that
 waits on others starts first and runs while the drawing goes on.
 
-## Next: the owner's list of 2026-10-21 (not started)
+## Next: the owner's list of 2026-10-21 (all 11 drawn and checked in stills, 2026-10-21 afternoon; render and join left)
 
 The owner, 2026-10-21: "Make a list of changes for the future." Times are of the live film of 12:30 that day
 (`lanna_tales_maeng14.mp4`, 930.7 s: the hero film 0 to 97.75, the card to 109.75, then the tale), so a tale second is
@@ -32,7 +32,7 @@ beside a reference where it is a new look), then the kit check on a copy, render
 4. **A buffalo eating grass** (s03): "Add a buffalo eating grass behavior and show the buffalo eating." A new look key
    on the kit's buffalo (head down to the ground, the jaw working, a step now and then), shown in s03.
 5. **Grass tufts** (s03): "Add some grass tufts." For the buffalo to eat, and in the kit (beside `grassBundle`).
-6. **The tokay that folds over itself** (s04 the wish, on the hut wall): "Fix the tokay so it can't double back on
+6. **The tokay that folds over itself** (4:30, tale 160.25, s04 the wish, 40 s in, on the hut wall): "Fix the tokay so it can't double back on
    itself. When it walks up the wall it folds over itself." In the kit's `gecko()` (beasts.js): the body must not turn
    back on itself along its course (a limit on the bend between segments, or a course that turns wide); check with
    the s04 course, the "tokay of a house wall" figure on the sash, and the credits' tile.
@@ -47,6 +47,23 @@ beside a reference where it is a new look), then the kit check on a copy, render
 11. **Credits, two more roles for the narrator** (s15): "add Writer: Amornrat Jaijar because she is going to rewrite the
     text properly. Language Research: Amornrat Jaijar for her work on recording and checking and correcting the
     language model results." Two heads in S15_CREDITS after "Narrator (AI voice)", in Thai and English as the others.
+
+**Done in stills (uncommitted until the kit check of a copy passes):** 1 the field egret flies out past the nearer
+edge (sets.js maengFieldLife); 2 s02's hen pecks, walks, pecks, walks back; 3 the nose rope up each cheek under the eye,
+behind the horn's base and over the poll (beasts.js, from Dennis G. Jarvis's photograph); 4 look key `graze` on the
+buffalo (head down, jaw working; the lowered neck takes the body's shade and its lines stop short of the body), s03's
+buffalo grazes from a second after it stops, lifting every 6 s; 5 `grassTuft()` in pieces.js (look.eaten crops it), six
+on s03's meadow and the one it eats; 6 GECKO_BEND in beasts.js (the spine bends at most 0.5 a joint) and s04's way back
+up turns wide; 7 s08's roosters walk off left before the days go by; 8 s08's hen on the "front" layer, after the pen,
+darkened with the nights (a canvas filter); 9 s13's creature runs on out of the picture after its leap (S13_FLEE); 10
+s13's temple on the top of the shoulder, its base at the lowest ground under it; 11 Writer and Language research:
+Amornrat Jaijar in the credits.
+
+**Found on the way:** `maengDark()` (sets.js) snapped to black instead of fading: it took the larger of "going out"
+and "not yet back", already 1 before "back". Every shot change of s02, s10-s13 cut to black, every scene opened on 1.2 s
+of black then cut in, s14 and s15 cut to black at their ends. Fixed; every scene that calls it renders again. Also a
+faint light vertical line at about x 462 in s08's nights (in the live film too; the night sky's seam, likely): not
+looked into.
 
 Also open from 2026-10-21: the pond's dragon flying on out of the picture (lannamation 2e8d228) is rendered for the
 owner's look and not yet live; the night creatures are in the kit and the credits but not in the cartoon maker's

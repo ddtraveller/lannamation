@@ -39,8 +39,12 @@ var S04_LIFE = [
   // woven wall: it crossed the door's top corner before, over the night (owner, 2026-10-20: "crawls over empty air
   // when moving over the door frame ... make it stop and stay where it is at the top of the wall").
   {name: "tokay", kind: "gecko", layer: "back", look: {size: 1.0},
+   // Back up, it turns wide: on down a little, round to the right and up on its own line, no corner sharper than
+   // about 60 degrees, where it went straight back up the way it came and folded over itself (owner, 2026-10-21: "When
+   // it walks up the wall it folds over itself"; the kit's gecko() also bends no more than GECKO_BEND a joint now).
    course: [[0, 1400, 104], [9.0, 1380, 200], [13.0, 1350, 260], [21.0, 1290, 350], [24.0, 1250, 390, "rest"], [39.5, 1250, 390],
-            [44.0, 1290, 240], [46.5, 1320, 112, "rest"], [60.0, 1320, 112]],
+            [40.6, 1222, 425], [41.6, 1225, 470], [42.5, 1262, 492], [43.3, 1305, 470], [44.3, 1330, 400], [45.6, 1328, 260],
+            [47.0, 1320, 112, "rest"], [60.0, 1320, 112]],
    calls: [[36.0, "tokay", 0.5]]}
 ];
 

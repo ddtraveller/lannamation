@@ -42,6 +42,14 @@ var S15_CREDITS = [
   ["head", "เสียงเล่าเรื่อง", "Narrator (AI voice)"],
   ["line", "อมรรัตน์ ใจจา · Amornrat Jaijar"],
   ["gap"],
+  // owner, 2026-10-21: "add Writer: Amornrat Jaijar because she is going to rewrite the text properly. Language
+  // Research: Amornrat Jaijar for her work on recording and checking and correcting the language model results"
+  ["head", "ผู้เขียน", "Writer"],
+  ["line", "อมรรัตน์ ใจจา · Amornrat Jaijar"],
+  ["gap"],
+  ["head", "ค้นคว้าภาษา", "Language research"],
+  ["line", "อมรรัตน์ ใจจา · Amornrat Jaijar"],
+  ["gap"],
   ["head", "ตัวละคร", "The cast"],
   ["pair", ["อ้ายทุกขตะ", "Thukkhata", "a poor boy of the north"], ["ป้อ", "His father", "who asked for the snare"]],
   ["pair", ["แม่", "His mother", "who went before"], ["แมงสี่หูห้าตา", "The creature", "four ears, five eyes"]],
