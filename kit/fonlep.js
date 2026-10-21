@@ -273,11 +273,11 @@ var FONLEP_DOLL = {
   advance: function (doll, dt, s) {
     if (!doll.own.stage) { doll.leave = null; return; }
     doll.leave = leaveOf(doll, "A", 30);                          // the cloth leaves the forearm inside its wrap
-    if (doll.leave) { chainStep(chainOf(doll, "scarf", 17, 14 * s, Math.PI / 7, 220 * s, 0.9), doll.leave, dt, doll.y + 2); }
+    if (doll.leave) { chainStep(chainOf(doll, "scarf", 17, 14 * s, Math.PI / 7, 220 * s, 0.9), doll.leave, dt, floorOf(doll, 2)); }
     if (doll.bun) {                                               // five strands from below the bun, a little apart
       for (var k = 0; k < 5; k++) {
         var lead = [doll.bun[0] - 6 * s + (k - 2) * 3.5 * s, doll.bun[1] + (12 + Math.abs(k - 2) * 2) * s];
-        chainStep(chainOf(doll, "bead" + k, 11, 10 * s, Math.PI / 16, 700 * s, 0.55), lead, dt, doll.y);
+        chainStep(chainOf(doll, "bead" + k, 11, 10 * s, Math.PI / 16, 700 * s, 0.55), lead, dt, floorOf(doll));
       }
     }
   }

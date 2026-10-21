@@ -86,6 +86,15 @@ function paperdoll(style, x, y, more) {
   if (doll.scale && style.advance) { style.advance(doll, dt, doll.scale); }
 }
 
+// Where a doll's chains stop falling: "below" under her feet in the frame she was drawn in, on the sheet, as the
+// chains' points are. doll.y alone is the sheet's only when nothing is scaled or moved: a doll woven into the sabai
+// is drawn at (0, 0) in a small tile, and a floor of 0 there pinned every point of its chains to the tile's top
+// edge (the pu man's red cloth, up from his hip in the hero film's cloth, 2026-10-21). Asked while the chains are
+// moved, at the end of paperdoll(), when the pen is in the caller's frame again.
+function floorOf(doll, below) {
+  return onScreen(doll.x, doll.y + (below || 0))[1];
+}
+
 // a point as [x, y], whichever way it was given
 function xy(p) {
   if (!p) { return null; }

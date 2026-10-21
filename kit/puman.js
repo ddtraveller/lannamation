@@ -156,8 +156,8 @@ var PUMAN_DOLL = {
   },
 
   advance: function (doll, dt, s) {
-    if (doll.rootB) { chainStep(chainOf(doll, "cloth", 10, 12 * s, Math.PI / 7, 260 * s, 0.85), [doll.rootB[0] - 6 * s, doll.rootB[1] + 4 * s], dt, doll.y); }
-    if (doll.tailLead) { chainStep(chainOf(doll, "tail", 6, 11 * s, Math.PI / 8, 420 * s, 0.7), doll.tailLead, dt, doll.y); }
+    if (doll.rootB) { chainStep(chainOf(doll, "cloth", 10, 12 * s, Math.PI / 7, 260 * s, 0.85), [doll.rootB[0] - 6 * s, doll.rootB[1] + 4 * s], dt, floorOf(doll)); }
+    if (doll.tailLead) { chainStep(chainOf(doll, "tail", 6, 11 * s, Math.PI / 8, 420 * s, 0.7), doll.tailLead, dt, floorOf(doll)); }
   }
 };
 

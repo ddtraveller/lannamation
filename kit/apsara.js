@@ -254,13 +254,13 @@ var APSARA_DOLL = {
   advance: function (doll, dt, s) {
     doll.leaveA = leaveOf(doll, "A", 30);
     doll.leaveB = leaveOf(doll, "B", 30);
-    if (doll.tongueLead) { chainStep(chainOf(doll, "tongue", 7, 16 * s, Math.PI / 8, 500 * s, 0.7), doll.tongueLead, dt, doll.y); }
-    if (doll.leaveA) { chainStep(chainOf(doll, "scarfA", 16, 14 * s, Math.PI / 7, 220 * s, 0.9), doll.leaveA, dt, doll.y + 2); }
-    if (doll.leaveB) { chainStep(chainOf(doll, "scarfB", 16, 14 * s, Math.PI / 7, 220 * s, 0.9), doll.leaveB, dt, doll.y + 2); }
+    if (doll.tongueLead) { chainStep(chainOf(doll, "tongue", 7, 16 * s, Math.PI / 8, 500 * s, 0.7), doll.tongueLead, dt, floorOf(doll)); }
+    if (doll.leaveA) { chainStep(chainOf(doll, "scarfA", 16, 14 * s, Math.PI / 7, 220 * s, 0.9), doll.leaveA, dt, floorOf(doll, 2)); }
+    if (doll.leaveB) { chainStep(chainOf(doll, "scarfB", 16, 14 * s, Math.PI / 7, 220 * s, 0.9), doll.leaveB, dt, floorOf(doll, 2)); }
     if (doll.crown) {                                             // six strands from the rosette, a little apart
       for (var k = 0; k < 6; k++) {
         var lead = [doll.crown[0] + (k - 2.5) * 3 * s, doll.crown[1] + Math.abs(k - 2.5) * 1.5 * s];
-        chainStep(chainOf(doll, "bead" + k, 13, 10 * s, Math.PI / 16, 700 * s, 0.55), lead, dt, doll.y);
+        chainStep(chainOf(doll, "bead" + k, 13, 10 * s, Math.PI / 16, 700 * s, 0.55), lead, dt, floorOf(doll));
       }
     }
   }
