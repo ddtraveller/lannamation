@@ -1,0 +1,10 @@
+# Sound: the kit's sounds and music (sounds.py, score.py, *_music.py, sls_sound.py, checks/score_check.py), the
+# films' songs (*_sing.py, singer.py, sing_check.py) and the narration's checks (sash_narrate.py); and what
+# requirements.txt has
+-r requirements.txt
+soundfile==0.14.0
+soxr==1.1.0
+librosa==0.11.0
+edge-tts==7.3.1
+pyworld==0.3.5
+faster-whisper==1.2.1

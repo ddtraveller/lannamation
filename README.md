@@ -31,8 +31,9 @@ cd lannamation
 pip install -r requirements.txt
 ```
 
-- **Python 3.** The first group in `requirements.txt` draws, renders and checks. The other two
-  groups are for the films' songs and for the dance track.
+- **Python 3.** `requirements.txt` draws, renders and checks. Two more, each only for what it says:
+  `pip install -r requirements-sound.txt` for the sounds, the music and the songs, and
+  `pip install -r requirements-dance.txt` for the dance track.
 - **Google Chrome.** The scripts start it by name (`channel="chrome"`), with no window.
 - **ffmpeg** on the path, for video.
 - **For the hero film's narration only:** PyTorch and transformers for its voice (`sash_narrate.py --voice

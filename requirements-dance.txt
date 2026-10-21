@@ -1,0 +1,4 @@
+# The dance track: dance_track.py (and what requirements.txt has)
+-r requirements.txt
+mediapipe==1.1.0
+opencv-python==4.13.0.92

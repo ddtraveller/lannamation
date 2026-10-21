@@ -13,7 +13,6 @@ __pycache__/
 # but the README's picture
 !docs/stills.jpg
 node_modules/
-package-lock.json
 spoken_km/
 spoken_km_assistant/
 # the videos and the concat list of scenes.py
