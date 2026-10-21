@@ -70,7 +70,7 @@ var S15_SOURCES = [
   ["small", "researched in 22 sources: the Lanna Traditional House Museum (Chiang Mai University),"],
   ["small", "a Ministry of Education book of basketry, studies of the Tai Yuan house"],
   ["gap"],
-  ["head", "ค้นคว้า", "Research: 241 sources in ten NotebookLM notebooks"],
+  ["head", "ค้นคว้า", "Research: 285 sources in eleven NotebookLM notebooks"],
   ["small", "Thai journals on ThaiJo · Chiang Mai University: Lanna Info, ACCL, Art and Culture · Chulalongkorn University"],
   ["small", "Mahidol University · Silpakorn University · Mae Fah Luang University · RMUTP · NIU SEAsite · UPSI, Malaysia"],
   ["small", "studies of Thai faces: Brunelli et al. 2017, Freas 2011, King 1997, Techataweewan et al. 2021, Rejuso-Kalbit et al."],
@@ -91,6 +91,10 @@ var S15_SOURCES = [
   ["small", "AIMS Press · MDPI · Thai PBS · Read the Cloud · Krua.co · ONEP · Khon Kaen Zoo · Rakbankerd · Thai Language Hut"],
   ["small", "Lanna fish: the Field Guide to the Northern Thai Fishes · FishBase · Maejo University · the Department of Fisheries"],
   ["small", "the Lee Kong Chian Natural History Museum (NUS) · the Nagao Natural Environment Foundation · Saranukrom Thai · ThaiJo"],
+  ["small", "Night creatures: Thai National Parks · Avibase · ThaiBirding · North Thailand Birding · Bangkok Herps"],
+  ["small", "Amphibian & Reptile Travels · FORRU (Chiang Mai University) · Chiang Mai Rajabhat University · Naresuan University"],
+  ["small", "ThaiJo · the Journal of Wildlife and Biodiversity · the Fine Arts Department · Silpa Wattanatham · Thai PBS · Thairath"],
+  ["small", "siamensis.org · GotoKnow · Jorakay · LINE Today · Chiang Mai Citylife · and Wikipedia"],
   ["gap"],
   ["head", "สมุดค้นคว้า", "The research notebooks, open to read (Google asks for a sign-in)"],
   ["small", "Lanna houses · notebooklm.google.com/notebook/113b14eb-cc08-44fd-8646-dfa8a1296ea0"],
@@ -103,10 +107,12 @@ var S15_SOURCES = [
   ["small", "Lanna women's hair · notebooklm.google.com/notebook/918d561e-9488-47ee-8192-eacea4243181"],
   ["small", "Lanna household items · notebooklm.google.com/notebook/51aaf1ee-6676-4e56-bf69-618a3bc7a219"],
   ["small", "Lanna fairy tales and myths · notebooklm.google.com/notebook/fd7ed330-3806-456e-b9be-5ef912977abe"],
+  ["small", "Night creatures of the north · notebooklm.google.com/notebook/26c20a5c-6f6e-420a-8fe9-f1f86409f91a"],
   ["gap"],
   ["head", "ภาพถ่ายที่ใช้ศึกษา", "Photographs studied (Wikimedia Commons)"],
   ["small", "Chainwit., Big HDV, Dennis G. Jarvis, Hałun, Iudexvivorum, Photo Dharma,"],
-  ["small", "Jiranee119, Leopoldoghost, Patiparn.Nice2002bkk, มะเดื่อ แสลงหลวง: drawn from, never copied"],
+  ["small", "Jiranee119, Leopoldoghost, Patiparn.Nice2002bkk, มะเดื่อ แสลงหลวง; the night: Nikhil More, Dannymoore1973,"],
+  ["small", "Charlie Marshall, Quartl, Jonathan Curley, Bernard Dupont, Manoj Karingamadathil: drawn from, never copied"],
   ["gap"],
   ["head", "ตัวอักษร", "Letters"],
   ["line", "Noto Sans Tai Tham and Noto Serif Thai (SIL Open Font License)"],
@@ -161,6 +167,10 @@ var S15_MAKER = [
   ["pair", ["ครกไม้", "Mortar", "the House Museum; Tai Yuan houses"], ["ตาแหลว", "Ta laew", "the House Museum; Tai Yuan houses"]],
   ["pair", ["คอก ฆ้อง ฟืน ถ้ำ", "Pen, gong, firewood, cave", "made for this tale"], ["เรือนเครื่องผูก", "Bamboo house", "the Lanna Traditional House Museum (CMU)"]],
   ["pair", ["หญ้ามัด กล้วยน้ำว้า", "Grass, bananas", "made for this tale"], ["ไม้เขี่ยไฟ", "Fire stick", "made for this tale"]],
+  ["gap"],
+  ["head", "สัตว์กลางคืน", "Creatures of the night (night.js)"],
+  ["pair", ["นกแสก", "Eastern barn owl", "Thai National Parks; photographs (Commons)"], ["ผีเสื้อหนอนใบกระท้อน", "Atlas moth", "a photograph by Quartl (Commons)"]],
+  ["pair", ["ค้างคาว", "Bats", "house bats; bats going out at dusk (Commons)"], ["หิ่งห้อย", "Fireflies", "the fireflies of the fields, seen from far off"]],
   ["gap"]
 ];
 var S15_END = ["end", "ᩁᩰᩫ᩠ᨦᨿᩉ᩠ᨶᩢᨦᨩᩦᩅᩥ᩠ᨲᨧ᩶ᩣ᩻", "Slow Life Studios", "แล้วปะกั๋นใหม่เจ้า · See you again",
@@ -521,6 +531,10 @@ var S15_FIGURES = {
   "Bamboo house": function (b) { ruenPhuk(b, 0, 0, 1); },
   "Grass, bananas": s15Many([[-50, function (b) { grassBundle(b, 0, -45, 1.2, {tied: true}); }], [50, function (b) { bananas(b, 0, -18, 1.2, {count: 5, ripe: 0.8}); }]]),
   "Fire stick": function (b) { fireStick(b, [-60, 0], [60, -12], {hot: 0.6}); },
+  "Eastern barn owl": function (b, u) { barnOwl(0, 0, u * 2, {size: 1}); },
+  "Atlas moth": function (b, u) { atlasMoth(0, -80, u, {size: 0.42}); },
+  "Bats": function (b, u) { batStream(u * 3, {from: [-90, -170], to: [90, -40], count: 12, every: 0.25, long: 3, size: 1.6, far: 0.6, spread: 50}); },
+  "Fireflies": function (b, u) { farFireflies(u * 4, {box: [-90, -170, 90, -10], count: 24}); },
   "Pen, gong, firewood, cave": s15Many([[-70, function (b) { gong(b, 0, 0, 1.1); }], [70, function (b) { firewood(b, 0, -8, 1.1, {loose: true}); }]])
 };
 
@@ -544,6 +558,62 @@ function s15Bow(row, y, t) {                          // the figures of a row wh
   });
 }
 
+// The night over the mountain while the credits roll (owner, 2026-10-21: "do the moth, the fireflies, the owl, maybe a
+// common bat and add them to the credits", then "Add a Moon and clouds and change the color of the owl when it is in
+// or out of moon light and show its silouette as it crosses the moon"; the bats "fly behind hills or get smaller and
+// fade out"; the fireflies "subtle and distant in the background"). All of it is under the veil, as the mountain is.
+var S15_MOON = [1610, 150, 58];                      // the moon: its middle and its radius, high at the right
+var S15_OWLS = [                                     // [from, to, fly, path: [x, y, size] at its start and its end]
+  [12, 26, "side", [[-160, 330, 0.75], [2100, 90, 0.75]]],      // across the sky and over the moon's face
+  [70, 82, "front", [[700, 260, 0.3], [260, 900, 1.1]]],        // gliding toward us, out at the lower left
+  [118, 130, "side", [[2080, 210, 0.75], [-160, 320, 0.75]]]    // back the other way, over the far hills
+];
+var S15_PERCH = [150, 195];                           // the owl on a branch at the upper left, to the end
+var S15_BATS = [[34, [1760, 110], [1180, 540]], [96, [1830, 190], [1300, 560]], [158, [1700, 90], [1000, 520]]];   // [start, from, to]: out past the moon, where they show black on its glow, and down behind the near ridge
+var S15_MOTHS = [[86, 98, [1960, 760], [1500, 640]], [138, 150, [-60, 700], [420, 620]]];   // [from, to, where from, where to]
+
+function s15Owl(o, t, moon) {                        // one of S15_OWLS, at second t of its flight
+  if (t < o[0] || t > o[1]) { return; }
+  var u = (t - o[0]) / (o[1] - o[0]), a = o[3][0], b = o[3][1];
+  var x = mix(a[0], b[0], u), y = mix(a[1], b[1], u) - (o[2] === "side" ? 60 * Math.sin(Math.PI * u) : 0);
+  barnOwl(x, y, t, {fly: o[2], size: mix(a[2], b[2], u * u), face: b[0] < a[0] ? -1 : 1, lit: moonLight(x, y, moon), moon: moon});
+}
+
+function s15NightSky(t) {                             // behind the far hills: the moon, the clouds, the owl in flight
+  var moon = nightMoon(S15_MOON[0], S15_MOON[1], S15_MOON[2]);
+  cumulus(pen, t, CLOUD_LOOKS.night);
+  S15_OWLS.forEach(function (o) { if (o[2] === "side") { s15Owl(o, t, moon); } });   // high, behind the hills
+  return moon;
+}
+
+function s15NightHills(t) {                           // between the far hills and the near: the bats, going behind the near ridge
+  S15_BATS.forEach(function (b) { batStream(t, {start: b[0], from: b[1], to: b[2], count: 50, every: 0.18, long: 9, size: 1.4, far: 0.35, spread: 80}); });
+}
+
+function s15NightNear(t, moon) {                      // in front of the mountain: the fireflies on its slopes, a moth, the perched owl
+  farFireflies(t, {box: [0, 820, WIDE, 1070], count: 70});
+  S15_OWLS.forEach(function (o) { if (o[2] === "front") { s15Owl(o, t, moon); } });   // coming down toward us, in front of the mountain
+  S15_MOTHS.forEach(function (m) {
+    if (t < m[0] || t > m[1]) { return; }
+    var u = (t - m[0]) / (m[1] - m[0]), x = mix(m[2][0], m[3][0], s15Ease(u * 1.6)) + 40 * Math.sin(t * 2.1), y = mix(m[2][1], m[3][1], u) + 30 * Math.sin(t * 2.9);
+    if (u > 0.62) { x += (m[3][0] < m[2][0] ? -1 : 1) * 1400 * (u - 0.62) * (u - 0.62); y -= 900 * (u - 0.62) * (u - 0.62); }   // it rests a moment, then flutters off and up
+    atlasMoth(x, y, t, {size: 0.42, turn: 0.3 * Math.sin(t * 1.3), lit: moonLight(x, y, moon)});
+  });
+  if (t >= S15_PERCH[0]) {
+    var come = s15Ease((t - S15_PERCH[0]) / 1.5);     // the branch reaches in from the frame's left, the owl on it
+    pen.save();
+    pen.translate(-260 * (1 - come), 0);
+    pen.strokeStyle = "#1a1612";
+    pen.lineCap = "round";
+    pen.lineWidth = 16;
+    pen.beginPath(); pen.moveTo(-30, 330); pen.quadraticCurveTo(150, 300, 330, 340); pen.stroke();
+    pen.lineWidth = 6;
+    pen.beginPath(); pen.moveTo(250, 326); pen.quadraticCurveTo(300, 290, 330, 280); pen.stroke();
+    barnOwl(190, 312, t, {size: 1, lit: moonLight(190, 260, moon) + 0.2, turn: -0.4});
+    pen.restore();
+  }
+}
+
 function sceneCredits(t) {
   var mountain = maengMountain();
   if (!mountain.backNight) {                         // the mountain by night, as the yard is at night
@@ -551,8 +621,11 @@ function sceneCredits(t) {
     mountain.frontNight = maengTinted(mountain.front, MAENG_NIGHT[0], 0.75);
   }
   pen.drawImage(maengSky("night"), 0, 0);
+  var moon = s15NightSky(t);
   pen.drawImage(mountain.backNight, 0, 0);
+  s15NightHills(t);
   pen.drawImage(mountain.frontNight, 0, 0);
+  s15NightNear(t, moon);
   pen.fillStyle = "rgba(4, 6, 20, 0.45)";            // a veil, so the words read over the mountain
   pen.fillRect(0, 0, WIDE, 1080);
   // The roll: the first row comes in at the foot of the frame at S15_ROLL[0], and the end's middle reaches the

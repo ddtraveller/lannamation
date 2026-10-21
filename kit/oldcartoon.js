@@ -9210,6 +9210,17 @@ function iris(open) {
   pen.fill("evenodd");
 }
 
+// A fade through black at a cut (owner, 2026-10-21: "change between scenes like between the night dancers and
+// SLS scene"): the sheet darkens to black over the last CUT_FADE seconds of a scene and comes back over the first
+// CUT_FADE of the next, eased, as chain.py fades where two films meet. It took the place of the iris at the cuts,
+// whose quick 0.5 s close read as a hard cut beside that fade. "dark" is 0 (none) to 1 (black).
+var CUT_FADE = 0.75;
+function cutFade(dark) {
+  if (dark <= 0) { return; }
+  pen.fillStyle = "rgba(0, 0, 0, " + Math.min(1, dark).toFixed(3) + ")";
+  pen.fillRect(0, 0, WIDE, 1080);
+}
+
 // ---------- the film ----------
 
 // ---------- a frame that does not depend on the last one drawn ----------
@@ -9293,14 +9304,14 @@ function filmFrameOnce(t, scenes) {
       pen.translate(-WIDE / 2, -620);
       scenes[i][2](t - from);
       pen.restore();
-      if (from > 0 && t - from < 0.5) { iris(between(t - from, 0, 0.5)); }
-      if (to < scenes[scenes.length - 1][1] && to - t < 0.5) { iris(between(to - t, 0, 0.5)); }
+      if (from > 0 && t - from < CUT_FADE) { cutFade(1 - between(t - from, 0, CUT_FADE)); }
+      if (to < scenes[scenes.length - 1][1] && to - t < CUT_FADE) { cutFade(1 - between(to - t, 0, CUT_FADE)); }
     }
   }
 }
 
-// Draw second t of a film: find its scene, let the camera push in, close and
-// open the iris at the cuts, then send the sheet to the screen through the lens.
+// Draw second t of a film: find its scene, let the camera push in, fade
+// through black at the cuts, then send the sheet to the screen through the lens.
 function film(t, scenes) {
   var frame = Math.round(t * 30);
   settled(t, function (at) { filmFrame(at, scenes); });
