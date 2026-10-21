@@ -3388,7 +3388,7 @@ function stroll(t, from, to, start, look) {
 
 // The ways a lady wears her hair, by their names in "bun" (true is "high"),
 // each with its knot's half width and half height. Read from the hair notebook
-// (2026-10-17): the sources' own words in docs/STYLE.md, "A lady's hair".
+// (2026-10-17): the sources' own words in docs/kit/figures.md, "A lady's hair".
 //   high   the kit's own: one high bun at the back of the head, a gold comb across it
 //   wong   klao wit wong: a round knot on the crown with a lock looped up in its
 //          middle and a long pin through it (the murals of Wat Phumin and Wat Phra

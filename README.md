@@ -405,7 +405,8 @@ kit/              the kit and everything that uses it, side by side
   sash_narrate.py   the hero film's story, told in Kam Mueang (the Kam Mueang assistant's voice; or say.mjs, the extension's)
   dance_track.py    a dancer's moves, read from a video, -> dance_track.js
 maker/            the cartoon maker, its film.py and its skill for agents
-docs/STYLE.md     the rules with their numbers, how each part was built, what is not done
+docs/STYLE.md     the rules with their numbers, the framework, the checks, what is not done
+docs/kit/         how each part was built, a file for each: figures, feelings, creatures, places ...
 ```
 
 The kit's files sit side by side on purpose: every page loads `oldcartoon.js` and its modules by a
@@ -471,7 +472,7 @@ the five birds of the north and the sun).
 
 The style was read from paintings, murals, thangkas and photographs and written down as rules;
 nothing of them is copied, and no picture of them is in this repository. The photographs used for
-measurements are credited where they are used, in `docs/STYLE.md`. `dance_track.js` holds numbers
+measurements are credited where they are used, in `docs/STYLE.md` and `docs/kit/`. `dance_track.js` holds numbers
 read by MediaPipe Pose from a video of a Bharatanatyam dancer; the video is not here.
 
 The hero film's narration: its facts come from a NotebookLM notebook of Lanna's history (Wikipedia on

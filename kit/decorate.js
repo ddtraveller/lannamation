@@ -4,7 +4,7 @@
 //     <script src="oldcartoon.js"></script>
 //     <script src="decorate.js"></script>
 //
-// A scene that is built is decorated in passes (docs/STYLE.md, "Decorating a scene"): its place (flora and mist,
+// A scene that is built is decorated in passes (docs/kit/places.md, "Decorating a scene"): its place (flora and mist,
 // painted on its sheets or drawn live), its things (what a home or a hall of that place has: dress(), at the end of
 // this file), its life (what lives there, at that hour, each on a course: decorate()), and a check of it
 // (checks/ghost.py plots every course; checks/seek_check.py; kit_check.py).

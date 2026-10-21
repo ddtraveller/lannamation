@@ -11,7 +11,7 @@
 // celestial dancer of the classical stage. The Lanna murals draw their
 // celestials in a tall pointed crown with ear flanges, a fitted long-sleeved
 // jacket, a collar piece and a pha nung with a tail; that figure is still to
-// be built (docs/STYLE.md, "the characters still to build").
+// be built (docs/kit/paperdolls.md, "the characters still to build").
 //  1. A flat orange ground (#cd6a3c), and the figure on it alone: the manner
 //     of a thangka's red ground. Flat colour inside a fine dark line.
 //  2. White skin (#f8f7fb), black hair (#1e1b24) pulled smooth under the

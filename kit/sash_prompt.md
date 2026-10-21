@@ -1,7 +1,7 @@
 # The prompt that makes the sash film
 
 (2026-10-16: the film's song gave way to the story of Lanna told in Kam Mueang by
-`sash_narrate.py`, the end card went, and the film is 79 seconds; see `docs/STYLE.md`,
+`sash_narrate.py`, the end card went, and the film is 79 seconds; see `docs/kit/sound.md`,
 "The story told in Kam Mueang". Later that day a khom phat, the spinning lantern, was
 hung at the left of the night of dancing, with three children under it; see "The
 spinning lantern". This is the brief it was first made from.)
