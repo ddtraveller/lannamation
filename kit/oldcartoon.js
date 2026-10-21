@@ -3861,6 +3861,28 @@ function personDrawn(x, y, look) {
   var chestTurn = Math.max(-1, Math.min(1, bodyTurn + (look.step && !seat ? 0.15 * Math.cos(walk) * Math.min(1, gait) : 0)));
   var hipHalf = blend3(bodyTurn, BODY.hips[0], BODY.hips[1], BODY.hips[2]), footHalf = blend3(bodyTurn, BODY.feet[0], BODY.feet[1], BODY.feet[2]);   // each leg's root and foot, this far from the middle
   var sideOn = bodyTurn < -0.5;                     // nearer profile than three-quarter: the far side goes behind the body
+  // the person being drawn: each stage below reads from it what it needs, and adds what it worked out
+  var fig = {bodyTurn: bodyTurn, build: build, chestTurn: chestTurn, dip: dip, feel: feel, figureFrame: figureFrame,
+    footHalf: footHalf, gait: gait, hairShown: hairShown, handA: handA, handB: handB, hipHalf: hipHalf,
+    hipTip: hipTip, hipX: hipX, hipY: hipY, inFront: inFront, joints: joints, lady: lady, land: land,
+    layered: layered, leggy: leggy, look: look, rig: rig, rock: rock, scene: scene, sceneFrame: sceneFrame,
+    seat: seat, sheetPen: sheetPen, shoulderTip: shoulderTip, sideOn: sideOn, size: size, slight: slight,
+    small: small, speed: speed, spot: spot, still: still, sung: sung, swayAt: swayAt, swing: swing,
+    tallness: tallness, tube: tube, turned: turned, umbrellaAt: umbrellaAt, up: up, who: who, x: x, y: y};
+  personGround(fig);
+  personLegs(fig);
+  personTrunk(fig);
+  personReach(fig);
+  personBody(fig);
+  personHead(fig);
+  return personArms(fig);
+}
+
+// person(), stage 2 of 8: on the ground, before the figure: its shadow, and the dust of a landing
+function personGround(fig) {
+  // what the stages before this one worked out
+  var land = fig.land, look = fig.look, seat = fig.seat, size = fig.size, still = fig.still, up = fig.up, x = fig.x,
+      y = fig.y;
 
   // a soft shadow on the ground, smaller while they are in the air (none for ground: false)
   if (look.ground !== false) {
@@ -3894,20 +3916,6 @@ function personDrawn(x, y, look) {
       pen.fill();
     }
   }
-  // the person being drawn: each stage below reads from it what it needs, and adds what it worked out
-  var fig = {bodyTurn: bodyTurn, build: build, chestTurn: chestTurn, dip: dip, feel: feel, figureFrame: figureFrame,
-    footHalf: footHalf, gait: gait, hairShown: hairShown, handA: handA, handB: handB, hipHalf: hipHalf,
-    hipTip: hipTip, hipX: hipX, hipY: hipY, inFront: inFront, joints: joints, lady: lady, land: land,
-    layered: layered, leggy: leggy, look: look, rig: rig, rock: rock, scene: scene, sceneFrame: sceneFrame,
-    seat: seat, sheetPen: sheetPen, shoulderTip: shoulderTip, sideOn: sideOn, size: size, slight: slight,
-    small: small, speed: speed, spot: spot, still: still, sung: sung, swayAt: swayAt, swing: swing,
-    tallness: tallness, tube: tube, turned: turned, umbrellaAt: umbrellaAt, up: up, who: who, x: x, y: y};
-  personLegs(fig);
-  personTrunk(fig);
-  personReach(fig);
-  personBody(fig);
-  personHead(fig);
-  return personArms(fig);
 }
 
 // person(), stage 3 of 8: the figure's own frame, and the legs: a thigh and a shin each, the walk, the feet, and the cloth
