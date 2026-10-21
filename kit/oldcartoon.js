@@ -3998,6 +3998,29 @@ function personDrawn(x, y, look) {
     joints["ankle" + (leg ? "A" : "B")] = spot(ankleX, ankleY);
   }
   joints.hip = spot(hipX, hipY);
+  // the person being drawn: each stage below reads from it what it needs, and adds what it worked out
+  var fig = {ankles: ankles, bodyTurn: bodyTurn, build: build, chestTurn: chestTurn, dip: dip, feel: feel,
+    figureFrame: figureFrame, hairShown: hairShown, handA: handA, handB: handB, hipTip: hipTip, hipX: hipX,
+    hipY: hipY, inFront: inFront, joints: joints, knees: knees, lady: lady, land: land, layered: layered,
+    leggy: leggy, look: look, rig: rig, rock: rock, scene: scene, sceneFrame: sceneFrame, seat: seat,
+    sheetPen: sheetPen, shoulderTip: shoulderTip, size: size, small: small, speed: speed, spot: spot, still: still,
+    sung: sung, swayAt: swayAt, tube: tube, turned: turned, umbrellaAt: umbrellaAt, up: up, who: who, x: x, y: y};
+  personTrunk(fig);
+  personReach(fig);
+  personBody(fig);
+  personHead(fig);
+  return personArms(fig);
+}
+
+// person(), stage 4 of 8: at the waist: the breath, the spine, the chest's outline, the shoulders that work with the
+// arms, the back of the sabai, and the skirt
+function personTrunk(fig) {
+  // what the stages before this one worked out
+  var ankles = fig.ankles, chestTurn = fig.chestTurn, dip = fig.dip, handA = fig.handA, handB = fig.handB,
+      hipTip = fig.hipTip, hipX = fig.hipX, hipY = fig.hipY, joints = fig.joints, knees = fig.knees, lady = fig.lady,
+      layered = fig.layered, leggy = fig.leggy, look = fig.look, rig = fig.rig, seat = fig.seat,
+      sheetPen = fig.sheetPen, shoulderTip = fig.shoulderTip, spot = fig.spot, still = fig.still,
+      swayAt = fig.swayAt, tube = fig.tube, turned = fig.turned, x = fig.x;
 
   // everything above the hips turns about the waist: a lean, and the rock
   pen.translate(hipX, hipY - 14);
@@ -4215,18 +4238,9 @@ function personDrawn(x, y, look) {
          look.coat ? null : [[0.86, "rgba(230, 140, 60, 0.85)", 2.2]]);
   }
   pen.restore();
-  // the person being drawn: each stage below reads from it what it needs, and adds what it worked out
-  var fig = {bodyTurn: bodyTurn, build: build, chest: chest, chestTurn: chestTurn, dip: dip, feel: feel,
-    figureFrame: figureFrame, ground: ground, hairShown: hairShown, handA: handA, handB: handB, hipTip: hipTip,
-    inFront: inFront, joints: joints, lady: lady, land: land, layered: layered, leggy: leggy, long: long, look: look,
-    narrow: narrow, neckX: neckX, phase: phase, rig: rig, rock: rock, sabaiLine: sabaiLine, scene: scene,
-    sceneFrame: sceneFrame, seat: seat, sheetPen: sheetPen, shoulderTip: shoulderTip, size: size, small: small,
-    speed: speed, spine: spine, spot: spot, still: still, sung: sung, swayAt: swayAt, umbrellaAt: umbrellaAt, up: up,
-    who: who, x: x, y: y};
-  personReach(fig);
-  personBody(fig);
-  personHead(fig);
-  return personArms(fig);
+  // what the stages after this one use
+  Object.assign(fig, {chest: chest, ground: ground, long: long, narrow: narrow, neckX: neckX, phase: phase,
+    sabaiLine: sabaiLine, spine: spine});
 }
 
 // person(), stage 5 of 8: the arms worked out before they are drawn: the trunk, the shoulders, where each hand goes, the
