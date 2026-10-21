@@ -313,8 +313,8 @@
       <h3>6. เล่น โค้ด วิดีโอ <small>Play, code, video</small></h3>
       <p>▶ เล่นหนังวนไป ⏮ กลับไปต้นเรื่อง "ความยาว" ตั้งความยาวของหนังเป็นวินาที</p>
       <p>📜 ดูโค้ด: หนังทั้งเรื่องเป็นหน้าเว็บหนึ่งหน้า เขียนด้วยชุดวาดการ์ตูนล้านนา สิ่งที่เห็นบนจอคือโค้ดนี้ที่กำลังรันอยู่ ดาวน์โหลดเป็นไฟล์ .html เปิดในเบราว์เซอร์ก็เล่นได้ หรือทำเป็นไฟล์วิดีโอด้วย render.py ของชุดวาด</p>
-      <p>🎥 บันทึกวิดีโอ: หนังเล่นหนึ่งรอบตั้งแต่ต้น แล้วเบราว์เซอร์บันทึกจอเป็นไฟล์ .webm ให้ดาวน์โหลด กดปุ่มเดิมอีกครั้งเพื่อหยุดก่อน</p>
-      <span class="en">▶ plays the film in a loop, ⏮ goes to the start, and "duration" sets the film's length in seconds. Code: the whole film as one web page, written with the Lanna cartoon kit; what you see on the stage is this code running. Download it as .html and open it in a browser, or make a video file with the kit's render.py. Video: the film plays once from the start while the browser records the stage to a .webm file; press the same button again to stop early.</span>
+      <p>🎥 บันทึกวิดีโอ: เบราว์เซอร์วาดหนังทีละภาพตั้งแต่ต้นจนจบ แล้วให้ดาวน์โหลดเป็นไฟล์ .mp4 ที่มือถือเปิดได้ (เบราว์เซอร์รุ่นเก่าบันทึกจอขณะหนังเล่นเป็นไฟล์ .webm) กดปุ่มเดิมอีกครั้งเพื่อหยุดก่อน</p>
+      <span class="en">▶ plays the film in a loop, ⏮ goes to the start, and "duration" sets the film's length in seconds. Code: the whole film as one web page, written with the Lanna cartoon kit; what you see on the stage is this code running. Download it as .html and open it in a browser, or make a video file with the kit's render.py. Video: the browser draws the film a frame at a time from start to end and saves it as an .mp4 file a phone plays (an older browser records the stage while the film plays, as a .webm file); press the same button again to stop early.</span>
       <h3>7. ชุดวาดและหนัง <small>The kit and the film</small></h3>
       <p>ทุกอย่างบนจอวาดด้วย oldcartoon.js ชุดวาดการ์ตูนล้านนา หน้า <a href="https://krueng.ai/lanna_cartoon.html">การ์ตูนล้านนาที่ทำด้วยโค้ด</a> เล่าเรื่องหนังหนึ่งนาทีที่ทำด้วยมัน อธิบายชุดวาด และสอนเขียนหนังเองทีละขั้น โค้ดที่หน้านี้สร้างให้คือหนังแบบเดียวกัน</p>
       <span class="en">Everything on the stage is drawn by oldcartoon.js, the Lanna cartoon kit. The page <a href="https://krueng.ai/lanna_cartoon.html">A Lanna cartoon made in code</a> tells the story of the one-minute film made with it, explains the kit, and teaches writing a film by hand, step by step. The code this page writes for you is a film of that same kind.</span>
@@ -1008,7 +1008,7 @@ function filmCode() {
 // the same ones, from the site, or carries them inside it.
 var KIT_SITE = "https://krueng.ai/js_animation_assets/";
 
-function kitScripts() { return Array.prototype.slice.call(document.querySelectorAll("script[src]")); }
+function kitScripts() { return Array.prototype.slice.call(document.querySelectorAll("script[src]:not([data-tool])")); }
 
 function kitName(script) { return script.getAttribute("src").split("/").pop(); }
 
@@ -2444,23 +2444,99 @@ byId("downloadBtn").onclick = function () {
 };
 
 // ---------- a video ----------
-// The browser records what the stage shows while the film plays once from the
-// start. Chrome writes a .webm file; a phone or a Mac plays it, and ffmpeg turns
-// it into .mp4. render.py makes a sharper file, one frame at a time.
+// The film is drawn a frame at a time, a 30th of a second apart, and each frame goes to the browser's own
+// video encoder (WebCodecs) with its second on it, then into an .mp4 file (mp4-muxer, beside this page, read
+// only when a video is made): every frame is in the video however long one takes to draw, and a phone plays
+// it. Recorded as the film played instead, a laptop kept 163 of the example's 420 frames, a second and a half
+// lost at the start while the backdrop was painted (2026-10-21). A browser without WebCodecs records what the
+// stage shows while the film plays once from the start, as a .webm file. render.py makes a sharper file.
 var recorder = null, recorded = [];
+var recording = null;                   // the video being made a frame at a time: {stop}, or null
+var VIDEO = {codec: "avc1.640028", bitrate: 8000000, framerate: 30};   // H.264 High, asked at level 4.0 (Chrome's encoder marks it 5.0)
 
 byId("videoBtn").onclick = function () {
+  if (recording) { recording.stop = true; return; }
   if (recorder) { stopRecording(); return; }
+  var config = Object.assign({width: stage.width, height: stage.height}, VIDEO);
+  if (!window.VideoEncoder) { recordLive(); return; }
+  VideoEncoder.isConfigSupported(config).then(function (answer) {
+    if (!answer.supported) { recordLive(); return; }
+    loadMuxer(function (ready) { if (ready) { recordFrames(config); } else { recordLive(); } });
+  }, recordLive);
+};
+
+// mp4-muxer, the first time a video is made; not one of the kit's scripts, so an exported film does not carry it
+function loadMuxer(done) {
+  if (window.Mp4Muxer) { done(true); return; }
+  var tag = document.createElement("script");
+  tag.src = "cartoon_maker_assets/mp4-muxer.js";
+  tag.dataset.tool = "video";
+  tag.onload = function () { done(!!window.Mp4Muxer); };
+  tag.onerror = function () { done(false); };
+  document.head.appendChild(tag);
+}
+
+function saveFile(blob, name) {
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 60000);
+}
+
+function recordFrames(config) {
+  var frames = Math.round(movie.duration * config.framerate), n = 0, failed = null;
+  var muxer = new Mp4Muxer.Muxer({target: new Mp4Muxer.ArrayBufferTarget(), fastStart: "in-memory",
+                                  video: {codec: "avc", width: config.width, height: config.height, frameRate: config.framerate}});
+  var encoder = new VideoEncoder({output: function (chunk, meta) { muxer.addVideoChunk(chunk, meta); },
+                                  error: function (error) { failed = error; }});
+  encoder.configure(config);
+  recording = {stop: false};
+  setPlaying(false);
+  selected = null;
+  panel();
+  function next() {
+    if (failed || recording.stop || n === frames) { finish(); return; }
+    if (encoder.encodeQueueSize > 4) { setTimeout(next, 5); return; }      // the encoder catches up first
+    time = n / config.framerate;
+    window.MAKER_CAMERA = true;         // the camera moves, as it does while the film plays
+    try { drawFilm(time); } catch (error) { console.error(error); }
+    var frame = new VideoFrame(stage, {timestamp: Math.round(n * 1e6 / config.framerate), duration: Math.round(1e6 / config.framerate)});
+    encoder.encode(frame, {keyFrame: n % (2 * config.framerate) === 0});
+    frame.close();
+    n++;
+    byId("videoBtn").textContent = "⏺ กำลังบันทึก " + Math.round(100 * n / frames) + "% (กดเพื่อหยุด)";
+    setTimeout(next, 0);
+  }
+  function finish() {
+    recording = null;
+    (failed ? Promise.reject(failed) : encoder.flush()).then(function () {
+      encoder.close();
+      if (n) {
+        muxer.finalize();
+        saveFile(new Blob([muxer.target.buffer], {type: "video/mp4"}), "my_cartoon.mp4");
+      }
+    }).catch(function (error) {
+      console.error("the video could not be made:", error);
+      try { encoder.close(); } catch (closed) { /* closed already */ }
+    }).then(function () {
+      byId("videoBtn").innerHTML = "🎥 บันทึกวิดีโอ <small>video</small>";
+      time = 0;
+      show();
+    });
+  }
+  next();
+}
+
+// The film plays once from the start while the browser records what the stage shows: a browser without WebCodecs.
+function recordLive() {
   if (!window.MediaRecorder || !stage.captureStream) { byId("videoBtn").textContent = "เบราว์เซอร์นี้บันทึกไม่ได้"; return; }
   var kind = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
   recorded = [];
   recorder = new MediaRecorder(stage.captureStream(30), {mimeType: kind, videoBitsPerSecond: 8000000});
   recorder.ondataavailable = function (event) { if (event.data.size) { recorded.push(event.data); } };
   recorder.onstop = function () {
-    var blob = new Blob(recorded, {type: "video/webm"}), a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "my_cartoon.webm";
-    a.click();
+    saveFile(new Blob(recorded, {type: "video/webm"}), "my_cartoon.webm");
     byId("videoBtn").innerHTML = "🎥 บันทึกวิดีโอ <small>video</small>";
   };
   time = 0;
@@ -2469,7 +2545,7 @@ byId("videoBtn").onclick = function () {
   recorder.start(200);
   byId("videoBtn").textContent = "⏺ กำลังบันทึก... (กดเพื่อหยุด)";
   setPlaying(true);
-};
+}
 
 function stopRecording() {
   if (!recorder) { return; }
