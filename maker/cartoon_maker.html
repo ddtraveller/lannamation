@@ -2090,9 +2090,13 @@ var SIDES_FIRST = [190, 250], SIDE_LEAST = 56, SIDE_MOST = 480;
 var sides = SIDES_FIRST.slice();
 try { var keptSides = JSON.parse(localStorage.getItem("cartoon_maker_sides")); if (keptSides && keptSides.length === 2) { sides = keptSides.map(Number); } } catch (error) { /* nothing kept */ }
 
+var NARROW = window.matchMedia("(max-width: 900px)");   // the stylesheet's one column, for a phone
+
 function applySides() {
   sides = sides.map(function (w) { return Math.max(SIDE_LEAST, Math.min(SIDE_MOST, Math.round(w))); });
-  document.querySelector(".maker").style.gridTemplateColumns = sides[0] + "px minmax(0, 1fr) " + sides[1] + "px";
+  // the sides' widths only where the three columns stand side by side: written into the page's own style, they
+  // would beat the stylesheet's one column and leave a phone's stage 0 wide (2026-10-21)
+  document.querySelector(".maker").style.gridTemplateColumns = NARROW.matches ? "" : sides[0] + "px minmax(0, 1fr) " + sides[1] + "px";
   try { localStorage.setItem("cartoon_maker_sides", JSON.stringify(sides)); } catch (error) { /* a browser that keeps nothing */ }
   applyZoom();
   show();
@@ -2115,6 +2119,7 @@ function applySides() {
   el.ondblclick = function () { sides[which] = SIDES_FIRST[which]; applySides(); };   // a double tap puts that side back
 });
 applySides();
+NARROW.addEventListener("change", applySides);           // a phone turned, or a window made narrow or wide
 
 function applyZoom() {
   var box = byId("stageBox"), w = box.clientWidth, h = box.clientHeight;
