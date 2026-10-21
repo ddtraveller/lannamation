@@ -18,6 +18,8 @@ from pathlib import Path
 from PIL import Image
 from playwright.sync_api import sync_playwright
 
+from render import FONTS
+
 WIDE = 960                   # each frame on the sheet is 960 x 540
 TALL = 540
 
@@ -36,6 +38,7 @@ def frames(page_file, seconds):
         page.on("pageerror", lambda error: errors.append(str(error)))
         # the hero film paints its forests as it loads: 42 s on a laptop on battery
         page.goto(Path(page_file).resolve().as_uri(), timeout=180000)
+        page.evaluate(FONTS)                      # the page's web fonts first, as render.py loads them: a still shows what the video does
         page.evaluate("rendering = true")
         for second in seconds:
             page.evaluate("draw(%f)" % second)

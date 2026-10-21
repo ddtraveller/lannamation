@@ -61,15 +61,19 @@ var SABAI_FRAMES = 6;                   // moments of a walk in one tile's cycle
 // Run a painter that draws with the kit's "pen" on another sheet, at second "at".
 // brush: a canvas 2D context; action: a function of no arguments that draws with pen; at: the second
 // to set the kit's clock to while it runs (0 when left out). Returns nothing. It sets the globals pen
-// and clock for the while and puts them back after (not if action throws).
+// and clock for the while and puts them back after, even if action throws (since 2026-10-21: before, a painter's
+// error left every later drawing on the tile's sheet).
 // e.g. var sheet = document.createElement("canvas"); paintWith(sheet.getContext("2d"), function () { person(150, 280, cast("boy")); }, 2.5);
 function paintWith(brush, action, at) {
   var keep = pen, was = clock;
   pen = brush;
   clock = at || 0;
-  action();
-  pen = keep;
-  clock = was;
+  try {
+    action();
+  } finally {
+    pen = keep;
+    clock = was;
+  }
 }
 
 // A tile from a painter: the picture is drawn once on a scratch sheet and

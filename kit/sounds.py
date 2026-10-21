@@ -357,8 +357,9 @@ def main():
         sys.exit("no sound called %s; python sounds.py --list" % ", ".join(unknown))
     OUT.mkdir(parents=True, exist_ok=True)
     reel, gap, made = [], np.zeros(int(1.2 * RATE)), {}
-    if not args:                                     # the sheet lists what was made before, too
-        made = {n: np.zeros(0) for n in every if (OUT / (n + ".wav")).exists()}
+    if args:                                         # some remade: the sheet still lists what was made before, at its length
+        made = {n: wavfile.read(str(OUT / (n + ".wav")))[1] for n in every if (OUT / (n + ".wav")).exists()}
+        made = {n: m / 32767 if m.dtype == np.int16 else m for n, m in made.items()}   # (until 2026-10-21 only those named)
     for name in names:
         sound = made[name] = make(name, OUT)
         print("%-14s %5.2f s  %s" % (name, len(sound) / RATE, OUT / (name + ".wav")))

@@ -2989,6 +2989,7 @@ function adoptFilm(data) {
   film.bounce = data.bounce === true;   // the 1930s bounce, off unless a film asks for it
   var byRaw = {}, byRawId = {};          // each item taken, by its place in the JSON's items, and by the id a film this page saved gave it
   taken(data.items, "items", dropped).forEach(function (raw, index) {
+    if (!raw || typeof raw !== "object") { dropped.push("item " + JSON.stringify(raw)); return; }   // an empty entry: left out, not a TypeError
     var kind = raw.kind, name = String(raw.name || "");
     var known = kind === "person" ? CASTS.some(function (c) { return c[0] === name; }) && !!CAST[name] : kind === "thing" ? THINGS.concat(FLORAS).some(function (t) { return t[0] === name; })
               : kind === "piece" ? PIECES.concat(TREES).some(function (p) { return p[0] === name; }) : false;
@@ -3059,6 +3060,7 @@ function adoptFilm(data) {
   });
   var lastFrom = 0, lastTo = 0;
   taken(data.texts, "texts", dropped).forEach(function (raw) {
+    if (!raw || typeof raw !== "object") { dropped.push("text " + JSON.stringify(raw)); return; }
     if (raw.kind !== "card" && raw.kind !== "subtitle" && !TALKS[raw.kind]) { return; }
     var speaker = null;
     if (TALKS[raw.kind]) {              // a bubble's person: their id in a film this page saved, or their place in items, or their name
@@ -3067,7 +3069,7 @@ function adoptFilm(data) {
       if (!speaker || speaker.kind !== "person") { dropped.push(raw.kind + " by " + JSON.stringify(raw.who)); return; }
     }
     var from = round2(clean(secondOf(raw.from, lastTo, lastFrom, marks, dropped), 0, film.duration, 0));
-    var to = round2(clean(secondOf(raw.to, from, from, marks, dropped), 0, film.duration, from + 3));
+    var to = round2(clean(secondOf(raw.to, from, from, marks, dropped), 0, film.duration, Math.min(film.duration, from + 3)));   // no end given: three seconds, inside the film
     if (to <= from) { to = Math.min(film.duration, from + 3); }
     film.texts.push({id: film.next++, kind: raw.kind, big: String(raw.big || "").slice(0, 80), small: String(raw.small || "").slice(0, 80), from: from, to: to});
     if (speaker) { film.texts[film.texts.length - 1].who = speaker.id; }

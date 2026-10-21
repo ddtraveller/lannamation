@@ -267,9 +267,10 @@ function chainStep(chain, lead, dt, floor) {
     P = chain.points = [];
     chain.was = [];
     chain.angles = [];
-    for (n = 0; n < chain.count; n++) {
-      P.push([lead[0], lead[1] + n * chain.gap]);
-      chain.was.push([lead[0], lead[1] + n * chain.gap]);
+    for (n = 0; n < chain.count; n++) {           // hung straight down, and no lower than the floor (until 2026-10-21 a long
+      var hang = Math.min(floor, lead[1] + n * chain.gap);   // scarf went through the ground on its first frame)
+      P.push([lead[0], hang]);
+      chain.was.push([lead[0], hang]);
       chain.angles.push(Math.PI / 2);
     }
     return;

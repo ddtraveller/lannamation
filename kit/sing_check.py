@@ -16,9 +16,9 @@ It writes the four sound files, so the owner can listen as well.
 
 It needs what lanna_sing.py needs, and faster-whisper. Run it in the folder that holds lanna.wav. It
 writes voice_old.wav, voice_new.wav, song_old.wav and song_new.wav into --out, and what it printed into
-sing_check_output.txt in the folder it is run from. It reads lanna_sing.LINES, which lanna_sing.py no longer
-has (it reads the song's lines from lanna.html's CUES since then): as it stands it stops with an
-AttributeError (2026-10-21).
+sing_check_output.txt in the folder it is run from. The song's lines are the film's own, lanna.html's CUES,
+read as lanna_sing.py reads them (lanna_sing.cues_of: Chrome with no window); it read a list lanna_sing.py no
+longer has, and stopped, until 2026-10-21.
 """
 import argparse
 import time
@@ -82,15 +82,16 @@ def cents_off(sound, frequency):
     return 1200 * numpy.log2(numpy.median(heard) / frequency)
 
 
-def build(method, length):
+def build(method, length, lines):
     """The voice alone, as long as the band, and the cents off for each
     syllable: method is "old" or "new".
 
-    length: the band's length in samples. Gives back (voice, offs): the samples, and a numpy array of cents.
-    e.g. voice, offs = build("new", len(band))"""
+    length: the band's length in samples. lines: the song's lines, (beat, syllables) each (lanna_sing.cues_of).
+    Gives back (voice, offs): the samples, and a numpy array of cents.
+    e.g. voice, offs = build("new", len(band), lanna_sing.cues_of(lanna_sing.FILM))"""
     voice = numpy.zeros(length)
     offs = []
-    for start, words in lanna_sing.LINES:
+    for start, words in lines:
         syllables = words.split()
         for place, syllable in enumerate(syllables):
             note = lanna_sing.note_on(start + place)
@@ -149,10 +150,11 @@ def run(args, out):
     import wave
     with wave.open("lanna.wav", "rb") as file:
         band = numpy.frombuffer(file.readframes(file.getnframes()), numpy.int16) / 32767
+    lines = lanna_sing.cues_of(lanna_sing.FILM)                  # the film's own lines, as lanna_sing.py sings them
     voices = {}
     for method in ("old", "new"):
         started = time.time()
-        voice, offs = build(method, len(band))
+        voice, offs = build(method, len(band), lines)
         voices[method] = voice
         save(voice / (numpy.abs(voice).max() or 1) * 0.85, str(out / ("voice_%s.wav" % method)))
         track = band * 0.55 + voice
@@ -163,7 +165,7 @@ def run(args, out):
     model = WhisperModel(args.model, device="cpu", compute_type="int8")
     totals = {"old": [], "new": []}
     say("\nline by line: written / heard old / heard new")
-    for start, words in lanna_sing.LINES:
+    for start, words in lines:
         first, last = start * BEAT - 0.15, (start + len(words.split())) * BEAT + 0.4
         say("  " + words)
         for method in ("old", "new"):

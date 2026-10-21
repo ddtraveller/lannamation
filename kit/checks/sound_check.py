@@ -11,8 +11,8 @@ sounds.py and howl.py have not changed since it passed.
 
 It needs numpy and scipy, and imports howl.py and sounds.py from the kit's folder. It runs main() as it is
 loaded: do not import it. It makes each sound by howl.py from its outline; the sounds sounds.py makes from
-numbers (MADE: crickets, mouse-squeak, wind) give no outline, and as it stands it stops on the first of them
-with an AttributeError (2026-10-21).
+numbers (MADE: crickets, mouse-squeak, wind) give no outline but the sound itself, and are checked as they are
+(until 2026-10-21 it stopped on the first of them).
 """
 import sys
 from pathlib import Path
@@ -21,7 +21,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from howl import RATE, chorus, howl  # noqa: E402
-from sounds import SOUNDS  # noqa: E402
+from sounds import MADE, SOUNDS  # noqa: E402
 from report import Report, fingerprint  # noqa: E402
 
 
@@ -47,8 +47,12 @@ def main():
     failed, made = 0, {}
     for name, (outline_of, _) in SOUNDS.items():
         outline = outline_of()
-        sound = chorus(outline) if "voices" in outline else howl(outline)
-        seconds, most = longest(outline)
+        if name in MADE:                                  # made from numbers by its painter: the sound itself, as sounds.make() keeps it
+            sound = outline
+            seconds = most = len(sound) / RATE
+        else:
+            sound = chorus(outline) if "voices" in outline else howl(outline)
+            seconds, most = longest(outline)
         middle = sound[int(0.25 * seconds * RATE):int(0.75 * seconds * RATE)]
         quiet = 20 * np.log10(np.sqrt(np.mean(middle ** 2)) + 1e-12)
         wrong = []

@@ -5,8 +5,8 @@ boxes that hold the pixels which differ, and saves the two versions of the large
 
 It needs Google Chrome (through Playwright), numpy, scipy and Pillow. The other kit is named from the folder
 it is run in; the page from the kit's folder (kit/). It writes out.png only when some pixel differs, and ends
-with exit code 0. The box saved is held inside 1440 x 1080: for a sheet 1920 wide, a box past x 1440 is cut
-there (and one wholly past it fails).
+with exit code 0. The box saved is held inside the sheet, 1440 or 1920 wide (until 2026-10-21 inside 1440: a box past x 1440 was cut
+there, and one wholly past it failed).
 """
 import base64
 import io
@@ -66,7 +66,7 @@ def main():
     for pixels, x0, y0, x1, y1 in boxes[:8]:
         print("   %5d px in x %d to %d, y %d to %d" % (pixels, x0, x1, y0, y1))
     _, x0, y0, x1, y1 = boxes[0]
-    box = (max(0, x0 - 30), max(0, y0 - 30), min(1440, x1 + 30), min(1080, y1 + 30))
+    box = (max(0, x0 - 30), max(0, y0 - 30), min(one.width, x1 + 30), min(one.height, y1 + 30))   # inside the sheet, 1440 or 1920 wide
     a, b = one.crop(box), other.crop(box)
     pair = Image.new("RGB", (a.width * 2 + 6, a.height), "#ff00ff")
     pair.paste(a, (0, 0))

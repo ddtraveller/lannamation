@@ -9,7 +9,7 @@ row after the reference, scaled to the same height.
 It needs Google Chrome (through Playwright) and Pillow. --box is x y w h in screen pixels of the
 1920 x 1080 picture (default 340 60 460 720); --ref-box crops the reference first. It writes one JPEG
 where it is named and prints its size and the page's errors; exit code 0 even when the page reported an
-error. It waits 30 s for the page to load, which is too short for the hero film.
+error. It waits up to 180 s for the page to load (the hero film paints its forests as it loads), and for its web fonts.
 """
 import argparse
 import io
@@ -17,6 +17,8 @@ from pathlib import Path
 
 from PIL import Image
 from playwright.sync_api import sync_playwright
+
+from render import FONTS
 
 
 def shots(page_file, seconds, box):
@@ -30,7 +32,8 @@ def shots(page_file, seconds, box):
         browser = playwright.chromium.launch(channel="chrome")
         page = browser.new_page(viewport={"width": 1920, "height": 1080})
         page.on("pageerror", lambda error: errors.append(str(error)))
-        page.goto(Path(page_file).resolve().as_uri())
+        page.goto(Path(page_file).resolve().as_uri(), timeout=180000)   # the hero film paints its forests as it loads
+        page.evaluate(FONTS)                      # the page's web fonts first, as render.py loads them
         page.evaluate("rendering = true")
         for second in seconds:
             page.evaluate("draw(%f)" % second)

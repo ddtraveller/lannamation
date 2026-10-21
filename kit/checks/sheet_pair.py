@@ -5,7 +5,7 @@ sheet to keep (all of it unless told).
 
 It needs Google Chrome (through Playwright) and Pillow. The other kit is named from the folder it is run in;
 the page from the kit's folder (kit/). It writes out.png (the two crops side by side, 8 pixels apart) and
-prints its size; exit code 0. The default box is 1440 wide: give the box for a page whose sheet is 1920.
+prints its size; exit code 0. The default box is the whole sheet, 1440 or 1920 wide.
 """
 import base64
 import io
@@ -39,11 +39,11 @@ def frame(browser, page_file, kit, second):
 def main():
     """The command line: sheet_pair.py OTHER_KIT OUT PAGE SECOND [X Y W H]: save the frame with both kits side by side."""
     kit, out, name, second = sys.argv[1], sys.argv[2], sys.argv[3], float(sys.argv[4])
-    box = [int(v) for v in sys.argv[5:9]] if len(sys.argv) > 8 else [0, 0, 1440, 1080]
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome", args=["--allow-file-access-from-files"])
         pictures = [frame(browser, ASSETS / name, None, second), frame(browser, ASSETS / name, kit, second)]
         browser.close()
+    box = [int(v) for v in sys.argv[5:9]] if len(sys.argv) > 8 else [0, 0, pictures[0].width, pictures[0].height]   # the whole sheet
     crops = [p.crop((box[0], box[1], box[0] + box[2], box[1] + box[3])) for p in pictures]
     pair = Image.new("RGB", (crops[0].width * 2 + 8, crops[0].height), "#222222")
     pair.paste(crops[0], (0, 0))

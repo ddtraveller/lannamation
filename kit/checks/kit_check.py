@@ -42,7 +42,6 @@ may take to load is KIT_CHECK_LOAD_SECONDS from the environment (180 unless set)
 """
 import argparse
 import hashlib
-import json
 import os
 import re
 import sys
@@ -319,9 +318,10 @@ def main():
     args = parser.parse_args()
     files = pages_of(args.pages)
     report = Report("kit_check")
-    out = HERE / "out" / "checks"
-    passed_file = out / "kit_check_passed.json"
-    passed = json.loads(passed_file.read_text(encoding="utf-8")) if passed_file.exists() else {}
+    # what each page passed with last: the report's own (out/checks/kit_check_passed.json), which report.finish()
+    # writes. A copy of its own written here first was then written over with the marks read at the start, and
+    # --changed never left out a page (until 2026-10-21)
+    passed = report.marks
     scripts = scripts_fingerprint()
     drift, shared = [], {}
     if args.changed and passed.get("__scripts__") == scripts:
@@ -392,8 +392,6 @@ def main():
                 passed[name] = mark
         browser.close()
     print("%d pages, %d failures" % (len(files), bad))
-    out.mkdir(parents=True, exist_ok=True)
-    passed_file.write_text(json.dumps(passed, indent=1), encoding="utf-8")
     report.finish()
     sys.exit(1 if bad else 0)
 
