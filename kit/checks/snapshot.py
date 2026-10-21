@@ -1,8 +1,13 @@
-"""snapshot.py save|compare [page.html ...]  - stills of a film's key moments, kept, and compared after a change.
+"""snapshot.py save|compare [--exact] [page.html ...]  - stills of a film's key moments, kept, and compared after a change.
 
-    python checks/snapshot.py save                  # every film scene (*/s*.html): its stills into out/snapshots/
+    python checks/snapshot.py save                  # every page that loads the kit: its stills into out/snapshots/
     python checks/snapshot.py compare               # draw them again and compare with what was saved
+    python checks/snapshot.py compare --exact       # a change meant to move no pixel (a refactor): any pixel counts
     python checks/snapshot.py save maeng/s04.html   # one page
+
+The pages are a film's scenes (*/s*.html) and the kit's own sheets (every page beside the kit that loads
+oldcartoon.js, as kit_check.py finds them); a page that needs a script which is not on this computer is left out,
+and said so.
 
 Before a change to the kit, save; after it, compare. A film's scenes load the kit's shared files (beasts.js,
 pieces.js, myth.js, oldcartoon.js), and a change made for one film can move something in another nobody is
@@ -12,7 +17,9 @@ of its lines (a scene's SNN_LINES, or any LINES the page has), and its last fram
 seconds spread over it. They are kept at half size (960 x 540), outside the repository (out/ is not kept), and
 compared by kit_check.py's rule (frames.py), at half size both. A moment where a shift of one pixel does not
 explain HALF_LIMIT pixels or more is a change, and is saved beside its still as NAME_now.png, with NAME_diff.png
-showing where it differs, to look at. Each moment compared is written down, PASS or FAIL, in out/checks/
+showing where it differs, to look at. With --exact, a moment changes when any pixel of its still differs at all:
+for a change that should move nothing, such as person() taken apart into its stages, on the same computer and
+Chrome as the stills were saved with. Each moment compared is written down, PASS or FAIL, in out/checks/
 snapshot.txt (report.py). Exits 1 if anything changed, or a still is missing.
 """
 import json
@@ -25,6 +32,7 @@ from playwright.sync_api import sync_playwright
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from frames import differ, frame_at, open_page  # noqa: E402
+from kit_check import missing_of, pages_of  # noqa: E402
 from report import Report  # noqa: E402
 
 KIT = Path(__file__).resolve().parent.parent
@@ -55,13 +63,19 @@ def folder_of(page_file):
 def main():
     if len(sys.argv) < 2 or sys.argv[1] not in ("save", "compare"):
         sys.exit(__doc__)
-    doing, names = sys.argv[1], sys.argv[2:]
-    pages = [(KIT / n).resolve() for n in names] if names else sorted(p for p in KIT.glob("*/s[0-9]*.html") if "node_modules" not in p.parts)
+    doing, names = sys.argv[1], [n for n in sys.argv[2:] if n != "--exact"]
+    exact = "--exact" in sys.argv[2:]
+    pages = [(KIT / n).resolve() for n in names] if names else         sorted(p for p in KIT.glob("*/s[0-9]*.html") if "node_modules" not in p.parts) + pages_of([])
     changed = 0
     report = Report("snapshot_" + doing)
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome")
         for page_file in pages:
+            missing = missing_of(page_file)
+            if missing:
+                print("left out  %-16s it needs %s, which is not here" % (page_file.relative_to(KIT).as_posix(), ", ".join(missing)))
+                report.skip(page_file.relative_to(KIT).as_posix(), "it needs %s, which is not here" % ", ".join(missing))
+                continue
             folder, errors = folder_of(page_file), []
             page = open_page(browser, page_file, errors)
             moments = page.evaluate(MOMENTS)
@@ -83,17 +97,20 @@ def main():
                     now = half(frame_at(page, t))
                     then = np.asarray(Image.open(kept).convert("RGB")).astype(np.int16)
                     apart, counted = differ(then, now)
-                    if counted >= HALF_LIMIT:
+                    if exact:                                 # any pixel at all
+                        apart = counted = int((then != now).any(axis=2).sum())
+                    limit = 1 if exact else HALF_LIMIT
+                    if counted >= limit:
                         changed += 1
                         Image.fromarray(now.astype(np.uint8)).save(folder / ("%06.2f_now.png" % t))
                         mark = (np.abs(then - now) > 24).any(axis=2)
                         diff = (then * 0.35).astype(np.uint8)
                         diff[mark] = [255, 60, 60]
                         Image.fromarray(diff).save(folder / ("%06.2f_diff.png" % t))
-                    report.record("%s %.2f s" % (page_file.relative_to(KIT).as_posix(), t), counted < HALF_LIMIT,
+                    report.record("%s %.2f s" % (page_file.relative_to(KIT).as_posix(), t), counted < limit,
                                   "%d differ, %d past a pixel's shift" % (apart, counted))
                     print("compare  %-16s %6.2f s  %6d differ, %5d past a pixel's shift%s"
-                          % (page_file.relative_to(KIT).as_posix(), t, apart, counted, "  CHANGED" if counted >= HALF_LIMIT else ""))
+                          % (page_file.relative_to(KIT).as_posix(), t, apart, counted, "  CHANGED" if counted >= limit else ""))
             if errors:
                 print("         page error: %s" % errors[0])
                 changed += 1
