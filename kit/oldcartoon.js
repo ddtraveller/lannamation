@@ -4215,6 +4215,27 @@ function personDrawn(x, y, look) {
          look.coat ? null : [[0.86, "rgba(230, 140, 60, 0.85)", 2.2]]);
   }
   pen.restore();
+  // the person being drawn: each stage below reads from it what it needs, and adds what it worked out
+  var fig = {bodyTurn: bodyTurn, build: build, chest: chest, chestTurn: chestTurn, dip: dip, feel: feel,
+    figureFrame: figureFrame, ground: ground, hairShown: hairShown, handA: handA, handB: handB, hipTip: hipTip,
+    inFront: inFront, joints: joints, lady: lady, land: land, layered: layered, leggy: leggy, long: long, look: look,
+    narrow: narrow, neckX: neckX, phase: phase, rig: rig, rock: rock, sabaiLine: sabaiLine, scene: scene,
+    sceneFrame: sceneFrame, seat: seat, sheetPen: sheetPen, shoulderTip: shoulderTip, size: size, small: small,
+    speed: speed, spine: spine, spot: spot, still: still, sung: sung, swayAt: swayAt, umbrellaAt: umbrellaAt, up: up,
+    who: who, x: x, y: y};
+  personReach(fig);
+  personBody(fig);
+  personHead(fig);
+  return personArms(fig);
+}
+
+// person(), stage 5 of 8: the arms worked out before they are drawn: the trunk, the shoulders, where each hand goes, the
+// hands and the far arm
+function personReach(fig) {
+  // what the stages before this one worked out
+  var build = fig.build, chest = fig.chest, chestTurn = fig.chestTurn, handA = fig.handA, handB = fig.handB,
+      lady = fig.lady, leggy = fig.leggy, look = fig.look, phase = fig.phase, rig = fig.rig, scene = fig.scene,
+      small = fig.small, spine = fig.spine, still = fig.still, up = fig.up, who = fig.who;
   // A child's trunk is shorter and narrower, not a grown-up's made small:
   // all that is above the waist is drawn smaller about the waist, by up to
   // 0.88 at a build of -1. The head and the arms are given back what that
@@ -4381,18 +4402,10 @@ function personDrawn(x, y, look) {
     poseA = handPose("A", wristA, handA);
     drawHand("A", wristA, poseA);
   }
-  // the person being drawn: each stage below reads from it what it needs, and adds what it worked out
-  var fig = {armBand: armBand, armOf: armOf, arms: arms, behindA: behindA, bodyTurn: bodyTurn, chest: chest,
-    chestTurn: chestTurn, dip: dip, drawHand: drawHand, feel: feel, figureFrame: figureFrame, flex: flex,
-    ground: ground, hairShown: hairShown, handA: handA, handB: handB, handPose: handPose, hipTip: hipTip,
-    inFront: inFront, joints: joints, lady: lady, land: land, layered: layered, leggy: leggy, long: long, look: look,
-    narrow: narrow, neckX: neckX, phase: phase, poseA: poseA, rig: rig, rock: rock, rootA: rootA, rootB: rootB,
-    sabaiLine: sabaiLine, sceneFrame: sceneFrame, seat: seat, sheetPen: sheetPen, shoulderTip: shoulderTip,
-    size: size, sleeve: sleeve, small: small, speed: speed, spine: spine, spot: spot, still: still, sung: sung,
-    swayAt: swayAt, trunk: trunk, umbrellaAt: umbrellaAt, up: up, who: who, wristA: wristA, x: x, y: y};
-  personBody(fig);
-  personHead(fig);
-  return personArms(fig);
+  // what the stages after this one use
+  Object.assign(fig, {armBand: armBand, armOf: armOf, arms: arms, behindA: behindA, drawHand: drawHand, flex: flex,
+    handA: handA, handB: handB, handPose: handPose, poseA: poseA, rootA: rootA, rootB: rootB, sleeve: sleeve,
+    small: small, trunk: trunk, wristA: wristA});
 }
 
 // person(), stage 6 of 8: the body painted over the skirt: the torso and its shading, the chest, the cloth, the neck
