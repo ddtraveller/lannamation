@@ -504,3 +504,33 @@ photographs is copied.
 | Bats | "a stream far off ... Instead of leaving a cave just have them fly behind hills or get smaller and fade out" | `batStream(t, look)`: each bat a flapping "m", dark, along a line from `from` to `to`, one every `every` seconds from `start`, each `long` seconds on the way, shrinking from `size` to `far` and fading over the last half; a stream drawn before a hill's sheet goes behind the hill | the wings beat 5 a second; each wobbles less as it goes |
 | Fireflies, หิ่งห้อย | "Make it subtle and distant in the background. Try to create a realistic look at fireflies from far away" | `farFireflies(t, look)`: far off a firefly is a point, not a glow: a short flash, up in 0.08 s and out over 0.3 s, then dark for two to five seconds, each in its own time; a core of 1 to 2.2 px and a faint halo four times as wide, a little brighter and larger the lower (nearer) it is in its `box`. The large soft glows of `sls_intro.html`'s `fireflies()` are the near ones | a slow drift of 14 px |
 | Tried first | the owl's folded wings drawn before its breast showed only as golden rims; the bat stream started below the hill's top and was hidden behind it from its first second | |
+
+## The beings of the Himmaphan, flying (2026-10-21)
+
+The owner: "Change the SLS video to be of a misty mountain scene with birds flying and ... these Thai angels and other
+mystic beings flying around. Everything should move glide and soar effortlessly and slowly as if viewing something
+really high up", with a photograph of a temple mural of thewada flying among clouds, then "Spend some time adding
+detail and improving the quality of each sprite". They are `himmaphan.js`, with its sheet `himmaphan.html`; the mural
+was studied, not copied. Each is drawn about its middle, flying right (`face` -1 left), `size` 1 about 220 tall, its
+own time by `seed`, `light` (0 to 1) the low sun gilding it.
+
+| Being | In the code | Moves |
+|---|---|---|
+| Thewada, an angel | `thewada(x, y, t, look)`: the murals' pose of flight, one knee forward and down, the other leg swept up behind, the foot flexed with its sole to the sky; a slim gilded body, the crossed chains over the chest (sangwan) with a jewel, a gold collar, armbands, bracelets and anklets; hands of Thai dance, the fingers bent far back (`himmaHand`); the face turned a little to us, brows arched, eyes long and lowered, a small red mouth, an earring on the long lobe (`himmaHead`); the tall crown in tiers to a spire that flicks back, its jewelled band and the gold flame behind the ear (`himmaCrown`); the cloth red with rows of gold diamonds over a green under-layer, its ends flaring back in curling flames (`himmaCloth`). `gift`: "lotus" (a bud held up) or "garland"; `scarves`: two long scarves streaming | a slow rise and fall (0.55 a second), a slight roll; the cloth's flames and the scarves ripple |
+| Kinnari | `kinnari(x, y, t, look)`: a woman crowned to the waist, her hands forward; below, a bird: a feathered body, legs tucked back with curled claws, a tail of broad gold plumes each with a red eye (`himmaPlume`); two wings spread from her back, white feathers with buff edges, coverts in rows, gilt along the leading edge (`himmaWing`) | slow deep wingbeats (0.9 a second) |
+| Hong, the golden swan | `hongFlight(x, y, t, look)`: the long S of the neck, a red collar, a little crest, a red beak; golden wings of fingered feathers; the tail a flame of curling plumes (kranok) | slow beats (0.8 a second) |
+| On the studio's card | `sls_intro.html`: dawn high over the mountains, steep forested peaks out of a sea of mist, the far ranges pale and gold toward the sun; nine fliers in `SLS_FLIGHT`, from Phaya Luang and a hornbill far off to two thewada near, each crossing at its own height and pace (12 to 34 px a second), the far ones hazed; two far flocks; the camera rises 40 and comes in 4%. Its sound (`sls_sound.py`): the kit's new `wind` (sounds.py, made from numbers), a red-billed blue magpie at 2.2 s, a flock passing at 5.5 s; the fireflies, crickets and tokay of the evening card are gone | |
+| Tried first | thewada drawn in straight segments, blocky; then curved, but the legs too thick (the raised leg read as a flipper) and the tails thin spikes; the card's first view had a wall of forest below the mist and rounded hills | |
+
+## The tokay's spine, a buffalo grazing, the farmer's nose rope (2026-10-21)
+
+From the owner's list of 2026-10-21 (maeng/TODO.md). **`GECKO_BEND`** (beasts.js): a joint of the gecko's spine turns
+at most 0.5 from the one before; where a route doubles back the joints behind follow the one before instead of the
+route, so the body curves round behind the head and never folds over itself ("When it walks up the wall it folds over
+itself"); the feet go with their hips where the body leaves the route. A route that turns gently draws as it did.
+**`graze`** (buffalo, 0 to 1): the head lowered to the ground, the muzzle on the grass at 1, the jaw working; the
+lowered neck takes the body's shade and its two lines stop short of the body, so nothing shows across it.
+**The nose rope** (`rope`): from the pierced nose up each cheek under the eye, behind the horn's base between horn and
+ear, and over the poll behind the horns, drawn before the near horn (Dennis G. Jarvis's photograph of a Thai buffalo on
+Commons, and the "Lanna village farming" notebook: both ends of the finger-thick rope are looped behind the horns and
+tied loosely; the lead is a separate rope tied to one side).

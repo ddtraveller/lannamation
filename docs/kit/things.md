@@ -505,3 +505,10 @@ hangs at the left of the night of dancing; what the scene made for it stays in t
 | Tried for the children | the kit's `child` (as tall as the drummer); the two girls turned to profile toward the lantern (`turn: -0.8`; their faces met over the boy's); a head tilted back (`tilt`: a roll about the head's middle, which a three-quarter face hardly shows). Eyes alone (`at`) move at most 4 pixels; raised arms are what reads at this size, and a child's arm reaches its forehead | |
 | Tried for the scene that was removed | six figures, a sixth of a turn apart (three showed at once in the close-up); the figures faded with `globalAlpha` on one shared layer (a figure drawn at a part of its strength shows its own overlaps, and its insides showed through as a ghost); the layer on the GPU (it changed how the sheet drew every later frame, as `WAI_LAYER` had) | |
 | Words | the scene's two lines in Kam Mueang went with it: "ฮ้อนเทียน ยะหื้อรูปภาพหมุนวนๆ เจ้า" (the candle's heat turns it, and the pictures go round and round) and "นี่คือโคมพัด โคมหมุนงานยี่เป็งเจ้า" (this is a khom phat, a spinning lantern for Yi Peng), from the notebooks "Lanna material culture" and the Kam Mueang one; their voice stays in `spoken_km/` for a film that wants them. The dance keeps its two lines | |
+
+## Grass tufts (2026-10-21)
+
+`grassTuft(brush, x, y, size, look)` (pieces.js): a tuft of blades from one root on the ground, leaning out from the
+middle, swaying a little with `look.t`; `look.eaten` (0 to 1) crops it short, as a grazing buffalo leaves it;
+`look.tint` as the set's pieces take it. About 50 tall at size 1 (owner, 2026-10-21: "Add some grass tufts"). Scene 3 of
+the tale lays six on the meadow and one under the buffalo's muzzle that it crops through the scene.

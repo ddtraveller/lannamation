@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>himmaphan - the thewada, the kinnari and the hong in flight</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script src="himmaphan.js"></script>
+<script>
+// The "himmaphan" sheet: himmaphan.js. Above, large: a thewada with a lotus, one with scarves and a garland, a
+// kinnari, the hong on the wing. Below, a flight of them small and far off, as the studio's card has them, gliding.
+var DURATION = 12;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#3a2a1a";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  var sky = pen.createLinearGradient(0, 0, 0, 1080);
+  sky.addColorStop(0, "#5a6e9a");
+  sky.addColorStop(0.55, "#e8c08a");
+  sky.addColorStop(1, "#f6e2c0");
+  pen.fillStyle = sky;
+  pen.fillRect(0, 0, WIDE, 1080);
+  thewada(250, 330, t, {size: 1.9});
+  caption("thewada(): a lotus held up", 250, 560);
+  thewada(760, 330, t, {size: 1.9, scarves: true, gift: "garland", seed: 1.5});
+  caption("scarves: true, gift: \"garland\"", 760, 560);
+  kinnari(1230, 330, t, {size: 1.8, seed: 0.7});
+  caption("kinnari()", 1230, 560);
+  hongFlight(1660, 300, t, {size: 1.6, seed: 2.1});
+  caption("hongFlight()", 1660, 560);
+  var drift = (t * 22) % 2400;
+  thewada(-200 + drift, 800, t, {size: 0.55, seed: 0.3, scarves: true});
+  thewada(-380 + drift, 860, t, {size: 0.42, seed: 1.1});
+  kinnari(-60 + drift, 760, t, {size: 0.5, seed: 2.3});
+  hongFlight(260 + drift * 0.8, 880, t, {size: 0.45, seed: 3.1});
+  caption("small and far off, gliding: as on the studio's card", 960, 1050);
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

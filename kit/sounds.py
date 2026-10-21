@@ -129,6 +129,22 @@ def crickets():
     return 0.5 * out / np.abs(out).max()
 
 
+def wind():
+    """Wind high on a mountain at dawn: noise made soft and low (through low-passes at 350 Hz and 1100 Hz, mixed
+    by the gust), swelling and falling in slow gusts, never quite still; 20 s, so a scene can lay it end to end
+    (owner, 2026-10-21, for the studio's card high over the mountains: "wind and birdsong")."""
+    from scipy.signal import butter, sosfilt
+    seconds, rng = 20.0, np.random.default_rng(23)
+    n = int(seconds * RATE)
+    t = np.arange(n) / RATE
+    noise = rng.standard_normal(n)
+    low = sosfilt(butter(2, 350, "low", fs=RATE, output="sos"), noise)
+    mid = sosfilt(butter(2, 1100, "low", fs=RATE, output="sos"), noise)
+    gust = np.clip(0.5 + 0.3 * np.sin(2 * np.pi * t / 7.3) + 0.2 * np.sin(2 * np.pi * t / 3.1 + 1.3), 0.05, 1)
+    out = (low * (1 - 0.5 * gust) + 0.6 * mid * gust) * (0.35 + 0.65 * gust)
+    return 0.6 * out / np.abs(out).max()
+
+
 def mouse_squeak():
     """A mouse's squeaks: three short whistles, each rising then falling between 3.5 and 6.5 kHz, 50 to 80 ms."""
     rng = np.random.default_rng(5)
@@ -152,8 +168,9 @@ SOUNDS = {
     "maeng-home": (maeng_home, "running home into its cave: one long howl that starts low and lifts, its throats swelling"),
     "crickets": (crickets, "field crickets in the grass at night, seven of them chirping, 20 s to lay end to end"),
     "mouse-squeak": (mouse_squeak, "a mouse's three high squeaks, for the mice along a wall"),
+    "wind": (wind, "wind high on a mountain at dawn, soft and low, in slow gusts, 20 s to lay end to end"),
 }
-MADE = ("crickets", "mouse-squeak")     # the two made from numbers, not by howl.py
+MADE = ("crickets", "mouse-squeak", "wind")     # the ones made from numbers, not by howl.py
 
 # Sounds the kit does not make but fetches: recordings whose makers gave them to everyone (public domain, or a
 # licence that lets the kit use them, named here with them), each from where it lives, cut if a part is wanted.
