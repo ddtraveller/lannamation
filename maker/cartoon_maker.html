@@ -1245,7 +1245,7 @@ function show() {
 // Reads pathing (the mover in path mode), time and pathStep; returns seconds, at most movie.duration. Changes nothing.
 function nextPathTime() {
   var last = pathing.keys[pathing.keys.length - 1][0];
-  return Math.min(movie.duration, Math.max(round2(time), round2(last + pathStep)));
+  return Math.min(90, Math.max(round2(time), round2(last + pathStep)));   // past the film's end it grows (addPoint), to 90 s
 }
 
 // Turns path mode on for item (a mover): each tap on the stage adds the next point of its course. Changes pathing,
@@ -1695,8 +1695,12 @@ function clampTime(item, i, t) {
 // e.g. addPoint(movie.items[0], 900, 950, 6); rebuild(); show();
 function addPoint(item, x, y, t) {        // a new point after the last one, at second t (or one step on)
   var before = item.keys[item.keys.length - 1], last = before[0];
-  var when = t === undefined ? last + pathStep : t;
-  item.keys.push([Math.min(movie.duration, Math.max(round2(last + 0.5), round2(when))), x, y].concat(typeof before[3] === "number" ? [before[3]] : []));   // a depth carries on; a pose carries on by itself
+  var when = Math.min(90, Math.max(round2(last + 0.5), round2(t === undefined ? last + pathStep : t)));
+  if (when > movie.duration) {            // a point past the film's end makes the film longer, as the guide does (guideRoom):
+    movie.duration = Math.ceil(when);     // held at the end, it took the last point's second and the course jumped (until 2026-10-21)
+    byId("durationBox").value = movie.duration;
+  }
+  item.keys.push([when, x, y].concat(typeof before[3] === "number" ? [before[3]] : []));   // a depth carries on; a pose carries on by itself
   return item.keys.length - 1;
 }
 
@@ -3059,12 +3063,15 @@ function adoptFilm(data) {
     lastCam = at;
   });
   var lastFrom = 0, lastTo = 0;
+  // a number for "who" is an id in a film whose items have ids (one this page saved), else a place in items (a
+  // model's answer): one or the other, where an id was tried first and could find another person (until 2026-10-21)
+  var byIds = Object.keys(byRawId).length > 0;
   taken(data.texts, "texts", dropped).forEach(function (raw) {
     if (!raw || typeof raw !== "object") { dropped.push("text " + JSON.stringify(raw)); return; }
     if (raw.kind !== "card" && raw.kind !== "subtitle" && !TALKS[raw.kind]) { return; }
     var speaker = null;
     if (TALKS[raw.kind]) {              // a bubble's person: their id in a film this page saved, or their place in items, or their name
-      speaker = typeof raw.who === "number" ? byRawId[raw.who] || byRaw[raw.who]
+      speaker = typeof raw.who === "number" ? (byIds ? byRawId : byRaw)[raw.who]
               : film.items.filter(function (i) { return i.kind === "person" && i.name === raw.who; })[0];
       if (!speaker || speaker.kind !== "person") { dropped.push(raw.kind + " by " + JSON.stringify(raw.who)); return; }
     }
@@ -3273,10 +3280,10 @@ function guideNextPerson() {            // this person's turn is over: the next 
   if (guideTurn >= guideWho.length) { guideGo(guideAt + 1); } else { guideShow(); }
 }
 
-// (The words go in a bubble over this person, said or thought, or under the picture, as guideHow says; the big box
-// first, else the small one; nothing when both are empty.) Changes movie.texts, maybe movie.duration; rebuilds and
+// The words go in a bubble over this person, said or thought, or under the picture, as guideHow says; the big box
+// first, else the small one; nothing when both are empty. Changes movie.texts, maybe movie.duration; rebuilds and
 // saves; then the next person's turn.
-function guideSay() {                   // the words this person says, at their turn, under the picture
+function guideSay() {                   // the words this person says or thinks, at their turn, where guideHow puts them
   var big = byId("guideBig").value.trim(), small = byId("guideSmall").value.trim(), t0 = turnStart();
   guideRoom();
   if (big || small) {                   // in a bubble over this person's head, said or thought, or under the picture
@@ -3298,9 +3305,9 @@ function guidePut(x, y) {               // one of the picked thing, standing at 
   guideShow();
 }
 
-// (All nine of FEELS, in fact.) chosen  the name lit; what  the data-g of each button ("feel" or "feelthere").
+// chosen  the name lit; what  the data-g of each button ("feel" or "feelthere").
 // Returns the buttons as one string of HTML.
-function feelChoices(chosen, what) {    // the eight feelings as the guide's big buttons; "what" is what a tap on one does
+function feelChoices(chosen, what) {    // the nine feelings (FEELS) as the guide's big buttons; "what" is what a tap on one does
   return "<div class='choices'>" + FEELS.map(function (f, n) {
     return "<button data-g='" + what + "' data-n='" + n + "'" + (f[0] === chosen ? " class='on'" : "") + ">" + f[1] + "</button>";
   }).join("") + "</div>";

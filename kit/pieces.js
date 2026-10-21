@@ -790,7 +790,8 @@ function tungSaiMu(brush, x, base, size, t, seed, tiers) {
   brush.lineTo(0, -172);
   brush.stroke();
   for (var r = 0; r < rows; r++) {
-    var y = -164 + r * (96 / (rows - 1)), wide = 10 + r * (34 / (rows - 1)), count = 3 + Math.round(r * 4 / (rows - 1));
+    var span = Math.max(1, rows - 1);                 // one tier alone: no division by nothing (it drew nothing, NaN)
+    var y = -164 + r * (96 / span), wide = 10 + r * (34 / span), count = 3 + Math.round(r * 4 / span);
     brush.strokeStyle = "rgba(90, 70, 40, 0.6)";  // the thread the tier hangs on
     brush.lineWidth = 0.8;
     brush.beginPath();

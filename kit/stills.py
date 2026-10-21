@@ -8,8 +8,8 @@ mistakes, and they take seconds, not minutes.
 
 It needs Google Chrome (through Playwright) and Pillow. The page must have draw(t) and the switch
 rendering. It writes one JPEG where it is named: two frames a row, each 960 x 540, in the order the
-seconds are given; then prints the kit's warnings and the page's errors. It ends with exit code 0 even
-when the page reported an error: read what it prints.
+seconds are given; then prints the kit's warnings and the page's errors. It ends with exit code 1 when
+the page reported an error, as render.py does (0 until 2026-10-21), else 0.
 """
 import io
 import sys
@@ -73,6 +73,8 @@ def main():
         print("the kit warned:", warning)
     for error in errors:
         print("the page reported an error:", error)
+    if errors:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

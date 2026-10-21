@@ -390,6 +390,7 @@ function sabaiUnique(rows, count, shown, centre) {
   var out = rows.map(function (row) { return row.slice(); }), need = 0, n = 0;
   out.forEach(function (row) { need += Math.max(0, count - row.length); });
   if (need > pool.length) { warn("sabaiUnique: the cloth needs " + need + " more figures and the pool has " + pool.length + ": some come twice"); }
+  if (!pool.length) { return out; }                  // nothing left to weave: the rows as they are, not undefined figures
   if (centre) {
     var places = [];
     out.forEach(function (row, r) { for (var i = row.length; i < count; i++) { places.push([r, i, Math.abs(r - centre[0]) * 2.5 + Math.abs(i - centre[1])]); } });

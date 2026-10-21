@@ -552,30 +552,6 @@ function leaveOf(doll, side, up) {
 
 // ---------- pieces of costume, in the waist's and the head's frames ----------
 
-// a band of trim between two lines of another colour
-// From (x1, y1) to (x2, y2) in the pen's frame; colour: the band; edge: its two lines (1.7 FINE wide);
-// width: the band's width, in the same pixels. Returns nothing: it strokes with pen. No doll in the kit
-// calls it yet.
-// e.g. trim(-30, 40, 30, 40, FONLEP.gold, FONLEP.goldDark, 6);
-function trim(x1, y1, x2, y2, colour, edge, width) {
-  var a = angleTo([x1, y1], [x2, y2]), nx = -Math.sin(a) * width * 0.4, ny = Math.cos(a) * width * 0.4;
-  pen.lineCap = "round";
-  pen.strokeStyle = colour;
-  pen.lineWidth = width;
-  pen.beginPath();
-  pen.moveTo(x1, y1);
-  pen.lineTo(x2, y2);
-  pen.stroke();
-  pen.strokeStyle = edge;
-  pen.lineWidth = 1.7 * FINE;
-  pen.beginPath();
-  pen.moveTo(x1 + nx, y1 + ny);
-  pen.lineTo(x2 + nx, y2 + ny);
-  pen.moveTo(x1 - nx, y1 - ny);
-  pen.lineTo(x2 - nx, y2 - ny);
-  pen.stroke();
-}
-
 // The hips' line and the skirt's sway, as person() and tier() find them, so
 // that a band drawn on the skirt lies on the cloth: [phase, hipTip]
 // doll: the doll being drawn (doll.look, doll.x and the clock are read). Returns [phase, hipTip]:
@@ -645,26 +621,4 @@ function sleeveBand(ex, ey, wx, wy, from, to, halfFrom, halfTo, colour, swell) {
   bone(wx + ux * from, wy + uy * from, wx + ux * to, wy + uy * to, halfFrom, halfTo, swell || 0.5);
   shape(colour, 0.9 * LINE);
   return [ux, uy];
-}
-
-// a gold leaf from (x, y), pointing the way "angle" says
-// In the pen's frame; angle in radians; long: its length; wide: half its width at the belly; gold: its
-// fill; dark: its vein. Returns nothing: it draws with pen. No doll in the kit calls it yet.
-// e.g. leaf(0, -380, -Math.PI / 2, 30, 6, FONLEP.gold, FONLEP.goldDark);
-function leaf(x, y, angle, long, wide, gold, dark) {
-  var tip = walk([x, y], angle, long), belly = walk([x, y], angle, long * 0.38);
-  var l = walk(belly, angle - Math.PI / 2, wide), r = walk(belly, angle + Math.PI / 2, wide);
-  pen.beginPath();
-  pen.moveTo(x, y);
-  pen.quadraticCurveTo(l[0], l[1], tip[0], tip[1]);
-  pen.quadraticCurveTo(r[0], r[1], x, y);
-  pen.closePath();
-  shape(gold, 0.8 * LINE);
-  var vein = walk([x, y], angle, long * 0.8);
-  pen.strokeStyle = dark;
-  pen.lineWidth = 0.8 * LINE;
-  pen.beginPath();
-  pen.moveTo(x, y);
-  pen.lineTo(vein[0], vein[1]);
-  pen.stroke();
 }

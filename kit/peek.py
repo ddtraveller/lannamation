@@ -8,11 +8,12 @@ row after the reference, scaled to the same height.
 
 It needs Google Chrome (through Playwright) and Pillow. --box is x y w h in screen pixels of the
 1920 x 1080 picture (default 340 60 460 720); --ref-box crops the reference first. It writes one JPEG
-where it is named and prints its size and the page's errors; exit code 0 even when the page reported an
-error. It waits up to 180 s for the page to load (the hero film paints its forests as it loads), and for its web fonts.
+where it is named and prints its size and the page's errors; exit code 1 when the page reported an error
+(0 until 2026-10-21), else 0. It waits up to 180 s for the page to load (the hero film paints its forests as it loads), and for its web fonts.
 """
 import argparse
 import io
+import sys
 from pathlib import Path
 
 from PIL import Image
@@ -71,6 +72,8 @@ def main():
     print("%s: %d cuts at %s, %dx%d" % (args.out, len(cuts), args.seconds, sheet.width, sheet.height))
     for error in errors:
         print("the page reported an error:", error)
+    if errors:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

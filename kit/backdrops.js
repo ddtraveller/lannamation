@@ -1950,7 +1950,6 @@ var BACKDROP_PAINTERS = {
   }
 };
 
-// The set of that name, painted the first time it is asked for.
 // What hangs in a backdrop, and sways (owner, 2026-10-16: "Look at the flags
 // and lanterns and if they are hanging give them a sway function"): the paper
 // lanterns on the rope over the market, and the two lines of flags at the

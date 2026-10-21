@@ -148,7 +148,7 @@ function decorate(t, life, layer) {
       var mid = pen.getTransform().transformPoint(new DOMPoint((box[0] + box[2]) / 2, (box[1] + box[3]) / 2));
       sighted(mid.x, mid.y);
     }
-    if (window.LIFE_SEEN) {                          // a check is watching: where it was, and in what measure
+    if (window.LIFE_SEEN && box) {                   // a check is watching: where it was, and in what measure
       var m = pen.getTransform(), a = m.transformPoint(new DOMPoint(box[0], box[1])), b = m.transformPoint(new DOMPoint(box[2], box[3]));
       window.LIFE_SEEN.push({name: one.name, kind: one.kind, t: t, box: [a.x / PIX, a.y / PIX, b.x / PIX, b.y / PIX]});
     }
