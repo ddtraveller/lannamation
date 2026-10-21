@@ -763,10 +763,11 @@ function scenePond(t) {                 // 35-53 (3 s longer since 2026-10-21, t
   // orchids on the sheet's tree trunks. The flock in "sky". The fish, which can be anywhere, in "back", in the water,
   // by how deep each swims and not by their feet (a fish's y on the sheet is not its depth in the pond): the snakehead
   // lying deep at 3, the barbs 3.1, the flying barbs just under the surface 3.2, the gouramis 3.3. The dragon "*",
-  // its band from its depth (far behind everyone, near in front), its flag with it. At 4, between "back" and "people",
-  // what grows in the water, the lotus and the reeds: over every fish (owner, 2026-10-20: "Make sure the fish are
-  // behind the lotus on the z scale") and behind the people on the bank (sorted by feet alone, the right lotus, whose
-  // foot is lower, came in front of the fellow). In "people":
+  // its band from its depth (far behind everyone, near in front), its flag with it. In "people", by their feet, what
+  // grows in the water, the lotus and the reeds, each by its base: over every fish (owner, 2026-10-20: "Make sure the
+  // fish are behind the lotus on the z scale"), and the right lotus, whose base is lower than his feet, in front of
+  // the fellow (owner, 2026-10-21: "Lotus should be in front of the man in this scene but the base of the lotus should
+  // be the comparison point in general"). Also in "people":
   // the cat, the maiden and the fellow, each given an id, as a person drawn by drawByZ must be: one with none is
   // known by the order the people are drawn in, and their own time (ownTime()) and what hangs from them would change
   // with it. Theirs are the names that order gave them, n0 and n1, so they move as the film was passed. The falling
@@ -789,8 +790,8 @@ function scenePond(t) {                 // 35-53 (3 s longer since 2026-10-21, t
   var watched = [700 + Math.sin(t * 0.6) * 60, 850 + 6 * Math.sin(t * 1.1)];   // the gourami she watches
   fish(watched[0], watched[1], 1.7, Math.cos(t * 0.6) > 0 ? 1 : -1, "gourami", t);
   fish(900 - Math.sin(t * 0.5) * 40, 868, 1.4, Math.cos(t * 0.5) > 0 ? -1 : 1, "gourami", t + 2);
-  sprites.push({name: "lotus", kind: "lotus", z: 4, y: 1010, draw: function () { lotusClump(pen, 520, 1010, 0.9, 4, "#ee7f9c", t); }},   // it stirs in the breeze
-               {name: "lotus", kind: "lotus", z: 4, y: 1030, draw: function () { lotusClump(pen, 1150, 1030, 1.2, 1, "#e9627f", t); }},
+  sprites.push({name: "lotus", kind: "lotus", y: 1010, draw: function () { lotusClump(pen, 520, 1010, 0.9, 4, "#ee7f9c", t); }},   // it stirs in the breeze
+               {name: "lotus", kind: "lotus", y: 1030, draw: function () { lotusClump(pen, 1150, 1030, 1.2, 1, "#e9627f", t); }},
                {name: "flock", kind: "birds", z: "sky", y: 180, draw: function () { birds(t, 100 + t * 60, 180); }});
   var head = dragonFly(t + POND_AT);
   sprites.push({name: "dragon", kind: "dragon", depth: head[4], y: head[1], draw: function () {
@@ -803,7 +804,7 @@ function scenePond(t) {                 // 35-53 (3 s longer since 2026-10-21, t
   }});
   // reeds at the water's edge; her Siamese cat sits beside her again (owner, 2026-10-20: "move the cat to be back
   // beside the woman", after it had been put in the reeds)
-  sprites.push({name: "reeds", kind: "reeds", z: 4, y: 1010, draw: function () { pondReeds(445, 1010, 0.9, t, "back"); pondReeds(445, 1010, 0.9, t, "front"); }},
+  sprites.push({name: "reeds", kind: "reeds", y: 1010, draw: function () { pondReeds(445, 1010, 0.9, t, "back"); pondReeds(445, 1010, 0.9, t, "front"); }},
                {name: "cat", kind: "cat", y: 1012, draw: function () { siamese(130, 1012, 0.9, t); }},
                {name: "orchids", kind: "orchid", z: "set", y: 806, draw: function () {   // wild orchids (dok ueang), as they grow, on the trunks of the trees
                  flora("orchid", 172, 800, {size: 0.9, ground: false});

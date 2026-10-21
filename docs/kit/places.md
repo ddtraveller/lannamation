@@ -745,8 +745,10 @@ What the test taught, each found by comparing every frame with the film as it wa
   (the pond's maiden and fellow are `n0` and `n1`).
 - **Feet are not always nearness.** A fish's y on the sheet is not its depth in the pond: the pond's fish are
   `back` and a step deeper or shallower within it (3, 3.1, 3.2, 3.3), a school at one y so it keeps its order,
-  and the lotus and reeds at 4, over every fish and behind the people on the bank (by feet alone the right lotus,
-  whose foot is lower, came in front of the fellow). A band may be any number.
+  so the lotus and the reeds, in "people", are over every fish. A band may be any number.
+- **A plant is compared by its base.** The pond's right lotus, whose base is lower on the sheet than the fellow's
+  feet, is in front of him (owner, 2026-10-21: "Lotus should be in front of the man in this scene but the base of the
+  lotus should be the comparison point in general"; the test had first kept it behind him, as the film was drawn).
 - **`null` makes the choice be made.** Every fish and bird of the two scenes had to be given a place, and was.
 
 `checks/z_check.py PAGE` watches a page draw and reports what on the ground is drawn over what stands nearer
