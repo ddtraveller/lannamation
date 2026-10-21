@@ -694,7 +694,8 @@ e.g. tier(120, 50, 10, clock * Math.PI * 2 / BEAT, "#a33a2a", 4, [[0.85, STYLE.g
 
 ```
 one rolled curl of hair, with the light on it
-x, y: its middle; r: its radius, in pixels. Drawn in the kit's dark hair colour, not HAIR. Returns nothing.
+x, y: its middle; r: its radius, in pixels. Drawn in the person's hair colour, HAIR and HAIR_LINE (until
+2026-10-21 always the kit's dark brown, and an elder's white hair had dark curls). Returns nothing.
 e.g. curl(-40, -330, 8);
 ```
 
@@ -709,7 +710,7 @@ the furthest and the latest, as the hem of a skirt does.
   shove        [across, down]: a lag for the tip, from follow()
   phase        radians: where the swing is (tier()'s phase)
   plain        true: a straight lock that narrows to its tip, with no curl
-Units are pen's pixels; drawn in the kit's dark hair colour, not HAIR. Returns nothing.
+Units are pen's pixels; drawn in the person's hair colour, HAIR and HAIR_LINE. Returns nothing.
 e.g. lock(-40, -338, 150, 11, 6, clock * 3, true, follow("noi/tail", -40, -338, 50, 6, 40));
 ```
 
@@ -1003,7 +1004,8 @@ e.g. tattoo(10, -190, 30, -100);
 
 ```
 gold rings round a wrist, drawn across the forearm: "angle" is the way the arm points
-Drawn about pen's origin, which is the wrist: count + 1 rings in STYLE.gold, from the wrist up the forearm.
+Drawn about pen's origin, which is the wrist: count rings in STYLE.gold, from the wrist up the forearm (until
+2026-10-21 it drew count + 1, and every look's count was one less than the rings it showed).
 count: a whole number. Returns nothing.
 e.g. pen.translate(wristX, wristY); bangles(1.2, 2);
 ```
@@ -4452,7 +4454,8 @@ sabai.js - a sabai woven with figures that walk, for films made with oldcartoon.
 Run a painter that draws with the kit's "pen" on another sheet, at second "at".
 brush: a canvas 2D context; action: a function of no arguments that draws with pen; at: the second
 to set the kit's clock to while it runs (0 when left out). Returns nothing. It sets the globals pen
-and clock for the while and puts them back after (not if action throws).
+and clock for the while and puts them back after, even if action throws (since 2026-10-21: before, a painter's
+error left every later drawing on the tile's sheet).
 e.g. var sheet = document.createElement("canvas"); paintWith(sheet.getContext("2d"), function () { person(150, 280, cast("boy")); }, 2.5);
 ```
 
@@ -4460,7 +4463,8 @@ e.g. var sheet = document.createElement("canvas"); paintWith(sheet.getContext("2
 
 ```
 A tile from a painter: the picture is drawn once on a scratch sheet and
-measured, then drawn again to fit the tile, at each moment of its cycle.
+measured, then drawn again to fit the tile, at each moment of its cycle. A figure whose later moments reach past
+its first (and would be cut at the tile's edge) is measured at every moment, and fitted to them all.
 painter: a function (brush, u): it draws standing on (0, 0) of the pen's frame (pen is brush while
 it runs), u 0 to 1 its walk; one that takes fewer than two arguments stands still. side: the
 tile's side in pixels (SABAI_TILE, 384, when left out). Returns a list of canvases, side by side
@@ -5801,12 +5805,14 @@ e.g. farFireflies(clock, {box: [0, 640, 1920, 900], count: 80})
 
 northbirds.js - six birds of the north of Thailand, for the Lanna cartoon kit. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="northbirds.js"></script>  and call each from a scene, as the kit's rooster() is called: (x, y) is where its feet are, or, for one in flight, the middle of its body; t is the second; look holds what it does, and a name the bird does not know is warned of.  peafowl(x, y, t, look)      the green peafowl: walks, pecks, calls, and raises its train into a fan and shivers it pheasant(x, y, t, look)     Mrs Hume's pheasant: walks and pecks, its long barred tail swaying; or the brown hen sunbird(x, y, t, look)      the green-tailed sunbird: perches, hovers on blurred wings, sips from a flower blueMagpie(x, y, t, look)   the red-billed blue magpie: perches and flicks its long tail; flies, beating and gliding hornbill(x, y, t, look)     the great hornbill: perches and turns its head; flies on slow, heavy wings egret(x, y, t, look)        the cattle egret: walks behind the plough and pecks; flies off on slow white wings  Why these five (each said in its own words below, with its source): the green peafowl's largest known mainland population i
 
-### `nbEye(x, y, r, colour, e, skin)`
+### `nbEye(x, y, r, colour, e, skin, pupil)`
 
 ```
 A bird's eye at (x, y), r across: the dot it always was, or with a feeling (e), a small eye of that colour
 under a lid of the head's colour ("skin").
-"colour" is the eye's; e a feeling (creatureFeel()) or null. Returns nothing: it draws with pen.
+"colour" is the eye's; e a feeling (creatureFeel()) or null; pupil, a colour or left out: a pupil in a pale eye
+(the hornbill's), a little toward the front, under the lid a feeling brings down and not on an eye it shuts.
+Returns nothing: it draws with pen.
 e.g. nbEye(45, -104, 1.6, "#141414", null, "#d8302a")
 ```
 
@@ -6030,7 +6036,7 @@ e.g. egret(1100, GROUND - 10, clock, {peck: 0.5 + 0.5 * Math.sin(clock * 3)})
 
 ## himmaphan.js
 
-himmaphan.js - beings of the Himmaphan, the mythic forest above the world in Thai art, flying, for the Lanna cartoon kit: the thewada (an angel), the kinnari (half woman, half bird) and the hong (the golden swan) on the wing. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="himmaphan.js"></script>  thewada(x, y, t, look)     an angel flying as the murals paint them: one knee forward, the other leg swept up behind, the sole to the sky; a lotus held up, the other hand before the chest kinnari(x, y, t, look)     a kinnari in flight: a woman crowned to the waist, a bird below, her wings spread hongFlight(x, y, t, look)  the hong on the wing, its neck long, its tail a flame of plumes  (x, y) is the middle of the figure; each flies to the right (look.face -1 to the left); t is the second; look.size, 1 being about 220 from crown to the lowest point; look.seed sets each one's own time, so a flight of them do not move as one; look.scarves (the thewada's and the kinnari's): two long scarves streaming behind; look.gift: what the thewada holds up, "lotus" (the default) or "garland"; look.light (0 to 1, 0.6 unless told): the low sun on them, gilding their edges.  Drawn
+himmaphan.js - beings of the Himmaphan, the mythic forest above the world in Thai art, flying, for the Lanna cartoon kit: the thewada (an angel), the kinnari (half woman, half bird) and the hong (the golden swan) on the wing. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="himmaphan.js"></script>  thewada(x, y, t, look)     an angel flying as the murals paint them: one knee forward, the other leg swept up behind, the sole to the sky; a lotus held up, the other hand before the chest kinnari(x, y, t, look)     a kinnari in flight: a woman crowned to the waist, a bird below, her wings spread hongFlight(x, y, t, look)  the hong on the wing, its neck long, its tail a flame of plumes  (x, y) is the middle of the figure; each flies to the right (look.face -1 to the left); t is the second; look.size, 1 being about 220 from crown to the lowest point; look.seed sets each one's own time, so a flight of them do not move as one; look.scarves (the thewada's and the kinnari's): two long scarves streaming behind; look.gift: what the thewada holds up, "lotus" (the default) or "garland"; look.light (0 to 1, 0.6 unless told): the low sun on them, gilding their edges; look.s
 
 ### `himmaFill(fill, line, width)`
 
@@ -6106,17 +6112,45 @@ long flight feathers, white with buff edges, gilded along its leading edge by th
 A feather as a leaf from its root to its tip, "wide" across, shaded from its root's deep gold to its tip's light.
 ```
 
-### `hongWing(lift, light, far)`
+### `hongWing(up, rate, light, far)`
 
 ```
-The hong's wing from its shoulder (0, 0), raised up and back: long primaries fanned from the wrist, the secondaries
-along the trailing edge, rows of scalloped coverts over the arm, gilt along the leading edge. "lift" (-1 down to
-1 up) turns it about the shoulder and foreshortens it, as a side view sees a wing beat; "far" darkens it.
+The hong's wing from its shoulder (0, 0), seen from the side as it beats: long primaries fanned from the wrist, the
+secondaries along the trailing edge, rows of scalloped coverts over the arm, gilt along the leading edge. "up" (-1
+down to 1 up) is where the stroke is, "rate" how fast it is rising (+) or falling (-). The arm swings about the
+shoulder and is seen shorter as it comes toward us; the hand bends at the wrist and trails the stroke, higher than
+the arm on the way down and lower on the way up; the primaries spread on the downstroke and close on the upstroke;
+the secondaries always trail back (owner, 2026-10-21: "Make the golden bird's wing flap like a natural wing instead
+of rotating"). "far" darkens it.
+```
+
+### `hongChain(rise, t)`
+
+```
+The way each joint of the hong's spine faces, by the rule of procedural_animation.html, as nagaChain's: the head
+leads, each joint turns to face the one in front, no more than HONG_BEND from it, and keeps its own gap behind it.
+The head flies on at HONG_AIR and rises and falls as "rise" says (in drawn pixels, a function of the time). A chain
+remembers where it has been and a film must not, so the chain is laid out straight as it was four seconds ago and
+led from then until now, in every frame. Returns the angle each joint faces (0 is level, to the right).
 ```
 
 ### `hongFlight(x, y, t, look)`
 
-(no comment)
+```
+The hong flying, about the middle of its body, to the right (look.face -1 left). Its spine moves as
+procedural_animation.html's does (owner, 2026-10-21: "Can you use the spine logic from procedural_animation on the
+bird so it's neck and head and body move more fluidly?"): the head leads and the neck and body follow it a joint at
+a time (hongChain), so as it rises the head tips up first, then the neck bends, then the body comes round; each
+piece of the drawing turns with its joint, so the S of the neck is kept. The wings lift the body under a steady
+head, so the neck flexes with every beat.
+```
+
+### `hongNeck(spine, light)`
+
+```
+The hong's neck through the first six joints of its spine (the head's end first), as wide as HONG_NECK says at
+each: a smooth band, gold deepening down to the breast, its fine feathers in ticks, the jewelled collar at its root.
+```
 
 ## paperdoll.js
 
@@ -6333,16 +6367,6 @@ units, toward the elbow. Returns [x, y], pixels of the sheet, or null before the
 e.g. doll.leave = leaveOf(doll, "A", 30);
 ```
 
-### `trim(x1, y1, x2, y2, colour, edge, width)`
-
-```
-a band of trim between two lines of another colour
-From (x1, y1) to (x2, y2) in the pen's frame; colour: the band; edge: its two lines (1.7 FINE wide);
-width: the band's width, in the same pixels. Returns nothing: it strokes with pen. No doll in the kit
-calls it yet.
-e.g. trim(-30, 40, 30, 40, FONLEP.gold, FONLEP.goldDark, 6);
-```
-
 ### `hipsOf(doll)`
 
 ```
@@ -6386,15 +6410,6 @@ The four points are onArm()'s, in the waist's frame; halfFrom, halfTo: half its 
 colour: its fill; swell: how far its sides curve out (bone()'s, 0.5 when left out). Returns [ux, uy],
 the unit step from the wrist toward the elbow, to place more on the band; it draws with pen.
 e.g. var u = sleeveBand(ex, ey, wx, wy, 5, 19, 9.4, 10.2, FONLEP.green);
-```
-
-### `leaf(x, y, angle, long, wide, gold, dark)`
-
-```
-a gold leaf from (x, y), pointing the way "angle" says
-In the pen's frame; angle in radians; long: its length; wide: half its width at the belly; gold: its
-fill; dark: its vein. Returns nothing: it draws with pen. No doll in the kit calls it yet.
-e.g. leaf(0, -380, -Math.PI / 2, 30, 6, FONLEP.gold, FONLEP.goldDark);
 ```
 
 ## puman.js
@@ -6800,8 +6815,8 @@ row after the reference, scaled to the same height.
 
 It needs Google Chrome (through Playwright) and Pillow. --box is x y w h in screen pixels of the
 1920 x 1080 picture (default 340 60 460 720); --ref-box crops the reference first. It writes one JPEG
-where it is named and prints its size and the page's errors; exit code 0 even when the page reported an
-error. It waits 30 s for the page to load, which is too short for the hero film.
+where it is named and prints its size and the page's errors; exit code 1 when the page reported an error
+(0 until 2026-10-21), else 0. It waits up to 180 s for the page to load (the hero film paints its forests as it loads), and for its web fonts.
 ```
 
 - `shots(page_file, seconds, box)`: The box cut from the page's picture at each second named: (cuts, errors).
@@ -7040,15 +7055,15 @@ It writes the four sound files, so the owner can listen as well.
 
 It needs what lanna_sing.py needs, and faster-whisper. Run it in the folder that holds lanna.wav. It
 writes voice_old.wav, voice_new.wav, song_old.wav and song_new.wav into --out, and what it printed into
-sing_check_output.txt in the folder it is run from. It reads lanna_sing.LINES, which lanna_sing.py no longer
-has (it reads the song's lines from lanna.html's CUES since then): as it stands it stops with an
-AttributeError (2026-10-21).
+sing_check_output.txt in the folder it is run from. The song's lines are the film's own, lanna.html's CUES,
+read as lanna_sing.py reads them (lanna_sing.cues_of: Chrome with no window); it read a list lanna_sing.py no
+longer has, and stopped, until 2026-10-21.
 ```
 
 - `sung_old(syllable, frequency)`: The old tuning, kept here as the "before": librosa's pitch_shift to the
 - `character_error(written, heard)`: The share of the written characters that are wrong in what was heard.
 - `cents_off(sound, frequency)`: How far the sung pitch is from the note, in cents, by its median.
-- `build(method, length)`: The voice alone, as long as the band, and the cents off for each
+- `build(method, length, lines)`: The voice alone, as long as the band, and the cents off for each
 - `hear(model, sound, start, stop)`: What the listener hears in one stretch of a sound: the Thai text it writes down.
 - `say(line)`: Print line and keep it in SAID, for sing_check_output.txt. Gives back nothing.
 - `main()`: The command line: make --out, run the check, and write sing_check_output.txt even when it fails.
@@ -7178,8 +7193,8 @@ mistakes, and they take seconds, not minutes.
 
 It needs Google Chrome (through Playwright) and Pillow. The page must have draw(t) and the switch
 rendering. It writes one JPEG where it is named: two frames a row, each 960 x 540, in the order the
-seconds are given; then prints the kit's warnings and the page's errors. It ends with exit code 0 even
-when the page reported an error: read what it prints.
+seconds are given; then prints the kit's warnings and the page's errors. It ends with exit code 1 when
+the page reported an error, as render.py does (0 until 2026-10-21), else 0.
 ```
 
 - `frames(page_file, seconds)`: The page's picture at each second named: (pictures, errors, warnings).
@@ -7602,7 +7617,7 @@ sheet to keep (all of it unless told).
 
 It needs Google Chrome (through Playwright) and Pillow. The other kit is named from the folder it is run in;
 the page from the kit's folder (kit/). It writes out.png (the two crops side by side, 8 pixels apart) and
-prints its size; exit code 0. The default box is 1440 wide: give the box for a page whose sheet is 1920.
+prints its size; exit code 0. The default box is the whole sheet, 1440 or 1920 wide.
 ```
 
 - `frame(browser, page_file, kit, second)`: The page's sheet at second, come to by a jump with rendering on: a PIL image (the sheet's own size).
@@ -7662,8 +7677,8 @@ sounds.py and howl.py have not changed since it passed.
 
 It needs numpy and scipy, and imports howl.py and sounds.py from the kit's folder. It runs main() as it is
 loaded: do not import it. It makes each sound by howl.py from its outline; the sounds sounds.py makes from
-numbers (MADE: crickets, mouse-squeak, wind) give no outline, and as it stands it stops on the first of them
-with an AttributeError (2026-10-21).
+numbers (MADE: crickets, mouse-squeak, wind) give no outline but the sound itself, and are checked as they are
+(until 2026-10-21 it stopped on the first of them).
 ```
 
 - `longest(outline)`: How long a sound may be: its latest voice's end, and the echo's ring after it.
@@ -7694,8 +7709,8 @@ boxes that hold the pixels which differ, and saves the two versions of the large
 
 It needs Google Chrome (through Playwright), numpy, scipy and Pillow. The other kit is named from the folder
 it is run in; the page from the kit's folder (kit/). It writes out.png only when some pixel differs, and ends
-with exit code 0. The box saved is held inside 1440 x 1080: for a sheet 1920 wide, a box past x 1440 is cut
-there (and one wholly past it fails).
+with exit code 0. The box saved is held inside the sheet, 1440 or 1920 wide (until 2026-10-21 inside 1440: a box past x 1440 was cut
+there, and one wholly past it failed).
 ```
 
 - `frame(browser, page_file, kit, second)`: The page's sheet at second, come to by a jump from elsewhere with rendering off: a PIL image.
