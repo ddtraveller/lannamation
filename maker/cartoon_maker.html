@@ -245,10 +245,11 @@
         <label>โมเดล <small>model</small><input id="aiModel" value="gpt-4o-mini"></label>
         <label>คีย์ <small>API key; none for Ollama</small><input id="aiKey" type="password" autocomplete="off"></label>
       </div>
+      <label><input type="checkbox" id="aiRemember"> จำคีย์ไว้ในเครื่องนี้ อย่าติ๊กถ้าใช้เครื่องร่วมกับคนอื่น <small>remember the key on this computer; leave it unticked on a shared one</small></label>
       <p><button id="aiGo">✨ สร้างหนัง <small>make the film</small></button> <button id="aiCopyPrompt">📋 คัดลอกคำสั่ง <small>copy the instructions</small></button> <button id="aiPaste">📥 วางคำตอบ <small>load a pasted answer</small></button></p>
       <div class="status" id="aiStatus"></div>
       <textarea id="aiJson" placeholder="วาง JSON ที่โมเดลตอบมาที่นี่ แล้วกด วางคำตอบ · paste a model's JSON answer here, then press load"></textarea>
-      <p class="en">Ollama: address http://your-spark.local:11434/v1, model qwen2.5:14b, no key; the server must allow this page with OLLAMA_ORIGINS=https://krueng.ai. The address, model and key are kept in this browser only.</p>
+      <p class="en">Ollama: address http://your-spark.local:11434/v1, model qwen2.5:14b, no key; the server must allow this page with OLLAMA_ORIGINS=https://krueng.ai. The address and model are kept in this browser only; the key only when its box is ticked.</p>
     </div>
     <div style="display:flex;gap:8px"><button id="closeAi">ปิด <small>close</small></button></div>
   </div>
@@ -569,7 +570,8 @@ function wireFolds(root) {
 
 function byId(id) { return document.getElementById(id); }
 
-var stage = byId("stage"), marks = byId("marks"), marker = marks.getContext("2d");
+// "stage", the film's canvas, is the kit's own (oldcartoon.js): a second "var stage" here would replace it
+var marks = byId("marks"), marker = marks.getContext("2d");
 var ruler = byId("ruler"), rulerPen = ruler.getContext("2d");
 
 // ---------- the film's code ----------
@@ -619,7 +621,10 @@ var LAND_CODE = {
           '  brush.fillRect(0, 880, WIDE, 200);']
 };
 
-function js(value) { return JSON.stringify(value); }
+// A value as JavaScript. The exported page carries this code inside a script element, and a typed text that
+// closes that element would end the film's code early and run what follows it; "<" is the same "<" to
+// JavaScript and nothing to HTML.
+function js(value) { return JSON.stringify(value).replace(/</g, "\\u003c"); }
 
 function keysCode(item) {                 // the course as where() reads it: a key's fourth number is a depth; a person's pose at a key is written elsewhere
   return "[" + item.keys.map(function (k) {
@@ -1046,7 +1051,7 @@ function show() {
   paintMarks();
   paintRuler();
   byId("timeLabel").textContent = time.toFixed(1) + " วินาที";
-  byId("stageBox").className = (pathing ? "stage-box pathing" : tool === "move" ? "stage-box moving" + (held ? " held" : "") : "stage-box") +
+  byId("stageBox").className = (pathing ? "stage-box pathing" : tool === "move" ? "stage-box moving" + (grabbed ? " held" : "") : "stage-box") +
                                (guideTap ? " tapping" : "");   // the guide waits for a tap on the picture
   placeBar();
   if (pathing) {
@@ -2148,7 +2153,7 @@ function shiftItem(item, dx, dy) {
 }
 
 // ---------- dragging on the stage ----------
-var held = null, heldIndex = -1, heldNew = false, heldFrom = null, heldCamera = -1;   // heldCamera: the camera point being aimed by a drag
+var grabbed = null, heldIndex = -1, heldNew = false, heldFrom = null, heldCamera = -1;   // heldCamera: the camera point being aimed by a drag
 
 marks.onpointerdown = function (event) {
   if (guideTap) {                                   // the guide is asking where: the tap is its answer
@@ -2178,7 +2183,7 @@ marks.onpointerdown = function (event) {
     return;
   }
   selected = item;
-  held = item;
+  grabbed = item;
   heldCamera = -1;
   if (!item && cameraAt(time) >= 0) {             // empty stage, a camera point at this second: a drag inside its frame aims it
     var cam = cameraOf()[cameraAt(time)], q = toSheet(s[0], s[1]);
@@ -2217,26 +2222,26 @@ marks.onpointermove = function (event) {
     show();
     return;
   }
-  if (!held) { return; }
+  if (!grabbed) { return; }
   var s = pointerOnStage(event), p = toSheet(s[0], s[1]);
   if (tool === "move") {                          // carry it: the whole course goes along
-    shiftItem(held, p[0] - heldFrom[0], p[1] - heldFrom[1]);
+    shiftItem(grabbed, p[0] - heldFrom[0], p[1] - heldFrom[1]);
     heldFrom = p;
     rebuild();
     show();
     return;
   }
   var x = Math.round(p[0]), y = Math.round(Math.max(40, Math.min(1040, p[1])));
-  if (held.kind === "piece") {
-    held.keys = [[held.keys[0][0], x, y]];          // it keeps its second, and so its scene
+  if (grabbed.kind === "piece") {
+    grabbed.keys = [[grabbed.keys[0][0], x, y]];          // it keeps its second, and so its scene
   } else {
     if (heldIndex < 0) {                            // not on a point: this drag makes a new one, after the last
-      heldIndex = addPoint(held, x, y);
+      heldIndex = addPoint(grabbed, x, y);
       heldNew = true;
-      time = held.keys[heldIndex][0];
+      time = grabbed.keys[heldIndex][0];
     }
-    held.keys[heldIndex][1] = x;
-    held.keys[heldIndex][2] = y;
+    grabbed.keys[heldIndex][1] = x;
+    grabbed.keys[heldIndex][2] = y;
   }
   rebuild();
   show();
@@ -2245,9 +2250,9 @@ marks.onpointerup = function () {
   panning = null;
   if (scaling) { scaling = null; panel(); show(); return; }
   if (heldCamera >= 0) { heldCamera = -1; panel(); show(); return; }
-  if (!held) { return; }
-  var item = held, index = heldIndex, fresh = heldNew;
-  held = null;
+  if (!grabbed) { return; }
+  var item = grabbed, index = heldIndex, fresh = heldNew;
+  grabbed = null;
   panel();
   show();
   if (fresh) { openTimePop(item, index, "arrive"); }
@@ -2359,7 +2364,7 @@ function resetAll() {
   movie = freshFilm();
   selected = null; pathing = null; picked = []; time = 0;
   scripting = false; colourPart = null; pathStep = 2;
-  held = null; heldIndex = -1; heldNew = false; heldFrom = null; heldCamera = -1; scrubbing = false; panning = null;
+  grabbed = null; heldIndex = -1; heldNew = false; heldFrom = null; heldCamera = -1; scrubbing = false; panning = null;
   byId("timePop").className = "time-pop"; popItem = null;
   ["helpSheet", "codeSheet", "aiSheet"].forEach(function (id) { byId(id).className = "sheet"; });
   byId("codeBox").value = "";
@@ -2460,7 +2465,12 @@ function stopRecording() {
 // number out of range is pulled in, and the seconds of a course only go up.
 function aiSettings(save) {
   var keep = {base: byId("aiBase").value.trim(), model: byId("aiModel").value.trim(), key: byId("aiKey").value.trim()};
-  if (save) { try { localStorage.setItem("cartoon_maker_ai", JSON.stringify(keep)); } catch (error) { /* nothing kept */ } }
+  if (save) {
+    // the key stays in this browser only when its box is ticked: a classroom's computer is the next child's too
+    var kept = {base: keep.base, model: keep.model};
+    if (byId("aiRemember").checked) { kept.key = keep.key; }
+    try { localStorage.setItem("cartoon_maker_ai", JSON.stringify(kept)); } catch (error) { /* nothing kept */ }
+  }
   return keep;
 }
 
@@ -2636,7 +2646,8 @@ function askModel(story, settings, strict) {
 byId("aiBtn").onclick = function () {
   try {
     var kept = JSON.parse(localStorage.getItem("cartoon_maker_ai"));
-    if (kept) { byId("aiBase").value = kept.base || byId("aiBase").value; byId("aiModel").value = kept.model || byId("aiModel").value; byId("aiKey").value = kept.key || ""; }
+    if (kept) { byId("aiBase").value = kept.base || byId("aiBase").value; byId("aiModel").value = kept.model || byId("aiModel").value; byId("aiKey").value = kept.key || "";
+                byId("aiRemember").checked = !!kept.key; }   // a key kept before the box was there shows the box ticked: untick it to forget the key
   } catch (error) { /* nothing kept */ }
   byId("aiStatus").textContent = "";
   byId("aiSheet").className = "sheet open";

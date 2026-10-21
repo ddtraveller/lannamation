@@ -14,8 +14,8 @@ keys and the names only when a script has; what is left out is written down as S
 
 Run it after any change to oldcartoon.js. First the kit's own list: every key of a "look" that the kit reads must be
 written down in the comment above person(), and every key written there must be read. Then the names: no top-level
-name may be defined in two script files beside the kit, or in the folder of a film's scenes beside it (maeng/), since
-the one loaded last silently replaces the other. Then
+name may be defined in two script files beside the kit, or in the folder of a film's scenes beside it (maeng/), or by
+the cartoon maker's own script and a script it loads, since the one loaded last silently replaces the other. Then
 for each page, in Chrome with no window:
   draws     the page loads, and draws 24 frames spread over its length, with no error
   same      a still shows what the film shows. A frame come to by a jump of the clock, as a still comes to it, is
@@ -154,6 +154,9 @@ def scripts_fingerprint():
     digest = hashlib.sha1()
     for script in sorted(HERE.glob("*.js")) + sorted(q for q in HERE.glob("*/*.js") if q.parent.name != "node_modules"):
         digest.update(script.name.encode("utf-8") + script.read_bytes())
+    maker = maker_file()                  # its own script's names are checked against the scripts it loads
+    if maker:
+        digest.update(maker.read_bytes())
     return digest.hexdigest()
 
 
@@ -179,16 +182,35 @@ def keys_of(kit):
     return read, written, listed
 
 
+DEFINED = r"^(?:function|var|let|const) ([A-Za-z_]\w*)"
+
+
+def maker_file():
+    """The cartoon maker: maker/ beside the kit in lannamation, the page beside the kit's folder on krueng.ai."""
+    return next((m for m in (HERE.parent / "maker" / "cartoon_maker.html", HERE.parent / "cartoon_maker.html") if m.exists()), None)
+
+
 def shared_names():
     """Top-level names that two script files beside the kit both define. The files share one page, so the one loaded
     last silently replaces the other's: paperdoll.js's ribbon() replaced the kit's on 2026-10-14 and three sheets
-    stopped drawing; puman.js's tattoo() replaced the kit's and nothing said so."""
+    stopped drawing; puman.js's tattoo() replaced the kit's and nothing said so. The cartoon maker's own script shares
+    the page with the scripts it loads in the same way: its "var held" replaced motion.js's held() until 2026-10-21."""
     owners = {}
     films = sorted(p for p in HERE.glob("*/*.js") if p.parent.name != "node_modules")   # a film made of scene files keeps them in a folder beside the kit
     for script in sorted(HERE.glob("*.js")) + films:
-        for name in set(re.findall(r"^(?:function|var|let|const) ([A-Za-z_]\w*)", script.read_text(encoding="utf-8"), re.M)):
+        for name in set(re.findall(DEFINED, script.read_text(encoding="utf-8"), re.M)):
             owners.setdefault(name, []).append(str(script.relative_to(HERE)).replace("\\", "/"))
-    return {name: files for name, files in owners.items() if len(files) > 1}
+    shared = {name: files for name, files in owners.items() if len(files) > 1}
+    maker = maker_file()
+    if maker:
+        text = maker.read_text(encoding="utf-8")
+        loaded = {Path(src).name for src in re.findall(r'<script src="([^"]+)"', text)}
+        own = "\n".join(re.findall(r"<script>(.*?)</script>", text, re.S))
+        for name in set(re.findall(DEFINED, own, re.M)):
+            theirs = [f for f in owners.get(name, []) if f in loaded]      # a script beside the kit that the maker loads
+            if theirs:
+                shared[name] = sorted(set(shared.get(name, []) + theirs)) + [maker.relative_to(HERE.parent).as_posix()]
+    return shared
 
 
 def missing_of(page_file):
