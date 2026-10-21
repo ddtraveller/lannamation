@@ -486,10 +486,18 @@ function sceneCloth(t) {                // 0-22: one row, still; the music and t
   pen.drawImage(VILLAGE.back, 0, 0);
   hillMist(t);
   pen.drawImage(VILLAGE.front, 0, 0);
-  villageTung(t);
-  villageMagpies(t);
-  sabai(t, where, CLOTH, "back");         // the end of the cloth that hangs behind her shoulder
-  person(720 + SIDE, 1010, sabaiWorn(look, t, where, CLOTH));   // the cloth across her chest, worn under her arm
+  // The z plan (the kit's drawByZ(), oldcartoon.js Z): the village's sheets, its sky and mist first, as painted (the
+  // set). The magpies, which can be anywhere, in "sky": crossing the sky over the village, behind the tung and the
+  // woman. In "people", by their feet: the tung at its foot, 905, and the woman at hers, 1010, the end of her cloth
+  // that hangs behind her shoulder drawn with her, just before her, so that nothing comes between them.
+  drawByZ([
+    {name: "tung", kind: "tung", x: 1570 + SIDE, y: 905, draw: function () { villageTung(t); }},
+    {name: "magpies", kind: "magpie", z: "sky", y: 280, draw: function () { villageMagpies(t); }},
+    {name: "woman", kind: "person", x: 720 + SIDE, y: 1010, draw: function () {
+      sabai(t, where, CLOTH, "back");     // the end of the cloth that hangs behind her shoulder
+      person(720 + SIDE, 1010, sabaiWorn(look, t, where, CLOTH));   // the cloth across her chest, worn under her arm
+    }}
+  ]);
   pen.restore();
 }
 
