@@ -9,11 +9,12 @@ takes a picture of each, and hands the pictures to ffmpeg. Then it says
 what the page said: an error, or a warning from the kit (a name it does
 not know, which changes nothing).
 
-Before the first picture it draws the film's frames once more with no pictures (the kit's vanished(),
-oldcartoon.js; seconds, not the minutes the pictures take) and tells anything that blinked out: drawn in
+Before the first picture it draws the film's frames once more with no pictures (the kit's lookOver(),
+oldcartoon.js; seconds, not the minutes the pictures take) and tells anything that blinked out (drawn in
 one frame and gone in the next, while it could be seen, not gone off the edge, faded, shrunk away or
-taken by a fade to black. It tells them again at the end, and makes the video all the same: stop it and
-mend the scene. --no-vanish leaves the look out.
+taken by a fade to black) and anyone who popped (a joint that jumped in one frame further than a body
+moves). It tells them again at the end, and makes the video all the same: stop it and mend the scene.
+--no-vanish leaves the look out.
 
 In the same look it listens: a sound the picture makes (a rooster's crow, the kit's heard()) is laid under
 the film at its second, over the --audio sound or alone, from sounds.py's out/sounds/NAME.wav (made by
@@ -121,18 +122,17 @@ def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=(), va
         first, last = round(start * FPS), round(end * FPS)
         # what blinks out of the film, told before the pictures, while there is time to stop and mend the scene (a
         # page made before the kit had vanished() has nothing to tell)
-        blinks = []
+        blinks = []                       # what blinked out and who popped: told now, and again at the end
         if vanish:
             looked = time.time()
-            page.evaluate("if (typeof HEARD !== 'undefined') { HEARD = []; }")   # it listens in the same look (heard())
-            blinks = page.evaluate("([a, b, fps]) => typeof vanished === 'function' ? vanished(a, b, fps) : []",
-                                   [first / FPS, last / FPS, FPS])
+            seen = page.evaluate("([a, b, fps]) => typeof lookOver === 'function' ? lookOver(a, b, fps) : "
+                                 "{blinks: typeof vanished === 'function' ? vanished(a, b, fps) : [], calls: [], pops: []}",
+                                 [first / FPS, last / FPS, FPS])
+            blinks, calls = seen["blinks"] + seen["pops"], seen["calls"]
             for blink in blinks:
                 print("warning:", blink, flush=True)
-            print("looked for what blinks out in %.0f seconds: %d found" % (time.time() - looked, len(blinks)), flush=True)
-            calls = page.evaluate("([a, b]) => { if (typeof heardCalls !== 'function') { return []; } var calls = heardCalls()"
-                                  ".filter(function (c) { return c[0] + ((HEARD_SOUNDS[c[1]] || {}).lead || 0) >= a && c[0] < b; });"
-                                  " HEARD = null; return calls; }", [first / FPS, last / FPS])
+            print("looked over the film in %.0f seconds: %d blinked out, %d popped"
+                  % (time.time() - looked, len(seen["blinks"]), len(seen["pops"])), flush=True)
         else:
             calls = page.evaluate("([a, b, fps]) => typeof heard === 'function' ? heard(a, b, fps) : []",
                                   [first / FPS, last / FPS, FPS])

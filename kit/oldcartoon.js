@@ -3071,10 +3071,24 @@ function bendOf(key, gain) {
 //                  comes round
 //   wx, wy         the wrist asked for, from the shoulder, in pixels (down is +y)
 // Changes BENDS[key] when a key is given (bendOf(), and the way it points).
+// How far an arm reaches toward a place "far" from its shoulder, its bones "longest" long together (owner,
+// 2026-10-22, of the kit's research into 2D animation: Spine's IK "softness"): the place itself while it is well
+// within reach; over the last REACH_SOFT of the arm's length, easing toward its full length (never quite there)
+// instead of coming to it at once. A straightening arm then comes to its last few degrees slowly: before, as a hand
+// neared its full reach the elbow turned faster and faster and snapped straight (a herb doctor's arm thrown up,
+// village.html, jumped half his torso in one frame). far, longest: pixels. Returns pixels.
+// e.g. softReach(130, 119)   // 117.3: a hand asked for past the arm's reach falls short of it, the elbow still bent
+var REACH_SOFT = 0.12;
+function softReach(far, longest) {
+  var soft = REACH_SOFT * longest, start = longest - soft;
+  return far <= start ? far : start + soft * (1 - Math.exp(-(far - start) / soft));
+}
+
 // e.g. var at = armJoints(30, 100, 62, 58, 1, "noi/armA", 1);
 function armJoints(wx, wy, upper, lower, outward, key, sure) {
   var must = sure > 1;
-  var far = Math.sqrt(wx * wx + wy * wy) || 1, reach = Math.min(far, upper + lower - 1);
+  var far = Math.sqrt(wx * wx + wy * wy) || 1;
+  var reach = must ? Math.min(far, upper + lower - 1) : softReach(far, upper + lower - 1);   // a hand with a place to be reaches it
   var dx = wx / far, dy = wy / far;
   var seen = key && BENDS[key];
   if (seen && sure < 1 && seen.dx !== undefined && clock - seen.t >= 0 && clock - seen.t <= 0.25) {
@@ -3711,11 +3725,23 @@ function poseAt(t, keys, hold) {
   var u = (t - keys[i][0]) / (keys[i + 1][0] - keys[i][0]);
   u = clamp((u - hold) / (1 - hold));
   u = keys[i + 1][2] === "snap" ? snap(u) : u * u * (3 - 2 * u);   // a key marked "snap" is hit with anticipation and overshoot
-  var out = {}, key, from, to;
-  for (key in a) { out[key] = a[key]; }
+  return poseBlend(a, b, u);
+}
+
+// The look between two looks, a and b, u of the way from a to b (eased already: 0 is a, 1 is b): numbers and pairs
+// of numbers, such as a hand's place, go between the two; a hand to or from a lift (liftHand()) lifts the natural
+// way; a hand one of the two leaves unset (or sets to undefined) goes from or to where it hangs (handRest()), so a
+// pose may let a hand fall to its side or take it up from there without a jump; anything else is a's until half way
+// and b's after; what b does not have fades out (its numbers to 0). This is how poseAt() and poseSteps() go from one
+// pose to the next. a, b: looks; u: 0 to 1. Returns a new look; a and b are not changed.
+// e.g. person(700, GROUND, poseBlend({handA: [30, -80]}, {handA: [60, 20]}, 0.5));
+function poseBlend(a, b, u) {
+  var out = {}, key, from, to, body = b.body || a.body;
+  for (key in a) { if (a[key] !== undefined) { out[key] = a[key]; } }
   for (key in b) {
     from = a[key];
     to = b[key];
+    if (to === undefined) { continue; }              // unset: as if b did not have it (below)
     if (typeof to === "number") {
       from = typeof from === "number" ? from : 0;
       out[key] = from + (to - from) * u;
@@ -3730,20 +3756,132 @@ function poseAt(t, keys, hold) {
       if (key === "handA" || key === "handB") {     // a lift's hand and a plain one: the lift's as the hand that brings its wrist there
         if (to.lift !== undefined) { to = handFor(to[0], to[1]); }
         if (from && from.lift !== undefined) { from = handFor(from[0], from[1]); }
+        if (!from) { from = handRest(key, body); }  // a hand that hung comes up from where it hung
         if (from && from.length >= 2) { from = [from[0], from[1]].concat(to.slice(2)); }
       }
       from = from && from.length === to.length ? from : to;
       out[key] = to.map(function (v, j) { return from[j] + (v - from[j]) * u; });
+      if (key === "handA" || key === "handB") { var swung = handSwing(key, from, to, u); out[key][0] = swung[0]; out[key][1] = swung[1]; }   // by an arc where a line would not do
     } else if (u >= 0.5) {
       out[key] = to;
     }
   }
   for (key in a) {                                  // what the next key does not have fades out
-    if (key in b) { continue; }
+    if (b[key] !== undefined || a[key] === undefined) { continue; }
     if (typeof a[key] === "number") { out[key] = a[key] * (1 - u); }
+    else if ((key === "handA" || key === "handB") && a[key].length >= 2 && a[key].lift === undefined && u < 1) {
+      var rest = handRest(key, body);               // a hand let go falls to where it hangs, and is unset there
+      out[key] = handSwing(key, a[key], rest, u).concat(a[key].slice(2));
+    }
     else if (u >= 0.5) { delete out[key]; }
   }
   return out;
+}
+
+// Where a hand going from one place to another is, u of the way (owner, 2026-10-22: "I want to improve"; the arcs
+// of 2D animation): on the straight line between the two, as any pair of numbers, unless that line passes within
+// HAND_ARC of the shoulder. An arm cannot follow such a line: as the hand goes by the shoulder the way it points
+// turns half round in a few frames, and the arm whips round with it (a herb doctor's hand, from across his body on
+// the stone to over his head, village.html, jumped half his torso in a frame). Then the hand swings round the
+// shoulder instead, its angle and its reach going from the one to the other, the way a shoulder turns: round the
+// arm's own side, never across the middle of the inward arc (SHOULDER). key: "handA" or "handB" (hand B's own side
+// is the other way); from, to: [x, y] from the shoulder, as a look's hand is; u: 0 to 1. Returns [x, y].
+// e.g. handSwing("handB", [36, 52], [-44, -84], 0.5)   // [-68, 41]: down and out to his own side, not through his shoulder
+var HAND_ARC = 45;
+function handSwing(key, from, to, u) {
+  var dx = to[0] - from[0], dy = to[1] - from[1], long = dx * dx + dy * dy;
+  var s = long ? clamp(-(from[0] * dx + from[1] * dy) / long) : 0;
+  if (Math.hypot(from[0] + dx * s, from[1] + dy * s) >= HAND_ARC) { return [mix(from[0], to[0], u), mix(from[1], to[1], u)]; }
+  var outward = key === "handB" ? -1 : 1, cut = (SHOULDER[0] + SHOULDER[1] - 360) / 2;   // the middle of the inward arc
+  function angle(p) { var a = Math.atan2(p[0] * outward, p[1]) * 180 / Math.PI; return a < cut ? a + 360 : a; }
+  var a = mix(angle(from), angle(to), u) * Math.PI / 180, r = mix(Math.hypot(from[0], from[1]), Math.hypot(to[0], to[1]), u);
+  return [Math.sin(a) * outward * r, Math.cos(a) * r];
+}
+
+// Where a hand hangs when a look does not place it, as person() hangs it for one standing: hand A a little out
+// from the body (the body's BODIES hand), hand B a little behind. key: "handA" or "handB"; body: a look's body (a
+// name of BODIES, "slim" when left out). Returns [x, y], from the shoulder as a look's hand is.
+// e.g. handRest("handA", "fat")   // [44, 97]
+function handRest(key, body) {
+  return key === "handA" ? [(BODIES[body] || BODIES.slim).hand, 97] : [-12, 97];
+}
+
+// A look from a track, at t: keys read from a video, ten or more a second (dance_track.js's TRACK), played as one
+// smooth movement (owner, 2026-10-22: "I want to improve"). poseAt() eases into each key and out of it, which suits
+// poses held a second or two apart; on a track it stopped the dancer and started her again ten times a second, each
+// start sudden enough to pop (checks/pop_check.py), and a hand the video lost for one frame went there and back.
+// Here each number, and each list of numbers (a hand's place, its curls), is the average of the keys near t, the
+// nearer counting more (a bell "soft" seconds wide, 0.12 unless told), over the keys that have it, when the nearest
+// key has it; a raised foot (raise) comes up and goes down by degrees, a key without one counting as a foot on the
+// ground; the eyes and the mouth (TRACK_SHARP) are the nearest key's, as eyes dart and a blink is quick. Where no
+// key is near (before the first, after the last, in a gap), the nearest key's look. t: seconds; keys: [[second,
+// look], ...], the seconds rising; soft: seconds. Returns a new look; the keys are not changed.
+// e.g. var pose = trackAt(t + 20, TRACK);
+var TRACK_SHARP = ["glance", "blink", "mouth"];
+function trackAt(t, keys, soft) {
+  soft = soft || 0.12;
+  var lo = 0, hi = keys.length - 1;
+  while (lo < hi) {                                // the first key at or after t
+    var mid = (lo + hi) >> 1;
+    if (keys[mid][0] < t) { lo = mid + 1; } else { hi = mid; }
+  }
+  var first = lo, last = lo;
+  while (first > 0 && keys[first - 1][0] >= t - 3 * soft) { first--; }
+  while (last < keys.length - 1 && keys[last + 1][0] <= t + 3 * soft) { last++; }
+  var nearest = keys[lo > 0 && t - keys[lo - 1][0] < keys[lo][0] - t ? lo - 1 : lo][1];
+  var sum = {}, weight = {}, all = 0, lift = [0, 0], lifted = 0, leg = null, legWeight = 0;
+  for (var i = first; i <= last; i++) {
+    var d = (keys[i][0] - t) / soft, w = Math.exp(-d * d / 2), look = keys[i][1];
+    all += w;
+    if (look.raise) {
+      lift[0] += look.raise[1] * w;
+      lift[1] += look.raise[2] * w;
+      lifted += w;
+      if (w > legWeight) { leg = look.raise[0]; legWeight = w; }
+    }
+    for (var key in look) {
+      var v = look[key];
+      if (key === "raise" || TRACK_SHARP.indexOf(key) >= 0) { continue; }
+      if (typeof v === "number") {
+        sum[key] = (sum[key] || 0) + v * w;
+      } else if (v && v.length && typeof v[0] === "number" && (!sum[key] || sum[key].length === v.length)) {
+        sum[key] = sum[key] || v.map(function () { return 0; });
+        for (var j = 0; j < v.length; j++) { sum[key][j] += v[j] * w; }
+      } else {
+        continue;
+      }
+      weight[key] = (weight[key] || 0) + w;
+    }
+  }
+  var out = Object.assign({}, nearest);
+  delete out.raise;
+  for (key in sum) {
+    if (nearest[key] === undefined || weight[key] < 1e-6) { continue; }
+    out[key] = typeof sum[key] === "number" ? sum[key] / weight[key] : sum[key].map(function (v) { return v / weight[key]; });
+  }
+  if (all > 1e-6 && lifted / all > 0.02) { out.raise = [leg, lift[0] / all, lift[1] / all]; }
+  else if (all <= 1e-6 && nearest.raise) { out.raise = nearest.raise; }
+  return out;
+}
+
+// A look that changes at given seconds, easing into each change over "mix" seconds from its second, where a scene
+// would otherwise switch a look in one frame ("t < 5 ? one : other"), which pops (owner, 2026-10-22, of the kit's
+// research: Spine, Rive and Unity ease from one pose to the next over a mix time; checks/pop_check.py finds the
+// pops). Before the first step's second its look holds; after a step's mix, that step's look holds until the next.
+// A step [second, look, "snap"] is hit as poseAt()'s "snap" keys are, with anticipation and overshoot.
+//   t      seconds
+//   steps  [[second, look], [second, look, "snap"], ...]: at least one, the seconds rising
+//   mix    seconds, 0.25 unless told: how long each change takes
+// Returns a new look (a copy of a step's, or poseBlend()'s between two); the steps are not changed.
+// e.g. person(700, GROUND, Object.assign(cast("king"), poseSteps(t, [[0, {handA: [20, -60]}], [5, {handA: [-40, -120]}]])));
+function poseSteps(t, steps, mix) {
+  mix = mix === undefined ? 0.25 : mix;
+  var i = 0;
+  while (i < steps.length - 1 && steps[i + 1][0] <= t) { i++; }
+  if (i === 0 || t >= steps[i][0] + mix) { return Object.assign({}, steps[i][1]); }
+  var u = clamp((t - steps[i][0]) / mix);
+  u = steps[i][2] === "snap" ? snap(u) : u * u * (3 - 2 * u);
+  return poseBlend(steps[i - 1][1], steps[i][1], u);
 }
 
 // where the joint of two bones lies, from (x1, y1) toward (x2, y2); the
@@ -10953,28 +11091,20 @@ function heardCalls() {
   return calls;
 }
 
-// from, to: seconds of the page's film, drawn by the page's draw(t); fps: frames a second (30 when left out).
-// Returns the calls the picture made from "from" to "to" (heardCalls(): a call's file may start before "from"). It
-// draws on the page's sheet as draw(t)
-// does, so it is for a page with rendering on, as vanished() is; HEARD is null again after, even when a frame throws.
+// from, to: seconds of the page's film; fps: frames a second (30 when left out). Returns hearWatch()'s calls: those
+// the picture makes heard from "from" to "to" (a call's file may start before "from"), from a pass of its own (render.py
+// hears them in its one look, lookOver()).
 // e.g. heard(0, 35);   // [[22.2, "rooster-crow", 0.28], [27.9, "rooster-crow", 0.28]]
 function heard(from, to, fps) {
-  fps = fps || 30;
-  HEARD = [];
-  try {
-    for (var n = Math.round(from * fps); n < Math.round(to * fps); n++) { draw(n / fps); }
-    return heardCalls().filter(function (call) { return call[0] + ((HEARD_SOUNDS[call[1]] || {}).lead || 0) >= from && call[0] < to; });
-  } finally {
-    HEARD = null;
-  }
+  return filmWatch(from, to, fps, {calls: hearWatch(from, to)}).calls;
 }
 
 // ---------- what blinks out of a film ----------
 // Nothing should blink out of a film (owner, 2026-10-22: "Everything should either continue off the edge, fade and
 // shrink away, be part of a scene that is going to black or fade out. Sprites shouldn't just blink off the canvas").
-// vanished() draws a film's frames one after another, as a render does but keeping no pictures, notes where on the
-// film each person (person()), each of a scene's life (decorate.js) and each of drawByZ()'s sprites that gives an x
-// is, and finds what is drawn in one frame and not in the next. That is all right when, in the frame it was last
+// vanished() looks over a film's frames (filmWatch(), below), notes where on the film each person (person()), each
+// of a scene's life (decorate.js) and each of drawByZ()'s sprites that gives an x is, and finds what is drawn in one
+// frame and not in the next (blinkWatch()). That is all right when, in the frame it was last
 // drawn,
 //   most of it (edge) was already off the film,
 //   it was drawn faint (pen.globalAlpha at most faint),
@@ -10988,32 +11118,54 @@ function heard(from, to, fps) {
 // small copy of each frame is that the pictures are compared on.
 var VANISH = {edge: 0.8, faint: 0.15, small: 0.03, dark: 20, still: 6, snap: 480};
 
-// from, to: seconds of the page's film, drawn by the page's draw(t); fps: frames a second (30 when left out).
-// Returns a list of sentences, one for each thing that blinked out ([] when nothing did), each with the first second
-// it did and how many times. It draws on the page's sheet as draw(t) does, so it is for a page with rendering on
-// (render.py, checks/vanish_check.py): a render after it starts with a jump of the clock, and settled() forgets what
-// it drew. It puts person(), drawByZ(), filmFrameOnce() and LIFE_KINDS back as they were, even when a frame throws.
-// e.g. vanished(0, 22);   // ["the rooster (rooster) blinked out at 3.47 s, at x 1010-1060, y 930-1000"]
-function vanished(from, to, fps) {
+// What pops (owner, 2026-10-22, of the kit's research into 2D animation: Spine, Rive and Unity ease from one pose to
+// the next over a mix time, where a scene that sets a look at a second, "t < 5 ? one : other", changes it in one
+// frame). A person's elbows, hands, knees, ankles and crown are measured from their hip in lengths of their own torso
+// (hip to neck), so that walking across the film and a camera's push are not counted; a joint that moves "jump" of a
+// torso or more between two frames popped, unless the person has turned to face the other way (the kit's people turn
+// in a frame) or the film is dark where they are (a cut's fade). A person is known from frame to frame as a thing
+// is for blinkWatch(): by their name (the sprite they are in, else their id) and, among those of a name facing the
+// same way, as the nearest, no further than their own width (a person's place in the frame's order changes as others
+// come and go). And a pop is sudden: a joint that went "jump" or more but less than "sudden" times as far as it went
+// the frame before is a quick move, not a pop (an arm thrown up, eased, goes faster for a few frames together; a look
+// switched at a second goes from still to all the way in one). jump: a part of the torso; sudden: times; joints:
+// person()'s.
+var POP = {jump: 0.35, sudden: 2, joints: ["elbowA", "elbowB", "handA", "handB", "kneeA", "kneeB", "ankleA", "ankleB", "crown"]};
+
+// ---------- a look over a film before it is rendered ----------
+// filmWatch(from, to, fps, watchers) draws a film's frames one after another, as a render does but keeping no
+// pictures, and lets watchers see what each frame drew: every person (person(): the name of the sprite they are in,
+// else their id; their joints and the way they face), every one of a scene's life (decorate.js's kinds) and every
+// drawByZ() sprite that gives an x, each with its box on the film and how faint it was drawn, and a small copy of the
+// frame. A watcher is an object of three functions, each left out when it is not wanted: start(), before the first
+// frame; frame(now, last, inBox), after each frame (now and last: {t, things: [{name, kind, box, alpha, most, who,
+// joints, face}], picture}; inBox(box, one, two): the brightness of a picture in a box of the film, or how much two
+// pictures differ there, 0-255, or null when the box holds none of the film); result(), what it gives back.
+// lookOver() runs the three of the kit's: blinkWatch(), hearWatch() and popWatch(), in one pass, as render.py does.
+// from, to: seconds of the page's film (its draw(t)); fps: frames a second (30 when left out); watchers: {name:
+// watcher}. Returns {name: what that watcher's result() gives}. It draws on the page's sheet as draw(t) does, so it
+// is for a page with rendering on (render.py, the checks): a render after it starts with a jump of the clock, and
+// settled() forgets what it drew. It puts person(), drawByZ(), filmFrameOnce() and LIFE_KINDS back as they were,
+// even when a frame throws.
+// e.g. var seen = filmWatch(0, 22, 30, {blinks: blinkWatch()}).blinks;
+function filmWatch(from, to, fps, watchers) {
   fps = fps || 30;
   var keep = {person: window.person, drawByZ: window.drawByZ, filmFrameOnce: window.filmFrameOnce};
   var kinds = typeof LIFE_KINDS === "undefined" ? {} : LIFE_KINDS, keepKinds = Object.assign({}, kinds);
-  var now = [], within = null, blinks = {}, order = [];
+  var names = Object.keys(watchers), now = null, within = null;
   var small = document.createElement("canvas"), scale = VANISH.snap / FILM.width;
   small.width = VANISH.snap;
   small.height = Math.round(FILM.height * scale);
   var brush = small.getContext("2d", {willReadFrequently: true});
 
   function area(box) { return Math.max(0, box[2] - box[0]) * Math.max(0, box[3] - box[1]); }
-  function note(name, kind, box) {                 // box: in pen's pixels, as the thing was drawn
+  function note(name, kind, box, more) {           // box: in pen's pixels, as the thing was drawn
     if (pen.canvas !== FILM) { return; }           // a figure drawn on a scratch sheet to be measured is not in the film
     var m = pen.getTransform(), a = m.transformPoint(new DOMPoint(box[0], box[1])), b = m.transformPoint(new DOMPoint(box[2], box[3]));
     var on = [Math.min(a.x, b.x), Math.min(a.y, b.y), Math.max(a.x, b.x), Math.max(a.y, b.y)];
-    now.push({name: name, kind: kind, alpha: pen.globalAlpha, box: on, most: area(on)});
+    now.things.push(Object.assign({name: name, kind: kind, alpha: pen.globalAlpha, box: on, most: area(on)}, more));
     if (within) { within.noted = true; }
   }
-  // what the film shows inside box (the film's pixels): its brightness in a frame (one picture), and how much two
-  // frames differ there (two). Gives back a number 0-255, or null when the box holds none of the film.
   function inBox(box, one, two) {
     var left = Math.max(0, Math.floor(box[0] * scale)), right = Math.min(small.width, Math.ceil(box[2] * scale));
     var top = Math.max(0, Math.floor(box[1] * scale)), bottom = Math.min(small.height, Math.ceil(box[3] * scale));
@@ -11028,19 +11180,13 @@ function vanished(from, to, fps) {
     }
     return sum / count;
   }
-  function blinked(one, before, after, t) {        // whether "one", drawn in the frame before and not in this one, blinked out
-    var box = one.box, film = [0, 0, FILM.width, FILM.height];
-    var inside = area([Math.max(box[0], 0), Math.max(box[1], 0), Math.min(box[2], film[2]), Math.min(box[3], film[3])]);
-    if (area(box) === 0 || inside <= (1 - VANISH.edge) * area(box)) { return false; }
-    if (one.alpha <= VANISH.faint || area(box) <= VANISH.small * one.most) { return false; }
-    var light = Math.min(inBox(box, before), inBox(box, after)), change = inBox(box, before, after);
-    return light >= VANISH.dark && change >= VANISH.still;
-  }
 
   try {
     window.person = function (x, y, look) {
+      var who = (look && look.id) || "n" + DRAWN;  // the name person() itself goes by (it counts DRAWN up as it draws)
       var given = keep.person.apply(this, arguments), size = (look && look.size) || 1;
-      note((within && within.name) || (look && look.id) || "someone", "person", [x - 60 * size, y - 330 * size, x + 60 * size, y]);
+      note((within && within.name) || (look && look.id) || "someone", "person", [x - 60 * size, y - 330 * size, x + 60 * size, y],
+           {who: who, joints: given, face: (look && look.face) || 1});
       return given;
     };
     Object.keys(keepKinds).forEach(function (kind) {
@@ -11067,49 +11213,173 @@ function vanished(from, to, fps) {
       }));
     };
     window.filmFrameOnce = function () {           // a frame drawn again (one that watches, or the frames a jump paints first): only the last counts
-      now = [];
+      now.things = [];
       return keep.filmFrameOnce.apply(this, arguments);
     };
-    var last = null, lastPicture = null;
+    names.forEach(function (name) { if (watchers[name].start) { watchers[name].start(); } });
+    var last = null;
     for (var n = Math.round(from * fps); n < Math.round(to * fps); n++) {
-      now = [];
+      now = {t: n / fps, things: []};
       draw(n / fps);
       brush.clearRect(0, 0, small.width, small.height);
       brush.drawImage(FILM, 0, 0, small.width, small.height);
-      var picture = brush.getImageData(0, 0, small.width, small.height).data, drawn = now, taken = [];
-      if (last) {
-        last.forEach(function (one) {
-          var best = -1, far = Infinity;
-          drawn.forEach(function (other, k) {
-            if (taken[k] || other.name !== one.name || other.kind !== one.kind) { return; }
-            var gap = Math.hypot((other.box[0] + other.box[2] - one.box[0] - one.box[2]) / 2, (other.box[1] + other.box[3] - one.box[1] - one.box[3]) / 2);
-            if (gap < far) { far = gap; best = k; }
-          });
-          if (best >= 0) {
-            taken[best] = true;
-            drawn[best].most = Math.max(drawn[best].most, one.most);
-          } else if (blinked(one, lastPicture, picture)) {
-            var told = one.name + " (" + one.kind + ")";
-            if (!blinks[told]) {
-              blinks[told] = {at: n / fps, times: 0, box: one.box.map(function (v) { return Math.round(v / PIX); })};
-              order.push(told);
-            }
-            blinks[told].times++;
-          }
-        });
-      }
-      last = drawn;
-      lastPicture = picture;
+      now.picture = brush.getImageData(0, 0, small.width, small.height).data;
+      var seen = now;
+      names.forEach(function (name) { if (watchers[name].frame) { watchers[name].frame(seen, last, inBox); } });
+      last = now;
     }
   } finally {
     window.person = keep.person;
     window.drawByZ = keep.drawByZ;
     window.filmFrameOnce = keep.filmFrameOnce;
     Object.keys(keepKinds).forEach(function (kind) { kinds[kind] = keepKinds[kind]; });
+    names.forEach(function (name) { if (watchers[name].stop) { watchers[name].stop(); } });
   }
-  return order.map(function (told) {
-    var one = blinks[told];
-    return told + " blinked out at " + one.at.toFixed(2) + " s, at x " + one.box[0] + "-" + one.box[2] + ", y " + one.box[1] + "-" +
-           one.box[3] + (one.times > 1 ? " (and " + (one.times - 1) + " more time" + (one.times > 2 ? "s" : "") + ")" : "");
-  });
+  var out = {};
+  names.forEach(function (name) { out[name] = watchers[name].result ? watchers[name].result() : null; });
+  return out;
+}
+
+// A watcher of filmWatch() for what blinks out (VANISH, above). Returns the watcher; its result is a list of
+// sentences, one for each thing that blinked out ([] when nothing did), with the first second it did and how many
+// times. e.g. filmWatch(0, 22, 30, {blinks: blinkWatch()}).blinks
+function blinkWatch() {
+  var blinks = {}, order = [];
+  function area(box) { return Math.max(0, box[2] - box[0]) * Math.max(0, box[3] - box[1]); }
+  function blinked(one, before, after, inBox) {    // whether "one", drawn in the frame before and not in this one, blinked out
+    var box = one.box, film = [0, 0, FILM.width, FILM.height];
+    var inside = area([Math.max(box[0], 0), Math.max(box[1], 0), Math.min(box[2], film[2]), Math.min(box[3], film[3])]);
+    if (area(box) === 0 || inside <= (1 - VANISH.edge) * area(box)) { return false; }
+    if (one.alpha <= VANISH.faint || area(box) <= VANISH.small * one.most) { return false; }
+    var light = Math.min(inBox(box, before), inBox(box, after)), change = inBox(box, before, after);
+    return light >= VANISH.dark && change >= VANISH.still;
+  }
+  return {
+    frame: function (now, last, inBox) {
+      if (!last) { return; }
+      var taken = [];
+      last.things.forEach(function (one) {
+        var best = -1, far = Infinity;
+        now.things.forEach(function (other, k) {
+          if (taken[k] || other.name !== one.name || other.kind !== one.kind) { return; }
+          var gap = Math.hypot((other.box[0] + other.box[2] - one.box[0] - one.box[2]) / 2, (other.box[1] + other.box[3] - one.box[1] - one.box[3]) / 2);
+          if (gap < far) { far = gap; best = k; }
+        });
+        if (best >= 0) {
+          taken[best] = true;
+          now.things[best].most = Math.max(now.things[best].most, one.most);
+        } else if (blinked(one, last.picture, now.picture, inBox)) {
+          var told = one.name + " (" + one.kind + ")";
+          if (!blinks[told]) {
+            blinks[told] = {at: now.t, times: 0, box: one.box.map(function (v) { return Math.round(v / PIX); })};
+            order.push(told);
+          }
+          blinks[told].times++;
+        }
+      });
+    },
+    result: function () {
+      return order.map(function (told) {
+        var one = blinks[told];
+        return told + " blinked out at " + one.at.toFixed(2) + " s, at x " + one.box[0] + "-" + one.box[2] + ", y " + one.box[1] + "-" +
+               one.box[3] + (one.times > 1 ? " (and " + (one.times - 1) + " more time" + (one.times > 2 ? "s" : "") + ")" : "");
+      });
+    }
+  };
+}
+
+// A watcher of filmWatch() for what the picture makes heard (hear(), above), from "from" to "to" (seconds). Returns
+// the watcher; its result is heardCalls()'s, those whose sound is heard in that while (a call's file may start
+// before "from"). HEARD is a list while it watches and null again after.
+// e.g. filmWatch(0, 35, 30, {calls: hearWatch(0, 35)}).calls
+function hearWatch(from, to) {
+  var calls = [];
+  return {
+    start: function () { HEARD = []; },
+    stop: function () {
+      calls = heardCalls().filter(function (call) { return call[0] + ((HEARD_SOUNDS[call[1]] || {}).lead || 0) >= from && call[0] < to; });
+      HEARD = null;
+    },
+    result: function () { return calls; }
+  };
+}
+
+// A watcher of filmWatch() for what pops (POP, above). Returns the watcher; its result is a list of sentences, one
+// for each person who popped ([] when none did), with the joint, how far it jumped, the first second and how many
+// times. e.g. filmWatch(0, 40, 30, {pops: popWatch()}).pops
+function popWatch() {
+  var pops = {}, order = [];
+  function shape(one) {                            // its joints from the hip, in torsos; null when it gives none
+    var j = one.joints;
+    if (!j || !j.hip || !j.neck) { return null; }
+    var torso = Math.hypot(j.neck[0] - j.hip[0], j.neck[1] - j.hip[1]);
+    if (torso < 1) { return null; }
+    var out = {torso: torso};
+    POP.joints.forEach(function (name) {
+      if (j[name]) { out[name] = [(j[name][0] - j.hip[0]) / torso, (j[name][1] - j.hip[1]) / torso]; }
+    });
+    return out;
+  }
+  return {
+    frame: function (now, last, inBox) {
+      if (!last) { return; }
+      var taken = [];
+      now.things.forEach(function (one) {
+        if (one.kind !== "person") { return; }
+        var best = -1, far = Infinity, mid = (one.box[0] + one.box[2]) / 2;
+        last.things.forEach(function (other, k) {   // the same person in the frame before
+          if (taken[k] || other.kind !== "person" || other.name !== one.name || other.face !== one.face) { return; }
+          var gap = Math.abs((other.box[0] + other.box[2]) / 2 - mid);
+          if (gap < far && gap < one.box[2] - one.box[0]) { far = gap; best = k; }
+        });
+        if (best < 0) { return; }
+        taken[best] = true;
+        var was = last.things[best];
+        var a = shape(was), b = shape(one);
+        if (!a || !b || Math.abs(b.torso / a.torso - 1) > 0.3) { return; }   // a cut to another shot, or another person by that name
+        var worst = null, far = 0;
+        one.moves = {};                                // how far each joint went, for the frame after
+        POP.joints.forEach(function (name) {
+          if (!a[name] || !b[name]) { return; }
+          var d = one.moves[name] = Math.hypot(b[name][0] - a[name][0], b[name][1] - a[name][1]);
+          if (d > far) { far = d; worst = name; }
+        });
+        var light = Math.min(inBox(one.box, last.picture) || 0, inBox(one.box, now.picture) || 0);
+        if (light < VANISH.dark) { return; }
+        if (far < POP.jump || far < POP.sudden * ((was.moves && was.moves[worst]) || 0)) { return; }   // not far, or not sudden
+        var told = one.name === one.who ? one.who : one.name + " (" + one.who + ")";
+        if (!pops[told]) {
+          pops[told] = {at: now.t, times: 0, joint: worst, far: far};
+          order.push(told);
+        }
+        pops[told].times++;
+      });
+    },
+    result: function () {
+      return order.map(function (told) {
+        var one = pops[told];
+        return told + " popped at " + one.at.toFixed(2) + " s: the " + one.joint + " jumped " + one.far.toFixed(2) +
+               " of a torso in one frame" + (one.times > 1 ? " (and " + (one.times - 1) + " more time" + (one.times > 2 ? "s" : "") + ")" : "");
+      });
+    }
+  };
+}
+
+// The kit's look over a film before it is rendered, in one pass: {blinks, calls, pops}, as blinkWatch(),
+// hearWatch() and popWatch() give them. from, to, fps: as filmWatch() takes them. render.py runs it.
+// e.g. var look = lookOver(0, 22);   // {blinks: [], calls: [[21, "rooster-crow", 0.28]], pops: []}
+function lookOver(from, to, fps) {
+  return filmWatch(from, to, fps, {blinks: blinkWatch(), calls: hearWatch(from, to), pops: popWatch()});
+}
+
+// from, to: seconds of the page's film; fps: frames a second (30 when left out). Returns blinkWatch()'s sentences:
+// what blinked out. e.g. vanished(0, 22);   // ["the rooster (rooster) blinked out at 3.47 s, at x 1010-1060, y 930-1000"]
+function vanished(from, to, fps) {
+  return filmWatch(from, to, fps, {blinks: blinkWatch()}).blinks;
+}
+
+// from, to: seconds of the page's film; fps: frames a second (30 when left out). Returns popWatch()'s sentences:
+// who popped. e.g. popped(0, 40);   // ["the king (n1) popped at 5.00 s: the elbowB jumped 0.71 of a torso in one frame"]
+function popped(from, to, fps) {
+  return filmWatch(from, to, fps, {pops: popWatch()}).pops;
 }

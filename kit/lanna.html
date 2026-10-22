@@ -326,7 +326,8 @@ function sceneDawn(t) {
   for (var n = 0; n < 3; n++) {
     three.push(kid(n, mix(60 - n * 150, 450 - n * 130, walk), GROUND + 60, {
       late: n * 0.3, step: walk < 1 ? t * 1.6 : 0, at: [640, 560], smile: 1, wonder: 0.3,
-      handA: walk < 1 ? undefined : [36, -70 - hop(t, n * 0.3) * 20], mouth: mouthAt(SUNG)   // walking, the arms swing by themselves; then one waves
+      handA: poseSteps(t, [[0, {}], [7, {handA: [36, -70 - hop(t, n * 0.3) * 20]}]]).handA,   // walking, the arms swing by themselves; then one waves, coming up from where it hung (poseSteps: once in one frame, a pop)
+      mouth: mouthAt(SUNG)
     }));
   }
   drawByZ(three);
@@ -345,13 +346,13 @@ function sceneDawn(t) {
 
 function sceneInside(t) {
   pen.drawImage(INSIDE, 0, 0);
-  // the older girl, getting ready: hands to the hair, then the sabai, then a turn to the door
-  var hair = t < 1.6, sash = t >= 1.6 && t < 3.2;
+  // the older girl, getting ready: hands to the hair, then the sabai, then a turn to the door, her hands going
+  // from one to the next in a quarter of a second (poseSteps: once each in one frame, a pop)
+  var hair = t < 1.6;
   person(760, GROUND - 10, Object.assign({}, CAST.sister, {
-    late: 0, spring: 0.2, mouth: mouthAt(SUNG), smile: 1, turn: 0.5, at: hair ? [380, 500] : [1500, 600],
-    handA: hair ? [28, -108] : sash ? [26, -36] : undefined, handB: hair ? [-30, -104] : sash ? [-28, -34] : undefined,
-    wristA: hair ? -0.6 : 0, wristB: hair ? 0.6 : 0
-  }));
+    late: 0, spring: 0.2, mouth: mouthAt(SUNG), smile: 1, turn: 0.5, at: hair ? [380, 500] : [1500, 600]
+  }, poseSteps(t, [[0, {handA: [28, -108], handB: [-30, -104], wristA: -0.6, wristB: 0.6}],
+                   [1.6, {handA: [26, -36], handB: [-28, -34]}], [3.2, {}]])));
 }
 
 function sceneDoor(t) {
@@ -371,7 +372,7 @@ function sceneDoor(t) {
   for (var n = 0; n < 3; n++) {                      // the three wait below, jumping, then follow her
     four.push(kid(n, mix(450 - n * 130, 1700 - n * 150, gone), GROUND + 60, {
       id: "n" + n, late: n * 0.3, spring: 1, step: gone > 0 ? t * 1.6 : 0, at: [760, 600], smile: 1, wonder: 0.4,
-      handA: gone > 0 ? undefined : [40, -80 - hop(t, n * 0.3) * 20], mouth: mouthAt(SUNG)
+      handA: poseSteps(t, [[0, {handA: [40, -80 - hop(t, n * 0.3) * 20]}], [4, {}]]).handA, mouth: mouthAt(SUNG)   // the wave comes down as they go
     }));
   }
   // the sister: in the doorway, then down the stairs, then away with them
@@ -480,18 +481,24 @@ function sceneLane(t) {
   }
   drawByZ(sprites);
   pen.drawImage(LANE_FRONT, 0, 0);
+  // One game goes to the next through black, as one scene to the next (cutFade), quicker, as a game is short: once
+  // the players stood where one game had them in one frame and in the next game's places the next (a pop).
+  var changes = [CUES[3][0] * BEAT + 2, CUES[4][0] * BEAT - 1, CUES[5][0] * BEAT - 1];   // as "game" above counts them
+  changes.forEach(function (at) { cutFade(1 - between(Math.abs(clock - at), 0, GAME_FADE)); });
 }
+
+var GAME_FADE = 0.3;                                 // seconds to black, and as long back
 
 function sceneDance(t) {
   pen.drawImage(LANE, 0, 0);
   // The z plan (drawByZ): the lane first, as painted, and its near side last. The crowd behind them (3, "back"). In
   // "people", by their feet: the sister and two of the children (GROUND + 60), in the order listed, and the youngest a
   // step nearer (GROUND + 90).
-  var pose = poseAt(t * 1.0 + 20, TRACK, 0);         // the sister dances the dance read from the video
+  var pose = trackAt(t + 20, TRACK);                 // the sister dances the dance read from the video, as one movement
   var sprites = [{name: "crowd", kind: "crowd", z: "back", y: 866, draw: function () { crowd(t, 866, 0); }},
                  standing("sister", 820, GROUND + 60, Object.assign({}, CAST.sister, {late: 0, spring: 0.1, mouth: mouthAt(SUNG), smile: 1}, pose))];
   for (var n = 0; n < 3; n++) {                      // the children copy her, each a little late
-    var copy = poseAt(t + 20 - 0.4 * (n + 1), TRACK, 0);
+    var copy = trackAt(t + 20 - 0.4 * (n + 1), TRACK);
     sprites.push(kid(n, [440, 1200, 1480][n], GROUND + 60 + (n === 2 ? 30 : 0), Object.assign({late: n * 0.3, spring: 0.2, smile: 1, at: [820, 400]}, copy,
         {glance: undefined, blink: undefined})));
   }
@@ -520,15 +527,18 @@ function sceneNight(t) {
       }
     }}
   ];
-  var bow = between(t, 12, 12.6) * (1 - between(t, 15.4, 16));   // a wai to say good night
-  var pose = poseAt(t + 40, TRACK, 0);
-  sprites.push(standing("sister", 820, GROUND + 60, Object.assign({}, CAST.sister, {late: 0, spring: 0.1, mouth: mouthAt(SUNG), smile: 1}, pose,
-    bow > 0.5 ? {handA: [24, 6], handB: [-24, 6], bend: 0.28, sit: 0, tilt: 0, raise: undefined, turn: 1, at: [720, 1300]} : {})));
+  // A wai to say good night, eased in and out (poseBlend: once all at once, a pop); a raised foot comes down to it.
+  var bow = between(t, 12, 12.6) * (1 - between(t, 15.4, 16)), meet = bow * bow * (3 - 2 * bow);
+  var pose = trackAt(t + 40, TRACK);
+  var wai = {handA: [24, 6], handB: [-24, 6], bend: 0.28, turn: 1};
+  sprites.push(standing("sister", 820, GROUND + 60, Object.assign({}, CAST.sister, {late: 0, spring: 0.1, mouth: mouthAt(SUNG), smile: 1},
+    poseBlend(pose, Object.assign({sit: 0, tilt: 0, raise: pose.raise ? [pose.raise[0], 0, 0] : undefined}, wai), meet),
+    bow > 0.5 ? {at: [720, 1300]} : {})));
   for (var k = 0; k < 3; k++) {
     var late = k * 0.5 + 0.1, high = hop(t, late);
-    sprites.push(kid(k, [430, 1180, 1460][k], GROUND + 60, Object.assign({late: late, mouth: mouthAt(SUNG), smile: 1, at: [800, 300 - high * 40],
-      handA: [44, -84 - high * 24], handB: [-44, -84 - hop(t, late + 0.5) * 24]},
-      bow > 0.5 ? {handA: [24, 6], handB: [-24, 6], bend: 0.28, turn: 1, at: [720, 1300]} : {})));
+    sprites.push(kid(k, [430, 1180, 1460][k], GROUND + 60, Object.assign({late: late, mouth: mouthAt(SUNG), smile: 1, at: [800, 300 - high * 40]},
+      poseBlend({handA: [44, -84 - high * 24], handB: [-44, -84 - hop(t, late + 0.5) * 24]}, wai, meet),
+      bow > 0.5 ? {at: [720, 1300]} : {})));
   }
   drawByZ(sprites);
   pen.fillStyle = "rgba(70, 40, 110, " + mix(0.08, 0.16, between(t, 0, 8)) + ")";

@@ -96,6 +96,40 @@ nearest. It wraps `person()`, `drawByZ()`, `filmFrameOnce()` and `LIFE_KINDS` wh
   with an x; and a sprite whose `draw()` sometimes paints nothing (`if (t > 3.5) { birds(...); }`): it is still drawn.
   A sprite of its own (no person or animal in it) is taken to stand in a box 160 wide and 160 high above its feet.
 
+## Nothing pops (2026-10-22)
+
+Of the kit's research into 2D animation (NotebookLM, 2026-10-22): Spine, Rive and Unity ease from one pose to the next
+over a mix time, where a scene that sets a look at a second ("t < 5 ? one : other") changes it in one frame, and an
+arm or a leg jumps. The owner: "I don't need things to be identical, I want to improve."
+
+- **`popped(from, to)`** (oldcartoon.js, beside `vanished()`) draws the film as `vanished()` does and measures each
+  person's elbows, hands, knees, ankles and crown from their hip, in lengths of their own torso, so that walking and a
+  camera's push do not count. A joint that moves `POP.jump` (0.35) of a torso or more in one frame, and at least
+  `POP.sudden` (2) times as far as it moved the frame before, popped: a quick move that is eased goes fast for a few
+  frames together and is not told. A turn to face the other way and a fade to black are let go. `filmWatch()` draws
+  the frames once for any number of watchers (`blinkWatch()`, `hearWatch()`, `popWatch()`); `lookOver()` is the three
+  together, and `render.py` runs it before its first picture and prints "... popped at ...".
+- **`checks/pop_check.py PAGE`** runs it with no render; `--from`, `--to`. Exit code 1 when someone popped. Not in
+  `kit_check.py`.
+- **The mends**, in the kit:
+  - `poseSteps(t, steps, mix)`: a look that changes at given seconds, each change eased over `mix` (0.25 s). Where a
+    scene wrote `t < 1.6 ? a : b`, it writes `poseSteps(t, [[0, a], [1.6, b]])`.
+  - `poseBlend(a, b, u)`: the look between two (what `poseAt()` and `poseSteps()` use); a hand one of them leaves unset
+    comes from or goes to where it hangs (`handRest()`), so letting a hand go is not a jump.
+  - `handSwing(key, from, to, u)`: a hand goes in a straight line unless that line passes within `HAND_ARC` (45) of
+    its shoulder; then it swings round the shoulder on the arm's own side, as an arm can. `poseBlend()` moves hands by it.
+  - `trackAt(t, keys, soft)`: a track read from a video (`TRACK`, ten keys a second) played as one movement, each
+    number the average of the keys near t; `poseAt()` stopped and started the dancer at every key.
+  - `softReach()`: an arm coming to its full reach slows into it (Spine's IK softness) instead of snapping straight.
+- **What it found** (2026-10-22, and after): `village.html` 8 people popping, now none (the three throwing their arms
+  up as the medicine is ready, the herb doctor's far hand through his shoulder, the night's dancers losing their lift
+  when their hands were copied for the wai); `lanna.html` 38 pops, now 7; `dance.html` 72, now 18. What is left in
+  those two is the dance: a hand the dancer sweeps across her body passes in front of its own shoulder, and the arm,
+  which keeps the wrist out from the shoulder, turns over (an arm foreshortened toward us is not drawn yet). The
+  Maeng scenes s11 (the king at 5.00 s, the lad at 30.53 s) and s13 (the crowd's waves) are told to their author.
+- **What it cannot see**: a person not drawn by `person()`; a pop smaller than a third of a torso (a hand's curl, a
+  face).
+
 ## The credits (2026-10-19)
 
 `maeng/s15_credits.js`, after the goodbye: Doi Khao Khwai at night under its stars, the credits rolling up over

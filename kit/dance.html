@@ -45,7 +45,7 @@ var PLACE = (function () {               // the set is painted once, when the pa
 
 function sceneDance(t) {
   pen.drawImage(PLACE, 0, 0);
-  var pose = poseAt(t, TRACK, 0);        // hold 0: the track is dense, so it plays smoothly
+  var pose = trackAt(t, TRACK);          // the track as one movement, not stopping at each key
   stick(440, GROUND + 60, Object.assign({size: 1.3, dance: true}, pose));
   person(1010, GROUND + 60, cast("dancer", Object.assign({late: 0, spring: 0.08, smile: 1}, pose)));
 }

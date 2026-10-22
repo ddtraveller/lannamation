@@ -888,27 +888,13 @@ is better. Returns -1 to 1. Reads clock; keeps its state in BENDS[key].
 e.g. var side = bendOf("noi/armA", 5);
 ```
 
+### `softReach(far, longest)`
+
+(no comment)
+
 ### `armJoints(wx, wy, upper, lower, outward, key, sure)`
 
 ```
-Where an arm's wrist and elbow are, measured from its shoulder, for a wrist
-asked for at (wx, wy): [wristX, wristY, elbowX, elbowY]. Two elbows reach
-any wrist, one on each side of the line to it. Each is first made to keep
-the two rules; then the arm takes the one it likes better: back and down
-for a hanging arm, out to its own side and down for a lifted one, and the
-one that leaves the wrist nearer to where it was asked for.
-  upper, lower   the lengths of the two bones
-  outward        1 or -1: which side of the body the arm is on
-  key            a name to remember the bend by (or nothing)
-  sure           0 to 1: how sure the way to the wrist is. A hand lying on
-                 its own shoulder points nowhere in particular, and the
-                 arm then leans on the way it pointed the frame before.
-                 2: the wrist has a place to be (a reach). Then the elbow
-                 that brings it there wins over the one the arm likes
-                 better, and the wrist is there at once while the elbow
-                 comes round
-  wx, wy         the wrist asked for, from the shoulder, in pixels (down is +y)
-Changes BENDS[key] when a key is given (bendOf(), and the way it points).
 e.g. var at = armJoints(30, 100, 62, 58, 1, "noi/armA", 1);
 ```
 
@@ -1132,6 +1118,50 @@ e.g. var keys = [[0, {handA: [30, -80]}], [2, {handA: [60, 20]}], [4, {handA: [3
      person(700, GROUND, Object.assign(cast("dancer"), poseAt(t, keys)));
 ```
 
+### `poseBlend(a, b, u)`
+
+```
+The look between two looks, a and b, u of the way from a to b (eased already: 0 is a, 1 is b): numbers and pairs
+of numbers, such as a hand's place, go between the two; a hand to or from a lift (liftHand()) lifts the natural
+way; a hand one of the two leaves unset (or sets to undefined) goes from or to where it hangs (handRest()), so a
+pose may let a hand fall to its side or take it up from there without a jump; anything else is a's until half way
+and b's after; what b does not have fades out (its numbers to 0). This is how poseAt() and poseSteps() go from one
+pose to the next. a, b: looks; u: 0 to 1. Returns a new look; a and b are not changed.
+e.g. person(700, GROUND, poseBlend({handA: [30, -80]}, {handA: [60, 20]}, 0.5));
+```
+
+### `handSwing(key, from, to, u)`
+
+(no comment)
+
+### `handRest(key, body)`
+
+```
+Where a hand hangs when a look does not place it, as person() hangs it for one standing: hand A a little out
+from the body (the body's BODIES hand), hand B a little behind. key: "handA" or "handB"; body: a look's body (a
+name of BODIES, "slim" when left out). Returns [x, y], from the shoulder as a look's hand is.
+e.g. handRest("handA", "fat")   // [44, 97]
+```
+
+### `trackAt(t, keys, soft)`
+
+(no comment)
+
+### `poseSteps(t, steps, mix)`
+
+```
+A look that changes at given seconds, easing into each change over "mix" seconds from its second, where a scene
+would otherwise switch a look in one frame ("t < 5 ? one : other"), which pops (owner, 2026-10-22, of the kit's
+research: Spine, Rive and Unity ease from one pose to the next over a mix time; checks/pop_check.py finds the
+pops). Before the first step's second its look holds; after a step's mix, that step's look holds until the next.
+A step [second, look, "snap"] is hit as poseAt()'s "snap" keys are, with anticipation and overshoot.
+  t      seconds
+  steps  [[second, look], [second, look, "snap"], ...]: at least one, the seconds rising
+  mix    seconds, 0.25 unless told: how long each change takes
+Returns a new look (a copy of a step's, or poseBlend()'s between two); the steps are not changed.
+e.g. person(700, GROUND, Object.assign(cast("king"), poseSteps(t, [[0, {handA: [20, -60]}], [5, {handA: [-40, -120]}]])));
+```
+
 ### `jointOf(x1, y1, x2, y2, upper, lower, prefer)`
 
 ```
@@ -1224,11 +1254,180 @@ hands and the far arm
 person(), stage 6 of 8: the body painted over the skirt: the torso and its shading, the chest, the cloth, the neck
 ```
 
+### `bodyPaint(b)`
+
+```
+The paint on the chest, kept inside its outline (the path the chest was drawn with): the back in shadow, the head's shadow on the shoulders, the front edge in the light. b: personBody()'s body (see there).
+```
+
+### `bodyCollar(b)`
+
+```
+A wrap blouse's patterned band down both sides of a V neck and on down the front edge (look.collar). b: personBody()'s body.
+```
+
+### `bodySabai(b)`
+
+```
+The kit's sabai across the chest, over the body and under the arms. b: personBody()'s body. Returns sabaiFront, a function that draws it again over an upper arm in a wai, in the frame it was first drawn in.
+```
+
+### `bodyTattoo(b)`
+
+```
+A bare chest's tattoo, a man of the north's: a star on the breast and a row of dots along the collarbones. b: personBody()'s body.
+```
+
+### `bodyShirtFront(b)`
+
+```
+A shirt's front: a mo hom's round neck and opening, its buttons, and a breast pocket. b: personBody()'s body.
+```
+
+### `bodyWaistCloth(b)`
+
+```
+A pha khao ma round the waist, its ends hanging and lagging after the body. b: personBody()'s body.
+```
+
+### `bodyDrum(b)`
+
+```
+A drum on its strap across the chest, bouncing a little late, its head ringing as the hand hits (look.drum). b: personBody()'s body.
+```
+
+### `bodyNeck(b)`
+
+```
+The neck between chest and head, the chin's shadow on it, and a lady's necklace, a noble's collar and sash or a silver ring. b: personBody()'s body.
+```
+
 ### `personHead(fig)`
 
 ```
 person(), stage 7 of 8: the head, in a frame of its own: the knots and ornaments, the brow, cheek, jaw and chin, the hair,
 the ears, the face, and the blink
+```
+
+### `headKnotFan(h, kx, ky)`
+
+```
+A lady's knots and ornaments by the ways of the hair notebook (BUN_STYLES).
+The high bun's fan, flower and garland are drawn here for every knot.
+The fan of gold leaves behind a knot at (kx, ky) (look.fan). // h: personHead()'s head (what it has worked out: see there).
+```
+
+### `headKnotFlowers(h, kx, ky)`
+
+```
+The flower at a knot's side (look.flower) and the loop of jasmine from it (look.garland). // h: personHead()'s head (what it has worked out: see there).
+```
+
+### `headLadyKnot(h, kx, ky, style)`
+
+```
+A knot that is not the high bun, at (kx, ky): style "wong", "low" or "ipun". // h: personHead()'s head (what it has worked out: see there).
+```
+
+### `headLadyMass(h, HL)`
+
+```
+The outline of a lady's hair, as the mass is drawn, from the turn's points HL. // h: personHead()'s head (what it has worked out: see there). Returns a Path2D.
+```
+
+### `headIpunOutline(HL)`
+
+```
+The raised frame's outline (see headIpunFrame()), from the turn's points HL. Returns a Path2D.
+```
+
+### `headIpunFrame(HL)`
+
+```
+The hair over the brow raised on its cushion (klao i-pun), from the turn's points HL.
+```
+
+### `headKnotDress(h, kx, ky, r)`
+
+```
+The ornaments of the hair notebook at a knot at (kx, ky), r its [half width, half height]: malai, ueang, maiwai.
+h: personHead()'s head (what it has worked out: see there).
+```
+
+### `headHalo(h)`
+
+```
+A halo behind the head, as a thangka paints one (look.halo). // h: personHead()'s head (what it has worked out: see there).
+```
+
+### `headBunBehind(h)`
+
+```
+A lady's knot (look.bun, her hair shown): which way she wears it and where it sits as the head turns, and what
+is drawn behind the head: the tail of hair and the strands of gold flowers that hang from it, and a knot at the
+nape. h: personHead()'s head (what it has worked out: see there). It sets h.hairdo, h.knot and h.knotR, which headLadyHair() takes up.
+```
+
+### `headEarplug(h, x, fade)`
+
+```
+A lan hu, a rolled leaf or sheet of gold through the stretched lobe of an ear at x (look.earplug); fade 0 to 1,
+smaller toward profile. h: personHead()'s head (what it has worked out: see there).
+```
+
+### `headNearEar(h)`
+
+```
+The ear nearest the camera, where the turn puts it (h.earX, smaller by h.earLess in profile), and its plug. // h: personHead()'s head (what it has worked out: see there).
+```
+
+### `headFarEar(h)`
+
+```
+The far ear, as the head comes round (V.farEar), its plug or a lady's earring. // h: personHead()'s head (what it has worked out: see there).
+```
+
+### `headEarring(h)`
+
+```
+An earring at the near ear, swinging after the head. // h: personHead()'s head (what it has worked out: see there).
+```
+
+### `headSkull(h)`
+
+```
+h: personHead()'s head (what it has worked out: see there). It sets V.face and V.skin, which the face keeps to.
+```
+
+### `headLadyHair(h)`
+
+```
+A lady's hair over the head (look.bun, her hair shown): the mass, its sheen and lines, and her knot with what
+it wears. h: personHead()'s head (what it has worked out: see there).
+```
+
+### `headManHair(h)`
+
+```
+A man's hair, gathered up into a knot on the top of the head (his hair shown, no hat, not shaved). // h: personHead()'s head (what it has worked out: see there).
+```
+
+### `headHat(h)`
+
+```
+A hat (look.hat), loose: it lags the head and floats up as the body springs. // h: personHead()'s head (what it has worked out: see there).
+```
+
+### `headWrap(h)`
+
+```
+A ruler's head-cloth of silk, wound over the whole head (look.wrap). // h: personHead()'s head (what it has worked out: see there).
+```
+
+### `headTurban(h)`
+
+```
+A Lanna head-cloth tied round the head, its ends swinging after it (look.turban). // h: personHead()'s head (what it has worked out: see there).
 ```
 
 ### `personArms(fig)`
@@ -1934,21 +2133,105 @@ e.g. var p = parasolOf("yantra");   // {tilt: 0, spin: 0, kind: "yantra"}
 the look's parasol as {tilt, spin, kind, colour}: true, a kind, a colour, or parasolAt()'s object
 ```
 
-### `parasol(brush, x, y, R, tilt, spin, colour, kind, open)`
+### `canopyRing(c, r, paint)`
 
 ```
-The canopy, its centre (the middle of the rim) at (x, y), of radius R, tipped
-toward the viewer by tilt (0 upright, 1 face on) and turned by spin. Each
-ring of the pattern is a circle of the cone seen at that tilt: an ellipse
-as wide as the ring and as tall as the tilt makes it, raised toward the
-crown by the cone's height. The rings are drawn from the hem inward, each
-band's ground painted over the far side of the band outside it, so the far
-side of the dome is hidden as it should be, and the front shows every ring.
-brush: a 2D context; x, y, R in its pixels (R the open radius: PARASOL.radius); tilt 0 to 2; spin in radians;
-colour: the paper's CSS colour, or nothing for the kind's own; kind: "lai" (or anything else), "yantra" or
-"buddha"; open: 0 to 1, default 1. The handle is not drawn: person() draws it. Returns nothing.
-e.g. parasol(pen, 700, 400, PARASOL.radius, 1, t * 2, undefined, "buddha", 1);
+The frame of the ring at r (0 to 1 of R): x along, y across, foreshortened; paint(rr) draws in it, rr the ring's radius. c: the canopy (see above). Returns nothing.
 ```
+
+### `canopyFill(c, r, edge)`
+
+```
+The ring at r filled with the paper's ground, and edged with its line when edge. c: the canopy (see above). Returns nothing.
+```
+
+### `canopyEach(c, r, count, offset, motif, still)`
+
+```
+motif(j) drawn at each of count places round the ring at r, x pointing outward, from offset; still: not turned by the spin. c: the canopy (see above). Returns nothing.
+```
+
+### `parasolDot(c, cx, cy, size, colourOf)`
+
+```
+A dot at (cx, cy) of the given size, in colourOf or the ink. c: the canopy (see above). Returns nothing.
+```
+
+### `canopyDots(c, r, count, size)`
+
+```
+count dots of the given size round the ring at r. c: the canopy (see above). Returns nothing.
+```
+
+### `canopyCircle(c, r, width)`
+
+```
+A line round the ring at r, width wide. c: the canopy (see above). Returns nothing.
+```
+
+### `canopyScript(c, r, count, long)`
+
+```
+A ring of script at r: count short radial strokes, by turns longer and shorter, long the longest. c: the canopy (see above). Returns nothing.
+```
+
+### `parasolRosette(c, m)`
+
+```
+A many-petalled flower of size m: an ink disc with gaps of the ground, a ring, a heart. c: the canopy (see above). Returns nothing.
+```
+
+### `parasolLozenge(c, m, w, lobes)`
+
+```
+A diamond flower m long and w wide: a lozenge, a ring of dots of the ground, a heart; with lobes, a small lobe at each point. c: the canopy (see above). Returns nothing.
+```
+
+### `parasolPetal(c, len, w, inner)`
+
+```
+A pointed leaf len long and w wide along +x, with a smaller one of the ground inside when inner. c: the canopy (see above). Returns nothing.
+```
+
+### `parasolTriangle(c, len, w)`
+
+```
+A plain point len long and w wide along +x. c: the canopy (see above). Returns nothing.
+```
+
+### `parasolElephant(c, m)`
+
+```
+An elephant of size m walking round the ring: feet outward (+x), head the way it goes (+y). c: the canopy (see above). Returns nothing.
+```
+
+### `parasolBuddha(c, b)`
+
+```
+The Buddha, size b, seated on a lotus in an aureole of flame, drawn upright at the crown, and never turned. c: the canopy (see above). Returns nothing.
+```
+
+### `canopyYantra(c)`
+
+```
+The yantra paper: a rim of dots, eight rays with script down them, circles and dots between, rings of script round the core, and the unalome spiral at it. c: the canopy (see above). Returns nothing.
+```
+
+### `canopyBuddha(c)`
+
+```
+The Buddha paper: a hem of triangles, a vine of kanok flames, elephants walking round under rosettes, diamond flowers, and the Buddha at the crown. c: the canopy (see above). Returns nothing.
+```
+
+### `canopyLai(c)`
+
+```
+The lai paper (the kit's own): a hem of petals, rails of dots, rosettes and diamond flowers, a vine with its buds, and a rosette at the crown. c: the canopy (see above). Returns nothing.
+```
+
+### `parasol(brush, x, y, R, tilt, spin, colour, kind, open)`
+
+(no comment)
 
 ### `yak(brush, x, base, facing)`
 
@@ -2195,22 +2478,78 @@ e.g. HEARD = []; vanished(0, 22); var calls = heardCalls(); HEARD = null;
 ### `heard(from, to, fps)`
 
 ```
-from, to: seconds of the page's film, drawn by the page's draw(t); fps: frames a second (30 when left out).
-Returns the calls the picture made from "from" to "to" (heardCalls(): a call's file may start before "from"). It
-draws on the page's sheet as draw(t)
-does, so it is for a page with rendering on, as vanished() is; HEARD is null again after, even when a frame throws.
+from, to: seconds of the page's film; fps: frames a second (30 when left out). Returns hearWatch()'s calls: those
+the picture makes heard from "from" to "to" (a call's file may start before "from"), from a pass of its own (render.py
+hears them in its one look, lookOver()).
 e.g. heard(0, 35);   // [[22.2, "rooster-crow", 0.28], [27.9, "rooster-crow", 0.28]]
+```
+
+### `filmWatch(from, to, fps, watchers)`
+
+```
+---------- a look over a film before it is rendered ----------
+filmWatch(from, to, fps, watchers) draws a film's frames one after another, as a render does but keeping no
+pictures, and lets watchers see what each frame drew: every person (person(): the name of the sprite they are in,
+else their id; their joints and the way they face), every one of a scene's life (decorate.js's kinds) and every
+drawByZ() sprite that gives an x, each with its box on the film and how faint it was drawn, and a small copy of the
+frame. A watcher is an object of three functions, each left out when it is not wanted: start(), before the first
+frame; frame(now, last, inBox), after each frame (now and last: {t, things: [{name, kind, box, alpha, most, who,
+joints, face}], picture}; inBox(box, one, two): the brightness of a picture in a box of the film, or how much two
+pictures differ there, 0-255, or null when the box holds none of the film); result(), what it gives back.
+lookOver() runs the three of the kit's: blinkWatch(), hearWatch() and popWatch(), in one pass, as render.py does.
+from, to: seconds of the page's film (its draw(t)); fps: frames a second (30 when left out); watchers: {name:
+watcher}. Returns {name: what that watcher's result() gives}. It draws on the page's sheet as draw(t) does, so it
+is for a page with rendering on (render.py, the checks): a render after it starts with a jump of the clock, and
+settled() forgets what it drew. It puts person(), drawByZ(), filmFrameOnce() and LIFE_KINDS back as they were,
+even when a frame throws.
+e.g. var seen = filmWatch(0, 22, 30, {blinks: blinkWatch()}).blinks;
+```
+
+### `blinkWatch()`
+
+```
+A watcher of filmWatch() for what blinks out (VANISH, above). Returns the watcher; its result is a list of
+sentences, one for each thing that blinked out ([] when nothing did), with the first second it did and how many
+times. e.g. filmWatch(0, 22, 30, {blinks: blinkWatch()}).blinks
+```
+
+### `hearWatch(from, to)`
+
+```
+A watcher of filmWatch() for what the picture makes heard (hear(), above), from "from" to "to" (seconds). Returns
+the watcher; its result is heardCalls()'s, those whose sound is heard in that while (a call's file may start
+before "from"). HEARD is a list while it watches and null again after.
+e.g. filmWatch(0, 35, 30, {calls: hearWatch(0, 35)}).calls
+```
+
+### `popWatch()`
+
+```
+A watcher of filmWatch() for what pops (POP, above). Returns the watcher; its result is a list of sentences, one
+for each person who popped ([] when none did), with the joint, how far it jumped, the first second and how many
+times. e.g. filmWatch(0, 40, 30, {pops: popWatch()}).pops
+```
+
+### `lookOver(from, to, fps)`
+
+```
+The kit's look over a film before it is rendered, in one pass: {blinks, calls, pops}, as blinkWatch(),
+hearWatch() and popWatch() give them. from, to, fps: as filmWatch() takes them. render.py runs it.
+e.g. var look = lookOver(0, 22);   // {blinks: [], calls: [[21, "rooster-crow", 0.28]], pops: []}
 ```
 
 ### `vanished(from, to, fps)`
 
 ```
-from, to: seconds of the page's film, drawn by the page's draw(t); fps: frames a second (30 when left out).
-Returns a list of sentences, one for each thing that blinked out ([] when nothing did), each with the first second
-it did and how many times. It draws on the page's sheet as draw(t) does, so it is for a page with rendering on
-(render.py, checks/vanish_check.py): a render after it starts with a jump of the clock, and settled() forgets what
-it drew. It puts person(), drawByZ(), filmFrameOnce() and LIFE_KINDS back as they were, even when a frame throws.
-e.g. vanished(0, 22);   // ["the rooster (rooster) blinked out at 3.47 s, at x 1010-1060, y 930-1000"]
+from, to: seconds of the page's film; fps: frames a second (30 when left out). Returns blinkWatch()'s sentences:
+what blinked out. e.g. vanished(0, 22);   // ["the rooster (rooster) blinked out at 3.47 s, at x 1010-1060, y 930-1000"]
+```
+
+### `popped(from, to, fps)`
+
+```
+from, to: seconds of the page's film; fps: frames a second (30 when left out). Returns popWatch()'s sentences:
+who popped. e.g. popped(0, 40);   // ["the king (n1) popped at 5.00 s: the elbowB jumped 0.71 of a torso in one frame"]
 ```
 
 ## motion.js
@@ -7138,11 +7477,12 @@ takes a picture of each, and hands the pictures to ffmpeg. Then it says
 what the page said: an error, or a warning from the kit (a name it does
 not know, which changes nothing).
 
-Before the first picture it draws the film's frames once more with no pictures (the kit's vanished(),
-oldcartoon.js; seconds, not the minutes the pictures take) and tells anything that blinked out: drawn in
+Before the first picture it draws the film's frames once more with no pictures (the kit's lookOver(),
+oldcartoon.js; seconds, not the minutes the pictures take) and tells anything that blinked out (drawn in
 one frame and gone in the next, while it could be seen, not gone off the edge, faded, shrunk away or
-taken by a fade to black. It tells them again at the end, and makes the video all the same: stop it and
-mend the scene. --no-vanish leaves the look out.
+taken by a fade to black) and anyone who popped (a joint that jumped in one frame further than a body
+moves). It tells them again at the end, and makes the video all the same: stop it and mend the scene.
+--no-vanish leaves the look out.
 
 In the same look it listens: a sound the picture makes (a rooster's crow, the kit's heard()) is laid under
 the film at its second, over the --audio sound or alone, from sounds.py's out/sounds/NAME.wav (made by
@@ -7799,6 +8139,28 @@ a kit's page throws an error of its own.
 - `cases_of(count)`: count cases for person(), the same every time (seeded): each a look from person_looks.json, perhaps with
 - `drawn(browser, kit_file, cases)`: Each case's answer, drawn with this oldcartoon.js and the maker's modules beside the kit.
 - `main()`: The command line: person_same.py [--against REV] [--cases N] [--harvest]: draw the cases with both kits,
+
+## kit/checks/pop_check.py
+
+```
+pop_check.py - does anyone in a film pop: a joint that jumps in one frame further than a body moves?
+
+    python checks/pop_check.py maeng/s11.html                  # the whole film
+    python checks/pop_check.py sash.html --from 22 --to 36     # a part of it
+
+A scene that switches a look at a second ("t < 5 ? one : other") moves an arm or a leg in one frame: it pops. This
+check runs the kit's popped() (oldcartoon.js: filmWatch() with popWatch()) on the page: it draws every frame in
+order, as render.py does but keeping no pictures, measures each person's elbows, hands, knees, ankles and crown from
+their hip in lengths of their own torso, and tells who had a joint jump POP.jump of a torso or more between two
+frames, while facing the same way and not in a fade. render.py runs the same look before its first frame. The way
+to mend one is poseSteps() (or poseAt()): the change eased over a quarter of a second. It needs Google Chrome
+(Playwright).
+
+It reads the page only: it writes nothing. It ends with exit code 0 when no one popped, 1 when someone did or the
+page reported an error.
+```
+
+- `main()`: The command line: draw the page's film frame by frame and print who popped.
 
 ## kit/checks/reach_check.py
 

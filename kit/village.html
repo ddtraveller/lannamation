@@ -307,6 +307,11 @@ function sceneMedicine(t) {
   var found = between(t, 5, 5.3);                  // the medicine is ready, on the words "it's done"
   var up = found * between(t, 7.5, 5.3);
   var lift = 70 * hop(t, 0), liftB = 70 * hop(t, 0.5);   // the pestles rise between the beats and strike on them
+  // As the medicine is ready the three throw their arms up, eased (they once went up in one frame: a pop,
+  // checks/pop_check.py), each hand by handSwing(): his far hand, across his body on the stone, swings down and out
+  // round his shoulder, not through it.
+  var thrown = between(t, 5, 5.5), rise = thrown * thrown * (3 - 2 * thrown);   // over half a second: a throw of the arms, not a jump
+  var thrownFar = between(t, 5, 5.8), riseFar = thrownFar * thrownFar * (3 - 2 * thrownFar);   // his far hand goes round, twice as far
   pen.drawImage(LAB, 0, 0);
   // The z plan (the kit's drawByZ(), oldcartoon.js Z): the room first, as painted, and the stars last, over everyone.
   // In "people", by their feet: the pestles just behind the hands that hold them (GROUND - 11); the two assistants,
@@ -315,10 +320,9 @@ function sceneMedicine(t) {
   // glow falls on the assistant beside it: it is put on his line, just before him.
   var sprites = [
     {name: "pestles", kind: "pestle", x: 700, y: GROUND - 11, draw: function () {
-      if (found < 1) {                             // the pestles, behind the hands that hold them
-        pestle(628 - lift * 0.33, 450 - lift * 0.5, 690, 790);
-        pestle(792 + liftB * 0.33, 450 - liftB * 0.5, 710, 790);
-      }
+      var held = 1 - found;                        // the pestles, behind the hands that hold them; let go as the
+      pestle(628 - lift * 0.33 * held, 450 - lift * 0.5 * held, 690, 790);   // medicine is ready, they rest in the mortar
+      pestle(792 + liftB * 0.33 * held, 450 - liftB * 0.5 * held, 710, 790);
     }},
     {name: "mortar", kind: "mortar", x: 700, y: 920, draw: function () { mortar(700, 920, t); }}
   ];
@@ -328,22 +332,22 @@ function sceneMedicine(t) {
   onLine("assistant", 520, {                       // an assistant, pounding on the beat
     shirt: "#4a6797", legs: "#3d4f78", size: 1.25, late: 0, spring: 0.25 + 0.75 * found, mouth: mouthAt(SUNG), grip: found < 1,
     at: found ? [1120, 560] : [700, 760], turn: 0.1, wonder: up, smile: found,
-    handA: found ? [44, -84 - hop(t, 0) * 24] : [52, -58 - lift],
-    handB: found ? [-44, -84 - hop(t, 0.5) * 24] : [30, -30 - lift]
+    handA: handSwing("handA", [52, -58 - lift], [44, -84 - hop(t, 0) * 24], rise),
+    handB: handSwing("handB", [30, -30 - lift], [-44, -84 - hop(t, 0.5) * 24], rise)
   });
   onLine("the other assistant", 900, {                       // the other, on the off-beat
     shirt: "#5a9686", legs: "#3d4f78", size: 1.25, face: -1, late: 0.5, spring: 0.25 + 0.75 * found, grip: found < 1,
     mouth: mouthAt(SUNG), at: found ? [1120, 560] : [700, 760], turn: 0.1, wonder: up, smile: found,
-    handA: found ? [44, -84 - hop(t, 0.5) * 24] : [52, -58 - liftB],
-    handB: found ? [-44, -84 - hop(t, 0) * 24] : [30, -30 - liftB]
+    handA: handSwing("handA", [52, -58 - liftB], [44, -84 - hop(t, 0.5) * 24], rise),
+    handB: handSwing("handB", [30, -30 - liftB], [-44, -84 - hop(t, 0) * 24], rise)
   });
   sprites.push({name: "table", kind: "table", x: 1100, y: GROUND - 10, draw: function () { table(1100, 600, found, t); }});
   onLine("herb doctor", 1230, {                      // the herb doctor, grinding at his table; then his arms go up
     shirt: "#f2ead8", legs: "#814a77", sarong: "#814a77", turban: "#c4654f", size: 1.3, face: -1,
     late: 0.25, spring: 0.2 + 0.8 * found, bend: 0.22 * (1 - found), mouth: mouthAt(SUNG),
     at: found ? [1120, 520] : [1070, 590], turn: 0.3 * found, wonder: up, smile: 1,
-    handA: found ? [44, -84 - hop(t, 0.25) * 24] : [64 + 16 * Math.sin(t * 7), 34], wristA: found ? 0 : 0.9,   // flat on the stone
-    handB: found ? [-44, -84 - hop(t, 0.75) * 24] : [36, 52]
+    handA: handSwing("handA", [64 + 16 * Math.sin(t * 7), 34], [44, -84 - hop(t, 0.25) * 24], rise), wristA: mix(0.9, 0, rise),   // flat on the stone
+    handB: handSwing("handB", [36, 52], [-44, -84 - hop(t, 0.75) * 24], riseFar)
   });
   drawByZ(sprites);
   if (found > 0) {
@@ -445,7 +449,13 @@ function sceneEvening(t) {
     ][k % 3];
     var pose = woman ? poseAt(t + k, DANCE) : {};   // the women dance; each a second behind the other
     if (woman) { arms = [pose.handA, pose.handB]; }
-    if (bow > 0.5) { arms = [[24, 6], [-24, 6]]; }  // the hands meet at the chest
+    // The hands come together at the chest as they bow (once in one frame: a pop), by poseBlend(), which brings a
+    // lifted arm (liftHand) down the way it went up; a hand copied by hand lost its lift, and its arm whipped round.
+    var meet = bow * bow * (3 - 2 * bow);
+    if (meet) {
+      var waiing = poseBlend({handA: arms[0], handB: arms[1]}, {handA: [24, 6], handB: [-24, 6]}, meet);
+      arms = [waiing.handA, waiing.handB];
+    }
     standing(170 + k * 275, GROUND + (woman ? 78 : 46), {
       size: woman ? 1.3 : 1.2, shirt: shirts[k], legs: woman ? (k === 1 ? "#2f6b5a" : "#814a77") : "#3d4f78",
       weave: k === 1 ? 2 : 3, sabai: k === 1 ? ["#f6e3a1", "#e86f9a"] : ["#3f8f5a", "#e0b23a"],
@@ -457,7 +467,7 @@ function sceneEvening(t) {
       smile: 1, wonder: 0.3 * (1 - bow),
       bend: (woman ? (pose.bend || 0) : swing * 0.06) * (1 - bow) + 0.28 * bow, handA: arms[0], handB: arms[1],
       sit: woman ? (pose.sit || 0) * (1 - bow) : 0, tilt: woman ? (pose.tilt || 0) * (1 - bow) : 0,
-      raise: woman && bow < 0.5 ? pose.raise : undefined
+      raise: woman && pose.raise && bow < 1 ? pose.raise.map(function (v, i) { return i ? v * (1 - bow) : v; }) : undefined   // a lifted foot comes down as she bows
     });
   }
   drawByZ(sprites);
