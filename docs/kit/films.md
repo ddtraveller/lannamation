@@ -119,14 +119,26 @@ arm or a leg jumps. The owner: "I don't need things to be identical, I want to i
   - `handSwing(key, from, to, u)`: a hand goes in a straight line unless that line passes within `HAND_ARC` (45) of
     its shoulder; then it swings round the shoulder on the arm's own side, as an arm can. `poseBlend()` moves hands by it.
   - `trackAt(t, keys, soft)`: a track read from a video (`TRACK`, ten keys a second) played as one movement, each
-    number the average of the keys near t; `poseAt()` stopped and started the dancer at every key.
+    number the average of the keys near t; `poseAt()` stopped and started the dancer at every key. A hand the video
+    sees pass through its shoulder goes round it on the side it passed (`trackBulges()`); a hand held at its shoulder
+    takes its way from a longer while, as the video's way for it wanders; across a gap in the keys (the video lost
+    her) the look goes from the key before to the key after, eased.
+  - `poseBlend()` lets a raised foot (`raise`) come up from the ground and go down to it, as it does a hand.
+  - A reach (`reachA`, `reachB`, a point of the scene) takes a third number, 0 to 1: how far the wrist goes from
+    where it would be toward the point, by an arc (`handSwing()`). `poseBlend()` and `poseSteps()` ease a reach in
+    and out by it, so `poseSteps(t, [[0, {}], [30.5, {reachA: [x, y]}], [34, {}]])` is a hand that goes out to a
+    point and comes back.
   - `softReach()`: an arm coming to its full reach slows into it (Spine's IK softness) instead of snapping straight.
+  - In `armJoints()`, a forearm from an upper arm held at the end of its arc (`SHOULDER`), reaching across the body
+    to a wrist nearer than its length, is drawn shorter, pointing toward us (`FOREARM_SHORT`, 0.4 of it at least), so
+    the wrist comes to its place by either elbow and does not jump as the elbow goes from one way to the other.
 - **What it found** (2026-10-22, and after): `village.html` 8 people popping, now none (the three throwing their arms
   up as the medicine is ready, the herb doctor's far hand through his shoulder, the night's dancers losing their lift
-  when their hands were copied for the wai); `lanna.html` 38 pops, now 7; `dance.html` 72, now 18. What is left in
-  those two is the dance: a hand the dancer sweeps across her body passes in front of its own shoulder, and the arm,
-  which keeps the wrist out from the shoulder, turns over (an arm foreshortened toward us is not drawn yet). The
-  Maeng scenes s11 (the king at 5.00 s, the lad at 30.53 s) and s13 (the crowd's waves) are told to their author.
+  when their hands were copied for the wai); `lanna.html` 38 pops, now none; `dance.html` 72, now 2. Those two are one
+  step of the track, at 76.7 s: her hand B goes from out at her side to across her body in one key (0.11 s), and her
+  hand A jumps as far at the same moment, which looks like the video losing her hands. The Maeng scenes s11 (the king
+  at 5.00 s, the lad at 30.53 s, their reaches switched at a second) and s13 (the crowd pointing as they arrive) popped
+  as well: now none, by `poseSteps()` and a reach's third number.
 - **What it cannot see**: a person not drawn by `person()`; a pop smaller than a third of a torso (a hand's curl, a
   face).
 

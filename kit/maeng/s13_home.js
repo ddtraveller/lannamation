@@ -34,8 +34,11 @@ function s13Crowd(t) {                               // people from both sides, 
     if (arrived) {
       walk.look.face = one[3] < MAENG_PEN[0] ? 1 : -1;   // turned to the pen
       walk.look.feel = t > S13_BOLT ? "surprised" : "happy";
-      if (n % 2 === 0 && t < S13_BOLT) {             // every other one points at it
-        walk.look.reachA = [walk.x + walk.look.face * 90, one[4] - 150 * look.size];
+      // Every other one points at it, the arm coming up as they stop and down as it leaps, eased (the reach's third
+      // number: it once came in one frame, a pop, checks/pop_check.py).
+      var point = between(t - walk.arrives, 0, 0.35) * (1 - between(t, S13_BOLT, S13_BOLT + 0.35));
+      if (n % 2 === 0 && point > 0) {
+        walk.look.reachA = [walk.x + walk.look.face * 90, one[4] - 150 * look.size, point * point * (3 - 2 * point)];
       }
     }
     return {name: "crowd" + n, kind: "person", x: walk.x, y: one[4], draw: function () { person(walk.x, one[4], walk.look); }};

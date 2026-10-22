@@ -67,15 +67,14 @@ function s11Palace(t) {                             // the king wakes, and the t
   var waking = t < 5, sees = t >= 5;
   var king = maengPerson("noble", MAENG_KING, {id: "king", face: -1, feel: waking ? "sleepy" : t < 9.2 ? "surprised" : "concerned",
                                                at: sees ? [MAENG_STAIR - 300, row - 30] : undefined, mouth: s11Speaking(t, S11_KING)});
-  if (waking) {                                     // rubbing his eyes, a fist at each
-    var rub = 4 * Math.sin(t * 9);
-    king.reachA = [x - 8 + rub, floor - 196];
-    king.reachB = [x + 14 - rub, floor - 196];
-    king.fingersA = king.fingersB = [0.8, 0.85, 0.9, 0.9, 0.6];
-  } else if (t > S11_KING[0]) {                     // pointing along the trough: follow it!
-    king.reachA = [x - 130, floor - 150];
-  }
-  if (sees && t < S11_KING[0] && king.feel === "surprised") { king.reachB = [x + 40, floor - 210]; }   // a hand up in wonder
+  // Rubbing his eyes, a fist at each; then a hand up in wonder; then pointing along the trough: follow it! Each
+  // change eased (poseSteps; they once came in one frame, a pop: checks/pop_check.py).
+  var rub = 4 * Math.sin(t * 9);
+  Object.assign(king, poseSteps(t, [
+    [0, {reachA: [x - 8 + rub, floor - 196], reachB: [x + 14 - rub, floor - 196], fingersA: [0.8, 0.85, 0.9, 0.9, 0.6], fingersB: [0.8, 0.85, 0.9, 0.9, 0.6]}],
+    [5, {reachB: [x + 40, floor - 210]}],
+    [S11_KING[0], {reachA: [x - 130, floor - 150]}]
+  ], 0.35));
   person(x, floor, king);
   maengPalace(t, "front");
   var man = maengPerson("fellow", MAENG_HERALD, {id: "herald", face: 1, feel: t > 5.6 ? "surprised" : "neutral", at: [x, floor - 180]});
@@ -144,7 +143,7 @@ function s11Garden(t) {                             // "I built it, and there is
     {name: "trough", kind: "trough", line: s11TroughLine, draw: function () { maengYardTrough(1, "near"); }},
     {name: "lad", kind: "person", x: MAENG_GARDEN[0] + 60, y: 948, draw: function () {
       person(MAENG_GARDEN[0] + 60, 948, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: "happy", mouth: s11Speaking(t, S11_LAD),
-                                                                        reachA: t > 30.5 && t < 34 ? [MAENG_GARDEN[0] + 200, 860] : undefined}));
+                                                                        reachA: poseSteps(t, [[0, {}], [30.5, {reachA: [MAENG_GARDEN[0] + 200, 860]}], [34, {}]], 0.35).reachA}));
     }},
     {name: "herald", kind: "person", x: 1820, y: 958, draw: function () {
       person(1820, 958, maengPerson("fellow", MAENG_HERALD, {id: "herald", face: -1, feel: t > 31 ? "surprised" : "happy"}));

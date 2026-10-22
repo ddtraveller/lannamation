@@ -1124,7 +1124,9 @@ e.g. var keys = [[0, {handA: [30, -80]}], [2, {handA: [60, 20]}], [4, {handA: [3
 The look between two looks, a and b, u of the way from a to b (eased already: 0 is a, 1 is b): numbers and pairs
 of numbers, such as a hand's place, go between the two; a hand to or from a lift (liftHand()) lifts the natural
 way; a hand one of the two leaves unset (or sets to undefined) goes from or to where it hangs (handRest()), so a
-pose may let a hand fall to its side or take it up from there without a jump; anything else is a's until half way
+pose may let a hand fall to its side or take it up from there without a jump, and a raised foot (raise) one of
+the two leaves unset goes up from the ground or down to it the same way, and a reach (reachA, reachB) in and out
+by its third number; anything else is a's until half way
 and b's after; what b does not have fades out (its numbers to 0). This is how poseAt() and poseSteps() go from one
 pose to the next. a, b: looks; u: 0 to 1. Returns a new look; a and b are not changed.
 e.g. person(700, GROUND, poseBlend({handA: [30, -80]}, {handA: [60, 20]}, 0.5));
@@ -1146,6 +1148,18 @@ e.g. handRest("handA", "fat")   // [44, 97]
 ### `trackAt(t, keys, soft)`
 
 (no comment)
+
+### `trackBulges(keys)`
+
+```
+Where the hands of a track (trackAt()) cross in front of their shoulders, and the place each goes round by: for
+two keys in a row whose straight line from the hand's place in the one to its place in the next passes within
+HAND_ARC of the shoulder, at the second the line comes nearest, a place out from the shoulder on the side the line
+passed (below it, when it went straight through), as far out as the hand was there, or HAND_ARC if nearer. The
+side is the video's, known from the two keys, so it does not change from frame to frame. keys: as trackAt() takes
+them. Returns {handA: [[second, x, y], ...], handB: [...]}, kept on the keys (keys.bulges) after the first call.
+e.g. trackBulges(TRACK).handB[1]   // [12.56, -1.64, 56.79]: her hand B goes under her shoulder at 12.56 s
+```
 
 ### `poseSteps(t, steps, mix)`
 

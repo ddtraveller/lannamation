@@ -3012,7 +3012,7 @@ function paintBone(ax, ay, bx, by, wideA, wideB, colour) {
 // And neither joint jumps: of two elbows as good as each other an arm keeps
 // the one it has, and when the better one changes, the elbow swings across
 // in a fifth of a second (bendOf).
-var SHOULDER = [-30, 200], ELBOW = 150;
+var SHOULDER = [-30, 200], ELBOW = 150, FOREARM_SHORT = 0.4;
 // A woman's lifted arm (owner, 2026-10-22: "women should extend their biceps up at a slightly less steep
 // angle", the upper arm "angles away from the body slightly"): with her hand above the shoulder her upper
 // arm rises no steeper than "top" and stands at least "out" from her side; at the top of a lift (liftHand)
@@ -3106,8 +3106,9 @@ function armJoints(wx, wy, upper, lower, outward, key, sure) {
   for (var n = 0; n < 2; n++) {
     var side = n ? -1 : 1;
     var ex = dx * along - side * dy * out, ey = dy * along + side * dx * out;
-    var turn = Math.atan2(ex * outward, ey) * 180 / Math.PI;       // the upper arm's angle
+    var turn = Math.atan2(ex * outward, ey) * 180 / Math.PI, held = false;   // the upper arm's angle
     if (turn < SHOULDER[0] && turn > SHOULDER[1] - 360) {           // in the inward arc: back to its nearer end
+      held = true;
       turn = (turn > (SHOULDER[0] + SHOULDER[1] - 360) / 2 ? SHOULDER[0] : SHOULDER[1]) * Math.PI / 180;
       ex = Math.sin(turn) * outward * upper;
       ey = Math.cos(turn) * upper;
@@ -3115,14 +3116,21 @@ function armJoints(wx, wy, upper, lower, outward, key, sure) {
     var fx = wx - ex, fy = wy - ey;                                // the forearm, toward the wrist asked for
     var fold = Math.atan2(ex * fy - ey * fx, ex * fx + ey * fy);   // how far it folds from straight
     if (Math.abs(fold) > most) {                                    // further than an elbow folds: as far as it does
+      held = false;
       fold = fold < 0 ? -most : most;
       fx = ex * Math.cos(fold) - ey * Math.sin(fold);
       fy = ex * Math.sin(fold) + ey * Math.cos(fold);
     }
     var fl = Math.sqrt(fx * fx + fy * fy) || 1;
-    var hx = ex + fx / fl * lower, hy = ey + fy / fl * lower;      // where the wrist comes to
+    // A forearm from an upper arm held at the end of its arc, reaching across the body to a wrist nearer than its
+    // length, points toward us and looks shorter (FOREARM_SHORT of it at the least): the wrist comes to its place, and
+    // both elbows bring it there. Drawn at its full length it went past, and as the elbow went from one way to the
+    // other the wrist jumped between the two (a dancer's hand across her body, dance.html, 2026-10-22). Which elbow
+    // the arm likes better is still judged by the forearm at its full length, as before.
+    var hx = ex + fx / fl * lower, hy = ey + fy / fl * lower;      // where the wrist comes to at full length
     var miss = Math.sqrt((hx - wx) * (hx - wx) + (hy - wy) * (hy - wy));
-    ways.push([hx, hy, ex, ey, ex * (wy < 0 ? outward : -0.6) + ey * 0.8 - (must ? 60 : 6) * miss, miss]);
+    var shown = held ? Math.max(lower * FOREARM_SHORT, Math.min(lower, fl)) : lower;
+    ways.push([ex + fx / fl * shown, ey + fy / fl * shown, ex, ey, ex * (wy < 0 ? outward : -0.6) + ey * 0.8 - (must ? 60 : 6) * miss, miss]);
   }
   var part = (bendOf(key, ways[0][4] - ways[1][4]) + 1) / 2;       // 1: the first elbow; 0: the second
   if (key) {                                                        // the way it points, for the next frame
@@ -3731,7 +3739,9 @@ function poseAt(t, keys, hold) {
 // The look between two looks, a and b, u of the way from a to b (eased already: 0 is a, 1 is b): numbers and pairs
 // of numbers, such as a hand's place, go between the two; a hand to or from a lift (liftHand()) lifts the natural
 // way; a hand one of the two leaves unset (or sets to undefined) goes from or to where it hangs (handRest()), so a
-// pose may let a hand fall to its side or take it up from there without a jump; anything else is a's until half way
+// pose may let a hand fall to its side or take it up from there without a jump, and a raised foot (raise) one of
+// the two leaves unset goes up from the ground or down to it the same way, and a reach (reachA, reachB) in and out
+// by its third number; anything else is a's until half way
 // and b's after; what b does not have fades out (its numbers to 0). This is how poseAt() and poseSteps() go from one
 // pose to the next. a, b: looks; u: 0 to 1. Returns a new look; a and b are not changed.
 // e.g. person(700, GROUND, poseBlend({handA: [30, -80]}, {handA: [60, 20]}, 0.5));
@@ -3759,6 +3769,11 @@ function poseBlend(a, b, u) {
         if (!from) { from = handRest(key, body); }  // a hand that hung comes up from where it hung
         if (from && from.length >= 2) { from = [from[0], from[1]].concat(to.slice(2)); }
       }
+      if (key === "raise" && !from) { from = to.map(function (v, j) { return j ? 0 : v; }); }   // a foot comes up from the ground
+      if (key === "reachA" || key === "reachB") {    // a reach comes in from where the hand was, by its third number
+        to = [to[0], to[1], to[2] === undefined ? 1 : to[2]];
+        from = from ? [from[0], from[1], from[2] === undefined ? 1 : from[2]] : [to[0], to[1], 0];
+      }
       from = from && from.length === to.length ? from : to;
       out[key] = to.map(function (v, j) { return from[j] + (v - from[j]) * u; });
       if (key === "handA" || key === "handB") { var swung = handSwing(key, from, to, u); out[key][0] = swung[0]; out[key][1] = swung[1]; }   // by an arc where a line would not do
@@ -3772,6 +3787,12 @@ function poseBlend(a, b, u) {
     else if ((key === "handA" || key === "handB") && a[key].length >= 2 && a[key].lift === undefined && u < 1) {
       var rest = handRest(key, body);               // a hand let go falls to where it hangs, and is unset there
       out[key] = handSwing(key, a[key], rest, u).concat(a[key].slice(2));
+    }
+    else if (key === "raise" && a[key].length && u < 1) {   // a raised foot let go comes down to the ground, and is unset there
+      out[key] = a[key].map(function (v, j) { return j ? v * (1 - u) : v; });
+    }
+    else if ((key === "reachA" || key === "reachB") && u < 1) {   // a reach let go goes back to the free hand
+      out[key] = [a[key][0], a[key][1], (a[key][2] === undefined ? 1 : a[key][2]) * (1 - u)];
     }
     else if (u >= 0.5) { delete out[key]; }
   }
@@ -3813,11 +3834,18 @@ function handRest(key, body) {
 // Here each number, and each list of numbers (a hand's place, its curls), is the average of the keys near t, the
 // nearer counting more (a bell "soft" seconds wide, 0.12 unless told), over the keys that have it, when the nearest
 // key has it; a raised foot (raise) comes up and goes down by degrees, a key without one counting as a foot on the
-// ground; the eyes and the mouth (TRACK_SHARP) are the nearest key's, as eyes dart and a blink is quick. Where no
+// ground; the eyes and the mouth (TRACK_SHARP) are the nearest key's, as eyes dart and a blink is quick. A hand
+// the dancer sweeps across her body goes in front of its own shoulder, and the video sees it pass through it: near
+// such a crossing (trackBulges()) the hand is averaged as a way and a reach from the shoulder, with the place on the
+// way, so it goes round the shoulder on the side it passed and the arm does not turn over. A hand held at its
+// shoulder (nearer than TRACK_NEAR) points nowhere in particular, and the video's way for it wanders from key to key:
+// there the way it points is the keys' over a bell four times as wide, its reach still the near keys'. Across a gap
+// in the keys (the video lost the dancer), where the bell holds little, the look goes from the key before to the key
+// after eased, as poseAt() would: the bell alone leant from the one to the other in a few frames. Where no
 // key is near (before the first, after the last, in a gap), the nearest key's look. t: seconds; keys: [[second,
 // look], ...], the seconds rising; soft: seconds. Returns a new look; the keys are not changed.
 // e.g. var pose = trackAt(t + 20, TRACK);
-var TRACK_SHARP = ["glance", "blink", "mouth"];
+var TRACK_SHARP = ["glance", "blink", "mouth"], TRACK_NEAR = 30;
 function trackAt(t, keys, soft) {
   soft = soft || 0.12;
   var lo = 0, hi = keys.length - 1;
@@ -3861,6 +3889,75 @@ function trackAt(t, keys, soft) {
   }
   if (all > 1e-6 && lifted / all > 0.02) { out.raise = [leg, lift[0] / all, lift[1] / all]; }
   else if (all <= 1e-6 && nearest.raise) { out.raise = nearest.raise; }
+  var bulges = trackBulges(keys);
+  ["handA", "handB"].forEach(function (hand) {      // round the shoulder where it crosses it
+    if (!out[hand]) { return; }
+    var ux = 0, uy = 0, reach = 0, sum = 0, round = 0;
+    function add(x, y, w) {
+      var far = Math.hypot(x, y) || 1;
+      ux += x / far * w;
+      uy += y / far * w;
+      reach += far * w;
+      sum += w;
+    }
+    function bell(at) { var d = (at - t) / soft; return Math.exp(-d * d / 2); }
+    for (var k = first; k <= last; k++) { if (keys[k][1][hand]) { add(keys[k][1][hand][0], keys[k][1][hand][1], bell(keys[k][0])); } }
+    bulges[hand].forEach(function (b) {
+      if (Math.abs(b[0] - t) <= 3 * soft) { add(b[1], b[2], bell(b[0])); round += bell(b[0]); }
+    });
+    if (round) {
+      var way = Math.hypot(ux, uy) || 1, m = clamp(round / (0.25 * sum));   // all round at a crossing, less further off
+      out[hand] = [mix(out[hand][0], ux / way * reach / sum, m), mix(out[hand][1], uy / way * reach / sum, m)].concat(out[hand].slice(2));
+    }
+    var close = Math.hypot(out[hand][0], out[hand][1]);
+    if (close < TRACK_NEAR) {                       // at the shoulder: the way it points over a longer while
+      var px = 0, py = 0;
+      for (k = Math.max(0, first - 40); k < Math.min(keys.length, last + 40); k++) {
+        var h = keys[k][1][hand], d = (keys[k][0] - t) / (4 * soft), w = Math.exp(-d * d / 2);
+        if (h) { px += h[0] * w; py += h[1] * w; }
+      }
+      var steady = Math.hypot(px, py), u = 1 - close / TRACK_NEAR;
+      if (steady > 1e-6) {
+        out[hand] = [mix(out[hand][0], px / steady * close, u), mix(out[hand][1], py / steady * close, u)].concat(out[hand].slice(2));
+      }
+    }
+  });
+  var dense = clamp((all - 0.3) / 1.2);             // about 2.7 where the keys are a tenth of a second apart
+  if (dense < 1 && lo > 0 && t <= keys[lo][0]) {    // a gap (the video lost her): across it, eased, as poseAt() goes
+    var across = (t - keys[lo - 1][0]) / (keys[lo][0] - keys[lo - 1][0]);
+    out = poseBlend(poseBlend(keys[lo - 1][1], keys[lo][1], across * across * (3 - 2 * across)), out, dense);
+  }
+  return out;
+}
+
+// Where the hands of a track (trackAt()) cross in front of their shoulders, and the place each goes round by: for
+// two keys in a row whose straight line from the hand's place in the one to its place in the next passes within
+// HAND_ARC of the shoulder, at the second the line comes nearest, a place out from the shoulder on the side the line
+// passed (below it, when it went straight through), as far out as the hand was there, or HAND_ARC if nearer. The
+// side is the video's, known from the two keys, so it does not change from frame to frame. keys: as trackAt() takes
+// them. Returns {handA: [[second, x, y], ...], handB: [...]}, kept on the keys (keys.bulges) after the first call.
+// e.g. trackBulges(TRACK).handB[1]   // [12.56, -1.64, 56.79]: her hand B goes under her shoulder at 12.56 s
+function trackBulges(keys) {
+  if (keys.bulges) { return keys.bulges; }
+  var out = {handA: [], handB: []};
+  for (var i = 0; i + 1 < keys.length; i++) {
+    for (var hand in out) {
+      var a = keys[i][1][hand], b = keys[i + 1][1][hand];
+      if (!a || !b) { continue; }
+      var dx = b[0] - a[0], dy = b[1] - a[1], long = dx * dx + dy * dy;
+      var s = long ? clamp(-(a[0] * dx + a[1] * dy) / long) : 0;
+      var px = a[0] + dx * s, py = a[1] + dy * s, near = Math.hypot(px, py);
+      if (near >= HAND_ARC || s <= 0 || s >= 1) { continue; }   // passes wide, or only comes to the shoulder or leaves it
+      if (near < 1) {                              // straight through: below it
+        px = dx > 0 ? -dy : dy;
+        py = Math.abs(dx);
+        near = Math.hypot(px, py);
+      }
+      var far = Math.max(HAND_ARC, mix(Math.hypot(a[0], a[1]), Math.hypot(b[0], b[1]), s));
+      out[hand].push([mix(keys[i][0], keys[i + 1][0], s), px / near * far, py / near * far]);
+    }
+  }
+  keys.bulges = out;
   return out;
 }
 
@@ -4233,7 +4330,10 @@ var LOOK_KEYS = {};
 //                   person(x, y) and "at" are in). It takes the place of handA or handB. The
 //                   hand goes on from the wrist the way the forearm points. An arm is 120
 //                   long and keeps to its joints, so a point too far, or behind the body, is
-//                   reached for and not touched. Two people given one point hold hands
+//                   reached for and not touched. Two people given one point hold hands. A third
+//                   number, 0 to 1, is how far the wrist goes from where it would be toward
+//                   the point (1 unless told): poseBlend() and poseSteps() ease a reach in
+//                   and out by it
 //   wai             true: both wrists together before the chest and the hands upright, palm
 //                   to palm, as in a wai
 //   floor           true: sitting on the floor. One with her hair tied up (bun) folds both legs
@@ -4430,8 +4530,10 @@ function personLook(fig) {
     var shoulder = y - ((look.skirt ? 190 : 216) * leggyOf(look.build) + 126) * size;
     return [(reach[0] - x) / (size * (look.face || 1)) - side * 40, (reach[1] - shoulder) / size];
   }
-  if (look.reachA) { handA = about(look.reachA, 1); }
-  if (look.reachB) { handB = about(look.reachB, -1); }
+  var freeA = handA, freeB = handB;               // where the hands would be without a reach
+  function partly(free, to, how) { return how === undefined || how >= 1 ? to : [mix(free[0], to[0], how), mix(free[1], to[1], how)]; }
+  if (look.reachA) { handA = partly(freeA, about(look.reachA, 1), look.reachA[2]); }
+  if (look.reachB) { handB = partly(freeB, about(look.reachB, -1), look.reachB[2]); }
   if (look.wai) { handA = [-34, 30]; handB = [34, 30]; }
   // The pen for this figure: the usual one up to the film's usual size (1.3),
   // and finer on a larger figure, so that the line on the film grows far
@@ -4517,7 +4619,7 @@ function personLook(fig) {
   var sideOn = bodyTurn < -0.5;                     // nearer profile than three-quarter: the far side goes behind the body
   // what the stages after this one use
   Object.assign(fig, {bodyTurn: bodyTurn, build: build, chestTurn: chestTurn, dip: dip, feel: feel,
-    figureFrame: figureFrame, footHalf: footHalf, gait: gait, hairShown: hairShown, handA: handA, handB: handB,
+    figureFrame: figureFrame, footHalf: footHalf, freeA: freeA, freeB: freeB, gait: gait, hairShown: hairShown, handA: handA, handB: handB,
     hipHalf: hipHalf, hipTip: hipTip, hipX: hipX, hipY: hipY, inFront: inFront, joints: joints, lady: lady,
     land: land, layered: layered, leggy: leggy, look: look, rig: rig, rock: rock, scene: scene,
     sceneFrame: sceneFrame, seat: seat, sheetPen: sheetPen, shoulderTip: shoulderTip, sideOn: sideOn, size: size,
@@ -4919,7 +5021,7 @@ function personTrunk(fig) {
 // hands and the far arm
 function personReach(fig) {
   // what the stages before this one worked out
-  var build = fig.build, chest = fig.chest, chestTurn = fig.chestTurn, handA = fig.handA, handB = fig.handB,
+  var build = fig.build, chest = fig.chest, chestTurn = fig.chestTurn, freeA = fig.freeA, freeB = fig.freeB, handA = fig.handA, handB = fig.handB,
       lady = fig.lady, leggy = fig.leggy, look = fig.look, phase = fig.phase, rig = fig.rig, scene = fig.scene,
       small = fig.small, spine = fig.spine, still = fig.still, up = fig.up, who = fig.who;
   // A child's trunk is shorter and narrower, not a grown-up's made small:
@@ -4963,8 +5065,12 @@ function personReach(fig) {
     var here = pen.getTransform().inverse().transformPoint(onSheet);
     return handFor((here.x - root[0]) / arms, (here.y - root[1]) / arms);
   }
-  if (look.reachA) { handA = aimed(look.reachA, rootA); }
-  if (look.reachB) { handB = aimed(look.reachB, rootB); }
+  function partway(key, free, reach, root) {     // a reach part of the way (its third number): from the free hand, by an arc
+    var to = aimed(reach, root);
+    return reach[2] === undefined || reach[2] >= 1 ? to : handSwing(key, free, to, reach[2]).concat(to.slice(2));
+  }
+  if (look.reachA) { handA = partway("handA", freeA, look.reachA, rootA); }
+  if (look.reachB) { handB = partway("handB", freeB, look.reachB, rootB); }
   if (look.wai) {                                   // the two wrists side by side before the chest, a little below the shoulders' line
     var waiX = spine(-84) + 8;
     handA = handFor((waiX + 4 - rootA[0]) / arms, (-84 - rootA[1]) / arms);
