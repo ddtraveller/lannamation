@@ -9,7 +9,7 @@ var S03_SOUND = {calls: [[0, "cicadas", 0.55, 35], [4, "buffalo", 0.45]]};
 var S03_LINES = [[1.5, 5.22, "M012"], [5.6, 11.2, "M013"], [25.5, 29.5, "M014"]];
 var S03_STAND = 760, S03_GROUND = 968;              // where the buffalo stops to graze, and the ground the two walk on
 var S03_PILE = MAENG_TREE[0] - 90;                  // where the fallen wood lies
-var S03_LIFT = [22.6, 23.2, 24.0];                  // he bends to the bound bundle, lifts it to his shoulder, and sets off home
+var S03_LIFT = [22.3, 22.9, 24.0];                  // he bends to the bound bundle, lifts it to his shoulder, and sets off home
 // Its life: a red-billed blue magpie perched on the great tree's left limb, flicking its long tail; as he sets off
 // home with the wood it flies off over the meadow. A flock goes over, high, while he leads the buffalo out.
 var S03_LIFE = [
@@ -75,9 +75,13 @@ function s03Lift(t, go) {
   var down = s03Ease(between(t, S03_LIFT[0], S03_LIFT[1])), up = s03Ease(between(t, S03_LIFT[1], S03_LIFT[2]));
   var face = -1, shoulder = maengMeasure(go.x, S03_GROUND, Object.assign({}, go.look, {face: -1})).shoulderB;   // where the walk home carries it
   var stand = Object.assign({}, go.look, {face: up < 0.5 ? 1 : -1});   // turned to the bundle, on his right, to bend for it; back as he lifts it
-  var bx = mix(S03_PILE, shoulder[0] + 22 * face, up), by = mix(S03_GROUND - 4, shoulder[1] - 10, up);
+  // Turned for home, the bundle behind him, his hand and the bundle dip as they swing past his side and up: straight
+  // from the ground to the shoulder the hand passed through the shoulder itself, and the elbow swung across in a
+  // frame (arms_check, 23.73 s).
+  var dip = 60 * Math.sin(Math.PI * clamp((up - 0.5) / 0.5));
+  var bx = mix(S03_PILE, shoulder[0] + 22 * face, up), by = mix(S03_GROUND - 4, shoulder[1] - 10, up) + dip;
   var look = Object.assign({}, stand, {sit: down * (1 - up), bend: 0.9 * down * (1 - up), feel: "concerned",
-                                       reachA: [mix(S03_PILE + 10, shoulder[0] + 62 * face, up), mix(S03_GROUND - 30, shoulder[1] - 22, up)]});
+                                       reachA: [mix(S03_PILE + 10, shoulder[0] + 62 * face, up), mix(S03_GROUND - 30, shoulder[1] - 22, up) + dip]});
   return {name: "lad", kind: "person", x: go.x, y: S03_GROUND, draw: function () {
     if (up > 0) { firewood(pen, bx, by, mix(0.55, 0.78, up), {turn: -0.2 * face * up}); }
     else { firewood(pen, S03_PILE, S03_GROUND - 4, 0.55, {loose: false, count: 7}); }   // still on the ground as he bends to it
