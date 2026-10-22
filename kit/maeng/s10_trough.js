@@ -194,10 +194,13 @@ function s10Caravan(t) {                            // dusk: the Haw caravan com
 // to 1 between 29.5 s and 48.5 s, the crew of S10_CREW at it. Gives back nothing: it draws with pen. From sets.js:
 // maengYardAt() at night, maengYardTrough(), MAENG_TROUGH_TURN, maengGarden(), MAENG_PEN, MAENG_NIGHT.
 // Its z plan (oldcartoon.js, Z): the yard at night as painted first; then by drawByZ, in "back", what is across the
-// fields: the resting horses, the traders past the turn, and the trough's far part, a long thing by its line
-// (s10TroughLine "far"); the garden in a band of its own, S10_PLOT, under all that stands by it; and in "people" by
-// their feet: the pen with the creature (one sprite, MAENG_PEN), the lad, the traders by the path, and the trough's
-// near part by its line, before whoever stands in front of it. e.g. s10Night(40);
+// fields: the resting horses and the traders past the turn; the garden in a band of its own, S10_PLOT, under all that
+// stands by it; and in "people" by their feet: the pen with the creature (one sprite, MAENG_PEN), the lad, the traders by
+// the path, and the trough, both its parts long things by their lines (s10TroughLine), each before whoever stands in
+// front of it: so it runs on along the path in front of the pen and climbs from there to the traders in the fields, in
+// one piece (owner, 2026-10-22: "Redo scene 10 so the golden trough is continuous. It should extend past the cage ...
+// and then go up to where the workers are"; its far part had been in "back", and the pen's right side hid where the two
+// parts meet).
 var S10_PLOT = (Z.back + Z.people) / 2;             // the garden's band at night: before the people, after what is across the fields
 // part: "near" (along the path, to MAENG_TROUGH_TURN) or "far" (across the fields); x in pixels of the sheet. Gives back
 // the y of the yard's trough there, or null where that part does not reach. e.g. s10TroughLine("far", 1500)
@@ -224,7 +227,7 @@ function s10Night(t) {                              // all night under the lante
                   y: maengTroughAt(c[0])[1] - 8, draw: function () { s10Crew(t, c, built); }});
   });
   sprites.push(
-    {name: "trough, far", kind: "trough", z: "back", line: function (x) { return s10TroughLine("far", x); },
+    {name: "trough, far", kind: "trough", line: function (x) { return s10TroughLine("far", x); },
      draw: function () { maengYardTrough(built, "far"); }},
     {name: "garden", kind: "garden", z: S10_PLOT, draw: function () { maengGarden(t, MAENG_MOUNDS.length, MAENG_MOUNDS.length, tint); }},
     {name: "pen", kind: "kok", x: k[0], y: k[1], draw: function () {

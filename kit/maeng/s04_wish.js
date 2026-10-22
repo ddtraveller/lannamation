@@ -13,6 +13,7 @@ var S04_SPEAKS = [[10.0, 14.76], [15.4, 19.06], [20.4, 25.68], [26.4, 30.1], [31
 // his mouth moves through them, a shape as mouthAt() gives one (the voice is the narrator's; the film's words are
 // timed to it later)
 var S04_LAMP = [930, 925];                          // the lamp on the floor between them
+var S04_POST = [1790, 710, 34];                     // the room's corner post at the right: its left, its foot, its width (s04Room)
 var S04_NEAR = 2;                                   // the two are drawn this much larger than in the yard: the room is close
 var S04_ROOM = null;
 
@@ -21,16 +22,16 @@ var S04_ROOM = null;
 // Each keeps to the right of the room, in the lamp's reach, away from the father and his son; each is still while
 // the father speaks his wish; the mice are gone before the grief (38 s on), and the tokay stays high on the wall.
 var S04_LIFE = [
-  // The house mouse: in from outside across the doorway's sill, along the foot of the wall; it sniffs as the father
-  // calls his son close (M016), sits up while he speaks (M017, M018), and out across the sill to the doorway's far edge;
-  // in again to sit up at "set a snare" (M020), and out the same way before the grief. Each time it goes all the way
-  // to the far post of the doorway (x 1650), so it is seen to go out into the night (owner, 2026-10-22: "Have the mouse
-  // go to the far edge of the door so it looks like it's walking outside rather than just disappearing"; it vanished
-  // by the near post).
+  // The house mouse: in from the dark at the room's edge, out from behind the corner post (S04_POST) and across the
+  // doorway's sill, along the foot of the wall; it sniffs as the father calls his son close (M016), sits up while he
+  // speaks (M017, M018), and away the way it came, across the sill, behind the post and out past the picture's edge;
+  // in again to sit up at "set a snare" (M020), and away the same way before the grief. It is never put out where it is
+  // seen (owner, 2026-10-22: "Have the mouse go to the far edge of the door so it looks like it's walking outside", then
+  // "Walk on behind the post", when the blink check still saw it go at the doorway's edge).
   {name: "house mouse", kind: "mouse", look: {kind: "house", size: 0.8},
-   course: [[2.5, 1655, 703, "hide"], [3.0, 1655, 703], [5.8, 1330, 705, "sniff"], [9.4, 1330, 705], [10.6, 1250, 707, "up"],
-            [14.6, 1250, 707], [16.4, 1655, 703, "hide"], [25.2, 1655, 703], [26.8, 1300, 705, "up"], [30.4, 1300, 705],
-            [32.2, 1655, 703, "hide"], [32.4, 1655, 703, "hide"]]},
+   course: [[2.5, 2010, 703, "hide"], [2.6, 2010, 703], [5.8, 1330, 705, "sniff"], [9.4, 1330, 705], [10.6, 1250, 707, "up"],
+            [14.6, 1250, 707], [17.2, 2010, 703, "hide"], [24.2, 2010, 703], [26.8, 1300, 705, "up"], [30.4, 1300, 705],
+            [33.0, 2010, 703, "hide"], [33.2, 2010, 703, "hide"]]},
   // The field mouse: in along the floor from the far post during the wish (M019), it sniffs at the mat's edge,
   // then hurries back, and hides.
   {name: "field mouse", kind: "mouse", look: {kind: "field", size: 0.8},
@@ -161,14 +162,15 @@ function s04Blanket(x, y, size) {                   // a cloth of faded checks o
 // 10 s to 35.6 s), the boy holds his hand from 37.5 s, the lamp goes out 46 s to 50.5 s, black from 55 s. Gives back
 // nothing: it draws the whole sheet with pen. From sets.js: MAENG_HUT_THINGS, maengPerson() with MAENG_FATHER and
 // MAENG_LAD. Its life is S04_LIFE; its words S04_LINES (M015 to M023), written under it by the page.
-// Its z plan (oldcartoon.js, Z): the room and the hut's things as painted first; then by drawByZ the tokay in "set"
-// (on the wall), and in "people" by their feet: the mice at the wall's foot and the mat's edge (703 to 828), the
-// father under his blanket (900), the boy (905), the lamp on the floor between them (925).
+// Its z plan (oldcartoon.js, Z): the room as painted first; then by drawByZ the tokay in "set" (on the wall), and in
+// "people" by their feet or bases: the mice at the wall's foot and the mat's edge (703 to 828), the hut's things (the
+// hearth's pot, the baskets, 748 to 770: the house mouse runs behind the pot on its way to the post), the corner
+// post at the right drawn again at its foot (710), so the house mouse goes behind it, the father under his blanket
+// (900), the boy (905), the lamp on the floor between them (925).
 // e.g. sceneWish(25);
 function sceneWish(t) {
   var flame = 1 - between(t, 46, 50.5);             // the lamp burns low, and goes out
   pen.drawImage(s04Room(), 0, 0);
-  dress(t, MAENG_HUT_THINGS, "back");               // the hearth, cold at night, and the baskets
   var speaking = S04_SPEAKS.some(function (s) { return t >= s[0] && t < s[1]; });
   var holding = t >= 37.5;                          // from the line "he held his father's hand"
   var meet = [960, 770];
@@ -179,7 +181,13 @@ function sceneWish(t) {
                                            tears: between(t, 37.5, 38.5),   // he cries, as the words say he does (M022, 38.0) (owner: "Add some tears for when the boy cries")
                                            size: MAENG_LAD.size * S04_NEAR});
   if (holding) { father.reachA = meet; lad.reachA = meet; }
-  drawByZ(lifeSprites(t, S04_LIFE).concat([          // the mice and the tokay, in the room's own light
+  drawByZ(lifeSprites(t, S04_LIFE).concat(MAENG_HUT_THINGS.map(function (one) {   // the hearth, cold at night, and the baskets
+    return {name: one.name, kind: one.kind, x: one.x, y: one.base, draw: function () { dress(t, [one], "back"); }};
+  }), [                                               // the mice and the tokay, in the room's own light
+    {name: "post", kind: "post", x: S04_POST[0], y: S04_POST[1], draw: function () {   // as s04Room() paints it, over its tie
+      pen.fillStyle = "#6e4c30";
+      pen.fillRect(S04_POST[0], 0, S04_POST[2], S04_POST[1]);
+    }},
     {name: "father", kind: "person", x: 770, y: 900, draw: function () { person(770, 900, father); s04Blanket(770, 905, 1.25); }},
     {name: "lad", kind: "person", x: 1110, y: 905, draw: function () { person(1110, 905, lad); }},
     {name: "lamp", kind: "lamp", x: S04_LAMP[0], y: S04_LAMP[1], draw: function () {

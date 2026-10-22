@@ -300,10 +300,11 @@ var MAENG_HUT_THINGS = [
 ];
 
 // t: the scene's second (the clouds drift by it, the fields' life moves by it); night: 0 by day to 1 at night;
-// glow: the hut's lamp, 0 (out) to 1, 0 when left out; behind: a function of no arguments, or left out. Gives back
+// glow: the hut's lamp, 0 (out) to 1, 0 when left out; behind: a function of no arguments, or left out; away: 0 to 1,
+// how far the folk of the fields have gone home, when the scene says (left out: by the night, as below). Gives back
 // nothing: it draws with pen, the whole picture behind the people (life in the fields only while night < 0.5).
 // e.g. maengYardAt(t, 1, 0.9, function () { s02Mist(t); });
-function maengYardAt(t, night, glow, behind) {   // behind: drawn after the far sheet, before the yard and the hut (mist over the fields)
+function maengYardAt(t, night, glow, behind, away) {   // behind: drawn after the far sheet, before the yard and the hut (mist over the fields)
   var yard = maengYard();
   pen.drawImage(maengSky("day"), 0, 0);
   if (night > 0) {
@@ -314,7 +315,13 @@ function maengYardAt(t, night, glow, behind) {   // behind: drawn after the far 
   cumulus(pen, t + 10, night > 0.5 ? MAENG_CLOUDS.night : MAENG_CLOUDS.day);
   pen.drawImage(yard.back, 0, 0);
   if (night > 0) { pen.globalAlpha = night; pen.drawImage(yard.backNight, 0, 0); pen.globalAlpha = 1; }
-  if (night < 0.5) { maengFieldLife(t); }         // the farmers, the buffalo and the egrets out in the fields
+  var home = away !== undefined ? clamp(away) : clamp((night - 0.4) / 0.2);   // the farmers, the buffalo and the egrets: they fade out
+  if (home < 1) {                                  // through dusk and back in at dawn, where they were there or not at half
+    pen.save();                                    // dark and blinked on and off as scene 8's days went by (the blink check,
+    pen.globalAlpha *= 1 - home;                   // 2026-10-22); a day (0), a night (1) and a dusk short of 0.4 draw as before
+    maengFieldLife(t);
+    pen.restore();
+  }
   if (behind) { behind(); }
   pen.drawImage(yard.front, 0, 0);
   if (night > 0) { pen.globalAlpha = night; pen.drawImage(yard.frontNight, 0, 0); pen.globalAlpha = 1; }

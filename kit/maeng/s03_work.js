@@ -9,6 +9,7 @@ var S03_SOUND = {calls: [[0, "cicadas", 0.55, 35], [4, "buffalo", 0.45]]};
 var S03_LINES = [[1.5, 5.22, "M012"], [5.6, 11.2, "M013"], [25.5, 29.5, "M014"]];
 var S03_STAND = 760, S03_GROUND = 968;              // where the buffalo stops to graze, and the ground the two walk on
 var S03_PILE = MAENG_TREE[0] - 90;                  // where the fallen wood lies
+var S03_LIFT = [22.6, 23.2, 24.0];                  // he bends to the bound bundle, lifts it to his shoulder, and sets off home
 // Its life: a red-billed blue magpie perched on the great tree's left limb, flicking its long tail; as he sets off
 // home with the wood it flies off over the meadow. A flock goes over, high, while he leads the buffalo out.
 var S03_LIFE = [
@@ -66,6 +67,26 @@ function s03Tufts(t, ox) {
 // maengMeadow(), MAENG_TREE, maengPerson() with MAENG_LAD, maengLead(), maengMeasure(). Its life is S03_LIFE; its
 // words S03_LINES (M012 to M014), written under it by the page. e.g. sceneWork(20);
 //
+// The lad lifting the bound bundle at second t (S03_LIFT), go: what stroll() gave back for him, stood by the pile. Down
+// to it (S03_LIFT[0] to [1]), then up with it to his shoulder ([1] to [2]), where the walk home has it from 24 s; where
+// it lay on the ground and was on his shoulder the next frame (the blink check, 2026-10-22; owner: "Show him lift it").
+// Gives back his sprite for drawByZ(), the bundle with him. e.g. drawByZ([s03Lift(23.5, go)]);
+function s03Lift(t, go) {
+  var down = s03Ease(between(t, S03_LIFT[0], S03_LIFT[1])), up = s03Ease(between(t, S03_LIFT[1], S03_LIFT[2]));
+  var face = -1, shoulder = maengMeasure(go.x, S03_GROUND, Object.assign({}, go.look, {face: -1})).shoulderB;   // where the walk home carries it
+  var stand = Object.assign({}, go.look, {face: up < 0.5 ? 1 : -1});   // turned to the bundle, on his right, to bend for it; back as he lifts it
+  var bx = mix(S03_PILE, shoulder[0] + 22 * face, up), by = mix(S03_GROUND - 4, shoulder[1] - 10, up);
+  var look = Object.assign({}, stand, {sit: down * (1 - up), bend: 0.9 * down * (1 - up), feel: "concerned",
+                                       reachA: [mix(S03_PILE + 10, shoulder[0] + 62 * face, up), mix(S03_GROUND - 30, shoulder[1] - 22, up)]});
+  return {name: "lad", kind: "person", x: go.x, y: S03_GROUND, draw: function () {
+    if (up > 0) { firewood(pen, bx, by, mix(0.55, 0.78, up), {turn: -0.2 * face * up}); }
+    else { firewood(pen, S03_PILE, S03_GROUND - 4, 0.55, {loose: false, count: 7}); }   // still on the ground as he bends to it
+    person(go.x, S03_GROUND, look);
+  }};
+}
+// u: 0 to 1; gives back 0 to 1, eased in and out. e.g. s03Ease(0.5)   // 0.5
+function s03Ease(u) { u = clamp(u); return u * u * (3 - 2 * u); }
+
 // Its z plan (oldcartoon.js, Z): the sky and the yard as painted first; then by drawByZ the flock in "sky", so it flies
 // behind the great tree (owner, 2026-10-22: "the birds flying by ... should fly behind the tree"); in "set" the meadow
 // with the tree (a painted sheet, at the back of its band) and the magpie (on the tree's limb, then over the meadow),
@@ -97,10 +118,14 @@ function sceneWork(t) {
     if (t > 16 && t < 22) {                         // stooping to the wood, a hand to the ground
       Object.assign(lad, {sit: 1, bend: 0.9, reachA: [go.x + 40, S03_GROUND - 10], feel: "concerned"});
     }
-    drawByZ(sprites.concat([
-      {name: "wood", kind: "firewood", x: S03_PILE, y: S03_GROUND - 4, draw: function () {
+    if (t >= S03_LIFT[0]) {                         // the lift: down to the bound bundle, and up with it to his shoulder
+      sprites.push(s03Lift(t, go));
+    } else {
+      sprites.push({name: "wood", kind: "firewood", x: S03_PILE, y: S03_GROUND - 4, draw: function () {
         firewood(pen, S03_PILE, S03_GROUND - 4, 0.55, {loose: t < 22, count: 2 + Math.round(5 * gathered)});
-      }},
+      }});
+    }
+    drawByZ(sprites.concat(t >= S03_LIFT[0] ? [] : [
       {name: "lad", kind: "person", x: go.x, y: S03_GROUND, draw: function () { person(go.x, S03_GROUND, lad); }}
     ]));
   } else {                                          // home with the bundle on his shoulder

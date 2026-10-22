@@ -45,7 +45,9 @@ function sceneGold(t) {
   pen.translate(WIDE / 2, 540);
   pen.scale(S08_CAMERA[2], S08_CAMERA[2]);
   pen.translate(-S08_CAMERA[0], -S08_CAMERA[1]);
-  maengYardAt(t, night, 0);
+  // The folk of the fields go home as the days begin to race (fading out over 0.8 s) and come back as they end: at a day a
+  // second they blinked on and off with every night (the blink check, 2026-10-22).
+  maengYardAt(t, night, 0, undefined, between(t, S08_DAYS[0], S08_DAYS[0] + 0.8) * (1 - between(t, S08_DAYS[1], S08_DAYS[1] + 0.8)));
   var tint = night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null;
   maengGarden(t, Math.min(MAENG_MOUNDS.length, mounds), 0, tint);
   var pleased = t > 6.2 && t < 12.7;
@@ -89,6 +91,10 @@ function sceneGold(t) {
   }
   drawByZ(sprites);
   pen.restore();
+  // A short dip to dark between him standing back from the full garden and leading the buffalo out, where he blinked
+  // out of the garden and into the edge of the picture at 27 s (the blink check, 2026-10-22): the picture is black at
+  // 27 s, when the lead begins, and back by 28.2 s, before "But he still herded buffalo" (M049, 28 s).
+  maengDark(t, 25.8, 27);
   if (t < 1.5 || t > 38) {
     pen.fillStyle = "rgba(0, 0, 0, " + Math.max(1 - t / 1.5, between(t, 38, 40)).toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);
