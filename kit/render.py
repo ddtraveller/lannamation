@@ -9,12 +9,18 @@ takes a picture of each, and hands the pictures to ffmpeg. Then it says
 what the page said: an error, or a warning from the kit (a name it does
 not know, which changes nothing).
 
+Before the first picture it draws the film's frames once more with no pictures (the kit's vanished(),
+oldcartoon.js; seconds, not the minutes the pictures take) and tells anything that blinked out: drawn in
+one frame and gone in the next, while it could be seen, not gone off the edge, faded, shrunk away or
+taken by a fade to black. It tells them again at the end, and makes the video all the same: stop it and
+mend the scene. --no-vanish leaves the look out.
+
 It needs Google Chrome (Playwright drives it: channel "chrome") and ffmpeg on the PATH. The page must
 have draw(t), the switch rendering, and LENGTH or DURATION (the film's seconds), as every kit page does.
 It writes the video where it is named, 1920 x 1080 at 30 frames a second (H.264; AAC sound with --audio),
 and prints how many frames it made and how long that took. It ends with exit code 0; 1 when the page
 reported an error (the video is made all the same) or when ffmpeg stopped (no video); 2 for arguments
-argparse does not take. From Python: render.render(page, video, audio, start, end, fast, sets).
+argparse does not take. From Python: render.render(page, video, audio, start, end, fast, sets, vanish).
 """
 import argparse
 import json
@@ -60,14 +66,14 @@ def ffmpeg_command(video, audio, start=0, fast=False):
     return command
 
 
-def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=()):
+def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=(), vanish=True):
     """Render a kit page to a video file, frame by frame, in Chrome with no window: gives back nothing.
 
     page_file: the page (a path). video: the file to write. audio: a sound file, or None.
     start, end: the seconds to render from and to (default 0 to the page's LENGTH; end is held to LENGTH).
     fast: JPEG frames and the encoder's usual settings. sets: (name, value) pairs set on window before
-    the first frame (render.py --set).
-    It prints the frames made, the time it took, the kit's warnings and the page's errors.
+    the first frame (render.py --set). vanish: first look for what blinks out of the film (vanished()), and tell it.
+    It prints what blinked out, the frames made, the time it took, the kit's warnings and the page's errors.
     It fails with SystemExit (a message) when ffmpeg stops, and SystemExit(1) when the page reported an
     error; then the video is written all the same. scenes.py calls it once for each scene.
     e.g. render("hello.html", "hello.mp4", None, 0.0, 5.0)"""
@@ -90,8 +96,18 @@ def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=()):
         # a part of a film starts with a jump of the clock; the kit's settled()
         # lets what hangs and swings come to rest first, as it would in the film
         first, last = round(start * FPS), round(end * FPS)
+        # what blinks out of the film, told before the pictures, while there is time to stop and mend the scene (a
+        # page made before the kit had vanished() has nothing to tell)
+        blinks = []
+        if vanish:
+            looked = time.time()
+            blinks = page.evaluate("([a, b, fps]) => typeof vanished === 'function' ? vanished(a, b, fps) : []",
+                                   [first / FPS, last / FPS, FPS])
+            for blink in blinks:
+                print("warning:", blink, flush=True)
+            print("looked for what blinks out in %.0f seconds: %d found" % (time.time() - looked, len(blinks)), flush=True)
 
-        ffmpeg = subprocess.Popen(ffmpeg_command(video, audio, first / FPS, fast),
+        ffmpeg =subprocess.Popen(ffmpeg_command(video, audio, first / FPS, fast),
                                   stdin=subprocess.PIPE)
         try:
             for number in range(first, last):
@@ -111,6 +127,8 @@ def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=()):
     took = time.time() - started
     print("%s: %d frames, %.1f seconds of video" % (video, last - first, (last - first) / FPS))
     print("rendered in %.0f seconds" % took)
+    for blink in blinks:
+        print("warning:", blink)
     for warning in warnings:
         print("the kit warned:", warning)
     for error in errors:
@@ -133,6 +151,8 @@ def main():
     parser.add_argument("--fast", action="store_true", help="JPEG frames and the encoder's usual settings: quicker, softer")
     parser.add_argument("--set", action="append", default=[], metavar="NAME=VALUE",
                         help="give the page a value for this render: VALUE is JSON, or @file.json (sash.html: SLOW, LENGTH, WORDS)")
+    parser.add_argument("--no-vanish", dest="vanish", action="store_false",
+                        help="do not look first for what blinks out of the film")
     args = parser.parse_args()
     if not shutil.which("ffmpeg"):
         raise SystemExit("ffmpeg is not installed, or not on the PATH")
@@ -144,7 +164,7 @@ def main():
     for one in args.set:
         name, _, value = one.partition("=")
         sets.append((name, json.loads(Path(value[1:]).read_text(encoding="utf-8") if value.startswith("@") else value)))
-    render(args.page, args.video, args.audio, args.start, args.end, args.fast, sets)
+    render(args.page, args.video, args.audio, args.start, args.end, args.fast, sets, args.vanish)
 
 
 if __name__ == "__main__":

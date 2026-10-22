@@ -2049,6 +2049,17 @@ Draw second t of a film: find its scene, let the camera push in, fade
 through black at the cuts, then send the sheet to the screen through the lens.
 ```
 
+### `vanished(from, to, fps)`
+
+```
+from, to: seconds of the page's film, drawn by the page's draw(t); fps: frames a second (30 when left out).
+Returns a list of sentences, one for each thing that blinked out ([] when nothing did), each with the first second
+it did and how many times. It draws on the page's sheet as draw(t) does, so it is for a page with rendering on
+(render.py, checks/vanish_check.py): a render after it starts with a jump of the clock, and settled() forgets what
+it drew. It puts person(), drawByZ(), filmFrameOnce() and LIFE_KINDS back as they were, even when a frame throws.
+e.g. vanished(0, 22);   // ["the rooster (rooster) blinked out at 3.47 s, at x 1010-1060, y 930-1000"]
+```
+
 ## motion.js
 
 motion.js - timing and travel for films of the Lanna cartoon kit (oldcartoon.js).  Load it after the kit. Everything here is a plain function of the time, with no state between frames: a frame drawn alone is the frame the film would show, which is what render.py and the maker's scrub bar need.  ramp(t, a, b, name)        0 at second a, 1 at second b, bent by the ease named tween(t, points, name)     a value through [[second, value], ...]: held before the first, eased between, held after the last; a value is a number, a colour "#rrggbb", or a list of numbers such as [x, y] springTween(t, points, look)  a number through points in time on a spring: pulled to each new value at its second, and swinging past cycle(t, seconds, look)    a repeat, 0 to 1 over and over: a loop, or back the next time ("reverse", "mirror"), with a rest between span(v, from, to, name)    a value of one range as a value of another: span(speed, [0, 300], [0, 0.2]) is a lean that grows with the speed glide(t, from, speed, look)  a thing thrown or let go: it slows as it goes and stops on its own, or at a bound ease(name, u)              a curve from 0 to 1: "smooth", "in", "out", "back", "bounce", "elastic", "wobbl
@@ -6922,16 +6933,22 @@ takes a picture of each, and hands the pictures to ffmpeg. Then it says
 what the page said: an error, or a warning from the kit (a name it does
 not know, which changes nothing).
 
+Before the first picture it draws the film's frames once more with no pictures (the kit's vanished(),
+oldcartoon.js; seconds, not the minutes the pictures take) and tells anything that blinked out: drawn in
+one frame and gone in the next, while it could be seen, not gone off the edge, faded, shrunk away or
+taken by a fade to black. It tells them again at the end, and makes the video all the same: stop it and
+mend the scene. --no-vanish leaves the look out.
+
 It needs Google Chrome (Playwright drives it: channel "chrome") and ffmpeg on the PATH. The page must
 have draw(t), the switch rendering, and LENGTH or DURATION (the film's seconds), as every kit page does.
 It writes the video where it is named, 1920 x 1080 at 30 frames a second (H.264; AAC sound with --audio),
 and prints how many frames it made and how long that took. It ends with exit code 0; 1 when the page
 reported an error (the video is made all the same) or when ffmpeg stopped (no video); 2 for arguments
-argparse does not take. From Python: render.render(page, video, audio, start, end, fast, sets).
+argparse does not take. From Python: render.render(page, video, audio, start, end, fast, sets, vanish).
 ```
 
 - `ffmpeg_command(video, audio, start, fast)`: The ffmpeg command that reads frames on its stdin and encodes them as render.py does: a list of words.
-- `render(page_file, video, audio, start, end, fast, sets)`: Render a kit page to a video file, frame by frame, in Chrome with no window: gives back nothing.
+- `render(page_file, video, audio, start, end, fast, sets, vanish)`: Render a kit page to a video file, frame by frame, in Chrome with no window: gives back nothing.
 - `main()`: The command line: read the arguments, check that ffmpeg and the sound file are there, render.
 
 ## kit/sash_music.py
@@ -7790,6 +7807,26 @@ Chrome (through Playwright) and Pillow. Exit code 0.
 ```
 
 - `main()`: The command line: strip.py PAGE OUT T0 DT N X Y W H (see this file's docstring): draw, crop, save the row.
+
+## kit/checks/vanish_check.py
+
+```
+vanish_check.py - does anything blink out of a film?
+
+    python checks/vanish_check.py sash.html                  # the whole film
+    python checks/vanish_check.py sash.html --from 22 --to 36  # a part of it
+
+Nothing should blink out of a film: what leaves goes off the edge, fades, shrinks away, or goes with a scene that
+fades to black. This check runs the kit's vanished() (oldcartoon.js) on the page: it draws every frame in order, as
+render.py does but keeping no pictures, and tells each person, each of a scene's life and each of drawByZ()'s
+sprites that gives an x which was drawn in one frame and gone in the next while it could be seen. render.py runs the
+same before its first frame. It needs Google Chrome (Playwright).
+
+It reads the page only: it writes nothing. It ends with exit code 0 when nothing blinked out, 1 when something did or
+the page reported an error.
+```
+
+- `main()`: The command line: draw the page's film frame by frame and print what blinked out.
 
 ## kit/checks/where_differ.py
 

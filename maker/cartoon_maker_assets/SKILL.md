@@ -28,6 +28,10 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
 5. `python film.py render film.json out.mp4` makes the video, 1920x1080 at 30
    frames a second, in a form phones play. `--from 2 --to 8` renders a part
    while you iterate. A 20-second film takes about a minute on a laptop.
+   Before the first picture it looks for anything that blinks out, drawn
+   in one frame and gone in the next in plain sight, and prints each as
+   "warning: ... blinked out at ...". Mend those in the JSON: let it walk off the edge,
+   or end its course where something hides it. Then render again.
 
 ## Rules that decide whether it looks right
 

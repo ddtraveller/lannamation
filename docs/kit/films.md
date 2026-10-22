@@ -62,6 +62,40 @@ ears and five eyes was put together, in order, each step a tool anyone can run a
    scene and at the end 2 tokay sounds"): `sls_sound.py music.wav sls_intro.mp4 out.mp4` lays the kit's crickets
    under it and the tokay's first two calls at its end, the music lowered under them; the picture is copied as it is.
 
+## Nothing blinks out (2026-10-22)
+
+The owner, 2026-10-22: "Everything should either continue off the edge, fade and shrink away, be part of a scene that
+is going to black or fade out. Sprites shouldn't just blink off the canvas." The kit's `vanished(from, to)`
+(oldcartoon.js, after `film()`) draws a film's frames one after another, as a render does but keeping no pictures,
+and notes where on the film each person (`person()`), each of a scene's life (`decorate.js`) and each of `drawByZ()`'s
+sprites that gives an x is. What is drawn in one frame and not in the next is let go when, in the frame it was last
+drawn:
+
+- most of it (`VANISH.edge`, 0.8) was already off the film: it walked off the edge;
+- it was drawn faint (`pen.globalAlpha` at most `VANISH.faint`, 0.15): it faded;
+- it had shrunk to `VANISH.small` (0.03) of the most it covered: it went into the distance;
+- where it was, the film is nearly black in either frame (`VANISH.dark`): a cut's fade, a fade to black;
+- where it was, the two frames hardly differ (`VANISH.still`): it was hidden, behind a sheet or a door.
+
+Anything else blinked out, and is told with the first second it did, where, and how many times more. A thing is known
+from frame to frame by its name: the sprite's, else the person's id, else its kind; among those of one name, by the
+nearest. It wraps `person()`, `drawByZ()`, `filmFrameOnce()` and `LIFE_KINDS` while it draws and puts them back.
+
+- **`render.py` looks first.** Before its first picture it runs `vanished()` over the part it renders and prints each
+  as "warning: ... blinked out at ...", and again at the end; the video is made all the same, so stop it and mend the scene.
+  The look takes a fraction of the render: a frame drawn, not photographed and encoded (the hero film's 85 s in about
+  6 minutes on the laptop, the village's 36 s in 1). `--no-vanish` leaves it out. `film.py render` and `scenes.py`
+  render through it, so the maker's films are looked at too.
+- **`checks/vanish_check.py PAGE`** runs the same look with no render; `--from`, `--to` for a part. Exit code 1 when
+  something blinked out. Not in `kit_check.py`.
+- **What it found first** (2026-10-22): the house mouse of s04 at 16.0 s and once more, as it went into the gap by the
+  door post (owner: "a disappearing mouse"); in `bubbles.html` the girl at 6 s, when the others start to walk; in
+  `lanna.html` the lane's games, which change at 20, 23 and 29 s with no fade. A planted one (a figure no longer drawn
+  at 3 s, beside one walking off the edge, one fading and one shrinking) is told alone, at 3.00 s.
+- **What it cannot see**: something painted straight onto the sheet, not by `person()`, a scene's life or a sprite
+  with an x; and a sprite whose `draw()` sometimes paints nothing (`if (t > 3.5) { birds(...); }`): it is still drawn.
+  A sprite of its own (no person or animal in it) is taken to stand in a box 160 wide and 160 high above its feet.
+
 ## The credits (2026-10-19)
 
 `maeng/s15_credits.js`, after the goodbye: Doi Khao Khwai at night under its stars, the credits rolling up over

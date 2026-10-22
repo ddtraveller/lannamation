@@ -10103,3 +10103,148 @@ function film(t, scenes) {
   }
   screen.restore();
 }
+
+// ---------- what blinks out of a film ----------
+// Nothing should blink out of a film (owner, 2026-10-22: "Everything should either continue off the edge, fade and
+// shrink away, be part of a scene that is going to black or fade out. Sprites shouldn't just blink off the canvas").
+// vanished() draws a film's frames one after another, as a render does but keeping no pictures, notes where on the
+// film each person (person()), each of a scene's life (decorate.js) and each of drawByZ()'s sprites that gives an x
+// is, and finds what is drawn in one frame and not in the next. That is all right when, in the frame it was last
+// drawn,
+//   most of it (edge) was already off the film,
+//   it was drawn faint (pen.globalAlpha at most faint),
+//   it had shrunk to a small part (small) of the most it covered, or
+// where it was, the film is nearly black in either frame (dark: a cut's fade, a fade to black), or the two frames
+// hardly differ (still: it was hidden, behind a sheet or a door, when the scene stopped drawing it).
+// Anything else blinked out, and is told. A thing is known from one frame to the next by its name (the sprite's,
+// else the person's id, else its kind) and, among those of a name, by the nearest.
+// edge, faint, small: parts of 1. dark: the brightness (0-255) under which the film counts as black. still: how
+// much the two frames may differ there (0-255, on the average) and the thing count as hidden. snap: how wide the
+// small copy of each frame is that the pictures are compared on.
+var VANISH = {edge: 0.8, faint: 0.15, small: 0.03, dark: 20, still: 6, snap: 480};
+
+// from, to: seconds of the page's film, drawn by the page's draw(t); fps: frames a second (30 when left out).
+// Returns a list of sentences, one for each thing that blinked out ([] when nothing did), each with the first second
+// it did and how many times. It draws on the page's sheet as draw(t) does, so it is for a page with rendering on
+// (render.py, checks/vanish_check.py): a render after it starts with a jump of the clock, and settled() forgets what
+// it drew. It puts person(), drawByZ(), filmFrameOnce() and LIFE_KINDS back as they were, even when a frame throws.
+// e.g. vanished(0, 22);   // ["the rooster (rooster) blinked out at 3.47 s, at x 1010-1060, y 930-1000"]
+function vanished(from, to, fps) {
+  fps = fps || 30;
+  var keep = {person: window.person, drawByZ: window.drawByZ, filmFrameOnce: window.filmFrameOnce};
+  var kinds = typeof LIFE_KINDS === "undefined" ? {} : LIFE_KINDS, keepKinds = Object.assign({}, kinds);
+  var now = [], within = null, blinks = {}, order = [];
+  var small = document.createElement("canvas"), scale = VANISH.snap / FILM.width;
+  small.width = VANISH.snap;
+  small.height = Math.round(FILM.height * scale);
+  var brush = small.getContext("2d", {willReadFrequently: true});
+
+  function area(box) { return Math.max(0, box[2] - box[0]) * Math.max(0, box[3] - box[1]); }
+  function note(name, kind, box) {                 // box: in pen's pixels, as the thing was drawn
+    if (pen.canvas !== FILM) { return; }           // a figure drawn on a scratch sheet to be measured is not in the film
+    var m = pen.getTransform(), a = m.transformPoint(new DOMPoint(box[0], box[1])), b = m.transformPoint(new DOMPoint(box[2], box[3]));
+    var on = [Math.min(a.x, b.x), Math.min(a.y, b.y), Math.max(a.x, b.x), Math.max(a.y, b.y)];
+    now.push({name: name, kind: kind, alpha: pen.globalAlpha, box: on, most: area(on)});
+    if (within) { within.noted = true; }
+  }
+  // what the film shows inside box (the film's pixels): its brightness in a frame (one picture), and how much two
+  // frames differ there (two). Gives back a number 0-255, or null when the box holds none of the film.
+  function inBox(box, one, two) {
+    var left = Math.max(0, Math.floor(box[0] * scale)), right = Math.min(small.width, Math.ceil(box[2] * scale));
+    var top = Math.max(0, Math.floor(box[1] * scale)), bottom = Math.min(small.height, Math.ceil(box[3] * scale));
+    if (right <= left || bottom <= top) { return null; }
+    var sum = 0, count = 0;
+    for (var y = top; y < bottom; y++) {
+      for (var x = left, i = (y * small.width + left) * 4; x < right; x++, i += 4) {
+        sum += two ? (Math.abs(one[i] - two[i]) + Math.abs(one[i + 1] - two[i + 1]) + Math.abs(one[i + 2] - two[i + 2])) / 3
+                   : (one[i] + one[i + 1] + one[i + 2]) / 3;
+        count++;
+      }
+    }
+    return sum / count;
+  }
+  function blinked(one, before, after, t) {        // whether "one", drawn in the frame before and not in this one, blinked out
+    var box = one.box, film = [0, 0, FILM.width, FILM.height];
+    var inside = area([Math.max(box[0], 0), Math.max(box[1], 0), Math.min(box[2], film[2]), Math.min(box[3], film[3])]);
+    if (area(box) === 0 || inside <= (1 - VANISH.edge) * area(box)) { return false; }
+    if (one.alpha <= VANISH.faint || area(box) <= VANISH.small * one.most) { return false; }
+    var light = Math.min(inBox(box, before), inBox(box, after)), change = inBox(box, before, after);
+    return light >= VANISH.dark && change >= VANISH.still;
+  }
+
+  try {
+    window.person = function (x, y, look) {
+      var given = keep.person.apply(this, arguments), size = (look && look.size) || 1;
+      note((within && within.name) || (look && look.id) || "someone", "person", [x - 60 * size, y - 330 * size, x + 60 * size, y]);
+      return given;
+    };
+    Object.keys(keepKinds).forEach(function (kind) {
+      kinds[kind] = function () {
+        var box = keepKinds[kind].apply(this, arguments);
+        if (box) { note((within && within.name) || kind, kind, box); }
+        return box;
+      };
+    });
+    window.drawByZ = function (sprites) {
+      return keep.drawByZ(sprites.map(function (one) {
+        return Object.assign({}, one, {draw: function () {
+          var outer = within;
+          within = {name: one.name || one.kind, noted: false};
+          try {
+            one.draw();
+            if (!within.noted && typeof one.x === "number" && typeof one.y === "number") {   // a sprite of its own: about where it stands
+              note(within.name, one.kind || "sprite", [one.x - 80, one.y - 160, one.x + 80, one.y]);
+            }
+          } finally {
+            within = outer;
+          }
+        }});
+      }));
+    };
+    window.filmFrameOnce = function () {           // a frame drawn again (one that watches, or the frames a jump paints first): only the last counts
+      now = [];
+      return keep.filmFrameOnce.apply(this, arguments);
+    };
+    var last = null, lastPicture = null;
+    for (var n = Math.round(from * fps); n < Math.round(to * fps); n++) {
+      now = [];
+      draw(n / fps);
+      brush.clearRect(0, 0, small.width, small.height);
+      brush.drawImage(FILM, 0, 0, small.width, small.height);
+      var picture = brush.getImageData(0, 0, small.width, small.height).data, drawn = now, taken = [];
+      if (last) {
+        last.forEach(function (one) {
+          var best = -1, far = Infinity;
+          drawn.forEach(function (other, k) {
+            if (taken[k] || other.name !== one.name || other.kind !== one.kind) { return; }
+            var gap = Math.hypot((other.box[0] + other.box[2] - one.box[0] - one.box[2]) / 2, (other.box[1] + other.box[3] - one.box[1] - one.box[3]) / 2);
+            if (gap < far) { far = gap; best = k; }
+          });
+          if (best >= 0) {
+            taken[best] = true;
+            drawn[best].most = Math.max(drawn[best].most, one.most);
+          } else if (blinked(one, lastPicture, picture)) {
+            var told = one.name + " (" + one.kind + ")";
+            if (!blinks[told]) {
+              blinks[told] = {at: n / fps, times: 0, box: one.box.map(function (v) { return Math.round(v / PIX); })};
+              order.push(told);
+            }
+            blinks[told].times++;
+          }
+        });
+      }
+      last = drawn;
+      lastPicture = picture;
+    }
+  } finally {
+    window.person = keep.person;
+    window.drawByZ = keep.drawByZ;
+    window.filmFrameOnce = keep.filmFrameOnce;
+    Object.keys(keepKinds).forEach(function (kind) { kinds[kind] = keepKinds[kind]; });
+  }
+  return order.map(function (told) {
+    var one = blinks[told];
+    return told + " blinked out at " + one.at.toFixed(2) + " s, at x " + one.box[0] + "-" + one.box[2] + ", y " + one.box[1] + "-" +
+           one.box[3] + (one.times > 1 ? " (and " + (one.times - 1) + " more time" + (one.times > 2 ? "s" : "") + ")" : "");
+  });
+}
