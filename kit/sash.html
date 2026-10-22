@@ -477,8 +477,9 @@ function FACE(n) { return FACES[n % FACES.length]; }
 function sceneCloth(t) {                // 0-22: one row, still; the music and the walk; one steady pull-back
   // She stands still while the cloth dances and the camera pulls back; once it
   // is back she keeps the beat, and makes a wai (owner: "have the woman wai
-  // instead of raise her arm and wave").
-  var look = t < 20 ? WOMAN : Object.assign({}, WOMAN, {late: 0, spring: 0.5, wai: true});
+  // instead of raise her arm and wave"). The wai comes in over 0.4 s (wai: a number; it once came in one frame, a
+  // pop: checks/pop_check.py).
+  var look = t < 20 ? WOMAN : Object.assign({}, WOMAN, {late: 0, spring: 0.5, wai: between(t, 20, 20.4)});
   var where = sabaiOf(t, 720 + SIDE, 1010, look);
   pen.save();
   sabaiCamera(t, where, CLOTH, 6, 20);
@@ -569,8 +570,8 @@ function sceneLane(t) {                 // 22-35: the lane: a man and a child co
   // the old walk did. The nod is a tween: a small dip back first, two bows.
   var nod = tween(t, [[7, 0], [7.2, -0.06], [7.6, 0.35], [8.1, 0.05], [8.5, 0.3], [9, 0]], "smooth");
   var man = stroll(t, -100, 420, 0, cast("farmer", Object.assign({id: "n0", stride: 0.9, late: 0, spring: 0.4, feel: "joy", at: [820, 700], bend: nod}, FACE(0))));
-  var woman = stroll(t, 1500, 820, 0.5, cast("weaver", Object.assign({id: "n1", stride: 0.9, late: 0.3, spring: 0.4, at: [420, 700], wai: t >= 6.3}, HAIR_OF.weaver, FACE(1))));
-  var kid = stroll(t, -200, 300, 1, cast("child", Object.assign({id: "n2", stride: 0.9, late: 0.5, spring: 0.7, smile: 1, at: [820, 700], wai: t >= 7.2,
+  var woman = stroll(t, 1500, 820, 0.5, cast("weaver", Object.assign({id: "n1", stride: 0.9, late: 0.3, spring: 0.4, at: [420, 700], wai: between(t, 6.3, 6.7)}, HAIR_OF.weaver, FACE(1))));
+  var kid = stroll(t, -200, 300, 1, cast("child", Object.assign({id: "n2", stride: 0.9, late: 0.5, spring: 0.7, smile: 1, at: [820, 700], wai: between(t, 7.2, 7.6),
                                                    wonder: tween(t, [[6, 0.3], [6.5, 1], [7.4, 1], [8, 0.4]], "smooth")}, FACE(2))));   // her wai takes him
   drawByZ([
     {name: "tung", kind: "tung", y: 905, draw: function () { villageTung(t + 22); }},
@@ -836,7 +837,7 @@ function scenePond(t) {                 // 35-53 (3 s longer since 2026-10-21, t
   var POND_LOOKS_UP = 5.2;
   var her = t >= POND_FLAG && t < POND_LAUGHED ? {feel: "laughing", at: sky}
           : {smile: 1, wonder: t < POND_FLAG ? awe : 0, at: awe > 0.5 ? sky : t < POND_LOOKS_UP ? watched : [1330, 800]};
-  var hands = t >= POND_FLAG || t < POND_LOOKS_UP + 0.3 ? {} : {wai: true};   // her hands in her lap; the wai to him; in her lap again at the flag
+  var hands = {wai: between(t, POND_LOOKS_UP + 0.3, POND_LOOKS_UP + 0.7) * (1 - between(t, POND_FLAG, POND_FLAG + 0.4))};   // her hands in her lap; the wai to him, eased in; in her lap again at the flag
   var his = t < POND_SEEN || t >= POND_CALM ? "happy" : t < POND_FLAG ? "surprised" : "angry";
   var fellow = stroll(t, 1600, 1330, 0, cast("fellow", Object.assign({id: "n1", stride: 0.8, late: 0.25, spring: 0.4, feel: his,
                                                         at: t >= POND_SEEN && t < POND_CALM ? sky : [300, 800]}, FACE(16))));   // he stops short of the water's edge

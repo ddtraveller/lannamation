@@ -87,7 +87,7 @@ function sceneEmbers(t) {
     var stickFrom = t > 38.6, flick = feed !== null && feed > 30 && since < 0.35 ? Math.sin(since / 0.35 * Math.PI) : 0;
     var tip = [S07_FIRE[0] + 12 + 14 * flick, S07_FIRE[1] - 12 - 70 * flick];
     var lad = maengPerson("boy", MAENG_LAD, {id: "lad", floor: "cross", face: -1, feel: laughs ? "laughing" : t > 26.3 && t < 30.4 ? "surprised" : "happy",
-                                             reachA: stickFrom ? [S07_FIRE[0] + 96, S07_FIRE[1] - 44 - 16 * flick] : undefined, grip: stickFrom});
+                                             reachA: stickFrom ? [S07_FIRE[0] + 96, S07_FIRE[1] - 44 - 16 * flick, between(t, 38.6, 39.0)] : undefined, grip: stickFrom});   // to the stick, eased
     sprites.push({name: "fire and lad", kind: "person", x: S07_FIRE[0] + 170, y: S07_FIRE[1] - 6, draw: function () {
       campfire(pen, S07_FIRE[0], S07_FIRE[1], 0.8, t, {light: 1});
       var ladAt = person(S07_FIRE[0] + 170, S07_FIRE[1] - 6, lad);
@@ -99,7 +99,9 @@ function sceneEmbers(t) {
     }
   } else {                                          // by day: Thukkhata at the pen, holding out grass, then a banana
     var holding = t > 8.4 && t < 11.8 ? "grass" : t > 12.8 && t < 15.4 ? "banana" : null;
-    var hand = [MAENG_PEN[0] + 160, MAENG_PEN[1] - 120];
+    // His hand goes out with each and back, eased (a reach's third number: it once went in one frame, a pop)
+    var out = between(t, 8.4, 8.8) * (1 - between(t, 11.4, 11.8)) + between(t, 12.8, 13.2) * (1 - between(t, 15.0, 15.4));
+    var hand = [MAENG_PEN[0] + 160, MAENG_PEN[1] - 120, out];
     var boy = maengPerson("boy", MAENG_LAD, {id: "lad", face: -1, feel: holding && away ? "concerned" : t > 16.1 ? "sad" : "neutral",
                                              reachA: holding ? hand : undefined});
     sprites.push({name: "lad", kind: "person", x: MAENG_PEN[0] + 270, y: MAENG_PEN[1] + 4, draw: function () {

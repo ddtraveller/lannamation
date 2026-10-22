@@ -115,9 +115,9 @@ function sceneWork(t) {
   if (t < 24) {                                     // to the tree, and down to gather the wood
     go = stroll(t, S03_STAND + 380, S03_PILE - 50, ox.arrives + 1.2, lad);
     lad = go.look;
-    if (t > 16 && t < 22) {                         // stooping to the wood, a hand to the ground
-      Object.assign(lad, {sit: 1, bend: 0.9, reachA: [go.x + 40, S03_GROUND - 10], feel: "concerned"});
-    }
+    // Stooping to the wood, a hand to the ground, from 16 s; up again before he bends to the bundle (S03_LIFT). Each
+    // eased over half a second (poseSteps; it once came in one frame, a pop: checks/pop_check.py).
+    Object.assign(lad, poseSteps(t, [[0, {}], [16, {sit: 1, bend: 0.9, reachA: [go.x + 40, S03_GROUND - 10], feel: "concerned"}], [21.7, {}]], 0.5));
     if (t >= S03_LIFT[0]) {                         // the lift: down to the bound bundle, and up with it to his shoulder
       sprites.push(s03Lift(t, go));
     } else {

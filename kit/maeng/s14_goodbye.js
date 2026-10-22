@@ -32,12 +32,9 @@ function sceneGoodbye(t) {
     var w = S14_WAI, up = s14Ease((t - w[0]) / (w[1] - w[0])) * (1 - s14Ease((t - w[2]) / (w[3] - w[2])));
     Object.assign(walk.look, {face: -1, feel: "happy", glance: [1.5, 0], bend: 0.12 * up,
                               mouth: speaking ? {open: 0.06 + 0.26 * Math.abs(Math.sin(t * 8.5)), wide: 0.5, round: 0.15} : undefined});
-    // the hands rise from beside her to before her chest, and there the kit's wai joins them palm to palm
-    if (up >= 0.97) { walk.look.wai = true; }
-    else if (up > 0) {
-      walk.look.handA = [mix(12, -16, up), mix(92, 0, up)]; walk.look.handB = [mix(-12, 16, up), mix(92, 0, up)];
-      walk.look.wristA = -1.2 * up; walk.look.wristB = 1.2 * up;
-    }
+    // the hands rise from beside her to before her chest, palm to palm: the kit's wai, by how far it has come (wai as a
+    // number; the hands once reached their own place and then jumped into the wai's, a pop: checks/pop_check.py)
+    if (up > 0) { walk.look.wai = up; }
   }
   drawByZ(lifeSprites(t, S14_LIFE).concat([
     {name: "buakham", kind: "person", x: walk.x, y: 965, draw: function () { person(walk.x, 965, walk.look); }}

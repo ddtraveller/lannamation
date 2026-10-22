@@ -94,7 +94,8 @@ function sceneCreature(t) {
     lad = Object.assign(come.look, {feel: t < 9.5 ? "concerned" : t < 22 ? "surprised" : "concerned", face: 1});
   } else if (t < 39.5) {
     x = S06_SPOT[0] - 230;
-    lad = Object.assign(lad, {face: 1, feel: "happy", reachA: t < 37 ? [where[0] - 26, where[1] - 120] : undefined});
+    lad = Object.assign(lad, {face: 1, feel: "happy",   // his hand out to tie the vine, and back, each eased (poseSteps; once in one frame, a pop)
+                              reachA: poseSteps(t, [[0, {}], [30, {reachA: [where[0] - 26, where[1] - 120]}], [37, {}]], 0.4).reachA});
   } else {
     var home = stroll(t, S06_SPOT[0] - 230, S06_SPOT[0] - 1300, 39.5, lad);
     x = home.x;

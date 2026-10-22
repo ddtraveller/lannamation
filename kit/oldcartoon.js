@@ -4356,7 +4356,9 @@ var LOOK_KEYS = {};
 //                   the point (1 unless told): poseBlend() and poseSteps() ease a reach in
 //                   and out by it
 //   wai             true: both wrists together before the chest and the hands upright, palm
-//                   to palm, as in a wai
+//                   to palm, as in a wai. 0 to 1: how far the hands have come to it, each by an
+//                   arc from where it would be (waiOf()), its shape turning to the wai's as it
+//                   comes: wai: between(t, 6.3, 6.7) brings it in; set at a second, it pops
 //   floor           true: sitting on the floor. One with her hair tied up (bun) folds both legs
 //                   to one side, the knees to the front and the feet out behind (phap phiap);
 //                   anyone else sits cross-legged. "side" or "cross" says which, and "astride"
@@ -4476,8 +4478,8 @@ function personLook(fig) {
     // Hands that a scene does not place lie in the lap, turned in toward
     // each other, or one on each knee.
     var lapA = seat === "side" ? [[-2, 76], 1] : [[34, 90], 0], lapB = seat === "side" ? [[22, 76], -1] : [[-34, 90], 0];
-    if (!look.handA && !look.reachA && !look.wai) { look.handA = lapA[0]; look.wristA = look.wristA || lapA[1]; }
-    if (!look.handB && !look.reachB && !look.wai) { look.handB = lapB[0]; look.wristB = look.wristB || lapB[1]; }
+    if (!look.handA && !look.reachA && waiOf(look) < 1) { look.handA = lapA[0]; look.wristA = look.wristA || lapA[1]; }   // a wai on its way comes from the lap
+    if (!look.handB && !look.reachB && waiOf(look) < 1) { look.handB = lapB[0]; look.wristB = look.wristB || lapB[1]; }
   }
   var scene = pen.getTransform();                 // the scene's own frame, before this figure moves the pen: a reach is given in it
   SKIN = look.skin || STYLE.skin;                 // this figure's own skin, or the film's
@@ -4555,7 +4557,7 @@ function personLook(fig) {
   function partly(free, to, how) { return how === undefined || how >= 1 ? to : [mix(free[0], to[0], how), mix(free[1], to[1], how)]; }
   if (look.reachA) { handA = partly(freeA, about(look.reachA, 1), look.reachA[2]); }
   if (look.reachB) { handB = partly(freeB, about(look.reachB, -1), look.reachB[2]); }
-  if (look.wai) { handA = [-34, 30]; handB = [34, 30]; }
+  if (look.wai) { handA = partly(handA, [-34, 30], waiOf(look)); handB = partly(handB, [34, 30], waiOf(look)); }
   // The pen for this figure: the usual one up to the film's usual size (1.3),
   // and finer on a larger figure, so that the line on the film grows far
   // more slowly than the figure does. It is never heavier on a small figure:
@@ -5093,9 +5095,10 @@ function personReach(fig) {
   if (look.reachA) { handA = partway("handA", freeA, look.reachA, rootA); }
   if (look.reachB) { handB = partway("handB", freeB, look.reachB, rootB); }
   if (look.wai) {                                   // the two wrists side by side before the chest, a little below the shoulders' line
-    var waiX = spine(-84) + 8;
-    handA = handFor((waiX + 4 - rootA[0]) / arms, (-84 - rootA[1]) / arms);
-    handB = handFor((waiX - 4 - rootB[0]) / arms, (-84 - rootB[1]) / arms);
+    var waiX = spine(-84) + 8, waied = waiOf(look);
+    var toA = handFor((waiX + 4 - rootA[0]) / arms, (-84 - rootA[1]) / arms), toB = handFor((waiX - 4 - rootB[0]) / arms, (-84 - rootB[1]) / arms);
+    handA = waied >= 1 ? toA : handSwing("handA", handA, toA, waied).concat(toA.slice(2));   // part of the way: from where it was, by an arc
+    handB = waied >= 1 ? toB : handSwing("handB", handB, toB, waied).concat(toB.slice(2));
   }
   // Big gloved hands for the fellows, as they drew them, and small bare
   // hands for the ladies.
@@ -5130,10 +5133,11 @@ function personReach(fig) {
     var palm = rest ? 0.15 : given[1] < 0 ? (look.dance ? 0.15 : 0.85) : 0.3;   // the back of a hanging hand; the palm of a lifted one; the dance hand's back, its long nails seen whole
     var nails = look.nails === "long" ? "long" : look.nails && given[1] < 0;   // long nails are worn all the time; tips show on a lifted hand
     if (look.wai) {                                 // the hands stand upright whatever the forearms do, the fingers straight and together, the thumbs to the chest
-      angle = -Math.PI / 2 + (near ? -0.05 : 0.05);
-      open = 0;
-      curls = WAI;
-      palm = 0.25;
+      var w = waiOf(look), upright = -Math.PI / 2 + (near ? -0.05 : 0.05);
+      angle = w >= 1 ? upright : angle + Math.atan2(Math.sin(upright - angle), Math.cos(upright - angle)) * w;   // turning the short way to upright
+      open = open * (1 - w);
+      curls = w >= 1 || !curls ? (w >= 0.5 ? WAI : curls) : curls.map(function (c, k) { return mix(c, WAI[k], w); });
+      palm = mix(palm, 0.25, w);
     }
     // A hand of classical dance (GESTURES): the one the look names, or, on a
     // dancer's lifted hand that nothing else shapes, wong or jeeb (danceHand).
@@ -6417,6 +6421,10 @@ function headCap(h) {
   pen.closePath();
   shape(h.look.cap);
 }
+
+// How far a look's wai has come: 1 for true, a number of 0 to 1 as it is, else 0. look: a person's look.
+// e.g. waiOf({wai: true})   // 1
+function waiOf(look) { return look.wai === true ? 1 : typeof look.wai === "number" ? clamp(look.wai) : 0; }
 
 // A Lanna head-cloth tied round the head, its ends swinging after it (look.turban). // h: personHead()'s head (what it has worked out: see there).
 function headTurban(h) {

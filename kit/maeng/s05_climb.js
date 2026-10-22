@@ -72,10 +72,9 @@ function sceneClimb(t) {
     if (t < 27) {
       var tug = Math.max(0, Math.sin((t - 21) * 3.2));
       lad = Object.assign(lad, {face: -1, bend: -0.12 * tug});
-    } else if (t < 34) {
-      lad = Object.assign(lad, {face: 1, sit: 1, bend: 0.7, reachA: [S05_SNARE[0] - 10, S05_SNARE[1] - 30]});
-    } else {
-      lad = Object.assign(lad, {face: 1, smile: 0.2});
+    } else {                                        // down to the snare, and up again: each eased over half a second (poseSteps;
+      lad = Object.assign(lad, {face: 1}, poseSteps(t, [   // he once stood up in one frame, a pop: checks/pop_check.py)
+        [0, {}], [27, {sit: 1, bend: 0.7, reachA: [S05_SNARE[0] - 10, S05_SNARE[1] - 30]}], [34, {smile: 0.2}]], 0.5));
     }
   } else {                                          // home again, down the path
     go = stroll(t, S05_TOP, -200, 38, lad);

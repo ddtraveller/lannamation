@@ -1445,6 +1445,13 @@ A pointed cap over the head-cloth (look.cap), as the Khom Dam soldiers of Chang 
 standing up from the band, its tip a little back. // h: personHead()'s head (what it has worked out: see there).
 ```
 
+### `waiOf(look)`
+
+```
+How far a look's wai has come: 1 for true, a number of 0 to 1 as it is, else 0. look: a person's look.
+e.g. waiOf({wai: true})   // 1
+```
+
 ### `headTurban(h)`
 
 ```

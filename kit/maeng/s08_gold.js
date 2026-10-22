@@ -71,7 +71,7 @@ function sceneGold(t) {
   if (t < 11.1) {                                   // at the pen: the gold picked up, held up, a wonder
     x = MAENG_PEN[0] + 240;
     var held = t > 6.2;
-    lad = Object.assign(lad, {face: -1, feel: held ? "surprised" : "concerned", reachA: held ? [x - 70, y - 175] : [x - 70, y - 130],
+    lad = Object.assign(lad, {face: -1, feel: held ? "surprised" : "concerned", reachA: [x - 70, y - 130 - 45 * between(t, 6.2, 6.6)],   // held up over 0.4 s (once in one frame, a pop)
                               fingersA: held ? [0.5, 0.55, 0.6, 0.65, 0.4] : undefined});
     sprites.push({name: "lad", kind: "person", x: x, y: y, draw: function () {
       var joints = person(x, y, lad);

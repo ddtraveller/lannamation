@@ -169,7 +169,7 @@ function s10Caravan(t) {                            // dusk: the Haw caravan com
     {name: "heap", kind: "gold", x: 820, y: 966, draw: function () { s10Heap(820, 966, 22, t); }},
     {name: "lad", kind: "person", x: 700, y: 962, draw: function () {
       person(700, 962, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: asks ? "concerned" : "happy",
-                                                       reachA: asks ? [820, 780] : undefined,
+                                                       reachA: asks ? [820, 780, between(t, 24.4, 24.8)] : undefined,   // out to the heap, eased (once in one frame, a pop)
                                                        mouth: asks ? {open: 0.08 + 0.26 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined}));
     }}
   ]);
@@ -295,12 +295,12 @@ function s10Dawn(t) {                               // dawn at the palace: the t
     {name: "palace, back", kind: "palace", z: "set", draw: function () { maengPalace(t, "back", MAENG_DAWN); }},
     {name: "palace, front", kind: "palace", z: "set", draw: function () { maengPalace(t, "front", MAENG_DAWN); }},
     {name: "trader1", kind: "person", x: x, y: row - 8, draw: function () {
-      var joints = person(x, row - 8, maengTrader(1, {face: 1, sit: done ? 0 : 1, bend: done ? 0 : 0.5, feel: done ? "happy" : "concerned",
-                                                      reachA: done ? undefined : [x + 40, mix(row - 46, row - 150, strike.high)]}));
-      if (!done) {
-        s10Hammer(joints, MAENG_TRADERS[1].size);
-        if (strike.spark !== null) { s10Sparks(x + 46, row - 52, strike.spark, Math.floor(t * 1.6)); }
-      }
+      // Done, he gets up over 0.6 s, the hammer still in his hand (he once stood up in one frame, a pop)
+      var rise = between(t, 53.2, 53.8);
+      var joints = person(x, row - 8, maengTrader(1, {face: 1, sit: 1 - rise, bend: 0.5 * (1 - rise), feel: done ? "happy" : "concerned",
+                                                      reachA: rise < 1 ? [x + 40, mix(row - 46, row - 150, strike.high), 1 - rise] : undefined}));
+      s10Hammer(joints, MAENG_TRADERS[1].size);
+      if (!done && strike.spark !== null) { s10Sparks(x + 46, row - 52, strike.spark, Math.floor(t * 1.6)); }
     }},
     {name: "trough", kind: "trough", line: s10DawnLine, draw: function () { linKham(pen, [[-40, row], [MAENG_STAIR, row - 4]], 1, {size: 1.2}); }},
     {name: "trader0", kind: "person", x: x - 240, y: row + 30, draw: function () {

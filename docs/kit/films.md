@@ -139,6 +139,15 @@ arm or a leg jumps. The owner: "I don't need things to be identical, I want to i
   hand A jumps as far at the same moment, which looks like the video losing her hands. The Maeng scenes s11 (the king
   at 5.00 s, the lad at 30.53 s, their reaches switched at a second) and s13 (the crowd pointing as they arrive) popped
   as well: now none, by `poseSteps()` and a reach's third number.
+- **The films that ship** (the sweep of 2026-10-22, on the Spark): the hero film (`sash.html`) had four wais switched
+  on at a second (the woman at 20.00 s, the weaver at 28.30, the child at 29.23, the maiden at the pond at 40.50):
+  `wai` now takes a number, 0 to 1, how far the hands have come, each by an arc (`handSwing()`) from where it would be
+  (a seated one's from her lap), its shape turning to the wai's as it comes, so `wai: between(t, 20, 20.4)` brings
+  one in. In the tale, s03 (the lad's stoop to the wood), s04 (the father's and the son's hands meeting), s05 (the
+  crouch at the snare), s06 (the vine tied), s07 (the grass, the banana and the fire stick held out), s08 (the gold
+  held up) s10 (the lad's hand to the heap, the trader getting up at dawn) and s14 (Buakham's goodbye wai, now the kit's wai by how far it has come)
+  were switched at a second: now eased by `poseSteps()`, a reach's third number or `between()`. s01, s09, s12 and s15 had none. Left: in s03 the lad's elbow swings across in one frame as he lifts the
+  bundle to his shoulder (23.73 s; arms_check; it was there before).
 - **What it cannot see**: a person not drawn by `person()`; a pop smaller than a third of a torso (a hand's curl, a
   face).
 

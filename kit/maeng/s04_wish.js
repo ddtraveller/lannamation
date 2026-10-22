@@ -180,7 +180,9 @@ function sceneWish(t) {
   var lad = maengPerson("boy", MAENG_LAD, {id: "lad", floor: "side", face: -1, feel: t > 33 ? "sad" : "concerned", at: [700, 560],
                                            tears: between(t, 37.5, 38.5),   // he cries, as the words say he does (M022, 38.0) (owner: "Add some tears for when the boy cries")
                                            size: MAENG_LAD.size * S04_NEAR});
-  if (holding) { father.reachA = meet; lad.reachA = meet; }
+  if (holding) {                                    // the two hands come together over 0.6 s (a reach's third number: they once met in one frame, a pop)
+    father.reachA = lad.reachA = meet.concat(between(t, 37.5, 38.1));
+  }
   drawByZ(lifeSprites(t, S04_LIFE).concat(MAENG_HUT_THINGS.map(function (one) {   // the hearth, cold at night, and the baskets
     return {name: one.name, kind: one.kind, x: one.x, y: one.base, draw: function () { dress(t, [one], "back"); }};
   }), [                                               // the mice and the tokay, in the room's own light
