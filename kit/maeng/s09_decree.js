@@ -41,8 +41,9 @@ var S09_LIFE = [
 // pen. From sets.js: maengCity(), maengSky("day"), MAENG_CLOUDS.day, maengPalace(), MAENG_PALACE, MAENG_STAIR,
 // MAENG_FINIAL, maengPerson() with MAENG_KING, MAENG_SIMA, MAENG_HERALD and MAENG_PRINCES. Its life is S09_LIFE; its
 // words S09_LINES (M050 to M056), written under it by the page.
-// Its z plan (oldcartoon.js, Z): the sky, the city and the palace as painted first, the king and Sima on its dais
-// between its back and its front; then by drawByZ the flock in "sky", the magpie in "set" (on the finial), and in
+// Its z plan (oldcartoon.js, Z): the sky and the city as painted first; then by drawByZ the flock in "sky", and in
+// "set" by height the magpie on the finial, the palace's back, the king and Sima on its dais and the palace's front, so
+// the birds fly behind the palace (owner, 2026-10-22: "In 9 the birds should fly behind the palace"); and in
 // "people" by their feet: the herald with his gong, each prince on his row (850, 875, 900), and each prince's trough,
 // a long thing, by its line (s09TroughLine): drawn just before whoever stands in front of it where they stand.
 // e.g. sceneDecree(20);
@@ -52,18 +53,22 @@ function sceneDecree(t) {
   cumulus(pen, t + 90, MAENG_CLOUDS.day);
   pen.drawImage(city.back, 0, 0);
   pen.drawImage(city.front, 0, 0);
-  maengPalace(t, "back");
   var dais = hoKhamDais(p[1], p[2]), speaking = S09_KING.some(function (s) { return t >= s[0] && t < s[1]; });
   var laughs = [0, 1, 2].some(function (n) { return t > s09Fails(n) && t < s09Fails(n) + (n === 2 ? 4 : 1.8); });
-  person(p[0] - 70, dais, maengPerson("noble", MAENG_KING, {id: "king", floor: "cross", face: -1, at: [p[0] - 700, 860],
-                                                            feel: t > s09Fails(0) ? "concerned" : undefined,
-                                                            mouth: speaking ? {open: 0.06 + 0.26 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined}));
-  person(p[0] + 80, dais, maengPerson("lady", MAENG_SIMA, {id: "sima", floor: "side", face: -1, at: [p[0] - 700, 860],
-                                                           feel: laughs ? "laughing" : "happy"}));
-  maengPalace(t, "front");
   // The herald at his gong; he strikes it as the king begins.
   var struck = t - 16.3, swing = struck > -0.5 && struck < 0.4, boss = gongAt(S09_GONG[0], S09_GONG[1], 0.9);
   var sprites = lifeSprites(t, S09_LIFE).concat([   // on the roof, and in the sky
+    {name: "palace, back", kind: "palace", z: "set", y: dais - 1, draw: function () { maengPalace(t, "back"); }},
+    {name: "king", kind: "person", z: "set", x: p[0] - 70, y: dais, draw: function () {
+      person(p[0] - 70, dais, maengPerson("noble", MAENG_KING, {id: "king", floor: "cross", face: -1, at: [p[0] - 700, 860],
+                                                                feel: t > s09Fails(0) ? "concerned" : undefined,
+                                                                mouth: speaking ? {open: 0.06 + 0.26 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined}));
+    }},
+    {name: "sima", kind: "person", z: "set", x: p[0] + 80, y: dais, draw: function () {
+      person(p[0] + 80, dais, maengPerson("lady", MAENG_SIMA, {id: "sima", floor: "side", face: -1, at: [p[0] - 700, 860],
+                                                               feel: laughs ? "laughing" : "happy"}));
+    }},
+    {name: "palace, front", kind: "palace", z: "set", y: dais + 1, draw: function () { maengPalace(t, "front"); }},
     {name: "herald", kind: "person", x: S09_GONG[0] - 110, y: S09_GONG[1], draw: function () {
       gong(pen, S09_GONG[0], S09_GONG[1], 0.9, {struck: struck >= 0 ? struck : undefined});
       person(S09_GONG[0] - 110, S09_GONG[1], maengPerson("fellow", MAENG_HERALD, {id: "herald", face: 1,

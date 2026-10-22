@@ -247,7 +247,10 @@ function s10Crew(t, c, built) {                     // a trader sitting behind t
     pen.strokeStyle = "#3a3226";
     pen.lineWidth = 5;
     pen.beginPath();
-    pen.moveTo(x + 70, y + 4); pen.lineTo(x + 70, y - 300);
+    // the pole's foot behind the trough's bar (46 x 0.9 above its line), where it was on the ground and showed under the
+    // raised trough as if it stood in front of it (owner, 2026-10-22: "look at the lantern stands. Move where the line for
+    // the stand begins up")
+    pen.moveTo(x + 70, y - 30); pen.lineTo(x + 70, y - 300);
     pen.quadraticCurveTo(x + 76, y - 312, x + 110, y - 306);
     pen.stroke();
     khom(x + 108, y - 306, {size: 0.3, colour: [KHOM_RED, KHOM_GREEN, KHOM_BLUE][c[1]], lit: 1, late: c[1] * 1.7});
