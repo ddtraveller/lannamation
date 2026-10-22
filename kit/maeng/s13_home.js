@@ -19,15 +19,16 @@ var S13_CROWD = [["inta", 2.0, 2100, 1560, 948], ["sinuan", 2.6, 2150, 1690, 965
                  ["farmer", 6.4, 2200, 1800, 955], ["villager", 7.0, -320, 660, 962]];
 var S13_LIFE = [
   // its cries: afraid in the crowd, and its howl of home from inside the cave (the kit's sounds, sounds.py)
-  {name: "the creature's cries", kind: "flock", layer: "back", course: [[0, -999, -999], [0.1, -999, -999]],
+  {name: "the creature's cries", kind: "flock", z: "sky", course: [[0, -999, -999], [0.1, -999, -999]],
    calls: [[11.2, "maeng-afraid", 0.97], [22.4, "maeng-home", 2.95]]},
-  {name: "flock over the mountain", kind: "flock", layer: "back", course: [[30.5, 2150, 260], [40.0, -150, 200]]}
+  {name: "flock over the mountain", kind: "flock", z: "sky", course: [[30.5, 2150, 260], [40.0, -150, 200]]}
 ];
 
 // t: the scene's second: each of S13_CROWD walks in from its side at its second, turns to the pen, points (every
-// other one) until S13_BOLT, then is surprised. Gives back nothing: it draws with pen. e.g. s13Crowd(t);
+// other one) until S13_BOLT, then is surprised. Gives back their sprites for drawByZ(), each at its feet (one[4]).
+// e.g. drawByZ(s13Crowd(t));
 function s13Crowd(t) {                               // people from both sides, pressing round the pen, pointing
-  S13_CROWD.forEach(function (one, n) {
+  return S13_CROWD.map(function (one, n) {
     var look = cast(one[0], {size: 0.62 * (one[0] === "bunma" || one[0] === "dokkham" ? 0.75 : 1), id: "crowd" + n, smile: 0.8});
     var walk = stroll(t, one[2], one[3], one[1], look), arrived = t > walk.arrives;
     if (arrived) {
@@ -37,8 +38,14 @@ function s13Crowd(t) {                               // people from both sides, 
         walk.look.reachA = [walk.x + walk.look.face * 90, one[4] - 150 * look.size];
       }
     }
-    person(walk.x, one[4], walk.look);
+    return {name: "crowd" + n, kind: "person", x: walk.x, y: one[4], draw: function () { person(walk.x, one[4], walk.look); }};
   });
+}
+
+// x in pixels of the sheet; gives back the y of the yard trough's near part there, or null where it does not reach
+// (as scene 11's s11TroughLine). e.g. s13TroughLine(700)   // about 960
+function s13TroughLine(x) {
+  return x < maengTroughRoute().near[0][0] || x > MAENG_TROUGH_TURN ? null : maengTroughAt(x)[1];
 }
 
 // Scene 13, the entry the film calls (SCENES): t, its own second, 0 to S13_LONG (40 s), in three shots cut through
@@ -46,7 +53,13 @@ function s13Crowd(t) {                               // people from both sides, 
 // up the trail into the cave to 30 s; the mountain today with its temple after. Gives back nothing: it draws the whole
 // sheet with pen. From sets.js: maengYardAt(), maengYardTrough(), maengGarden(), MAENG_PEN, maengSlope(),
 // MAENG_SLOPE_CAVE, maengTrail(), maengMountain(), maengPeak(), maengSky("day"), MAENG_CLOUDS.day, maengDark(). Its
-// life is S13_LIFE; its words S13_LINES (M073 to M077), written under it by the page. e.g. sceneHome(20);
+// life is S13_LIFE; its words S13_LINES (M073 to M077), written under it by the page.
+// Its z plan (oldcartoon.js, Z): at the pen, the yard, the far trough and the garden as painted first; then by drawByZ
+// in "people" by their feet: the pen with the creature (its back, the creature, its front: one sprite at its foot,
+// MAENG_PEN; it leaps out over the front), the crowd, each at its own feet, and the trough's near part by its line,
+// before whoever stands in front of it. On the trail, the slope and the cave as painted, the creature, then the
+// slope's foreground. On the mountain, all painted, the temple on its shoulder, then the flock in "sky".
+// e.g. sceneHome(20);
 function sceneHome(t) {
   var k = MAENG_PEN;
   if (t < S13_SHOTS[0]) {                            // the crowd at the pen
@@ -57,21 +70,23 @@ function sceneHome(t) {
     maengYardAt(t, 0, 0);
     maengYardTrough(1, "far");
     maengGarden(t, 6, 0, null);
-    decorate(t, S13_LIFE, "back");
-    kok(pen, k[0], k[1], k[2], 1, {part: "back"});
     var leap = between(t, S13_BOLT, S13_BOLT + 1.6), at = [mix(k[0] - 60, k[0] + 520, leap), k[1] - 22 - 120 * Math.sin(Math.PI * Math.min(1, leap * 1.4))];
     // Landed, it runs on, out of the picture at the right (owner, 2026-10-21: "have the monster run all the way off
     // the screen"; it vanished where it landed): S13_FLEE seconds from the end of the leap to past the frame's edge.
     var fled = clamp((t - S13_BOLT - 1.6) / S13_FLEE);
     if (leap >= 1) { at = [mix(k[0] + 520, k[0] + 1250, fled), k[1] - 22]; }
-    if (fled < 1) {
-      maengSiHuHaTa(at[0], at[1], {size: 0.45, face: 1, feel: t < 5.6 ? "concerned" : "fear",
-                                   step: leap > 0 ? leap * 6 + Math.max(0, t - S13_BOLT - 1.6) * 14 : undefined,
-                                   mouth: t > 11.0 && t < 12.2 ? 0.7 : 0});
-    }
-    kok(pen, k[0], k[1], k[2], 1, {part: "front"});
-    maengYardTrough(1, "near");
-    s13Crowd(t);
+    drawByZ(lifeSprites(t, S13_LIFE).concat([
+      {name: "pen", kind: "kok", x: k[0], y: k[1], draw: function () {
+        kok(pen, k[0], k[1], k[2], 1, {part: "back"});
+        if (fled < 1) {
+          maengSiHuHaTa(at[0], at[1], {size: 0.45, face: 1, feel: t < 5.6 ? "concerned" : "fear",
+                                       step: leap > 0 ? leap * 6 + Math.max(0, t - S13_BOLT - 1.6) * 14 : undefined,
+                                       mouth: t > 11.0 && t < 12.2 ? 0.7 : 0});
+        }
+        kok(pen, k[0], k[1], k[2], 1, {part: "front"});
+      }},
+      {name: "trough", kind: "trough", line: s13TroughLine, draw: function () { maengYardTrough(1, "near"); }}
+    ], s13Crowd(t)));
     pen.restore();
   } else if (t < S13_SHOTS[1]) {                     // the run home, up the trail and into the cave
     var slope = maengSlope(), size = MAENG_SLOPE_CAVE[2];
@@ -106,7 +121,7 @@ function sceneHome(t) {
     pen.scale(0.22, 0.22);
     temple(pen, 0, 0);
     pen.restore();
-    decorate(t, S13_LIFE, "back");
+    drawByZ(lifeSprites(t, S13_LIFE));
   }
   maengDark(t, S13_SHOTS[0] - 1.2, S13_SHOTS[0]);
   maengDark(t, S13_SHOTS[1] - 1.2, S13_SHOTS[1]);

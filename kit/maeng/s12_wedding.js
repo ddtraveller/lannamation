@@ -14,8 +14,8 @@ var S12_SHOTS = [12.6, 25.0];                       // the wedding at dusk; the 
 var S12_POOR = [["fellow", MAENG_FATHER, -170], ["weaver", MAENG_MOTHER, -330], ["boy", MAENG_BOY, -470]];
 var S12_PEOPLE = [[420, 940, "inta"], [560, 960, "buakham"], [700, 940, "khammun"], [830, 965, "sinuan"], [960, 945, "bunma"]];
 var S12_LIFE = [
-  {name: "flock at dusk", kind: "flock", layer: "back", course: [[0.5, 2150, 200], [12.0, -150, 150]]},
-  {name: "blue magpie", kind: "magpie", layer: "back", look: {size: 0.6},
+  {name: "flock at dusk", kind: "flock", z: "sky", course: [[0.5, 2150, 200], [12.0, -150, 150]]},
+  {name: "blue magpie", kind: "magpie", z: "set", look: {size: 0.6},     // on the palace's finial: of the set
    course: [[S12_SHOTS[0], MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [S12_LONG, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4]]}
 ];
 
@@ -41,8 +41,8 @@ function s12Bowl(joints, full) {                    // a wooden bowl in a near h
 }
 
 // t: seconds; tint: MAENG_DUSK for dusk, or null for day. On the first call with a tint it adds backDusk and frontDusk
-// to MAENG_CITY. Gives back nothing: it draws with pen (the palace's front is left to the caller).
-// e.g. s12City(t, MAENG_DUSK); person(...); maengPalace(t, "front", MAENG_DUSK, 1);
+// to MAENG_CITY. Gives back nothing: it draws with pen (the palace's front and the scene's life are left to the
+// caller's s12Set()). e.g. s12City(t, MAENG_DUSK);
 function s12City(t, tint) {                         // the courtyard, the palace's back, in the scene's light
   var city = maengCity();
   if (tint && !city.backDusk) {
@@ -54,7 +54,17 @@ function s12City(t, tint) {                         // the courtyard, the palace
   pen.drawImage(tint ? city.backDusk : city.back, 0, 0);
   pen.drawImage(tint ? city.frontDusk : city.front, 0, 0);
   maengPalace(t, "back", tint);
-  decorate(t, S12_LIFE, "back");
+}
+
+// The sprites of the palace for drawByZ(), all in "set": the scene's life (the magpie on the finial, the flock in
+// "sky"), whoever sits on the dais (dais: [[name, x, look], ...], each at the dais's height), and the palace's front
+// just in front of the dais; t: seconds; tint and lamps as maengPalace() takes them (left out by day).
+// e.g. drawByZ(s12Set(t, []));
+function s12Set(t, dais, tint, lamps) {
+  var top = hoKhamDais(MAENG_PALACE[1], MAENG_PALACE[2]);
+  return lifeSprites(t, S12_LIFE).concat(dais.map(function (one) {
+    return {name: one[0], kind: "person", z: "set", x: one[1], y: top, draw: function () { person(one[1], top, one[2]); }};
+  }), [{name: "palace, front", kind: "palace", z: "set", y: top + 1, draw: function () { maengPalace(t, "front", tint, lamps); }}]);
 }
 
 // Scene 12, the entry the film calls (SCENES): t, its own second, 0 to S12_LONG (35 s), in three shots cut through
@@ -62,44 +72,63 @@ function s12City(t, tint) {                         // the courtyard, the palace
 // the people's wai (S12_PEOPLE) after. Gives back nothing: it draws the whole sheet with pen. From sets.js: maengCity(),
 // maengPalace(), MAENG_PALACE, MAENG_STAIR, MAENG_DUSK, maengDark(), maengPerson() with MAENG_KING, MAENG_GROOM,
 // MAENG_SIMA, MAENG_KING_THUKKHATA and the family's looks. Its life is S12_LIFE; its words S12_LINES (M069 to M072),
-// written under it by the page. e.g. sceneWedding(18);
+// written under it by the page.
+// Its z plan (oldcartoon.js, Z): the sky, the city and the palace's back as painted first (s12City); then by drawByZ
+// the flock in "sky"; in "set" (s12Set) the magpie on the finial, whoever sits on the dais in the hall, and the
+// palace's front before them; and in "people" by their feet: at the wedding the band (935), the khantoke and the two
+// guests who sit at it (960), the tray just behind them, so their knees and hands rest over its rim (owner, 2026-10-22:
+// "Keep the old"; by its base, 975, it would cover them); by day the rice basket (902), the poor and the groom (905);
+// last, the people's wai (940 to 965). e.g. sceneWedding(18);
 function sceneWedding(t) {
   var p = MAENG_PALACE, dais = hoKhamDais(p[1], p[2]);
   if (t < S12_SHOTS[0]) {                            // the wedding, at dusk
     s12City(t, MAENG_DUSK);
-    person(p[0] - 170, dais, maengPerson("noble", MAENG_KING, {id: "king", floor: "cross", face: 1, feel: "happy", at: [p[0], dais - 120]}));
-    person(p[0] - 30, dais, maengPerson("noble", MAENG_GROOM, {id: "groom", floor: "cross", face: 1, feel: "happy", at: [p[0] + 90, dais - 120]}));
-    person(p[0] + 90, dais, maengPerson("lady", MAENG_SIMA, {id: "sima", floor: "side", face: -1, feel: "happy", at: [p[0] - 30, dais - 120]}));
-    maengPalace(t, "front", MAENG_DUSK, 1);
+    var sprites = s12Set(t, [
+      ["king", p[0] - 170, maengPerson("noble", MAENG_KING, {id: "king", floor: "cross", face: 1, feel: "happy", at: [p[0], dais - 120]})],
+      ["groom", p[0] - 30, maengPerson("noble", MAENG_GROOM, {id: "groom", floor: "cross", face: 1, feel: "happy", at: [p[0] + 90, dais - 120]})],
+      ["sima", p[0] + 90, maengPerson("lady", MAENG_SIMA, {id: "sima", floor: "side", face: -1, feel: "happy", at: [p[0] - 30, dais - 120]})]
+    ], MAENG_DUSK, 1);
     [["salo", "fellow", 260], ["sueng", "farmer", 400], ["pichum", "elder", 540]].forEach(function (player, n) {
-      musician(player[2], 935, player[0], cast(player[1], {size: 0.72, face: 1, id: "player" + n}), n * 0.3);
+      sprites.push({name: "player" + n, kind: "person", x: player[2], y: 935, draw: function () {
+        musician(player[2], 935, player[0], cast(player[1], {size: 0.72, face: 1, id: "player" + n}), n * 0.3);
+      }});
     });
-    food("khantoke", 820, 975, {size: 0.9});        // the guests' khantoke, and two at it
-    person(730, 960, cast("buakham", {floor: "side", size: 0.72, face: 1, smile: 1, id: "guest0"}));
-    person(915, 960, cast("inta", {floor: "cross", size: 0.74, face: -1, smile: 1, id: "guest1"}));
+    drawByZ(sprites.concat([                        // the guests' khantoke, and two at it
+      {name: "khantoke", kind: "khantoke", x: 820, y: 959, draw: function () { food("khantoke", 820, 975, {size: 0.9}); }},   // behind the guests at it
+      {name: "guest0", kind: "person", x: 730, y: 960, draw: function () {
+        person(730, 960, cast("buakham", {floor: "side", size: 0.72, face: 1, smile: 1, id: "guest0"}));
+      }},
+      {name: "guest1", kind: "person", x: 915, y: 960, draw: function () {
+        person(915, 960, cast("inta", {floor: "cross", size: 0.74, face: -1, smile: 1, id: "guest1"}));
+      }}
+    ]));
   } else if (t < S12_SHOTS[1]) {                     // by day, at the palace's stair: rice for the poor
     s12City(t, null);
-    maengPalace(t, "front");
     var giver = MAENG_STAIR + 40, gave = 0;
-    kongKhao(pen, giver + 70, 902, 0.9);            // the rice basket beside him
+    var day = s12Set(t, []).concat([          // the rice basket beside him
+      {name: "basket", kind: "kongKhao", x: giver + 70, y: 902, draw: function () { kongKhao(pen, giver + 70, 902, 0.9); }}
+    ]);
     S12_POOR.forEach(function (one, n) {
       var arrive = S12_SHOTS[0] + 0.6 + n * 0.5, walk = stroll(t, 260 - n * 120, giver + one[2], arrive, maengPerson(one[0], one[1], {id: "poor" + n, feel: "concerned"}));
       var filled = t > S12_SHOTS[0] + 8.4 + n * 1.6;
       var look = Object.assign(walk.look, {face: 1, feel: filled ? "happy" : "concerned", reachA: [walk.x + 70, 880 - 80 * one[1].size]});
       if (filled) { gave = n + 1; }
-      var joints = person(walk.x, 905, look);
-      s12Bowl(joints, filled);
+      day.push({name: "poor" + n, kind: "person", x: walk.x, y: 905, draw: function () { s12Bowl(person(walk.x, 905, look), filled); }});
     });
     var serving = S12_POOR.some(function (one, n) { var at = S12_SHOTS[0] + 8.4 + n * 1.6; return t > at - 1.2 && t < at + 0.2; });
-    person(giver, 905, maengPerson("noble", MAENG_GROOM, {id: "groom", face: -1, feel: "happy",
-                                                         reachA: serving ? [giver - 90, 820] : undefined}));
+    day.push({name: "groom", kind: "person", x: giver, y: 905, draw: function () {
+      person(giver, 905, maengPerson("noble", MAENG_GROOM, {id: "groom", face: -1, feel: "happy",
+                                                           reachA: serving ? [giver - 90, 820] : undefined}));
+    }});
+    drawByZ(day);
   } else {                                           // later: the Righteous King on the dais, and the people's wai
     s12City(t, null);
-    person(p[0], dais, maengPerson("noble", MAENG_KING_THUKKHATA, {id: "king", floor: "cross", face: -1, feel: "happy", at: [700, 900]}));
-    maengPalace(t, "front");
-    S12_PEOPLE.forEach(function (one, n) {
-      person(one[0], one[1], cast(one[2], {floor: "side", wai: true, size: 0.72, face: 1, smile: 0.8, id: "people" + n}));
-    });
+    drawByZ(s12Set(t, [["king", p[0], maengPerson("noble", MAENG_KING_THUKKHATA, {id: "king", floor: "cross", face: -1, feel: "happy", at: [700, 900]})]])
+      .concat(S12_PEOPLE.map(function (one, n) {
+        return {name: "people" + n, kind: "person", x: one[0], y: one[1], draw: function () {
+          person(one[0], one[1], cast(one[2], {floor: "side", wai: true, size: 0.72, face: 1, smile: 0.8, id: "people" + n}));
+        }};
+      })));
   }
   maengDark(t, S12_SHOTS[0] - 1.2, S12_SHOTS[0]);
   maengDark(t, S12_SHOTS[1] - 1.2, S12_SHOTS[1]);

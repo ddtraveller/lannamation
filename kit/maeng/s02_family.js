@@ -14,16 +14,16 @@ var S02_LINES = [[1.5, 6.2, "M005"], [6.3, 10.4, "M006"], [10.5, 13.42, "M007"],
                  [27.5, 33.22, "M010"], [42.0, 45.6, "M011"]];
 
 var S02_LIFE = [
-  {name: "hen", kind: "hen", layer: "back",
+  {name: "hen", kind: "hen",
    course: [[0, 260, 958, "peck"], [4.0, 260, 958], [6.5, 340, 962, "peck"], [11.0, 340, 962], [13.0, 300, 956, "peck"], [24.5, 300, 956]]},
-  {name: "rooster", kind: "rooster", layer: "back", look: {feel: "satiated"},
+  {name: "rooster", kind: "rooster", look: {feel: "satiated"},
    course: [[0, 130, 950], [7.0, 210, 954, "peck"], [10.0, 210, 954], [12.0, 180, 962, "peck"], [24.5, 180, 962]]},
   // a black-boned hen of the north (ไก่ดำ), pecking under the house (owner, 2026-10-20: "add a black chicken and rooster")
-  {name: "black hen", kind: "hen", layer: "back", look: {black: true}, course: [[0, 430, 962, "peck"], [9.0, 430, 962], [11.0, 470, 966, "peck"], [24.5, 470, 966]]},
-  {name: "flock", kind: "flock", course: [[2.0, -100, 270], [13.0, 2150, 210]]},
+  {name: "black hen", kind: "hen", look: {black: true}, course: [[0, 430, 962, "peck"], [9.0, 430, 962], [11.0, 470, 966, "peck"], [24.5, 470, 966]]},
+  {name: "flock", kind: "flock", z: "sky", course: [[2.0, -100, 270], [13.0, 2150, 210]]},
   // she pecks, walks a little, pecks, and walks back the other way (owner, 2026-10-21: "should switch between 3
   // behaviors like pecking walking pecking and then walking back the other way"; she only pecked on one spot)
-  {name: "hen, alone", kind: "hen", layer: "back",
+  {name: "hen, alone", kind: "hen",
    course: [[39.5, 330, 958, "peck"], [43.0, 330, 958], [45.5, 440, 962, "peck"], [49.5, 440, 962], [52.0, 330, 958, "peck"], [55.0, 330, 958]]}
 ];
 
@@ -54,31 +54,35 @@ function s02Bowl(joints) {                          // a small wooden bowl in th
 
 // t: the scene's second; start: the second they set off; names: "boy", "mother", "father" (all three: neutral; the
 // boy and the father alone: sad and concerned, slower). Each walks 1400 pixels of the sheet from his place in the
-// line. Gives back nothing: it draws with pen. e.g. s02Walk(t, 3, ["boy", "mother", "father"]);
+// line. Gives back their sprites for drawByZ(), each on the worn middle of the path where its feet are; the mother's
+// draws her bowl in her hand. e.g. drawByZ(s02Walk(t, 3, ["boy", "mother", "father"]));
 function s02Walk(t, start, names) {                 // the family on the path from the hut, out to the right
   var spots = names.length === 2 ? {father: 860, boy: 760} : {father: 1000, boy: 860, mother: 720};   // in a line, the father first
-  names.forEach(function (name) {
+  return names.map(function (name) {
     var from = spots[name], begin = start;
     var kind = {father: "fellow", mother: "weaver", boy: "boy"}[name];
     var own = {father: MAENG_FATHER, mother: MAENG_MOTHER, boy: MAENG_BOY}[name];
     var feel = names.length === 2 ? {father: "concerned", boy: "sad"}[name] : "neutral";
     var go = stroll(t, from, from + 1400, begin, maengPerson(kind, own, {id: name, feel: feel, stride: names.length === 2 ? 0.8 : 1}));
-    var joints = person(go.x, maengWay(go.x) + 12, go.look);    // on the worn middle of the path
-    if (name === "mother") { s02Bowl(joints); }
+    var feet = maengWay(go.x) + 12;                // on the worn middle of the path
+    return {name: name, kind: "person", x: go.x, y: feet, draw: function () {
+      var joints = person(go.x, feet, go.look);
+      if (name === "mother") { s02Bowl(joints); }
+    }};
   });
 }
 
 // Scene 2, the entry the film calls (SCENES): t, its own second, 0 to S02_LONG (55 s): the morning to 24.5 s, the
 // night to 39.5 s, the next morning after. Gives back nothing: it draws the whole sheet with pen. From sets.js:
 // maengYardAt() (the yard, MAENG_HUT's lamp), maengWay(), maengPerson() with MAENG_FATHER, MAENG_MOTHER and
-// MAENG_BOY, maengDark(). Its life is S02_LIFE (decorate()); its words S02_LINES (M005 to M011), written under it by
-// the page. e.g. sceneFamily(30);
+// MAENG_BOY, maengDark(). Its life is S02_LIFE; its words S02_LINES (M005 to M011), written under it by the page.
+// Its z plan (oldcartoon.js, Z): the yard as painted first (maengYardAt), then by drawByZ the flock in "sky", and in
+// "people" the hens and the family by their feet: the hens peck left of the hut, away from the path, so no one passes
+// in front of another. e.g. sceneFamily(30);
 function sceneFamily(t) {
   if (t < 24.5) {                                   // morning: the three go to the city
     maengYardAt(t, 0, 0, function () { s02Mist(t); });
-    decorate(t, S02_LIFE, "back");
-    s02Walk(t, 3, ["boy", "mother", "father"]);
-    decorate(t, S02_LIFE, "front");
+    drawByZ(lifeSprites(t, S02_LIFE).concat(s02Walk(t, 3, ["boy", "mother", "father"])));
     maengDark(t, 23, 99);
   } else if (t < 39.5) {                            // night: the lamp in the door, and it goes out
     var glow = 1 - between(t, 33, 36.5);
@@ -86,8 +90,7 @@ function sceneFamily(t) {
     maengDark(t, 38, 24.5);
   } else {                                          // the next morning: the father and the boy
     maengYardAt(t, 0, 0);
-    decorate(t, S02_LIFE, "back");
-    s02Walk(t, 41.5, ["boy", "father"]);
+    drawByZ(lifeSprites(t, S02_LIFE).concat(s02Walk(t, 41.5, ["boy", "father"])));
     maengDark(t, 99, 39.5);
   }
 }

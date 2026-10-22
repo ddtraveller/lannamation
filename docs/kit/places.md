@@ -754,6 +754,27 @@ What the test taught, each found by comparing every frame with the film as it wa
 `checks/z_check.py PAGE` watches a page draw and reports what on the ground is drawn over what stands nearer
 (people, and a scene's animals by `decorate.js`); set pieces drawn by a scene's own code are not seen by it.
 
+**The whole Maeng tale on its z plans (2026-10-22).** The owner: "I want to get all the scenes converted." Every scene
+of `maeng/` is drawn by `drawByZ` now, its plan written above it (s01 and s15 have no one on their ground: their plans
+say so, and nothing is sorted). Each was compared frame by frame with the film as it was (`z_compare`: both kits in
+one Chrome, 40 x 40 tiles; a control run of the old against itself, 0 of 300). s04, s05, s09, s11 (its palace shot,
+converted too), s12 and s14: 0 frames differ. Where the feet rule disagreed with the old hand order, the frames were
+shown to the owner first, who kept them: the boy in s02 walks in front of his mother where he was hidden behind her;
+hens and roosters by their feet (s02, s07, s08); s03's tufts in front of the lad's legs; in s08 the hen in front of the
+lad's feet; in s10's night the lad in front of the trough that was drawn across his legs; in s13 the crowd by depth,
+and the man behind the trough with it across his shins. What it taught:
+
+- **A seat at a table is not its base.** The khantoke's base (975) is nearer than the guests sitting at it (960), but
+  they sit at it, their knees and hands over its rim: it is sorted just behind them (owner: "Keep the old").
+- **A file of walkers on one path is at one depth.** The caravan's traders and horses, each by its own x on a sloping
+  path, put a horse's hind leg over the trader behind it; they are given the path's one y and drawn in the line's order.
+- **Things that need each other are one sprite.** The creature with the snare on its paw, the pen with the creature in
+  it, the fire with the lad who tends it; a line between two (the vine) is its own sprite, just in front of the nearer.
+- **A set that wraps people stays in "set".** Whoever sits in the palace hall is in "set" with it, between its back and
+  its front (the front just before them), and the magpie on its finial before both.
+- **`z_check` reads birds in the air as standing.** In s09 it reports the magpie flying off the roof over the far flock;
+  a bird's height on the sheet is not its depth, and no pixel moved.
+
 ## What hangs, sways (2026-10-16)
 
 The owner: "Look at the flags and lanterns and if they are hanging give them a sway function. I notice

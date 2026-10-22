@@ -697,6 +697,11 @@ function s15NightNear(t, moon) {                      // in front of the mountai
 // frontNight to MAENG_MOUNTAIN. From sets.js: maengMountain(), maengTinted(), maengSky("night"), MAENG_NIGHT,
 // maengDark(), maengPerson() and maengTrader() (the figures); from thanks.js MAENG_THANKED and MAENG_SCHOLARS. No
 // words are said: S15_LINES is empty. e.g. sceneCredits(60);
+// Its z plan (oldcartoon.js, Z): no one stands on its ground, so nothing is sorted by drawByZ: it is painted in fixed
+// layers from the back: the night sky with the moon, the clouds and the far owl (s15NightSky), the mountain, what is in
+// front of it (the fireflies on its slopes, the near owl, the moths, the perched owl: s15NightNear), the veil for the
+// words, the bats over it all but cut out behind the near ridge, the rolling words with their bowing figures, and the
+// pandas' thanks.
 function sceneCredits(t) {
   var mountain = maengMountain();
   if (!mountain.backNight) {                         // the mountain by night, as the yard is at night

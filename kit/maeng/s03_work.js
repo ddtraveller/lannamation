@@ -12,9 +12,9 @@ var S03_PILE = MAENG_TREE[0] - 90;                  // where the fallen wood lie
 // Its life: a red-billed blue magpie perched on the great tree's left limb, flicking its long tail; as he sets off
 // home with the wood it flies off over the meadow. A flock goes over, high, while he leads the buffalo out.
 var S03_LIFE = [
-  {name: "blue magpie", kind: "magpie", look: {size: 0.8},
+  {name: "blue magpie", kind: "magpie", z: "set", look: {size: 0.8},     // on the tree, then over the meadow: of the set
    course: [[0, 1520, 588], [26.0, 1520, 588], [33.0, -220, 260]]},
-  {name: "flock", kind: "flock", course: [[3.0, 2150, 230], [14.0, -150, 170]]}
+  {name: "flock", kind: "flock", z: "sky", course: [[3.0, 2150, 230], [14.0, -150, 170]]}
 ];
 
 // Gives back an x in pixels of the sheet (left of the picture), from the kit's GAITS.buffalo and BEAT.
@@ -45,16 +45,19 @@ function s03Graze(t, ox) {
 function s03Muzzle(ox) {                             // where its muzzle meets the ground when it grazes
   return ox.x + 195 * 0.62 * GAITS.buffalo[0] * (ox.look.face || 1);
 }
-// The tufts of S03_TUFTS on one side of S03_GROUND: front false, those behind it; true, those before it, and with an
-// ox (what s03Ox() gave back, or null) the one it eats. Gives back nothing: it draws with pen.
-// e.g. s03Tufts(t, null, false);
-function s03Tufts(t, ox, front) {
-  S03_TUFTS.forEach(function (tuft) {
-    if ((tuft[1] > S03_GROUND) === front) { grassTuft(pen, tuft[0], tuft[1], tuft[2], {t: t}); }
+// The tufts of S03_TUFTS as sprites for drawByZ(), each by its base (a plant is compared by its base), and with an ox
+// (what s03Ox() gave back, or null) the one it eats, under its muzzle. e.g. drawByZ(s03Tufts(t, null));
+function s03Tufts(t, ox) {
+  var out = S03_TUFTS.map(function (tuft) {
+    return {name: "tuft", kind: "tuft", x: tuft[0], y: tuft[1], draw: function () { grassTuft(pen, tuft[0], tuft[1], tuft[2], {t: t}); }};
   });
-  if (front && ox) {                                 // the one it eats, over its muzzle
-    grassTuft(pen, s03Muzzle(ox), S03_GROUND - 2, 1.0, {t: t, eaten: between(t, ox.arrives + 2.4, S03_LONG)});
+  if (ox) {                                          // the one it eats, over its muzzle
+    var x = s03Muzzle(ox);
+    out.push({name: "eaten tuft", kind: "tuft", x: x, y: S03_GROUND - 2, draw: function () {
+      grassTuft(pen, x, S03_GROUND - 2, 1.0, {t: t, eaten: between(t, ox.arrives + 2.4, S03_LONG)});
+    }});
   }
+  return out;
 }
 
 // Scene 3, the entry the film calls (SCENES): t, its own second, 0 to S03_LONG (35 s): he leads the buffalo out
@@ -62,36 +65,52 @@ function s03Tufts(t, ox, front) {
 // draws the whole sheet with pen. From sets.js: maengSky("day"), MAENG_CLOUDS.day, maengYard().back,
 // maengMeadow(), MAENG_TREE, maengPerson() with MAENG_LAD, maengLead(), maengMeasure(). Its life is S03_LIFE; its
 // words S03_LINES (M012 to M014), written under it by the page. e.g. sceneWork(20);
+//
+// Its z plan (oldcartoon.js, Z): the sky, the yard and the meadow as painted first; then by drawByZ the flock in
+// "sky", the magpie in "set" (on the tree's limb, then over the meadow), and in "people" by their feet or bases: the
+// tufts, the buffalo (S03_GROUND - 6), the pile of wood (- 4), the eaten tuft (- 2), the lad (S03_GROUND), so a tuft
+// nearer than his feet is in front of his legs as he walks home past it.
 function sceneWork(t) {
   pen.drawImage(maengSky("day"), 0, 0);
   cumulus(pen, t + 40, MAENG_CLOUDS.day);
   pen.drawImage(maengYard().back, 0, 0);
   pen.drawImage(maengMeadow().front, 0, 0);
-  decorate(t, S03_LIFE, "front");                   // on the tree and in the sky: before the buffalo and the lad
   var ox = s03Ox(t), lad = maengPerson("boy", MAENG_LAD, {id: "lad"}), go;
   var gathered = between(t, 16, 21.5);              // how much of the wood he has picked up
-  s03Tufts(t, null, false);
+  var sprites = lifeSprites(t, S03_LIFE);
   if (t < ox.arrives + 1) {                         // leading the buffalo: ahead of it at its pace, the rope in his back hand
-    maengLead(ox, s03From(), S03_GROUND, lad, 0.62);
-    s03Tufts(t, null, true);
+    drawByZ(sprites.concat(s03Tufts(t, null), [
+      {name: "lad and buffalo", kind: "person", x: ox.x, y: S03_GROUND, draw: function () { maengLead(ox, s03From(), S03_GROUND, lad, 0.62); }}
+    ]));
     return;
   }
-  buffalo(ox.x, S03_GROUND - 6, Object.assign({}, ox.look, {graze: s03Graze(t, ox)}));   // it grazes where it stopped
-  s03Tufts(t, ox, true);
+  sprites = sprites.concat(s03Tufts(t, ox), [       // it grazes where it stopped
+    {name: "buffalo", kind: "buffalo", x: ox.x, y: S03_GROUND - 6, draw: function () {
+      buffalo(ox.x, S03_GROUND - 6, Object.assign({}, ox.look, {graze: s03Graze(t, ox)}));
+    }}
+  ]);
   if (t < 24) {                                     // to the tree, and down to gather the wood
     go = stroll(t, S03_STAND + 380, S03_PILE - 50, ox.arrives + 1.2, lad);
     lad = go.look;
     if (t > 16 && t < 22) {                         // stooping to the wood, a hand to the ground
       Object.assign(lad, {sit: 1, bend: 0.9, reachA: [go.x + 40, S03_GROUND - 10], feel: "concerned"});
     }
-    firewood(pen, S03_PILE, S03_GROUND - 4, 0.55, {loose: t < 22, count: 2 + Math.round(5 * gathered)});
-    person(go.x, S03_GROUND, lad);
+    drawByZ(sprites.concat([
+      {name: "wood", kind: "firewood", x: S03_PILE, y: S03_GROUND - 4, draw: function () {
+        firewood(pen, S03_PILE, S03_GROUND - 4, 0.55, {loose: t < 22, count: 2 + Math.round(5 * gathered)});
+      }},
+      {name: "lad", kind: "person", x: go.x, y: S03_GROUND, draw: function () { person(go.x, S03_GROUND, lad); }}
+    ]));
   } else {                                          // home with the bundle on his shoulder
     go = stroll(t, S03_PILE - 50, -260, 24, lad);
     // The bundle lies on his far shoulder, behind his head, its ends out before and behind him; his near hand is
-    // up at its front end. Measured first, drawn before him.
+    // up at its front end. Measured first, drawn before him, with him.
     var face = go.look.face, shoulder = maengMeasure(go.x, S03_GROUND, go.look).shoulderB;
-    firewood(pen, shoulder[0] + 22 * face, shoulder[1] - 10, 0.78, {turn: -0.2 * face});
-    person(go.x, S03_GROUND, Object.assign(go.look, {reachA: [shoulder[0] + 62 * face, shoulder[1] - 22], fingersA: [0.8, 0.85, 0.9, 0.95, 0.7], smile: 0.4}));
+    drawByZ(sprites.concat([
+      {name: "lad", kind: "person", x: go.x, y: S03_GROUND, draw: function () {
+        firewood(pen, shoulder[0] + 22 * face, shoulder[1] - 10, 0.78, {turn: -0.2 * face});
+        person(go.x, S03_GROUND, Object.assign(go.look, {reachA: [shoulder[0] + 62 * face, shoulder[1] - 22], fingersA: [0.8, 0.85, 0.9, 0.95, 0.7], smile: 0.4}));
+      }}
+    ]));
   }
 }

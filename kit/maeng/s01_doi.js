@@ -14,7 +14,7 @@ var S01_LINES = [[8.0, 11.34, "M001"], [11.6, 15.28, "M002"], [15.48, 19.4, "M00
 // its cave, far off on the mountain (sounds.py, maeng-base), and the howl fades as the film goes on. Heard only:
 // nothing of the scene is drawn for it (feelings.py --film lays the calls of a scene's life into the film's sound).
 var S01_LIFE = [
-  {name: "the creature's howl, far off", kind: "flock", layer: "back", course: [[0, -999, -999], [0.1, -999, -999]],
+  {name: "the creature's howl, far off", kind: "flock", z: "sky", course: [[0, -999, -999], [0.1, -999, -999]],
    calls: [[24.5, "maeng-base", 0.87]]}
 ];
 
@@ -100,6 +100,10 @@ function s01Crowns(list, dawn) {
 // the whole sheet with pen and leaves it as it found it. From sets.js: maengMountain(), maengSky("night"/"dawn"),
 // MAENG_CLOUDS.dawn, MAENG_CAVE, MAENG_DAWN. Its words are S01_LINES (M001 to M004, 8 s to 24 s), written under it
 // by the page (maengSubtitles); S01_SOUND and S01_LIFE are heard only. e.g. sceneDoi(12);
+// Its z plan (oldcartoon.js, Z): nothing stands on the ground here, so nothing is sorted by drawByZ: all of it is the
+// set, painted from the back to the front (the skies, the far ranges, the sea of mist, the mountain, the crowns behind
+// the cave, its mouth, the eyes in its dark, the crowns before it, the low mist, the fog), then the titles over it. Its
+// life is only the howl's sound, in "sky", drawn by nothing.
 function sceneDoi(t) {
   var mountain = maengMountain(), light = between(t, 0, S01_LONG);
   var day = 0.6 * light * light * (3 - 2 * light), dawn = MAENG_DAWN[1] * (1 - day);   // the sun coming up behind the mountain

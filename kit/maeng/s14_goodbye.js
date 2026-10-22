@@ -11,7 +11,7 @@ var S14_LINES = [[2.0, 7.86, "M078"], [8.06, 11.78, "M079"]];
 var S14_SPEAKS = [[2.0, 7.46], [8.06, 11.38]];          // she says them herself: her mouth moves through them
 var S14_WAI = [7.9, 8.4, 12.3, 12.8];                // the hands come up, are joined (a wai, and a small bow), part, are down
 var S14_LIFE = [
-  {name: "flock at dusk", kind: "flock", layer: "back", course: [[0.5, -150, 230], [13.0, 2150, 180]]}
+  {name: "flock at dusk", kind: "flock", z: "sky", course: [[0.5, -150, 230], [13.0, 2150, 180]]}
 ];
 
 // u: 0 to 1 (held there outside it); gives back 0 to 1, eased in and out. e.g. var up = s14Ease((t - 7.9) / 0.5);
@@ -21,11 +21,11 @@ function s14Ease(u) { u = clamp(u); return u * u * (3 - 2 * u); }
 // speaks (S14_SPEAKS), and makes a wai over S14_WAI (7.9 s to 12.8 s); out of black at the start, into it from 14.2 s.
 // Gives back nothing: it draws the whole sheet with pen. From sets.js: maengYardAt() at dusk 0.35 with the lamp lit,
 // maengDark(). Its life is S14_LIFE; its words S14_LINES (M078, M079), written under it by the page.
-// e.g. sceneGoodbye(10);
+// Its z plan (oldcartoon.js, Z): the yard at dusk as painted first; then by drawByZ the flock in "sky" and Bua-kham in
+// "people". e.g. sceneGoodbye(10);
 function sceneGoodbye(t) {
   var dusk = 0.35;
   maengYardAt(t, dusk, 1);
-  decorate(t, S14_LIFE, "back");
   var look = cast("buakham", {size: 1.05, id: "buakham", smile: 1}), walk = stroll(t, 2120, 1240, 0.3, look);
   if (t > walk.arrives) {
     var speaking = S14_SPEAKS.some(function (s) { return t >= s[0] && t < s[1]; });
@@ -39,7 +39,9 @@ function sceneGoodbye(t) {
       walk.look.wristA = -1.2 * up; walk.look.wristB = 1.2 * up;
     }
   }
-  person(walk.x, 965, walk.look);
+  drawByZ(lifeSprites(t, S14_LIFE).concat([
+    {name: "buakham", kind: "person", x: walk.x, y: 965, draw: function () { person(walk.x, 965, walk.look); }}
+  ]));
   maengDark(t, S14_LONG - 1.8, S14_LONG + 10);
   maengDark(t, -10, 0);
 }

@@ -15,7 +15,7 @@ var S11_CAMERA = [1234, 690, 1.4];                  // the last shot, close on t
 // Its life: the blue magpie back on the palace roof's finial as the king wakes; by the hut the rooster crowing, it
 // is morning, as the king's man follows the trough there; hens in the garden.
 var S11_LIFE = [
-  {name: "blue magpie", kind: "magpie", layer: "back", z: "set", look: {size: 0.6},     // perched on the palace: of the set
+  {name: "blue magpie", kind: "magpie", z: "set", look: {size: 0.6},     // perched on the palace: of the set
    course: [[0, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [13.5, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4]]},
   {name: "rooster", kind: "rooster", look: {feel: "happy"}, course: [[13.5, 250, 958], [26.5, 250, 958]]},
   // The hen pecks in front of the trough (nearer than it): her feet are lower than its nearest point, so drawByZ draws
@@ -47,7 +47,16 @@ function s11Speaking(t, when) {                     // a mouth that moves while 
 
 // The first shot (t, the scene's second, 0 to 13.5 s): he rubs his eyes to 5 s, sees, speaks (S11_KING) and points;
 // his man sets off at 11.2 s. Gives back nothing: it draws with pen. From sets.js: maengCity(), maengSky("day"),
-// maengPalace(), MAENG_PALACE, MAENG_STAIR, maengPerson() with MAENG_KING and MAENG_HERALD. e.g. s11Palace(10);
+// maengPalace(), MAENG_PALACE, MAENG_STAIR, maengPerson() with MAENG_KING and MAENG_HERALD.
+// Its z plan (oldcartoon.js, Z): the sky, the city and the palace as painted first, the king in the hall between its
+// back and its front; then by drawByZ the magpie in "set" (on the finial), and in "people" the trough by its line
+// (s11PalaceLine) and the king's man before it. e.g. s11Palace(10);
+// x in pixels of the sheet; gives back the y of the trough at the palace there (its row, 880, falling 4 to the stair),
+// or null where it does not reach. e.g. s11PalaceLine(500)   // about 878
+function s11PalaceLine(x) {
+  return x < -40 || x > MAENG_STAIR ? null : 880 - 4 * (x + 40) / (MAENG_STAIR + 40);
+}
+
 function s11Palace(t) {                             // the king wakes, and the trough is at his stair
   var city = maengCity(), p = MAENG_PALACE, row = 880, floor = hoKhamFloor(p[1], p[2]), x = p[0] - 60;
   pen.drawImage(maengSky("day"), 0, 0);
@@ -69,15 +78,13 @@ function s11Palace(t) {                             // the king wakes, and the t
   if (sees && t < S11_KING[0] && king.feel === "surprised") { king.reachB = [x + 40, floor - 210]; }   // a hand up in wonder
   person(x, floor, king);
   maengPalace(t, "front");
-  decorate(t, S11_LIFE, "back");
-  linKham(pen, [[-40, row], [MAENG_STAIR, row - 4]], 1, {size: 1.2});
   var man = maengPerson("fellow", MAENG_HERALD, {id: "herald", face: 1, feel: t > 5.6 ? "surprised" : "neutral", at: [x, floor - 180]});
-  if (t > 11.2) {                                   // off he goes, along the trough
-    var off = stroll(t, 920, -200, 11.2, man);
-    person(off.x, row + 40, off.look);
-  } else {
-    person(920, row + 40, man);
-  }
+  var walks = {x: 920, look: man};
+  if (t > 11.2) { walks = stroll(t, 920, -200, 11.2, man); }   // off he goes, along the trough
+  drawByZ(lifeSprites(t, S11_LIFE).concat([
+    {name: "trough", kind: "trough", line: s11PalaceLine, draw: function () { linKham(pen, [[-40, row], [MAENG_STAIR, row - 4]], 1, {size: 1.2}); }},
+    {name: "herald", kind: "person", x: walks.x, y: row + 40, draw: function () { person(walks.x, row + 40, walks.look); }}
+  ]));
 }
 
 // The z plan of the yard's two shots, drawn by the kit's drawByZ() (oldcartoon.js, Z): the set first, as painted (the

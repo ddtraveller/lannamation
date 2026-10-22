@@ -29,10 +29,10 @@ function s06Crowns(list, size, seed, shake) {        // the forest's own crowns 
 // Its life: morning mist on the slope, thinning as he climbs; and once all is calm, as he wonders if it is his
 // father (M033) and ties the vine (M034), a green-tailed sunbird hovering at the ferns over the cave's mouth.
 var S06_LIFE = [
-  {name: "sunbird", kind: "sunbird", layer: "back", look: {size: 1.0},
+  {name: "sunbird", kind: "sunbird", z: "set", look: {size: 1.0},     // at the ferns of the slope: of the set
    course: [[22.0, 1720, 300], [24.0, 1310, 470, "sip"], [29.0, 1310, 470], [31.5, 1680, 260]]},
   // its roar as it tugs at the snare (sounds.py, maeng-angry)
-  {name: "the creature's roar", kind: "flock", layer: "back", course: [[0, -999, -999], [0.1, -999, -999]],
+  {name: "the creature's roar", kind: "flock", z: "sky", course: [[0, -999, -999], [0.1, -999, -999]],
    calls: [[5.3, "maeng-angry", 3.7]]}
 ];
 
@@ -41,7 +41,12 @@ var S06_LIFE = [
 // and from 39.5 s it follows him down; out of black over 1.5 s, into it from 56 s. Gives back nothing: it draws the
 // whole sheet with pen, under a camera S06_NEAR times near. From sets.js: maengSlope(), maengSky("day"),
 // MAENG_SLOPE_CAVE, maengTrail(), maengAt(), maengPerson() with MAENG_LAD. Its life is S06_LIFE; its words
-// S06_LINES (M028 to M035), written under it by the page. e.g. sceneCreature(20);
+// S06_LINES (M028 to M035), written under it by the page.
+// Its z plan (oldcartoon.js, Z): the sky, the slope, the mist, the crowns behind the cave and its mouth as painted
+// first; then by drawByZ the sunbird in "set" (at the ferns), and in "people" by their feet: the creature with the
+// snare on its paw (one sprite: the snare holds the paw it is drawn with), the crowns before the cave just in front of
+// where it stands at the mouth, the lad, and the vine just in front of the nearest of them (it runs from his hand to
+// its neck, over both); last, as painted, the slope's foreground. e.g. sceneCreature(20);
 function sceneCreature(t) {
   var slope = maengSlope(), size = MAENG_SLOPE_CAVE[2];
   pen.save();                                       // close to the cave: everything seen S06_NEAR times larger about it
@@ -53,7 +58,6 @@ function sceneCreature(t) {
   pen.drawImage(slope.front, 0, 0);
   var mist = 1 - between(t, 0, 12);                 // the morning's mist, thinning as he climbs
   if (mist > 0) { mistDrift(pen, t, {left: -200, right: WIDE + 200, top: 560, bottom: 780, count: 5, wide: 520, drift: 7, seed: 33, alpha: 0.6 * mist}); }
-  decorate(t, S06_LIFE, "back");
   var struggle = t > 5.2 && t < 9.5 ? 1 : 0;        // something tugs at the snare
   s06Crowns(S06_BEHIND, size * 1.6, 3, 0);
   caveMouth(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f"});
@@ -72,11 +76,17 @@ function sceneCreature(t) {
     where = [behind, maengTrail(behind) + 8];
     step = off - behind > 0.5 ? (off - behind) / pace : undefined;
   }
-  var beast = maengSiHuHaTa(where[0], where[1], {size: 0.5, face: -1, feel: feel, wake: t < 17.5 ? 0 : wake,
+  var beast, joints, crowns = S06_SPOT[1] + 1;      // the crowns before the cave: just in front of its mouth
+  var sprites = lifeSprites(t, S06_LIFE).concat([
+    {name: "creature", kind: "maengSiHuHaTa", x: where[0], y: where[1], draw: function () {
+      beast = maengSiHuHaTa(where[0], where[1], {size: 0.5, face: -1, feel: feel, wake: t < 17.5 ? 0 : wake,
                                                  step: step !== undefined ? step : (t > 9.5 && t < 12.5 ? (t - 9.5) * 1.2 : undefined)});
-  var paw = beast.paw;
-  snare(pen, S06_SNARE[0], S06_SNARE[1], 0.62, {sprung: 1, t: t, caught: t < 34 ? paw : null});
-  s06Crowns(S06_BEFORE, size * 1.6, 9, struggle * 3);
+      snare(pen, S06_SNARE[0], S06_SNARE[1], 0.62, {sprung: 1, t: t, caught: t < 34 ? beast.paw : null});
+    }},
+    {name: "crowns before", kind: "trees", x: MAENG_SLOPE_CAVE[0], y: crowns, draw: function () {
+      s06Crowns(S06_BEFORE, size * 1.6, 9, struggle * 3);
+    }}
+  ]);
   // Thukkhata: up the path into view, then still before it; he ties the vine, and leads it home.
   if (t < 30) {
     var come = stroll(t, S06_SPOT[0] - 700, S06_SPOT[0] - 230, 0.5, lad);
@@ -90,17 +100,21 @@ function sceneCreature(t) {
     x = home.x;
     lad = Object.assign(home.look, {feel: "happy"});
   }
-  var joints = person(x, maengTrail(x) + 8, lad);
+  var feet = maengTrail(x) + 8;
+  sprites.push({name: "lad", kind: "person", x: x, y: feet, draw: function () { joints = person(x, feet, lad); }});
   if (t > 33.5) {                                   // the vine, from his hand to the creature's neck, sagging a little
-    var wrist = maengAt(joints.wristB), neck = beast.neck;   // his wrist in the film's pixels, back in the scene's
-    pen.strokeStyle = "#5d7a32";
-    pen.lineWidth = 3.2;
-    pen.lineCap = "round";
-    pen.beginPath();
-    pen.moveTo(wrist[0], wrist[1]);
-    pen.quadraticCurveTo((wrist[0] + neck[0]) / 2, Math.max(wrist[1], neck[1]) + 30, neck[0], neck[1]);
-    pen.stroke();
+    sprites.push({name: "vine", kind: "vine", y: Math.max(feet, where[1], crowns) + 0.01, draw: function () {
+      var wrist = maengAt(joints.wristB), neck = beast.neck;   // his wrist in the film's pixels, back in the scene's
+      pen.strokeStyle = "#5d7a32";
+      pen.lineWidth = 3.2;
+      pen.lineCap = "round";
+      pen.beginPath();
+      pen.moveTo(wrist[0], wrist[1]);
+      pen.quadraticCurveTo((wrist[0] + neck[0]) / 2, Math.max(wrist[1], neck[1]) + 30, neck[0], neck[1]);
+      pen.stroke();
+    }});
   }
+  drawByZ(sprites);
   pen.drawImage(slope.fore, 0, 0);
   pen.restore();
   var dark = Math.max(1 - between(t, 0, 1.5), between(t, 56, 59.5));

@@ -26,9 +26,9 @@ function s05Crowns(list, size, seed, tint) {          // the forest's own crowns
 // Its life: a band of mist drifting across the slope at dusk, below the cave; and a great hornbill crossing the
 // sky on its slow heavy wings, in the quiet between "pulling the rope behind him" (M025) and the rope catching (M026).
 var S05_LIFE = [
-  {name: "great hornbill", kind: "hornbill", layer: "back", look: {size: 0.5}, course: [[13.6, 2150, 230], [21.0, -260, 150]]},
+  {name: "great hornbill", kind: "hornbill", z: "sky", look: {size: 0.5}, course: [[13.6, 2150, 230], [21.0, -260, 150]]},
   // the creature, unseen in its cave, howls once as the snare is set and dusk comes on (sounds.py, maeng-base)
-  {name: "the creature's howl", kind: "flock", layer: "back", course: [[0, -999, -999], [0.1, -999, -999]],
+  {name: "the creature's howl", kind: "flock", z: "sky", course: [[0, -999, -999], [0.1, -999, -999]],
    calls: [[38.0, "maeng-base", 0.87]]}
 ];
 
@@ -36,7 +36,11 @@ var S05_LIFE = [
 // catches to 27 s, he sets the snare 29 s to 33 s, and goes down from 38 s; out of black over 2 s, into it from 43 s.
 // Gives back nothing: it draws the whole sheet with pen. From sets.js: maengSlope() (its dusk sheets), maengSky("dusk"),
 // MAENG_SLOPE_CAVE, MAENG_DUSK, maengTrail(), maengPerson() with MAENG_LAD. Its life is S05_LIFE; its words
-// S05_LINES (M024 to M027), written under it by the page. e.g. sceneClimb(30);
+// S05_LINES (M024 to M027), written under it by the page.
+// Its z plan (oldcartoon.js, Z): the sky, the slope and the mist as painted first; then by drawByZ the hornbill in
+// "sky", in "set" the crowns behind the cave, the cave's mouth and the crowns before it (in that order), and in
+// "people" by their feet the snare and the lad (his rope with him); last, as painted, the rock before it all, which
+// the rope goes behind. e.g. sceneClimb(30);
 function sceneClimb(t) {
   var slope = maengSlope(), tint = MAENG_DUSK, size = MAENG_SLOPE_CAVE[2];
   pen.drawImage(maengSky("dusk"), 0, 0);
@@ -45,12 +49,19 @@ function sceneClimb(t) {
   pen.drawImage(slope.frontDusk, 0, 0);             // the path, under the cave's ledge
   mistDrift(pen, t, {left: 0, right: WIDE, top: 640, bottom: 790, count: 5, wide: 520, drift: 8, seed: 31, colour: "#eadcea",
                      glow: "#f2b8a0", alpha: 0.55});   // dusk mist across the slope, below the cave
-  decorate(t, S05_LIFE, "back");
-  s05Crowns(S05_BEHIND, size * 1.6, 3, tint);
-  caveMouth(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f", tint: tint});
-  s05Crowns(S05_BEFORE, size * 1.6, 9, tint);
+  var sprites = lifeSprites(t, S05_LIFE).concat([
+    {name: "crowns behind", kind: "trees", z: "set", draw: function () { s05Crowns(S05_BEHIND, size * 1.6, 3, tint); }},
+    {name: "cave", kind: "cave", z: "set", draw: function () {
+      caveMouth(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f", tint: tint});
+    }},
+    {name: "crowns before", kind: "trees", z: "set", draw: function () { s05Crowns(S05_BEFORE, size * 1.6, 9, tint); }}
+  ]);
   var set = between(t, 29, 33);                     // the snare: he bends the pole down and sets it
-  if (t > 28.5) { snare(pen, S05_SNARE[0], S05_SNARE[1], 0.62, {sprung: 1 - set, t: t, tint: tint}); }
+  if (t > 28.5) {
+    sprites.push({name: "snare", kind: "snare", x: S05_SNARE[0], y: S05_SNARE[1], draw: function () {
+      snare(pen, S05_SNARE[0], S05_SNARE[1], 0.62, {sprung: 1 - set, t: t, tint: tint});
+    }});
+  }
   var lad = maengPerson("boy", MAENG_LAD, {id: "lad", feel: t < 21 ? "concerned" : t < 27 ? "surprised" : "concerned"});
   var go, x, ground, roping = t < 27;
   if (t < 21) {                                     // up the path, leaning into the pull
@@ -72,7 +83,21 @@ function sceneClimb(t) {
   }
   x = go.x;
   ground = maengTrail(x) + 8;
-  if (roping) {                                     // the rope from his back hand, down the path behind him, out of sight behind the rock
+  sprites.push({name: "lad", kind: "person", x: x, y: ground, draw: function () { s05Lad(t, x, ground, lad, roping, tint); }});
+  drawByZ(sprites);
+  pen.drawImage(slope.foreDusk, 0, 0);              // the rock before it all: the rope goes behind it
+  var dark = Math.max(1 - between(t, 0, 2), between(t, 43, 45));
+  if (dark > 0) {
+    pen.fillStyle = "rgba(0, 0, 0, " + dark.toFixed(3) + ")";
+    pen.fillRect(0, 0, WIDE, 1080);
+  }
+}
+
+// The lad at (x, ground) with his look; roping: the rope from his back hand, down the path behind him, out of sight
+// behind the rock (it catches at 21 s); tint: the dusk's. Gives back nothing: it draws with pen.
+// e.g. s05Lad(10, 400, 900, cast("boy"), true, MAENG_DUSK);
+function s05Lad(t, x, ground, lad, roping, tint) {
+  if (roping) {
     lad.reachB = [x - 120 * (lad.face || 1), ground - 70];
     var joints = person(x, ground, lad), end = pen.getTransform().transformPoint(new DOMPoint(210, 960));   // behind the rock
     pen.save();
@@ -88,11 +113,5 @@ function sceneClimb(t) {
     pen.restore();
   } else {
     person(x, ground, lad);
-  }
-  pen.drawImage(slope.foreDusk, 0, 0);              // the rock before it all: the rope goes behind it
-  var dark = Math.max(1 - between(t, 0, 2), between(t, 43, 45));
-  if (dark > 0) {
-    pen.fillStyle = "rgba(0, 0, 0, " + dark.toFixed(3) + ")";
-    pen.fillRect(0, 0, WIDE, 1080);
   }
 }

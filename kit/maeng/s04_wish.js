@@ -24,13 +24,13 @@ var S04_LIFE = [
   // The house mouse: in under the doorway, along the foot of the wall; it sniffs as the father calls his son
   // close (M016), sits up while he speaks (M017, M018), back into the gap by the door post; out again to sit up
   // at "set a snare" (M020), and away before the grief.
-  {name: "house mouse", kind: "mouse", layer: "back", look: {kind: "house", size: 0.8},
+  {name: "house mouse", kind: "mouse", look: {kind: "house", size: 0.8},
    course: [[2.5, 1520, 703, "hide"], [3.0, 1520, 703], [5.8, 1330, 705, "sniff"], [9.4, 1330, 705], [10.6, 1250, 707, "up"],
             [14.6, 1250, 707], [16.0, 1470, 703, "hide"], [25.6, 1470, 703], [26.8, 1300, 705, "up"], [30.4, 1300, 705],
             [31.8, 1500, 703, "hide"], [32.0, 1500, 703, "hide"]]},
   // The field mouse: in along the floor from the far post during the wish (M019), it sniffs at the mat's edge,
   // then hurries back, and hides.
-  {name: "field mouse", kind: "mouse", layer: "back", look: {kind: "field", size: 0.8},
+  {name: "field mouse", kind: "mouse", look: {kind: "field", size: 0.8},
    course: [[19.5, 1780, 790, "hide"], [20.0, 1780, 790], [23.4, 1500, 822, "sniff"], [27.6, 1500, 822], [28.0, 1475, 828, "sniff"],
             [29.6, 1475, 828], [30.6, 1790, 792, "hide"], [31.0, 1790, 792, "hide"]]},
   // The tokay: down the wall from the beam, to rest above the boy; in the quiet after "look after it" (M021 ends
@@ -38,7 +38,7 @@ var S04_LIFE = [
   // the top of the wall, under the beam. Its way keeps left of the doorway (x 1440 to 1650 from y 230), on the
   // woven wall: it crossed the door's top corner before, over the night (owner, 2026-10-20: "crawls over empty air
   // when moving over the door frame ... make it stop and stay where it is at the top of the wall").
-  {name: "tokay", kind: "gecko", layer: "back", look: {size: 1.0},
+  {name: "tokay", kind: "gecko", z: "set", look: {size: 1.0},     // on the wall: of the set
    // Back up, it turns wide: on down a little, round to the right and up on its own line, no corner sharper than
    // about 60 degrees, where it went straight back up the way it came and folded over itself (owner, 2026-10-21: "When
    // it walks up the wall it folds over itself"; the kit's gecko() also bends no more than GECKO_BEND a joint now).
@@ -158,12 +158,14 @@ function s04Blanket(x, y, size) {                   // a cloth of faded checks o
 // 10 s to 35.6 s), the boy holds his hand from 37.5 s, the lamp goes out 46 s to 50.5 s, black from 55 s. Gives back
 // nothing: it draws the whole sheet with pen. From sets.js: MAENG_HUT_THINGS, maengPerson() with MAENG_FATHER and
 // MAENG_LAD. Its life is S04_LIFE; its words S04_LINES (M015 to M023), written under it by the page.
+// Its z plan (oldcartoon.js, Z): the room and the hut's things as painted first; then by drawByZ the tokay in "set"
+// (on the wall), and in "people" by their feet: the mice at the wall's foot and the mat's edge (703 to 828), the
+// father under his blanket (900), the boy (905), the lamp on the floor between them (925).
 // e.g. sceneWish(25);
 function sceneWish(t) {
   var flame = 1 - between(t, 46, 50.5);             // the lamp burns low, and goes out
   pen.drawImage(s04Room(), 0, 0);
   dress(t, MAENG_HUT_THINGS, "back");               // the hearth, cold at night, and the baskets
-  decorate(t, S04_LIFE, "back");                    // the mice and the tokay, in the room's own light
   var speaking = S04_SPEAKS.some(function (s) { return t >= s[0] && t < s[1]; });
   var holding = t >= 37.5;                          // from the line "he held his father's hand"
   var meet = [960, 770];
@@ -174,10 +176,13 @@ function sceneWish(t) {
                                            tears: between(t, 37.5, 38.5),   // he cries, as the words say he does (M022, 38.0) (owner: "Add some tears for when the boy cries")
                                            size: MAENG_LAD.size * S04_NEAR});
   if (holding) { father.reachA = meet; lad.reachA = meet; }
-  person(770, 900, father);
-  s04Blanket(770, 905, 1.25);
-  person(1110, 905, lad);
-  pratheep(pen, S04_LAMP[0], S04_LAMP[1], 2.6 * Math.max(0.15, flame), t, 3);
+  drawByZ(lifeSprites(t, S04_LIFE).concat([          // the mice and the tokay, in the room's own light
+    {name: "father", kind: "person", x: 770, y: 900, draw: function () { person(770, 900, father); s04Blanket(770, 905, 1.25); }},
+    {name: "lad", kind: "person", x: 1110, y: 905, draw: function () { person(1110, 905, lad); }},
+    {name: "lamp", kind: "lamp", x: S04_LAMP[0], y: S04_LAMP[1], draw: function () {
+      pratheep(pen, S04_LAMP[0], S04_LAMP[1], 2.6 * Math.max(0.15, flame), t, 3);
+    }}
+  ]));
   // The room is lit by the lamp alone: dark round the edges, and darker as the lamp burns low.
   var reach = 160 + 420 * flame, dark = pen.createRadialGradient(S04_LAMP[0], S04_LAMP[1] - 80, 40, S04_LAMP[0], S04_LAMP[1] - 80, reach + 300);
   dark.addColorStop(0, "rgba(12, 8, 22, " + (0.04 + 0.62 * (1 - flame)).toFixed(3) + ")");

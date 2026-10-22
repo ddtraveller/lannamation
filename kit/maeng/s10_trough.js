@@ -23,9 +23,9 @@ var S10_NIGHT = [820, 1320, 742, 1.6];             // the night shot's camera: c
 // Its life: hens in the garden by day; a flock flying home to roost as the caravan comes at dusk; and at dawn, at
 // the palace, mist low over the courtyard and a flock over.
 var S10_LIFE = [
-  {name: "hen", kind: "hen", layer: "back", course: [[0, 700, 966, "peck"], [6.0, 700, 966], [8.0, 790, 968, "peck"], [15.0, 790, 968]]},
-  {name: "flock to roost", kind: "flock", layer: "back", course: [[16.5, -150, 240], [27.0, 2150, 190]]},
-  {name: "flock at dawn", kind: "flock", layer: "back", course: [[51.0, 2150, 180], [60.0, -150, 140]]}
+  {name: "hen", kind: "hen", course: [[0, 700, 966, "peck"], [6.0, 700, 966], [8.0, 790, 968, "peck"], [15.0, 790, 968]]},
+  {name: "flock to roost", kind: "flock", z: "sky", course: [[16.5, -150, 240], [27.0, 2150, 190]]},
+  {name: "flock at dawn", kind: "flock", z: "sky", course: [[51.0, 2150, 180], [60.0, -150, 140]]}
 ];
 
 // x, y: the middle of its foot, in pixels of the sheet; count: how many nuggets; t: seconds (they glint by it). Gives
@@ -85,7 +85,7 @@ function s10Sparks(x, y, u, seed) {                 // sparks off the gold where
 // black at S10_SHOTS: s10Garden() to 15 s, s10Caravan() to 29 s, s10Night() to 50 s, s10Dawn() after. Gives back
 // nothing: it draws the whole sheet with pen. From sets.js: maengDark(), and through its shots the yard, the garden,
 // the pen, the trough and the city (see each). Its life is S10_LIFE; its words S10_LINES (M057 to M063), written
-// under it by the page. e.g. sceneTrough(40);
+// under it by the page. Each shot's z plan is written above it. e.g. sceneTrough(40);
 function sceneTrough(t) {
   if (t < S10_SHOTS[0]) { s10Garden(t); }
   else if (t < S10_SHOTS[1]) { s10Caravan(t); }
@@ -100,7 +100,10 @@ function sceneTrough(t) {
 
 // The first shot (t, the scene's second, 0 to 15 s), under the camera S10_CAMERA: the gold dug up over S10_DIG and
 // heaped at S10_HEAP. Gives back nothing: it draws with pen. From sets.js: maengYardAt(), maengGarden(), MAENG_MOUNDS,
-// MAENG_GARDEN, MAENG_PEN, maengWay(), maengPerson() with MAENG_LAD and MAENG_HERALD. e.g. s10Garden(8);
+// MAENG_GARDEN, MAENG_PEN, maengWay(), maengPerson() with MAENG_LAD and MAENG_HERALD.
+// Its z plan (oldcartoon.js, Z): the yard and the garden as painted first; then by drawByZ in "people" by their feet:
+// the pen with the creature in it (one sprite, at its foot, MAENG_PEN), the lad, the heap of gold, the hen, and the
+// crier on the path. e.g. s10Garden(8);
 function s10Garden(t) {                             // the crier goes by calling; Thukkhata hears, and digs up his gold
   var dug = between(t, S10_DIG[0], S10_DIG[1]) * MAENG_MOUNDS.length, k = MAENG_PEN;
   pen.save();
@@ -109,28 +112,42 @@ function s10Garden(t) {                             // the crier goes by calling
   pen.translate(-S10_CAMERA[0], -S10_CAMERA[1]);
   maengYardAt(t, 0, 0);
   maengGarden(t, MAENG_MOUNDS.length, Math.floor(dug), null);
-  decorate(t, S10_LIFE, "back");
-  kok(pen, k[0], k[1], k[2], 1, {part: "back"});
-  maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: t > 6 ? "happy" : "neutral"});
-  kok(pen, k[0], k[1], k[2], 1, {part: "front"});
-  s10Heap(S10_HEAP[0], S10_HEAP[1], Math.floor(dug * 1.2), t);
-  var lad = maengPerson("boy", MAENG_LAD, {id: "lad", feel: t < S10_DIG[0] ? "surprised" : "concerned"}), y = 948;
+  var sprites = lifeSprites(t, S10_LIFE).concat([
+    {name: "pen", kind: "kok", x: k[0], y: k[1], draw: function () {
+      kok(pen, k[0], k[1], k[2], 1, {part: "back"});
+      maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: t > 6 ? "happy" : "neutral"});
+      kok(pen, k[0], k[1], k[2], 1, {part: "front"});
+    }},
+    {name: "heap", kind: "gold", x: S10_HEAP[0], y: S10_HEAP[1], draw: function () { s10Heap(S10_HEAP[0], S10_HEAP[1], Math.floor(dug * 1.2), t); }}
+  ]);
+  var lad = maengPerson("boy", MAENG_LAD, {id: "lad", feel: t < S10_DIG[0] ? "surprised" : "concerned"}), y = 948, lx, ly;
   if (t < S10_DIG[0]) {                             // in the garden: he looks up at the crier on the path
-    person(MAENG_GARDEN[0] + 120, y, Object.assign(lad, {face: -1, at: [S10_CAMERA[0] - 300, 760]}));
+    lx = MAENG_GARDEN[0] + 120;
+    ly = y;
+    lad = Object.assign(lad, {face: -1, at: [S10_CAMERA[0] - 300, 760]});
   } else {                                          // down on his knees, opening one mound after another
     var m = MAENG_MOUNDS[Math.min(MAENG_MOUNDS.length - 1, Math.floor(dug))];
-    person(m[0] - 50, y - 10, Object.assign(lad, {face: 1, sit: 1, bend: 0.75, reachA: [m[0] - 4, MAENG_GARDEN[1] + 10 + 6 * Math.sin(t * 9)]}));
+    lx = m[0] - 50;
+    ly = y - 10;
+    lad = Object.assign(lad, {face: 1, sit: 1, bend: 0.75, reachA: [m[0] - 4, MAENG_GARDEN[1] + 10 + 6 * Math.sin(t * 9)]});
   }
+  sprites.push({name: "lad", kind: "person", x: lx, y: ly, draw: function () { person(lx, ly, lad); }});
   var crier = stroll(t, 2150, 380, -4, maengPerson("fellow", MAENG_HERALD, {id: "herald"}));   // the king's man crying the news, along the path
-  var calling = t > 1.5 && t < 4.5;
+  var calling = t > 1.5 && t < 4.5, walks = maengWay(crier.x) + 12;
   if (calling) { crier.look.mouth = {open: 0.1 + 0.3 * Math.abs(Math.sin(t * 7)), wide: 0.5, round: 0.2}; }
-  person(crier.x, maengWay(crier.x) + 12, crier.look);
+  sprites.push({name: "herald", kind: "person", x: crier.x, y: walks, draw: function () { person(crier.x, walks, crier.look); }});
+  drawByZ(sprites);
   pen.restore();
 }
 
 // The second shot (t, the scene's second, 15 s to 29 s): the horses come from 15.6 s; he asks 24.4 s to 29.3 s. Gives
 // back nothing: it draws with pen. From sets.js: maengYard() and its night sheets at 0.4, maengSky("dusk"),
-// MAENG_HUT, MAENG_NIGHT, maengGarden(), MAENG_PEN, maengLead() and maengTrader(). e.g. s10Caravan(25);
+// MAENG_HUT, MAENG_NIGHT, maengGarden(), MAENG_PEN, maengLead() and maengTrader().
+// Its z plan (oldcartoon.js, Z): the sky, the yard, the hut and the garden as painted first; then by drawByZ the
+// flock in "sky", and in "people" by their feet: the pen with the creature (one sprite, MAENG_PEN), the lad, the heap
+// of gold, and the horses on the path, the first two led by their traders: in single file on the path they are at one
+// depth (the path's, where they stop), drawn in the line's order, each trader before the horse behind him (by each
+// one's own x, the slope of the path put the first horse's hind leg over the second trader). e.g. s10Caravan(25);
 function s10Caravan(t) {                            // dusk: the Haw caravan comes along the path; he asks them to help
   var yard = maengYard(), dusk = 0.4, k = MAENG_PEN;
   pen.drawImage(maengSky("dusk"), 0, 0);
@@ -142,28 +159,54 @@ function s10Caravan(t) {                            // dusk: the Haw caravan com
   var tint = [MAENG_NIGHT[0], MAENG_NIGHT[1] * dusk];
   ruenPhuk(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2] * 0.92, {glow: 0.3, tint: tint});
   maengGarden(t, MAENG_MOUNDS.length, MAENG_MOUNDS.length, tint);
-  decorate(t, S10_LIFE, "back");
-  kok(pen, k[0], k[1], k[2], 1, {part: "back", tint: tint});
-  maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: t > 18 ? "surprised" : "happy"});
-  kok(pen, k[0], k[1], k[2], 1, {part: "front", tint: tint});
-  s10Heap(820, 966, 22, t);
-  var asks = t > 24.4 && t < 29.28, start = 15.6;
-  person(700, 962, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: asks ? "concerned" : "happy",
-                                                   reachA: asks ? [820, 780] : undefined,
-                                                   mouth: asks ? {open: 0.08 + 0.26 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined}));
+  var asks = t > 24.4 && t < 29.28, start = 15.6, file = maengWay(1360) + 12;   // the caravan's one depth
+  var sprites = lifeSprites(t, S10_LIFE).concat([
+    {name: "pen", kind: "kok", x: k[0], y: k[1], draw: function () {
+      kok(pen, k[0], k[1], k[2], 1, {part: "back", tint: tint});
+      maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: t > 18 ? "surprised" : "happy"});
+      kok(pen, k[0], k[1], k[2], 1, {part: "front", tint: tint});
+    }},
+    {name: "heap", kind: "gold", x: 820, y: 966, draw: function () { s10Heap(820, 966, 22, t); }},
+    {name: "lad", kind: "person", x: 700, y: 962, draw: function () {
+      person(700, 962, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: asks ? "concerned" : "happy",
+                                                       reachA: asks ? [820, 780] : undefined,
+                                                       mouth: asks ? {open: 0.08 + 0.26 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined}));
+    }}
+  ]);
   // Three horses in a line, the first two led; they stop by the pen.
   [[1360, 0], [1730, 1], [2110, null]].forEach(function (h, n) {
     var walk = amble("horse", t, h[0] + 640, h[0], start + n * 0.3, {size: 0.6, pack: ["#c9b48a", "#6a7a8a", "#a8804a"][n],
                                                                          colour: ["#8a5a3a", "#5a4a3a", "#cdb48a"][n]});
-    if (h[1] === null) { horse(walk.x, maengWay(walk.x) + 6, walk.look); return; }
-    var feel = t > 26.5 ? "happy" : t > 23.5 ? "concerned" : undefined;
-    maengLead(walk, h[0] + 640, maengWay(walk.x) + 12, maengTrader(h[1], {feel: feel}), 0.6, "horse");
+    if (h[1] === null) {
+      var hoof = maengWay(walk.x) + 6;
+      sprites.push({name: "horse" + n, kind: "horse", x: walk.x, y: file, draw: function () { horse(walk.x, hoof, walk.look); }});
+      return;
+    }
+    var feel = t > 26.5 ? "happy" : t > 23.5 ? "concerned" : undefined, feet = maengWay(walk.x) + 12;
+    sprites.push({name: "horse" + n, kind: "person", x: walk.x, y: file, draw: function () {
+      maengLead(walk, h[0] + 640, feet, maengTrader(h[1], {feel: feel}), 0.6, "horse");
+    }});
   });
+  drawByZ(sprites);
 }
 
 // The third shot (t, the scene's second, 29 s to 50 s), under a camera panning by S10_NIGHT: the trough laid from 0
 // to 1 between 29.5 s and 48.5 s, the crew of S10_CREW at it. Gives back nothing: it draws with pen. From sets.js:
-// maengYardAt() at night, maengYardTrough(), MAENG_TROUGH_TURN, maengGarden(), MAENG_PEN, MAENG_NIGHT. e.g. s10Night(40);
+// maengYardAt() at night, maengYardTrough(), MAENG_TROUGH_TURN, maengGarden(), MAENG_PEN, MAENG_NIGHT.
+// Its z plan (oldcartoon.js, Z): the yard at night as painted first; then by drawByZ, in "back", what is across the
+// fields: the resting horses, the traders past the turn, and the trough's far part, a long thing by its line
+// (s10TroughLine "far"); the garden in a band of its own, S10_PLOT, under all that stands by it; and in "people" by
+// their feet: the pen with the creature (one sprite, MAENG_PEN), the lad, the traders by the path, and the trough's
+// near part by its line, before whoever stands in front of it. e.g. s10Night(40);
+var S10_PLOT = (Z.back + Z.people) / 2;             // the garden's band at night: before the people, after what is across the fields
+// part: "near" (along the path, to MAENG_TROUGH_TURN) or "far" (across the fields); x in pixels of the sheet. Gives back
+// the y of the yard's trough there, or null where that part does not reach. e.g. s10TroughLine("far", 1500)
+function s10TroughLine(part, x) {
+  var route = maengTroughRoute();
+  if (part === "far") { return x < MAENG_TROUGH_TURN || x > route.far[route.far.length - 1][0] ? null : maengTroughAt(x)[1]; }
+  return x < route.near[0][0] || x > MAENG_TROUGH_TURN ? null : maengTroughAt(x)[1];
+}
+
 function s10Night(t) {                              // all night under the lanterns: hammering, and the trough grows
   var built = between(t, S10_SHOTS[1] + 0.5, S10_SHOTS[2] - 1.5), k = MAENG_PEN, tint = MAENG_NIGHT, c = S10_NIGHT;
   pen.save();
@@ -171,16 +214,29 @@ function s10Night(t) {                              // all night under the lante
   pen.scale(c[3], c[3]);
   pen.translate(-mix(c[0], c[1], between(t, S10_SHOTS[1], S10_SHOTS[2])), -c[2]);
   maengYardAt(t, 1, 0.6);
-  S10_HORSES.forEach(function (h) { horse(h[0], 836, {size: 0.5, colour: blend(h[1], tint[0], tint[1]), face: -1}); });
-  S10_CREW.forEach(function (c) { if (c[0] >= MAENG_TROUGH_TURN) { s10Crew(t, c, built); } });   // across the fields: behind the garden
-  maengYardTrough(built, "far");
-  maengGarden(t, MAENG_MOUNDS.length, MAENG_MOUNDS.length, tint);
-  kok(pen, k[0], k[1], k[2], 1, {part: "back", tint: tint});
-  maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: "sleepy"});
-  kok(pen, k[0], k[1], k[2], 1, {part: "front", tint: tint});
-  person(640, 962, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: "happy"}));
-  S10_CREW.forEach(function (c) { if (c[0] < MAENG_TROUGH_TURN) { s10Crew(t, c, built); } });
-  maengYardTrough(built, "near");
+  var sprites = S10_HORSES.map(function (h, n) {
+    return {name: "horse" + n, kind: "horse", z: "back", x: h[0], y: 836, draw: function () {
+      horse(h[0], 836, {size: 0.5, colour: blend(h[1], tint[0], tint[1]), face: -1});
+    }};
+  });
+  S10_CREW.forEach(function (c) {                   // across the fields, behind the garden, or by the path
+    sprites.push({name: "trader" + c[1], kind: "person", z: c[0] >= MAENG_TROUGH_TURN ? "back" : "people", x: c[0],
+                  y: maengTroughAt(c[0])[1] - 8, draw: function () { s10Crew(t, c, built); }});
+  });
+  sprites.push(
+    {name: "trough, far", kind: "trough", z: "back", line: function (x) { return s10TroughLine("far", x); },
+     draw: function () { maengYardTrough(built, "far"); }},
+    {name: "garden", kind: "garden", z: S10_PLOT, draw: function () { maengGarden(t, MAENG_MOUNDS.length, MAENG_MOUNDS.length, tint); }},
+    {name: "pen", kind: "kok", x: k[0], y: k[1], draw: function () {
+      kok(pen, k[0], k[1], k[2], 1, {part: "back", tint: tint});
+      maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: "sleepy"});
+      kok(pen, k[0], k[1], k[2], 1, {part: "front", tint: tint});
+    }},
+    {name: "lad", kind: "person", x: 640, y: 962, draw: function () { person(640, 962, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: "happy"})); }},
+    {name: "trough, near", kind: "trough", line: function (x) { return s10TroughLine("near", x); },
+     draw: function () { maengYardTrough(built, "near"); }}
+  );
+  drawByZ(sprites);
   pen.restore();
 }
 
@@ -205,7 +261,17 @@ function s10Crew(t, c, built) {                     // a trader sitting behind t
 // The last shot (t, the scene's second, 50 s to 60 s): the last piece beaten in, done at 53.2 s. Gives back nothing:
 // it draws with pen. From sets.js: maengCity() (on the first call it adds backDawn and frontDawn to MAENG_CITY, made
 // by maengTinted()), maengSky("dawn"), MAENG_CLOUDS.dawn, maengPalace(), MAENG_PALACE, MAENG_STAIR, MAENG_DAWN,
-// maengTrader(). e.g. s10Dawn(52);
+// maengTrader().
+// Its z plan (oldcartoon.js, Z): the sky, the city and the mist as painted first; then by drawByZ the flock in "sky"
+// (behind the palace), the palace in "set" (its back, then its front), and in "people" by their feet: the trader
+// beating in the last piece, the trough by its line (s10DawnLine), and the trader who watches, before it.
+// e.g. s10Dawn(52);
+// x in pixels of the sheet; gives back the y of the trough at the palace there (its row, 880, falling 4 to the stair), or
+// null where it does not reach. e.g. s10DawnLine(500)   // about 878
+function s10DawnLine(x) {
+  return x < -40 || x > MAENG_STAIR ? null : 880 - 4 * (x + 40) / (MAENG_STAIR + 40);
+}
+
 function s10Dawn(t) {                               // dawn at the palace: the trough has come to its stair, and it is done
   var city = maengCity(), p = MAENG_PALACE, row = 880;
   if (!city.backDawn) {
@@ -218,16 +284,21 @@ function s10Dawn(t) {                               // dawn at the palace: the t
   pen.drawImage(city.frontDawn, 0, 0);
   mistDrift(pen, t, {left: 0, right: WIDE, top: 760, bottom: 900, count: 5, wide: 560, drift: 6, seed: 41, glow: "#f6c9a0",
                      alpha: 0.5 * (1 - between(t, 53, 59))});   // the dawn's mist, low over the courtyard, going as the sun comes
-  decorate(t, S10_LIFE, "back");
-  maengPalace(t, "back", MAENG_DAWN);
-  maengPalace(t, "front", MAENG_DAWN);
   var done = t > 53.2, strike = s10Strike(t, 0), x = MAENG_STAIR - 120;
-  var joints = person(x, row - 8, maengTrader(1, {face: 1, sit: done ? 0 : 1, bend: done ? 0 : 0.5, feel: done ? "happy" : "concerned",
-                                                  reachA: done ? undefined : [x + 40, mix(row - 46, row - 150, strike.high)]}));
-  if (!done) {
-    s10Hammer(joints, MAENG_TRADERS[1].size);
-    if (strike.spark !== null) { s10Sparks(x + 46, row - 52, strike.spark, Math.floor(t * 1.6)); }
-  }
-  linKham(pen, [[-40, row], [MAENG_STAIR, row - 4]], 1, {size: 1.2});
-  person(x - 240, row + 30, maengTrader(0, {face: 1, feel: done ? "laughing" : "happy"}));
+  drawByZ(lifeSprites(t, S10_LIFE).concat([
+    {name: "palace, back", kind: "palace", z: "set", draw: function () { maengPalace(t, "back", MAENG_DAWN); }},
+    {name: "palace, front", kind: "palace", z: "set", draw: function () { maengPalace(t, "front", MAENG_DAWN); }},
+    {name: "trader1", kind: "person", x: x, y: row - 8, draw: function () {
+      var joints = person(x, row - 8, maengTrader(1, {face: 1, sit: done ? 0 : 1, bend: done ? 0 : 0.5, feel: done ? "happy" : "concerned",
+                                                      reachA: done ? undefined : [x + 40, mix(row - 46, row - 150, strike.high)]}));
+      if (!done) {
+        s10Hammer(joints, MAENG_TRADERS[1].size);
+        if (strike.spark !== null) { s10Sparks(x + 46, row - 52, strike.spark, Math.floor(t * 1.6)); }
+      }
+    }},
+    {name: "trough", kind: "trough", line: s10DawnLine, draw: function () { linKham(pen, [[-40, row], [MAENG_STAIR, row - 4]], 1, {size: 1.2}); }},
+    {name: "trader0", kind: "person", x: x - 240, y: row + 30, draw: function () {
+      person(x - 240, row + 30, maengTrader(0, {face: 1, feel: done ? "laughing" : "happy"}));
+    }}
+  ]));
 }

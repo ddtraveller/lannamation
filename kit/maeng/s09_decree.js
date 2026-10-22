@@ -20,13 +20,19 @@ var S09_BUILDS = [{at: 200, row: 850, built: 0.55, look: {}},
 // n: 0, 1 or 2, which prince (S09_BUILDS); gives back the second his trough is done failing.
 // e.g. if (t > s09Fails(0)) { feel = "sad"; }
 function s09Fails(n) { return 27 + n * 3 + 3.5; }
+// The y of prince n's trough at x (pixels of the sheet), from his house (x -40) to the palace's stair, or null where it
+// does not reach. e.g. s09TroughLine(1, 500)   // about 873
+function s09TroughLine(n, x) {
+  var row = S09_BUILDS[n].row;
+  return x < -40 || x > MAENG_STAIR ? null : row - 4 * (x + 40) / (MAENG_STAIR + 40);
+}
 
 // Its life: a red-billed blue magpie perched on the tip of the palace roof's golden finial, that flies off as the
 // herald strikes the gong; a flock over as the princes come.
 var S09_LIFE = [
-  {name: "blue magpie", kind: "magpie", layer: "back", look: {size: 0.6},
+  {name: "blue magpie", kind: "magpie", z: "set", look: {size: 0.6},     // on the palace's finial: of the set
    course: [[0, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [15.0, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [19.5, 2160, 110]]},
-  {name: "flock", kind: "flock", layer: "back", course: [[9.0, -150, 230], [19.0, 2150, 170]]}
+  {name: "flock", kind: "flock", z: "sky", course: [[9.0, -150, 230], [19.0, 2150, 170]]}
 ];
 
 // Scene 9, the entry the film calls (SCENES): t, its own second, 0 to S09_LONG (55 s): the princes come in from
@@ -34,7 +40,12 @@ var S09_LIFE = [
 // princes go from 40 s; out of black over 1.5 s, into it from 53 s. Gives back nothing: it draws the whole sheet with
 // pen. From sets.js: maengCity(), maengSky("day"), MAENG_CLOUDS.day, maengPalace(), MAENG_PALACE, MAENG_STAIR,
 // MAENG_FINIAL, maengPerson() with MAENG_KING, MAENG_SIMA, MAENG_HERALD and MAENG_PRINCES. Its life is S09_LIFE; its
-// words S09_LINES (M050 to M056), written under it by the page. e.g. sceneDecree(20);
+// words S09_LINES (M050 to M056), written under it by the page.
+// Its z plan (oldcartoon.js, Z): the sky, the city and the palace as painted first, the king and Sima on its dais
+// between its back and its front; then by drawByZ the flock in "sky", the magpie in "set" (on the finial), and in
+// "people" by their feet: the herald with his gong, each prince on his row (850, 875, 900), and each prince's trough,
+// a long thing, by its line (s09TroughLine): drawn just before whoever stands in front of it where they stand.
+// e.g. sceneDecree(20);
 function sceneDecree(t) {
   var city = maengCity(), p = MAENG_PALACE;
   pen.drawImage(maengSky("day"), 0, 0);
@@ -50,19 +61,24 @@ function sceneDecree(t) {
   person(p[0] + 80, dais, maengPerson("lady", MAENG_SIMA, {id: "sima", floor: "side", face: -1, at: [p[0] - 700, 860],
                                                            feel: laughs ? "laughing" : "happy"}));
   maengPalace(t, "front");
-  decorate(t, S09_LIFE, "back");                    // on the roof, and in the sky
   // The herald at his gong; he strikes it as the king begins.
   var struck = t - 16.3, swing = struck > -0.5 && struck < 0.4, boss = gongAt(S09_GONG[0], S09_GONG[1], 0.9);
-  gong(pen, S09_GONG[0], S09_GONG[1], 0.9, {struck: struck >= 0 ? struck : undefined});
-  person(S09_GONG[0] - 110, S09_GONG[1], maengPerson("fellow", MAENG_HERALD, {id: "herald", face: 1,
-                                                          reachA: swing ? [boss[0] - 20, boss[1]] : undefined}));
+  var sprites = lifeSprites(t, S09_LIFE).concat([   // on the roof, and in the sky
+    {name: "herald", kind: "person", x: S09_GONG[0] - 110, y: S09_GONG[1], draw: function () {
+      gong(pen, S09_GONG[0], S09_GONG[1], 0.9, {struck: struck >= 0 ? struck : undefined});
+      person(S09_GONG[0] - 110, S09_GONG[1], maengPerson("fellow", MAENG_HERALD, {id: "herald", face: 1,
+                                                              reachA: swing ? [boss[0] - 20, boss[1]] : undefined}));
+    }}
+  ]);
   // The princes: in, then watching their troughs come toward the palace, and away.
   MAENG_PRINCES.forEach(function (own, n) {
     var build = S09_BUILDS[n], fails = s09Fails(n), feel = t > fails ? "sad" : t > fails - 3.5 ? "concerned" : undefined;
     var look = maengPerson("noble", own, {id: "prince" + n, feel: feel, smile: feel ? undefined : 0.5}), walk;
     if (t > fails - 3.5) {                          // his trough, from his house toward the palace; left there when he goes
       var lay = between(t, fails - 3.5, fails) * build.built;
-      linKham(pen, [[-40, build.row], [MAENG_STAIR, build.row - 4]], lay, Object.assign({size: 1.2}, build.look));
+      sprites.push({name: "trough" + n, kind: "trough", line: function (x) { return s09TroughLine(n, x); }, draw: function () {
+        linKham(pen, [[-40, build.row], [MAENG_STAIR, build.row - 4]], lay, Object.assign({size: 1.2}, build.look));
+      }});
     }
     if (t < 40) {
       walk = stroll(t, -200 - n * 60, build.at, 10.4 + n * 0.6, look);
@@ -70,8 +86,9 @@ function sceneDecree(t) {
     } else {
       walk = stroll(t, build.at, -300, 40 + n * 0.4, look);
     }
-    person(walk.x, build.row, walk.look);
+    sprites.push({name: "prince" + n, kind: "person", x: walk.x, y: build.row, draw: function () { person(walk.x, build.row, walk.look); }});
   });
+  drawByZ(sprites);
   if (t < 1.5 || t > 53) {
     pen.fillStyle = "rgba(0, 0, 0, " + Math.max(1 - t / 1.5, between(t, 53, 55)).toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);
