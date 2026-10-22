@@ -8015,6 +8015,42 @@ the page reported an error, as render.py does (0 until 2026-10-21), else 0.
 - `sheet(pictures)`: One picture with all of pictures on it, two a row, each scaled to 960 x 540: a PIL image.
 - `main()`: The command line: stills.py PAGE OUT SECONDS...; saves the sheet and prints what it found.
 
+## kit/tale_plan.py
+
+```
+tale_plan.py - a tale's plan and its words, from one file: the scenes, what each shows, and every line said.
+
+    python tale_plan.py changngu                # changngu/story.py -> changngu/plan.html, words.js, central.txt
+    python tale_plan.py changngu --check        # only say what is wrong with story.py: writes nothing
+
+A new tale starts as a plan the owner reads before anything is drawn (docs/kit/films.md, "A new tale, from start to
+finish"). Its folder's story.py holds it all: SCENES, each (title, seconds, what we see, what the kit has, what it
+needs, [(English, Central Thai, Kam Mueang), ...]), the plan's own words around them (PLAN), and SAY_AS, the
+names said the Northern way by the voice. From it this writes:
+  plan.html     the plan: the tale in short, the choices made, every scene with its seconds, its kit (green: there,
+                red: new) and its lines in English, Central Thai and Kam Mueang. For the owner, before anything else.
+  words.js      the film's words for its pages, <FOLDER>_WORDS[id] = [what the voice says, what the subtitle writes,
+                the English], as maeng/words.js: a scene names its lines by id (sNN_LINES), the film page puts them
+                on its clock. The ids are PLAN["prefix"] and a number in the order of the lines (C001, C002 ...):
+                a line put in or taken out renumbers those after it, so ids are settled before the voice speaks.
+  central.txt   the Central Thai, a line each, in order: what a writer of Kam Mueang (or a translator) is given.
+Edit story.py and run it again; nothing else is hand-written.
+
+It needs only Python. It ends with exit code 0, or 1 with what is wrong: a line with no Kam Mueang, a ๆ in a
+line's Kam Mueang (the voice
+reads the written repeat badly: write the word twice), or a scene with no lines and no seconds.
+```
+
+- `story_of(folder)`: The film folder's story.py, as a module. e.g. story_of(Path("changngu")).SCENES[0][0] is "The Mae Khong".
+- `clock(seconds)`: m:ss for a number of seconds. e.g. clock(95) is "1:35".
+- `lines_of(story)`: Every line in order: [id, scene number, English, Central Thai, Kam Mueang].
+- `spoken(story, written)`: What the voice says for a written line: each name in SAY_AS said its way. e.g. spoken(s, "ช้าง") is "จ๊าง".
+- `problems(story)`: What is wrong with story.py, as sentences; none when it is ready.
+- `e(text)`: (no docstring)
+- `plan_page(story, lines)`: plan.html's text.
+- `words_js(story, lines, name)`: words.js's text: NAME_WORDS[id] = [spoken, written, English].
+- `main()`: (no docstring)
+
 ## kit/village_music.py
 
 ```

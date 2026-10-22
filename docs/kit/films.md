@@ -4,6 +4,47 @@ Part of the Lanna cartoon kit's style guide, [`docs/STYLE.md`](../STYLE.md), whi
 framework, `person()` and the checks. Each section below was written there first and is here word for word
 (moved 2026-10-21); a new note on these parts of the kit goes here.
 
+## A new tale, from start to finish (2026-10-23)
+
+The owner, 2026-10-23: "Write down the template of how to do all this for future cartoons." The order the second
+tale, Chang Ngu (`changngu/`), is made in, from the first, Maeng (`maeng/`); the sections below say how each
+step went the first time. Each step ends in something the owner looks at, and nothing goes live without the owner's word.
+
+1. **Choose the tale, and check it.** Gather the tellings (a NotebookLM notebook of picked sources works: journals,
+   museums, universities, the old chronicles; Wikipedia last and never alone), have the tales summarised, and let the
+   owner pick. Then read the tale itself in its sources, the oldest first: a summary gets names, numbers and who does
+   what wrong. Where tellings differ, the owner decides the rule (for Chang Ngu: "historical accuracy as much as
+   possible", so the chronicle wins). Ask early what to leave out for children (a death, blood) and keep the respect
+   rule: a temple may stand in a film, a monk or novice is kit only, never in the maker.
+2. **The plan, one file.** `<film>/story.py` holds every scene (title, seconds, what we see, the kit it has, what
+   it needs new) and every line (English, Central Thai, Kam Mueang); `python tale_plan.py <film>` writes the plan page
+   (`plan.html`), the words (`words.js`, `<FILM>_WORDS[id]`) and the Central Thai for a writer (`central.txt`). The
+   length: the whole film the owner asks for, less the hero film (97.75 s), the studio's card (12 s) and the
+   credits; Maeng told about 0.12 lines a second (79 lines in 626 s), scenes of 25 to 55 s. Questions the sources
+   leave open go to the owner before anything is drawn, all at once.
+3. **The words.** The Central Thai first, plain and short; the Kam Mueang drafted in a native speaker's spellings
+   (her rules run over it should change nothing), checked against the voice project's lexicon and set beside a Kam
+   Mueang writer's version of the same lines, whose Northern words are taken and whose mistakes are not (it turned the
+   Khom king into a monk and an elephant into a cow). Names said the Northern way go in `SAY_AS` (ช้าง is said จ๊าง),
+   so the subtitle keeps the spelling and the voice the sound. No ๆ in the Kam Mueang: write the word twice. A
+   native speaker's ear before the voice reads them (`ASK` lists the words that most need it).
+4. **The voice, then the seconds.** One WAV a line, several takes each; keep the take in the speaker's own pitch,
+   heard back best by the listener, trimmed to its first and last sound (see "Putting a tale together", below). Then
+   time each scene to its lines (`SNN_LINES`, [from, to, id] in the scene's own seconds) with 0.6 s between lines,
+   measured on the voiced part, never sped up; a scene's length is its lines and the action between them.
+5. **New pieces, candidates first.** For each thing the plan marks new: two or three candidates drawn beside a
+   reference, one sheet for many items, the owner picks; then into the kit with its demo page and a note in
+   `docs/kit`, and `kit_check.py`. What only one film needs (its sets, its cast's looks) goes in `<film>/sets.js`.
+6. **Each scene alone** (`<film>/sNN_name.js`, `sNN.html`; owner, 2026-10-19: "make them separately and then wire
+   them together at the end"): on its own clock from 0, drawn by its z plan (`drawByZ`), looked at in stills
+   (`stills.py`) and checked (`checks/kit_check.py`, `pop_check.py`, `arms_check.py`; render.py's blink check), shown to
+   the owner as stills. Scene cuts fade through black.
+7. **Wire, sound, render, join**, as "Putting a tale together" below: `film.html` lays the scenes end to end; each
+   line's feeling makes the music and the scenes' life calls their sounds; the voice is laid over the music
+   (`sash_narrate.py --spoken`); the scenes render on two machines (`scenes.py`, `render_back.py`) from one clean
+   copy of the kit at one commit; `chain.py` joins the hero film, the card (`--fade 1,0.75`) and the tale. The
+   finished film is checked for its length and its sound (-14 LUFS, peaks under -1 dB) and opened for the owner.
+
 ## The studio's card, and the tale's titles (2026-10-19)
 
 The films open on the hero film, then the card of Slow Life Studios, then the tale (the owner). `sls_intro.html`
