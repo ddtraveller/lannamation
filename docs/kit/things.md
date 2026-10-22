@@ -512,3 +512,15 @@ hangs at the left of the night of dancing; what the scene made for it stays in t
 middle, swaying a little with `look.t`; `look.eaten` (0 to 1) crops it short, as a grazing buffalo leaves it;
 `look.tint` as the set's pieces take it. About 50 tall at size 1 (owner, 2026-10-21: "Add some grass tufts"). Scene 3 of
 the tale lays six on the meadow and one under the buffalo's muzzle that it crops through the scene.
+
+## Chang Ngu's kangsadan, and the bael (2026-10-22)
+
+Two things of the tale of Chang Ngu (its creatures are in creatures.md), each picked by the owner from three candidates.
+
+| Piece | What it is | Rules |
+|---|---|---|
+| `kangsadan(brush, x, base, size, look)`, `kangsadanAt()`, `pieces.js` | the golden kangsadan (กังสดาล; the tale's ปาน) on its frame, the plain one of three; 180 wide, 214 high at size 1 | "รูปทรงกลมแบน ไม่มีปุ่ม ต่างจากฆ้องที่มีปุ่ม": a flat round plate of gold, no boss (the gong's has one), hung by a red cord through a hole at its top from the beam of a wooden frame, three rings engraved on its face and a gleam; `look.struck` (seconds since) swings it and sends out quick thin rings of light, higher than the gong's. Beaten from a hundred kahapana of gold, it rang "ting ting" on the Mekong's bank until the white elephant came up. The temple gongs of Chiang Mai looked at on Commons are all bossed: only their frames and cords were taken. `kangsadanAt()` is the middle of the plate, where a beater strikes. On `pieces.html` |
+| `flora("bael", x, y, look)`, `floraBael()`, `floraBaelLeaves()`, `flora.js` | the bael (มะตูม, matum), on its twig, as the owner picked; 52 across at size 1; it hangs on `floraTree(..., "bael")` | a round fruit in a hard shell, grey-green going to yellow (`ripe`), speckled, a short stalk; its leaves in threes, the middle one longest (two Commons photographs, CC0 and CC BY-SA 3.0). The measure of the Khom's tribute in the tale: gold "the size of four bael fruits" a year. On `flora.html` (seven fruits to a row now) |
+
+The tale's soldiers (Tai and the Khom Dam, told apart by dress only), their spears and the Khom's pointed cap are in
+figures.md; the cartoon maker's palette for all of these is in the maker's notes.

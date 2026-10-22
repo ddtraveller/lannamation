@@ -4,7 +4,9 @@
 //     <script src="oldcartoon.js"></script>
 //     <script src="naga.js"></script>
 //
-// and call naga(x, y, look) from a scene, as person() is called.
+// and call naga(x, y, look) from a scene, as person() is called. At its end
+// are the giant river snakes of the tale of Chang Ngu, riverSnake(x, water,
+// look), which swim with their heads up out of a river.
 //
 // It was read from one drawing the owner gave (2026-10-13): a five-headed
 // Naga in black line on gold paper, from Chiang Mai. Nothing of the drawing
@@ -551,4 +553,177 @@ function naga(x, y, look) {
   pen.restore();
   FINE = 1;
   LINE = STYLE.line;
+}
+
+// ---------- the river snakes of Chang Ngu ----------
+// The giant snakes of the tale of Chang Ngu (ตำนานช้างงู, Chiang Saen): Prince Phrom, thirteen, is told in a dream
+// to wash his face in the Mekong, where three white elephants will float down. Three giant snakes come instead:
+// the first as big as a rice granary, the second as thick as a palm trunk, both so fearsome that everyone runs up
+// the bank; the third a little smaller, and he jumps on to its neck, and it becomes a white elephant (the Lanna
+// Folktales tellings of Chang Ngu and of Phra Chao Phrom Maharat). Drawn from no picture: the tellings say only
+// "patterned" and "shining". The owner chose two kinds of three, 2026-10-22:
+//   plain   a smooth band of olive brown with dark blotches along the back and a pale line along the belly, as a
+//           python's: the first two
+//   pearl   pearl-white, unmarked, a sheen along the back: the third, already the colour of the elephant it becomes
+// A snake swims: its head is held up out of the water, and its body goes in and out of the water line in humps
+// behind it, a wave running back along it; rings of water where it goes in and out, and a wake before the head.
+var RIVER_SNAKES = {
+  plain: {body: "#7a6a48", blot: "#3e3424", belly: "#e8dcb0"},
+  pearl: {body: "#ece6dc", blot: null, belly: "#fbf6ee", sheen: true}
+};
+
+// The names a river snake's look may have (riverSnake() warns about any other):
+//   size    how large it is drawn: 1 is as thick as a palm trunk beside the cast (about 80 thick, 760 long);
+//           the granary-sized first one is about 1.6
+//   face    1 swims to the right, -1 to the left
+//   kind    "plain" (unless told) or "pearl", as RIVER_SNAKES above
+//   body, blot, belly   colours instead of the kind's own (blot null: no blotches)
+//   late    a part of a second, so that two snakes do not wave together
+var RIVER_SNAKE_KEYS = {};
+
+["size", "face", "kind", "body", "blot", "belly", "late"].forEach(function (name) { RIVER_SNAKE_KEYS[name] = true; });
+
+// The middle of a swimming snake, from its head back along the water: it rises and dips across the water line,
+// the head held up out of it. x, water: the head's x and the water line, pixels of the sheet; s: the size;
+// face: 1 or -1; phase: where the wave is (radians). Returns a list of 61 [x, y], head first. Draws nothing.
+// e.g. riverSnakeSpine(900, 780, 0.8, 1, clock * 1.6)
+function riverSnakeSpine(x, water, s, face, phase) {
+  var points = [];
+  for (var n = 0; n <= 60; n++) {
+    var u = n / 60, back = u * 760 * s;
+    var rise = -62 * s * Math.sin(u * 11 - phase) * (0.7 + 0.3 * u) + 12 * s;
+    var head = Math.pow(Math.max(0, 1 - u * 6), 1.6);        // the neck rises out of the water to the head
+    points.push([x - face * back, water + rise * (1 - head) - 96 * s * head]);
+  }
+  return points;
+}
+
+// The snake's band along its middle: filled, its blotches, its pale belly line, its sheen, and its outline.
+// line: the middle, a list of [x, y]; wide: a function of the way along (0 at the head, 1 at the tail) giving the
+// half-width in pixels; c: {body, blot, belly, sheen}. Returns nothing: it draws with pen.
+// e.g. riverSnakeStrip(riverSnakeSpine(900, 780, 1, 1, 0), function (u) { return mix(40, 14, u); }, RIVER_SNAKES.plain);
+function riverSnakeStrip(line, wide, c) {
+  var left = [], right = [], belly = [], n, last = line.length - 1;
+  for (n = 0; n <= last; n++) {
+    var a = line[Math.max(0, n - 1)], b = line[Math.min(last, n + 1)];
+    var far = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, tx = (b[0] - a[0]) / far, ty = (b[1] - a[1]) / far, w = wide(n / last);
+    left.push([line[n][0] - ty * w, line[n][1] + tx * w]);
+    right.push([line[n][0] + ty * w, line[n][1] - tx * w]);
+    belly.push([line[n][0] + ty * w * 0.62, line[n][1] - tx * w * 0.62]);
+  }
+  var outline = function () {
+    pen.beginPath();
+    left.forEach(function (p, k) { if (k) { pen.lineTo(p[0], p[1]); } else { pen.moveTo(p[0], p[1]); } });
+    for (var m = last; m >= 0; m--) { pen.lineTo(right[m][0], right[m][1]); }
+    pen.closePath();
+  };
+  outline();
+  pen.fillStyle = c.body;
+  pen.fill();
+  pen.save();
+  pen.clip();
+  for (n = 3; c.blot && n < last; n += 3) {         // the blotches along the back
+    var w2 = wide(n / last);
+    oval(line[n][0], line[n][1] - 0.15 * w2, 0.55 * w2, 0.42 * w2, c.blot);
+  }
+  pen.strokeStyle = c.belly;                        // the pale belly line
+  pen.lineWidth = 0.35 * wide(0.2);
+  pen.beginPath();
+  belly.forEach(function (p, k) { if (k) { pen.lineTo(p[0], p[1]); } else { pen.moveTo(p[0], p[1]); } });
+  pen.stroke();
+  if (c.sheen) {                                    // a pearl's sheen along the back
+    pen.strokeStyle = "rgba(255, 255, 255, 0.8)";
+    pen.lineWidth = 0.18 * wide(0.2);
+    pen.beginPath();
+    left.forEach(function (p, k) {
+      var q = [p[0] * 0.75 + line[k][0] * 0.25, p[1] * 0.75 + line[k][1] * 0.25];
+      if (k) { pen.lineTo(q[0], q[1]); } else { pen.moveTo(q[0], q[1]); }
+    });
+    pen.stroke();
+  }
+  pen.restore();
+  outline();
+  pen.strokeStyle = inkFor(c.body);
+  pen.lineWidth = 2.4 * FINE;
+  pen.stroke();
+}
+
+// A river snake's head: long, round-nosed, no crest, the eye high, a pale lip, a slight smile; (hx, hy) its
+// middle, s its size, face 1 or -1, c the snake's colours. Returns nothing: it draws with pen.
+// e.g. riverSnakeHead(900, 680, 1, 1, RIVER_SNAKES.pearl);
+function riverSnakeHead(hx, hy, s, face, c) {
+  pen.save();
+  pen.translate(hx, hy);
+  pen.scale(s * face, s);
+  pen.beginPath();
+  pen.moveTo(-40, -26);
+  pen.bezierCurveTo(10, -40, 62, -26, 74, -6);
+  pen.bezierCurveTo(78, 6, 64, 18, 30, 20);
+  pen.bezierCurveTo(0, 24, -30, 24, -44, 18);
+  pen.closePath();
+  pen.fillStyle = c.body;
+  pen.fill();
+  pen.strokeStyle = inkFor(c.body);
+  pen.lineWidth = 2.4;
+  pen.stroke();
+  pen.beginPath();                                  // the jaw
+  pen.moveTo(74, -2);
+  pen.quadraticCurveTo(40, 12, 6, 8);
+  pen.stroke();
+  pen.fillStyle = c.belly;                          // the pale lip under it
+  pen.beginPath();
+  pen.moveTo(70, 4); pen.quadraticCurveTo(40, 18, 0, 14); pen.lineTo(0, 20); pen.quadraticCurveTo(40, 24, 66, 10);
+  pen.fill();
+  oval(30, -14, 9, 7.5, "#fff6ea");                 // the eye, and the nostril
+  oval(33, -14, 4.2, 5.2, "#1f1a1a");
+  pen.beginPath();
+  pen.arc(66, -14, 2.4, 0, 7);
+  pen.fillStyle = inkFor(c.body);
+  pen.fill();
+  pen.restore();
+}
+
+// riverSnake(x, water, look): a giant snake swimming in a river, as described above.
+//   x, water  the head's x, and the water line (the river's surface) it swims along, pixels of the sheet
+//   look      an object, never left out ({} gives the plain snake, size 1, swimming right): its keys are
+//             RIVER_SNAKE_KEYS above
+// Returns {head, neck}, each [x, y], points of the sheet: the head's middle, and the neck where someone who rides
+// it holds on. It draws with pen at the film's clock; only what is above the water line shows. It sets FINE and
+// LINE while it draws and leaves them at 1 and STYLE.line.
+// e.g. var snake = riverSnake(1100, 780, {size: 0.8, face: -1, kind: "pearl"});
+function riverSnake(x, water, look) {
+  checkNames("The river snake's name", look, RIVER_SNAKE_KEYS);
+  var s = look.size || 1, face = look.face || 1, own = RIVER_SNAKES[look.kind || "plain"];
+  if (!own) { checkName("The river snake's kind", look.kind, RIVER_SNAKES); own = RIVER_SNAKES.plain; }
+  var c = {body: look.body || own.body, blot: look.blot !== undefined ? look.blot : own.blot,
+           belly: look.belly || own.belly, sheen: own.sheen};
+  FINE = Math.min(1, Math.pow(s, -0.7));
+  LINE = STYLE.line * FINE;
+  var spine = riverSnakeSpine(x, water, s, face, (clock + (look.late || 0)) * 1.6);
+  var wide = function (u) { return s * mix(40, 14, Math.pow(u, 0.9)); };
+  pen.save();                                       // only what is above the water shows
+  pen.beginPath();
+  pen.rect(-1e4, -1e4, 2e4, water + 4 + 1e4);
+  pen.clip();
+  riverSnakeStrip(spine, wide, c);
+  pen.restore();
+  pen.strokeStyle = "rgba(255, 252, 238, 0.75)";      // rings where it goes in and out of the water
+  pen.lineWidth = 2.5;
+  for (var n = 5; n < spine.length - 1; n++) {
+    if ((spine[n][1] - water) * (spine[n + 1][1] - water) <= 0) {
+      pen.beginPath();
+      pen.ellipse(spine[n][0], water + 2, 46 * s, 9 * s, 0, 0, 7);
+      pen.stroke();
+    }
+  }
+  pen.strokeStyle = "rgba(255, 252, 238, 0.6)";       // the wake before the head
+  pen.lineWidth = 3;
+  pen.beginPath();
+  pen.ellipse(x + face * 40 * s, water + 4, 90 * s, 14 * s, 0, 0, 7);
+  pen.stroke();
+  var head = [spine[0][0] + face * 6 * s, spine[0][1] + 6 * s];
+  riverSnakeHead(head[0], head[1], 1.25 * s, face, c);
+  FINE = 1;
+  LINE = STYLE.line;
+  return {head: head, neck: spine[6]};
 }

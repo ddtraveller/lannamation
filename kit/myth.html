@@ -51,6 +51,8 @@ function sheet(t) {
   caption("mom, walking: step, mouth", 250, top + 40);
   hatsadiling(1190, top, {size: 0.68, late: 0.5, trunk: Math.max(0, Math.sin(t * 1.1))});
   caption("hatsadiling: trunk", 1190, top + 40);
+  changNgu(780, top - 10, {size: 0.4, face: -1});
+  caption("changNgu: the snake-elephant", 640, top + 40);
   var walker = thereAndBack(t, 150, 470, 0.5, 9.5, {size: 0.8});
   mom(walker.x, low, walker.look);
   caption("amble(\"mom\", ...)", 310, low + 40);

@@ -24,7 +24,8 @@
 // bougainvillea; jasmine; and marigold. The fruits are the ones of the
 // market and the orchard: mango, durian, mangosteen, rambutan, the longan
 // of Lamphun and Chiang Mai, lychee, papaya, a young coconut, pineapple,
-// jackfruit, dragon fruit and pomelo.
+// jackfruit, dragon fruit and pomelo; and the bael (matum), the measure of
+// the Khom's tribute of gold in the tale of Chang Ngu.
 //
 // The names a look may have (flora() warns about any other):
 //   size       how large it is drawn: 1 is as large as it is beside the cast
@@ -540,6 +541,76 @@ function fruitMangoHang(seed) {
   floraMango(6, 46, 0.8, 1.3);
 }
 
+// A bael (มะตูม, matum; Aegle marmelos): a round fruit in a hard shell, grey-green going to yellow, speckled, on a
+// short stalk; its leaves come in threes. Read from two photographs on Wikimedia Commons ("Aegle marmelos fruit 06",
+// Forestowlet, CC0; "Bael (Aegle marmelos) fruit at Narendrapur", J.M.Garg, CC BY-SA 3.0). Nothing is copied.
+// In the north it is the measure of the tribute in the tale of Chang Ngu: the Khom took gold "the size of four
+// bael fruits" a year.
+// x, y: its middle, pixels of the pen's frame; size: 1 is 52 across; ripe: 0 (green) to 1 (yellow).
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. floraBael(0, -26, 1, 0.2);
+function floraBael(x, y, size, ripe) {
+  pen.save();
+  pen.translate(x, y);
+  pen.scale(size, size);
+  pen.beginPath();
+  pen.ellipse(0, 0, 26, 27, 0, 0, 7);
+  var shell = pen.createRadialGradient(-10, -11, 4, 0, 0, 27);
+  shell.addColorStop(0, blend("#c9cf8a", "#e8d27a", ripe));
+  shell.addColorStop(1, blend("#7f8a46", "#a8902e", ripe));
+  floraPaint(blend("#a4ac66", "#c8b052", ripe), shell);
+  pen.fillStyle = "rgba(90, 80, 40, 0.35)";           // the speckles of the shell
+  for (var d = 0; d < 14; d++) {
+    var far = 16 * ((d % 3) + 1) / 3;
+    pen.beginPath();
+    pen.arc(Math.cos(d * 2.4) * far, Math.sin(d * 2.4) * far, 1.3, 0, 7);
+    pen.fill();
+  }
+  pen.fillStyle = "rgba(255, 250, 235, 0.35)";        // its shine
+  pen.beginPath();
+  pen.ellipse(-9, -12, 8, 4, -0.5, 0, 7);
+  pen.fill();
+  hose(0, -26, 2, -34, 0, 3, FLORA_TWIG);             // the short stalk
+  pen.restore();
+}
+
+// Three leaflets on one stalk, as the bael's leaves grow: the middle one longest.
+// x, y: where the stalk leaves the twig; turn: radians (0 points right); size: 1 is about 50 long.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. floraBaelLeaves(36, -66, -0.4, 1);
+function floraBaelLeaves(x, y, turn, size) {
+  pen.save();
+  pen.translate(x, y);
+  pen.rotate(turn);
+  pen.scale(size, size);
+  hose(0, 0, 10, 0, 0, 2, FLORA_TWIG);
+  floraLeaf(10, 0, 30, 10, -0.75);
+  floraLeaf(10, 0, 30, 10, 0.75);
+  floraLeaf(10, 0, 40, 12, 0);
+  pen.restore();
+}
+
+// FLORA.bael.draw: flora() calls it with the pen moved to the foot and scaled by look.size: the fruit on the
+// ground, its stalk and twig still on it, with a spray of leaves in threes.
+// look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+// Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+// e.g. flora("bael", 700, 900, {size: 1.5});
+function fruitBael(look, seed) {
+  hose(2, -60, 40, -84, 0.08, 3.5, FLORA_TWIG);        // the twig it was picked with
+  floraBaelLeaves(40, -84, -0.5, 0.9);
+  floraBaelLeaves(22, -70, -2.2, 0.75);
+  floraBael(0, -27, 1, 0.15 + 0.1 * Math.sin(seed));
+}
+
+// FLORA.bael.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+// seed: a number. Returns nothing: it draws with pen.
+// e.g. floraTree(pen, 240, 900, 1.0, "bael", 1);
+function fruitBaelHang(seed) {
+  hose(0, 0, 2, 20, 0, 2.5, FLORA_TWIG);
+  floraBaelLeaves(0, 4, -0.6 + 0.3 * Math.sin(seed), 0.7);
+  floraBael(2, 46, 0.8, 0.2 + 0.2 * Math.sin(seed * 3));
+}
+
 // A durian: a big oval in a coat of spikes, green going to brown, a thick
 // stem at one end; the spikes on its face are marks like small tents.
 // x, y: its middle, pixels of the pen's frame; size: 1 is about 130 long; turn: radians; seed: a number.
@@ -1050,7 +1121,8 @@ var FLORA = {
   pineapple: {kind: "fruit", draw: fruitPineapple, wide: 40, thai: "สับปะรด", say: "sapparot"},
   jackfruit: {kind: "fruit", draw: fruitJackfruit, wide: 80, thai: "ขนุน", say: "khanun", hang: fruitJackfruitHang, on: "trunk"},
   dragonfruit: {kind: "fruit", draw: fruitDragonfruit, wide: 40, thai: "แก้วมังกร", say: "kaeo mangkon"},
-  pomelo: {kind: "fruit", draw: fruitPomelo, wide: 76, thai: "ส้มโอ", say: "som o"}
+  pomelo: {kind: "fruit", draw: fruitPomelo, wide: 76, thai: "ส้มโอ", say: "som o"},
+  bael: {kind: "fruit", draw: fruitBael, wide: 34, thai: "มะตูม", say: "matum", hang: fruitBaelHang}
 };
 
 // The names a tree can bear: the ones with a hanging painter.
@@ -1061,7 +1133,7 @@ Object.keys(FLORA).forEach(function (name) { if (FLORA[name].hang) { FLORA_TREES
 // flora(name, x, y, look) draws one flower or fruit, with a soft shadow under it unless look.ground is false.
 //   name   a key of FLORA: ratchaphruek, thongkwao, frangipani, orchid, hibiscus, bougainvillea, jasmine,
 //          marigold, mango, durian, mangosteen, rambutan, longan, lychee, papaya, coconut, pineapple,
-//          jackfruit, dragonfruit, pomelo; another is reported by checkName() and nothing is drawn
+//          jackfruit, dragonfruit, pomelo, bael; another is reported by checkName() and nothing is drawn
 //   x, y   the foot of the stem, or the ground the fruit lies on, pixels of the sheet
 //   look   optional; its keys: FLORA_KEYS, at the top of this file (size 1, colour, ground)
 // Returns nothing: it draws with pen, and leaves pen as it found it. It sets the kit's LINE and FINE

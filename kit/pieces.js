@@ -1812,6 +1812,95 @@ function gong(brush, x, base, size, look) {
   brush.restore();
 }
 
+// ---------- pieces for a tale: Chang Ngu, the snake-elephant of Chiang Saen ----------
+// Things of the tale of Prince Phrom and Chang Ngu (ตำนานช้างงู, Chiang Saen), a painter on a brush as the others
+// are: kangsadan, the flat golden plate that rang the white elephant out of the Mekong. Its creatures are in
+// naga.js (riverSnake) and myth.js (changNgu); its fruit, the bael, is in flora.js.
+PIECES_KIT.push("kangsadan");
+
+// A kangsadan (กังสดาล; in the tale of Chang Ngu, ปาน, pan) on its frame, the frame's foot's middle on (x, base):
+// a flat round plate of gold with no boss, hung by a red cord from the beam of a wooden frame, rings engraved on
+// its face. "ปาน หรือ กังสดาล เครื่องดนตรีล้านนา รูปทรงกลมแบน ไม่มีปุ่ม ต่างจากฆ้องที่มีปุ่ม" (the Lanna Folktales
+// telling of Phra Chao Phrom Maharat): the one Prince Phrom struck on the Mekong's bank was beaten from a hundred
+// kahapana of gold, and it rang "ting ting" until the white elephant came up out of the water. The temple gongs
+// of Chiang Mai looked at (Wat Chet Lin, Wat Pha Bong, Wat Si Khun Muang; Commons, CC BY-SA / CC BY) are bossed:
+// only their frames and cords are taken. The owner chose this plainest of three, 2026-10-22.
+// look.struck: the seconds since it was struck: it swings and rings, quick thin rings of light for a second and a
+// half (higher than the gong's: "ting", not "gong"). 180 wide, 214 high at size 1; kangsadanAt() gives the
+// middle of its face, where a beater strikes.
+// kangsadanAt(x, base, size) gives back [x, y], pixels of the sheet: the middle of the plate.
+// e.g. var face = kangsadanAt(900, 940, 1);
+function kangsadanAt(x, base, size) { return [x, base - 96 * size]; }
+
+// brush: a canvas 2D context; x, base: pixels of the sheet; size: needed; look: optional, struck (seconds since
+// the stroke; left out, it hangs still and silent). Returns nothing: it draws with brush, and leaves brush as it
+// found it.
+// e.g. kangsadan(pen, 900, 940, 1, {struck: t - 3.2});
+function kangsadan(brush, x, base, size, look) {
+  look = look || {};
+  var since = look.struck === undefined || look.struck < 0 ? 99 : look.struck;
+  var swing = since < 2 ? 0.06 * Math.sin(since * 11) * (1 - since / 2) : 0;
+  brush.save();
+  brush.translate(x, base);
+  brush.scale(size, size);
+  brush.strokeStyle = "#5a3a22";                    // the frame: two posts and a beam
+  brush.lineWidth = 9;
+  brush.lineCap = "round";
+  brush.beginPath();
+  brush.moveTo(-78, 0); brush.lineTo(-74, -210);
+  brush.moveTo(78, 0); brush.lineTo(74, -210);
+  brush.moveTo(-90, -206); brush.lineTo(90, -206);
+  brush.stroke();
+  brush.save();
+  brush.translate(0, -206);
+  brush.rotate(swing);
+  brush.strokeStyle = "#7a2a1a";                    // the cord, red, through a hole at the plate's top
+  brush.lineWidth = 3;
+  brush.beginPath();
+  brush.moveTo(-18, 0); brush.lineTo(0, 34); brush.lineTo(18, 0);
+  brush.stroke();
+  brush.translate(0, 110);
+  var r = 72, gold = brush.createRadialGradient(-22, -26, 8, 0, 0, r);
+  gold.addColorStop(0, "#fff0b0");
+  gold.addColorStop(0.45, "#f0c450");
+  gold.addColorStop(1, "#b07a1a");
+  brush.fillStyle = gold;
+  brush.beginPath();
+  brush.arc(0, 0, r, 0, 7);
+  brush.fill();
+  brush.strokeStyle = "#7a5010";
+  brush.lineWidth = 2.5;
+  brush.stroke();
+  brush.beginPath();
+  brush.arc(0, -r + 12, 5, 0, 7);
+  brush.fillStyle = "#5a3a10";
+  brush.fill();
+  brush.strokeStyle = "rgba(120, 80, 16, 0.55)";    // rings engraved on its face, and no boss: it is flat
+  brush.lineWidth = 1.6;
+  [0.72, 0.5, 0.28].forEach(function (f) {
+    brush.beginPath();
+    brush.arc(0, 4, r * f, 0, 7);
+    brush.stroke();
+  });
+  brush.fillStyle = "rgba(255, 255, 240, 0.55)";    // a gleam
+  brush.beginPath();
+  brush.ellipse(-26, -30, 16, 7, -0.6, 0, 7);
+  brush.fill();
+  brush.restore();
+  if (since < 1.5) {                                // its ringing: thin bright rings, quick and high
+    for (var n = 0; n < 4; n++) {
+      var u = since / 1.5 + n * 0.14;
+      if (u > 1) { continue; }
+      brush.strokeStyle = "rgba(255, 226, 130, " + ((1 - u) * 0.7).toFixed(3) + ")";
+      brush.lineWidth = 2;
+      brush.beginPath();
+      brush.arc(0, -96, 80 + u * 150, 0, 7);
+      brush.stroke();
+    }
+  }
+  brush.restore();
+}
+
 // A trough of gold (ลินคำ, lin kham) on posts, as a house's rainwater runs along one to a jar: a half-pipe of
 // gold, lit along its upper lip, raised "high" (46 unless told) above the ground on forked posts of wood, one
 // every "gap" (80). It runs along "ground", a row of points of the scene on the ground (the first at its start),

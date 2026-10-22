@@ -578,3 +578,22 @@ lowered neck takes the body's shade and its two lines stop short of the body, so
 ear, and over the poll behind the horns, drawn before the near horn (Dennis G. Jarvis's photograph of a Thai buffalo on
 Commons, and the "Lanna village farming" notebook: both ends of the finger-thick rope are looped behind the horns and
 tied loosely; the lead is a separate rope tied to one side).
+
+## Chang Ngu: the river snakes, the white elephant and the snake-elephant (2026-10-22)
+
+For the next tale, Chang Ngu (ตำนานช้างงู, Chiang Saen): Prince Phrom, thirteen, is told in a dream to wash his face in
+the Mekong, where three white elephants will float down; three giant snakes come instead, and the third becomes a white
+elephant when he jumps on to its neck. It will not come ashore until a golden kangsadan rings (things.md); it carries him
+to win back the city from the Khom, and at the end walks into a ravine of Doi Chang Ngu and becomes a snake again. From
+the Lanna Folktales tellings of Chang Ngu and of Phra Chao Phrom Maharat, the Chiang Saen school's page and the Ministry
+of Culture's page on the town's statue (the research: the "Lanna fairy tales" NotebookLM notebook). Three candidates of
+each were drawn in scratch on the kit's own river and doi backdrops, and the owner picked.
+
+| Creature | Picked | How it is built |
+|---|---|---|
+| `riverSnake(x, water, look)`, `naga.js` | B, plain and blotched, for the first two; C, pearl-white, for the third | the head held up out of the water, the body in humps along the water line behind it (`riverSnakeSpine`: a wave runs back along it), clipped at the water line, rings where it goes in and out, a wake before the head; a smooth band (`riverSnakeStrip`) with blotches and a pale belly line, or the pearl's sheen; a plain head with no crest (`riverSnakeHead`). `kind` "plain" or "pearl", `size` (1 as thick as a palm trunk; the granary-sized first one about 1.6), `face`, `body`, `blot`, `belly`, `late`. Gives back `{head, neck}`: the neck is where Phrom holds on. On `naga.html` |
+| the white elephant (ช้างเผือก) | C, pink-white with a gold cloth | no new function: `elephant(x, y, {colour: "#f1ddd3", cloth: "#c9962a"})`, read from the royal white elephants (Commons, public domain): pale, pinkish skin, a red-and-gold cloth with a fringed edge |
+| `changNgu(x, y, look)`, `myth.js` | A, three heads, white and gold, as the statue at Chiang Saen's roundabout ("ลำตัวเป็นงู หัวเป็นช้าง ๓ เศียร") | the Naga's body and fan of necks (`nagaLine`, `nagaStrip`, `NAGA_PATH`), and on each neck the kit's own elephant cut to its head (`changNguHead`: `elephant()` clipped, the ear over the joint). The owner: "Make the bodies and heads of the naga elephants the same color": `body` colours both (white, `#efe6d6`), with gold belly, bars and spikes. `heads` 1, 3 or 5, `size`, `face`, `trunk`. On `myth.html` |
+
+The change itself (the snake held at the neck, a ring of light and spray, the white elephant swimming round) is the
+film's to draw from these; its three stills are in the candidates (`chang_ngu_candidates_2026-10-22.jpg`, not kept in git).

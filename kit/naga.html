@@ -36,12 +36,17 @@ function sheet(t) {
   naga(1260, 620, {size: 0.5, heads: 7, body: "#2f4a7a", crest: "#e9dcc0", late: 0.5});
   var chest = swim(t);
   naga(chest[0], chest[1], {size: 0.5, heads: 3, trail: swim, mouth: 0.2});
+  pen.fillStyle = "#8fc6c0";                         // a strip of river, and the river snakes of Chang Ngu in it
+  pen.fillRect(470, 50, 470, 92);
+  riverSnake(900, 100, {size: 0.28, face: 1, kind: "pearl"});
+  riverSnake(690, 110, {size: 0.34, face: 1, late: 0.6});
   pen.fillStyle = "#5a4630";
   pen.textAlign = "center";
   pen.font = "22px Georgia, 'Times New Roman', serif";
   pen.fillText("five heads, as the drawing has it: it keeps the beat, and sings", 560, 716);
   pen.fillText("heads: 1, in gold and ink", 1230, 356);
   pen.fillText("heads: 7, in indigo", 1260, 676);
+  pen.fillText("riverSnake: plain, and pearl (it becomes the white elephant)", 705, 34);
   pen.fillText("trail: its chest is led across the sheet, and the body follows as a chain", 720, 1062);
 }
 

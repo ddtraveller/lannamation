@@ -50,8 +50,10 @@ function sheet(t) {
   tung(pen, 0, 0, t, true);
   pen.restore();
   caption("tung(..., true): a hong on the pole", 760, 345);
-  hong(pen, 1150, 290, 4);
-  caption("hong", 1150, 345);
+  hong(pen, 1060, 290, 4);
+  caption("hong", 1060, 345);
+  kangsadan(pen, 1310, 300, 0.95, {struck: t % 3 - 0.5});
+  caption("kangsadan: struck, it rings", 1310, 345);
   var walk = amble("buffalo", t, -150, 650, 0, {size: 0.5, cloth: "#8a2a3a"});   // the buffalo and its cart, across the middle row
   var face = walk.look.face, scale = 0.5 * GAITS.buffalo[0];                     // the buffalo's own scale, from its look
   var yoke = [walk.x + 150 * scale * face, 660 - 310 * scale];                    // the withers, where the yoke sits

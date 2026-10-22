@@ -9,7 +9,8 @@
 //     <script src="myth.js"></script>
 //
 // and call mom(x, y, look), luang(x, y, look), hatsadiling(x, y, look) or
-// maengSiHuHaTa(x, y, look) from a scene.
+// maengSiHuHaTa(x, y, look) from a scene. A fifth, Chang Ngu, the
+// snake-elephant of Chiang Saen, is at the file's end: changNgu(x, y, look).
 //
 // Nothing is copied. Each was read by eye from one photograph of a work in
 // the north (all on Wikimedia Commons) and from what is written of it, and
@@ -1403,4 +1404,102 @@ function maengSiHuHaTa(x, y, look) {
           mouth: [x + headAt[0] * size * face, y + (headAt[1] + 1.24 * (44 + 40 * open) - lift) * size],
           paw: [x + 92 * size * face, y - 6 * size],                    // the near fore paw, on the ground
           neck: [x + 110 * size * face, y + (-110 - lift) * size]};      // under its head, where a vine is tied
+}
+
+// ---------- Chang Ngu, the snake-elephant of Chiang Saen ----------
+// Chang Ngu (ช้างงู). In the tale (ตำนานช้างงู; the Lanna Folktales tellings of Chang Ngu and of Phra Chao Phrom
+// Maharat), the third giant snake of the Mekong becomes a white elephant when Prince Phrom grabs its neck, carries
+// him to win back Chiang Saen from the Khom, and at the end walks into a ravine and becomes a snake again: the
+// mountain is still called Doi Chang Ngu (Doi Sa-ngop, Si Don Mun, Chiang Saen). Chiang Saen keeps it as a statue
+// at the roundabout before the town, "ลำตัวเป็นงู หัวเป็นช้าง ๓ เศียร" (a snake's body, three elephant heads;
+// m-culture.in.th, Chiang Rai). No photograph of the statue was looked at; it is built the kit's way:
+//   1. The Naga's body and its fan of necks (naga.js: nagaLine, nagaStrip, the same S and loop).
+//   2. On each neck, the kit's own elephant's head (beasts.js), its ear over the place where the neck goes in.
+//   3. Heads and body one colour, white, with gold scales' edges, belly and spikes, as a temple statue is
+//      painted. The owner chose this of three, 2026-10-22, and asked for the heads in the body's colour.
+// The names its look may have (changNgu() warns about any other):
+//   size     how large it is drawn: 1 is about 750 across and 560 high, as the Naga
+//   face     1 looks right, -1 left
+//   heads    how many heads: 1, 3 or 5 (3 unless told)
+//   body     the colour of its scales and of its elephant heads (white unless told)
+//   belly, bars, crest   as the Naga's: the belly band, its bars, the spikes
+//   trunk    0 to 1: how far the trunks are raised (they swing a little unless told)
+var CHANG_NGU_KEYS = {};
+
+["size", "face", "heads", "body", "belly", "bars", "crest", "trunk"].forEach(function (name) { CHANG_NGU_KEYS[name] = true; });
+
+// One of Chang Ngu's heads: the kit's elephant() drawn whole and cut to its head, the neck's top at the pen's
+// (0, 0). At size 1 the head of elephant(0, 0) runs from x 130 to 720 and y -820 to -40, and the back of its
+// head behind the ear, where the neck goes in, is at about (230, -560).
+// skin: the colour; s: the size of the head (0.52 on Chang Ngu's necks); trunk: 0 to 1.
+// Returns nothing: it draws with pen, and leaves pen as it found it.
+// e.g. changNguHead("#efe6d6", 0.52, 0.3);
+function changNguHead(skin, s, trunk) {
+  pen.save();
+  pen.scale(s, s);
+  pen.translate(-230, 560);
+  pen.beginPath();
+  pen.moveTo(140, -830); pen.lineTo(760, -830); pen.lineTo(760, -30); pen.lineTo(330, -30);
+  pen.lineTo(330, -500); pen.lineTo(140, -500);
+  pen.closePath();
+  pen.clip();
+  elephant(0, 0, {size: 1, face: 1, colour: skin, trunk: trunk, ground: false});
+  pen.restore();
+}
+
+// changNgu(x, y, look): Chang Ngu, the snake-elephant (described above), its chest standing on (x, y).
+//   x, y   where the chest stands, pixels of the sheet, as the Naga's
+//   look   an object, never left out ({} gives the white three-headed Chang Ngu, size 1, facing right): its keys
+//          are CHANG_NGU_KEYS above
+// Returns nothing: it draws with pen at the film's clock (the body waves, the heads sway one after another). It
+// sets FINE and LINE while it draws and leaves them at 1 and STYLE.line.
+// e.g. changNgu(900, 960, {size: 0.62, face: -1});
+function changNgu(x, y, look) {
+  checkNames("Chang Ngu's name", look, CHANG_NGU_KEYS);
+  var size = look.size || 1, face = look.face || 1, count = look.heads || 3, skin = look.body || "#efe6d6";
+  var c = {body: skin, belly: look.belly || "#e6c86a", bars: look.bars || "#b8892a", crest: look.crest || "#d9a83a",
+           fire: "#c8382c"};
+  FINE = Math.min(1, Math.pow(size, -0.7));
+  LINE = STYLE.line * FINE;
+  pen.save();
+  pen.translate(x, y);
+  pen.scale(size * face, size);
+  pen.fillStyle = "rgba(70, 45, 30, 0.2)";          // a soft shadow under the chest and the first bend
+  pen.beginPath();
+  pen.ellipse(-70, 26, 150, 14, 0, 0, 7);
+  pen.fill();
+  var middle = nagaLine(NAGA_PATH, 9), body = [], n;
+  for (n = 0; n < middle.length; n++) {             // the wave down the body, the tail swinging most
+    var u = n / (middle.length - 1), a = middle[Math.max(0, n - 1)], b = middle[Math.min(middle.length - 1, n + 1)];
+    var far = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, swing = 13 * Math.pow(u, 1.3) * Math.sin(u * 16 - clock * 2.4);
+    body.push([middle[n][0] - (b[1] - a[1]) / far * swing, middle[n][1] + (b[0] - a[0]) / far * swing]);
+  }
+  nagaStrip(body, function (v) { return mix(41, 11, Math.pow(v, 0.8)); }, c, [0.045, 0.2, -0.33, 0.47, -0.6, 0.74]);
+  var hub = body[0];
+  for (var head = 0; head < count; head++) {        // the necks fan out of the chest, as the Naga's do
+    var place = count === 1 ? 0 : head / (count - 1) * 2 - 1;
+    var lean = count === 1 ? 0.3 : 0.05 + place * 0.8;
+    var long = 290 - 60 * Math.pow(Math.abs(place), 1.5);
+    var sway = Math.sin(clock * 1.3 + head * 1.1);
+    var top = [hub[0] + Math.sin(lean) * long + 7 * sway, hub[1] - Math.cos(lean) * long + 5 * Math.sin(clock * 1.7 + head)];
+    var foot = [hub[0] + place * 15, hub[1] + 30], dense = [];
+    for (n = 0; n <= 24; n++) {                     // from the head down into the chest
+      var t = n / 24, w = 1 - t;
+      var c1 = [top[0] - 0.42 * long, top[1] + 0.1 * long];
+      var c2 = [foot[0] + Math.sin(lean * 0.6) * long * 0.5, foot[1] - Math.cos(lean * 0.6) * long * 0.5];
+      dense.push([w * w * w * top[0] + 3 * w * w * t * c1[0] + 3 * w * t * t * c2[0] + t * t * t * foot[0],
+                  w * w * w * top[1] + 3 * w * w * t * c1[1] + 3 * w * t * t * c2[1] + t * t * t * foot[1]]);
+    }
+    nagaStrip(nagaWalk(dense, 9), function (v) { return mix(16, 26, v); }, c, [0.14]);
+    pen.save();
+    pen.translate(top[0] - 12, top[1] + 8);
+    pen.rotate(-0.08 + 0.04 * sway);
+    changNguHead(skin, 0.52, look.trunk !== undefined ? clamp(look.trunk) : 0.25 + 0.2 * Math.sin(clock + head));
+    pen.restore();
+    FINE = Math.min(1, Math.pow(size, -0.7));       // elephant() puts them back to 1 when it is done
+    LINE = STYLE.line * FINE;
+  }
+  pen.restore();
+  FINE = 1;
+  LINE = STYLE.line;
 }

@@ -43,8 +43,8 @@ function sheetNames() {
     caption(FLORA[name].say === name ? name : FLORA[name].say + " · " + name, x, y + 64);
   }
   for (n = 0; n < fruits.length; n++) {
-    x = 130 + (n % 6) * 236;
-    y = 560 + Math.floor(n / 6) * 310;
+    x = 110 + (n % 7) * 203;                       // seven to a row since the bael made thirteen
+    y = 560 + Math.floor(n / 7) * 310;
     name = fruits[n];
     flora(name, x, y, {size: 1.1});
     caption(FLORA[name].thai, x, y + 40, true);
