@@ -950,6 +950,55 @@ Changes BENDS[key].
 e.g. var wrist = arm(44, -112, [14, 82], 1, SKIN, "noi/armA");
 ```
 
+### `liftJoints(u, outward, start)`
+
+```
+An arm lifted the natural way (owner, 2026-10-22: "instead of lifting like
+a jumping jack the arm should lift naturally where the forearm comes up
+first inside with the back of the hand facing out then turns palm out as
+the arm extends up"). Not a hand that the arm finds its own elbow for,
+which swings it out and up straight, but the arm's two angles in turn: the
+upper arm a little out from the side while the forearm comes up, inside,
+before the chest, folded as far as an elbow folds; then the upper arm rises
+out and up to its top (ARM_TOP, MAN_ARM), the forearm up and leaning in
+over the head. Angles are from straight down, growing toward the arm's own
+side, as SHOULDER's. Between the two the elbow comes forward, toward us (the
+upper arm drawn short), while the arm turns: a forearm up inside cannot get
+past the upper arm in the picture's plane but by lying flat along it, which
+an elbow does not do (ELBOW).
+An arm that starts somewhere else ("start", where its wrist and elbow are
+for the hand it had, as armJoints() gives them) comes into the lift by the
+time the forearm is up: its two angles go from that arm's to the lift's.
+u: 0 hanging to 1 up over the head; outward: 1 or -1, the arm's side; start: [wristX, wristY, elbowX, elbowY]
+from the shoulder, or nothing. Returns [wristX, wristY, elbowX, elbowY] from the shoulder, in pixels, as
+armJoints() does.
+e.g. var at = liftJoints(0.5, 1);
+```
+
+### `liftHand(u, outward, from)`
+
+```
+The hand to give an arm (a look's handA or handB) for a lift: its wrist
+where liftJoints() puts it, with the lift kept on it, so that arm() takes
+the lift's own angles and the hand turns as it goes (the back of the hand
+out while the forearm comes up, the palm out at the top, the thumb inside
+then: handPose). From one pose to another, give u in time, as any hand.
+A hand given as "from" is where the arm starts: it comes into the lift
+from there (poseAt() gives it, between a hand and a lift).
+u: 0 hanging to 1 up over the head; outward: 1 for handA (the default), -1 for handB; from: a hand, or nothing.
+Returns [x, y], where the wrist is from the shoulder, with .lift (u), and .from, on it.
+e.g. person(x, y, cast("lady", {handA: liftHand(up), handB: liftHand(up, -1)}));
+```
+
+### `handJoints(hand, outward)`
+
+```
+Where arm() puts the wrist and the elbow for a hand, from the shoulder, with
+no memory of the frame before: [wristX, wristY, elbowX, elbowY], in pixels.
+hand: as arm() takes it; outward: 1 or -1.
+e.g. var at = handJoints([52, 12], 1);
+```
+
 ### `handFor(dx, dy)`
 
 ```
@@ -1580,7 +1629,7 @@ nothing at all.
 e.g. fallingFeather(620, 760, GROUND, t - 4.2, 1, "#c98b4e", 40);
 ```
 
-### `chick(x, y, t, look)`
+### `chick(x, y, t, bird)`
 
 ```
 A chick standing at (x, y), its feet there, at second t (it blinks). Its look:
@@ -1591,6 +1640,7 @@ A chick standing at (x, y), its feet there, at second t (it blinks). Its look:
   size   1 unless told
 Returns {beak: [x, y]}: the tip of its beak in pen's pixels (where a worm it holds hangs from). Draws with pen;
 other names in its look warn.
+The look is called bird inside the kit, as the rooster's is, so that kit_check does not count its keys a person's.
 e.g. chick(600, GROUND, t, {peck: 1});
 ```
 
@@ -1622,7 +1672,7 @@ as it is swallowed. worm: chickWorm()'s; beak: chick()'s answer's beak. Returns 
 e.g. var w = chickWorm(s); chickWormDrawn(600, GROUND, 1, 1, w.worm, chick(600 + w.x, GROUND, t, w.look).beak, t);
 ```
 
-### `grasshopper(x, y, t, look)`
+### `grasshopper(x, y, t, hopper)`
 
 ```
 x, y: where its feet are, pen's pixels; t: seconds; look: {face, leap 0 to 1, size (0.9 unless told)}.

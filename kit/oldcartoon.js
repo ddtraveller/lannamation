@@ -3013,6 +3013,16 @@ function paintBone(ax, ay, bx, by, wideA, wideB, colour) {
 // the one it has, and when the better one changes, the elbow swings across
 // in a fifth of a second (bendOf).
 var SHOULDER = [-30, 200], ELBOW = 150;
+// A woman's lifted arm (owner, 2026-10-22: "women should extend their biceps up at a slightly less steep
+// angle", the upper arm "angles away from the body slightly"): with her hand above the shoulder her upper
+// arm rises no steeper than "top" and stands at least "out" from her side; at the top of a lift (liftHand)
+// the forearm leans "lean" in over her head. person() puts LADY_ARM in ARM_TOP for a woman and null for
+// anyone else; a man's lift goes to MAN_ARM.
+var LADY_ARM = {top: 150, out: 18, lean: 25}, MAN_ARM = {top: 168, out: 12, lean: 8};
+var ARM_TOP = null;
+// How far the top end of a woman's sabai tilts at a full lift of the arm under it, in radians: the corner
+// by the neck goes down and the outer one up over the shoulder (owner, 2026-10-22).
+var SABAI_TILT = 0.6;
 // Where a leg ends: the ankle this far up and forward from the heel's point on
 // the ground. Measured on standing people (joint_models.md, 2026-10-15): 14 to
 // 18 up, 6 to 10 forward. It was 22 and 6.
@@ -3110,8 +3120,28 @@ function armJoints(wx, wy, upper, lower, outward, key, sure) {
   // out again the new way. It does not sweep across the chest to get there.
   var first = part * part, second = (1 - part) * (1 - part), through = 2 * part * (1 - part);
   var wrist = must ? (ways[0][5] <= ways[1][5] ? ways[0] : ways[1]) : null;   // the nearer of the two, for a wrist with a place to be
-  return [wrist ? wrist[0] : mix(ways[1][0], ways[0][0], part), wrist ? wrist[1] : mix(ways[1][1], ways[0][1], part),
-          first * ways[0][2] + second * ways[1][2] + through * outward * 12, first * ways[0][3] + second * ways[1][3]];
+  var at = [wrist ? wrist[0] : mix(ways[1][0], ways[0][0], part), wrist ? wrist[1] : mix(ways[1][1], ways[0][1], part),
+            first * ways[0][2] + second * ways[1][2] + through * outward * 12, first * ways[0][3] + second * ways[1][3]];
+  // A woman's lifted arm (ARM_TOP): the upper arm the arm has come to rises no
+  // steeper than her top and stands out from her side, both coming in by
+  // degrees as the hand rises its first 50 above the shoulder (no jump); the forearm then goes
+  // toward the wrist asked for, no further folded than an elbow folds. While
+  // the elbow goes by way of the shoulder from one way to the other, where it
+  // points means little: there it is let be.
+  if (ARM_TOP && wy < 0) {
+    var deg = Math.atan2(at[2] * outward, at[3]) * 180 / Math.PI, rise = clamp(-wy / 50);
+    if (deg < SHOULDER[1] - 360) { deg += 360; }    // past straight up, as SHOULDER counts it
+    var want = deg > ARM_TOP.top ? deg + (ARM_TOP.top - deg) * rise : deg + Math.max(0, ARM_TOP.out - deg) * rise;
+    if (want !== deg) {
+      var ux = Math.sin(want * Math.PI / 180) * outward * upper, uy = Math.cos(want * Math.PI / 180) * upper;
+      var gx = at[0] - ux, gy = at[1] - uy, bend = Math.atan2(ux * gy - uy * gx, ux * gx + uy * gy);
+      bend = Math.max(-most, Math.min(most, bend));
+      var ang = Math.atan2(uy, ux) + bend, kept = clamp((Math.sqrt(at[2] * at[2] + at[3] * at[3]) - 25) / 25);
+      var to = [ux + Math.cos(ang) * lower, uy + Math.sin(ang) * lower, ux, uy];
+      at = at.map(function (v, i) { return mix(v, to[i], kept); });
+    }
+  }
+  return at;
 }
 
 // Two bones from (x1, y1) toward (x2, y2), and where the joint between them
@@ -3197,9 +3227,83 @@ function arm(shoulderX, shoulderY, hand, outward, colour, key) {
   // A hand given near its shoulder points nowhere in particular, so the arm
   // leans on the way it pointed the frame before. A hand from handFor() is
   // near on purpose (a third number, 1, says so): its wrist has a place to be.
-  var at = armJoints(hand[0] / far * long, hand[1] / far * long, 62, 58, outward, key, hand[2] ? 2 : clamp(far / 25));
+  var at = hand.lift !== undefined ? liftJoints(hand.lift, outward, hand.from ? handJoints(hand.from, outward) : null)   // a lift (liftHand) has its own two angles
+         : armJoints(hand[0] / far * long, hand[1] / far * long, 62, 58, outward, key, hand[2] ? 2 : clamp(far / 25));
   return limb(shoulderX, shoulderY, shoulderX + at[0], shoulderY + at[1], 62, 58, BODY.arm, colour,
               [shoulderX + at[2], shoulderY + at[3]], 0.4);
+}
+
+// An arm lifted the natural way (owner, 2026-10-22: "instead of lifting like
+// a jumping jack the arm should lift naturally where the forearm comes up
+// first inside with the back of the hand facing out then turns palm out as
+// the arm extends up"). Not a hand that the arm finds its own elbow for,
+// which swings it out and up straight, but the arm's two angles in turn: the
+// upper arm a little out from the side while the forearm comes up, inside,
+// before the chest, folded as far as an elbow folds; then the upper arm rises
+// out and up to its top (ARM_TOP, MAN_ARM), the forearm up and leaning in
+// over the head. Angles are from straight down, growing toward the arm's own
+// side, as SHOULDER's. Between the two the elbow comes forward, toward us (the
+// upper arm drawn short), while the arm turns: a forearm up inside cannot get
+// past the upper arm in the picture's plane but by lying flat along it, which
+// an elbow does not do (ELBOW).
+// An arm that starts somewhere else ("start", where its wrist and elbow are
+// for the hand it had, as armJoints() gives them) comes into the lift by the
+// time the forearm is up: its two angles go from that arm's to the lift's.
+// u: 0 hanging to 1 up over the head; outward: 1 or -1, the arm's side; start: [wristX, wristY, elbowX, elbowY]
+// from the shoulder, or nothing. Returns [wristX, wristY, elbowX, elbowY] from the shoulder, in pixels, as
+// armJoints() does.
+// e.g. var at = liftJoints(0.5, 1);
+function liftJoints(u, outward, start) {
+  var how = ARM_TOP || MAN_ARM;
+  function ease(v) { v = clamp(v); return v * v * (3 - 2 * v); }
+  var first = ease(u / 0.5), then = clamp((u - 0.5) / 0.5);
+  var mid = how.out - (ELBOW - 2);                  // the forearm when the first part ends: up and in, folded all but as far as an elbow folds
+  var turn = ease((then - 0.15) / 0.6);             // the second part: the elbow forward first, then the arm turns out and up, then the elbow back out
+  var long = 62 - 44 * ease(then / 0.25) + 44 * ease((then - 0.55) / 0.4);
+  var upper = 4 + (how.out - 4) * first + (how.top - how.out) * turn;
+  var side = -190;                                  // the forearm upright, a little out, while the elbow is forward: the hands rise beside the head, not before the face
+  var fore = -4 + (mid + 4) * first + (side - mid) * ease(then / 0.22) + (how.lean - 180 - side) * ease((then - 0.7) / 0.3);
+  if (start) {                                      // from the arm it had, by the time the forearm is up
+    var was = Math.atan2(start[2] * outward, start[3]) * 180 / Math.PI;
+    var wasFore = Math.atan2((start[0] - start[2]) * outward, start[1] - start[3]) * 180 / Math.PI;
+    if (wasFore - mid > 180) { wasFore -= 360; }    // the shorter way round to where the lift's forearm comes up to, chosen once
+    if (wasFore - mid < -180) { wasFore += 360; }
+    upper = mix(was, upper, first);
+    fore = mix(wasFore, fore, first);
+  }
+  var fold = Math.abs(((fore - upper) % 360 + 540) % 360 - 180);   // and wherever else the arm would fold near flat, the elbow comes toward us
+  long = Math.min(long, 62 - 42 * clamp((fold - 140) / 11));
+  upper *= Math.PI / 180;
+  fore *= Math.PI / 180;
+  var ex = Math.sin(upper) * outward * long, ey = Math.cos(upper) * long;
+  return [ex + Math.sin(fore) * outward * 58, ey + Math.cos(fore) * 58, ex, ey];
+}
+
+// The hand to give an arm (a look's handA or handB) for a lift: its wrist
+// where liftJoints() puts it, with the lift kept on it, so that arm() takes
+// the lift's own angles and the hand turns as it goes (the back of the hand
+// out while the forearm comes up, the palm out at the top, the thumb inside
+// then: handPose). From one pose to another, give u in time, as any hand.
+// A hand given as "from" is where the arm starts: it comes into the lift
+// from there (poseAt() gives it, between a hand and a lift).
+// u: 0 hanging to 1 up over the head; outward: 1 for handA (the default), -1 for handB; from: a hand, or nothing.
+// Returns [x, y], where the wrist is from the shoulder, with .lift (u), and .from, on it.
+// e.g. person(x, y, cast("lady", {handA: liftHand(up), handB: liftHand(up, -1)}));
+function liftHand(u, outward, from) {
+  var at = liftJoints(clamp(u), outward || 1, from ? handJoints(from, outward || 1) : null), hand = [at[0], at[1]];   // the wrist itself: arm() takes the lift's angles, and the rest asks only where the hand is
+  hand.lift = clamp(u);
+  if (from) { hand.from = from; }
+  return hand;
+}
+
+// Where arm() puts the wrist and the elbow for a hand, from the shoulder, with
+// no memory of the frame before: [wristX, wristY, elbowX, elbowY], in pixels.
+// hand: as arm() takes it; outward: 1 or -1.
+// e.g. var at = handJoints([52, 12], 1);
+function handJoints(hand, outward) {
+  var far = Math.sqrt(hand[0] * hand[0] + hand[1] * hand[1]) || 1;
+  var long = Math.max(Math.min(74, 30 + far * 2.2), Math.min(119, far * 1.3));
+  return armJoints(hand[0] / far * long, hand[1] / far * long, 62, 58, outward, null, hand[2] ? 2 : clamp(far / 25));
 }
 
 // The hand to give an arm so that its wrist comes to (dx, dy) from its
@@ -3615,7 +3719,19 @@ function poseAt(t, keys, hold) {
     if (typeof to === "number") {
       from = typeof from === "number" ? from : 0;
       out[key] = from + (to - from) * u;
+    } else if ((key === "handA" || key === "handB") && (to.lift !== undefined || (from && from.lift !== undefined)) &&
+               (to.lift !== undefined ? !from || from.lift !== undefined || from[1] >= 0 : to[1] >= 0)) {
+      // to or from a lift (liftHand) from or to a low hand: the arm lifts the natural way, from the hand it had or
+      // down to the next (between a lift and a hand already up, the hand goes straight there, as any)
+      var side = key === "handB" ? -1 : 1, liftFrom = from && from.lift !== undefined, liftTo = to.lift !== undefined;
+      out[key] = liftFrom && liftTo ? liftHand(mix(from.lift, to.lift, u), side)
+               : liftTo ? liftHand(to.lift * u, side, from) : liftHand(from.lift * (1 - u), side, to);
     } else if (to && to.length && typeof to[0] === "number") {   // a pair, or a list of numbers such as a hand's curls
+      if (key === "handA" || key === "handB") {     // a lift's hand and a plain one: the lift's as the hand that brings its wrist there
+        if (to.lift !== undefined) { to = handFor(to[0], to[1]); }
+        if (from && from.lift !== undefined) { from = handFor(from[0], from[1]); }
+        if (from && from.length >= 2) { from = [from[0], from[1]].concat(to.slice(2)); }
+      }
       from = from && from.length === to.length ? from : to;
       out[key] = to.map(function (v, j) { return from[j] + (v - from[j]) * u; });
     } else if (u >= 0.5) {
@@ -3938,7 +4054,7 @@ var LOOK_KEYS = {};
 //                   Left out, a hanging hand shows its back and a little of the thumb's edge (0.15),
 //                   a lifted hand its palm (0.85), a dancer's lifted hand its back (0.15, so the
 //                   long nails are seen whole), a hand closed round a thing its thumb's edge (0.3),
-//                   a wai 0.25
+//                   a wai 0.25; a lift's hand (liftHand) turns from its back to its palm as it goes up
 //   wristA, wristB  the bend of each wrist, in radians: a hand laid flat on a thing
 //   grip            true: both hands closed round a thing, such as a pestle
 //   fingersA, fingersB
@@ -4037,6 +4153,7 @@ function personDone() {
   EYE_LIDS = null;
   EYE_TEARS = 0;
   BODY = BODIES.slim;
+  ARM_TOP = null;
 }
 
 // Every save() of a sheet put back, after an error left some open; restore() with none open does nothing, and no
@@ -4481,6 +4598,7 @@ function personTrunk(fig) {
   }
   var workA = shoulderWork(handA, 1), workB = shoulderWork(handB, -1);
   var liftA = workA[0], liftB = workB[0], inA = workA[1], inB = workB[1];
+  var riseA = lady ? clamp(-handA[1] / 90) : 0;     // how far a woman's arm A is lifted, for her sabai over that shoulder: 0 at the shoulder's level, 1 overhead
   function chest(px, py) {
     var u = Math.min(1.1, Math.max(0, (2 - py) / 136));
     var high = clamp((-py - 86) / 24);              // the top of the chest, where the shoulders are
@@ -4524,7 +4642,7 @@ function personTrunk(fig) {
   function sabaiLine() {                            // the band's middle line and sides, in the chest's space
     var root = blend3(chestTurn, 4, 40, 46), half = 30;
     var dx = Math.SQRT1_2, dy = -Math.SQRT1_2;      // up the band, 45 degrees
-    var neck = [root - 18, -112 - 32], top = [neck[0] + half * Math.SQRT1_2, neck[1] + half * Math.SQRT1_2];
+    var neck = [root - 18, -112 - 32 - 4 * riseA], top = [neck[0] + half * Math.SQRT1_2, neck[1] + half * Math.SQRT1_2];
     var cutX = -root - 33, reach = (top[0] - cutX) / dx;
     var end = [top[0] - dx * reach, top[1] - dy * reach];
     var mid = [(top[0] + end[0]) / 2 + 34, (top[1] + end[1]) / 2];   // the curve's control: the middle bows the way the figure faces
@@ -4543,7 +4661,9 @@ function personTrunk(fig) {
     }
     function side(along, across) {                  // a point "across" from the middle line, to the lower side when positive
       var p = at(along);
-      return [p[0] - Math.sin(p[2]) * across, p[1] + Math.cos(p[2]) * across];
+      // With the arm under it lifted, the top of the band tilts (SABAI_TILT): the corner by the neck down, the outer one up
+      var near = clamp((along - (len - 44)) / 44), turn = p[2] - SABAI_TILT * riseA * near * near * (3 - 2 * near);
+      return [p[0] - Math.sin(turn) * across, p[1] + Math.cos(turn) * across];
     }
     return {half: half, length: len, start: 50, slant: 12, at: at, side: side};
   }
@@ -4669,6 +4789,7 @@ function personReach(fig) {
   // 0.88 at a build of -1. The head and the arms are given back what that
   // takes from them, so the head keeps its size and the arms their length.
   var trunk = 1 + 0.12 * Math.min(0, build);
+  ARM_TOP = lady ? LADY_ARM : null;                 // a woman's lifted upper arm rises less steeply (armJoints, liftJoints)
   pen.scale(trunk, trunk);
   small = small / trunk;
   var shoulderY = -112;
@@ -4773,6 +4894,14 @@ function personReach(fig) {
         if (parasolOf(look.parasol).busy > 0.5) { open = 0.12; curls = undefined; palm = 0; }
       }
     }
+    if (given.lift !== undefined && !look.wai && !look.grip) {
+      // A lift (liftHand): the back of the hand out while the forearm comes
+      // up, turning to the palm as the arm reaches up; the thumb inside when
+      // the palm is out and outside when it faces down (owner, 2026-10-22)
+      var turnAt = clamp((given.lift - 0.45) / 0.5);
+      palm = mix(0, 0.85, turnAt * turnAt * (3 - 2 * turnAt));
+      if (!given.from || given.lift > 0.25) { thumb = near ? 1 : -1; }   // the two hands mirror each other
+    }
     if (open <= 0.12 && !form) { palm = 0.3; }      // closed round a thing
     if (turned !== undefined) { palm = turned; }
     return {angle: angle, open: open, curls: curls, thumb: thumb, palm: palm, nails: nails, form: form, still: calm};
@@ -4813,7 +4942,7 @@ function personReach(fig) {
   // hand before the face), crosses to the other side, goes to a point of
   // the scene, makes a wai or closes round a thing with the other hand:
   // all of those lie before the body.
-  var behindA = !rig && handA[1] > 0 && handA[0] > -10 && !look.wai && !look.grip && !look.reachA;
+  var behindA = !rig && handA[1] > 0 && handA[0] > -10 && !look.wai && !look.grip && !look.reachA && !(handA.lift > 0.06);   // a lifting forearm comes up before the chest
   // a band of dark cord round a bare upper arm (gold, with a stone, on a noble), drawn with its arm
   function armBand(root, wrist) {
     var ax = root[0] + (wrist[2] - root[0]) * 0.42, ay = root[1] + (wrist[3] - root[1]) * 0.42;
@@ -5932,7 +6061,7 @@ function personHead(fig) {
 function personArms(fig) {
   // what the stages before this one worked out
   var armBand = fig.armBand, armOf = fig.armOf, arms = fig.arms, behindA = fig.behindA, drawHand = fig.drawHand,
-      end = fig.end, flex = fig.flex, ground = fig.ground, handA = fig.handA, handB = fig.handB,
+      flex = fig.flex, ground = fig.ground, handA = fig.handA, handB = fig.handB,
       handPose = fig.handPose, inFront = fig.inFront, joints = fig.joints, layered = fig.layered, look = fig.look,
       poseA = fig.poseA, rig = fig.rig, rootA = fig.rootA, rootB = fig.rootB, sabaiFront = fig.sabaiFront,
       sheetPen = fig.sheetPen, sleeve = fig.sleeve, spot = fig.spot, trunk = fig.trunk, umbrellaAt = fig.umbrellaAt,
@@ -5961,7 +6090,10 @@ function personArms(fig) {
   // shape, its ink line too; then the forearm, ink and colour, only where
   // that cloth is; then the layer onto the sheet. Where no cloth lies over
   // the upper arm, the arm stays as arm() drew it, no line across the elbow.
-  if (look.wai && (look.worn || sabaiFront) && pen.canvas) {
+  // And over arm A whenever it is before the body, so a lifted arm goes up
+  // under the cloth on its shoulder and not out of a hole in it (owner,
+  // 2026-10-22: "it looks like it's going through a hole in her sabai").
+  if ((look.wai ? look.worn || sabaiFront : !behindA && sabaiFront && !look.worn) && pen.canvas) {   // (a cloth of sabai.js draws where it was made: it is laid over the arm only in a wai, as before)
     var waiSheet = pen;
     if (!WAI_LAYER || WAI_LAYER.canvas.width !== pen.canvas.width || WAI_LAYER.canvas.height !== pen.canvas.height) {
       var waiCanvas = document.createElement("canvas");

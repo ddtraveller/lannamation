@@ -113,7 +113,7 @@ function sheet(t) {
   // row 3: nine girls raise a hand, the middle one first: stagger from the centre
   for (var n = 0; n < 9; n++) {
     var late = stagger(n, 9, {from: "centre", gap: 0.25}), lift = ramp(t, 0.5 + late, 1.1 + late, "back");
-    person(150 + n * 140, 815, cast("lady", {size: 0.5, handA: [36, -70 - 60 * lift], late: late}));
+    person(150 + n * 140, 815, cast("lady", {size: 0.5, handA: liftHand(lift), late: late}));   // lifted the natural way (liftHand)
   }
   label("stagger(n, 9, {from: \"centre\", gap: 0.25}): the middle one first, then outward", 30, 852);
   // row 4: a course, its curve, and an arrow turned to the heading where() gives

@@ -274,7 +274,7 @@ function maengYard() {
   var keep = pen;                                   // the banana and the bamboo are drawn on "pen"
   pen = brush;
   bamboo(brush, 250, 925, 1.1, 7);
-  banana(brush, 880, 915);
+  banana(brush, 1200, 850);                         // past the ta laew and back at the fields edge, clear of the ladder (owner, 2026-10-22: it grew up between its rungs at 880; "move it up a bit")
   pen = keep;
   MAENG_YARD = {back: back, front: front, backNight: maengTinted(back, MAENG_NIGHT[0], MAENG_NIGHT[1] + 0.1),
                 frontNight: maengTinted(front, MAENG_NIGHT[0], MAENG_NIGHT[1])};

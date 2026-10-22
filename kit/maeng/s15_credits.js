@@ -69,7 +69,7 @@ var S15_SOURCES = [
   ["line", "music made from numbers by the kit, after the hero film's sueng, drum and ching"],
   ["line", "the creature's voice: made by the kit from outlines, nothing recorded"],
   ["line", "the tokay gecko: Richard Ling, public domain (Wikimedia Commons)"],
-  ["small", "the hens: alys, public domain (Wikimedia Commons) · the rooster: Wich'yanan L., CC BY 4.0 (iNaturalist)"],
+  ["small", "the hens: alys, public domain (Wikimedia Commons) · the rooster's crow: made with MOSS-SoundEffect (OpenMOSS, Apache-2.0)"],
   ["small", "the buffalo: Ashwin A., CC BY 4.0 (iNaturalist) · the cicadas: Wich'yanan (Jay) Limparungpatthanakij, CC BY 4.0 (iNaturalist)"],
   ["small", "the frogs of Chom Thong: golo.foellmer, Public Domain Mark (radio aporee ::: maps) · the flock: Gunter Königsmann, CC BY 4.0"],
   ["small", "the pack horse: Hü., public domain (Wikimedia Commons) · the crickets and the mice: made by the kit from numbers"],

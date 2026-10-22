@@ -238,16 +238,18 @@ function paint(wide, kind, part) {
 // and given a Thai manner: a shallower sit, the dance hand. poseAt() holds
 // each position and then eases into the next. The parade's dancers take the
 // arms, head and torso of it while they walk; the evening's take all of it.
+// An arm that goes up over the head from low lifts the natural way, forearm
+// first (liftHand, owner 2026-10-22), not swung out and up like a jumping jack.
 var DANCE = [
   [0, {sit: 0.3, handA: [52, 12], handB: [-52, 12], tilt: 0, bend: 0}],
-  [2, {sit: 0.3, handA: [12, -120], handB: [-104, -4], tilt: -0.16, bend: -0.05}],
+  [2, {sit: 0.3, handA: liftHand(1), handB: [-104, -4], tilt: -0.16, bend: -0.05}],
   [4, {sit: 0.25, handA: [84, -72], handB: [-92, 32], tilt: 0.12, bend: 0.08, raise: [1, 30, 22]}],
   [6, {sit: 0.35, handA: [32, -22], handB: [-32, -22], tilt: 0, bend: 0}],
   [8, {sit: 0.3, handA: [104, -12], handB: [-104, -12], tilt: 0.05, bend: 0}],
   [10, {sit: 0.3, handA: [22, -92], handB: [-62, 32], tilt: -0.18, bend: 0, raise: [0, 36, 12]}],
   [12, {sit: 0.4, handA: [62, 2], handB: [-62, 2], tilt: 0, bend: 0, raise: [1, 52, 0]}],
   [12.6, {sit: 0.4, handA: [62, 2], handB: [-62, 2], tilt: 0, bend: 0, raise: [1, 0, 0]}],
-  [14, {sit: 0.25, handA: [8, -118], handB: [-42, 32], tilt: -0.2, bend: 0}],
+  [14, {sit: 0.25, handA: liftHand(1), handB: [-42, 32], tilt: -0.2, bend: 0}],
   [16, {sit: 0.3, handA: [52, 12], handB: [-52, 12], tilt: 0, bend: 0}]
 ];
 

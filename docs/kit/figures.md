@@ -533,6 +533,28 @@ against the chest in the walk by themselves (their share is under a unit at this
 out); a paperdoll with `twist` below -0.5 is not tried (its wrapper counts the far arm's call as the
 first, and at that turn the near arm is drawn first).
 
+## An arm lifted the natural way, and the sabai over it (2026-10-22)
+
+The owner: "when a woman raises her arms above her head, it looks like it's going through a hole in her
+sabai. Try animating the arm lifting so that the bicep angles away from the body slightly and instead of
+lifting like a jumping jack the arm should lift naturally where the forearm comes up first inside with the
+back of the hand facing out then turns palm out as the arm extends up. Lift the sabai up around the shoulder
+when it lifts up. Also, women should extend their biceps up at a slightly less steep angle." Of three
+candidates side by side (the kit as it was, A and B) the owner took A, "but have the sabai tilt so the corner
+nearest the neck of the woman goes down and the other end goes up. Also, the thumbs should be on the inside
+when palms are facing out and on the outside when they are facing down", and asked for every raise in the
+films to take the new lift.
+
+| What | Rule | Numbers |
+|---|---|---|
+| The lift | `liftHand(u, outward)` is the hand to give for an arm lifted from hanging (0) to up over the head (1). It is not a hand that `arm()` finds its own elbow for (that swung the arm out and up straight) but the arm's two angles in turn (`liftJoints`): the upper arm a little out from the side while the forearm comes up, inside, before the chest, folded as far as an elbow folds; then the elbow comes forward, toward us (the upper arm drawn short), while the forearm turns upright and a little out, so the hands rise beside the head and never before the face; the upper arm rises out and up and lengthens again, and at the last the forearm leans in over the head. (A forearm up inside cannot get past the upper arm in the picture's plane but by lying flat along it, which an elbow does not do: in the round it goes by in front, which is the elbow coming forward. Wherever else a lift would fold the arm near flat, the elbow comes forward too.) Give `u` in time, as any hand | the first half the forearm; the second the elbow forward, the arm out and up, the lean |
+| From any hand | `liftHand(u, outward, from)` starts where the hand `from` puts the arm, and comes into the lift by the time the forearm is up. In `poseAt()`, a key whose hand is a `liftHand(...)`, after or before a key whose hand is low (at or below the shoulder), goes there by the lift; between a lift and a hand already up, the hand goes straight there | |
+| The hand turns as it goes | the back of the hand out while the forearm comes up, then the palm, as the arm reaches up; the thumb inside when the palm is out and outside when it faces down (`handPose`, for a lift) | palm 0 until halfway, 0.85 at the top |
+| A woman's upper arm rises less steeply | with her hand above the shoulder her upper arm stops at 150 degrees from straight down (a man's lift goes to 168) and stands at least 18 out from her side; at the top of a lift her forearm leans 25 in over her head (`LADY_ARM`, `MAN_ARM`; `person()` puts one in `ARM_TOP`) | 150, 18, 25; a man 168, 12, 8 |
+| The arm goes up under the sabai | the cloth on arm A's shoulder is drawn again over that upper arm wherever it lies on it, and the forearm over the cloth, whenever the arm is before the body (the wai's layer, until then drawn only for a wai). So the arm comes out from under the cloth's edge, not out of a hole in it | |
+| The sabai rides up and tilts | as a woman's arm A lifts, the top of her sabai rises a little and tilts: the corner by the neck goes down, the outer one up over the shoulder, and the back of the cloth hangs from that corner as it did | 4 up, `SABAI_TILT` 0.6 radians at a full lift |
+| Where it was put in | the village's dance (`village.html`, `DANCE`: the two keys where an arm goes up over the head from low) and `motion.html`'s nine girls who raise a hand. Every other raised arm of a woman in the kit holds a pose already up (the hero film's dancers, the sheets): those take the gentler angle and the sabai over the shoulder by themselves. The Maeng tale has no woman lifting her arms (its goodbye is a wai) | |
+
 ## Legs, ankles and feet, measured from photographs (2026-10-15)
 
 The owner: "Generate hip, hand, knee, ankle and foot models as well", then "Update the kit with the

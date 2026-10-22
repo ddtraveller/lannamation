@@ -11,6 +11,15 @@ each new look as a sheet of candidates beside its reference (the owner picks, on
 rounds), then the kit check once, then every scene rendered once, then the sound, then the join. Research that
 waits on others starts first and runs while the drawing goes on.
 
+## For the next join (owner, 2026-10-22)
+
+- **No thanks card.** "Next time the film is rendered drop the special thanks to Jing's Kitchen": join without
+  `--over thanks_jing.png,...` (it was laid over the tale's end, 908.95 to 915.25 s of the whole). The rest of the join
+  is as before: `../chain.py OUT hero.mp4 card.mp4 tale.mp4 --fade 1,0.75`.
+- **The new crow.** `rooster-crow` is now a MOSS-SoundEffect crow (claude-fc, 2026-10-22), and the credits say so
+  (`s15_credits.js`). A render copy that already has `out/sounds/rooster-crow.wav` keeps the old one: delete it, or
+  run `python sounds.py rooster-crow`, before the sound is made.
+
 ## Next: the owner's list of 2026-10-21 (all 11 drawn and checked in stills, 2026-10-21 afternoon; render and join left)
 
 The owner, 2026-10-21: "Make a list of changes for the future." Times are of the live film of 12:30 that day
