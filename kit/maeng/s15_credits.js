@@ -610,7 +610,7 @@ function s15Bow(row, y, t) {                          // the figures of a row wh
 var S15_MOON = [1610, 150, 58];                      // the moon: its middle and its radius, high at the right
 var S15_OWLS = [                                     // [from, to, fly, path: [x, y, size] at its start and its end]
   [12, 26, "side", [[-160, 330, 0.75], [2100, 90, 0.75]]],      // across the sky and over the moon's face
-  [70, 82, "front", [[700, 260, 0.3], [260, 900, 1.1]]],        // gliding toward us, out at the lower left
+  [70, 82, "front", [[700, 260, 0.3], [260, 900, 1.1]]],        // gliding toward us, then on down and out past the frame's foot
   [118, 130, "side", [[2080, 210, 0.75], [-160, 320, 0.75]]]    // back the other way, over the far hills
 ];
 var S15_PERCH = [150, 195];                           // the owl on a branch at the upper left, to the end
@@ -619,11 +619,16 @@ var S15_MOTHS = [[86, 98, [1960, 760], [1500, 640]], [138, 150, [-60, 700], [420
 
 // o: one of S15_OWLS; t: seconds; moon: what nightMoon() gave back (for its light). Gives back nothing: it draws
 // with pen, and nothing outside o's seconds. e.g. s15Owl(S15_OWLS[0], 20, moon);
+// A "front" owl does not stop at the end of its path: it carries on at the same pace and heading, nearer still, until it
+// has gone past the frame's foot (owner, 2026-10-22: "an owl that disappears that should go down to the bottom of the
+// screen and go off it"; its glide ended at y 900, still in the picture, and it was gone).
 function s15Owl(o, t, moon) {                        // one of S15_OWLS, at second t of its flight
-  if (t < o[0] || t > o[1]) { return; }
+  if (t < o[0] || (t > o[1] && o[2] !== "front")) { return; }
   var u = (t - o[0]) / (o[1] - o[0]), a = o[3][0], b = o[3][1];
   var x = mix(a[0], b[0], u), y = mix(a[1], b[1], u) - (o[2] === "side" ? 60 * Math.sin(Math.PI * u) : 0);
-  barnOwl(x, y, t, {fly: o[2], size: mix(a[2], b[2], u * u), face: b[0] < a[0] ? -1 : 1, lit: moonLight(x, y, moon), moon: moon});
+  var size = u <= 1 ? mix(a[2], b[2], u * u) : b[2] + (b[2] - a[2]) * (u - 1);   // past its path's end, growing as it comes on
+  if (y - 260 * size > 1080) { return; }             // gone past the frame's foot
+  barnOwl(x, y, t, {fly: o[2], size: size, face: b[0] < a[0] ? -1 : 1, lit: moonLight(x, y, moon), moon: moon});
 }
 
 // t: seconds. Draws the moon (S15_MOON), the clouds and the "side" owls with pen; gives back the moon, as
@@ -673,7 +678,10 @@ function s15NightNear(t, moon) {                      // in front of the mountai
     if (t < m[0] || t > m[1]) { return; }
     var u = (t - m[0]) / (m[1] - m[0]), x = mix(m[2][0], m[3][0], s15Ease(u * 1.6)) + 40 * Math.sin(t * 2.1), y = mix(m[2][1], m[3][1], u) + 30 * Math.sin(t * 2.9);
     if (u > 0.62) { x += (m[3][0] < m[2][0] ? -1 : 1) * 1400 * (u - 0.62) * (u - 0.62); y -= 900 * (u - 0.62) * (u - 0.62); }   // it rests a moment, then flutters off and up
-    atlasMoth(x, y, t, {size: 0.42, turn: 0.3 * Math.sin(t * 1.3), lit: moonLight(x, y, moon)});
+    // and as it flutters away it grows smaller, to nothing, by the end of its seconds (owner, 2026-10-22: "a moth that
+    // disappears. It should slowly shrink into nothingness"; it was gone at its full size)
+    var size = 0.42 * (1 - s15Ease((u - 0.62) / 0.38));
+    if (size > 0.004) { atlasMoth(x, y, t, {size: size, turn: 0.3 * Math.sin(t * 1.3), lit: moonLight(x, y, moon)}); }
   });
   if (t >= S15_PERCH[0]) {
     var come = s15Ease((t - S15_PERCH[0]) / 1.5);     // the branch reaches in from the frame's left, the owl on it
