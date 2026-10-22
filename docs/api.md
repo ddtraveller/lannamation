@@ -1458,6 +1458,14 @@ x, y, in pen's pixels; angle in radians; colour a CSS colour; open 0 to 1, defau
 e.g. roosterWing(-6, -38, 0.35, "#f0dcc0", 0);
 ```
 
+### `fowlEase(u)`
+
+```
+u: a number, held to 0 to 1. Returns 0 to 1: slow at both ends, quick in the middle (a smoothstep), for the
+fowl's steps and pecks.
+e.g. fowlEase(0.25)   // 0.15625
+```
+
 ### `rooster(x, y, t, bird)`
 
 ```
@@ -1473,13 +1481,30 @@ and chicken behaviors"; a second chicken that takes fright with it):
   step   a number that grows a step at a time while it runs: its legs run,
          a foot lifting as it swings forward, the body leans forward and
          bobs, and the head reaches forward, pumping with the steps
+  walk   a number that grows by one for each two steps while it walks (a
+         rooster's two steps cover 56 of the ground, a hen's 48;
+         ROOSTER_WALK): its body nearly level; a foot that is down goes
+         back under it as fast as it goes, so it does not slide, while the
+         other lifts with its toes curled and is set down ahead; at each
+         step the head holds still over the ground while the body walks
+         under it, then thrusts forward (owner, 2026-10-22: walking on the
+         run's legs "looks like they are running in slow motion")
+  stride 0 to 1: how far the feet swing in a walk (1 unless told), to ease
+         a walk in and out (roosterPeck())
+  crow   0 to 1: how far through a crow it is: it crows now, whatever else
+         is asked, and not on the beat (roosterPeck() has it crow between
+         its bouts); a hen never crows
   flap   0 to 1: both wings beat, up over the back and down, eight times a
          second (the far wing shows above the body as it rises), as in a jump
   wings  0 to 1: both wings held out and up a little, shivering, as a
          chicken holds them when it scurries
   lean   how far it leans forward running (radians; 0.2 unless told)
   peck   0 to 1: it tips forward from the hips and reaches down until its
-         beak is at the ground (roosterForage() gives a forager's pecks)
+         beak is at the ground (roosterPeck() gives a forager's ways)
+  reach  -1 to 1: where on the ground the beak comes down, 8 behind or
+         ahead of where it would
+  cock   -1 to 1: the head cocked, its beak up (1) or down, as a chicken
+         looks about with one eye
   alarm  0 to 1: a fright: the head high and drawn back, the body upright,
          the comb shaking, the eye wide
   sink   0 to 1: it crouches, the body down on bent legs and the head drawn
@@ -1493,18 +1518,16 @@ and chicken behaviors"; a second chicken that takes fright with it):
 roosterBolt() puts them together into a whole fright and flight.
 x, y: where its feet stand, in the sheet's pixels; t: seconds (it crows on the beat); bird: its look, as above,
 or nothing (other names warn). Returns nothing: it draws with pen (and a note of music while it crows).
-e.g. rooster(600, GROUND, t, {hen: true, peck: roosterForage(t, 2)});
+e.g. var p = roosterPeck(t, {seed: 2, hen: true}); rooster(600 + p.x, GROUND, t, p.look);
 ```
 
-### `roosterForage(t, seed)`
+### `roosterPeck(t, plan)`
 
 ```
-A forager's pecking, for rooster()'s peck at second t: its head low,
-looking, now and then a peck or a few quick pecks at the ground, each down
-in a tenth of a second and up in a fifth, and now and then its head up a
-while, looking about. "seed" gives each bird its own.
-t: seconds; seed: any number, default 0. Returns 0 to 1: the peck to give rooster().
-e.g. rooster(600, GROUND, t, {peck: roosterForage(t, 1)});
+t: seconds of its foraging (from 0, its head up); plan: {seed: any number, roam: pixels (ROOSTER_PECK.roam when
+left out; 0 stays where it stands, as at a course's stop), hen: true for a hen, face: -1 to start facing left}.
+Returns {x, look}: how far it has walked from where it stood (left is below 0), and the look for rooster().
+e.g. var p = roosterPeck(t, {seed: 1}); rooster(600 + p.x, GROUND, t, p.look);
 ```
 
 ### `roosterBolt(s, plan)`
@@ -2047,6 +2070,35 @@ e.g. filmFrameOnce(12.5, SCENES);
 ```
 Draw second t of a film: find its scene, let the camera push in, fade
 through black at the cuts, then send the sheet to the screen through the lens.
+```
+
+### `hear(sound, at, x, y)`
+
+```
+sound: a name of sounds.py's; at: the film's second it begins; x, y: where its caller is, in pen's pixels. Returns
+nothing: while HEARD is a list, and pen draws on the film (not a scratch sheet or a tile), it notes [at, sound,
+where along the film] there.
+e.g. hear("rooster-crow", clock, 600, GROUND);
+```
+
+### `heardCalls()`
+
+```
+Returns the calls HEARD holds, [[second, sound, loudness], ...] in the order they come, each no sooner than
+HEARD_GAP after the last kept of its name from within HEARD_NEAR of it (a call told again in the next frame is
+the same call). The second is when its file starts (HEARD_SOUNDS' lead before the moment, so it may be before
+the film's), to a hundredth; the loudness HEARD_SOUNDS' (0.3 when it has none). Changes nothing.
+e.g. HEARD = []; vanished(0, 22); var calls = heardCalls(); HEARD = null;
+```
+
+### `heard(from, to, fps)`
+
+```
+from, to: seconds of the page's film, drawn by the page's draw(t); fps: frames a second (30 when left out).
+Returns the calls the picture made from "from" to "to" (heardCalls(): a call's file may start before "from"). It
+draws on the page's sheet as draw(t)
+does, so it is for a page with rendering on, as vanished() is; HEARD is null again after, even when a frame throws.
+e.g. heard(0, 35);   // [[22.2, "rooster-crow", 0.28], [27.9, "rooster-crow", 0.28]]
 ```
 
 ### `vanished(from, to, fps)`
@@ -4800,9 +4852,11 @@ a peck: down and up again, twice a second, at a stop marked "peck"
 
 ```
 lifeFowl(at, look, t, hen) draws the kit's rooster (hen true: a hen) where courseAt() has it,
-walking as far as it goes and pecking at a "peck" stop. at: courseAt()'s answer; look: the
-rooster's look (look.size, 1 when left out, sizes only the box and the stride: the kit's rooster
-has one size); t: seconds. Returns the box it was drawn in, [left, top, right, bottom], pixels of the scene.
+walking as far as it goes (rooster()'s walk, two steps to 56 of the ground, a hen's to 48), and at a
+"peck" stop foraging where it stands (roosterPeck(), roam 0: a few pecks at spots of their own, then
+a look about or, a rooster, a crow). at: courseAt()'s answer; look: the rooster's look (look.size, 1 when left out, sizes
+only the box and the stride: the kit's rooster has one size); t: seconds. Returns the box it was
+drawn in, [left, top, right, bottom], pixels of the scene.
 e.g. var box = lifeFowl(courseAt(t, [[1, 300, 950], [5, 700, 950]]), {}, t, true);   // a hen, as LIFE_KINDS.hen draws one
 ```
 
@@ -5479,6 +5533,10 @@ sheet, and the way the route runs there, in radians. Draws nothing.
 e.g. geckoAt([[100, 800], [100, 200]], 150)   // [100, 650, -Math.PI / 2]
 the point a distance along a route, and the way it runs there
 ```
+
+### `geckoChain(route, along, gap)`
+
+(no comment)
 
 ### `gecko(route, along, look)`
 
@@ -6780,6 +6838,25 @@ folder it is run from. It ends with exit code 0, or 1 when no dancer is found in
 - `face_of(facer, frame, box)`: the kit's face fields from one frame, or None when no face is found
 - `main()`: The command line (see this file's docstring): track the dancer frame by frame, smooth the joints over
 
+## kit/heard.py
+
+```
+heard.py - the sounds a film's picture makes, as a scene's calls: [[second, sound, loudness], ...].
+
+    python heard.py sash.html                       # the whole film
+    python heard.py maeng/s02.html --from 0 --to 30 # a part of it
+    python heard.py maeng/s02.html --json calls.json
+
+The kit notes a sound where the picture makes it: a rooster's crow, from when its beak opens (oldcartoon.js,
+hear() and heard()). This draws the page's film frame by frame, as render.py does but keeping no pictures, and
+prints the calls in the form a scene writes its own (decorate.js calls; maeng/feelings.py lays those under a
+film): the second its sound file starts, the sound (sounds.py's out/sounds/NAME.wav) and its loudness. render.py
+lays the same under the films it renders; this is for a film whose sound is put together elsewhere.
+It needs Google Chrome (Playwright). It ends with exit code 0, 1 when the page reported an error.
+```
+
+- `main()`: The command line: draw the page's film, print its calls, and write them to --json when asked.
+
 ## kit/howl.py
 
 ```
@@ -6939,6 +7016,11 @@ one frame and gone in the next, while it could be seen, not gone off the edge, f
 taken by a fade to black. It tells them again at the end, and makes the video all the same: stop it and
 mend the scene. --no-vanish leaves the look out.
 
+In the same look it listens: a sound the picture makes (a rooster's crow, the kit's heard()) is laid under
+the film at its second, over the --audio sound or alone, from sounds.py's out/sounds/NAME.wav (made by
+sounds.py when it is not there yet; told and left out when it cannot be). A fetched sound's maker and
+licence are in sounds.py (FETCHED): a CC BY one is named in the film's credits.
+
 It needs Google Chrome (Playwright drives it: channel "chrome") and ffmpeg on the PATH. The page must
 have draw(t), the switch rendering, and LENGTH or DURATION (the film's seconds), as every kit page does.
 It writes the video where it is named, 1920 x 1080 at 30 frames a second (H.264; AAC sound with --audio),
@@ -6947,7 +7029,7 @@ reported an error (the video is made all the same) or when ffmpeg stopped (no vi
 argparse does not take. From Python: render.render(page, video, audio, start, end, fast, sets, vanish).
 ```
 
-- `ffmpeg_command(video, audio, start, fast)`: The ffmpeg command that reads frames on its stdin and encodes them as render.py does: a list of words.
+- `ffmpeg_command(video, audio, start, fast, sounds)`: The ffmpeg command that reads frames on its stdin and encodes them as render.py does: a list of words.
 - `render(page_file, video, audio, start, end, fast, sets, vanish)`: Render a kit page to a video file, frame by frame, in Chrome with no window: gives back nothing.
 - `main()`: The command line: read the arguments, check that ffmpeg and the sound file are there, render.
 

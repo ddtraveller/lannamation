@@ -32,6 +32,9 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
    in one frame and gone in the next in plain sight, and prints each as
    "warning: ... blinked out at ...". Mend those in the JSON: let it walk off the edge,
    or end its course where something hides it. Then render again.
+   A rooster's crow is laid under the film where it crows ("heard: ...").
+   The crow is a CC BY recording (Wich'yanan L., iNaturalist): name it in
+   the film's credits or description.
 
 ## Rules that decide whether it looks right
 

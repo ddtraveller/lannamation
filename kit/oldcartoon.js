@@ -7240,7 +7240,20 @@ var BLACK_HEN_COAT = {body: "#2a2b2e", wing: "#22302b", far: "#1a201e", ruff: "#
 // The names a rooster's look may have (see rooster()), so that one it does
 // not know is warned of.
 var ROOSTER_KEYS = {};
-["step", "flap", "wings", "lean", "peck", "alarm", "sink", "face", "hen", "feel", "black"].forEach(function (name) { ROOSTER_KEYS[name] = true; });
+["step", "walk", "stride", "crow", "flap", "wings", "lean", "peck", "reach", "cock", "alarm", "sink", "face", "hen", "feel", "black"].forEach(function (name) { ROOSTER_KEYS[name] = true; });
+
+// A walk (rooster()'s walk): how far a foot reaches ahead of the hip and behind it, so that two steps cover four
+// times that of the ground (a hen's 0.85 of it); how high the lifted foot goes; how far the head swings, about its
+// place, to hold still over the ground while the body walks under it.
+var ROOSTER_WALK = {reach: 14, lift: 9, bob: 10};
+
+// u: a number, held to 0 to 1. Returns 0 to 1: slow at both ends, quick in the middle (a smoothstep), for the
+// fowl's steps and pecks.
+// e.g. fowlEase(0.25)   // 0.15625
+function fowlEase(u) {
+  u = clamp(u);
+  return u * u * (3 - 2 * u);
+}
 
 // A rooster. It crows once every two beats, in three parts, as an animator
 // would time it: it sinks first (the part that makes the crow read), then
@@ -7254,13 +7267,30 @@ var ROOSTER_KEYS = {};
 //   step   a number that grows a step at a time while it runs: its legs run,
 //          a foot lifting as it swings forward, the body leans forward and
 //          bobs, and the head reaches forward, pumping with the steps
+//   walk   a number that grows by one for each two steps while it walks (a
+//          rooster's two steps cover 56 of the ground, a hen's 48;
+//          ROOSTER_WALK): its body nearly level; a foot that is down goes
+//          back under it as fast as it goes, so it does not slide, while the
+//          other lifts with its toes curled and is set down ahead; at each
+//          step the head holds still over the ground while the body walks
+//          under it, then thrusts forward (owner, 2026-10-22: walking on the
+//          run's legs "looks like they are running in slow motion")
+//   stride 0 to 1: how far the feet swing in a walk (1 unless told), to ease
+//          a walk in and out (roosterPeck())
+//   crow   0 to 1: how far through a crow it is: it crows now, whatever else
+//          is asked, and not on the beat (roosterPeck() has it crow between
+//          its bouts); a hen never crows
 //   flap   0 to 1: both wings beat, up over the back and down, eight times a
 //          second (the far wing shows above the body as it rises), as in a jump
 //   wings  0 to 1: both wings held out and up a little, shivering, as a
 //          chicken holds them when it scurries
 //   lean   how far it leans forward running (radians; 0.2 unless told)
 //   peck   0 to 1: it tips forward from the hips and reaches down until its
-//          beak is at the ground (roosterForage() gives a forager's pecks)
+//          beak is at the ground (roosterPeck() gives a forager's ways)
+//   reach  -1 to 1: where on the ground the beak comes down, 8 behind or
+//          ahead of where it would
+//   cock   -1 to 1: the head cocked, its beak up (1) or down, as a chicken
+//          looks about with one eye
 //   alarm  0 to 1: a fright: the head high and drawn back, the body upright,
 //          the comb shaking, the eye wide
 //   sink   0 to 1: it crouches, the body down on bent legs and the head drawn
@@ -7274,31 +7304,34 @@ var ROOSTER_KEYS = {};
 // roosterBolt() puts them together into a whole fright and flight.
 // x, y: where its feet stand, in the sheet's pixels; t: seconds (it crows on the beat); bird: its look, as above,
 // or nothing (other names warn). Returns nothing: it draws with pen (and a note of music while it crows).
-// e.g. rooster(600, GROUND, t, {hen: true, peck: roosterForage(t, 2)});
+// e.g. var p = roosterPeck(t, {seed: 2, hen: true}); rooster(600 + p.x, GROUND, t, p.look);
 function rooster(x, y, t, bird) {
   bird = bird || {};
   checkNames("The rooster's name", bird, ROOSTER_KEYS);
   var coat = bird.black ? (bird.hen ? BLACK_HEN_COAT : BLACK_ROOSTER_COAT) : bird.hen ? HEN_COAT : ROOSTER_COAT;
   var combColour = coat.comb || "#d63a2f", beakColour = coat.beak || "#f0a030", legColour = coat.legs || "#c8861e";
   var running = bird.step !== undefined, flap = clamp(bird.flap || 0), wings = clamp(bird.wings || 0);
+  var walking = !running && bird.walk !== undefined, swing = walking ? clamp(bird.stride === undefined ? 1 : bird.stride) : 0;
   var e = creatureFeel(bird, t), f = e.f;
   var peck = clamp(bird.peck || 0), alarm = Math.max(clamp(bird.alarm || 0), e.startle), sink = Math.max(clamp(bird.sink || 0), 0.5 * f.sleepy + 0.3 * f.full);
-  var crows = !running && !bird.hen && bird.flap === undefined && bird.wings === undefined &&
+  var crows = bird.crow !== undefined ? !bird.hen : !running && !walking && !bird.hen && bird.cock === undefined && bird.flap === undefined && bird.wings === undefined &&
               bird.peck === undefined && bird.alarm === undefined && bird.sink === undefined &&
               f.sad + f.worry + f.sleepy + f.full + f.laugh + f.wonder + f.fear < 0.3;   // a feeling that is not glad or cross keeps it quiet
-  var turn = (t / BEAT / 2) % 1;
+  var turn = bird.crow !== undefined ? clamp(bird.crow) % 1 : (t / BEAT / 2) % 1;
   var stretch = !crows ? -1.4 * sink : turn < 0.2 ? -0.35 * Math.sin(turn / 0.2 * Math.PI)
               : turn < 0.75 ? Math.sin((turn - 0.2) / 0.55 * Math.PI) : 0;
   var crowing = Math.max(0, stretch);
+  if (crowing > 0) { hear("rooster-crow", clock - (turn - 0.2) * 2 * (typeof BEAT === "number" ? BEAT : 0.5), x, y); }   // heard from when the beak opens
   var beat = flap * (0.8 + 0.95 * Math.sin(t * Math.PI * 16)) + wings * (0.7 + 0.12 * Math.sin(t * 40));   // how far up the wings are: beating in a jump, held out in a scurry
   var open = clamp(flap + 0.6 * wings);              // and how far spread
   var tip = peck * 0.35 - alarm * 0.12;             // the body tips forward from the hips to peck, back in a fright
   var size = bird.hen ? 0.85 : 1, n;
   pen.save();
-  var bob = running ? 3 * Math.abs(Math.sin(bird.step * Math.PI * 2)) : 0;
+  var bob = running ? 3 * Math.abs(Math.sin(bird.step * Math.PI * 2)) : walking ? 1.5 * swing * Math.abs(Math.cos(bird.walk * Math.PI * 2)) : 0;
   pen.translate(x, y + 4 - stretch * 5 - bob + 2 * e.shake);
   pen.scale(size * (bird.face || 1), size);
   if (running) { pen.rotate(bird.lean !== undefined ? bird.lean : 0.2); }   // leaning into the run
+  else if (walking) { pen.rotate(0.04 * swing); }   // a walk is nearly level
   pen.lineCap = "round";
   function hips() { pen.translate(0, -16); pen.rotate(tip); pen.translate(0, 16); }   // what is above the legs turns about the hips
   if (flap > 0 || wings > 0) {                      // the far wing, behind the body: it shows when the wings are up
@@ -7309,18 +7342,24 @@ function rooster(x, y, t, bird) {
   }
   for (n = 0; n < 2; n++) {                         // two legs, and three toes each
     var stride = running ? Math.sin(bird.step * Math.PI * 2 + n * Math.PI) : 0;   // running: each foot swings forward and back, the other half a step behind
-    var footX = -8 + n * 18 + stride * 12, lift = running ? Math.max(0, stride) * 7 : 0;
+    var footX = -8 + n * 18 + stride * 12, lift = running ? Math.max(0, stride) * 7 : 0, curl = 0;
+    if (walking) {                                  // each foot down for the first half of its step, going back; then up, coming forward
+      var u = ((bird.walk + n / 2) % 1 + 1) % 1;
+      footX = -8 + n * 18 + swing * ROOSTER_WALK.reach * (u < 0.5 ? 1 - 4 * u : 2 * fowlEase((u - 0.5) * 2) - 1);
+      lift = u < 0.5 ? 0 : swing * ROOSTER_WALK.lift * Math.sin((u - 0.5) * 2 * Math.PI);
+      curl = lift / ROOSTER_WALK.lift;              // the toes of a lifted foot curl under it
+    }
     pen.strokeStyle = legColour;
     pen.lineWidth = 4;
     pen.beginPath();
     var hipX = -6 + n * 18;
     pen.moveTo(hipX, -16);
     pen.lineTo(footX, -2 + stretch * 5 - lift);
-    pen.moveTo(footX - 9, 1 + stretch * 5 - lift);
+    pen.moveTo(footX - 9 + 4 * curl, 1 + 3 * curl + stretch * 5 - lift);
     pen.lineTo(footX, -2 + stretch * 5 - lift);
-    pen.lineTo(footX + 10, 1 + stretch * 5 - lift);
+    pen.lineTo(footX + 10 - 6 * curl, 1 + 4 * curl + stretch * 5 - lift);
     pen.moveTo(footX, -2 + stretch * 5 - lift);
-    pen.lineTo(footX + 2, 4 + stretch * 5 - lift);
+    pen.lineTo(footX + 2 - curl, 4 + curl + stretch * 5 - lift);
     pen.stroke();
   }
   hips();
@@ -7356,11 +7395,17 @@ function rooster(x, y, t, bird) {
   // reaches forward in a run and goes up in a fright
   var headX = mix(28 + crowing * 2, 34, peck) - 5 * alarm, headY = mix(-78 - stretch * 20, -40, peck) - 14 * alarm - 18 * Math.min(0, e.raise);   // a sad or sleepy one's head sinks
   if (running) { headX += 8 + 3 * Math.sin(bird.step * Math.PI * 4); headY += 10; }
+  if (walking) {                                    // at each step the head holds still over the ground while the body walks under it, then thrusts forward
+    var q = ((bird.walk * 2) % 1 + 1) % 1;
+    headX += 4 + swing * ROOSTER_WALK.bob * (q < 0.75 ? 1 - 2 * q / 0.75 : 2 * fowlEase((q - 0.75) / 0.25) - 1);
+    headY += 4;
+  }
+  headX += 8 * (bird.reach || 0) * peck;            // the spot on the ground it pecks at
   hose(16, -42, headX - 2, headY + 8, 0.12 + crowing * 0.1, 15, coat.body);
   hose(10, -40, 20, -52, 0.3, 9, coat.ruff);        // a ruff of gold feathers at its foot
   pen.save();
   pen.translate(headX, headY);
-  pen.rotate(-crowing * 0.55 + peck * 1.0 + 0.9 * e.nod);
+  pen.rotate(-crowing * 0.55 + peck * 1.0 + 0.9 * e.nod - 0.4 * (bird.cock || 0));
   var comb = bird.hen ? 0.6 : 1;
   for (n = 0; n < 3; n++) {                         // the comb: three bumps that wobble, and shake in a fright
     oval((-7 + n * 7) * comb, -13 * (bird.hen ? 0.85 : 1) - (n === 1 ? 3 * comb : 0) + Math.sin(t * 9 + n) * 1.2 + alarm * Math.sin(t * 60 + n * 2) * 1.5,
@@ -7434,18 +7479,92 @@ function rooster(x, y, t, bird) {
   }
 }
 
-// A forager's pecking, for rooster()'s peck at second t: its head low,
-// looking, now and then a peck or a few quick pecks at the ground, each down
-// in a tenth of a second and up in a fifth, and now and then its head up a
-// while, looking about. "seed" gives each bird its own.
-// t: seconds; seed: any number, default 0. Returns 0 to 1: the peck to give rooster().
-// e.g. rooster(600, GROUND, t, {peck: roosterForage(t, 1)});
-function roosterForage(t, seed) {
-  var cell = Math.floor(t / 0.3), u = t / 0.3 - cell;
-  var jab = dice(cell * 5 + (seed || 0) * 17 + 1) > 0.5 ? (u < 0.3 ? Math.sin(u / 0.3 * Math.PI / 2) : Math.cos((u - 0.3) / 0.7 * Math.PI / 2)) : 0;
-  var spell = Math.floor(t / 2), v = t / 2 - spell;
-  var up = dice(spell * 3 + (seed || 0) * 11 + 2) > 0.6 ? Math.sin(Math.PI * clamp((v - 0.2) / 0.6)) : 0;
-  return (0.3 + 0.7 * jab) * (1 - up);
+// A forager's ways (owner, 2026-10-22: "go to the ground and peck 1-3 times in different spots if 2-3, then go up
+// and either look around or take a few steps to the left or right and then peck again rather than hammering away
+// with their pecks"), bout after bout: its head goes down to the ground and stays low a moment, looking; it pecks
+// one to three times, each at a spot of its own (rooster()'s reach), the head moving to the next between them; the
+// head comes up; and then it looks about, its head up and cocked one way and then the other, or walks two to four
+// steps to the left or the right, turning to face the way it goes, or, a rooster, crows (owner: "Make sure they have
+// a chance to go through all their actions. I forgot about singing"), before its head goes down again. What it does
+// after its pecks goes round all it can do in an order of its own, each once before any comes again: a look about,
+// a walk where it may roam, a crow where it is a rooster. It does not wander further than roam from where it stood:
+// a walk that would take it further goes the other way, or is a look about instead. Each bird has its own (seed). ROOSTER_PECK holds the times, in seconds: down, the head to the
+// ground; low, how far down it looks (rooster()'s peck); look, a while looking there, [least, more at most]; jab, one
+// peck; move, to the next spot; up; about, a look about; step, one step of a walk; roam, in pixels. A crow takes two
+// beats (BEAT), as the rooster's own does.
+var ROOSTER_PECK = {down: 0.3, low: 0.7, look: [0.25, 0.3], jab: 0.3, move: [0.25, 0.2], up: 0.3, about: [1, 1.2], step: 0.3, roam: 60};
+
+// t: seconds of its foraging (from 0, its head up); plan: {seed: any number, roam: pixels (ROOSTER_PECK.roam when
+// left out; 0 stays where it stands, as at a course's stop), hen: true for a hen, face: -1 to start facing left}.
+// Returns {x, look}: how far it has walked from where it stood (left is below 0), and the look for rooster().
+// e.g. var p = roosterPeck(t, {seed: 1}); rooster(600 + p.x, GROUND, t, p.look);
+function roosterPeck(t, plan) {
+  plan = plan || {};
+  var P = ROOSTER_PECK, seed = plan.seed || 0, roam = plan.roam === undefined ? P.roam : plan.roam;
+  var x = 0, face = plan.face || 1, at = 0, s = Math.max(0, t), bout, d, u, k;
+  var stepLong = 2 * ROOSTER_WALK.reach * (plan.hen ? 0.85 : 1);   // the ground one step covers
+  function now(more) { return {x: x, look: Object.assign({peck: 0, face: face}, plan.hen ? {hen: true} : {}, more)}; }
+  function jab(u) { return u < 0.33 ? Math.sin(u / 0.33 * Math.PI / 2) : Math.cos((u - 0.33) / 0.67 * Math.PI / 2); }   // down in a tenth of a second, up in a fifth
+  for (bout = 0; ; bout++) {
+    var roll = function (n) { return dice(seed * 101 + bout * 13 + n); };
+    var pecks = 1 + Math.floor(roll(1) * 3), spots = [];
+    for (k = 0; k < pecks; k++) { spots.push(pecks === 1 ? 0 : 2 * roll(2 + k) - 1); }
+    d = P.down;                                     // the head goes down, to the first spot
+    if (s < at + d) { u = fowlEase((s - at) / d); return now({peck: P.low * u, reach: spots[0] * u}); }
+    at += d;
+    d = P.look[0] + P.look[1] * roll(5);            // a moment, looking
+    if (s < at + d) { return now({peck: P.low, reach: spots[0]}); }
+    at += d;
+    for (k = 0; k < pecks; k++) {
+      d = P.jab;                                    // a peck
+      if (s < at + d) { return now({peck: P.low + (1 - P.low) * jab((s - at) / d), reach: spots[k]}); }
+      at += d;
+      if (k < pecks - 1) {                          // the head moves to the next spot
+        d = P.move[0] + P.move[1] * roll(6 + k);
+        if (s < at + d) { return now({peck: P.low, reach: mix(spots[k], spots[k + 1], fowlEase((s - at) / d))}); }
+        at += d;
+      }
+    }
+    d = P.up;                                       // the head comes up
+    if (s < at + d) { u = fowlEase((s - at) / d); return now({peck: P.low * (1 - u), reach: spots[pecks - 1] * (1 - u)}); }
+    at += d;
+    var can = ["about"].concat(roam > 0 ? ["walk"] : [], plan.hen ? [] : ["crow"]), round = Math.floor(bout / can.length);
+    for (k = can.length - 1; k > 0; k--) {          // this round's order, shuffled
+      var other = Math.floor(dice(seed * 53 + round * 7 + k) * (k + 1)), was = can[k];
+      can[k] = can[other];
+      can[other] = was;
+    }
+    var then = can[bout % can.length];
+    if (then === "crow") {
+      d = 2 * (typeof BEAT === "number" ? BEAT : 0.5);
+      if (s < at + d) { return now({crow: (s - at) / d}); }
+      at += d;
+      continue;
+    }
+    var steps = 2 + Math.floor(roll(11) * 3), way = Math.abs(x) > roam / 2 ? -Math.sign(x) : roll(12) < 0.5 ? -1 : 1;
+    if (Math.abs(x + way * steps * stepLong) > roam) { way = -way; }
+    while (steps > 2 && Math.abs(x + way * steps * stepLong) > roam) { steps--; }
+    if (then === "walk" && Math.abs(x + way * steps * stepLong) <= roam) {   // a few steps to one side
+      face = way;
+      d = steps * P.step;
+      if (s < at + d) {
+        u = (s - at) / d;
+        return {x: x + way * steps * stepLong * u, look: Object.assign(now({}).look, {walk: u * steps / 2,
+                stride: fowlEase(Math.min(s - at, at + d - s) / 0.15)})};   // the feet ease into the walk and out of it
+      }
+      x += way * steps * stepLong;
+      at += d;
+      continue;
+    }
+    d = P.about[0] + P.about[1] * roll(13);         // a look about: the head up, cocked one way, then the other
+    var first = (roll(14) < 0.5 ? -1 : 1) * (0.5 + 0.5 * roll(15)), second = -Math.sign(first) * (0.4 + 0.5 * roll(16));
+    if (s < at + d) {
+      var since = s - at;
+      return now({cock: (since < d / 2 ? first * fowlEase(since / 0.15) : mix(first, second, fowlEase((since - d / 2) / 0.15))) *
+                        (1 - fowlEase((since - d + 0.15) / 0.15))});
+    }
+    at += d;
+  }
 }
 
 // A fright and a flight, in seconds from the fright: when the run starts,
@@ -10102,6 +10221,62 @@ function film(t, scenes) {
   screen.fillRect(0, 0, WIDE, 1080);
   }
   screen.restore();
+}
+
+// ---------- what the picture makes heard ----------
+// A sound the picture itself makes, at the second it makes it (owner, 2026-10-22: a rooster that crows as it forages,
+// "add a crow sound"): rooster() tells each crow it begins (hear()), and heard() draws a film's frames and gives
+// back the calls, [[second, sound, loudness], ...], as a scene's calls are written (decorate.js), the sound one of
+// sounds.py's. render.py lays them under the film it renders. A sound from one place comes again only HEARD_GAP after
+// the last of its name from there (a crow rings 3.6 s): a rooster that crows on every second beat is heard once in
+// that while, and another rooster, HEARD_NEAR or more along the film, crows for itself.
+var HEARD = null;                                  // while a film is listened to (heard(), render.py): what was told, [[second, sound, where], ...]
+// Each sound's loudness, as the tale's scenes call it, and its lead: the seconds of its file (sounds.py's
+// out/sounds/NAME.wav) before its voice begins, so that the call starts the file that much before the moment
+// (the crow's recording has 1.2 s of the forest before the bird).
+var HEARD_SOUNDS = {"rooster-crow": {loud: 0.28, lead: 1.2}};
+var HEARD_GAP = 3.6;
+var HEARD_NEAR = 150;                              // film pixels: two calls of one sound nearer than this along the film are one caller's
+
+// sound: a name of sounds.py's; at: the film's second it begins; x, y: where its caller is, in pen's pixels. Returns
+// nothing: while HEARD is a list, and pen draws on the film (not a scratch sheet or a tile), it notes [at, sound,
+// where along the film] there.
+// e.g. hear("rooster-crow", clock, 600, GROUND);
+function hear(sound, at, x, y) {
+  if (HEARD && pen.canvas === FILM) { HEARD.push([at, sound, pen.getTransform().transformPoint(new DOMPoint(x, y)).x / PIX]); }
+}
+
+// Returns the calls HEARD holds, [[second, sound, loudness], ...] in the order they come, each no sooner than
+// HEARD_GAP after the last kept of its name from within HEARD_NEAR of it (a call told again in the next frame is
+// the same call). The second is when its file starts (HEARD_SOUNDS' lead before the moment, so it may be before
+// the film's), to a hundredth; the loudness HEARD_SOUNDS' (0.3 when it has none). Changes nothing.
+// e.g. HEARD = []; vanished(0, 22); var calls = heardCalls(); HEARD = null;
+function heardCalls() {
+  var calls = [], kept = [];
+  (HEARD || []).slice().sort(function (a, b) { return a[0] - b[0]; }).forEach(function (one) {
+    var again = kept.some(function (was) { return was[1] === one[1] && Math.abs(was[2] - one[2]) < HEARD_NEAR && one[0] - was[0] < HEARD_GAP; });
+    if (again) { return; }
+    kept.push(one);
+    var known = HEARD_SOUNDS[one[1]] || {};
+    calls.push([Math.round((one[0] - (known.lead || 0)) * 100) / 100, one[1], known.loud || 0.3]);
+  });
+  return calls;
+}
+
+// from, to: seconds of the page's film, drawn by the page's draw(t); fps: frames a second (30 when left out).
+// Returns the calls the picture made from "from" to "to" (heardCalls(): a call's file may start before "from"). It
+// draws on the page's sheet as draw(t)
+// does, so it is for a page with rendering on, as vanished() is; HEARD is null again after, even when a frame throws.
+// e.g. heard(0, 35);   // [[22.2, "rooster-crow", 0.28], [27.9, "rooster-crow", 0.28]]
+function heard(from, to, fps) {
+  fps = fps || 30;
+  HEARD = [];
+  try {
+    for (var n = Math.round(from * fps); n < Math.round(to * fps); n++) { draw(n / fps); }
+    return heardCalls().filter(function (call) { return call[0] + ((HEARD_SOUNDS[call[1]] || {}).lead || 0) >= from && call[0] < to; });
+  } finally {
+    HEARD = null;
+  }
 }
 
 // ---------- what blinks out of a film ----------

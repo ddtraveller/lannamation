@@ -507,8 +507,9 @@ function sceneCloth(t) {                // 0-22: one row, still; the music and t
 // soon as the chicken starts to run"; "When the chicken jumps have a small
 // feather fall and descend to the ground and fade away"; "Add a second chicken
 // a little to the right of the first that startles and scurries off screen").
-// The rooster crows, then pecks about the lane (roosterForage); the hen, a
-// little to its right and a step farther back, pecks all along. When the dog
+// The rooster crows, then forages about the lane (roosterPeck: a few pecks,
+// then a look about, a few steps to one side or a crow); the hen, a little to its
+// right and a step farther back, forages all along. When the dog
 // comes near, the rooster takes fright (FRIGHT) and bolts (the kit's
 // roosterBolt(): a start, a few running steps, a hop with its wings beating,
 // and away), and a feather comes loose at the top of its hop and drifts down;
@@ -521,21 +522,24 @@ var FRIGHT = 6.2;                        // the second of the lane scene the roo
 var CROWED = 3;                          // when the rooster stops crowing and starts to peck (at the end of a crow)
 var COOP = [{x: 1300, y: 1000, late: 0, seed: 1}, {x: 1490, y: 988, late: 0.08, seed: 2, hen: true}];
 
-function chicken(t, c) {                 // one of COOP at second t of the lane scene: pecking, then off
-  var fright = FRIGHT + c.late, idle = c.hen ? {hen: true} : {};
-  function peckAt(T) { return roosterForage(T, c.seed) * (c.hen ? 1 : between(T, CROWED, CROWED + 0.3)); }
+function foraging(c, t) {                // one of COOP foraging at second t of the lane scene (the rooster from when it stops crowing): roosterPeck()'s {x, look}
+  return roosterPeck(t - (c.hen ? 0 : CROWED), {seed: c.seed, hen: c.hen});
+}
+
+function chicken(t, c) {                 // one of COOP at second t of the lane scene: foraging, then off
+  var fright = FRIGHT + c.late;
   if (t < fright) {
-    if (c.hen || t >= CROWED) { idle.peck = peckAt(t); }
-    rooster(c.x, c.y, t, idle);
+    var now = c.hen || t >= CROWED ? foraging(c, t) : {x: 0, look: {}};   // the rooster crows first
+    rooster(c.x + now.x, c.y, t, now.look);
     return;
   }
-  var off = roosterBolt(t - fright, {hop: !c.hen, hen: c.hen, peck: peckAt(fright)});
-  if (c.x + off.x < WIDE + 80) { rooster(c.x + off.x, c.y + off.y, t, off.look); }
+  var was = foraging(c, fright), off = roosterBolt(t - fright, {hop: !c.hen, hen: c.hen, peck: was.look.peck});
+  if (c.x + was.x + off.x < WIDE + 80) { rooster(c.x + was.x + off.x, c.y + off.y, t, off.look); }
 }
 
 function looseFeather(t) {               // the feather the rooster loses at the top of its hop
   var c = COOP[0], top = roosterBolt(BOLT.top);
-  fallingFeather(c.x + top.x - 8, c.y + top.y - 40, c.y + 6, t - FRIGHT - BOLT.top, 3, ROOSTER_COAT.body, 40);
+  fallingFeather(c.x + foraging(c, FRIGHT).x + top.x - 8, c.y + top.y - 40, c.y + 6, t - FRIGHT - BOLT.top, 3, ROOSTER_COAT.body, 40);
 }
 
 function chase(t) {                      // how far past its steady trot the dog has gone, in seconds of trot: it runs 420 a second once the rooster runs, not 195

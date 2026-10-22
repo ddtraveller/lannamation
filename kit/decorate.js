@@ -115,16 +115,19 @@ function lifePeck(at, t) {                           // a peck: down and up agai
 }
 
 // lifeFowl(at, look, t, hen) draws the kit's rooster (hen true: a hen) where courseAt() has it,
-// walking as far as it goes and pecking at a "peck" stop. at: courseAt()'s answer; look: the
-// rooster's look (look.size, 1 when left out, sizes only the box and the stride: the kit's rooster
-// has one size); t: seconds. Returns the box it was drawn in, [left, top, right, bottom], pixels of the scene.
+// walking as far as it goes (rooster()'s walk, two steps to 56 of the ground, a hen's to 48), and at a
+// "peck" stop foraging where it stands (roosterPeck(), roam 0: a few pecks at spots of their own, then
+// a look about or, a rooster, a crow). at: courseAt()'s answer; look: the rooster's look (look.size, 1 when left out, sizes
+// only the box and the stride: the kit's rooster has one size); t: seconds. Returns the box it was
+// drawn in, [left, top, right, bottom], pixels of the scene.
 // e.g. var box = lifeFowl(courseAt(t, [[1, 300, 950], [5, 700, 950]]), {}, t, true);   // a hen, as LIFE_KINDS.hen draws one
 function lifeFowl(at, look, t, hen) {
   var size = look.size || 1;
   var own = Object.assign({}, look);
   delete own.size;                                   // the kit's rooster has one size (a hen is drawn smaller of itself)
-  rooster(at.x, at.y, t, Object.assign(own, {hen: hen, face: at.face, step: at.moving ? at.along / (70 * size) : undefined,
-                                             peck: lifePeck(at, t)}));
+  var forage = at.what === "peck" ? roosterPeck(t, {seed: Math.round(at.x * 7 + at.y), roam: 0, hen: hen, face: at.face}).look : {};
+  rooster(at.x, at.y, t, Object.assign(own, {hen: hen, face: at.face,
+                                             walk: at.moving ? at.along / (4 * ROOSTER_WALK.reach * (hen ? 0.85 : 1) * size) : undefined}, forage));
   return [at.x - 90 * size, at.y - 150 * size, at.x + 90 * size, at.y];
 }
 
