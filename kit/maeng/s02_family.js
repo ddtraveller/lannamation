@@ -18,6 +18,17 @@ var S02_LIFE = [
    course: [[0, 260, 958, "peck"], [4.0, 260, 958], [6.5, 340, 962, "peck"], [11.0, 340, 962], [13.0, 300, 956, "peck"], [24.5, 300, 956]]},
   {name: "rooster", kind: "rooster", look: {feel: "satiated"},
    course: [[0, 130, 950], [7.0, 210, 954, "peck"], [10.0, 210, 954], [12.0, 180, 962, "peck"], [24.5, 180, 962]]},
+  // Her two chicks (owner, 2026-10-22: "have a chick struggle pulling a worm out of the ground"; the chick, the
+  // worm and the grasshopper picked of three candidates each). One forages at her heels as she goes; the other
+  // finds a worm and pulls (decorate.js "worm": chickWorm()): it stretches, gives, and the chick sits down hard,
+  // stars round its head; up again, a harder pull, and it pops out; the chick tumbles back with the worm dangling
+  // from its beak, gulps it down, and goes back to foraging. All of it left of the words, under the house, the
+  // worm's chick a step nearer than the hen's walk so that she does not stand in front of it.
+  {name: "chick", kind: "chick", look: {size: 1.3},
+   course: [[0, 200, 984, "peck"], [2.5, 200, 984], [3.6, 240, 986, "worm"], [11.2, 240, 986, "peck"], [13.0, 240, 986],
+            [14.5, 215, 984, "peck"], [24.5, 215, 984]]},
+  {name: "chick at her heels", kind: "chick", look: {size: 1.3},
+   course: [[0, 225, 964, "peck"], [4.4, 225, 964], [6.9, 370, 966, "peck"], [11.4, 370, 966], [13.4, 335, 962, "peck"], [24.5, 335, 962]]},
   // a black-boned hen of the north (ไก่ดำ), pecking under the house (owner, 2026-10-20: "add a black chicken and rooster")
   {name: "black hen", kind: "hen", look: {black: true}, course: [[0, 430, 962, "peck"], [9.0, 430, 962], [11.0, 470, 966, "peck"], [24.5, 470, 966]]},
   {name: "flock", kind: "flock", z: "sky", course: [[2.0, -100, 270], [13.0, 2150, 210]]},

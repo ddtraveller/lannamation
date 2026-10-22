@@ -28,9 +28,12 @@ var LIFE_KEYS = {};
 
 // courseAt(t, course) gives back where an animal on a course of stops is at second t:
 // {on: false} before the first stop's second and after the last's; else {on, x, y, face, moving,
-// along, what, points, speed}: on is false while it hides; x, y in pixels of the scene; face 1
-// (right) or -1; moving true or false; along the pixels it has come; what the stop's word while it
-// stands (else null); points the route [[x, y], ...]; speed in pixels a second.
+// along, what, mark, since, part, leg, points, speed}: on is false while it hides; x, y in pixels of
+// the scene; face 1 (right) or -1; moving true or false; along the pixels it has come; what the
+// stop's word while it stands (else null); mark the word of the stop it stands at or set out from
+// (a creep that leaves a "stalk"); since the seconds since it came to that stop or set out from it;
+// part how far along the way to the next stop (0 while it stands); leg how long that way is, in
+// pixels; points the route [[x, y], ...]; speed in pixels a second.
 // course: [[second, x, y, what], ...] in order of the seconds (see the top of this file).
 // Changes nothing outside itself.
 // e.g. var at = courseAt(t, [[2, 300, 900], [6, 700, 900, "sniff"], [8, 700, 900]]);
@@ -55,6 +58,7 @@ function courseAt(t, course) {
     if (!last || Math.hypot(stop[1] - last[0], stop[2] - last[1]) > 0.5) { points.push([stop[1], stop[2]]); }
   });
   return {on: from[3] !== "hide" || moving, x: x, y: y, face: face, moving: moving, along: along, what: moving ? null : from[3],
+          mark: from[3] || null, since: t - from[0], part: moving ? u : 0, leg: moving ? stretch : 0,
           points: points, speed: moving ? stretch / ((to[0] - from[0]) || 1) : 0};
 }
 
@@ -104,6 +108,17 @@ var LIFE_KINDS = {
     sunbird(at.x, at.y, t, Object.assign({}, look, {face: at.face, hover: at.moving || at.what === "hover" || at.what === "sip",
                                                     sip: at.what === "sip"}));
     return [at.x - 30 * size, at.y - 20 * size, at.x + 30 * size, at.y + 20 * size];
+  },
+  chick: function (at, look, t) { return lifeChick(at, look, t); },
+  // a grasshopper (oldcartoon.js): it sits at a stop, its feelers stirring, and goes from stop to stop in hops, an
+  // arc higher the further it goes, its hind legs kicked out behind; at a "caught" stop it is snapped up, into the
+  // beak over its spot in a tenth of a second (the hen's "caught" shows it there after); then "hide"
+  grasshopper: function (at, look, t) {
+    var size = (look.size || 0.9) * (at.what === "caught" ? 1 - clamp(at.since / 0.12) : 1);
+    var arc = at.moving ? Math.sin(Math.PI * at.part) * (0.35 * at.leg + 18) : 0;
+    if (size < 0.02) { return [at.x, at.y - 2, at.x + 1, at.y]; }
+    grasshopper(at.x, at.y - arc, t, Object.assign({}, look, {face: at.face, size: size, leap: clamp(Math.sin(Math.PI * at.part) * 3)}));
+    return [at.x - 40 * size, at.y - arc - 45 * size, at.x + 30 * size, at.y - arc + 4];
   }
 };
 
@@ -117,18 +132,62 @@ function lifePeck(at, t) {                           // a peck: down and up agai
 // lifeFowl(at, look, t, hen) draws the kit's rooster (hen true: a hen) where courseAt() has it,
 // walking as far as it goes (rooster()'s walk, two steps to 56 of the ground, a hen's to 48), and at a
 // "peck" stop foraging where it stands (roosterPeck(), roam 0: a few pecks at spots of their own, then
-// a look about or, a rooster, a crow). at: courseAt()'s answer; look: the rooster's look (look.size, 1 when left out, sizes
+// a look about or, a rooster, a crow). Its hunt, by the words of its stops: "stalk", crouched with its head low and
+// forward, frozen, and a slow creep on the way from there; "pounce", a lunge with the beak to the ground; "missed",
+// its head up and cocked one way and the other ("look": the same, a look about); "caught", up with a grasshopper kicking in its beak, gulped down
+// in 1.6 s (the grasshopper's own course is "caught" as the beak comes down, then "hide"). At a "crow" stop a
+// rooster crows once, from the stop's first second. at: courseAt()'s answer; look: the rooster's look (look.size, 1 when left out, sizes
 // only the box and the stride: the kit's rooster has one size); t: seconds. Returns the box it was
 // drawn in, [left, top, right, bottom], pixels of the scene.
 // e.g. var box = lifeFowl(courseAt(t, [[1, 300, 950], [5, 700, 950]]), {}, t, true);   // a hen, as LIFE_KINDS.hen draws one
 function lifeFowl(at, look, t, hen) {
-  var size = look.size || 1;
+  var size = look.size || 1, x = at.x, since = at.since, act = {}, stride = 1;
   var own = Object.assign({}, look);
   delete own.size;                                   // the kit's rooster has one size (a hen is drawn smaller of itself)
-  var forage = at.what === "peck" ? roosterPeck(t, {seed: Math.round(at.x * 7 + at.y), roam: 0, hen: hen, face: at.face}).look : {};
-  rooster(at.x, at.y, t, Object.assign(own, {hen: hen, face: at.face,
-                                             walk: at.moving ? at.along / (4 * ROOSTER_WALK.reach * (hen ? 0.85 : 1) * size) : undefined}, forage));
-  return [at.x - 90 * size, at.y - 150 * size, at.x + 90 * size, at.y];
+  if (at.what === "peck") {
+    act = roosterPeck(t, {seed: Math.round(at.x * 7 + at.y), roam: 0, hen: hen, face: at.face}).look;
+  } else if (at.mark === "stalk") {                  // crouched, its head low and forward: frozen at the stop, a slow creep away from it
+    act = {sink: 0.35, peck: 0.4, reach: 1};
+    stride = 0.6;
+    if (at.moving) { act.stride = stride; }
+  } else if (at.what === "pounce") {                 // a lunge, the beak to the ground, the wings flicking out; then it draws back
+    var lunge = fowlEase(since / 0.18) * (1 - fowlEase((since - 0.5) / 0.4));
+    act = {peck: mix(0.4, 1, fowlEase(since / 0.18)), reach: 1, wings: since < 0.35 ? 0.4 : undefined};
+    x += at.face * 10 * lunge * size;
+  } else if (at.what === "missed" || at.what === "look") {   // its head up, cocked one way and the other: where did it go?
+    act = {peck: 0, cock: Math.sin(since * 3.2) * 0.8};
+  } else if (at.what === "crow") {                   // a crow, once, two beats long; then it stands
+    var crowLong = 2 * (typeof BEAT === "number" ? BEAT : 0.5);
+    act = since < crowLong ? {crow: since / crowLong} : {peck: 0};
+  } else if (at.what === "caught") {                 // up with it kicking in its beak, a moment, and it is gulped down
+    act = since < 1.6 ? {peck: 1 - fowlEase(since / 0.3), holding: "grasshopper", cock: 0.25 * fowlEase((since - 0.3) / 0.3),
+                         gulp: clamp((since - 1.2) / 0.4)} : {peck: 0};
+  }
+  rooster(x, at.y, t, Object.assign(own, {hen: hen, face: at.face,
+                                          walk: at.moving ? at.along / (4 * ROOSTER_WALK.reach * (hen ? 0.85 : 1) * size * stride) : undefined}, act));
+  return [x - 90 * size, at.y - 150 * size, x + 90 * size, at.y];
+}
+
+// lifeChick(at, look, t) draws a chick (oldcartoon.js) where courseAt() has it: walking as far as it goes, foraging
+// where it stands at a "peck" stop (roosterPeck(), roam 0: its pecks, its looks about), and at a "worm" stop the
+// story of a worm it pulls out of the ground (chickWorm(), about 7.6 s; then it forages). at: courseAt()'s answer;
+// look: the chick's look (size 1 unless told); t: seconds. Returns the box it was drawn in, pixels of the scene.
+// e.g. lifeChick(courseAt(t, [[0, 400, 960, "worm"], [10, 400, 960]]), {}, t);
+function lifeChick(at, look, t) {
+  var size = look.size || 1, own = Object.assign({}, look, {face: at.face, size: size}), story = null;
+  if (at.moving) { own.walk = at.along / (4 * CHICK_WALK.reach * size); }
+  if (at.what === "worm") { story = chickWorm(at.since); }
+  if (at.what === "peck" || (story && story.done)) {
+    var forage = roosterPeck(t, {seed: Math.round(at.x * 11 + at.y), roam: 0, hen: true, face: at.face}).look;
+    own.peck = forage.peck;
+    own.reach = forage.reach;
+    own.cock = forage.cock;
+  } else if (story) {
+    Object.assign(own, story.look);
+  }
+  var x = at.x + (story ? at.face * story.x * size : 0), beak = chick(x, at.y, t, own).beak;
+  if (story && !story.done) { chickWormDrawn(at.x, at.y, at.face, size, story.worm, beak, t); }
+  return [x - 40 * size, at.y - 45 * size, x + 40 * size, at.y];
 }
 
 // decorate(t, life, layer) draws every animal of a scene's life in that layer at second t.

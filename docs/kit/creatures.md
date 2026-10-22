@@ -464,6 +464,43 @@ does is in the kit, for any film, and the lane only says when.
 | In the lane | `sash.html`'s `COOP`, `chicken()` and `looseFeather()`: the rooster crows, then pecks about (from 3 s); the hen, a little to its right and a step farther back, pecks all along. At `FRIGHT` the rooster bolts, a feather coming loose at the top of its hop; the hen takes fright 0.08 s after it and runs straight off. The dog (`chase()`), from the second the rooster starts to run, eases in half a second from its trot to more than twice that, its legs quicker with it, and follows them out. The rooster stood at 1060, under the words; it stands at 1300 now, so the fright shows | the fright at 6.2 s of the scene (the dog's nose 250 from the rooster's tail); the hen at 1490; the dog 195 to 420 a second |
 | Tried | the hen 140 to the rooster's right and 0.25 s later: the running rooster caught up with her tail; folded-size wings beating, which read as two small fins | |
 
+## A chick, a worm, a grasshopper: the yard's small stories (2026-10-22)
+
+The owner, 2026-10-22: "Try to animate the scenes with a sense of creating a small chicken story within the greater
+story just like the dog chasing the chickens in the first scene ... How about having a chick struggle pulling a worm
+out of the ground or a chicken hunting a grasshopper? Not every scene needs to be like that." Each new creature was
+picked of three candidates drawn beside the kit's hen (the chick "B: striped", the worm "B: thick, red-brown", the
+grasshopper "B: rice grasshopper").
+
+| What it is | In the code | Numbers |
+|---|---|---|
+| The chick | `chick(x, y, t, look)`: a chick of the village fowl, as the native fowl's and the junglefowl's are: brown, a dark stripe down its back with a pale one beside it, a dark cap and a stripe through the eye. It walks, pecks, looks about as the rooster does (`walk`, `stride`, `peck`, `reach`, `cock`); `tug` leans it back pulling at what its beak holds, its feet braced; `sit` sits it down hard, rocked back with its feet up; `dizzy` circles three little stars over its head. It gives back where its beak's tip is | about half the hen's height; two steps cover 24 (`CHICK_WALK`) |
+| The worm | `worm(points, stretch)`: an earthworm along a line of points, red-brown, ringed, its pale band a third of the way along, thinner the harder it is pulled; `wormBetween(a, b, bow, t)` gives the points of one bowed between two ends and wriggling | 6 wide, 46 long (`WORM`) |
+| The chick and the worm | `chickWorm(s)`, s seconds after the chick stops at the spot: it pecks there and looks; grips the worm's end and pulls, leaning back, its feet skidding, the worm stretching up out of its hole; the worm gives and snaps back, and the chick sits down hard, stars round its head; it gets up, grips again and pulls harder, trembling; the worm pops out and the chick tumbles back with it dangling from its beak; it slurps it down, gets up and walks back to its spot. `chickWormDrawn()` draws the worm for it. A course's "worm" stop plays it (decorate.js `chick`) | 7.6 s (`CHICK_WORM`) |
+| The grasshopper | `grasshopper(x, y, t, look)`: Oxya, the rice-field grasshopper: green, its folded wings brown, a dark stripe behind the eye, thin legs and feelers, the great hind thigh along its side; its feelers stir; in a hop (`leap`) its hind legs kick out behind and its wings lift. On a course (decorate.js `grasshopper`) it hops from stop to stop in an arc higher the further it goes, and at a "caught" stop it is snapped up in a tenth of a second, so it never blinks out | 0.9 of the candidate; an arc 0.35 of the hop and 18 more |
+| The hunt | a hen's course (decorate.js `lifeFowl()`), by the words of its stops: "stalk" crouches it, the head low and forward, frozen, and a slow creep on the way from there (the walk's stride 0.6); "pounce" lunges, the beak to the ground, the wings flicking; "missed" puts its head up, cocked one way and the other ("look", the same: two roosters eyeing each other); "caught" lifts the grasshopper kicking in its beak (`rooster()`'s `holding`) and gulps it down (`gulp`). The grasshopper's course is "caught" as the beak comes down and "hide" from the hen's "caught". A rooster's "crow" stop crows once | caught: up in 0.3 s, gulped from 1.2 s to 1.6 s |
+
+In the tale: in s02 the hen's two chicks, one at her heels, the other with the worm, left of the words under the
+house; in s07 a hen creeps up on a grasshopper and pounces, it hops past her and lands under the nose of the brown
+hen, too full to have moved all morning, and as the hen creeps up on it again the brown hen leans down and gobbles
+it; in s08 the two roosters crow at each other face to face, eyeing each other between, twice each, then both at once. s10 and s11 keep their fowl wandering and
+foraging, as the owner allowed. The hero film's lane, which the owner liked as it was, is untouched.
+
+## A buffalo turning round, and the far fields (2026-10-22)
+
+The owner, 2026-10-22, of the buffalo ploughing in the far fields behind the poor family's house (`maengFieldLife()`,
+maeng/sets.js): "Animate it turning from facing left to facing right. It should turn first where the head meets the
+neck, then where the neck meets the body with a gentle curve. Legs should move up and down. Have the plow farmer move
+in front of the buffalo as he follows and it turns. In the scene where egrets are following, they should fly up and
+away when the buffalo turns around. Also, animate 2 small kids on a buffalo being led at the same distance."
+
+| What it is | In the code | Numbers |
+|---|---|---|
+| A turn | `buffalo()`'s `turn`, 0 to 1, from facing `face` round to the other way: the head swings round where it meets the neck first (about x 92 of the neck's frame), looking back over its shoulder; then the neck at the shoulder, lifting in a gentle arc as it comes; then the body, which shows its front (`buffaloFront()`) for the moment it is end-on to us. Each part is seen side on as it goes round, shorter the more it faces us, never thinner than a beast's girth; each flips with its parent while the parent is end-on and thinnest. Keep `step` going and it steps round | the head 0 to 0.4, the neck 0.25 to 0.7 (lifting 0.3 radians at most), the body 0.45 to 1; the front for \|cos\| under 0.2; parts never under 0.3 of their length |
+| The ploughing | `fieldPloughAt(t)`: along `FIELD_PLOUGH` at 9 a second, turning round in its place at each end for `FIELD_TURN` seconds; its first turn, from facing left to facing right, `FIELD_TURN_FIRST` seconds into a scene, so that a short scene has one. The furrow is right of the pen in the yard's close views and clear of the family's path in its wide one (measured: it had been behind the pen, and behind the family in s02) | x 1350 to 1550 of row 1; a turn 3.5 s, the first at 3 s, then every 25.7 s |
+| The ploughman and the egrets | in a turn the plough swings round with the buffalo, and the ploughman walks round in front of it, a step nearer us, to take it up behind again; the three egrets behind the plough lift off one after another as it turns, fly up and away past the picture's edge, and 9 s after glide back down to where they would be walking (they took the place of the one that flew off every 24 s) | up and away in 5 s, back in 5 s, a quarter second apart |
+| The led buffalo | a man leads a second buffalo by its nose rope along the same row, slowly, two small children astride it (`floor: "astride"` at its seat) | from x 1000, 5 a second |
+
 ## Five birds of the north (2026-10-17)
 
 The owner: "research a handful of birds that are special to northern Thailand and animate them in the

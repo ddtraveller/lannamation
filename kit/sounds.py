@@ -219,7 +219,8 @@ MADE = ("crickets", "mouse-squeak", "wind")     # the ones made from numbers, no
 
 # Sounds the kit does not make but fetches: recordings whose makers gave them to everyone (public domain, or a
 # licence that lets the kit use them, named here with them), each from where it lives, cut if a part is wanted.
-# Nothing of them is kept in the repository: python sounds.py fetches them, as it makes the others.
+# Nothing of them is kept in the repository: python sounds.py fetches them, as it makes the others. One with a
+# "file" in place of a "url" is kept in the kit (sounds/), because what made it cannot be run again lightly.
 TOKAY = "https://upload.wikimedia.org/wikipedia/commons/9/91/Mating_call_of_a_male_Tokay_gecko_%28Gekko_gecko%29.ogg"
 TOKAY_FROM = ("Richard Ling, 22 April 2007, on the bank of the Mekong north of Huay Xai, Bokeo, Laos; public domain "
               "(Wikimedia Commons: File:Mating_call_of_a_male_Tokay_gecko_(Gekko_gecko).ogg)")
@@ -248,10 +249,16 @@ FETCHED.update({
     "hen-cackle": {"url": COMMONS + "4/44/Hen_announcing_shes_lain_an_egg.ogg", "cut": None,
                    "from": 'alys, "Hen announcing she\'s lain an egg"; public domain (Wikimedia Commons)',
                    "what": "a hen's cackle when she has laid an egg (9 s)"},
-    "rooster-crow": {"url": INAT + "383475.wav", "cut": [0.0, 3.6],
-                     "from": "Wich'yanan L., red junglefowl, Kaeng Krachan, Phetchaburi, Thailand; CC BY 4.0 "
-                             "(iNaturalist observation 110186322)",
-                     "what": "a rooster's crow: the red junglefowl, the village rooster's wild kin, in a Thai forest"},
+    # The rooster's crow is kept in the kit (sounds/rooster-crow.flac), not fetched (owner, 2026-10-22: "The crowing has
+    # crickets in the background so find a new rooster crow"; "Make a synthetic before doing any sharing"; "Look at
+    # hugging face for animal noises models"): made by MOSS-SoundEffect v2.0 (OpenMOSS, Apache-2.0: no recording in
+    # it, and what it makes is free to use) on the Spark, from the prompt "One village rooster crows once at dawn, a long
+    # clear cock-a-doodle-doo, recorded close, silent background." (4 s, 100 steps, cfg 4.0), the owner's pick of three.
+    # The model is 11 GB, so the file is kept rather than made again. Before it, the kit fetched a red junglefowl's
+    # crow from iNaturalist, which had the forest's insects behind it.
+    "rooster-crow": {"file": "sounds/rooster-crow.flac", "cut": [0.0, 3.0],
+                     "from": "made by MOSS-SoundEffect v2.0 (OpenMOSS-Team, Apache-2.0) for the kit, 2026-10-22",
+                     "what": "a rooster's crow, cock-a-doodle-doo, close and clean, made by a model (2.8 s)"},
     "buffalo": {"url": INAT + "1241617.mpga", "cut": [14.0, 16.6],
                 "from": "Ashwin A., water buffalo, Aluva, Kerala, India; CC BY 4.0 (iNaturalist observation 249871642)",
                 "what": "a water buffalo's low call"},
@@ -297,7 +304,10 @@ def fetch(name, out):
     Fails with urllib's errors when the download fails, CalledProcessError when ffmpeg cannot read it.
     e.g. fetch("tokay", OUT)"""
     one = FETCHED[name]
-    source = out / one["url"].rsplit("/", 1)[1].replace("%28", "(").replace("%29", ")")
+    if one.get("file"):                              # one kept in the kit itself, beside this file
+        source = Path(__file__).resolve().parent / one["file"]
+    else:
+        source = out / one["url"].rsplit("/", 1)[1].replace("%28", "(").replace("%29", ")")
     if not source.exists():
         request = urllib.request.Request(one["url"], headers={"User-Agent": "lannamation-kit/1.0 (sounds.py)"})
         source.write_bytes(urllib.request.urlopen(request, timeout=60).read())

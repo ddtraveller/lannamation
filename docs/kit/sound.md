@@ -159,10 +159,10 @@ nobody writes down; the owner, 2026-10-22: "add a crow sound". So the kit notes 
 it: `rooster()` tells each crow it begins, from when its beak opens (`hear()`), and `heard(from, to)` draws a
 film's frames and gives back the calls, `[[second, sound, loudness], ...]`, in the form a scene writes its own
 (decorate.js `calls`). The second is when the sound's file starts: `HEARD_SOUNDS` holds each sound's loudness (the
-crow 0.28, as the tale's scenes call it) and its lead, the seconds of its file before the voice begins (the crow's
-recording has 1.2 s of the forest before the bird). A caller is heard again only 3.6 s after its last call
-(`HEARD_GAP`: a crow rings that long), so a rooster that crows on every second beat is heard once a crow's length;
-another, 150 or more along the film (`HEARD_NEAR`), crows for itself.
+crow 0.28, as the tale's scenes call it) and its lead, the seconds of its file before the voice begins (0: the crow
+begins at once). A caller is heard again only 3 s after its last call (`HEARD_GAP`: the crow's voice is 2.8 s), so a
+rooster that crows on every second beat is heard every third crow or so; another, a rooster's width (60) or more
+along the film (`HEARD_NEAR`), crows for itself; one off the film is not heard.
 
 - **`render.py` lays them under the film it renders**, from the same look that finds what blinks out (no frame
   drawn twice): over `--audio`'s sound or over silence, as loud as each is called and not turned down by how many
@@ -172,8 +172,19 @@ another, 150 or more along the film (`HEARD_NEAR`), crows for itself.
 - **`heard.py PAGE`** prints a page's calls (`--json` writes them) for a film whose sound is put together elsewhere:
   the tale's (`maeng/feelings.py --film` lays the scenes' own calls). `maeng/s02.html`'s yard rooster: 7.7, 15.19
   and 21.75 s.
-- **The crow is CC BY**: Wich'yanan L.'s red junglefowl (iNaturalist; `sounds.py` FETCHED). A film that has it names
-  its maker in its credits: the tale's do (`s15_credits.js`), and so the film the hero film opens.
+- **The crow is made, not recorded** (owner, 2026-10-22: "The crowing has crickets in the background so find a new
+  rooster crow"; "Make a synthetic before doing any sharing"; "Look at hugging face for animal noises models"). Of
+  the text-to-audio models on Hugging Face, MOSS-SoundEffect v2.0 (OpenMOSS, a DiT with flow matching, 11 GB) is
+  Apache-2.0, so neither it nor what it makes puts conditions on a film; Stable Audio Open's community licence and
+  TangoFlux's and Woosh's non-commercial ones were set aside. It ran on the Spark in NVIDIA's PyTorch container
+  (`nvcr.io/nvidia/pytorch:25.04-py3`, its own PyTorch kept: MOSS's pins left out, descript-audiotools and
+  torchaudio 2.7 put in without their dependencies, FlashAttention taken out, as it only takes half precision), 29 s
+  a 4-second sound. Three prompts gave three crows (its seed is its own: torch.manual_seed changed nothing); the
+  owner picked "One village rooster crows once at dawn, a long clear cock-a-doodle-doo, recorded close, silent
+  background." Measured as the recordings were, the quiet round it is 48 dB under the crow, and what of it lies
+  between 3.5 and 9 kHz (crickets) 70 dB under; the red junglefowl's recording it took the place of, 30 and 31 dB.
+  Kept as `kit/sounds/rooster-crow.flac` (sounds.py: a "file" in place of a "url"): the model is too large to run
+  again for each copy of the kit.
 
 ## Music that follows the story's feelings (2026-10-19)
 

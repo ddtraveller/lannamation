@@ -748,13 +748,20 @@ function fieldRow(r) {                             // a row of plots: its top an
 // green and grown, "mud" ploughed and wet. Laid out by hand, so the ploughing and the planting have their places.
 var FIELD_PLOTS = [
   [0, 0, 420, "rice"], [0, 420, 900, "water"], [0, 900, 1500, "rice"], [0, 1500, 1920, "water"],
-  [1, 0, 300, "water"], [1, 300, 760, "rice"], [1, 760, 1250, "mud"], [1, 1250, 1920, "rice"],
+  [1, 0, 300, "water"], [1, 300, 1330, "rice"], [1, 1330, 1580, "mud"], [1, 1580, 1920, "rice"],
   [2, 0, 520, "rice"], [2, 520, 1100, "water"], [2, 1100, 1640, "rice"], [2, 1640, 1920, "water"],
   [3, 0, 380, "mud"], [3, 380, 980, "rice"], [3, 980, 1560, "water"], [3, 1560, 1920, "rice"],
   [4, 0, 700, "rice"], [4, 700, 1300, "rice"], [4, 1300, 1920, "water"],
   [5, 0, 1000, "rice"], [5, 1000, 1920, "rice"]
 ];
-var FIELD_PLOUGH = [1, 780, 1230];                 // the row and the stretch the buffalo ploughs, back and forth
+// The row and the stretch the buffalo ploughs, back and forth, 9 a second: right of the pen in the yard's close views
+// and clear of the family's path in its wide one, so that it is seen.
+var FIELD_PLOUGH = [1, 1350, 1550];
+// At each end of its furrow the buffalo turns round (buffalo()'s turn), FIELD_TURN seconds long; its first turn,
+// from facing left to facing right, begins FIELD_TURN_FIRST seconds into a scene, so that a short scene has one
+// (owner, 2026-10-22: "Animate it turning from facing left to facing right").
+var FIELD_TURN = 3.5, FIELD_TURN_FIRST = 3;
+var FIELD_LED = [1, 1000, 5];                       // the led buffalo: its row, where it is at a scene's start, how fast it goes
 var FIELD_PLANTERS = [[3, 1060], [3, 1180], [3, 1320]];   // women planting rice in the flooded plot, bent over
 
 // The plots of FIELD_PLOTS and their bunds, painted with brush (a 2D context: the yard's far sheet). Gives back
@@ -816,32 +823,82 @@ function maengFields(brush) {
   });
 }
 
-// What moves in the fields at second t: the buffalo ploughing FIELD_PLOUGH, the farmer, the egrets (one flies off
-// every 24 s), the women planting at FIELD_PLANTERS. Gives back nothing: it draws with pen (maengYardAt() calls it).
+// Where the ploughing buffalo is at second t: {x, face, turn}: along FIELD_PLOUGH at 9 a second, facing the way it
+// goes; at an end, turning round in its place (turn 0 to 1, from face to the other way), and since, the seconds
+// since its last turn began (below 0 before its first). e.g. var p = fieldPloughAt(t);
+function fieldPloughAt(t) {
+  var span = FIELD_PLOUGH[2] - FIELD_PLOUGH[1], leg = span / 9, lap = 2 * (leg + FIELD_TURN);
+  var u = ((t - FIELD_TURN_FIRST + 2 * leg + FIELD_TURN) % lap + lap) % lap;   // 0 as it sets off going right
+  var since = t < FIELD_TURN_FIRST ? t - FIELD_TURN_FIRST : (t - FIELD_TURN_FIRST) % (leg + FIELD_TURN);
+  if (u < leg) { return {x: FIELD_PLOUGH[1] + 9 * u, face: 1, turn: 0, since: since}; }
+  if (u < leg + FIELD_TURN) { return {x: FIELD_PLOUGH[2], face: 1, turn: (u - leg) / FIELD_TURN, since: since}; }
+  u -= leg + FIELD_TURN;
+  if (u < leg) { return {x: FIELD_PLOUGH[2] - 9 * u, face: -1, turn: 0, since: since}; }
+  return {x: FIELD_PLOUGH[1], face: -1, turn: (u - leg) / FIELD_TURN, since: since};
+}
+
+// What moves in the fields at second t: the buffalo ploughing FIELD_PLOUGH, the farmer, the egrets, a buffalo led
+// along the fields with two children on its back, the women planting at FIELD_PLANTERS. Gives back nothing: it
+// draws with pen (maengYardAt() calls it).
+// The ploughing buffalo turns round at each end of its furrow (owner, 2026-10-22: "Have the plow farmer move in front
+// of the buffalo as he follows and it turns"): the ploughman lets the plough swing round with it and walks round in
+// front of it, nearer us, to take it up again behind; and the egrets that walk behind the plough for what it turns up
+// fly up and away as it turns ("they should fly up and away when the buffalo turns around"), out past the picture's
+// edge, and come gliding back in to land behind it again. And a man leads a buffalo along the same row, slowly, two
+// small children astride its back ("animate 2 small kids on a buffalo being led at the same distance").
 // e.g. maengFieldLife(t);
 function maengFieldLife(t) {
-  var row = fieldRow(FIELD_PLOUGH[0]), y = row[0] + row[1] - 2, span = FIELD_PLOUGH[2] - FIELD_PLOUGH[1];
-  var lap = (t * 9) % (2 * span), going = lap < span, along = going ? lap : 2 * span - lap;
-  var bx = FIELD_PLOUGH[1] + along, face = going ? 1 : -1;
-  buffalo(bx, y, {size: 0.055, face: face, step: t * 1.4});   // the buffalo, at its slow walk
-  var fx = bx - face * 18;                          // the plough behind it, and the farmer behind the plough
+  var row = fieldRow(FIELD_PLOUGH[0]), y = row[0] + row[1] - 2, p = fieldPloughAt(t), bx = p.x, face = p.face;
+  var round = Math.cos(Math.PI * fowlEase((p.turn - 0.45) / 0.55));   // which way its body faces through a turn: 1 as it was, -1 round
+  buffalo(bx, y, {size: 0.055, face: face, step: t * 1.4, turn: p.turn});   // the buffalo, at its slow walk; it steps round as it turns
+  var fx = bx - face * round * 18;                  // the plough behind it, swinging round with it in a turn
   pen.strokeStyle = "#5a3a22";
-  pen.lineWidth = 1.6;
-  pen.lineWidth = 1.1; pen.beginPath(); pen.moveTo(bx - face * 6, y - 9); pen.lineTo(fx + face * 3, y - 5); pen.lineTo(fx + face * 1, y); pen.stroke();
-  person(fx - face * 3, y + 1, cast("farmer", {size: 0.085, face: face, id: "ploughman", step: t * 1.6, turban: null, hat: false, shirt: "#2f3a5a", legs: "#2f3a5a", sarong: undefined}));   // in indigo cotton (the research)
-  [0, 1, 2].forEach(function (k) {                 // egrets after the plough, for what it turns up
-    var ex = fx - face * (14 + k * 12 + 3 * Math.sin(t + k)), peck = 0.5 + 0.5 * Math.sin(t * 2.3 + k * 2);
-    egret(ex, y + 1, t, {size: 0.086, peck: peck, face: face});   // northbirds.js
+  pen.lineWidth = 1.1;
+  pen.beginPath();
+  pen.moveTo(bx - face * round * 6, y - 9);
+  pen.lineTo(fx + face * round * 3, y - 5);
+  pen.lineTo(fx + face * round * 1, y);
+  pen.stroke();
+  // The ploughman: behind the plough; in a turn he walks round in front of the buffalo, a step nearer us, from behind
+  // it as it was to behind it as it will be.
+  var go = fowlEase(p.turn), mx = p.turn > 0 ? mix(bx - face * 21, bx + face * 21, go) : fx - face * 3;
+  person(mx, y + 1 + 5 * Math.sin(Math.PI * go), cast("farmer", {size: 0.085, face: face, id: "ploughman",
+         step: t * 1.6, turban: null, hat: false, shirt: "#2f3a5a", legs: "#2f3a5a", sarong: undefined}));   // in indigo cotton (the research)
+  // The egrets: behind the plough, pecking, until a turn; then up and away for 5 s, out past the picture's edge;
+  // gone 4 s; and back in 5 s, gliding down to land where they would be walking now.
+  [0, 1, 2].forEach(function (k) {
+    var dir = p.turn > 0.5 ? -face : face, rear = bx - dir * 18;
+    var ex = rear - dir * (14 + k * 12 + 3 * Math.sin(t + k)), peck = 0.5 + 0.5 * Math.sin(t * 2.3 + k * 2);
+    var s = p.since - k * 0.25;                     // one after another
+    if (s < 0 || s >= 14) {
+      egret(ex, y + 1, t, {size: 0.086, peck: peck, face: dir});   // northbirds.js
+      return;
+    }
+    var was = p.turn > 0 ? face : -face, end = was > 0 ? FIELD_PLOUGH[2] : FIELD_PLOUGH[1];   // where it took off: behind the plough as the turn began
+    var from = end - was * 18 - was * (14 + k * 12 + 3 * Math.sin(t - p.since + k)), way = k === 1 ? 1 : -1, u;
+    var reach = way < 0 ? from + 150 : WIDE - from + 150;
+    if (s < 5) {                                    // up and away
+      u = s / 5;
+      egret(from + way * reach * u, y - 4 - 230 * u - 30 * Math.sin(u * 3) - k * 14 * u, t, {size: (0.32 + 0.2 * u) / 2.8, fly: true, face: way, seed: 3 + k});
+    } else if (s >= 9) {                            // back in, gliding down to where it would be walking
+      u = fowlEase((s - 9) / 5);
+      egret(ex + way * reach * (1 - u), y + 1 - (230 + k * 14) * (1 - u), t, {size: (0.32 + 0.2 * (1 - u)) / 2.8 * (1 - u) + 0.086 * u,
+            fly: u < 0.95, face: -way, seed: 3 + k});
+    }
   });
-  // and now and then one flies off, up and over to the nearer side of the picture, and out past its edge before the
-  // cycle comes round (owner, 2026-10-21: "a bird flying into the sky just disappears. It should continue on to beyond
-  // the edge of the screen"; it went 300 to one side and was simply not drawn once its 10 s were up)
-  var cycle = t % 24;
-  if (cycle > 14) {
-    var u = (cycle - 14) / 10, start = fx - face * 14, way = start < WIDE / 2 ? -1 : 1;
-    var reach = way < 0 ? start + 120 : WIDE - start + 120;
-    egret(start + way * reach * u, y - 4 - 240 * u - 40 * Math.sin(u * 3), t, {size: (0.32 + 0.2 * u) / 2.8, fly: true, face: way, seed: 3});
-  }
+  // The led buffalo, two children astride it, and the man leading it by its nose rope a few steps ahead.
+  var led = fieldRow(FIELD_LED[0]), ly = led[0] + led[1] - 2, lx = FIELD_LED[1] + FIELD_LED[2] * t;
+  var ride = buffalo(lx, ly, {size: 0.055, step: t * 1.2, rope: true});
+  person(ride.seat[0] + 2, ride.seat[1], cast("boy", {size: 0.042, floor: "astride", id: "rider one", late: 0, spring: 0.3, smile: 1}));
+  person(ride.seat[0] - 3, ride.seat[1] + 1, cast("girl", {size: 0.038, floor: "astride", id: "rider two", late: 0.3, spring: 0.3, smile: 1}));
+  pen.strokeStyle = "#c9a878";                      // the lead, from its nose to his hand
+  pen.lineWidth = 0.9;
+  pen.beginPath();
+  pen.moveTo(lx + 13, ly - 8);
+  pen.quadraticCurveTo(lx + 20, ly - 3, lx + 26, ly - 9);
+  pen.stroke();
+  person(lx + 29, ly + 1, cast("farmer", {size: 0.085, id: "leads the buffalo", step: t * 1.2 * 1.3, turban: "#c4654f", hat: false,
+         shirt: "#c9b28a", legs: "#3d4f78", sarong: undefined, handB: [-30, 40]}));
   FIELD_PLANTERS.forEach(function (w, k) {          // women planting rice, bent, stepping slowly back along the row
     var r = fieldRow(w[0]), px = w[1] - (t * 2) % 60;
     person(px, r[0] + r[1] - 1, cast("villager", {size: 0.095, face: -1, id: "planter" + k, bend: 0.7, bun: "low", lady: true, turban: null,

@@ -14,11 +14,20 @@ var S07_CAMERA = [1220, 740, 1.6];                  // the camera close on the p
 var S07_NIGHT = 18.5;                               // the cut to night
 var S07_FEEDS = [29.4, 44.1, 47.1, 50.1];           // the seconds an ember leaves the fire for its mouth: the first on "Pop!", caught as the next line begins
 
-// Its life: by day two hens pecking left of the pen; at night the house mouse creeps out from under the hut
-// toward the fire's warmth, sits up to watch it, and bolts back at "crunch, crunch!" (M042).
+// Its life: by day two hens left of the pen, and a grasshopper (owner, 2026-10-22: "The grasshopper should be farther
+// away and the hen should see it then stalk it and then it should jump away to get eaten by the second hen"): the hen
+// sees it, a way off by the pen, crouches, and creeps up on it, slowly, all the way; just as she is near enough to
+// pounce it jumps away past her, and lands under the nose of the brown hen, too full to have moved all morning, who
+// leans down and gobbles it (decorate.js "look", "stalk", "pounce", "caught"). The hen cocks her head, and goes back
+// to her pecking. At night the house mouse creeps out from under the hut toward the fire's warmth, sits up to watch
+// it, and bolts back at "crunch, crunch!" (M042).
 var S07_LIFE = [
-  {name: "hen", kind: "hen", course: [[0, 720, 968, "peck"], [6.0, 720, 968], [8.0, 800, 972, "peck"], [18.4, 800, 972]]},
-  {name: "brown hen", kind: "hen", look: {feel: "satiated"}, course: [[0, 660, 960, "peck"], [18.4, 660, 960]]},
+  {name: "hen", kind: "hen", course: [[0, 715, 968, "peck"], [2.4, 715, 968, "look"], [3.6, 715, 968, "stalk"], [4.2, 715, 968, "stalk"],
+                                      [8.6, 790, 968, "stalk"], [9.0, 790, 968, "missed"], [11.5, 790, 968, "peck"], [18.4, 790, 968]]},
+  {name: "brown hen", kind: "hen", look: {feel: "satiated"},
+   course: [[0, 675, 960, "peck"], [9.9, 675, 960, "pounce"], [10.25, 675, 960, "caught"], [12.0, 675, 960, "peck"], [18.4, 675, 960]]},
+  {name: "grasshopper", kind: "grasshopper",
+   course: [[0, 850, 976], [9.0, 850, 976], [9.6, 720, 966], [10.1, 720, 966, "caught"], [10.25, 720, 966, "hide"], [18.4, 720, 966, "hide"]]},
   {name: "house mouse", kind: "mouse", look: {kind: "house", size: 0.55},
    course: [[20.5, 600, 978, "hide"], [21.0, 600, 978], [23.6, 860, 982, "sniff"], [25.2, 860, 982, "up"], [30.6, 860, 982],
             [31.6, 560, 978, "hide"], [31.8, 560, 978, "hide"]]},

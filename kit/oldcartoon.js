@@ -7240,7 +7240,7 @@ var BLACK_HEN_COAT = {body: "#2a2b2e", wing: "#22302b", far: "#1a201e", ruff: "#
 // The names a rooster's look may have (see rooster()), so that one it does
 // not know is warned of.
 var ROOSTER_KEYS = {};
-["step", "walk", "stride", "crow", "flap", "wings", "lean", "peck", "reach", "cock", "alarm", "sink", "face", "hen", "feel", "black"].forEach(function (name) { ROOSTER_KEYS[name] = true; });
+["step", "walk", "stride", "crow", "flap", "wings", "lean", "peck", "reach", "cock", "holding", "gulp", "alarm", "sink", "face", "hen", "feel", "black"].forEach(function (name) { ROOSTER_KEYS[name] = true; });
 
 // A walk (rooster()'s walk): how far a foot reaches ahead of the hip and behind it, so that two steps cover four
 // times that of the ground (a hen's 0.85 of it); how high the lifted foot goes; how far the head swings, about its
@@ -7291,6 +7291,8 @@ function fowlEase(u) {
 //          ahead of where it would
 //   cock   -1 to 1: the head cocked, its beak up (1) or down, as a chicken
 //          looks about with one eye
+//   holding "grasshopper": one it has caught, in its beak, kicking
+//   gulp   0 to 1: swallowing what it holds, which goes in and is gone
 //   alarm  0 to 1: a fright: the head high and drawn back, the body upright,
 //          the comb shaking, the eye wide
 //   sink   0 to 1: it crouches, the body down on bent legs and the head drawn
@@ -7427,6 +7429,14 @@ function rooster(x, y, t, bird) {
     pen.lineTo(0, 0);
     pen.closePath();
     shape(beakColour);
+    pen.restore();
+  }
+  if (bird.holding === "grasshopper" && (bird.gulp || 0) < 1) {   // what it has caught, kicking in its beak, going down as it gulps
+    var gone = clamp(bird.gulp || 0);
+    pen.save();
+    pen.translate(21 - 10 * gone, 3);
+    pen.rotate(0.35);
+    grasshopper(0, 7, t, {size: 0.6 * (1 - 0.8 * gone), face: -1, leap: 0.5 + 0.5 * Math.sin(t * 22)});
     pen.restore();
   }
   oval(0, 0, 14, 13, coat.body);
@@ -7686,6 +7696,349 @@ function fallingFeather(x, y, ground, age, seed, colour, drift) {
   pen.save();
   pen.globalAlpha *= fade;
   feather(p[0], Math.min(p[1], ground), turn, 22, colour || ROOSTER_COAT.body);
+  pen.restore();
+}
+
+// ---------- a chick, a worm, a grasshopper ----------
+// Small lives of the yard for the fowl's small stories (owner, 2026-10-22: "a chick struggle pulling a worm out of
+// the ground or a chicken hunting a grasshopper"), each picked of three candidates drawn beside the kit's hen.
+
+// The chick (the owner's "B: striped"): a chick of the village fowl, as the native fowl's and the junglefowl's are:
+// brown, a dark stripe down its back with a pale one beside it, a dark cap and a stripe through the eye. About half
+// the hen's height. Its coat, and its walk as rooster()'s (ROOSTER_WALK), smaller: two steps cover 24 of the ground.
+var CHICK_COAT = {body: "#c89a62", head: "#d6ab72", wing: "#a8794a", stripe: "#5a3a22", pale: "#e9d2a8", legs: "#c8861e", beak: "#e0a040"};
+var CHICK_WALK = {reach: 6, lift: 5, bob: 4};
+var CHICK_KEYS = {};
+["walk", "stride", "peck", "reach", "cock", "face", "tug", "sit", "dizzy", "size"].forEach(function (name) { CHICK_KEYS[name] = true; });
+
+// A chick standing at (x, y), its feet there, at second t (it blinks). Its look:
+//   walk, stride, peck, reach, cock, face   as rooster()'s
+//   tug    0 to 1: it leans back from its hips, its feet braced ahead, pulling at what its beak holds
+//   sit    0 to 1: down on its bottom, rocked back, its feet up in front (a fall when a tug gives)
+//   dizzy  0 to 1: three little stars circling over its head, after a fall
+//   size   1 unless told
+// Returns {beak: [x, y]}: the tip of its beak in pen's pixels (where a worm it holds hangs from). Draws with pen;
+// other names in its look warn.
+// The look is called bird inside the kit, as the rooster's is, so that kit_check does not count its keys a person's.
+// e.g. chick(600, GROUND, t, {peck: 1});
+function chick(x, y, t, bird) {
+  bird = bird || {};
+  checkNames("The chick's name", bird, CHICK_KEYS);
+  var c = CHICK_COAT, size = bird.size || 1, face = bird.face || 1, n;
+  var walking = bird.walk !== undefined, swing = walking ? clamp(bird.stride === undefined ? 1 : bird.stride) : 0;
+  var peck = clamp(bird.peck || 0), tug = clamp(bird.tug || 0), sit = clamp(bird.sit || 0), cock = bird.cock || 0;
+  var down = 9 * sit + (walking ? 1 * swing * Math.abs(Math.cos(bird.walk * Math.PI * 2)) : 0);   // how far the body sinks
+  pen.save();
+  pen.translate(x, y);
+  pen.scale(size * face, size);
+  pen.lineCap = "round";
+  for (n = 0; n < 2; n++) {                         // two legs, three toes each
+    var hipX = -4 + n * 8, footX = hipX + 1, lift = 0;
+    if (walking) {
+      var u = ((bird.walk + n / 2) % 1 + 1) % 1;
+      footX += swing * CHICK_WALK.reach * (u < 0.5 ? 1 - 4 * u : 2 * fowlEase((u - 0.5) * 2) - 1);
+      lift = u < 0.5 ? 0 : swing * CHICK_WALK.lift * Math.sin((u - 0.5) * 2 * Math.PI);
+    }
+    footX = mix(footX + 6 * tug, hipX + 13, sit);   // braced ahead in a pull; up in front when it sits
+    var footY = mix(-1 - lift, -7 - 2 * n, sit);
+    pen.strokeStyle = c.legs;
+    pen.lineWidth = 2.6;
+    pen.beginPath();
+    pen.moveTo(hipX, -9 + down);
+    pen.lineTo(footX, footY);
+    pen.moveTo(footX - 5, footY + 2);
+    pen.lineTo(footX, footY);
+    pen.lineTo(footX + 6, footY + 2);
+    pen.stroke();
+  }
+  pen.save();                                       // the body: forward to peck, back to pull, back a little sat
+  pen.translate(0, -9 + down);
+  pen.rotate(0.45 * peck - 0.55 * tug - 0.45 * sit);
+  pen.translate(0, 9);
+  oval(0, -17, 14, 12, c.body);
+  pen.save();
+  pen.beginPath();
+  pen.ellipse(0, -17, 14, 12, 0, 0, 7);
+  pen.clip();
+  pen.strokeStyle = c.stripe;                       // the stripe down the back, and the pale one beside it
+  pen.lineWidth = 3;
+  pen.beginPath();
+  pen.moveTo(-14, -24);
+  pen.quadraticCurveTo(0, -31, 12, -26);
+  pen.stroke();
+  pen.strokeStyle = c.pale;
+  pen.lineWidth = 2;
+  pen.beginPath();
+  pen.moveTo(-14, -20);
+  pen.quadraticCurveTo(0, -27, 12, -22);
+  pen.stroke();
+  pen.restore();
+  pen.strokeStyle = INK;
+  pen.lineWidth = LINE;
+  pen.beginPath();
+  pen.ellipse(0, -17, 14, 12, 0, 0, 7);
+  pen.stroke();
+  oval(-3, -16, 7, 4.5, c.wing, -0.3 - 0.5 * sit);  // a wing, out a little when it sits down hard
+  pen.restore();
+  // The head: up, down to the ground to peck, low and drawn back in a pull; it bobs as it walks.
+  var headX = mix(9, 15 + 4 * (bird.reach || 0), peck), headY = mix(-28, -14, peck) + down, angle = peck * 1.0 - 0.4 * cock;
+  if (walking) {
+    var q = ((bird.walk * 2) % 1 + 1) % 1;
+    headX += 2 + swing * CHICK_WALK.bob * (q < 0.75 ? 1 - 2 * q / 0.75 : 2 * fowlEase((q - 0.75) / 0.25) - 1);
+  }
+  headX = mix(headX, -1, tug);                     // in a pull the head is drawn back and up, the beak down at the worm
+  headY = mix(headY, -27, tug);
+  angle = mix(angle, 0.9, tug);
+  if (Math.hypot(headX - 9, headY - (-28 + down)) > 5) { hose(5, -24 + down, headX, headY, 0, 10, c.body); }   // a neck when it reaches
+  pen.save();
+  pen.translate(headX, headY);
+  pen.rotate(angle);
+  oval(0, 0, 8.5, 8, c.head);
+  pen.save();
+  pen.beginPath();
+  pen.ellipse(0, 0, 8.5, 8, 0, 0, 7);
+  pen.clip();
+  pen.strokeStyle = c.stripe;                       // the cap, and the stripe through the eye
+  pen.lineWidth = 2.6;
+  pen.beginPath();
+  pen.moveTo(-7, -9);
+  pen.quadraticCurveTo(-1, -10, 5, -7);
+  pen.stroke();
+  pen.lineWidth = 1.8;
+  pen.beginPath();
+  pen.moveTo(-5, -1);
+  pen.lineTo(5, -2);
+  pen.stroke();
+  pen.restore();
+  pen.strokeStyle = INK;
+  pen.lineWidth = 1.6;
+  pen.beginPath();
+  pen.ellipse(0, 0, 8.5, 8, 0, 0, 7);
+  pen.stroke();
+  pen.beginPath();                                  // the beak
+  pen.moveTo(7, -3);
+  pen.lineTo(15, 0);
+  pen.lineTo(7, 2.5);
+  pen.closePath();
+  shape(c.beak, 1.6);
+  if ((t + 1.3) % 3.1 < 0.12) {                     // it blinks
+    pen.strokeStyle = INK;
+    pen.lineWidth = 1.6;
+    pen.beginPath();
+    pen.moveTo(0.5, -2.5);
+    pen.lineTo(4.5, -2.5);
+    pen.stroke();
+  } else {
+    pen.fillStyle = INK;
+    pen.beginPath();
+    pen.arc(2.5, -2.5, 2.2, 0, 7);
+    pen.fill();
+    pen.fillStyle = "#ffffff";
+    pen.beginPath();
+    pen.arc(2, -3.2, 0.7, 0, 7);
+    pen.fill();
+  }
+  pen.restore();
+  if (bird.dizzy > 0) {                             // stars going round over its head
+    for (n = 0; n < 3; n++) {
+      var round = t * 5 + n * Math.PI * 2 / 3;
+      pen.save();
+      pen.globalAlpha *= clamp(bird.dizzy * 2);
+      pen.translate(headX + Math.cos(round) * 11, headY - 14 + Math.sin(round) * 3.5);
+      pen.beginPath();
+      for (var point = 0; point < 10; point++) {
+        var reach = point % 2 === 0 ? 3.6 : 1.5, a = point / 10 * Math.PI * 2 - Math.PI / 2;
+        pen.lineTo(Math.cos(a) * reach, Math.sin(a) * reach);
+      }
+      pen.closePath();
+      shape("#f6d24a", 1);
+      pen.restore();
+    }
+  }
+  pen.restore();
+  var tip = [headX + 15 * Math.cos(angle), headY + 15 * Math.sin(angle)];
+  return {beak: [x + face * size * tip[0], y + size * tip[1]]};
+}
+
+// The worm (the owner's "B: thick, red-brown"): an earthworm along points [[x, y], ...] in pen's pixels: red-brown,
+// ringed, the pale band (the clitellum) a third of the way along; thinner the more it is stretched (its length over
+// WORM.long: its width over the square root of that).
+var WORM = {colour: "#b8645a", band: "#e6aaa0", width: 6, long: 46};
+
+// points: two or more; stretch: how far past its own length it is pulled (1 when left out). Returns nothing.
+// e.g. worm([[600, 900], [620, 896], [640, 900]]);
+function worm(points, stretch) {
+  var width = WORM.width / Math.sqrt(Math.max(1, stretch || 1)), k;
+  function along() {
+    pen.beginPath();
+    pen.moveTo(points[0][0], points[0][1]);
+    for (k = 1; k < points.length; k++) { pen.lineTo(points[k][0], points[k][1]); }
+  }
+  pen.save();
+  pen.lineCap = "round";
+  pen.lineJoin = "round";
+  along();
+  pen.strokeStyle = INK;
+  pen.lineWidth = width + 3;
+  pen.stroke();
+  along();
+  pen.strokeStyle = WORM.colour;
+  pen.lineWidth = width;
+  pen.stroke();
+  var b = Math.floor((points.length - 1) * 0.3);   // the pale band
+  if (points.length > 3) {
+    pen.beginPath();
+    pen.moveTo(points[b][0], points[b][1]);
+    pen.lineTo(points[b + 1][0], points[b + 1][1]);
+    pen.strokeStyle = WORM.band;
+    pen.lineWidth = width + 0.5;
+    pen.stroke();
+  }
+  pen.strokeStyle = "rgba(60, 20, 20, 0.35)";       // its rings
+  pen.lineWidth = 1;
+  for (k = 1; k < points.length - 1; k++) {
+    var dx = points[k + 1][0] - points[k - 1][0], dy = points[k + 1][1] - points[k - 1][1], l = Math.hypot(dx, dy) || 1;
+    pen.beginPath();
+    pen.moveTo(points[k][0] + dy / l * width / 2, points[k][1] - dx / l * width / 2);
+    pen.lineTo(points[k][0] - dy / l * width / 2, points[k][1] + dx / l * width / 2);
+    pen.stroke();
+  }
+  pen.restore();
+}
+
+// Points for worm(): from a to b, bowed to one side by bow (pixels) and wriggling with t. a, b: [x, y]; t: seconds.
+// Returns 13 points. e.g. worm(wormBetween([600, 900], [610, 870], 4, t));
+function wormBetween(a, b, bow, t) {
+  var points = [], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1;
+  for (var k = 0; k <= 12; k++) {
+    var u = k / 12, side = Math.sin(u * Math.PI) * bow + Math.sin(u * 9 + t * 7) * 1.6 * Math.sin(u * Math.PI);
+    points.push([a[0] + dx * u - dy / l * side, a[1] + dy * u + dx / l * side]);
+  }
+  return points;
+}
+
+// A chick and a worm (owner, 2026-10-22: "a chick struggle pulling a worm out of the ground"), s seconds after it
+// stops at the spot: it pecks there and looks; grips the worm's end and pulls, leaning back, the worm stretching up
+// out of its hole; the worm gives, snaps back, and the chick sits down hard; it sits a moment, dazed, gets up, grips
+// again and pulls harder, trembling with it; the worm pops out and the chick tumbles back onto its bottom, the worm
+// dangling from its beak; it slurps the worm down, gets up and steps back to its spot. CHICK_WORM holds when each
+// part begins. It gives back {done, x, look, worm}: done when the story is over (the chick forages after); x how
+// far it is from its spot (it falls back and walks up again); look for chick(); worm: {out, held, free, gulp}: how
+// much of the worm is out of the ground (0 to 1 of WORM.long), whether the chick's beak holds its end, whether it is
+// out of the ground altogether, how hard it is pulled (0 to 1: it thins), and how much of it is swallowed.
+// s: seconds (below 0: the story has not begun: it stands). e.g. var w = chickWorm(t - 4); chick(600 + w.x, GROUND, t, w.look);
+var CHICK_WORM = {find: 0, grip: 0.6, pull: 1.0, slip: 2.2, dazed: 2.4, up: 3.2, again: 3.8, pop: 5.3, dangle: 5.45, gulp: 6.2, stand: 7.0, done: 7.6};
+function chickWorm(s) {
+  var W = CHICK_WORM, u;
+  function part(from, to) { return clamp((s - from) / (to - from)); }
+  if (s < W.grip) { return {x: 0, look: {peck: fowlEase(part(0, 0.3))}, worm: {out: 0}}; }
+  if (s < W.pull) { return {x: 0, look: {peck: 1}, worm: {out: 0.12 * part(W.grip, W.pull), held: true}}; }
+  if (s < W.slip) {
+    u = fowlEase(part(W.pull, W.slip));
+    return {x: -4 * u + Math.sin(s * 40) * 0.6 * u, look: {peck: 1 - u, tug: u}, worm: {out: mix(0.12, 0.4, u), held: true, pull: u}};
+  }
+  if (s < W.dazed) {
+    u = fowlEase(part(W.slip, W.dazed));
+    return {x: mix(-4, -10, u), look: {tug: 1 - u, sit: u}, worm: {out: mix(0.4, 0.25, u)}};
+  }
+  if (s < W.up) { u = part(W.dazed, W.up); return {x: -10, look: {sit: 1, cock: Math.sin(s * 12) * 0.5 * (1 - u), dizzy: 1 - u}, worm: {out: 0.25}}; }
+  if (s < W.again) {
+    u = part(W.up, W.again);
+    return {x: -10 * (1 - fowlEase(u)), look: {sit: 1 - fowlEase(u * 2), peck: fowlEase(u * 2 - 1), walk: u, stride: Math.sin(u * Math.PI)},
+            worm: {out: 0.25, held: u > 0.9}};
+  }
+  if (s < W.pop) {
+    u = fowlEase(part(W.again, W.pop));
+    return {x: -9 * u + Math.sin(s * 55) * 1.1 * u, look: {peck: 1 - u, tug: u}, worm: {out: mix(0.25, 0.85, u), held: true, pull: u}};
+  }
+  if (s < W.dangle) {
+    u = fowlEase(part(W.pop, W.dangle));
+    return {x: mix(-9, -16, u), look: {tug: 1 - u, sit: u}, worm: {out: 1, held: true, free: true}};
+  }
+  if (s < W.gulp) { return {x: -16, look: {sit: 1, cock: 0.3}, worm: {out: 1, held: true, free: true}}; }
+  if (s < W.stand) {
+    u = part(W.gulp, W.stand);
+    return {x: -16, look: {sit: 1, cock: 0.3 + 0.5 * u + 0.15 * Math.sin(u * Math.PI * 6)}, worm: {out: 1, held: true, free: true, gulp: u}};
+  }
+  if (s < W.done) {
+    u = part(W.stand, W.done);
+    return {x: -16 * (1 - fowlEase(u)), look: {sit: 1 - fowlEase(u * 2), walk: u * 1.5, stride: Math.sin(u * Math.PI)}, worm: {out: 0}};
+  }
+  return {done: true, x: 0, look: {}, worm: {out: 0}};
+}
+
+// The worm of a chickWorm() story, drawn for a chick whose spot is (x, y), facing face, at the size given: in its
+// hole a little ahead of the chick (where the beak meets the ground), stretched up to the beak while it is held,
+// sticking up out of the hole and wriggling when it slips free, and hanging from the beak once it is out, shorter
+// as it is swallowed. worm: chickWorm()'s; beak: chick()'s answer's beak. Returns nothing.
+// e.g. var w = chickWorm(s); chickWormDrawn(600, GROUND, 1, 1, w.worm, chick(600 + w.x, GROUND, t, w.look).beak, t);
+function chickWormDrawn(x, y, face, size, w, beak, t) {
+  var hole = [x + face * 23 * size, y], long = WORM.long * size;
+  if (w.out <= 0 && !w.free) { return; }
+  if (!w.free) {
+    pen.fillStyle = "#5a3f2a";                      // the hole
+    pen.beginPath();
+    pen.ellipse(hole[0], hole[1], 7 * size, 2.4 * size, 0, 0, 7);
+    pen.fill();
+  }
+  if (w.free) {                                     // out of the ground: hanging from the beak, wriggling, going down
+    var left = long * 0.8 * (1 - (w.gulp || 0));
+    if (left < 2) { return; }
+    var end = [beak[0] + Math.sin(t * 6) * left * 0.25, Math.min(y, beak[1] + left)];
+    worm(wormBetween(beak, end, Math.sin(t * 5) * 5 * size, t), 1);
+  } else if (w.held) {                              // stretched from the hole to the beak
+    worm(wormBetween(hole, beak, 2 * size * (1 - (w.pull || 0)), t), 1 + 1.6 * (w.pull || 0));   // the harder the pull, the thinner and straighter
+  } else {                                          // slipped from the beak: its end sticking up, wriggling
+    worm(wormBetween(hole, [hole[0] - face * 3 * size + Math.sin(t * 8) * 2, hole[1] - w.out * long], 3 * size, t), 1);
+  }
+}
+
+// The grasshopper (the owner's "B: rice grasshopper"): Oxya, the rice-field grasshopper: green, its folded wings
+// brown, a dark stripe behind the eye; thin legs and feelers, the great hind thigh up along its side. At rest it
+// sits, its feelers stirring; in a hop (leap, 0 to 1) its hind legs kick out straight behind it and its wings lift.
+var GRASSHOPPER = {body: "#6fae3e", wing: "#9a7a45", leg: "#3e6a22", far: "#5a8a3a", feeler: "#3e5a22", thigh: "#78b446", eye: "#3a2a1a", stripe: "#3f5a22"};
+
+// x, y: where its feet are, pen's pixels; t: seconds; look: {face, leap 0 to 1, size (0.9 unless told)}.
+// Returns nothing. e.g. grasshopper(700, GROUND, t, {face: -1});
+function grasshopper(x, y, t, hopper) {
+  hopper = hopper || {};
+  var g = GRASSHOPPER, s = hopper.size || 0.9, leap = clamp(hopper.leap || 0);
+  pen.save();
+  pen.translate(x, y);
+  pen.scale(s * (hopper.face || 1), s);
+  pen.lineCap = "round";
+  pen.lineJoin = "round";
+  function thin(points, colour, width) {             // a leg or a feeler: a thin line with no ink round it
+    pen.strokeStyle = colour;
+    pen.lineWidth = width;
+    pen.beginPath();
+    pen.moveTo(points[0][0], points[0][1]);
+    for (var k = 1; k < points.length; k++) { pen.lineTo(points[k][0], points[k][1]); }
+    pen.stroke();
+  }
+  thin([[0, -10], [3, -5], [6, -1 - 4 * leap]], g.far, 1.4);
+  thin([[-8, -10], [-10, -5], [-7, -1 - 4 * leap]], g.far, 1.4);
+  oval(-14, -11, 16, 6, g.body, 0.06);              // the abdomen
+  oval(-11, -15 - 3 * leap, 16, 4 + 2 * leap, g.wing, 0.1 - 0.25 * leap);   // the wings: folded, lifting in a hop
+  oval(5, -13, 7, 6, g.body);                       // the thorax and the head
+  oval(13, -14, 6, 6.5, g.body);
+  var stir = Math.sin(t * 3.1) * 2, stir2 = Math.sin(t * 2.3 + 1) * 2;
+  thin([[14, -20], [18, -30], [26 + stir, -38]], g.feeler, 1.4);
+  thin([[12, -20], [14, -31], [20 + stir2, -41]], g.feeler, 1.4);
+  pen.fillStyle = g.eye;
+  pen.beginPath();
+  pen.ellipse(15, -16, 2.4, 3, 0, 0, 7);
+  pen.fill();
+  pen.strokeStyle = g.stripe;
+  pen.lineWidth = 1.6;
+  pen.beginPath();
+  pen.moveTo(18, -13);
+  pen.lineTo(1, -12);
+  pen.stroke();
+  thin([[9, -9], [11, -4], [13, -1 - 3 * leap]], g.leg, 1.6);
+  thin([[3, -9], [2, -4], [4, -1 - 3 * leap]], g.leg, 1.6);
+  oval(-11 - 5 * leap, -18 + 6 * leap, 11, 3.6, g.thigh, -0.62 + 0.5 * leap);   // the hind thigh, and its shin: folded, or kicked out behind
+  thin(leap > 0.5 ? [[-20, -14], [-34, -10], [-40, -7]] : [[-19, -24], [-23, -12], [-26, -1], [-30, -1]], g.leg, 1.8);
   pen.restore();
 }
 
@@ -10228,22 +10581,24 @@ function film(t, scenes) {
 // "add a crow sound"): rooster() tells each crow it begins (hear()), and heard() draws a film's frames and gives
 // back the calls, [[second, sound, loudness], ...], as a scene's calls are written (decorate.js), the sound one of
 // sounds.py's. render.py lays them under the film it renders. A sound from one place comes again only HEARD_GAP after
-// the last of its name from there (a crow rings 3.6 s): a rooster that crows on every second beat is heard once in
-// that while, and another rooster, HEARD_NEAR or more along the film, crows for itself.
+// the last of its name from there (the crow's voice is 2.8 s long): a rooster that crows on every second beat is heard once in
+// that while, and another rooster, HEARD_NEAR or more along the film, crows for itself. One off the film is not heard.
 var HEARD = null;                                  // while a film is listened to (heard(), render.py): what was told, [[second, sound, where], ...]
 // Each sound's loudness, as the tale's scenes call it, and its lead: the seconds of its file (sounds.py's
-// out/sounds/NAME.wav) before its voice begins, so that the call starts the file that much before the moment
-// (the crow's recording has 1.2 s of the forest before the bird).
-var HEARD_SOUNDS = {"rooster-crow": {loud: 0.28, lead: 1.2}};
-var HEARD_GAP = 3.6;
-var HEARD_NEAR = 150;                              // film pixels: two calls of one sound nearer than this along the film are one caller's
+// out/sounds/NAME.wav) before its voice begins, so that the call starts the file that much before the moment (the
+// crow begins at once; the recording it took the place of had 1.2 s of the forest before the bird).
+var HEARD_SOUNDS = {"rooster-crow": {loud: 0.28, lead: 0}};
+var HEARD_GAP = 3;
+var HEARD_NEAR = 60;                               // film pixels, a rooster's width: two calls of one sound nearer than this are one caller's
 
 // sound: a name of sounds.py's; at: the film's second it begins; x, y: where its caller is, in pen's pixels. Returns
-// nothing: while HEARD is a list, and pen draws on the film (not a scratch sheet or a tile), it notes [at, sound,
-// where along the film] there.
+// nothing: while HEARD is a list, and pen draws on the film (not a scratch sheet or a tile) where the film shows it,
+// it notes [at, sound, where along the film] there.
 // e.g. hear("rooster-crow", clock, 600, GROUND);
 function hear(sound, at, x, y) {
-  if (HEARD && pen.canvas === FILM) { HEARD.push([at, sound, pen.getTransform().transformPoint(new DOMPoint(x, y)).x / PIX]); }
+  if (!HEARD || pen.canvas !== FILM) { return; }
+  var where = pen.getTransform().transformPoint(new DOMPoint(x, y)).x / PIX;
+  if (where >= 0 && where <= WIDE) { HEARD.push([at, sound, where]); }
 }
 
 // Returns the calls HEARD holds, [[second, sound, loudness], ...] in the order they come, each no sooner than

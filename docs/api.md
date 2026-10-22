@@ -1505,6 +1505,8 @@ and chicken behaviors"; a second chicken that takes fright with it):
          ahead of where it would
   cock   -1 to 1: the head cocked, its beak up (1) or down, as a chicken
          looks about with one eye
+  holding "grasshopper": one it has caught, in its beak, kicking
+  gulp   0 to 1: swallowing what it holds, which goes in and is gone
   alarm  0 to 1: a fright: the head high and drawn back, the body upright,
          the comb shaking, the eye wide
   sink   0 to 1: it crouches, the body down on bent legs and the head drawn
@@ -1576,6 +1578,55 @@ x, y, ground in the sheet's pixels; age and drift: seconds, and pixels it carrie
 any number; colour: a CSS colour, the rooster's white unless told. Returns nothing: it draws with pen, or
 nothing at all.
 e.g. fallingFeather(620, 760, GROUND, t - 4.2, 1, "#c98b4e", 40);
+```
+
+### `chick(x, y, t, look)`
+
+```
+A chick standing at (x, y), its feet there, at second t (it blinks). Its look:
+  walk, stride, peck, reach, cock, face   as rooster()'s
+  tug    0 to 1: it leans back from its hips, its feet braced ahead, pulling at what its beak holds
+  sit    0 to 1: down on its bottom, rocked back, its feet up in front (a fall when a tug gives)
+  dizzy  0 to 1: three little stars circling over its head, after a fall
+  size   1 unless told
+Returns {beak: [x, y]}: the tip of its beak in pen's pixels (where a worm it holds hangs from). Draws with pen;
+other names in its look warn.
+e.g. chick(600, GROUND, t, {peck: 1});
+```
+
+### `worm(points, stretch)`
+
+```
+points: two or more; stretch: how far past its own length it is pulled (1 when left out). Returns nothing.
+e.g. worm([[600, 900], [620, 896], [640, 900]]);
+```
+
+### `wormBetween(a, b, bow, t)`
+
+```
+Points for worm(): from a to b, bowed to one side by bow (pixels) and wriggling with t. a, b: [x, y]; t: seconds.
+Returns 13 points. e.g. worm(wormBetween([600, 900], [610, 870], 4, t));
+```
+
+### `chickWorm(s)`
+
+(no comment)
+
+### `chickWormDrawn(x, y, face, size, w, beak, t)`
+
+```
+The worm of a chickWorm() story, drawn for a chick whose spot is (x, y), facing face, at the size given: in its
+hole a little ahead of the chick (where the beak meets the ground), stretched up to the beak while it is held,
+sticking up out of the hole and wriggling when it slips free, and hanging from the beak once it is out, shorter
+as it is swallowed. worm: chickWorm()'s; beak: chick()'s answer's beak. Returns nothing.
+e.g. var w = chickWorm(s); chickWormDrawn(600, GROUND, 1, 1, w.worm, chick(600 + w.x, GROUND, t, w.look).beak, t);
+```
+
+### `grasshopper(x, y, t, look)`
+
+```
+x, y: where its feet are, pen's pixels; t: seconds; look: {face, leap 0 to 1, size (0.9 unless told)}.
+Returns nothing. e.g. grasshopper(700, GROUND, t, {face: -1});
 ```
 
 ### `sun(x, y, t, how)`
@@ -2076,8 +2127,8 @@ through black at the cuts, then send the sheet to the screen through the lens.
 
 ```
 sound: a name of sounds.py's; at: the film's second it begins; x, y: where its caller is, in pen's pixels. Returns
-nothing: while HEARD is a list, and pen draws on the film (not a scratch sheet or a tile), it notes [at, sound,
-where along the film] there.
+nothing: while HEARD is a list, and pen draws on the film (not a scratch sheet or a tile) where the film shows it,
+it notes [at, sound, where along the film] there.
 e.g. hear("rooster-crow", clock, 600, GROUND);
 ```
 
@@ -4831,9 +4882,12 @@ decorate.js - the life of a scene: animals and birds on courses, for films made 
 ```
 courseAt(t, course) gives back where an animal on a course of stops is at second t:
 {on: false} before the first stop's second and after the last's; else {on, x, y, face, moving,
-along, what, points, speed}: on is false while it hides; x, y in pixels of the scene; face 1
-(right) or -1; moving true or false; along the pixels it has come; what the stop's word while it
-stands (else null); points the route [[x, y], ...]; speed in pixels a second.
+along, what, mark, since, part, leg, points, speed}: on is false while it hides; x, y in pixels of
+the scene; face 1 (right) or -1; moving true or false; along the pixels it has come; what the
+stop's word while it stands (else null); mark the word of the stop it stands at or set out from
+(a creep that leaves a "stalk"); since the seconds since it came to that stop or set out from it;
+part how far along the way to the next stop (0 while it stands); leg how long that way is, in
+pixels; points the route [[x, y], ...]; speed in pixels a second.
 course: [[second, x, y, what], ...] in order of the seconds (see the top of this file).
 Changes nothing outside itself.
 e.g. var at = courseAt(t, [[2, 300, 900], [6, 700, 900, "sniff"], [8, 700, 900]]);
@@ -4854,10 +4908,24 @@ a peck: down and up again, twice a second, at a stop marked "peck"
 lifeFowl(at, look, t, hen) draws the kit's rooster (hen true: a hen) where courseAt() has it,
 walking as far as it goes (rooster()'s walk, two steps to 56 of the ground, a hen's to 48), and at a
 "peck" stop foraging where it stands (roosterPeck(), roam 0: a few pecks at spots of their own, then
-a look about or, a rooster, a crow). at: courseAt()'s answer; look: the rooster's look (look.size, 1 when left out, sizes
+a look about or, a rooster, a crow). Its hunt, by the words of its stops: "stalk", crouched with its head low and
+forward, frozen, and a slow creep on the way from there; "pounce", a lunge with the beak to the ground; "missed",
+its head up and cocked one way and the other ("look": the same, a look about); "caught", up with a grasshopper kicking in its beak, gulped down
+in 1.6 s (the grasshopper's own course is "caught" as the beak comes down, then "hide"). At a "crow" stop a
+rooster crows once, from the stop's first second. at: courseAt()'s answer; look: the rooster's look (look.size, 1 when left out, sizes
 only the box and the stride: the kit's rooster has one size); t: seconds. Returns the box it was
 drawn in, [left, top, right, bottom], pixels of the scene.
 e.g. var box = lifeFowl(courseAt(t, [[1, 300, 950], [5, 700, 950]]), {}, t, true);   // a hen, as LIFE_KINDS.hen draws one
+```
+
+### `lifeChick(at, look, t)`
+
+```
+lifeChick(at, look, t) draws a chick (oldcartoon.js) where courseAt() has it: walking as far as it goes, foraging
+where it stands at a "peck" stop (roosterPeck(), roam 0: its pecks, its looks about), and at a "worm" stop the
+story of a worm it pulls out of the ground (chickWorm(), about 7.6 s; then it forages). at: courseAt()'s answer;
+look: the chick's look (size 1 unless told); t: seconds. Returns the box it was drawn in, pixels of the scene.
+e.g. lifeChick(courseAt(t, [[0, 400, 960, "worm"], [10, 400, 960]]), {}, t);
 ```
 
 ### `decorate(t, life, layer)`
@@ -5365,7 +5433,17 @@ its back, and the top of its head, in the scene.
   look   an object, never left out ({} gives a slate-grey buffalo standing,
          size 1, facing right): its keys are BEAST_KEYS above (the buffalo
          reads size, face, step, colour, late, front, rope, graze, feel,
-         slope)
+         slope, turn)
+A turn (owner, 2026-10-22: "Animate it turning from facing left to facing
+right. It should turn first where the head meets the neck, then where the
+neck meets the body with a gentle curve. Legs should move up and down"):
+the head swings round where it meets the neck first, looking back over its
+shoulder (turn 0 to 0.4); then the neck at the shoulder, lifting in a gentle
+arc as it comes round (0.25 to 0.7); then the body (0.45 to 1), which shows
+its front (buffaloFront()) for the moment it is end-on to us. Each part is
+seen from the side as it goes round, shorter the more it faces us, but never
+thinner than a beast's girth (0.3 of its length). Keep "step" going through
+a turn and its legs step it round.
 Returns {seat: [x, y], head: [x, y]}, points of the sheet. It draws with
 pen at the film's clock; it sets FINE and LINE while it draws and leaves
 them at 1 and STYLE.line.

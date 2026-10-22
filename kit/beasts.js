@@ -49,6 +49,7 @@
 //   late       the timing of the beat, as hop(t, late) takes it: the ears and
 //              the tail keep it (not in a film whose style has hop: false)
 //   front      true: seen from the front, coming toward us
+//   turn       0 to 1, the buffalo only: how far round it has turned from facing "face" to facing the other way
 // and for the elephant only:
 //   trunk      0 to 1: how high the trunk is lifted (0 hangs, 1 is held up)
 //   tusks      false for one without tusks
@@ -81,7 +82,7 @@
 //   mane       the colour of its mane, its tail and its lower legs
 var BEAST_KEYS = {};
 
-["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground", "feel", "pack", "mane", "graze"].forEach(function (name) { BEAST_KEYS[name] = true; });
+["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground", "feel", "pack", "mane", "graze", "turn"].forEach(function (name) { BEAST_KEYS[name] = true; });
 
 // Where a walking foot is in its stride: [how far forward of its joint, how
 // high off the ground]. "s" is how far through the stride it is; it is on
@@ -1076,7 +1077,17 @@ function elephant(x, y, look) {
 //   look   an object, never left out ({} gives a slate-grey buffalo standing,
 //          size 1, facing right): its keys are BEAST_KEYS above (the buffalo
 //          reads size, face, step, colour, late, front, rope, graze, feel,
-//          slope)
+//          slope, turn)
+// A turn (owner, 2026-10-22: "Animate it turning from facing left to facing
+// right. It should turn first where the head meets the neck, then where the
+// neck meets the body with a gentle curve. Legs should move up and down"):
+// the head swings round where it meets the neck first, looking back over its
+// shoulder (turn 0 to 0.4); then the neck at the shoulder, lifting in a gentle
+// arc as it comes round (0.25 to 0.7); then the body (0.45 to 1), which shows
+// its front (buffaloFront()) for the moment it is end-on to us. Each part is
+// seen from the side as it goes round, shorter the more it faces us, but never
+// thinner than a beast's girth (0.3 of its length). Keep "step" going through
+// a turn and its legs step it round.
 // Returns {seat: [x, y], head: [x, y]}, points of the sheet. It draws with
 // pen at the film's clock; it sets FINE and LINE while it draws and leaves
 // them at 1 and STYLE.line.
@@ -1087,6 +1098,14 @@ function buffalo(x, y, look) {
   var walk = look.step !== undefined, bob = walk ? 4 * Math.abs(Math.sin(look.step * Math.PI * 2)) : 0;
   var beat = look.late !== undefined && STYLE.hop ? hop(clock, look.late) : 0;
   var e = look.feel !== undefined ? creatureFeel(look, clock + x * 0.01) : null;   // a feeling: the eye, the head, the ear, the tail
+  var turn = clamp(look.turn || 0), turnHead = fowlEase(turn / 0.4), turnNeck = fowlEase((turn - 0.25) / 0.45), turnBody = fowlEase((turn - 0.45) / 0.55);
+  function round(u) {                               // how long a part looks, u of the way round: 1 side on, the sign the way it faces
+    var c = Math.cos(Math.PI * u);
+    return (c < 0 ? -1 : 1) * (0.3 + 0.7 * Math.abs(c));
+  }
+  // Each part's way, in its parent's frame: it flips with its parent while the parent is end-on and drawn thinnest.
+  var headWay = (turnNeck < 0.5 ? 1 : -1) * round(turnHead), neckWay = (turnBody < 0.5 ? 1 : -1) * round(turnNeck), bodyWay = round(turnBody);
+  var endOn = Math.abs(Math.cos(Math.PI * turnBody)) < 0.2;   // the moment it is end-on to us: its front
   FINE = Math.min(1, Math.pow(size, -0.7));
   LINE = STYLE.line * FINE;
   pen.fillStyle = "rgba(70, 45, 30, 0.2)";
@@ -1095,8 +1114,8 @@ function buffalo(x, y, look) {
   pen.fill();
   pen.save();
   pen.translate(x, y);
-  pen.scale(size * face, size);
-  if (look.front) {
+  pen.scale(size * face * (endOn ? 1 : bodyWay), size);
+  if (look.front || endOn) {
     var high = buffaloFront(look, colour);
     pen.restore();
     FINE = 1;
@@ -1150,7 +1169,14 @@ function buffalo(x, y, look) {
   var bodyFrame = pen.getTransform();               // the body's frame, for the neck's shade when the head is down
   pen.save();                                       // the neck and the head, carried forward and low (or down to graze)
   pen.translate(150 - 20 * graze, -262 + 70 * graze);
+  pen.scale(neckWay, 1);                            // a turn: the neck comes round at the shoulder, lifting as it comes
+  pen.rotate(-0.3 * Math.sin(Math.PI * turnNeck));
   pen.rotate(nod + 1.05 * graze + 0.03 * chew * graze);
+  function headRound() {                            // a turn: the head comes round first, where it meets the neck
+    pen.translate(92, 0);
+    pen.scale(headWay, 1);
+    pen.translate(-92, 0);
+  }
   function horn(dx, dy, pale) {                     // one horn: a crescent that sweeps back and up from the head
     pen.beginPath();
     pen.moveTo(96 + dx, -44 + dy);
@@ -1167,7 +1193,10 @@ function buffalo(x, y, look) {
     }
     pen.stroke();
   }
+  pen.save();
+  headRound();
   horn(14, -8, "#8a857a");                          // the far horn
+  pen.restore();
   pen.beginPath();                                  // the neck: colour first, with no line where it joins the shoulder,
   pen.moveTo(-40, -50);
   pen.quadraticCurveTo(40, -66, 100, -52);
@@ -1216,6 +1245,8 @@ function buffalo(x, y, look) {
   pen.moveTo(40, 52);
   pen.quadraticCurveTo(66, 44, 86, 30);
   pen.stroke();
+  pen.save();
+  headRound();
   pen.beginPath();                                  // the head: a long wedge, the muzzle broad
   pen.moveTo(84, -62);
   pen.bezierCurveTo(124, -66, 168, -40, 204, 6);
@@ -1284,9 +1315,10 @@ function buffalo(x, y, look) {
   var crown = pen.getTransform().transformPoint(new DOMPoint(96, -62));
   pen.restore();
   pen.restore();
+  pen.restore();
   FINE = 1;
   LINE = STYLE.line;
-  return {seat: [x - 20 * size * face, y - (296 + bob) * size], head: [crown.x, crown.y]};
+  return {seat: [x - 20 * size * face * bodyWay, y - (296 + bob) * size], head: [crown.x, crown.y]};
 }
 
 // ---------- a cat and a tiger ----------
