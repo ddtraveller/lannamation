@@ -26,9 +26,11 @@ LOAD_SECONDS = 600   # the hero film paints its forests as it loads
 # Wraps person() and each of decorate.js's kinds to note, while Z_DRAWN is a list, what was drawn and where:
 # {name, box: [left, top, right, bottom], feet}, in the pixels of the canvas (the camera's turn applied). A person's
 # box is the kit's figure at its size (about 120 wide and 330 high at size 1); an animal's is the box its kind gives.
+# Only what is drawn on the film (FILM) is noted: a figure drawn on a scratch sheet to be measured (sabaiOf, by way of
+# paintWith) is not in the frame.
 WRAP = """() => {
   function note(name, box, feet) {
-    if (!window.Z_DRAWN) { return; }
+    if (!window.Z_DRAWN || pen.canvas !== FILM) { return; }
     var m = pen.getTransform(), a = m.transformPoint(new DOMPoint(box[0], box[1])), b = m.transformPoint(new DOMPoint(box[2], box[3]));
     var f = m.transformPoint(new DOMPoint((box[0] + box[2]) / 2, feet));
     Z_DRAWN.push({name: name, box: [Math.min(a.x, b.x), Math.min(a.y, b.y), Math.max(a.x, b.x), Math.max(a.y, b.y)], feet: f.y / m.d});

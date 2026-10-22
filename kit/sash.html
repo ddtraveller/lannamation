@@ -550,12 +550,13 @@ function sceneLane(t) {                 // 22-35: the lane: a man and a child co
   pen.drawImage(VILLAGE.back, 0, 0);
   hillMist(t + 22);
   pen.drawImage(VILLAGE.front, 0, 0);
-  villageTung(t + 22);
-  sunbirdVisit(t, SUNBIRD_LANE);          // at the bougainvillea
-  pen.save();
-  pen.translate(SIDE, 0);                 // the figures, at their places on the old sheet
-  chicken(t, COOP[1]);                    // the hen, a step farther back, then the rooster
-  chicken(t, COOP[0]);
+  // The z plan (the kit's drawByZ(), oldcartoon.js Z): the village's sheets, sky and mist first, as painted. The
+  // sunbird, which can be anywhere, in "set": it sips at the bougainvillea painted on the sheet. The flock in "sky".
+  // In "people", by their feet: the tung (905), the woman (950), the man (960), the child (985), the hen (988), the
+  // rooster (1000), the dog (1005) and the feather that falls to the ground (1006). The man, the woman and the child
+  // have the ids their old order gave them (n0, n1, n2), so they move as the film was passed. The figures stand on
+  // the old sheet (shifted by SIDE); the tung and the sunbird on this one.
+  function onOldSheet(draw) { return function () { pen.save(); pen.translate(SIDE, 0); draw(); pen.restore(); }; }
   // The man and the child walk in from the left and stop; the woman walks in
   // from the right, her hands down, and stops before them. She wais them; the
   // child wais her back; the man nods his head to her, twice.
@@ -563,17 +564,22 @@ function sceneLane(t) {                 // 22-35: the lane: a man and a child co
   // short first and last step; the stride is set so each arrives about when
   // the old walk did. The nod is a tween: a small dip back first, two bows.
   var nod = tween(t, [[7, 0], [7.2, -0.06], [7.6, 0.35], [8.1, 0.05], [8.5, 0.3], [9, 0]], "smooth");
-  var man = stroll(t, -100, 420, 0, cast("farmer", Object.assign({stride: 0.9, late: 0, spring: 0.4, feel: "joy", at: [820, 700], bend: nod}, FACE(0))));
-  var woman = stroll(t, 1500, 820, 0.5, cast("weaver", Object.assign({stride: 0.9, late: 0.3, spring: 0.4, at: [420, 700], wai: t >= 6.3}, HAIR_OF.weaver, FACE(1))));
-  var kid = stroll(t, -200, 300, 1, cast("child", Object.assign({stride: 0.9, late: 0.5, spring: 0.7, smile: 1, at: [820, 700], wai: t >= 7.2,
+  var man = stroll(t, -100, 420, 0, cast("farmer", Object.assign({id: "n0", stride: 0.9, late: 0, spring: 0.4, feel: "joy", at: [820, 700], bend: nod}, FACE(0))));
+  var woman = stroll(t, 1500, 820, 0.5, cast("weaver", Object.assign({id: "n1", stride: 0.9, late: 0.3, spring: 0.4, at: [420, 700], wai: t >= 6.3}, HAIR_OF.weaver, FACE(1))));
+  var kid = stroll(t, -200, 300, 1, cast("child", Object.assign({id: "n2", stride: 0.9, late: 0.5, spring: 0.7, smile: 1, at: [820, 700], wai: t >= 7.2,
                                                    wonder: tween(t, [[6, 0.3], [6.5, 1], [7.4, 1], [8, 0.4]], "smooth")}, FACE(2))));   // her wai takes him
-  person(man.x, 960, man.look);
-  person(woman.x, 950, woman.look);
-  person(kid.x, 985, kid.look);
-  dog(-300 + 195 * (t + chase(t)), 1005, t + chase(t));   // it trots on through the lane and out of the picture (owner, 2026-10-17: it stopped going forward with its legs still walking), and runs once the rooster bolts, its legs quicker with it
-  looseFeather(t);
-  birds(t, 300 + t * 40, 220);
-  pen.restore();
+  drawByZ([
+    {name: "tung", kind: "tung", y: 905, draw: function () { villageTung(t + 22); }},
+    {name: "sunbird", kind: "sunbird", z: "set", y: 700, draw: function () { sunbirdVisit(t, SUNBIRD_LANE); }},   // at the bougainvillea
+    {name: "hen", kind: "hen", x: COOP[1].x, y: COOP[1].y, draw: onOldSheet(function () { chicken(t, COOP[1]); })},
+    {name: "rooster", kind: "rooster", x: COOP[0].x, y: COOP[0].y, draw: onOldSheet(function () { chicken(t, COOP[0]); })},
+    {name: "man", kind: "person", x: man.x, y: 960, draw: onOldSheet(function () { person(man.x, 960, man.look); })},
+    {name: "woman", kind: "person", x: woman.x, y: 950, draw: onOldSheet(function () { person(woman.x, 950, woman.look); })},
+    {name: "child", kind: "person", x: kid.x, y: 985, draw: onOldSheet(function () { person(kid.x, 985, kid.look); })},
+    {name: "dog", kind: "dog", y: 1005, draw: onOldSheet(function () { dog(-300 + 195 * (t + chase(t)), 1005, t + chase(t)); })},   // it trots on through the lane and out of the picture (owner, 2026-10-17: it stopped going forward with its legs still walking), and runs once the rooster bolts, its legs quicker with it
+    {name: "feather", kind: "feather", y: COOP[0].y + 6, draw: onOldSheet(function () { looseFeather(t); })},
+    {name: "flock", kind: "birds", z: "sky", y: 220, draw: onOldSheet(function () { birds(t, 300 + t * 40, 220); })}
+  ]);
 }
 
 // The dragon's course through the pond scene (35 to 50), in the film's time:
@@ -974,7 +980,7 @@ function paddySet() {
 }
 
 function scenePaddy(t) {                // 50-70: the rice fields: a storm that clears, the parasols spun, closed and carried off
-  var dark = storm(t), wet = rainfall(t), n, w, go, joints;
+  var dark = storm(t), wet = rainfall(t);
   if (!PADDY_SET) { PADDY_SET = paddySet(); }
   pen.drawImage(PADDY_SET, 0, 0);
   if (dark > 0) {
@@ -999,56 +1005,70 @@ function scenePaddy(t) {                // 50-70: the rice fields: a storm that 
     pen.fillStyle = "rgba(255, 255, 255, 0.55)";
     pen.fillRect(0, 0, WIDE, 1080);
   }
-  paddyBirds(t);
-  pen.save();
-  pen.translate(SIDE, 0);
-  // Along the back of the wide bund, behind the women, a buffalo pulls the ox
-  // cart (pieces.js) from the right, through the rain and on under the
-  // clearing sky: amble() gives its place and step, the cart's axle sits 460
-  // of its scale behind it, the yoke on its withers, and the wheels turn with
-  // the ground covered.
-  var ox = amble("buffalo", t, 2100, 1050, 0, {size: 0.55}), oxScale = 0.55 * GAITS.buffalo[0];
-  oxcart(pen, ox.x - 460 * oxScale * ox.look.face, 872, 1.3, (2100 - ox.x) / (62 * 1.3), ox.look.face,
-         [ox.x + 150 * oxScale * ox.look.face, 872 - 310 * oxScale]);
-  var nose = buffalo(ox.x, 872, ox.look).head;   // the crown of its head, in the film's own pixels
-  // A small boy leads it by a rope through its nose (owner, 2026-10-15):
-  // he walks ahead of its head at its own pace, his feet planted by the
-  // ground it has covered, and stands when it stands. His back hand holds
-  // the rope, which runs from his wrist to the nose with a little sag.
-  var lead = ox.look.face, boyX = ox.x + lead * 330, boyLook = cast("boy", Object.assign({size: 0.58, id: "boy-paddy", face: lead, smile: 1,
-                                                                            at: [boyX + lead * 300, 760], handB: [-56, 26],
-                                                                            fingersB: [0.75, 0.85, 0.9, 0.95, 0.7]}, FACE(5)));
-  if (ox.look.step !== undefined) {
-    boyLook.stride = 1.4;
-    boyLook.step = (2100 - ox.x) / (136 * boyLook.stride * 0.82 * boyLook.size);
-  }
-  var led = person(boyX, 884, boyLook);
-  pen.save();                             // the rope is drawn in the film's own pixels, as the joints and the crown are given
-  pen.setTransform(1, 0, 0, 1, 0, 0);
-  var oxS = 0.55 * GAITS.buffalo[0] * PIX, noseAt = [nose[0] + lead * 104 * oxS, nose[1] + 92 * oxS];
-  pen.strokeStyle = "#c9a878";
-  pen.lineWidth = 3 * PIX;
-  pen.lineCap = "round";
-  pen.beginPath();
-  pen.moveTo(led.wristB[0], led.wristB[1]);
-  pen.quadraticCurveTo((led.wristB[0] + noseAt[0]) / 2, Math.max(led.wristB[1], noseAt[1]) + 26 * PIX, noseAt[0], noseAt[1]);
-  pen.stroke();
-  pen.restore();
-  for (n = 0; n < PADDY_WOMEN.length; n++) {
-    w = PADDY_WOMEN[n];
-    var umbrella = t < PADDY_TWIRL + w.late ? w.kind
-                 : t < PADDY_FOLD + w.late ? parasolAt(t, PADDY_TWIRL + w.late, w.kind, undefined, "spin")
-                 : parasolAt(t, PADDY_FOLD + w.late, w.kind, undefined, "fold");
-    var look = cast(w.name, Object.assign({size: 1.3, smile: 1, id: w.name + "-paddy", parasol: umbrella}, w.hair, FACE(6 + n)));
-    go = t < PADDY_WALK + w.late ? stroll(t, w.from, w.to, w.start, look) : stroll(t, w.to, w.to + 1400, PADDY_WALK + w.late, look);
-    joints = person(go.x, 1000, go.look);
-    pen.restore();                          // the drops are in the film's own pixels, as the joints are
-    rainOff(pen, w, t, joints);
+  // The z plan (drawByZ): the set, the storm, its mist and the far rain first, as painted, and the near rain last, over
+  // everyone. The hornbill and the peafowl of the far fields in "far". In "people", by their feet: the boy leading the
+  // buffalo and its cart (884; one sprite, the rope tied from his hand to its nose), and the three women (1000 each,
+  // in the order listed), each with the drops her parasol throws off.
+  var sprites = [{name: "birds of the far fields", kind: "hornbill", z: "far", y: 790, draw: function () { paddyBirds(t); }}];
+  sprites.push({name: "the boy, the buffalo and the cart", kind: "oxcart", y: 884, draw: function () {
     pen.save();
     pen.translate(SIDE, 0);
-  }
-  pen.restore();
+    // Along the back of the wide bund, behind the women, a buffalo pulls the ox
+    // cart (pieces.js) from the right, through the rain and on under the
+    // clearing sky: amble() gives its place and step, the cart's axle sits 460
+    // of its scale behind it, the yoke on its withers, and the wheels turn with
+    // the ground covered.
+    var ox = amble("buffalo", t, 2100, 1050, 0, {size: 0.55}), oxScale = 0.55 * GAITS.buffalo[0];
+    oxcart(pen, ox.x - 460 * oxScale * ox.look.face, 872, 1.3, (2100 - ox.x) / (62 * 1.3), ox.look.face,
+           [ox.x + 150 * oxScale * ox.look.face, 872 - 310 * oxScale]);
+    var nose = buffalo(ox.x, 872, ox.look).head;   // the crown of its head, in the film's own pixels
+    // A small boy leads it by a rope through its nose (owner, 2026-10-15):
+    // he walks ahead of its head at its own pace, his feet planted by the
+    // ground it has covered, and stands when it stands. His back hand holds
+    // the rope, which runs from his wrist to the nose with a little sag.
+    var lead = ox.look.face, boyX = ox.x + lead * 330, boyLook = cast("boy", Object.assign({size: 0.58, id: "boy-paddy", face: lead, smile: 1,
+                                                                              at: [boyX + lead * 300, 760], handB: [-56, 26],
+                                                                              fingersB: [0.75, 0.85, 0.9, 0.95, 0.7]}, FACE(5)));
+    if (ox.look.step !== undefined) {
+      boyLook.stride = 1.4;
+      boyLook.step = (2100 - ox.x) / (136 * boyLook.stride * 0.82 * boyLook.size);
+    }
+    var led = person(boyX, 884, boyLook);
+    pen.save();                             // the rope is drawn in the film's own pixels, as the joints and the crown are given
+    pen.setTransform(1, 0, 0, 1, 0, 0);
+    var oxS = 0.55 * GAITS.buffalo[0] * PIX, noseAt = [nose[0] + lead * 104 * oxS, nose[1] + 92 * oxS];
+    pen.strokeStyle = "#c9a878";
+    pen.lineWidth = 3 * PIX;
+    pen.lineCap = "round";
+    pen.beginPath();
+    pen.moveTo(led.wristB[0], led.wristB[1]);
+    pen.quadraticCurveTo((led.wristB[0] + noseAt[0]) / 2, Math.max(led.wristB[1], noseAt[1]) + 26 * PIX, noseAt[0], noseAt[1]);
+    pen.stroke();
+    pen.restore();
+    pen.restore();
+  }});
+  PADDY_WOMEN.forEach(function (w) {
+    sprites.push({name: w.name, kind: "person", y: 1000, draw: function () { paddyWoman(t, w); }});
+  });
+  drawByZ(sprites);
   rain(pen, t, wet, 1);
+}
+
+// One of the women of the rice fields (PADDY_WOMEN) at second t of the scene, under her parasol, and the drops it
+// throws off. Gives back nothing: it draws with pen, on the old sheet (shifted by SIDE), the drops in the film's pixels.
+// e.g. paddyWoman(5, PADDY_WOMEN[0]);
+function paddyWoman(t, w) {
+  var n = PADDY_WOMEN.indexOf(w), go, joints;
+  pen.save();
+  pen.translate(SIDE, 0);
+  var umbrella = t < PADDY_TWIRL + w.late ? w.kind
+               : t < PADDY_FOLD + w.late ? parasolAt(t, PADDY_TWIRL + w.late, w.kind, undefined, "spin")
+               : parasolAt(t, PADDY_FOLD + w.late, w.kind, undefined, "fold");
+  var look = cast(w.name, Object.assign({size: 1.3, smile: 1, id: w.name + "-paddy", parasol: umbrella}, w.hair, FACE(6 + n)));
+  go = t < PADDY_WALK + w.late ? stroll(t, w.from, w.to, w.start, look) : stroll(t, w.to, w.to + 1400, PADDY_WALK + w.late, look);
+  joints = person(go.x, 1000, go.look);
+  pen.restore();                            // the drops are in the film's own pixels, as the joints are
+  rainOff(pen, w, t, joints);
 }
 
 // The string of khom over the night: a cord tied between two bamboo poles,
@@ -1181,31 +1201,41 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
   pen.drawImage(NIGHT.back, 0, 0);
   hillMist(t + 70, true);
   pen.drawImage(NIGHT.front, 0, 0);
-  khomString(t);
-  // Six khom loi leave the ground behind the crowd one after another, from the
-  // scene's first second, and climb through the night, smaller as they go;
-  // the rest of the night's lanterns hang, on the string and on the poles.
-  for (var n = 0; n < 6; n++) {
-    var age = t - 0.3 - n * 0.45;
-    if (age > 0) { lantern(120 + ((n * 7) % 11) * 168 + Math.sin(age * 0.8 + n) * 30, 975 - age * 115, 46 - age * 1.5); }
-  }
-  crowd(t, 985, 30, true);
-  khomPoles(t);
-  pen.save();
-  pen.translate(SIDE, 0);                 // the three, at their places on the old sheet
-  spinningLantern(t);                     // the khom phat at the left, and the children behind the drum looking up at it
-  drumCart(pen, 110, 988, 0.75, 1);       // the temple's great drum on its cart (pieces.js), brought out for the night, beside the drummer
+  // The z plan (drawByZ): the night's sheets, sky and mist first, as painted. Behind the dancing ground, in the order
+  // they stand back to front: the string of khom across the sky (1), the khom loi rising from the crowd (1.1), the
+  // crowd (3, "back"), the poles of khom (3.1), the khom phat at the left with the children behind the drum looking up
+  // at it (3.2). On the ground, in "people", by their feet: the grandmother (950), the old man (955), the three
+  // dancers (962), the dancer in the middle (985), the drum on its cart (988), the drummer and the celestial (990) and
+  // the band (1005). The drummer, the middle dancer and the celestial have the ids their old order gave them.
+  function onOldSheet(draw) { return function () { pen.save(); pen.translate(SIDE, 0); draw(); pen.restore(); }; }
+  var sprites = [
+    {name: "khom string", kind: "khom", z: 1, y: 0, draw: function () { khomString(t); }},
+    {name: "khom loi", kind: "lantern", z: 1.1, y: 0, draw: function () {
+      // Six khom loi leave the ground behind the crowd one after another, from the
+      // scene's first second, and climb through the night, smaller as they go;
+      // the rest of the night's lanterns hang, on the string and on the poles.
+      for (var n = 0; n < 6; n++) {
+        var age = t - 0.3 - n * 0.45;
+        if (age > 0) { lantern(120 + ((n * 7) % 11) * 168 + Math.sin(age * 0.8 + n) * 30, 975 - age * 115, 46 - age * 1.5); }
+      }
+    }},
+    {name: "crowd", kind: "crowd", z: "back", y: 985, draw: function () { crowd(t, 985, 30, true); }},
+    {name: "khom poles", kind: "khom", z: 3.1, y: 0, draw: function () { khomPoles(t); }},
+    {name: "khom phat", kind: "khomphat", z: 3.2, y: 0, draw: onOldSheet(function () { spinningLantern(t); })},
+    {name: "drum", kind: "drumcart", y: 988, draw: onOldSheet(function () { drumCart(pen, 110, 988, 0.75, 1); })}   // the temple's great drum on its cart (pieces.js), brought out for the night, beside the drummer
+  ];
+  function onGround(x, y, look) { sprites.push({name: look.id, kind: "person", x: x, y: y, draw: onOldSheet(function () { person(x, y, look); })}); }
   // More dancers, a step behind the three and a little smaller, each in her own colours and a beat apart (owner,
   // 2026-10-20: "Add a few more dancers to the night scene")
   [[560, "#6a3f8f", "#2a1a3a", 0.15, 1, {sabai: ["#e0b23a", "#8a2a3a"], bun: "wong", flower: "#f6c445"}], [890, "#2a6a8a", "#1f2a3a", 0.4, -1], [1230, "#b8457a", "#5a1e2a", 0.65, 1]].forEach(function (d, k) {   // the third pink, not the gold of the celestial before her (owner, 2026-10-21)
-    person(d[0], 962, cast("dancer", Object.assign({size: 0.86, late: d[3], spring: 0.7, smile: 1, dance: true, face: d[4], shirt: d[1], legs: d[2],
+    onGround(d[0], 962, cast("dancer", Object.assign({size: 0.86, late: d[3], spring: 0.7, smile: 1, dance: true, face: d[4], shirt: d[1], legs: d[2],
                                      id: "night-dancer" + k, at: [720, 520],
                                      handA: [64 + Math.sin(t * 3 + k) * 18, -126 - hop(t, d[3]) * 26], handB: [-56, -104 + Math.cos(t * 3 + k) * 18]}, d[5] || {}, FACE(k))));
   });
-  person(380, 990, cast("drummer", Object.assign({late: 0, spring: 0.6, smile: 1, at: [720, 700]}, LANNA_MAN, FACE(3))));
-  person(720, 985, cast("dancer", Object.assign({late: 0.25, spring: 0.7, smile: 1, dance: true, at: [900, 500], maiwai: true, malai: true,
+  onGround(380, 990, cast("drummer", Object.assign({id: "n0", late: 0, spring: 0.6, smile: 1, at: [720, 700]}, LANNA_MAN, FACE(3))));
+  onGround(720, 985, cast("dancer", Object.assign({id: "n1", late: 0.25, spring: 0.7, smile: 1, dance: true, at: [900, 500], maiwai: true, malai: true,
                                   handA: [70 + Math.sin(t * 3) * 20, -130 - hop(t, 0.25) * 30], handB: [-60, -110 + Math.cos(t * 3) * 20]}, FACE(4))));
-  person(1060, 990, cast("celestial", Object.assign({late: 0.5, spring: 0.6, smile: 1, face: -1, at: [720, 500], handA: [50, -120 - hop(t, 0.5) * 25]}, FACE(5))));
+  onGround(1060, 990, cast("celestial", Object.assign({id: "n2", late: 0.5, spring: 0.6, smile: 1, face: -1, at: [720, 500], handA: [50, -120 - hop(t, 0.5) * 25]}, FACE(5))));
   // An old couple watches the dancing, side by side and turned to us, holding hands, their eyes on the dancer
   // (owner, 2026-10-16: "Add an old couple to the end scene too"): the cast's grandmother, and its elder, who
   // leaves his stick for the night. They stand a step behind the band, so the players sitting in front hide
@@ -1214,16 +1244,17 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
   // to wrist; a point at hanging height was 117 off and his hand stopped short of hers). They do not hop on the
   // beat, as the dancers do: the stretch of a hop would take his hand away from hers.
   var hands = [1646, 772 + 4 * Math.sin(t * 1.4)];
-  person(1715, 950, cast("grandmother", Object.assign({size: 1.0, twist: 1, face: -1, spring: 0, at: [720, 640], reachA: hands, id: "old-woman", bun: "low"}, FACE(6))));
-  person(1575, 955, cast("elder", Object.assign({size: 1.1, twist: 1, holding: null, spring: 0, at: [720, 640], reachA: hands, id: "old-man"}, FACE(7))));
+  onGround(1715, 950, cast("grandmother", Object.assign({size: 1.0, twist: 1, face: -1, spring: 0, at: [720, 640], reachA: hands, id: "old-woman", bun: "low"}, FACE(6))));
+  onGround(1575, 955, cast("elder", Object.assign({size: 1.1, twist: 1, holding: null, spring: 0, at: [720, 640], reachA: hands, id: "old-man"}, FACE(7))));
   // The band of the north (band.js), sitting cross-legged on the ground at the right, a step nearer than the
   // dancers, facing them, each on the beat (owner, 2026-10-16: "Add the band members to the night scene"): the
   // pi chum, the salo (its bow across the piper's empty lap), the sueng (its neck behind the next player) and the
   // phin phia, as far right as the words under the picture allow.
   [["pichum", "elder", 1420, 0.31], ["salo", "fellow", 1570, 0], ["sueng", "farmer", 1715, 0.13], ["phinphia", "fellow", 1850, 0.07]].forEach(function (b, k) {
-    musician(b[2], 1005, b[0], cast(b[1], Object.assign({size: 1.0, face: -1, smile: 1, id: "band-" + b[0]}, FACE(k ? 8 + k : 17))), b[3]);
+    var player = cast(b[1], Object.assign({size: 1.0, face: -1, smile: 1, id: "band-" + b[0]}, FACE(k ? 8 + k : 17)));
+    sprites.push({name: player.id, kind: "person", x: b[2], y: 1005, draw: onOldSheet(function () { musician(b[2], 1005, b[0], player, b[3]); })});
   });
-  pen.restore();
+  drawByZ(sprites);
 }
 
 var SCENES = [[0, 22, sceneCloth], [22, 35, sceneLane], [35, 53, scenePond], [53, 73, scenePaddy], [73, DURATION, sceneDance]];
