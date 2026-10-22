@@ -47,18 +47,26 @@ function sceneVillage(t) {
   pen.scale(1 + 0.6 * close, 1 + 0.6 * close);
   pen.translate(-720 - 260 * close, -540 + 60 * close);
   pen.drawImage(backdrop("village"), 0, 0);
-  var joints = {};
-  joints.elder = person(1330, 1000, cast("elder", {late: 0.75, face: 1}));
-  if (!walking) {
-    joints.girl = person(930, 1010, cast("girl", {late: 0.5, feel: "happy", face: -1}));
-    joints.lady = person(250, 1000, cast("lady", {late: 0, feel: "happy"}));
-    joints.fellow = person(620, 990, cast("fellow", {late: 0.25, feel: "sleepy"}));
-  } else {
-    var lady = stroll(t, 250, 760, 6, cast("lady", {late: 0, feel: "happy"}));
-    var fellow = stroll(t, 620, 1000, 6.4, cast("fellow", {late: 0.25, feel: "happy"}));
-    joints.lady = person(lady.x, 1000, lady.look);
-    joints.fellow = person(fellow.x, 990, fellow.look);
+  // The z plan (the kit's drawByZ(), oldcartoon.js Z): the village's sheet first, as painted, and the bubbles last,
+  // over everyone. In "people", by their feet: the fellow (990), the elder and the lady (1000) and the girl (1010).
+  // Each has the id the old order gave them (n0, n1, ...), so they move as before.
+  var joints = {}, who = [];
+  function stand(name, x, y, look) {   // the bubbles are drawn in the order listed here, not the order drawn
+    joints[name] = null;
+    who.push({name: name, kind: "person", x: x, y: y, draw: function () { joints[name] = person(x, y, look); }});
   }
+  stand("elder", 1330, 1000, cast("elder", {id: "n0", late: 0.75, face: 1}));
+  if (!walking) {
+    stand("girl", 930, 1010, cast("girl", {id: "n1", late: 0.5, feel: "happy", face: -1}));
+    stand("lady", 250, 1000, cast("lady", {id: "n2", late: 0, feel: "happy"}));
+    stand("fellow", 620, 990, cast("fellow", {id: "n3", late: 0.25, feel: "sleepy"}));
+  } else {
+    var lady = stroll(t, 250, 760, 6, cast("lady", {id: "n1", late: 0, feel: "happy"}));
+    var fellow = stroll(t, 620, 1000, 6.4, cast("fellow", {id: "n2", late: 0.25, feel: "happy"}));
+    stand("lady", lady.x, 1000, lady.look);
+    stand("fellow", fellow.x, 990, fellow.look);
+  }
+  drawByZ(who);
   joints.house = [1190, 650];                       // a place, the window of a house: the bubble points at it
   Object.keys(joints).forEach(function (who) {      // the bubbles last, over everyone
     var row = saying(who, t);

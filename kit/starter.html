@@ -42,10 +42,23 @@ var PLACE = (function () {               // the set is painted once, when the pa
 
 function sceneHello(t) {
   pen.drawImage(PLACE, 0, 0);
-  person(330, GROUND + 60, cast("celestial", {late: 0, handA: [44, -84], handB: [-60, 20], at: [900, 500]}));
-  person(720, GROUND + 60, cast("dancer", {late: 0.25, handA: [60, -70], handB: [-50, -30], turn: 0.3}));
-  person(1060, GROUND + 60, cast("monk", {late: 0.5, handA: [26, 8], handB: [-26, 8], turn: 0.5, bend: 0.1}));
-  person(1360, GROUND + 60, cast("villager", {late: 0.75, step: t, handA: [40, -66], handB: [-20, 70]}));
+  // The z plan (the kit's drawByZ(), oldcartoon.js Z): the set first, as painted. In "people", by their feet: the four
+  // stand on one line (GROUND + 60) and are drawn in the order listed. Give each thing on the ground the y where it
+  // stands, and drawByZ() draws them from the back to the front.
+  drawByZ([
+    {name: "celestial", kind: "person", x: 330, y: GROUND + 60, draw: function () {
+      person(330, GROUND + 60, cast("celestial", {late: 0, handA: [44, -84], handB: [-60, 20], at: [900, 500]}));
+    }},
+    {name: "dancer", kind: "person", x: 720, y: GROUND + 60, draw: function () {
+      person(720, GROUND + 60, cast("dancer", {late: 0.25, handA: [60, -70], handB: [-50, -30], turn: 0.3}));
+    }},
+    {name: "monk", kind: "person", x: 1060, y: GROUND + 60, draw: function () {
+      person(1060, GROUND + 60, cast("monk", {late: 0.5, handA: [26, 8], handB: [-26, 8], turn: 0.5, bend: 0.1}));
+    }},
+    {name: "villager", kind: "person", x: 1360, y: GROUND + 60, draw: function () {
+      person(1360, GROUND + 60, cast("villager", {late: 0.75, step: t, handA: [40, -66], handB: [-20, 70]}));
+    }}
+  ]);
 }
 
 var SCENES = [[0, 8, sceneHello]];

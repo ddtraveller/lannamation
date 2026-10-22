@@ -65,8 +65,17 @@ var KIDS = [cast("child", {shirt: "#e9c45c", legs: "#3d4f78", size: 0.9, skin: "
             cast("child", {bun: true, dance: true, shirt: "#f2ead8", size: 0.8, sin: 2,
                            sabai: ["#f6e3a1", "#8a2a3a"], flower: "#e9c45c", skin: "#f4d3b4", eyes: 1.25, head: 1})];   // a child's round head
 
+// A person standing at (x, y) with "look", as a sprite for the kit's drawByZ() (oldcartoon.js): {name, kind, x, y,
+// draw}. It draws nothing itself: drawByZ() calls its draw, in its turn.
+// e.g. drawByZ([standing("sister", 720, GROUND + 60, CAST.sister)]);
+function standing(name, x, y, look) {
+  return {name: name, kind: "person", x: x, y: y, draw: function () { person(x, y, look); }};
+}
+
+// Child n of KIDS standing at (x, y), "more" laid over their look, as a sprite for drawByZ() (see standing()).
+// e.g. drawByZ([kid(0, 380, GROUND + 60, {late: 0})]);
 function kid(n, x, y, more) {
-  person(x, y, Object.assign({}, KIDS[n], more));
+  return standing("kid " + n, x, y, Object.assign({}, KIDS[n], more));
 }
 
 // ---------- the sets ----------
@@ -311,13 +320,16 @@ function sceneDawn(t) {
       pen.fill();
     }
   }
-  var walk = between(t, 3, 7);                      // the three come up the lane to the house
+  // The z plan (drawByZ): the dawn or the house first, as painted, the knock and what grows in front of the yard last.
+  // In "people", by their feet: the three on one line (GROUND + 60), in the order listed.
+  var walk = between(t, 3, 7), three = [];          // the three come up the lane to the house
   for (var n = 0; n < 3; n++) {
-    kid(n, mix(60 - n * 150, 450 - n * 130, walk), GROUND + 60, {
+    three.push(kid(n, mix(60 - n * 150, 450 - n * 130, walk), GROUND + 60, {
       late: n * 0.3, step: walk < 1 ? t * 1.6 : 0, at: [640, 560], smile: 1, wonder: 0.3,
       handA: walk < 1 ? undefined : [36, -70 - hop(t, n * 0.3) * 20], mouth: mouthAt(SUNG)   // walking, the arms swing by themselves; then one waves
-    });
+    }));
   }
+  drawByZ(three);
   if (t > 7.5) {                                     // a knock: three short lines from the door
     pen.strokeStyle = INK;
     pen.lineWidth = 3;
@@ -352,24 +364,34 @@ function sceneDoor(t) {
   pen.rect(0, 0, 70, 150);
   shape("#6a3b29");
   pen.restore();
+  // The z plan (drawByZ): the house and its door first, as painted, and the lotus at the corner of the yard last. In
+  // "people", by their feet: the sister, up in the doorway and coming down the stairs (GROUND - 170 to GROUND + 60),
+  // and the three below (GROUND + 60). Each has the id the old order gave them (n0 to n3), so they move as before.
+  var four = [];
   for (var n = 0; n < 3; n++) {                      // the three wait below, jumping, then follow her
-    kid(n, mix(450 - n * 130, 1700 - n * 150, gone), GROUND + 60, {
-      late: n * 0.3, spring: 1, step: gone > 0 ? t * 1.6 : 0, at: [760, 600], smile: 1, wonder: 0.4,
+    four.push(kid(n, mix(450 - n * 130, 1700 - n * 150, gone), GROUND + 60, {
+      id: "n" + n, late: n * 0.3, spring: 1, step: gone > 0 ? t * 1.6 : 0, at: [760, 600], smile: 1, wonder: 0.4,
       handA: gone > 0 ? undefined : [40, -80 - hop(t, n * 0.3) * 20], mouth: mouthAt(SUNG)
-    });
+    }));
   }
   // the sister: in the doorway, then down the stairs, then away with them
   var sx = mix(740, 790, down), sy = mix(GROUND - 170, GROUND + 60, down);
-  person(mix(sx, 1900, gone), sy, Object.assign({}, CAST.sister, {
-    late: 0.5, spring: 0.3, size: mix(0.95, 1.25, down), step: down > 0 ? t * 1.4 : 0, mouth: mouthAt(SUNG), smile: 1,
+  four.push(standing("sister", mix(sx, 1900, gone), sy, Object.assign({}, CAST.sister, {
+    id: "n3", late: 0.5, spring: 0.3, size: mix(0.95, 1.25, down), step: down > 0 ? t * 1.4 : 0, mouth: mouthAt(SUNG), smile: 1,
     at: [450, 700]                                  // her arms hang, and swing as she walks
-  }));
+  })));
+  drawByZ(four);
   pen.drawImage(HOUSE_FRONT, 0, 0);                  // the lotus at the corner of the yard, in front of them all
 }
 
 function sceneLane(t) {
   pen.drawImage(LANE, 0, 0);
-  crowd(t, 866, 0);
+  // The z plan (drawByZ): the lane first, as painted, and its near side last, over everyone. The crowd behind the
+  // games (3, "back"); a kite in "sky" and the hopscotch track, flat on the ground, in "set". In "people", by their
+  // feet: the players on their line (GROUND + 60), the skipping rope a step behind their feet or a step before it as
+  // it turns, the one on coconut shells at the shells' foot, the rest where they stand; the takraw ball, in the air
+  // over them, in "front". In the hopscotch each has the id the old order gave them (n0 to n3), so they move as before.
+  var sprites = [{name: "crowd", kind: "crowd", z: "back", y: 866, draw: function () { crowd(t, 866, 0); }}];
   // The lane's games follow the song, not the clock. Lines 4, 5 and 6 of
   // CUES name the games, and a game begins a second before the line that
   // names it, so the picture is there when its words come. Line 4 names two
@@ -380,13 +402,13 @@ function sceneLane(t) {
   var g = game === 1 ? into - 3 : into;             // seconds since this game began
   if (game === 0) {                                  // two turn the rope, the sister skips in it, a kid waits
     var handY = 655 + 39 * Math.cos(t * Math.PI / BEAT);   // the turners' hands, where the rope's ends are
-    if (Math.cos(t * Math.PI / BEAT) < 0) { rope(458, handY, 982, handY, t); }   // the rope behind her, then in front
-    kid(0, 380, GROUND + 60, {late: 0, spring: 0.3, handA: [60, -30 + 30 * Math.cos(t * Math.PI / BEAT)], at: [720, 500], smile: 1});
-    kid(1, 1060, GROUND + 60, {late: 0, spring: 0.3, face: -1, handA: [60, -30 + 30 * Math.cos(t * Math.PI / BEAT)], at: [720, 500], smile: 1});
-    person(720, GROUND + 60, Object.assign({}, CAST.sister, {late: 0.5, spring: 1.4, mouth: mouthAt(SUNG), smile: 1, turn: 0.6,
-      handA: [40, 20], handB: [-40, 20], at: [720, 300]}));
-    kid(2, 1300, GROUND + 60, {late: 0.25, spring: 0.6, handA: [40, -70], at: [720, 500], smile: 1, wonder: 0.5});
-    if (Math.cos(t * Math.PI / BEAT) >= 0) { rope(458, handY, 982, handY, t); }
+    var behind = Math.cos(t * Math.PI / BEAT) < 0;   // the rope behind her, then in front
+    sprites.push({name: "rope", kind: "rope", x: 720, y: GROUND + (behind ? 59 : 61), draw: function () { rope(458, handY, 982, handY, t); }});
+    sprites.push(kid(0, 380, GROUND + 60, {late: 0, spring: 0.3, handA: [60, -30 + 30 * Math.cos(t * Math.PI / BEAT)], at: [720, 500], smile: 1}));
+    sprites.push(kid(1, 1060, GROUND + 60, {late: 0, spring: 0.3, face: -1, handA: [60, -30 + 30 * Math.cos(t * Math.PI / BEAT)], at: [720, 500], smile: 1}));
+    sprites.push(standing("sister", 720, GROUND + 60, Object.assign({}, CAST.sister, {late: 0.5, spring: 1.4, mouth: mouthAt(SUNG), smile: 1, turn: 0.6,
+      handA: [40, 20], handB: [-40, 20], at: [720, 300]})));
+    sprites.push(kid(2, 1300, GROUND + 60, {late: 0.25, spring: 0.6, handA: [40, -70], at: [720, 500], smile: 1, wonder: 0.5}));
   } else if (game === 1) {                           // takraw: three keep the ball up with their feet
     // The ball is kicked, never headed. A flight lasts one second, and
     // "touches" says whose foot the ball is on at the start of each: the
@@ -417,56 +439,63 @@ function sceneLane(t) {
                 mix(from[1], to[1], u) - Math.sin(u * Math.PI) * (300 + 0.25 * Math.abs(to[0] - from[0]))];
     for (var n = 0; n < 3; n++) {
       var p = players[n], kick = kickOf(n);
-      person(p.x, GROUND + 60, Object.assign({}, p.look, {late: p.late, spring: 0.3, face: p.face, smile: 1, at: ball,
+      sprites.push(standing("player " + n, p.x, GROUND + 60, Object.assign({}, p.look, {late: p.late, spring: 0.3, face: p.face, smile: 1, at: ball,
         mouth: n === 1 ? mouthAt(SUNG) : null,
         raise: kick > 0.01 ? [1, p.high * kick, p.forward * kick, -0.3 * kick] : undefined,
-        handA: [50, -20 - 26 * kick], handB: [-50, 10 - 20 * kick]}));   // the arms go out and up, for balance
+        handA: [50, -20 - 26 * kick], handB: [-50, 10 - 20 * kick]})));   // the arms go out and up, for balance
     }
-    kid(2, 700, GROUND + 110, {late: 0.2, spring: 0.6, handA: [40, -70], handB: [-40, -70], at: ball, smile: 1, wonder: 0.4});
-    takraw(ball[0], ball[1]);
+    sprites.push(kid(2, 700, GROUND + 110, {late: 0.2, spring: 0.6, handA: [40, -70], handB: [-40, -70], at: ball, smile: 1, wonder: 0.4}));
+    sprites.push({name: "takraw ball", kind: "takraw", z: "front", y: 0, draw: function () { takraw(ball[0], ball[1]); }});
   } else if (game === 2) {                           // coconut-shell stilts, and hopscotch
-    shells(420 + g * 40, GROUND + 66);
-    kid(0, 420 + g * 40, GROUND + 50, {late: 0, spring: 0.2, step: t * 1.2, handA: [50, 40], handB: [-50, 40], wristA: 0.4, wristB: -0.4, at: [900, 600], smile: 1});
+    sprites.push({name: "kid 0 on the shells", kind: "person", x: 420 + g * 40, y: GROUND + 66, draw: function () {
+      shells(420 + g * 40, GROUND + 66);
+      kid(0, 420 + g * 40, GROUND + 50, {id: "n0", late: 0, spring: 0.2, step: t * 1.2, handA: [50, 40], handB: [-50, 40], wristA: 0.4, wristB: -0.4, at: [900, 600], smile: 1}).draw();
+    }});
     // The track lies on the ground and she hops along it, a row to each
     // beat: out to the far end, a turn, and back. Her feet stay on the
     // ground under the middle of the track; she moves along it while she is
     // in the air, and lands on a row. A single square takes one foot (the
     // other is lifted); a pair takes both.
     var trackX = 1250, trackY = GROUND + 62;
-    hopscotch(trackX, trackY);
+    sprites.push({name: "hopscotch", kind: "hopscotch", z: "set", y: trackY, draw: function () { hopscotch(trackX, trackY); }});
     var rows = [0, 1, 2, 3, 4, 4, 3, 2, 1, 0, 0];     // the row she is on at each beat of the game
     var beat = Math.min(9, Math.floor(g / BEAT));
     var part = clamp((g / BEAT - beat - HOLD) / (1 - 2 * HOLD));   // how far through this hop's flight (she is still while her feet are down)
     var row = mix(rows[beat], rows[beat + 1], part), back = beat >= 5;   // coming back, she faces the other way
     var pair = mix(rows[beat] % 2, rows[beat + 1] % 2, part);      // 0 over a single square, 1 over a pair
     var hopX = trackX - row * HOP_SQUARE;
-    person(hopX, trackY, Object.assign({}, CAST.sister, {late: 0, spring: 1.2, face: back ? 1 : -1, mouth: mouthAt(SUNG), smile: 1,
+    sprites.push(standing("sister", hopX, trackY, Object.assign({}, CAST.sister, {id: "n1", late: 0, spring: 1.2, face: back ? 1 : -1, mouth: mouthAt(SUNG), smile: 1,
       raise: pair > 0.98 ? undefined : [0, 40 * (1 - pair), -10 * (1 - pair)], handA: [50, -40], handB: [-50, -40],
-      at: [hopX + (back ? 160 : -160), trackY], size: 1.1}));
-    kid(1, 1420, GROUND + 60, {late: 0.5, spring: 0.6, face: -1, handA: [40, -70], at: [hopX, 500], smile: 1, wonder: 0.4});
-    kid(2, 760, GROUND + 100, {late: 0.3, spring: 0.6, handA: [40, -70], at: [hopX, 500], smile: 1});
+      at: [hopX + (back ? 160 : -160), trackY], size: 1.1})));
+    sprites.push(kid(1, 1420, GROUND + 60, {id: "n2", late: 0.5, spring: 0.6, face: -1, handA: [40, -70], at: [hopX, 500], smile: 1, wonder: 0.4}));
+    sprites.push(kid(2, 760, GROUND + 100, {id: "n3", late: 0.3, spring: 0.6, handA: [40, -70], at: [hopX, 500], smile: 1}));
   } else {                                           // a kite high up, and a top spinning
-    kite(1000, 260, t, 520, 600);
-    kid(0, 460, GROUND + 60, {late: 0, spring: 0.3, handA: [60, -80], at: [1000, 260], smile: 1, wonder: 0.5, wristA: -0.5});
-    spinTop(1150, GROUND + 60, t);
-    kid(1, 1250, GROUND + 60, {late: 0.5, spring: 0.4, face: -1, bend: 0.25, handA: [70, 30], at: [1150, 900], smile: 1});
-    person(800, GROUND + 60, Object.assign({}, CAST.sister, {late: 0.25, spring: 0.5, mouth: mouthAt(SUNG), smile: 1, turn: 0.4,
-      handA: [36, -84], at: [1000, 260]}));
-    kid(2, 1480, GROUND + 60, {late: 0.75, spring: 0.6, face: -1, handA: [40, -70], at: [1150, 900], smile: 1, wonder: 0.5});
+    sprites.push({name: "kite", kind: "kite", z: "sky", y: 260, draw: function () { kite(1000, 260, t, 520, 600); }});
+    sprites.push(kid(0, 460, GROUND + 60, {late: 0, spring: 0.3, handA: [60, -80], at: [1000, 260], smile: 1, wonder: 0.5, wristA: -0.5}));
+    sprites.push({name: "top", kind: "top", x: 1150, y: GROUND + 60, draw: function () { spinTop(1150, GROUND + 60, t); }});
+    sprites.push(kid(1, 1250, GROUND + 60, {late: 0.5, spring: 0.4, face: -1, bend: 0.25, handA: [70, 30], at: [1150, 900], smile: 1}));
+    sprites.push(standing("sister", 800, GROUND + 60, Object.assign({}, CAST.sister, {late: 0.25, spring: 0.5, mouth: mouthAt(SUNG), smile: 1, turn: 0.4,
+      handA: [36, -84], at: [1000, 260]})));
+    sprites.push(kid(2, 1480, GROUND + 60, {late: 0.75, spring: 0.6, face: -1, handA: [40, -70], at: [1150, 900], smile: 1, wonder: 0.5}));
   }
+  drawByZ(sprites);
   pen.drawImage(LANE_FRONT, 0, 0);
 }
 
 function sceneDance(t) {
   pen.drawImage(LANE, 0, 0);
-  crowd(t, 866, 0);
+  // The z plan (drawByZ): the lane first, as painted, and its near side last. The crowd behind them (3, "back"). In
+  // "people", by their feet: the sister and two of the children (GROUND + 60), in the order listed, and the youngest a
+  // step nearer (GROUND + 90).
   var pose = poseAt(t * 1.0 + 20, TRACK, 0);         // the sister dances the dance read from the video
-  person(820, GROUND + 60, Object.assign({}, CAST.sister, {late: 0, spring: 0.1, mouth: mouthAt(SUNG), smile: 1}, pose));
+  var sprites = [{name: "crowd", kind: "crowd", z: "back", y: 866, draw: function () { crowd(t, 866, 0); }},
+                 standing("sister", 820, GROUND + 60, Object.assign({}, CAST.sister, {late: 0, spring: 0.1, mouth: mouthAt(SUNG), smile: 1}, pose))];
   for (var n = 0; n < 3; n++) {                      // the children copy her, each a little late
     var copy = poseAt(t + 20 - 0.4 * (n + 1), TRACK, 0);
-    kid(n, [440, 1200, 1480][n], GROUND + 60 + (n === 2 ? 30 : 0), Object.assign({late: n * 0.3, spring: 0.2, smile: 1, at: [820, 400]}, copy,
-        {glance: undefined, blink: undefined}));
+    sprites.push(kid(n, [440, 1200, 1480][n], GROUND + 60 + (n === 2 ? 30 : 0), Object.assign({late: n * 0.3, spring: 0.2, smile: 1, at: [820, 400]}, copy,
+        {glance: undefined, blink: undefined})));
   }
+  drawByZ(sprites);
   pen.drawImage(LANE_FRONT, 0, 0);
 }
 
@@ -479,21 +508,29 @@ function sceneNight(t) {
   pen.fillRect(0, 420, WIDE, 380);
   pen.fillStyle = "rgba(70, 40, 110, " + mix(0.3, 0.55, between(t, 0, 8)) + ")";
   pen.fillRect(0, 0, WIDE, 1080);
-  crowd(t, 872, 0, true);
-  for (var n = 0; n < 26; n++) {
-    var age = t - n * 0.5;
-    if (age > 0 && age < 12) { lantern(120 + dice(n) * 1200 + Math.sin(age + n) * 30, 760 - age * 70, 40 - age * 1.5); }
-  }
+  // The z plan (drawByZ): the lane and the dusk first, as painted, and the dusk and the warm light on everyone and the
+  // card last. Behind them: the crowd (3, "back") and the khom loi rising from it (3.1). In "people", by their feet:
+  // the sister and the three on one line (GROUND + 60), in the order listed.
+  var sprites = [
+    {name: "crowd", kind: "crowd", z: "back", y: 872, draw: function () { crowd(t, 872, 0, true); }},
+    {name: "khom loi", kind: "lantern", z: 3.1, y: 0, draw: function () {
+      for (var n = 0; n < 26; n++) {
+        var age = t - n * 0.5;
+        if (age > 0 && age < 12) { lantern(120 + dice(n) * 1200 + Math.sin(age + n) * 30, 760 - age * 70, 40 - age * 1.5); }
+      }
+    }}
+  ];
   var bow = between(t, 12, 12.6) * (1 - between(t, 15.4, 16));   // a wai to say good night
   var pose = poseAt(t + 40, TRACK, 0);
-  person(820, GROUND + 60, Object.assign({}, CAST.sister, {late: 0, spring: 0.1, mouth: mouthAt(SUNG), smile: 1}, pose,
-    bow > 0.5 ? {handA: [24, 6], handB: [-24, 6], bend: 0.28, sit: 0, tilt: 0, raise: undefined, turn: 1, at: [720, 1300]} : {}));
+  sprites.push(standing("sister", 820, GROUND + 60, Object.assign({}, CAST.sister, {late: 0, spring: 0.1, mouth: mouthAt(SUNG), smile: 1}, pose,
+    bow > 0.5 ? {handA: [24, 6], handB: [-24, 6], bend: 0.28, sit: 0, tilt: 0, raise: undefined, turn: 1, at: [720, 1300]} : {})));
   for (var k = 0; k < 3; k++) {
     var late = k * 0.5 + 0.1, high = hop(t, late);
-    kid(k, [430, 1180, 1460][k], GROUND + 60, Object.assign({late: late, mouth: mouthAt(SUNG), smile: 1, at: [800, 300 - high * 40],
+    sprites.push(kid(k, [430, 1180, 1460][k], GROUND + 60, Object.assign({late: late, mouth: mouthAt(SUNG), smile: 1, at: [800, 300 - high * 40],
       handA: [44, -84 - high * 24], handB: [-44, -84 - hop(t, late + 0.5) * 24]},
-      bow > 0.5 ? {handA: [24, 6], handB: [-24, 6], bend: 0.28, turn: 1, at: [720, 1300]} : {}));
+      bow > 0.5 ? {handA: [24, 6], handB: [-24, 6], bend: 0.28, turn: 1, at: [720, 1300]} : {})));
   }
+  drawByZ(sprites);
   pen.fillStyle = "rgba(70, 40, 110, " + mix(0.08, 0.16, between(t, 0, 8)) + ")";
   pen.fillRect(0, 0, WIDE, 1080);
   pen.save();

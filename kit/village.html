@@ -276,17 +276,28 @@ function sceneMorning(t) {
   pen.scale(1, 1 + 0.012 * hop(t, 0));
   pen.drawImage(VILLAGE, 0, -850);
   pen.restore();
-  cloud(160 + t * 14, 150, 1);
-  cloud(760 + t * 9, 110, 0.8);
-  cloud(1240 + t * 12, 190, 0.9);
-  sun(1160, mix(520, 230, between(t, 3, 7)), t);
-  if (t > 3.5) { birds(t, -100 + (t - 3.5) * 150, 250 + Math.sin(t) * 20); }
-  rooster(1030, 505, t);
+  // The z plan (the kit's drawByZ(), oldcartoon.js Z): the village's sheet first, as painted, and the curtain last.
+  // In "sky": the clouds, the sun and the birds, which can be anywhere. In "people", by their feet: the rooster high
+  // on the sheet, far back (505), and the fellow (GROUND).
   var out = between(t, 4.5, 6.5);
-  person(mix(260, 520, out), GROUND, cast("fellow", {
-    late: 0, step: out < 1 ? t * 2 : 0, at: [1160, 300], turn: 0.4, smile: 1, turban: "#c4654f", sarong: "#3d4f78",
-    mouth: mouthAt(SUNG), size: 1.5, handA: [40, -70 - hop(t, 0) * 30], handB: [-40, -70 - hop(t, 0.5) * 30]
-  }));
+  drawByZ([
+    {name: "clouds", kind: "cloud", y: 0, draw: function () {
+      cloud(160 + t * 14, 150, 1);
+      cloud(760 + t * 9, 110, 0.8);
+      cloud(1240 + t * 12, 190, 0.9);
+    }},
+    {name: "sun", kind: "sun", y: 0, draw: function () { sun(1160, mix(520, 230, between(t, 3, 7)), t); }},
+    {name: "birds", kind: "birds", z: "sky", y: 0, draw: function () {
+      if (t > 3.5) { birds(t, -100 + (t - 3.5) * 150, 250 + Math.sin(t) * 20); }
+    }},
+    {name: "rooster", kind: "rooster", x: 1030, y: 505, draw: function () { rooster(1030, 505, t); }},
+    {name: "fellow", kind: "person", x: mix(260, 520, out), y: GROUND, draw: function () {
+      person(mix(260, 520, out), GROUND, cast("fellow", {
+        late: 0, step: out < 1 ? t * 2 : 0, at: [1160, 300], turn: 0.4, smile: 1, turban: "#c4654f", sarong: "#3d4f78",
+        mouth: mouthAt(SUNG), size: 1.5, handA: [40, -70 - hop(t, 0) * 30], handB: [-40, -70 - hop(t, 0.5) * 30]
+      }));
+    }}
+  ]);
   if (t < 4.6) { curtain(between(t, 3, 4.6)); }
 }
 
@@ -295,31 +306,44 @@ function sceneMedicine(t) {
   var up = found * between(t, 7.5, 5.3);
   var lift = 70 * hop(t, 0), liftB = 70 * hop(t, 0.5);   // the pestles rise between the beats and strike on them
   pen.drawImage(LAB, 0, 0);
-  if (found < 1) {                                 // the pestles, behind the hands that hold them
-    pestle(628 - lift * 0.33, 450 - lift * 0.5, 690, 790);
-    pestle(792 + liftB * 0.33, 450 - liftB * 0.5, 710, 790);
+  // The z plan (the kit's drawByZ(), oldcartoon.js Z): the room first, as painted, and the stars last, over everyone.
+  // In "people", by their feet: the pestles just behind the hands that hold them (GROUND - 11); the two assistants,
+  // the table and the herb doctor on one line (GROUND - 10), in the order listed; and the mortar at its foot (920).
+  // The table's legs reach 904, nearer than his feet, but he stands at its end with his hands on its top, and its
+  // glow falls on the assistant beside it: it is put on his line, just before him.
+  var sprites = [
+    {name: "pestles", kind: "pestle", x: 700, y: GROUND - 11, draw: function () {
+      if (found < 1) {                             // the pestles, behind the hands that hold them
+        pestle(628 - lift * 0.33, 450 - lift * 0.5, 690, 790);
+        pestle(792 + liftB * 0.33, 450 - liftB * 0.5, 710, 790);
+      }
+    }},
+    {name: "mortar", kind: "mortar", x: 700, y: 920, draw: function () { mortar(700, 920, t); }}
+  ];
+  function onLine(name, x, look) {
+    sprites.push({name: name, kind: "person", x: x, y: GROUND - 10, draw: function () { person(x, GROUND - 10, look); }});
   }
-  mortar(700, 920, t);
-  person(520, GROUND - 10, {                       // an assistant, pounding on the beat
+  onLine("assistant", 520, {                       // an assistant, pounding on the beat
     shirt: "#4a6797", legs: "#3d4f78", size: 1.25, late: 0, spring: 0.25 + 0.75 * found, mouth: mouthAt(SUNG), grip: found < 1,
     at: found ? [1120, 560] : [700, 760], turn: 0.1, wonder: up, smile: found,
     handA: found ? [44, -84 - hop(t, 0) * 24] : [52, -58 - lift],
     handB: found ? [-44, -84 - hop(t, 0.5) * 24] : [30, -30 - lift]
   });
-  person(900, GROUND - 10, {                       // the other, on the off-beat
+  onLine("the other assistant", 900, {                       // the other, on the off-beat
     shirt: "#5a9686", legs: "#3d4f78", size: 1.25, face: -1, late: 0.5, spring: 0.25 + 0.75 * found, grip: found < 1,
     mouth: mouthAt(SUNG), at: found ? [1120, 560] : [700, 760], turn: 0.1, wonder: up, smile: found,
     handA: found ? [44, -84 - hop(t, 0.5) * 24] : [52, -58 - liftB],
     handB: found ? [-44, -84 - hop(t, 0) * 24] : [30, -30 - liftB]
   });
-  table(1100, 600, found, t);
-  person(1230, GROUND - 10, {                      // the herb doctor, grinding at his table; then his arms go up
+  sprites.push({name: "table", kind: "table", x: 1100, y: GROUND - 10, draw: function () { table(1100, 600, found, t); }});
+  onLine("herb doctor", 1230, {                      // the herb doctor, grinding at his table; then his arms go up
     shirt: "#f2ead8", legs: "#814a77", sarong: "#814a77", turban: "#c4654f", size: 1.3, face: -1,
     late: 0.25, spring: 0.2 + 0.8 * found, bend: 0.22 * (1 - found), mouth: mouthAt(SUNG),
     at: found ? [1120, 520] : [1070, 590], turn: 0.3 * found, wonder: up, smile: 1,
     handA: found ? [44, -84 - hop(t, 0.25) * 24] : [64 + 16 * Math.sin(t * 7), 34], wristA: found ? 0 : 0.9,   // flat on the stone
     handB: found ? [-44, -84 - hop(t, 0.75) * 24] : [36, 52]
   });
+  drawByZ(sprites);
   if (found > 0) {
     for (var n = 0; n < 6; n++) {
       var angle = n / 6 * Math.PI * 2 + t;
@@ -330,19 +354,29 @@ function sceneMedicine(t) {
 
 function sceneParade(t) {
   pen.drawImage(ROAD, -t * 160, 0);
-  for (var flag = 0; flag < 5; flag++) { tung(pen, 640 + flag * 700 - t * 160, 850, t); }
-  crowd(t, 866, t * 160);
+  // The z plan (the kit's drawByZ(), oldcartoon.js Z): the road first, as painted, and its near side last, over
+  // everyone. In "people", by their feet: the tung flags (850), the crowd behind the parade (866), and the dog, the
+  // child, the two dancers and the drummer on one line (GROUND + 60), in the order listed.
+  var sprites = [
+    {name: "tung", kind: "tung", y: 850, draw: function () {
+      for (var flag = 0; flag < 5; flag++) { tung(pen, 640 + flag * 700 - t * 160, 850, t); }
+    }},
+    {name: "crowd", kind: "crowd", y: 866, draw: function () { crowd(t, 866, t * 160); }},
+    {name: "dog", kind: "dog", x: 130, y: GROUND + 60, draw: function () { dog(130, GROUND + 60, t); }}
+  ];
+  function onLine(name, x, look) {
+    sprites.push({name: name, kind: "person", x: x, y: GROUND + 60, draw: function () { person(x, GROUND + 60, look); }});
+  }
   var step = t / BEAT / 2;
   var hit = hop(t, 0);
-  dog(130, GROUND + 60, t);
-  person(350, GROUND + 60, {                       // a child, waving
+  onLine("child", 350, {                       // a child, waving
     shirt: "#e9c45c", legs: "#3d4f78", late: 0.5, step: step + 0.5, size: 0.95, wonder: 0.6, smile: 1,
     face: t > 6 && t < 8 ? -1 : 1, at: t > 6 && t < 8 ? [130, 860] : [1180, 500],   // a look back at the dog
     handA: [40, -66 - hop(t, 0) * 26], handB: [-20, 70]
   });
   for (var n = 0; n < 2; n++) {                    // two dancers, in the positions of the dance
     var moves = danceArms(t + n * 1);
-    person(610 + n * 260, GROUND + 60, {
+    onLine("dancer " + n, 610 + n * 260, {
       size: 1.35,
       skirt: true,                                 // two dancers, dressed differently
       shirt: n ? "#e9c45c" : "#d9573a", legs: n ? "#8a2a3a" : "#1f1a1a", weave: n ? 0 : 1,
@@ -354,10 +388,11 @@ function sceneParade(t) {
       handA: moves.handA, handB: moves.handB, tilt: moves.tilt, bend: moves.bend
     });
   }
-  person(1180, GROUND + 60, cast("drummer", {    // the drummer leads
+  onLine("drummer", 1180, cast("drummer", {    // the drummer leads
     late: 0, step: step, handA: [8, 30 + hit * 14], handB: [72, 42 - hit * 14],   // both hands on the drum head
     wristA: 1.0, wristB: 1.0
   }));
+  drawByZ(sprites);
   pen.drawImage(ROAD_FRONT, -t * 290, 0);          // nearer things pass faster
 }
 
@@ -372,17 +407,28 @@ function sceneEvening(t) {
   cloud(1000 + t * 7, 100, 0.9, "rgba(200, 180, 220, 0.5)");
   pen.fillStyle = "rgba(70, 40, 110, " + mix(0.25, 0.5, between(t, 0, 6)) + ")";
   pen.fillRect(0, 0, WIDE, 1080);
-  crowd(t, 872, 400, true);
-  for (var n = 0; n < 26; n++) {
-    var age = t - n * 0.5;
-    if (age > 0 && age < 9) {
-      lantern(120 + dice(n) * 1200 + Math.sin(age + n) * 30, 760 - age * 95, 40 - age * 2);
-    }
-  }
+  // The z plan (the kit's drawByZ(), oldcartoon.js Z): the village's sheet, the dusk and the clouds first, as painted,
+  // and the dusk and the warm light on everyone, the sparks and the card last. Behind the five: the crowd (3, "back")
+  // and the khom loi rising from it (3.1). In "people", by their feet: the three men (GROUND + 46) and the two women
+  // in front of them (GROUND + 78), each line in the order listed.
+  var sprites = [
+    {name: "crowd", kind: "crowd", z: "back", y: 872, draw: function () { crowd(t, 872, 400, true); }},
+    {name: "khom loi", kind: "lantern", z: 3.1, y: 0, draw: function () {
+      for (var n = 0; n < 26; n++) {
+        var age = t - n * 0.5;
+        if (age > 0 && age < 9) {
+          lantern(120 + dice(n) * 1200 + Math.sin(age + n) * 30, 760 - age * 95, 40 - age * 2);
+        }
+      }
+    }}
+  ];
   var shirts = ["#c4654f", "#f2ead8", "#4a6797", "#e6a7b6", "#5a9686"];
   // Five people, and no two alike: each hops a little after the one before,
   // each has a way of its own with its arms, and the ladies stand in front.
   var order = [0, 2, 4, 1, 3];
+  function standing(x, y, look) {
+    sprites.push({name: "dancer " + k, kind: "person", x: x, y: y, draw: function () { person(x, y, look); }});
+  }
   for (var place = 0; place < 5; place++) {
     var k = order[place];
     var woman = k % 2 === 1;
@@ -398,7 +444,7 @@ function sceneEvening(t) {
     var pose = woman ? poseAt(t + k, DANCE) : {};   // the women dance; each a second behind the other
     if (woman) { arms = [pose.handA, pose.handB]; }
     if (bow > 0.5) { arms = [[24, 6], [-24, 6]]; }  // the hands meet at the chest
-    person(170 + k * 275, GROUND + (woman ? 78 : 46), {
+    standing(170 + k * 275, GROUND + (woman ? 78 : 46), {
       size: woman ? 1.3 : 1.2, shirt: shirts[k], legs: woman ? (k === 1 ? "#2f6b5a" : "#814a77") : "#3d4f78",
       weave: k === 1 ? 2 : 3, sabai: k === 1 ? ["#f6e3a1", "#e86f9a"] : ["#3f8f5a", "#e0b23a"],
       flower: k === 1 ? "#f28fa8" : "#e9c45c", garland: k === 1, pins: k === 3, tail: k === 3,
@@ -412,6 +458,7 @@ function sceneEvening(t) {
       raise: woman && bow < 0.5 ? pose.raise : undefined
     });
   }
+  drawByZ(sprites);
   // Dusk is on the people as well as the village; then the lanterns throw
   // a warm light over everything, and sparks rise from them.
   pen.fillStyle = "rgba(70, 40, 110, " + mix(0.08, 0.16, between(t, 0, 6)) + ")";
