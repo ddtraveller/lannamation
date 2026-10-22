@@ -1198,7 +1198,7 @@ e.g. stick(700, GROUND, {handA: [30, -80], bend: 0.1, size: 1.3});
 ### `stroll(t, from, to, start, look)`
 
 ```
-It reads BEAT and the look's size, stride, skirt, sin, sarong and patoi; the look given is not changed.
+It reads BEAT and the look's size, stride, skirt, sin, sarong, patoi and bend; the look given is not changed.
 e.g. var walk = stroll(t, 200, 1100, 2, cast("lady")); person(walk.x, GROUND, walk.look);
 ```
 
@@ -1436,6 +1436,13 @@ A hat (look.hat), loose: it lags the head and floats up as the body springs. // 
 
 ```
 A ruler's head-cloth of silk, wound over the whole head (look.wrap). // h: personHead()'s head (what it has worked out: see there).
+```
+
+### `headCap(h)`
+
+```
+A pointed cap over the head-cloth (look.cap), as the Khom Dam soldiers of Chang Ngu wear it: a cone of black cloth
+standing up from the band, its tip a little back. // h: personHead()'s head (what it has worked out: see there).
 ```
 
 ### `headTurban(h)`
@@ -3465,6 +3472,32 @@ brush, and leaves brush as it found it.
 e.g. gong(pen, 900, 940, 1, {struck: 0.4});   // struck 0.4 seconds ago
 ```
 
+### `kangsadanAt(x, base, size)`
+
+```
+A kangsadan (กังสดาล; in the tale of Chang Ngu, ปาน, pan) on its frame, the frame's foot's middle on (x, base):
+a flat round plate of gold with no boss, hung by a red cord from the beam of a wooden frame, rings engraved on
+its face. "ปาน หรือ กังสดาล เครื่องดนตรีล้านนา รูปทรงกลมแบน ไม่มีปุ่ม ต่างจากฆ้องที่มีปุ่ม" (the Lanna Folktales
+telling of Phra Chao Phrom Maharat): the one Prince Phrom struck on the Mekong's bank was beaten from a hundred
+kahapana of gold, and it rang "ting ting" until the white elephant came up out of the water. The temple gongs
+of Chiang Mai looked at (Wat Chet Lin, Wat Pha Bong, Wat Si Khun Muang; Commons, CC BY-SA / CC BY) are bossed:
+only their frames and cords are taken. The owner chose this plainest of three, 2026-10-22.
+look.struck: the seconds since it was struck: it swings and rings, quick thin rings of light for a second and a
+half (higher than the gong's: "ting", not "gong"). 180 wide, 214 high at size 1; kangsadanAt() gives the
+middle of its face, where a beater strikes.
+kangsadanAt(x, base, size) gives back [x, y], pixels of the sheet: the middle of the plate.
+e.g. var face = kangsadanAt(900, 940, 1);
+```
+
+### `kangsadan(brush, x, base, size, look)`
+
+```
+brush: a canvas 2D context; x, base: pixels of the sheet; size: needed; look: optional, struck (seconds since
+the stroke; left out, it hangs still and silent). Returns nothing: it draws with brush, and leaves brush as it
+found it.
+e.g. kangsadan(pen, 900, 940, 1, {struck: t - 3.2});
+```
+
 ### `linKham(brush, ground, built, look)`
 
 ```
@@ -3906,6 +3939,46 @@ seed: a number. Returns nothing: it draws with pen.
 e.g. floraTree(pen, 240, 900, 1.0, "mango", 1);
 ```
 
+### `floraBael(x, y, size, ripe)`
+
+```
+A bael (มะตูม, matum; Aegle marmelos): a round fruit in a hard shell, grey-green going to yellow, speckled, on a
+short stalk; its leaves come in threes. Read from two photographs on Wikimedia Commons ("Aegle marmelos fruit 06",
+Forestowlet, CC0; "Bael (Aegle marmelos) fruit at Narendrapur", J.M.Garg, CC BY-SA 3.0). Nothing is copied.
+In the north it is the measure of the tribute in the tale of Chang Ngu: the Khom took gold "the size of four
+bael fruits" a year.
+x, y: its middle, pixels of the pen's frame; size: 1 is 52 across; ripe: 0 (green) to 1 (yellow).
+Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraBael(0, -26, 1, 0.2);
+```
+
+### `floraBaelLeaves(x, y, turn, size)`
+
+```
+Three leaflets on one stalk, as the bael's leaves grow: the middle one longest.
+x, y: where the stalk leaves the twig; turn: radians (0 points right); size: 1 is about 50 long.
+Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraBaelLeaves(36, -66, -0.4, 1);
+```
+
+### `fruitBael(look, seed)`
+
+```
+FLORA.bael.draw: flora() calls it with the pen moved to the foot and scaled by look.size: the fruit on the
+ground, its stalk and twig still on it, with a spray of leaves in threes.
+look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("bael", 700, 900, {size: 1.5});
+```
+
+### `fruitBaelHang(seed)`
+
+```
+FLORA.bael.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+seed: a number. Returns nothing: it draws with pen.
+e.g. floraTree(pen, 240, 900, 1.0, "bael", 1);
+```
+
 ### `floraDurian(x, y, size, turn, seed)`
 
 ```
@@ -4151,7 +4224,7 @@ One flower or fruit at (x, y). "name" is a key of FLORA.
 flora(name, x, y, look) draws one flower or fruit, with a soft shadow under it unless look.ground is false.
   name   a key of FLORA: ratchaphruek, thongkwao, frangipani, orchid, hibiscus, bougainvillea, jasmine,
          marigold, mango, durian, mangosteen, rambutan, longan, lychee, papaya, coconut, pineapple,
-         jackfruit, dragonfruit, pomelo; another is reported by checkName() and nothing is drawn
+         jackfruit, dragonfruit, pomelo, bael; another is reported by checkName() and nothing is drawn
   x, y   the foot of the stem, or the ground the fruit lies on, pixels of the sheet
   look   optional; its keys: FLORA_KEYS, at the top of this file (size 1, colour, ground)
 Returns nothing: it draws with pen, and leaves pen as it found it. It sets the kit's LINE and FINE
@@ -5385,7 +5458,7 @@ e.g. dress(t, [{name: "jar", kind: "namton", x: 820, base: 940}], "back");
 
 ## naga.js
 
-naga.js - a Naga, the many-headed serpent of the temple stairs, for films made with oldcartoon.js. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="naga.js"></script>  and call naga(x, y, look) from a scene, as person() is called.  It was read from one drawing the owner gave (2026-10-13): a five-headed Naga in black line on gold paper, from Chiang Mai. Nothing of the drawing is copied. This file keeps what the drawing does, as rules, and draws its own serpent in the kit's manner: flat colour inside a fine dark line.  1. Several heads, one body. Five necks fan out of one chest, the middle neck the longest, and every head looks the same way. A head that is further forward lies over the neck behind it. 2. A head is a profile with a turned-up nose, an open mouth, and a tall flame of a crest that leans back, about one and a half heads high. 3. The body is one band that narrows all the way: about a head wide at the chest, a third of that at the tail. It lies in an S and one loop, and where it crosses itself the part nearer the heads is on top. 4. Three things run its whole length, and every neck's too: scales, in rows that sit between each other, their round edg
+naga.js - a Naga, the many-headed serpent of the temple stairs, for films made with oldcartoon.js. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="naga.js"></script>  and call naga(x, y, look) from a scene, as person() is called. At its end are the giant river snakes of the tale of Chang Ngu, riverSnake(x, water, look), which swim with their heads up out of a river.  It was read from one drawing the owner gave (2026-10-13): a five-headed Naga in black line on gold paper, from Chiang Mai. Nothing of the drawing is copied. This file keeps what the drawing does, as rules, and draws its own serpent in the kit's manner: flat colour inside a fine dark line.  1. Several heads, one body. Five necks fan out of one chest, the middle neck the longest, and every head looks the same way. A head that is further forward lies over the neck behind it. 2. A head is a profile with a turned-up nose, an open mouth, and a tall flame of a crest that leans back, about one and a half heads high. 3. The body is one band that narrows all the way: about a head wide at the chest, a third of that at the tail. It lies in an S and one loop, and where it crosses itself the part nearer th
 
 ### `nagaWalk(dense, step)`
 
@@ -5502,6 +5575,45 @@ Returns nothing: it draws with pen at the film's clock (call it from a
 scene's draw, every frame). It sets the kit's FINE and LINE while it
 draws and leaves them at 1 and STYLE.line; pen's frame is restored.
 e.g. naga(640, 560, {size: 0.6, face: -1, heads: 5, late: 0.2, feel: "happy"})
+```
+
+### `riverSnakeSpine(x, water, s, face, phase)`
+
+```
+The middle of a swimming snake, from its head back along the water: it rises and dips across the water line,
+the head held up out of it. x, water: the head's x and the water line, pixels of the sheet; s: the size;
+face: 1 or -1; phase: where the wave is (radians). Returns a list of 61 [x, y], head first. Draws nothing.
+e.g. riverSnakeSpine(900, 780, 0.8, 1, clock * 1.6)
+```
+
+### `riverSnakeStrip(line, wide, c)`
+
+```
+The snake's band along its middle: filled, its blotches, its pale belly line, its sheen, and its outline.
+line: the middle, a list of [x, y]; wide: a function of the way along (0 at the head, 1 at the tail) giving the
+half-width in pixels; c: {body, blot, belly, sheen}. Returns nothing: it draws with pen.
+e.g. riverSnakeStrip(riverSnakeSpine(900, 780, 1, 1, 0), function (u) { return mix(40, 14, u); }, RIVER_SNAKES.plain);
+```
+
+### `riverSnakeHead(hx, hy, s, face, c)`
+
+```
+A river snake's head: long, round-nosed, no crest, the eye high, a pale lip, a slight smile; (hx, hy) its
+middle, s its size, face 1 or -1, c the snake's colours. Returns nothing: it draws with pen.
+e.g. riverSnakeHead(900, 680, 1, 1, RIVER_SNAKES.pearl);
+```
+
+### `riverSnake(x, water, look)`
+
+```
+riverSnake(x, water, look): a giant snake swimming in a river, as described above.
+  x, water  the head's x, and the water line (the river's surface) it swims along, pixels of the sheet
+  look      an object, never left out ({} gives the plain snake, size 1, swimming right): its keys are
+            RIVER_SNAKE_KEYS above
+Returns {head, neck}, each [x, y], points of the sheet: the head's middle, and the neck where someone who rides
+it holds on. It draws with pen at the film's clock; only what is above the water line shows. It sets FINE and
+LINE while it draws and leaves them at 1 and STYLE.line.
+e.g. var snake = riverSnake(1100, 780, {size: 0.8, face: -1, kind: "pearl"});
 ```
 
 ## dragon.js
@@ -6025,7 +6137,7 @@ the point a distance along a route, and the way it runs there
 
 ## myth.js
 
-myth.js - four creatures of the myths of Lanna, the north of Thailand, for films made with oldcartoon.js: the Mom, the Luang, the Hatsadiling bird and the creature with four ears and five eyes. They stand on the beasts' legs and the Naga's body, so load it after both:  <script src="oldcartoon.js"></script> <script src="naga.js"></script> <script src="beasts.js"></script> <script src="myth.js"></script>  and call mom(x, y, look), luang(x, y, look), hatsadiling(x, y, look) or maengSiHuHaTa(x, y, look) from a scene.  Nothing is copied. Each was read by eye from one photograph of a work in the north (all on Wikimedia Commons) and from what is written of it, and this file keeps what the work does, as rules, and draws its own creature in the kit's manner: flat colour inside a fine dark line.  The Mom (ตัวมอม). A creature the craftsmen of the north made up, seen as sculpture at the temples of the upper north, at the foot of a stair or by a gate, where it keeps watch. It is told that it is the mount of Pajjunna, the god of rain, and that it was carried in a procession to ask for rain. Writers on it say it is mixed of a lion, a cat, a dog, a monkey, a gecko and a lizard, with long arms and 
+myth.js - four creatures of the myths of Lanna, the north of Thailand, for films made with oldcartoon.js: the Mom, the Luang, the Hatsadiling bird and the creature with four ears and five eyes. They stand on the beasts' legs and the Naga's body, so load it after both:  <script src="oldcartoon.js"></script> <script src="naga.js"></script> <script src="beasts.js"></script> <script src="myth.js"></script>  and call mom(x, y, look), luang(x, y, look), hatsadiling(x, y, look) or maengSiHuHaTa(x, y, look) from a scene. A fifth, Chang Ngu, the snake-elephant of Chiang Saen, is at the file's end: changNgu(x, y, look).  Nothing is copied. Each was read by eye from one photograph of a work in the north (all on Wikimedia Commons) and from what is written of it, and this file keeps what the work does, as rules, and draws its own creature in the kit's manner: flat colour inside a fine dark line.  The Mom (ตัวมอม). A creature the craftsmen of the north made up, seen as sculpture at the temples of the upper north, at the foot of a stair or by a gate, where it keeps watch. It is told that it is the mount of Pajjunna, the god of rain, and that it was carried in a procession to ask for rain. Writers
 
 ### `mythScales(shapeOf, left, top, right, bottom, r, colour)`
 
@@ -6242,6 +6354,29 @@ Returns {head, mouth, paw, neck}, each [x, y], points of the sheet. It draws wit
 it sets FINE and LINE while it draws and leaves them at 1 and STYLE.line. Its watching eyes look at what
 the film has drawn in the frame (sightsNow() in the kit).
 e.g. var m = maengSiHuHaTa(700, GROUND, {size: 0.9, glow: 0.6, wake: 3.5, feel: "happy"});
+```
+
+### `changNguHead(skin, s, trunk)`
+
+```
+One of Chang Ngu's heads: the kit's elephant() drawn whole and cut to its head, the neck's top at the pen's
+(0, 0). At size 1 the head of elephant(0, 0) runs from x 130 to 720 and y -820 to -40, and the back of its
+head behind the ear, where the neck goes in, is at about (230, -560).
+skin: the colour; s: the size of the head (0.52 on Chang Ngu's necks); trunk: 0 to 1.
+Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. changNguHead("#efe6d6", 0.52, 0.3);
+```
+
+### `changNgu(x, y, look)`
+
+```
+changNgu(x, y, look): Chang Ngu, the snake-elephant (described above), its chest standing on (x, y).
+  x, y   where the chest stands, pixels of the sheet, as the Naga's
+  look   an object, never left out ({} gives the white three-headed Chang Ngu, size 1, facing right): its keys
+         are CHANG_NGU_KEYS above
+Returns nothing: it draws with pen at the film's clock (the body waves, the heads sway one after another). It
+sets FINE and LINE while it draws and leaves them at 1 and STYLE.line.
+e.g. changNgu(900, 960, {size: 0.62, face: -1});
 ```
 
 ## night.js

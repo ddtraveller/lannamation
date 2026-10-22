@@ -140,6 +140,18 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   the north, on posts, with a veranda and a ladder), `grass` (a tied bundle of
   cut grass), `bananas` (a hand of bananas) and `firestick` (a split-bamboo
   stick for the fire).
+- The tale of Chang Ngu: `soldier` (a Tai soldier, bare, a red head-cloth)
+  and `khomsoldier` (a soldier of the Khom Dam, the tale's enemy, in black
+  cloth and a pointed cap) are people, each standing with a spear; they differ
+  only by their dress. `riversnake` (a giant river snake, blotched) and
+  `pearlsnake` (the pearl-white one that becomes the white elephant) swim: a
+  snake's key is its head and its y is the water's surface, so only what is
+  above the water shows; give them the `river` backdrop (y about 700 to 850)
+  and a level course. `changngu` is Chang Ngu itself, a snake's body with three
+  elephant heads, all one colour; its key is its chest, on the ground.
+  `whiteelephant` is the white elephant with a gold cloth, walking as the
+  elephant does. `kangsadan` is a set piece: the golden kangsadan, a round
+  flat gong of gold on its frame. The bael (`bael`, มะตูม) is one of the fruits.
 - The flowers and fruits of Thailand (the vocabulary lists them: mango,
   durian, longan, orchid, marigold ...) are things that stand on the ground;
   a name ending in `Tree` (`longanTree`, `ratchaphruekTree` ...) is that tree

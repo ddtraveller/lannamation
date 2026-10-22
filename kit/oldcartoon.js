@@ -3571,6 +3571,13 @@ var CAST = {
   // peoples, as the north's villages held them, and not a Chiang Mai farmer
   villager: {bare: true, turban: "#b8294a", sabai: ["#8a5aa0", "#c8486e", "check"], sarong: "#5a3f32", patoi: 0.75, tattoo: true,
              shirt: "#4a6797", legs: "#3d4f78", size: 1.3, smile: 1, skin: "#d9a878", eyes: 0.94},
+  // The soldiers of the tale of Chang Ngu (owner's pick, 2026-10-22): a Tai soldier as the villager, bare, a red head-cloth,
+  // no shoulder cloth, a spear; and a soldier of the Khom Dam, told apart from him by dress only (black cloth, a pointed
+  // cap), never by face or skin: the people of the tale's enemy are real people's ancestors.
+  soldier: {bare: true, turban: "#b8294a", sabai: false, sarong: "#5a3f32", patoi: 0.75, tattoo: true, shirt: "#4a6797",
+            legs: "#3d4f78", size: 1.3, smile: 0.2, skin: "#d9a878", eyes: 0.94, holding: "spear"},
+  khomsoldier: {bare: false, turban: "#1e1e24", cap: "#1e1e24", sabai: false, sarong: "#26262c", patoi: 0.75, tattoo: true,
+                shirt: "#26262c", legs: "#3d4f78", size: 1.3, smile: 0.2, skin: "#d9a878", eyes: 0.94, holding: "spear"},
   // A man of Chiang Mai as the travellers saw him (Holt Hallett, 1890: no head-cloth, the hair a brush at the crown, "tattooed from
   // the waist downwards"; Lillian Curtis, 1903: the pa toi "should fall to the knee", plain or plaid, "the feet are always bare, and
   // the head uncovered"): a round-necked shirt of undyed cotton, the checked ta kong hitched to the knee, the tattoo showing beneath
@@ -4090,14 +4097,20 @@ function stick(x, y, look) {
 //   look       the walker's look. Its own "stride" is how long the steps are; left out,
 //              stroll() takes STROLL: a longer step than the cartoon's, and in a skirt
 //              or a sarong a shorter one than in trousers
+// The walker leans into the walk as they set off and back as they stop
+// (owner, 2026-10-22, of the kit's research into 2D animation: a body leans
+// into its acceleration): a lean forward, STROLL_LEAN at the most, over the
+// first stride, and back over the last, rising and falling smoothly, on top
+// of the look's own bend. Before, a walker went from standing to walking
+// upright, as if carried.
 // It gives back {x, look, arrives}: where the walker is at t; the look to
-// draw them with, which is the one given with step, stride and face set;
+// draw them with, which is the one given with step, stride, face and bend set;
 // and the second they arrive.
 //     var walk = stroll(t, 200, 1100, 2, cast("lady", {size: 1.2}));
 //     person(walk.x, GROUND, walk.look);
-var STROLL = {skirt: 1.2, trousers: 1.8};
+var STROLL = {skirt: 1.2, trousers: 1.8}, STROLL_LEAN = 0.07;
 
-// It reads BEAT and the look's size, stride, skirt, sin, sarong and patoi; the look given is not changed.
+// It reads BEAT and the look's size, stride, skirt, sin, sarong, patoi and bend; the look given is not changed.
 // e.g. var walk = stroll(t, 200, 1100, 2, cast("lady")); person(walk.x, GROUND, walk.look);
 function stroll(t, from, to, start, look) {
   var size = (look.size || 1) * 0.82, far = Math.abs(to - from), way = to < from ? -1 : 1;
@@ -4113,8 +4126,9 @@ function stroll(t, from, to, start, look) {
   var strides = pace ? far / pace + 0.5 : 0, done = Math.max(0, Math.min(strides, (t - start) / (2 * BEAT)));
   var gone = done < 0.5 ? done * done : done < strides - 0.5 ? done - 0.25 : strides - 0.5 - (strides - done) * (strides - done);
   var walking = done > 0 && done < strides;
+  var lean = STROLL_LEAN * (Math.sin(Math.PI * clamp(done)) - Math.sin(Math.PI * clamp(strides - done)));   // into the start, back from the stop
   return {x: from + way * pace * gone,
-          look: Object.assign({}, look, {face: way, step: walking ? done : 0,
+          look: Object.assign({}, look, {face: way, step: walking ? done : 0, bend: (look.bend || 0) + lean,
                                          stride: long * Math.min(1, 2 * done, 2 * (strides - done))}),
           arrives: start + strides * 2 * BEAT};
 }
@@ -4142,10 +4156,12 @@ var COMBED = {
          [2, -318, -14, -358, -34, -364]]
 };
 
+var SPEAR_LONG = 560;                            // a spear's length, from the ground: well above a grown man's head
+
 var HIDEABLE = {hair: true};                       // the parts a look may hide (look.hidden)
 var LOOK_KEYS = {};
 
-["age", "anger", "at", "bangles", "bare", "beard", "bend", "blink", "body", "build", "bun", "buttons", "coat", "collar", "dance", "drum", "earplug", "eyes", "face",
+["age", "anger", "at", "bangles", "bare", "beard", "bend", "blink", "body", "build", "bun", "buttons", "cap", "coat", "collar", "dance", "drum", "earplug", "eyes", "face",
  "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
  "handB", "hat", "head", "hidden", "holding", "id", "late", "laugh", "lady", "legs", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "reachA", "reachB",
  "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt", "sleepy",
@@ -4230,6 +4246,8 @@ var LOOK_KEYS = {};
 //                   bun (hair tied up is a lady), so the hair and the one who wears it can be chosen apart:
 //                   {lady: true} with no bun is a woman with a fellow's hair, {bun: "low", lady: false} a man with a knot
 //   turban          a colour: a Lanna head-cloth, a band tied round the head with the hair above it
+//   cap             a colour: a pointed cap over the head-cloth, as the Khom Dam soldiers of Chang Ngu wear
+//                   (a people told apart by their dress only, never by face or skin)
 //   tears           0 to 1: the eyes brim and a drop gathers at each and falls, now and then (owner, 2026-10-20: "Add
 //                   some tears for when the boy cries"); with a sad feeling
 //   wrap            a colour: a ruler's head-cloth of silk wound over the whole head, gold along its turns, its end
@@ -4271,7 +4289,10 @@ var LOOK_KEYS = {};
 //                   a paperdoll draws its own (apsara.js)
 //   shaved, plain   no hair; no waist cloth, collar or pocket (a monk's robe)
 //   holding         "lotus": a lotus in the near hand; "stick": a walking stick, from the
-//                   near hand to the ground (the hand goes to it unless handA is given)
+//                   near hand to the ground (the hand goes to it unless handA is given);
+//                   "spear": a soldier's spear stood on the ground, a shaft of bamboo up
+//                   through the near fist to well above the head, an iron blade, and a
+//                   tassel of the head-cloth's colour under it (the soldiers of Chang Ngu)
 //   parasol         a paper parasol in the near hand, its rings of pattern seen as bands from
 //                   the side: true (upright, open), a kind ("lai", "yantra", "buddha": see PARASOL),
 //                   a colour for its paper, or parasolAt()'s {tilt, spin, open, kind, colour}:
@@ -4515,7 +4536,7 @@ function personLook(fig) {
   // The figure is seen from the front and a little to one side, so neither
   // hand crosses to the other side of the body, and the two never meet.
   var swing = look.step ? Math.cos(walk) * Math.min(1.6, gait) : 0;
-  var handA = look.handA || (look.parasol ? parasolHand(parasolOf(look.parasol).tilt, parasolOf(look.parasol).hang) : look.holding === "stick" ? [34, 62] : [BODY.hand + 16 * swing, 97 - 12 * Math.max(0, swing)]);   // a hand on a stick is held forward, one on a parasol up to its handle
+  var handA = look.handA || (look.parasol ? parasolHand(parasolOf(look.parasol).tilt, parasolOf(look.parasol).hang) : look.holding === "stick" ? [34, 62] : look.holding === "spear" ? [36, 26] : [BODY.hand + 16 * swing, 97 - 12 * Math.max(0, swing)]);   // a hand on a stick is held forward, one on a parasol up to its handle
   var handB = look.handB || [-12 - 16 * swing, 97 - 12 * Math.max(0, -swing)];
   if (look.parasol && parasolOf(look.parasol).busy) {   // the other hand at the parasol's handle, working it
     var busy = parasolOf(look.parasol).busy;
@@ -5102,9 +5123,9 @@ function personReach(fig) {
     var angle = Math.atan2(wrist[1] - wrist[3], wrist[0] - wrist[2]) + (near ? 1 : -1) * beat
               + (bend !== undefined ? bend : near && look.holding === "stick" ? 0.9 : 0);   // a hand on a stick lies over its top
     var lifted = look.dance ? 1.6 : 0.7 + 0.3 * up;
-    var open = look.grip || (near && look.holding === "stick") ? 0.12 : given[1] < 0 ? lifted : rest ? 0.1 : 0.35;   // a grip is a fist round a thing
+    var open = look.grip || (near && (look.holding === "stick" || look.holding === "spear")) ? 0.12 : given[1] < 0 ? lifted : rest ? 0.1 : 0.35;   // a grip is a fist round a thing
     var curls = fingers || (rest ? (STYLE.hands === "flat" ? (near ? REST_A : REST_B) : REST) : undefined);
-    if (near && look.holding === "stick") { curls = undefined; }
+    if (near && (look.holding === "stick" || look.holding === "spear")) { curls = undefined; }
     var thumb = near ? -1 : given[1] < 0 ? 1 : -1;  // a lifted hand turns its thumb to the head; a hanging hand turns its thumb forward
     var palm = rest ? 0.15 : given[1] < 0 ? (look.dance ? 0.15 : 0.85) : 0.3;   // the back of a hanging hand; the palm of a lifted one; the dance hand's back, its long nails seen whole
     var nails = look.nails === "long" ? "long" : look.nails && given[1] < 0;   // long nails are worn all the time; tips show on a lifted hand
@@ -5693,6 +5714,7 @@ function personHead(fig) {
   if (look.hat) { headHat(h); }
   if (look.wrap) { headWrap(h); }
   if (look.turban) { headTurban(h); }
+  if (look.cap) { headCap(h); }
   // each person blinks at a time of their own, about every three seconds,
   // and their eyes wander a little
   // A blink drops the lid in a twelfth of a second and lifts it in a sixth,
@@ -6384,6 +6406,18 @@ function headWrap(h) {
   pen.restore();
 }
 
+// A pointed cap over the head-cloth (look.cap), as the Khom Dam soldiers of Chang Ngu wear it: a cone of black cloth
+// standing up from the band, its tip a little back. // h: personHead()'s head (what it has worked out: see there).
+function headCap(h) {
+  pen.beginPath();
+  pen.moveTo(-54, -318);
+  pen.bezierCurveTo(-46, -360, -20, -404, -8, -424);           // up the back to the tip
+  pen.bezierCurveTo(10, -400, 44, -360, 58, -318);             // and down the front
+  pen.bezierCurveTo(30, -334, -24, -334, -54, -318);           // its rim, over the band
+  pen.closePath();
+  shape(h.look.cap);
+}
+
 // A Lanna head-cloth tied round the head, its ends swinging after it (look.turban). // h: personHead()'s head (what it has worked out: see there).
 function headTurban(h) {
   var look = h.look, who = h.who, sway = h.sway;
@@ -6536,6 +6570,35 @@ function personArms(fig) {
   if (look.holding === "stick") {                   // a walking stick: from above the palm down to the ground, behind the fingers
     var palmX = wristA[0] + Math.cos(angleA) * 13, palmY = wristA[1] + Math.sin(angleA) * 13;
     hose(palmX - 3, palmY - 20, palmX + 8, ground / trunk - 2, 0.02, 6, "#7a5234");
+  }
+  if (look.holding === "spear") {                   // a spear: from the ground up through the fist to well above the head
+    var gripX = wristA[0] + Math.cos(angleA) * 13, gripY = wristA[1] + Math.sin(angleA) * 13, footY = ground / trunk - 2;
+    var footX = gripX + 6, rise = footY - gripY, tipX = footX + (gripX - footX) * (SPEAR_LONG / rise), tipY = footY - SPEAR_LONG;
+    pen.strokeStyle = "#7a5234";
+    pen.lineWidth = 6;
+    pen.lineCap = "round";
+    pen.beginPath();
+    pen.moveTo(footX, footY);
+    pen.lineTo(tipX, tipY);
+    pen.stroke();
+    pen.save();
+    pen.translate(tipX, tipY);
+    pen.rotate(Math.atan2(tipX - footX, footY - tipY));
+    pen.strokeStyle = look.turban || "#b8294a";     // the tassel under the blade, of the head-cloth's colour
+    pen.lineWidth = 3.5;
+    for (var strand = -2; strand <= 2; strand++) {
+      pen.beginPath();
+      pen.moveTo(0, 2);
+      pen.lineTo(strand * 4 + Math.sin(clock * 3 + strand) * 2, 24);
+      pen.stroke();
+    }
+    pen.beginPath();                                // the iron blade, a leaf
+    pen.moveTo(0, -58);
+    pen.quadraticCurveTo(14, -22, 5, 0);
+    pen.lineTo(-5, 0);
+    pen.quadraticCurveTo(-14, -22, 0, -58);
+    shape("#9aa0a8");
+    pen.restore();
   }
   if (!behindA) { drawHand("A", wristA, poseA); }
   }                                                 // end of the kit's own arms

@@ -555,6 +555,24 @@ films to take the new lift.
 | The sabai rides up and tilts | as a woman's arm A lifts, the top of her sabai rises a little and tilts: the corner by the neck goes down, the outer one up over the shoulder, and the back of the cloth hangs from that corner as it did | 4 up, `SABAI_TILT` 0.6 radians at a full lift |
 | Where it was put in | the village's dance (`village.html`, `DANCE`: the two keys where an arm goes up over the head from low) and `motion.html`'s nine girls who raise a hand. Every other raised arm of a woman in the kit holds a pose already up (the hero film's dancers, the sheets): those take the gentler angle and the sabai over the shoulder by themselves. The Maeng tale has no woman lifting her arms (its goodbye is a wai) | |
 
+## The soldiers of Chang Ngu, a spear and a pointed cap; a walk that leans (2026-10-22)
+
+For the tale of Chang Ngu (the owner's picks of 2026-10-22, from the candidates in the tale's research): two soldiers in
+`CAST`, told apart by their dress only, never by face or skin, as the people of the tale's enemy are real people's
+ancestors.
+
+- `cast("soldier")`: a Tai soldier, the villager's body, bare, a red head-cloth, no shoulder cloth, holding a spear.
+- `cast("khomsoldier")`: a soldier of the Khom Dam, the same body in black cloth (shirt, sarong, head-cloth) under a
+  pointed black cap (`cap`, a colour: a new look key, drawn over the head-cloth by `headCap()`).
+- `holding: "spear"`: the near hand at the chest, closed round the shaft; the shaft from the ground up through the
+  fist to `SPEAR_LONG` (560) above the ground, an iron blade like a leaf at the top and under it a tassel of the
+  head-cloth's colour, swinging a little (red for the Tai, black for the Khom). It is drawn behind the fingers, as the
+  walking stick is.
+- `stroll()` leans the walker into the walk as they set off and back as they stop (`STROLL_LEAN`, 0.07 of `bend`
+  at the most, rising and falling over the first and the last stride), from the kit's research into 2D animation:
+  a body leans into its acceleration. Measured on `walk.html`: the crown goes about 0.11 of a torso ahead of the hip as
+  a walker sets off, and as far behind as they stop.
+
 ## Legs, ankles and feet, measured from photographs (2026-10-15)
 
 The owner: "Generate hip, hand, knee, ankle and foot models as well", then "Update the kit with the
