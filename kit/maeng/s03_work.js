@@ -66,18 +66,20 @@ function s03Tufts(t, ox) {
 // maengMeadow(), MAENG_TREE, maengPerson() with MAENG_LAD, maengLead(), maengMeasure(). Its life is S03_LIFE; its
 // words S03_LINES (M012 to M014), written under it by the page. e.g. sceneWork(20);
 //
-// Its z plan (oldcartoon.js, Z): the sky, the yard and the meadow as painted first; then by drawByZ the flock in
-// "sky", the magpie in "set" (on the tree's limb, then over the meadow), and in "people" by their feet or bases: the
+// Its z plan (oldcartoon.js, Z): the sky and the yard as painted first; then by drawByZ the flock in "sky", so it flies
+// behind the great tree (owner, 2026-10-22: "the birds flying by ... should fly behind the tree"); in "set" the meadow
+// with the tree (a painted sheet, at the back of its band) and the magpie (on the tree's limb, then over the meadow),
+// and in "people" by their feet or bases: the
 // tufts, the buffalo (S03_GROUND - 6), the pile of wood (- 4), the eaten tuft (- 2), the lad (S03_GROUND), so a tuft
 // nearer than his feet is in front of his legs as he walks home past it.
 function sceneWork(t) {
   pen.drawImage(maengSky("day"), 0, 0);
   cumulus(pen, t + 40, MAENG_CLOUDS.day);
   pen.drawImage(maengYard().back, 0, 0);
-  pen.drawImage(maengMeadow().front, 0, 0);
   var ox = s03Ox(t), lad = maengPerson("boy", MAENG_LAD, {id: "lad"}), go;
   var gathered = between(t, 16, 21.5);              // how much of the wood he has picked up
-  var sprites = lifeSprites(t, S03_LIFE);
+  var sprites = [{name: "meadow", kind: "meadow", z: "set", y: 0, draw: function () { pen.drawImage(maengMeadow().front, 0, 0); }}]
+    .concat(lifeSprites(t, S03_LIFE));
   if (t < ox.arrives + 1) {                         // leading the buffalo: ahead of it at its pace, the rope in his back hand
     drawByZ(sprites.concat(s03Tufts(t, null), [
       {name: "lad and buffalo", kind: "person", x: ox.x, y: S03_GROUND, draw: function () { maengLead(ox, s03From(), S03_GROUND, lad, 0.62); }}

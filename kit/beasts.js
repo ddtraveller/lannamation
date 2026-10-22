@@ -2496,6 +2496,43 @@ function geckoAt(route, d) {                        // the point a distance alon
   return [mix(route[k - 1][0], route[k][0], u), mix(route[k - 1][1], route[k][1], u), a];
 }
 
+// The tokay's spine, by the rule of procedural_animation.html (the gecko of its steps 6 and 7) as the Naga's
+// nagaChain(): the head is on the route, "along" pixels from its start, and each joint behind is dragged after the one
+// before, turned to face it, no more than GECKO_BEND from the way that one faces, and kept "gap" behind it. A chain
+// remembers where it has been and a film must not, so it is laid out straight two body lengths back along the route
+// and led from there to "along" in steps of GECKO_STRIDE, in every frame. Where the route turns a corner, the body
+// swings round after the head instead of each joint snapping round the corner as it reaches it, and the head faces
+// the way its neck leads it (joint 2 to the head) rather than the next stretch of the route (owner, 2026-10-22: "The
+// tokay looks mechanical and grinding when it turns"; its joints were laid on the route's straight stretches, so the
+// head and then each joint turned all at once at every corner).
+//   route, along  as gecko() takes them; gap: pixels from one joint to the next
+// Returns [[x, y, angle], ...], GECKO_WIDTHS.length joints from the head back, each facing the joint before it.
+// e.g. var joints = geckoChain([[300, 850], [300, 300], [520, 240]], 400, GECKO_GAP);
+var GECKO_STRIDE = 3;                               // pixels the head moves between two pulls of the chain
+function geckoChain(route, along, gap) {
+  var count = GECKO_WIDTHS.length, from = along - 2 * gap * (count - 1), first = geckoAt(route, from), points = [], angles = [], n;
+  for (n = 0; n < count; n++) {
+    points.push([first[0] - Math.cos(first[2]) * n * gap, first[1] - Math.sin(first[2]) * n * gap]);
+    angles.push(first[2]);
+  }
+  for (var d = from; d < along;) {
+    d = Math.min(along, d + GECKO_STRIDE);
+    var head = geckoAt(route, d);
+    if (Math.abs(head[0] - points[0][0]) + Math.abs(head[1] - points[0][1]) > 0.01) {
+      angles[0] = Math.atan2(head[1] - points[0][1], head[0] - points[0][0]);   // it faces the way it goes
+    }
+    points[0] = [head[0], head[1]];
+    for (n = 1; n < count; n++) {
+      var away = Math.atan2(points[n - 1][1] - points[n][1], points[n - 1][0] - points[n][0]) - angles[n - 1];
+      away -= Math.PI * 2 * Math.round(away / (Math.PI * 2));               // the short way round
+      angles[n] = angles[n - 1] + Math.max(-GECKO_BEND, Math.min(GECKO_BEND, away));
+      points[n] = [points[n - 1][0] - Math.cos(angles[n]) * gap, points[n - 1][1] - Math.sin(angles[n]) * gap];
+    }
+  }
+  var neck = Math.atan2(points[0][1] - points[2][1], points[0][0] - points[2][0]);   // the head turns as its neck leads it
+  return points.map(function (q, k) { return [q[0], q[1], k === 0 ? neck : angles[k]]; });
+}
+
 // gecko(route, along, look): the tokay, its head "along" pixels of the way
 // along "route" (see above).
 //   route  a list of [x, y], points of the sheet, two or more; keep the same
@@ -2517,19 +2554,9 @@ function gecko(route, along, look) {
   function tone(c) { return look.tint ? blend(c, look.tint[0], look.tint[1]) : c; }
   var size = look.size || 1, t = look.t !== undefined ? look.t : clock,   // t: 0 is a second, not "the film's clock"
       skin = tone(look.colour || "#7f93a8"), spot = tone(look.spots || "#e07a3a");
-  var gap = GECKO_GAP * size, n, spine = [], bare = [], off = false;
-  for (n = 0; n < GECKO_WIDTHS.length; n++) {        // the spine: each joint the gap behind the one before, along the route
-    var p = geckoAt(route, along - n * gap);
-    if (n > 0) {                                     // ... turned no more than GECKO_BEND from the joint before it
-      var before = bare[n - 1], turn = Math.atan2(Math.sin(p[2] - before[2]), Math.cos(p[2] - before[2]));
-      if (off || Math.abs(turn) > GECKO_BEND) {
-        var a = before[2] + Math.max(-GECKO_BEND, Math.min(GECKO_BEND, turn));
-        p = [before[0] - Math.cos(a) * gap, before[1] - Math.sin(a) * gap, a];
-        off = true;                                  // from here back it follows the joint before, not the route
-      }
-    }
-    bare.push(p);
-    var sway = n > 8 ? Math.sin(t * 2.2 - n * 0.5) * (n - 8) * 0.25 * size : 0;   // the tail's tip wavers
+  var gap = GECKO_GAP * size, n, spine = [], bare = geckoChain(route, along, gap);
+  for (n = 0; n < bare.length; n++) {
+    var p = bare[n], sway = n > 8 ? Math.sin(t * 2.2 - n * 0.5) * (n - 8) * 0.25 * size : 0;   // the tail's tip wavers
     spine.push([p[0] - Math.sin(p[2]) * sway, p[1] + Math.cos(p[2]) * sway, p[2]]);
   }
   var breathe = 1 + 0.04 * Math.sin(t * 3.1);

@@ -528,6 +528,12 @@ From the owner's list of 2026-10-21 (maeng/TODO.md). **`GECKO_BEND`** (beasts.js
 at most 0.5 from the one before; where a route doubles back the joints behind follow the one before instead of the
 route, so the body curves round behind the head and never folds over itself ("When it walks up the wall it folds over
 itself"); the feet go with their hips where the body leaves the route. A route that turns gently draws as it did.
+**A chain, as procedural_animation.html's (2026-10-22).** The owner: "The tokay looks mechanical and grinding when it
+turns." Its joints had been laid on the route's straight stretches, so at each corner the head, then each joint as it
+came to the corner, turned all at once. `geckoChain()` now leads the head along the route and drags each joint after the
+one before (facing it, no more than `GECKO_BEND` from it, `gap` behind), laid out afresh from two body lengths back in
+every frame (`GECKO_STRIDE`, 3 px a pull), as the Naga's `nagaChain()`: the body swings round a corner after the head,
+and the head faces the way its neck leads it. On a straight route it draws as before (the woven tile, the credits').
 **`graze`** (buffalo, 0 to 1): the head lowered to the ground, the muzzle on the grass at 1, the jaw working; the
 lowered neck takes the body's shade and its two lines stop short of the body, so nothing shows across it.
 **The nose rope** (`rope`): from the pierced nose up each cheek under the eye, behind the horn's base between horn and

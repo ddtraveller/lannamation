@@ -21,13 +21,16 @@ var S04_ROOM = null;
 // Each keeps to the right of the room, in the lamp's reach, away from the father and his son; each is still while
 // the father speaks his wish; the mice are gone before the grief (38 s on), and the tokay stays high on the wall.
 var S04_LIFE = [
-  // The house mouse: in under the doorway, along the foot of the wall; it sniffs as the father calls his son
-  // close (M016), sits up while he speaks (M017, M018), back into the gap by the door post; out again to sit up
-  // at "set a snare" (M020), and away before the grief.
+  // The house mouse: in from outside across the doorway's sill, along the foot of the wall; it sniffs as the father
+  // calls his son close (M016), sits up while he speaks (M017, M018), and out across the sill to the doorway's far edge;
+  // in again to sit up at "set a snare" (M020), and out the same way before the grief. Each time it goes all the way
+  // to the far post of the doorway (x 1650), so it is seen to go out into the night (owner, 2026-10-22: "Have the mouse
+  // go to the far edge of the door so it looks like it's walking outside rather than just disappearing"; it vanished
+  // by the near post).
   {name: "house mouse", kind: "mouse", look: {kind: "house", size: 0.8},
-   course: [[2.5, 1520, 703, "hide"], [3.0, 1520, 703], [5.8, 1330, 705, "sniff"], [9.4, 1330, 705], [10.6, 1250, 707, "up"],
-            [14.6, 1250, 707], [16.0, 1470, 703, "hide"], [25.6, 1470, 703], [26.8, 1300, 705, "up"], [30.4, 1300, 705],
-            [31.8, 1500, 703, "hide"], [32.0, 1500, 703, "hide"]]},
+   course: [[2.5, 1655, 703, "hide"], [3.0, 1655, 703], [5.8, 1330, 705, "sniff"], [9.4, 1330, 705], [10.6, 1250, 707, "up"],
+            [14.6, 1250, 707], [16.4, 1655, 703, "hide"], [25.2, 1655, 703], [26.8, 1300, 705, "up"], [30.4, 1300, 705],
+            [32.2, 1655, 703, "hide"], [32.4, 1655, 703, "hide"]]},
   // The field mouse: in along the floor from the far post during the wish (M019), it sniffs at the mat's edge,
   // then hurries back, and hides.
   {name: "field mouse", kind: "mouse", look: {kind: "field", size: 0.8},
