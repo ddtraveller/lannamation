@@ -186,6 +186,46 @@ along the film (`HEARD_NEAR`), crows for itself; one off the film is not heard.
   Kept as `kit/sounds/rooster-crow.flac` (sounds.py: a "file" in place of a "url"): the model is too large to run
   again for each copy of the kit.
 
+## The birds and animals heard (2026-10-23)
+
+The owner: "Work on sounds for the kit next. Start with the birds and animals and see if you can find sounds for
+them. If you can't see what you can do with the gear on the spark to make some sounds." Every creature the kit draws
+that had no sound was looked for in iNaturalist and Wikimedia Commons, only under a licence that lets the kit use it
+(CC0, CC BY, public domain): 45 recordings, each heard by AST two seconds at a time and cut where it hears only the
+animal. Those that had no free recording at all (the green peafowl, Mrs Hume's pheasant, the eastern cattle egret,
+chicks; the bats' are ultrasound) or no clean one were made on the Spark by MOSS-SoundEffect, `moss_sounds.py`: one
+sentence a sound, written from how the field guides describe the call, and five takes from small changes to it (the
+model's seed changes nothing). The owner heard them on two listening pages, the found stretches beside the made
+takes, each with what AST heard and how far under it its background lies (the quietest tenth of its 50 ms frames
+under its loudest twentieth; the crow has 48 dB). What the ear found: nearly every free recording of a small bird has
+other birds, wind or a river over it, which AST passes and an ear does not; the first sentences, which asked for "a
+silent background", still gave other birds behind the pheasant and the pratincole, and a room behind the tiger, so
+the second round's sentences end by asking for the animal alone, with no other birds, insects, wind, water, ambience
+or echo. A call a take ends on is let go with a 0.3 s fade.
+
+| Sound | What | From |
+|---|---|---|
+| `peafowl` | the green peafowl's trumpeting ki-wao, three times (5 s) | made, round 1 |
+| `sunbird` | the green-tailed sunbird's thin chips and a twitter | made, round 1 |
+| `plover`, `plover-alt` | the little ringed plover's falling pee-oo, two ways | made, round 1 |
+| `chick` | two chicks peeping | made, round 1 |
+| `egret`, `barnowl`, `pratincole`, `avadavat`, `cat`, `tiger` | the cattle egret's croaks, the barn owl's rasping screech, the pratincole's rolling prrip, the avadavat's whistles, a meow, a roar outdoors | made, round 2 |
+| `lapwing` | the river lapwing's did-did-do-weet (6 s: at 4 s the call was cut off) | made, round 2 |
+| `grasshopper` | grasshoppers stridulating by day (8 s) | fetched: Mysid, public domain (Commons) |
+
+The made ones are kept in `sounds/` as FLAC, as the crow is (`moss_sounds.py`'s `KEPT` names the take of each); the
+grasshopper is fetched. Not kept, by ear: Mrs Hume's pheasant (other birds behind every take), the great hornbill (the
+free recordings rough and noisy, the made ones not kept), the spot-billed duck (the free one noise; the made ones heard
+as a turkey or a voice), the pig, and the bats (skipped). The barn owl's free recordings from Thailand and Kerala had
+too much behind them; the Kerala one, cleaned by spectral gating with its own quiet stretches as the noise, was heard
+beside the made screech and the made one kept. Nothing calls these yet by itself, as the rooster crows: a scene calls
+them (`calls`), or a creature's drawing would tell `hear()` when it calls, as `rooster()` does.
+
+```
+python sounds.py egret cat ...         # the sounds, into out/sounds/
+python moss_sounds.py --list           # the made ones' sentences (the GPU container is in its docstring)
+```
+
 ## Music that follows the story's feelings (2026-10-19)
 
 The owner: "Plot each scene musically against the emotion of each sentence and make sure the music always

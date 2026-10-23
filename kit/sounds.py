@@ -294,6 +294,43 @@ FETCHED.update({
                       "(iNaturalist observation 213325298)",
               "what": "the white-rumped shama (นกกางเขนดง) singing twice: fluted notes, then a bright whistle rising (3 s)"},
 })
+# The kit's creatures that had no sound (owner, 2026-10-23: "Start with the birds and animals and see if you can find
+# sounds for them. If you can't see what you can do with the gear on the spark to make some sounds"). Free recordings
+# of each were found on iNaturalist and Wikimedia Commons and heard by AST, as above; the owner heard the clean
+# stretches beside takes made by MOSS-SoundEffect on the Spark (moss_sounds.py: the sentence each was made from, and
+# the take kept) and picked these. The made ones are kept in sounds/, as the rooster's crow is.
+MOSS_FROM = "made by MOSS-SoundEffect v2.0 (OpenMOSS-Team, Apache-2.0) for the kit, 2026-10-23 (moss_sounds.py)"
+FETCHED.update({
+    "peafowl": {"file": "sounds/peafowl.flac", "cut": None, "from": MOSS_FROM,
+                "what": "the green peafowl's loud, deep, trumpeting ki-wao, three times (5 s): no free recording of it exists"},
+    "sunbird": {"file": "sounds/sunbird.flac", "cut": None, "from": MOSS_FROM,
+                "what": "the green-tailed sunbird's thin metallic chips and a quick twitter (4 s)"},
+    "plover": {"file": "sounds/plover.flac", "cut": None, "from": MOSS_FROM,
+               "what": "the little ringed plover's clear falling whistle, pee-oo (4 s)"},
+    "plover-alt": {"file": "sounds/plover-alt.flac", "cut": None, "from": MOSS_FROM,
+                   "what": "the little ringed plover's whistle, another way (4 s)"},
+    "chick": {"file": "sounds/chick.flac", "cut": None, "from": MOSS_FROM,
+              "what": "two chicks peeping, cheep cheep (4 s)"},
+    # the second round (the owner heard the first round's takes of these with other birds, wind or a room behind them):
+    # each sentence asked for the animal alone, and each take was kept with the 0.3 s fade it was heard with
+    "egret": {"file": "sounds/egret.flac", "cut": None, "from": MOSS_FROM,
+              "what": "the cattle egret's short, low croaks (4 s)"},
+    "barnowl": {"file": "sounds/barnowl.flac", "cut": None, "from": MOSS_FROM,
+                "what": "the barn owl's long, harsh, rasping screech, hissing as it fades, twice (5 s)"},
+    "pratincole": {"file": "sounds/pratincole.flac", "cut": None, "from": MOSS_FROM,
+                   "what": "the small pratincole's soft rolling calls, prrip, and tern-like chirps (4 s)"},
+    "lapwing": {"file": "sounds/lapwing.flac", "cut": None, "from": MOSS_FROM,
+                "what": "the river lapwing's sharp, high alarm call, did-did-do-weet, with a soft river behind it (6 s)"},
+    "avadavat": {"file": "sounds/avadavat.flac", "cut": None, "from": MOSS_FROM,
+                 "what": "the red avadavat's high, sweet whistles and a soft twitter (4 s)"},
+    "cat": {"file": "sounds/cat.flac", "cut": None, "from": MOSS_FROM,
+            "what": "a village cat's clear, plaintive meow, twice (3 s)"},
+    "tiger": {"file": "sounds/tiger.flac", "cut": None, "from": MOSS_FROM,
+              "what": "a tiger's deep, rumbling roar outdoors, then its breath out (4 s)"},
+    "grasshopper": {"url": COMMONS + "2/28/Grasshoppers.ogg", "cut": [0.0, 8.0],
+                    "from": 'Mysid, "Grasshoppers"; public domain (Wikimedia Commons: File:Grasshoppers.ogg)',
+                    "what": "grasshoppers stridulating in the grass by day (8 s)"},
+})
 
 
 def fetch(name, out):

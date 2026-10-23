@@ -7919,6 +7919,40 @@ file and it stops with that exception.
 - `sung(syllable, frequency, before)`: One syllable, sung on the note for nearly one beat: a little short of
 - `main()`: The command line: read the CUES of lanna.html, sing each syllable over lanna.wav, save lanna_song.wav.
 
+## kit/moss_sounds.py
+
+```
+moss_sounds.py - the kit's sounds that a model makes: animal calls no free recording has, made by MOSS-SoundEffect.
+
+    python moss_sounds.py --list                    the names, and the prompt each is made from
+    python moss_sounds.py peafowl chick --out made  takes of those, into made/NAME_take.wav
+    python moss_sounds.py --out made                takes of every one
+
+MOSS-SoundEffect v2.0 (OpenMOSS-Team, Apache-2.0) turns a sentence into a sound: no recording is in what it makes,
+and what it makes is free to use, so a film may carry it anywhere. It is used for a creature of the kit only when no
+recording of it is free to use (public domain, CC0 or CC BY), or the free ones have other sounds over the animal; the
+rest are fetched by sounds.py. Its seed changes nothing (the pipeline sets its own), so the takes of a sound are made
+from small changes to its sentence (TAKES). A person picks the take, and it is kept in sounds/ as FLAC, with a
+"file" row in sounds.py's FETCHED: the model is 11 GB and needs a GPU, too much to run again for each copy of the kit.
+
+Needs a CUDA GPU with about 16 GB free, and the model's code: git clone https://github.com/OpenMOSS/MOSS-TTS, then
+pip install -e its moss_soundeffect_v2 folder. On an NVIDIA DGX Spark (arm64, GB10) it runs in NVIDIA's own PyTorch
+container, keeping its PyTorch (the pins of the model's repository would replace it):
+
+    docker run --rm --gpus all --memory 48g --name moss-sfx -e HF_HOME=/work/hf -e TORCHDYNAMO_DISABLE=1 \
+      -v $PWD:/work -w /work nvcr.io/nvidia/pytorch:25.04-py3 bash -c '
+        pip install -q einops safetensors transformers==4.57.1 diffusers==0.37.1 ftfy regex soundfile imageio randomname \
+          argbind pyloudnorm importlib-resources rich librosa pystoi flatten_dict markdown2 ffmpy &&
+        pip install -q --no-deps descript-audiotools==0.7.2 torchaudio==2.7.0 julius torch-stoi &&
+        pip install -q --no-deps -e MOSS-TTS/moss_soundeffect_v2 && pip uninstall -y -q flash-attn;
+        python moss_sounds.py --out made'
+
+(FlashAttention is taken out because it takes only half precision; the model then uses PyTorch's own attention.)
+A 4-second sound takes about 29 s at 100 steps; the first run downloads the model.
+```
+
+- `main()`: (no docstring)
+
 ## kit/music.py
 
 ```
