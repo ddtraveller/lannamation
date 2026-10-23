@@ -54,7 +54,7 @@ function cngSceneSnakes(t) {
         person(x + shake, y, cngPerson(c.kind, c.look, {id: "child" + k, size: cngAgeSize(9 + (k % 4)), face: 1,
                                                         step: back > 0 && back < 1 ? t / BEAT * 1.5 + k : 0,
                                                         feel: fear > 0.15 ? "fear" : t > 40 ? "concerned" : "surprised",
-                                                        handA: fear > 0.3 && k % 2 ? liftHand(0.7) : undefined,
+                                                        handA: k % 2 ? liftHand(liftEven(liftShare(0.7) * between(fear, 0.3, 0.6))) : undefined,   // up as fear comes, at an even pace
                                                         at: [1200, C14_SWIM - 60]}));
       }});
     })(k);

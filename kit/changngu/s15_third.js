@@ -66,9 +66,25 @@ function cngSceneThird(t) {
       inRiver.push(function () {
         c15InWater(x, cngPerson(c.kind, c.look, {id: "child" + k, size: cngAgeSize(9 + (k % 4)), face: -1,
                                                  feel: changed ? "happy" : "fear",
-                                                 handA: changed && k % 2 ? liftHand(0.8) : undefined}), 0);
+                                                 handA: k % 2 ? liftHand(liftEven(liftShare(0.8) * between(t, C15_CHANGE[1], C15_CHANGE[1] + 0.8))) : undefined}), 0);   // up for joy, eased
       });
     })(k);
+  }
+  var leaper = null;                                       // Phrom calling on the bank, then leaping: the end of his leap into
+  if (t < 24.2) {                                         // the water is drawn with who is in it, before the water over them
+    var calls = t > 14.2 && t < 19.6, land = [(neck || [C15_HELD])[0] + 40, C15_SWIM + 230 * size - 10];   // where he is in the water, holding on
+    var px = mix(1260, land[0], leap), py = mix(CNG_BANK + 30, land[1], leap) - 110 * Math.sin(Math.PI * leap);
+    leaper = {name: "phrom", kind: "person", x: px, y: py, draw: function () {
+      var j = person(px, py, cngPerson("boy", CNG_PHROM, {id: "phrom", size: size, face: leap > 0 ? -1 : 1,
+                                                         feel: t < 13 ? "concerned" : "angry",
+                                                         reachA: t < 21 ? [px - 40, py - 380 * size, between(t, 14.2, 14.5) * (1 - between(t, 19.3, 19.6))]   // his arm up as he calls, eased
+                                                                 : [(neck || [C15_HELD])[0], (neck || [0, C15_SWIM])[1] - 6, leap],   // then out for the neck as he leaps
+                                                         reachB: [(neck || [C15_HELD])[0] - 20, (neck || [0, C15_SWIM])[1] + 6, leap],
+                                                         mouth: calls ? {open: 0.1 + 0.25 * Math.abs(Math.sin(t * 7)), wide: 0.6, round: 0.3} : undefined,
+                                                         at: t < 12 ? [px + 300, py - 400] : [hx, C15_SWIM - 80]}));
+      if (leap <= 0) { var w = cngLocal(j.wristA); elephantHook(pen, w[0], w[1] + 30 * size, size * 0.9, {angle: 0.12}); }
+    }};
+    if (leap > 0.6) { inRiver.push(leaper.draw); }
   }
   inRiver.forEach(function (f) { f(); });
   c15Water(t);
@@ -88,17 +104,7 @@ function cngSceneThird(t) {
       }});
     })(c2);
   }
-  if (t < 24.2) {
-    var calls = t > 14.2 && t < 19.6, px = mix(1260, C15_HELD + 40, leap), py = mix(CNG_BANK + 30, C15_SWIM + 60, leap) - 110 * Math.sin(Math.PI * leap);
-    onBank.push({name: "phrom", kind: "person", x: px, y: py, draw: function () {
-      var j = person(px, py, cngPerson("boy", CNG_PHROM, {id: "phrom", size: size, face: leap > 0 ? -1 : 1,
-                                                         feel: t < 13 ? "concerned" : "angry",
-                                                         reachA: calls ? [px - 40, py - 380 * size] : undefined,
-                                                         mouth: calls ? {open: 0.1 + 0.25 * Math.abs(Math.sin(t * 7)), wide: 0.6, round: 0.3} : undefined,
-                                                         at: t < 12 ? [px + 300, py - 400] : [hx, C15_SWIM - 80]}));
-      if (leap <= 0) { var w = cngLocal(j.wristA); elephantHook(pen, w[0], w[1] + 30 * size, size * 0.9, {angle: 0.12}); }
-    }});
-  }
+  if (leaper && leap <= 0.6) { onBank.push(leaper); }
   drawByZ(onBank);
   cngBurst(t, C15_HELD + 60, C15_SWIM - 60, C15_CHANGE);
   cngFadeIn(t, 1);

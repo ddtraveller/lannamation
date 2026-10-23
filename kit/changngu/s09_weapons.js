@@ -43,7 +43,12 @@ function cngSceneWeapons(t) {
       cngHammer(j);
     }},
     {name: "bellows man", kind: "person", x: f[0] - 200 * s, y: f[1] + 6, draw: function () {
-      person(f[0] - 200 * s, f[1] + 6, cngPerson("villager", CNG_SMITH, {id: "bellows", face: 1, turban: "#3a4a5a",
+      // he stands on a low block of wood, as a bellows man does, and pumps down: at the ground the handles were at his
+      // shoulder, his arms at full stretch, and his far hand jumped twice a stroke (pop_check)
+      var up = 70 * s;
+      pen.fillStyle = "#7a5432"; pen.fillRect(f[0] - 200 * s - 46 * s, f[1] + 6 - up, 92 * s, up);
+      pen.strokeStyle = "#4a3018"; pen.lineWidth = 2; pen.strokeRect(f[0] - 200 * s - 46 * s, f[1] + 6 - up, 92 * s, up);
+      person(f[0] - 200 * s, f[1] + 6 - up, cngPerson("villager", CNG_SMITH, {id: "bellows", face: 1, turban: "#3a4a5a",
                                                                        reachA: [bellows[0], bellows[1]], reachB: [bellows[0] + 26 * s, f[1] - 150 * s - 20 * s * Math.sin(t * 4)]}));
     }},
     {name: "queen", kind: "person", x: 470, y: 830, draw: function () {

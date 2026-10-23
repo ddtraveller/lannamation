@@ -80,10 +80,11 @@ function c13Bank(t) {
   var run = between(t, 20, 25), px = mix(-100, 1260, run), washing = t > 25 && t < 31;
   var sprites = [{name: "phrom", kind: "person", x: px, y: CNG_BANK + 30, draw: function () {
     if (run < 1) { c13Phrom(px, CNG_BANK + 30, {face: 1, step: t / BEAT * 1.4}); return; }
-    var dip = washing ? Math.max(0, Math.sin((t - 25) * 2.4)) : 0;   // his hands down to the water and up to his face
-    person(px, CNG_BANK + 30, cngPerson("boy", CNG_PHROM, {id: "phrom", size: cngAgeSize(13), face: 1, sit: 0.7, bend: 0.4 + 0.3 * dip,
-                                                          reachA: [px + 60, CNG_BANK - 40 * (1 - dip) - 120 * (1 - dip)],
-                                                          reachB: [px + 80, CNG_BANK - 30 - 130 * (1 - dip)]}));
+    var dip = washing ? Math.max(0, Math.sin((t - 25) * 2.4)) * (1 - between(t, 30.2, 31)) : 0;   // his hands down to the water and up to his face, still by the end
+    var down = between(t, 25, 25.6);                          // he crouches at the water's edge, eased from his run
+    person(px, CNG_BANK + 30, cngPerson("boy", CNG_PHROM, {id: "phrom", size: cngAgeSize(13), face: 1, sit: 0.7 * down, bend: (0.4 + 0.3 * dip) * down,
+                                                          reachA: [px + 60, CNG_BANK - 40 * (1 - dip) - 120 * (1 - dip), down],
+                                                          reachB: [px + 80, CNG_BANK - 30 - 130 * (1 - dip), down]}));
     elephantHook(pen, px - 60, CNG_BANK + 40, cngAgeSize(13) * 0.9, {angle: -1.3});   // laid down on the sand beside him
   }}];
   for (var k = 0; k < 14; k++) {
