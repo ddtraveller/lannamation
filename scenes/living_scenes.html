@@ -403,6 +403,9 @@ var FOOD_SIZES = {stickyrice: [15, 170], khaosoi: [20, 222], somtam: [22, 168], 
                   namphrik: [22, 208], curry: [18, 166], tomyum: [20, 172], padthai: [26, 202], muping: [25, 226],
                   khanomkrok: [26, 246], khantoke: [55, 402]};
 function foodSize(name) { var f = FOOD_SIZES[name]; return f ? 2.2 * f[0] * PX_PER_CM / f[1] : 2.2; }
+// A hanging khom as long as a real one, about 90 cm from its string to the end of its tassel (owner, 2026-10-23:
+// "lanterns up front are too big"): at the maker's size 0.9 it was drawn 394 pixels long (measured 2026-10-23).
+var KHOM = 0.9 * 90 * PX_PER_CM / 394;
 // how many times the maker's size a kind is drawn: its own size against what it measured (1 for one not in SIZES)
 function sizeOf(kind) { return SIZES[kind] ? SIZES[kind][0] * PX_PER_CM / SIZES[kind][1] : 1; }
 // A person's size: the kit's own size for that one of the cast (a child is about 0.6 of a grown one) times PERSON,
@@ -739,7 +742,7 @@ function drawThing(t, time) {
   var calls = {flower: function () { flora(t.flower, t.x, t.y, {size: 1.2}); }, grasstuft: function () { grassTuft(pen, t.x, t.y, 1.6, {t: time}); },
                reeds: function () { riverReeds(pen, t.x - 300, t.y, 600, 1, time, t.id); },
                tung: function () { tung(pen, t.x, t.y, time, true); }, huad: function () { huad(pen, t.x, t.y, 1.0, time, {fire: 1}); },
-               khom: function () { khom(t.x, t.y, {size: 0.9, lit: scene.night ? 1 : 0, late: t.id * 0.7}); },
+               khom: function () { khom(t.x, t.y, {size: KHOM, lit: scene.night ? 1 : 0, late: t.id * 0.7}); },
                food: function () { food(t.food, t.x, t.y, {size: foodSize(t.food), steam: true}); },
                chedisai: function () { chediSai(pen, t.x, t.y, 1.0, time, t.id); },
                pratheep: function () { pratheepRow(pen, t.x - 120, t.y, 5, 60, 1.2, time); },
