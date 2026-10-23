@@ -181,6 +181,8 @@
     <div class="row" id="thingRow"></div>
     <h2 class="fold" data-fold="flora">ดอกไม้และผลไม้ <small>flowers and fruits</small></h2>
     <div class="row" id="floraRow"></div>
+    <h2 class="fold" data-fold="food">อาหาร <small>food</small></h2>
+    <div class="row" id="foodRow"></div>
     <h2 class="fold" data-fold="pieces">ฉาก <small>set pieces</small></h2>
     <div class="row" id="pieceRow"></div>
     <h2 class="fold" data-fold="backdrop">ฉากหลัง <small>backdrop</small></h2>
@@ -372,6 +374,15 @@
 <script src="../kit/highlands.js"></script>
 <script src="../kit/band.js"></script>
 <script src="../kit/northbirds.js"></script>
+<script src="../kit/night.js"></script>
+<script src="../kit/himmaphan.js"></script>
+<script src="../kit/food.js"></script>
+<script src="../kit/chiangsaen.js"></script>
+<script src="../kit/paperdoll.js"></script>
+<script src="../kit/fonlep.js"></script>
+<script src="../kit/apsara.js"></script>
+<script src="../kit/puman.js"></script>
+<script src="../kit/finger_dance.js"></script>
 <script>
 // ---------- what the palette offers ----------
 // Each entry: the kit's name, and what a child sees. The kit draws every one of
@@ -384,6 +395,9 @@ var CASTS = [["boy", "👦 เด็กชาย"], ["girl", "👧 เด็ก�
              // the soldiers of the tale of Chang Ngu, each with a spear: a Tai soldier, and a soldier of the Khom Dam, told
              // apart by dress only (black cloth, a pointed cap), never by face or skin
              ["soldier", "🛡️ ทหาร"], ["khomsoldier", "🛡️ ทหารขอมดำ"],
+             // three paperdolls (paperdoll.js): the fon lep dancer in her stage dress, the celestial dancer of the
+             // Siamese stage (Central Thai, not Lanna), and the pu man, the whisperer of the Wat Phumin mural
+             ["fonlep", "💅 ช่างฟ้อนเล็บ"], ["apsara", "✨ นางอัปสร"], ["puman", "🗣️ ปู่ม่าน"],
              // six people with faces of the north (the kit's look.north, drawn from a photograph of about 1909), named as the north names people
              ["inta", "👨 อินตา"], ["khammun", "👨 คำมูล"], ["buakham", "👩 บัวคำ"], ["sinuan", "👩 ศรีนวล"], ["bunma", "👦 บุญมา"], ["dokkham", "👧 ดอกคำ"]];
 // The old of the cast. Four are the kit's own old people, who have white or grey hair, the lines of age and a stoop
@@ -391,6 +405,9 @@ var CASTS = [["boy", "👦 เด็กชาย"], ["girl", "👧 เด็ก�
 // and an old woman in white for the temple. The fifth is the kit's weaver, a grown woman with black hair: here she is
 // แม่อุ๊ย, a grandmother, so this page gives her what makes a face and a head of hair old, in the kit's own look names.
 var AGED = {weaver: 'hair: "#e8e3da", age: 1'};
+// The paperdolls of the cast: each drawn by its own function (fonlep(x, y, more) ...), which lays her dress over
+// the kit's person(); she takes a person's look keys all the same.
+var PAPERDOLLS = {fonlep: true, apsara: true, puman: true};
 // The kit's Hatsadiling bird (myth.js) is not offered here, out of respect: in the north it is known from the
 // cremations of revered monks and of rulers, and that is not a thing for a child's cartoon.
 var THINGS = [["dog", "🐕 หมา"], ["rooster", "🐓 ไก่"], ["naga", "🐉 พญานาค"], ["dragon", "🐲 มังกร"], ["mom", "🦁 มอม"], ["luang", "⚡ พญาลวง"], ["sun", "☀️ ตะวัน"], ["birds", "🐦 ฝูงนก"], ["lantern", "🏮 โคมลอย"], ["khom", "🎐 โคมล้านนา"],
@@ -417,7 +434,24 @@ var THINGS = [["dog", "🐕 หมา"], ["rooster", "🐓 ไก่"], ["naga",
               // the tale of Chang Ngu: the giant river snakes (naga.js riverSnake: a plain blotched one, and the pearl-white
               // one that becomes the white elephant), Chang Ngu itself, three elephant heads on a snake's body (myth.js),
               // and the white elephant (the kit's elephant, pink-white, a gold cloth)
-              ["riversnake", "🐍 งูใหญ่"], ["pearlsnake", "🐍 งูเผือก"], ["changngu", "🐘 ช้างงู"], ["whiteelephant", "🐘 ช้างเผือก"]];
+              ["riversnake", "🐍 งูใหญ่"], ["pearlsnake", "🐍 งูเผือก"], ["changngu", "🐘 ช้างงู"], ["whiteelephant", "🐘 ช้างเผือก"],
+              // beasts.js: the water buffalo on its own, walking; the kit's chick and grasshopper (oldcartoon.js)
+              ["buffalo", "🐃 ควาย"], ["chick", "🐥 ลูกเจี๊ยบ"], ["grasshopper", "🦗 ตั๊กแตน"],
+              // night.js: the full moon, the eastern barn owl, the atlas moth, a stream of bats going out, fireflies far off
+              ["moon", "🌕 พระจันทร์"], ["owl", "🦉 นกแสก"], ["moth", "🦋 ผีเสื้อหนอนกระท้อน"], ["bats", "🦇 ค้างคาว"], ["fireflies", "✨ หิ่งห้อย"],
+              // himmaphan.js: beings of the Himmaphan on the wing, an angel, a kinnari and the golden hong
+              ["thewada", "🪽 เทวดาเหาะ"], ["kinnari", "🪽 กินรี"], ["hong", "🦢 หงส์บิน"],
+              // finger_dance.js: one of the kit's dancers dancing the fon lep where she stands
+              ["fingerdancer", "💅 ฟ้อนเล็บร่ายรำ"],
+              // chiangsaen.js: the birds of the Mae Khong's sandbars, and a duck swimming
+              ["pratincole", "🐦 นกแอ่นทุ่งเล็ก"], ["lapwing", "🐦 นกกระแตหาด"], ["plover", "🐦 นกหัวโตเล็กขาเหลือง"], ["avadavat", "🐦 นกกระติ๊ดแดง"],
+              ["spotbill", "🦆 เป็ดเทา"],
+              // chiangsaen.js: the tale of Chang Ngu's things that move: the smiths' forge, a fire-gun smoking, a pan for gold,
+              // a hanging cradle swinging, Indra's wall rising out of the ground, the pool of the Chang Ngu statue
+              ["forge", "⚒️ เตาตีเหล็ก"], ["firegun", "🧨 ปืนไฟ"], ["goldpan", "🥘 ถาดร่อนคำ"], ["cradle", "🛏️ อู่"],
+              ["risingwall", "🧱 กำแพงพระอินทร์"], ["statuepool", "⛲ น้ำพุช้างงู"],
+              // pieces.js: a nugget of gold that twinkles; highlands.js: a band of mist
+              ["nugget", "🪙 ก้อนคำ"], ["mist", "🌫️ หมอก"]];
 var PIECES = [["house", "🏠 บ้าน"], ["tree", "🌳 ต้นไม้"], ["palm", "🌴 มะพร้าว"], ["banana", "🍌 กล้วย"], ["temple", "🛕 วัด"], ["yak", "👹 ยักษ์"],
               ["namton", "🏺 น้ำต้น"], ["tung", "🎏 ตุง"], ["drumcart", "🥁 กลองหลวง"],   // pieces.js: the water jar at the gate, a tung with a hong on its pole, the great drum on its cart
               ["longkhao", "🛖 หลองข้าว"], ["sawian", "🧺 เสวียน"],                        // pieces.js: the rice granary on its posts, with its baskets, and a basket alone
@@ -429,11 +463,24 @@ var PIECES = [["house", "🏠 บ้าน"], ["tree", "🌳 ต้นไม้"
               // pieces.js, drawn for the tale: the bamboo house of a poor family of the north (เรือนเครื่องผูก, tied, not
               // nailed), a tied bundle of cut grass, a hand of bananas (กล้วยน้ำว้า), a split-bamboo stick for the fire
               ["ruenphuk", "🛖 เรือนเครื่องผูก"], ["grass", "🌾 หญ้ามัด"], ["bananas", "🍌 กล้วยน้ำว้า"], ["firestick", "🪵 ไม้เขี่ยไฟ"],
-              ["kangsadan", "🔔 กังสดาล"]];   // pieces.js: the golden kangsadan of the tale of Chang Ngu, round and flat, on its frame
+              ["kangsadan", "🔔 กังสดาล"],   // pieces.js: the golden kangsadan of the tale of Chang Ngu, round and flat, on its frame
+              // pieces.js: a snare set for a small animal, the trough of gold on its posts, a tuft of grass that sways
+              ["snare", "🪤 แร้ว"], ["linkham", "🪵 ลินคำ"], ["grasstuft", "🌱 กอหญ้า"],
+              // highlands.js: rice terraces, the hut of the fields, a tall tree, bamboo, an areca palm, a belt of forest
+              ["terraces", "🌾 นาขั้นบันได"], ["fieldhut", "🛖 ห้างนา"], ["talltree", "🌳 ต้นไม้ใหญ่"], ["bamboo", "🎋 กอไผ่"],
+              ["areca", "🌴 ต้นหมาก"], ["forest", "🌲 ป่า"],
+              // chiangsaen.js: Chiang Saen's wall and gate, the limestone hill, a sandbar, khrai nam scrub and reeds by the
+              // river; the tale's things that stand still: a dap, the hook of bamboo, a carrying pole, a salung and a pot of gold
+              ["citywall", "🧱 กำแพงเมือง"], ["karst", "⛰️ ดอยหินปูน"], ["sandbar", "🏝️ ดอนทราย"], ["khrainam", "🌿 ไคร้น้ำ"],
+              ["reeds", "🌾 ต้นอ้อ"], ["dap", "🗡️ ดาบ"], ["hook", "🎋 ขอไม้ไล่"], ["carrypole", "🧺 คานหาบ"],
+              ["salung", "🥣 สลุงคำ"], ["goldpot", "🏺 หม้อคำ"]];
+// The novice's alms bowl of chiangsaen.js is kit only, never offered here (the respect rule, as the monk).
 // The flowers and fruits of flora.js, with the kit's own Thai names: each stands on the
 // ground as a thing; the ones a tree can bear are also a tree in flower or fruit, a set piece.
 var FLORAS = Object.keys(window.FLORA || {}).map(function (n) { return [n, (FLORA[n].kind === "flower" ? "🌸 " : "🍈 ") + FLORA[n].thai]; });
 var TREES = Object.keys(window.FLORA_TREES || {}).map(function (n) { return [n + "Tree", "🌳 ต้น" + FLORA[n].thai]; });
+// The dishes of food.js, with the kit's own Thai names: each a thing that stands where it is put, steaming.
+var FOODS_OFFERED = Object.keys(window.FOODS || {}).map(function (n) { return [n, "🍲 " + FOODS[n].thai]; });
 // The backdrops. Three are this page's own: the green hills at three hours of the day, under clouds that drift.
 // The rest are the pictures of backdrops.js, whose table is BACKDROPS (a name, a line about it, its name in Thai):
 // each is a whole painting with its own sky. A picture that has the name of one of the three is not offered.
@@ -484,7 +531,8 @@ var FEELING_THINGS = {dog: true, rooster: true, naga: true, dragon: true, mom: t
                       elephant: true, tiger: true, cat: true, pig: true, horse: true, maeng: true,
                       peafowl: true, pheasant: true, sunbird: true, magpie: true, hornbill: true,
                       hen: true, blackrooster: true, blackhen: true,   // the rooster's feelings, the hens' too
-                      whiteelephant: true};                            // the white elephant is the kit's elephant
+                      whiteelephant: true,                             // the white elephant is the kit's elephant
+                      buffalo: true};
 // Whether an item has feelings: a person, or a thing named in FEELING_THINGS. Returns true or false.
 // e.g. feels({kind: "thing", name: "dog"}) is true
 function feels(item) { return item.kind === "person" || (item.kind === "thing" && !!FEELING_THINGS[item.name]); }
@@ -812,7 +860,17 @@ function pieceCode(item) {
                kongkhao: "kongKhao(brush, X, Y, 1.1)", krabung: "krabung(brush, X, Y, 1.1)", mortar: "mortar(brush, X, Y, 1.1)",
                talaew: "taLaew(brush, X, Y, 1.1)", kangsadan: "kangsadan(brush, X, Y, 1.1)", firewood: "firewood(brush, X, Y - 8, 1.1, {loose: true})", cave: "caveMouth(brush, X, Y, 1.1, {})",
                ruenphuk: "ruenPhuk(brush, X, Y, 1)", grass: "grassBundle(brush, X, Y - 45, 1.2, {tied: true})",
-               bananas: "bananas(brush, X, Y - 18, 1.2, {count: 5, ripe: 0.8})", firestick: "fireStick(brush, [X - 50, Y - 4], [X + 50, Y - 9], {})"};
+               bananas: "bananas(brush, X, Y - 18, 1.2, {count: 5, ripe: 0.8})", firestick: "fireStick(brush, [X - 50, Y - 4], [X + 50, Y - 9], {})",
+               snare: "snare(brush, X, Y, 0.8, {})", linkham: "linKham(brush, [[X - 300, Y], [X + 300, Y]], 1, {})",
+               // highlands.js draws for a far landscape, a person there 80 tall: here they are drawn to stand beside the people
+               terraces: "terraces(brush, X, Y - 380, 1100, 380, {seed: " + item.id + "})", fieldhut: "fieldHut(brush, X, Y, 4.5)",
+               talltree: "tallTree(brush, X, Y, 1.4, FOREST_GREENS[" + item.id % 6 + "], " + item.id + ")", bamboo: "bamboo(brush, X, Y, 1.4, " + item.id + ")",
+               areca: "areca(brush, X, Y, 1.5, " + item.id + ")", forest: "forest(brush, X - 600, X + 600, Y, {tall: 300, seed: " + item.id + "})",
+               // chiangsaen.js: the wall's x is its left end; a sandbar's y is its top
+               citywall: "cityWall(brush, X - 600, Y, 1200, 1, {})", karst: "karstHill(brush, X, Y, 2, {})",
+               sandbar: "sandbar(brush, X - 350, Y - 50, 700, 50, " + item.id + ")", dap: "dap(brush, X, Y - 30, 0.6, {angle: 0.15})",
+               hook: "elephantHook(brush, X, Y, 1.4, {})", carrypole: "carryPole(brush, X, Y - 120, 1, {gold: true})",
+               salung: "salung(brush, X, Y, 1, {grass: true})", goldpot: "goldPot(brush, X, Y, 1)"};
   var call = calls[item.name] || "floraTree(brush, X, Y, 1, " + js(item.name.replace(/Tree$/, "")) + ", " + item.id + ")";   // a tree in flower or fruit, flora.js
   call = call.split("X").join(x).split("Y").join(base);   // every X and Y: a piece of two parts (the pen, the hall) has two of each
   if (s !== 1) {                          // scaled about its foot
@@ -824,14 +882,16 @@ function pieceCode(item) {
 // The set pieces that sway: a tung's cloth hangs from its pole and sways in the breeze (owner, 2026-10-16: "if
 // they are hanging give them a sway function"). Each is drawn every frame at the film's second, among the movers
 // by where it stands, not painted once on the scene's sheet; it has one key all the same.
-var SWAYS = {tung: true};
+var SWAYS = {tung: true, grasstuft: true, khrainam: true, reeds: true};   // and grass, scrub and reeds, stirring as the breeze goes
 
 // The code that draws a set piece that sways (SWAYS: the tung) on the pen at second t, every frame, scaled about its
 // foot. Returns the call as text, without ";"; changes nothing.
 // e.g. swayCode({name: "tung", keys: [[0, 600, 920]], size: 1.2}) gives "tung(pen, 600, 920, t, true)"
 function swayCode(item) {
   var x = Math.round(item.keys[0][1]), base = Math.round(item.keys[0][2]), s = scaleOf(item);
-  var call = {tung: "tung(pen, " + x + ", " + base + ", t, true)"}[item.name];   // the kit's tung, its cloth swaying from the top of the pole
+  var call = {tung: "tung(pen, " + x + ", " + base + ", t, true)",   // the kit's tung, its cloth swaying from the top of the pole
+              grasstuft: "grassTuft(pen, " + x + ", " + base + ", 1.6, {t: t})",   // pieces.js
+              khrainam: "khraiNam(pen, " + x + ", " + base + ", 1.6, t, " + item.id + ")", reeds: "riverReeds(pen, " + (x - 300) + ", " + base + ", 600, 1, t, " + item.id + ")"}[item.name];   // chiangsaen.js
   return s === 1 ? call : "pen.save(); pen.translate(" + x + ", " + base + "); pen.scale(" + num(s) + ", " + num(s) + "); pen.translate(" + (-x) + ", " + (-base) + "); " + call + "; pen.restore()";
 }
 
@@ -862,6 +922,7 @@ function personCode(item, n) {
     more = "Object.assign(" + more + ", [" + poses.map(function (q, i) { return "{" + poseLook(q, late, item.keys[i][0], item).join(", ") + "}"; }).join(", ") + "][p" + n + "[7]])";
   }
   var cast_ = "cast(" + js(item.name) + ", " + more + ")";
+  if (PAPERDOLLS[item.name]) { return item.name + "(p" + n + "[0], p" + n + "[1], " + more + ")"; }   // a paperdoll draws herself over her cast member
   if (item.sabai) {                     // the woven sabai of sabai.js: the cloth is read off the person's joints; its back is drawn behind them, its band under their arm
     return "(function () { var look = Object.assign(" + cast_ + ", {sabai: false}), w = sabaiOf(t, p" + n + "[0], p" + n + "[1], look); sabai(t, w, SABAI_CLOTH, \"back\"); return person(p" + n + "[0], p" + n + "[1], sabaiWorn(look, t, w, SABAI_CLOTH)); })()";   // sabai: false: the kit draws no band of its own under the woven cloth
   }
@@ -990,7 +1051,43 @@ function thingCode(item, n, sc) {
                pearlsnake: "riverSnake(P[0], P[1], {kind: \"pearl\", size: " + num(0.6 * s) + ", face: P[3], late: " + (n * 0.3).toFixed(1) + tints + "})",
                changngu: "changNgu(P[0], P[1], {size: " + num(0.5 * s) + ", face: P[3]" + tints + "})",
                whiteelephant: "elephant(P[0], P[1], {size: " + num(0.45 * s) + ", face: P[3], late: " + (n * 0.3).toFixed(1) + ", step: " + stepCode("elephant", 0.45 * s) + felt +
-                              ", colour: \"#f1ddd3\", cloth: \"#c9962a\"})"};
+                              ", colour: \"#f1ddd3\", cloth: \"#c9962a\"})",
+               // beasts.js: the buffalo walks as the elephant does; the chick walks and pecks when it stops; the grasshopper
+               // leaps while its course moves it
+               buffalo: "buffalo(P[0], P[1], {size: " + num(0.5 * s) + ", face: P[3], late: " + (n * 0.3).toFixed(1) + ", step: " + stepCode("buffalo", 0.5 * s) + felt + "})",
+               chick: "chick(P[0], P[1], t, {size: " + num(2.0 * s) + ", face: P[3], walk: P[2] ? P[6] / " + num(48 * s) + " : undefined, peck: P[2] ? 0 : Math.max(0, Math.sin(t * 2.3))})",
+               grasshopper: "grasshopper(P[0], P[1], t, {size: " + num(1.6 * s) + ", face: P[3], leap: P[2] ? Math.abs(Math.sin(t * 4)) : 0})",
+               // night.js: the moon in the sky; the owl flies past while its course moves it and perches when it stops; the
+               // moth flutters where it is; the bats stream away from their point, from its first second, into the distance
+               moon: "nightMoon(P[0], P[1], " + num(70 * s) + ")",
+               owl: "barnOwl(P[0], P[1], t, {size: " + num(1.0 * s) + ", face: P[3], fly: P[2] ? \"side\" : undefined, seed: " + item.id + "})",
+               moth: "atlasMoth(P[0], P[1], t, {size: " + num(0.4 * s) + ", face: P[3]})",
+               bats: "batStream(t, {from: [P[0], P[1]], to: [P[0] + " + Math.round(900 * s) + " * P[3], P[1] - " + Math.round(500 * s) + "], start: " + item.keys[0][0] + ", count: 30, size: " + num(2.5 * s) + ", far: " + num(0.6 * s) + "})",
+               fireflies: "farFireflies(t, {box: [P[0] - " + Math.round(450 * s) + ", P[1] - " + Math.round(120 * s) + ", P[0] + " + Math.round(450 * s) + ", P[1] + " + Math.round(120 * s) + "], count: 60, seed: " + item.id + "})",
+               // himmaphan.js: each flies facing the way its course goes; the hong's neck follows its rise (its trail)
+               thewada: "thewada(P[0], P[1], t, {size: " + num(1.0 * s) + ", face: P[3], seed: " + item.id + "})",
+               kinnari: "kinnari(P[0], P[1], t, {size: " + num(1.0 * s) + ", face: P[3], seed: " + item.id + "})",
+               hong: "hongFlight(P[0], P[1], t, {size: " + num(1.0 * s) + ", face: P[3], seed: " + item.id + ", trail: function (tt) { return where(" + keysCode(item) + ", tt); }})",
+               // finger_dance.js: one of the kit's dancers, dancing where she stands; each a little late, so two are not one copied
+               fingerdancer: "fingerDancer(P[0], P[1], \"pink\", {size: " + num(s) + ", id: " + js("i" + item.id) + "}, " + (n * 0.3).toFixed(1) + ")",
+               // chiangsaen.js: the sandbar birds peck while they stand and fly while their course moves them; the duck swims
+               pratincole: "pratincole(pen, P[0], P[1], " + num(2.4 * s) + ", {face: P[3], fly: !!P[2], t: t})",
+               lapwing: "riverLapwing(pen, P[0], P[1], " + num(2.4 * s) + ", {face: P[3], fly: !!P[2], t: t, peck: P[2] ? 0 : Math.max(0, Math.sin(t * 1.7))})",
+               plover: "ringedPlover(pen, P[0], P[1], " + num(2.4 * s) + ", {face: P[3], fly: !!P[2], t: t, peck: P[2] ? 0 : Math.max(0, Math.sin(t * 2.3))})",
+               avadavat: "redAvadavat(pen, P[0], P[1], " + num(2.4 * s) + ", {face: P[3], fly: !!P[2], t: t, peck: P[2] ? 0 : Math.max(0, Math.sin(t * 2.9))})",
+               spotbill: "spotbill(pen, P[0], P[1], " + num(2.4 * s) + ", {face: P[3], t: t})",
+               // chiangsaen.js: the tale's things that move by the second; Indra's wall rises in the three seconds after its first key
+               forge: "forge(pen, P[0], P[1], " + num(1.0 * s) + ", t)",
+               firegun: "fireGun(pen, P[0], P[1], " + num(0.8 * s) + ", {t: t})",
+               goldpan: "goldPan(pen, P[0], P[1], " + num(1.4 * s) + ", {tilt: 0.15, gold: true, t: t})",
+               cradle: "hangingCradle(pen, P[0], P[1], " + num(1.4 * s) + ", t, {})",
+               risingwall: "risingWall(pen, P[0] - " + Math.round(350 * s) + ", P[1], " + Math.round(700 * s) + ", " + Math.round(360 * s) + ", between(t, " + item.keys[0][0] + ", " + (item.keys[0][0] + 3) + "))",
+               statuepool: "statuePool(pen, P[0], P[1], " + num(1.0 * s) + ", t)",
+               // pieces.js: the nugget twinkles; highlands.js: the mist swells as it goes
+               nugget: "goldNugget(pen, P[0], P[1], " + num(2.5 * s) + ", t, {seed: " + item.id + "})",
+               mist: "mistBand(pen, P[0], P[1], " + Math.round(600 * s) + ", t, {seed: " + item.id + "})"};
+  // food.js: a dish, steaming, on where it is put
+  if (window.FOODS && FOODS[item.name]) { calls[item.name] = "food(" + js(item.name) + ", P[0], P[1], {size: " + num(2.2 * s) + ", steam: true})"; }
   // "P[" is this item's place: p0[, p1[ ... (only "P[": names such as khomPhat keep their capital P)
   return (calls[item.name] || "flora(" + js(item.name) + ", P[0], P[1], {size: " + num(1.2 * s) + "})").split("P[").join(p + "[");   // or a flower or fruit of flora.js
 }
@@ -1391,7 +1488,7 @@ function whereNow(item) {               // the item's place on the sheet at the 
 //         size (down undefined for most: hit() then allows 30). hit(), the size handle and the selection box use it.
 function reach(item) {                  // how far from its foot point a click still means this item
   if (item.kind === "person") { return {up: 440 * item.size, side: 90 * item.size}; }
-  var s = scaleOf(item), r = item.kind === "piece" ? {up: 320, side: 160}
+  var s = scaleOf(item), r = REACHES[item.name] || (item.kind === "piece" ? {up: 320, side: 160}
         : item.name === "naga" ? {up: 230, side: 400, down: 260} : item.name === "dragon" ? {up: 160, side: 440, down: 160}
         : item.name === "mom" ? {up: 210, side: 160} : item.name === "luang" ? {up: 120, side: 400, down: 120}
         : item.name === "khom" ? {up: 20, side: 70, down: 420}
@@ -1400,9 +1497,17 @@ function reach(item) {                  // how far from its foot point a click s
         : item.name === "tungsaimu" ? {up: 200, side: 60} : item.name === "tungyai" ? {up: 380, side: 90}
         : item.name === "rotdaeng" ? {up: 320, side: 300}
         : item.name === "riversnake" || item.name === "pearlsnake" ? {up: 180, side: 320, down: 40} : item.name === "changngu" ? {up: 220, side: 200, down: 60}
-        : item.name === "whiteelephant" ? {up: 340, side: 220} : {up: 120, side: 120};
+        : item.name === "whiteelephant" ? {up: 340, side: 220} : {up: 120, side: 120});
   return {up: r.up * s, side: r.side * s, down: r.down ? r.down * s : undefined};
 }
+// The reach of the wide set pieces and of what is drawn about its middle, not standing on its point
+var REACHES = {citywall: {up: 260, side: 600}, terraces: {up: 380, side: 550}, forest: {up: 320, side: 600}, linkham: {up: 80, side: 300},
+               sandbar: {up: 60, side: 350}, reeds: {up: 220, side: 300}, karst: {up: 440, side: 300}, risingwall: {up: 360, side: 350},
+               statuepool: {up: 260, side: 260, down: 60}, moon: {up: 80, side: 80, down: 80}, bats: {up: 80, side: 120, down: 80},
+               fireflies: {up: 120, side: 450, down: 120}, mist: {up: 60, side: 300, down: 60}, owl: {up: 100, side: 100, down: 60},
+               moth: {up: 80, side: 90, down: 80}, thewada: {up: 130, side: 130, down: 130}, kinnari: {up: 130, side: 150, down: 130},
+               hong: {up: 120, side: 160, down: 120}, fingerdancer: {up: 440, side: 90}, buffalo: {up: 260, side: 200},
+               talltree: {up: 590, side: 200}, bamboo: {up: 460, side: 140}, areca: {up: 500, side: 120}, fieldhut: {up: 380, side: 230}};
 
 // ---------- the size handle ----------
 // The selected sprite shows a handle at its top-right corner: dragged, it
@@ -1609,7 +1714,7 @@ function paintRuler() {
 //         its kit name when the palette has none. Changes nothing.
 // e.g. labelOf({kind: "thing", name: "dog"})
 function labelOf(item) {
-  var list = item.kind === "person" ? CASTS : item.kind === "thing" ? THINGS.concat(FLORAS) : PIECES.concat(TREES);
+  var list = item.kind === "person" ? CASTS : item.kind === "thing" ? THINGS.concat(FLORAS, FOODS_OFFERED) : PIECES.concat(TREES);
   for (var i = 0; i < list.length; i++) { if (list[i][0] === item.name) { return list[i][1]; } }
   return item.name;
 }
@@ -2304,6 +2409,7 @@ wireFolds(document.querySelector(".palette"));
 fillRow("castRow", CASTS.filter(function (entry) { return CAST[entry[0]]; }), "person");   // only what this kit knows
 fillRow("thingRow", THINGS, "thing");
 fillRow("floraRow", FLORAS, "thing");
+fillRow("foodRow", FOODS_OFFERED, "thing");
 fillRow("pieceRow", PIECES.concat(TREES), "piece");
 // A picture's button shows the picture itself, small, over its name in Thai. A picture takes a moment to
 // paint, so they are painted one at a time once the page is up: each on the kit's big sheet, then drawn small.
@@ -2917,7 +3023,7 @@ function filmPrompt() {
     "The stage is a sheet 1440 wide and 1080 high; x runs 0..1440 left to right, y runs 0..1080 top to bottom. The ground is y 880..1040 (feet stand there, 900 is typical); the sky is y 60..600.",
     "JSON shape: {\"duration\": seconds 5..60, \"backdrop\": one of " + JSON.stringify(BACKS.map(function (b) { return b[0]; })) + ",",
     " \"items\": [ {\"kind\": \"person\", \"name\": one of " + JSON.stringify(people) + ", \"keys\": [[second, x, y], ...], \"size\": 0.7..1.7, \"feel\": one of " + JSON.stringify(FEELS.map(function (f) { return f[0]; })) + " (the face, and how the body is carried, from the start; a key may change it), \"pose\": one of " + JSON.stringify(POSES.map(function (p) { return p[0]; })) + ", \"parasol\": one of " + JSON.stringify(PARASOLS.map(function (p) { return p[0]; })) + " (which parasol a woman carries, with a parasol pose; optional), \"sabai\": true for a shoulder cloth woven with small figures that walk (optional), \"style\": {\"face\": \"thai\", \"hair\": \"high\"|\"low\"|\"wong\"|\"loose\", \"body\": \"fat\"} (the face, the hair and the body chosen apart, for a man or a woman alike; each optional), \"colours\": {\"shirt\"|\"legs\"|\"skin\": \"#rrggbb\"} },",
-    "            {\"kind\": \"thing\", \"name\": one of " + JSON.stringify(THINGS.concat(FLORAS).map(function (t) { return t[0]; })) + ", \"keys\": [[second, x, y], ...], \"size\": 0.5..2 (1.2 is as the kit draws it; optional), \"feel\": as a person's, for the dog, rooster, naga, dragon, mom, luang and the oxcart's buffalo (its eyes, brows, mouth, and how it carries its head, ears and tail; optional)},",
+    "            {\"kind\": \"thing\", \"name\": one of " + JSON.stringify(THINGS.concat(FLORAS, FOODS_OFFERED).map(function (t) { return t[0]; })) + ", \"keys\": [[second, x, y], ...], \"size\": 0.5..2 (1.2 is as the kit draws it; optional), \"feel\": as a person's, for the dog, rooster, naga, dragon, mom, luang and the oxcart's buffalo (its eyes, brows, mouth, and how it carries its head, ears and tail; optional)},",
     "            {\"kind\": \"piece\", \"name\": one of " + JSON.stringify(PIECES.concat(TREES).map(function (p) { return p[0]; })) + ", \"keys\": [[0, x, y]]} ],",
     " \"texts\": [ {\"kind\": \"card\", \"big\": title, \"small\": second line, \"from\": second, \"to\": second}, {\"kind\": \"subtitle\", \"big\": words under the picture, \"small\": translation, \"from\": s, \"to\": s}, {\"kind\": \"say\" or \"think\", \"who\": the person's place in items (0 for the first), \"big\": what they say, or think, in a bubble over their head, \"small\": translation, \"from\": s, \"to\": s} ],",
     " \"cuts\": [ {\"at\": second, \"backdrop\": one of the backdrops} ] (optional: a new scene from that second on; the film begins on \"backdrop\"; the kit closes and opens an iris at each cut),",
@@ -3021,7 +3127,7 @@ function adoptFilm(data) {
   taken(data.items, "items", dropped).forEach(function (raw, index) {
     if (!raw || typeof raw !== "object") { dropped.push("item " + JSON.stringify(raw)); return; }   // an empty entry: left out, not a TypeError
     var kind = raw.kind, name = String(raw.name || "");
-    var known = kind === "person" ? CASTS.some(function (c) { return c[0] === name; }) && !!CAST[name] : kind === "thing" ? THINGS.concat(FLORAS).some(function (t) { return t[0] === name; })
+    var known = kind === "person" ? CASTS.some(function (c) { return c[0] === name; }) && !!CAST[name] : kind === "thing" ? THINGS.concat(FLORAS, FOODS_OFFERED).some(function (t) { return t[0] === name; })
               : kind === "piece" ? PIECES.concat(TREES).some(function (p) { return p[0] === name; }) : false;
     if (!known) { dropped.push(kind + " " + name); return; }
     var grounded = kind !== "thing" || !!(window.FLORA && FLORA[name]), keys = [], last = -1;
@@ -3215,7 +3321,7 @@ var GUIDE = [
   {big: "เลือกฉากหลัง", small: "Pick a background", backs: true},
   {big: "ของในฉาก", small: "Things that stand in the scene", list: function () { return withKind(PIECES, "piece"); }},
   {big: "ต้นไม้ ดอกไม้ ผลไม้", small: "Plants: trees, flowers and fruits", list: function () { return withKind(TREES, "piece").concat(withKind(FLORAS, "thing")); }},
-  {big: "สัตว์และของอื่นๆ", small: "Animals and other things", list: function () { return withKind(THINGS, "thing"); }},
+  {big: "สัตว์และของอื่นๆ", small: "Animals and other things", list: function () { return withKind(THINGS.concat(FOODS_OFFERED), "thing"); }},
   {big: "ใครอยู่ในเรื่องบ้าง", small: "Who is in the story?", list: function () { return withKind(CASTS.filter(function (e) { return CAST[e[0]]; }), "person"); }},
   {big: "ทีละคน", small: "Each person, one at a time", each: true},
   {big: "ดูฉากของเรา", small: "Watch your scene", play: true},
@@ -3226,8 +3332,8 @@ var GUIDE_PLAY = 6;                     // the step "skip all" goes to
 // Where "put it in for me" stands a new thing, when the child does not tap a place: along the ground,
 // left to right, no two in one place; up in the sky what is there (the sun, birds, a lantern rising),
 // high what hangs (the hanging lanterns), and in the air what flies (the dragon, the Luang).
-var GUIDE_SKY = {sun: true, birds: true, lantern: true}, GUIDE_HANGS = {khom: true, khomphat: true, khomdao: true, khombua: true},
-    GUIDE_FLIES = {dragon: true, luang: true};
+var GUIDE_SKY = {sun: true, birds: true, lantern: true, moon: true, bats: true}, GUIDE_HANGS = {khom: true, khomphat: true, khomdao: true, khombua: true},
+    GUIDE_FLIES = {dragon: true, luang: true, thewada: true, kinnari: true, hong: true, moth: true, mist: true};
 //   kind  "person", "thing" or "piece"; name  its kit name. Returns [x, y], pixels of the sheet, from how many items
 //         the film has; changes nothing.
 function guideSpot(kind, name) {

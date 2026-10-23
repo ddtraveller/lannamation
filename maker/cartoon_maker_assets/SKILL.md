@@ -152,6 +152,39 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   `whiteelephant` is the white elephant with a gold cloth, walking as the
   elephant does. `kangsadan` is a set piece: the golden kangsadan, a round
   flat gong of gold on its frame. The bael (`bael`, มะตูม) is one of the fruits.
+- Chiang Saen and more of the tale (chiangsaen.js). Set pieces: `citywall`
+  (the wall and its gate, about 1200 pixels wide, its key the middle of its
+  foot), `karst` (a limestone hill with a cave, big: toward the back),
+  `sandbar` (its key the middle of its top), `khrainam` (river scrub) and
+  `reeds` (600 wide), which stir in the breeze, `dap` (a sword standing),
+  `hook` (the bamboo hook), `carrypole` (a pole with two baskets of gold),
+  `salung` (a gold bowl of grass) and `goldpot`. Things: `pratincole`,
+  `lapwing`, `plover` and `avadavat` (small birds of the sandbars: they peck
+  while they stand and fly while they move), `spotbill` (a duck: give it
+  water), `forge` (a smiths' forge, its fire burning), `firegun`, `goldpan`,
+  `cradle` (a cradle on its beam: its key is the cradle's lowest point),
+  `risingwall` (Indra's wall: it rises out of the ground in the three seconds
+  after its first key) and `statuepool` (the fountain of the Chang Ngu statue).
+- More animals: `buffalo` walks as the elephant does; `chick` walks and pecks;
+  `grasshopper` leaps while it moves. The night (give it a night backdrop):
+  `moon` (in the sky), `owl` (a barn owl: it flies while its course moves and
+  perches when it stops), `moth` (the atlas moth), `bats` (a stream of bats
+  going away from their key into the distance, from its first second) and
+  `fireflies` (over the ground about their key). The Himmaphan: `thewada` (an
+  angel), `kinnari` and `hong` (the golden swan), flying the way their course
+  goes. `fingerdancer` dances the fon lep where she stands (one key; several
+  side by side make a troupe). `nugget` is a nugget of gold that twinkles;
+  `mist` is a band of mist. Set pieces: `snare`, `linkham` (a trough of gold on
+  posts, 600 wide), `grasstuft` (it sways), and from the highlands `terraces`
+  (rice terraces, 1100 wide: toward the back), `fieldhut`, `talltree`,
+  `bamboo`, `areca` and `forest` (a belt of forest 1200 wide).
+- Food (food.js): `stickyrice`, `khaosoi`, `somtam`, `mangorice`, `saiua`,
+  `namphrik`, `curry`, `tomyum`, `padthai`, `muping`, `khanomkrok` and
+  `khantoke` are things, each a dish standing where it is put, steaming.
+- Three paperdolls are people: `fonlep` (the fon lep dancer in her stage
+  dress), `apsara` (the celestial dancer of the Central Thai stage, not Lanna)
+  and `puman` (the whisperer of the Wat Phumin mural). They walk, pose and
+  feel as the others do.
 - The flowers and fruits of Thailand (the vocabulary lists them: mango,
   durian, longan, orchid, marigold ...) are things that stand on the ground;
   a name ending in `Tree` (`longanTree`, `ratchaphruekTree` ...) is that tree
