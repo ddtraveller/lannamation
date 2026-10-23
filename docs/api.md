@@ -424,7 +424,7 @@ e.g. feelingBetween(was, now, between(clock, since, since + FEEL_EASE))
 The numbers a face shows now, eased from what it showed (above).
 key: a name kept across frames (a person's id); f: the numbers its look asks for now, as feelingBetween() takes
 them. Returns a new object: f's numbers, or part way to them for FEEL_EASE seconds after they jumped. Reads clock;
-keeps its state in FELT[key], so call it once a frame for each key.
+keeps its state in FEEL_KEPT[key], so call it once a frame for each key.
 e.g. var shown = easedFeeling("lad", {wonder: 0, smile: 1, ...});
 ```
 

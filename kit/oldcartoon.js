@@ -1000,7 +1000,7 @@ function feelingOverTime(f, at) {
 // As follow()'s springs: a key whose clock runs backward or skips more than a quarter of a second starts at the new
 // feeling, and forget() clears them all, so a render and a still (settled() paints two seconds before a jump) show
 // the change as the film does.
-var FELT = {}, FELT_N = 0, FELT_AT = -1, FEEL_EASE = 0.4, FEEL_JUMP = 0.12;
+var FEEL_KEPT = {}, FEEL_KEPT_N = 0, FEEL_KEPT_AT = -1, FEEL_EASE = 0.4, FEEL_JUMP = 0.12;
 var FEEL_NUMBERS = ["wonder", "smile", "fear", "anger", "sad", "sleepy", "full", "worry", "laugh", "bend", "tilt"];
 
 // The numbers u of the way from feeling a to feeling b; a mouth a feeling opens (surprise, fear) opens and shuts by
@@ -1023,11 +1023,11 @@ function feelingBetween(a, b, u) {
 // The numbers a face shows now, eased from what it showed (above).
 // key: a name kept across frames (a person's id); f: the numbers its look asks for now, as feelingBetween() takes
 // them. Returns a new object: f's numbers, or part way to them for FEEL_EASE seconds after they jumped. Reads clock;
-// keeps its state in FELT[key], so call it once a frame for each key.
+// keeps its state in FEEL_KEPT[key], so call it once a frame for each key.
 // e.g. var shown = easedFeeling("lad", {wonder: 0, smile: 1, ...});
 function easedFeeling(key, f) {
-  var s = FELT[key];
-  if (!s || clock < s.t || clock - s.t > 0.25) { s = FELT[key] = {t: clock, from: f, to: f, since: -1e9}; }
+  var s = FEEL_KEPT[key];
+  if (!s || clock < s.t || clock - s.t > 0.25) { s = FEEL_KEPT[key] = {t: clock, from: f, to: f, since: -1e9}; }
   function opened(o, n) { return o ? o[n] : 0; }
   var jump = [0, 1, 2].some(function (n) { return Math.abs(opened(s.to.open, n) - opened(f.open, n)) > FEEL_JUMP; }) ||
              FEEL_NUMBERS.some(function (k) { return Math.abs(s.to[k] - f[k]) > FEEL_JUMP; });
@@ -1100,8 +1100,8 @@ function feelingOf(look, at, key) {
 // object above.
 // e.g. var e = creatureFeel({feel: "angry"}, clock + ownTime("dog"));
 function creatureFeel(look, at, key) {
-  if (clock !== FELT_AT) { FELT_N = 0; FELT_AT = clock; }
-  if (key === undefined) { key = "c/" + (look.id !== undefined ? look.id : FELT_N++); }
+  if (clock !== FEEL_KEPT_AT) { FEEL_KEPT_N = 0; FEEL_KEPT_AT = clock; }
+  if (key === undefined) { key = "c/" + (look.id !== undefined ? look.id : FEEL_KEPT_N++); }
   var f = feelingOf(look, at, key);
   var frown = clamp(f.sad + 0.6 * f.anger + 0.45 * f.worry);
   return {f: f, key: key, lid: f.lids, bowed: f.laugh > 0.5,
@@ -11256,11 +11256,12 @@ function cutFade(dark) {
 var SETTLE = 60, SETTLED_AT = null;
 
 // What the kit remembers from one frame to the next: the springs of what hangs (FOLLOWS), how each arm last bent
-// (BENDS), who was drawn n-th (DRAWN), what the eyes saw (SIGHTS), each face's feeling as it eases (FELT); a module that remembers more puts a function
-// that forgets it in FORGET (paperdoll.js: the dolls' chains). When a render jumps the clock, settled() forgets it
-// all before the frames it paints unseen, so that they start from rest, as the numbers above assume, and not from
-// whatever the page drew live while it loaded: a render gives the same pixels every time. (2026-10-21: before, the
-// same second of village.html or fonlep.html came out differently with what had been drawn before it.)
+// (BENDS), who was drawn n-th (DRAWN), what the eyes saw (SIGHTS), each face's feeling as it eases (FEEL_KEPT); a
+// module that remembers more puts a function that forgets it in FORGET (paperdoll.js: the dolls' chains). When a
+// render jumps the clock, settled() forgets it all before the frames it paints unseen, so that they start from rest,
+// as the numbers above assume, and not from whatever the page drew live while it loaded: a render gives the same
+// pixels every time. (2026-10-21: before, the same second of village.html or fonlep.html came out differently with
+// what had been drawn before it.)
 var FORGET = [];
 
 function forget() {
@@ -11268,9 +11269,9 @@ function forget() {
   BENDS = {};
   DRAWN = 0;
   DRAWN_AT = -1;
-  FELT = {};
-  FELT_N = 0;
-  FELT_AT = -1;
+  FEEL_KEPT = {};
+  FEEL_KEPT_N = 0;
+  FEEL_KEPT_AT = -1;
   SIGHTS.whole = null;
   FORGET.forEach(function (more) { more(); });
 }
