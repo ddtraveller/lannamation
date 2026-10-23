@@ -89,6 +89,10 @@ canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
 <script>
 var BEAT = 0.5;                          // the kit reads this: how long one beat is
 STYLE.hop = false;                       // no 1930s bounce: people walk and stand still, as in the maker unless asked (owner, 2026-10-23)
+// the spine sways less, so a walker's head does not rock with each stride (owner, 2026-10-23: "The man's hat wobbles on
+// his head"): the hat sits fast on the head, but the head rocked 2.6 to 10 degrees as he walked, which tips a wide
+// brim up and down; at 0.3, 5.3 to 7.4 (measured 2026-10-23), the stride still in the hips and legs
+STYLE.sway = 0.3;
 var ASK = new URLSearchParams(location.search);
 
 // ---------- the places: each backdrop picture of backdrops.js, where its ground, water and sky are ----------
