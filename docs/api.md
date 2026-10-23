@@ -7360,7 +7360,9 @@ gate looked like in those times"), so this claims the least: a passage through t
 under the parapet, two teak doors, a bridge of timber over the moat. Along the river there was no wall (the Mae
 Khong was the east moat). The owner's pick, 2026-10-23 (of three gates).
   x, base: the left end and the foot of the high rampart (the moat's edge); wide: pixels; size: 1 is a rampart 150
-  pixels high; look: gate (true), open (0 shut to 1 open; 0), outer (true: the low outer rampart and the moat).
+  pixels high; look: gate (true), open (0 shut to 1 open; 0), outer (true: the low outer rampart and the moat), plain
+  (true: a village's defences, earth and timber only, no brick: the chronicle's Wiang Phan, a moat dug and filled
+  and "ประตูหับไข", gates that open and shut).
 e.g. cityWall(pen, 200, 820, 1500, 1, {open: 0.8});
 ```
 
@@ -7512,8 +7514,9 @@ middle on (x, base); size 1 is 110 across. e.g. goldPot(pen, 980, 900, 1);
 
 ```
 A hanging cradle (อู่) of cloth slung from a beam on two cords, swinging with t, a baby swaddled in it; the sling's
-lowest point at (x, y); size 1 is 150 across. look: baby (true), beam (true: the beam it hangs from).
-e.g. hangingCradle(pen, 900, 760, 1, t, {});
+lowest point at (x, y); size 1 is 150 across. look: baby (true), beam (true: the beam it hangs from), top (the y of
+the beam its cords go up to; 170 above it at size 1 when left out: a cradle hangs low, by someone sitting).
+e.g. hangingCradle(pen, 900, 760, 1, t, {top: 300, beam: false});
 ```
 
 ### `swaddledBaby(brush, x, y, size)`
