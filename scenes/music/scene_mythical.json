@@ -1,0 +1,15 @@
+{
+ "name": "scene_mythical",
+ "caption": "dreamy ethereal music, shimmering small bells and a soft distant gong, khlui flute, gentle pads, floating and mystical like an old Lanna temple mural come to life, purely instrumental, no vocals, no singing, gentle and peaceful, soft dynamics, warm natural acoustic recording",
+ "lyrics_file": "/work/jobs/instrumental.txt",
+ "language": "unknown",
+ "bpm": 60,
+ "duration": 150,
+ "seeds": [
+  501,
+  502
+ ],
+ "dit": "acestep-v15-turbo",
+ "lm": "acestep-5Hz-lm-1.7B",
+ "backend": "pt"
+}

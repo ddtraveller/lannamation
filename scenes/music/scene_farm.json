@@ -1,0 +1,15 @@
+{
+ "name": "scene_farm",
+ "caption": "light cheerful northern Thai Lanna folk, pin phia and sueng, soft bamboo xylophone, easy-going like a sunny morning on the farm, purely instrumental, no vocals, no singing, gentle and peaceful, soft dynamics, warm natural acoustic recording",
+ "lyrics_file": "/work/jobs/instrumental.txt",
+ "language": "unknown",
+ "bpm": 80,
+ "duration": 150,
+ "seeds": [
+  301,
+  302
+ ],
+ "dit": "acestep-v15-turbo",
+ "lm": "acestep-5Hz-lm-1.7B",
+ "backend": "pt"
+}

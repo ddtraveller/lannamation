@@ -1,0 +1,15 @@
+{
+ "name": "scene_rural",
+ "caption": "gentle northern Thai countryside folk, plucked sueng and a soft salo fiddle playing a pentatonic tune, a light hand drum, warm and relaxed like a village afternoon, purely instrumental, no vocals, no singing, gentle and peaceful, soft dynamics, warm natural acoustic recording",
+ "lyrics_file": "/work/jobs/instrumental.txt",
+ "language": "unknown",
+ "bpm": 72,
+ "duration": 150,
+ "seeds": [
+  201,
+  202
+ ],
+ "dit": "acestep-v15-turbo",
+ "lm": "acestep-5Hz-lm-1.7B",
+ "backend": "pt"
+}

@@ -1,0 +1,15 @@
+{
+ "name": "scene_natural",
+ "caption": "peaceful slow northern Thai Lanna folk, a soft khlui bamboo flute melody over gently plucked sueng lute, light wooden percussion, airy and calm like a quiet forest morning, purely instrumental, no vocals, no singing, gentle and peaceful, soft dynamics, warm natural acoustic recording",
+ "lyrics_file": "/work/jobs/instrumental.txt",
+ "language": "unknown",
+ "bpm": 66,
+ "duration": 150,
+ "seeds": [
+  101,
+  102
+ ],
+ "dit": "acestep-v15-turbo",
+ "lm": "acestep-5Hz-lm-1.7B",
+ "backend": "pt"
+}

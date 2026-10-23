@@ -1,0 +1,15 @@
+{
+ "name": "scene_night",
+ "caption": "quiet night music, soft khlui flute and distant plucked sueng, sparse and slow, sleepy and calm under the stars, purely instrumental, no vocals, no singing, gentle and peaceful, soft dynamics, warm natural acoustic recording",
+ "lyrics_file": "/work/jobs/instrumental.txt",
+ "language": "unknown",
+ "bpm": 56,
+ "duration": 150,
+ "seeds": [
+  601,
+  602
+ ],
+ "dit": "acestep-v15-turbo",
+ "lm": "acestep-5Hz-lm-1.7B",
+ "backend": "pt"
+}
