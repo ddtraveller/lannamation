@@ -38,7 +38,7 @@ function c18Name(t) {
   pen.font = "700 80px 'Noto Serif Thai', 'Leelawadee UI', serif";
   pen.fillText("ช้างพานคำ", WIDE / 2, 200);
   pen.shadowBlur = 0;
-  pen.font = "italic 38px Georgia, serif";
+  pen.font = "italic 38px " + LETTERS_LATIN + ", serif";
   pen.fillStyle = "#fff6dc";
   pen.fillText("Chang Phan Kham, the elephant of the golden plate", WIDE / 2, 256);
   pen.restore();

@@ -302,3 +302,10 @@ for each film).
 - **Chang Ngu's credits** run 150 s for the film's 21 minutes: fewer rows than Maeng's (no maker's list, no names
   of the notebooks' people), so they roll at about 39 pixels a second against Maeng's 106, and each figure stays
   out about 6 s. A monk does not wai the audience: the novice is named in the cast with no figure.
+- **One film on two machines: its letters.** The kit's words were lettered in the Windows fonts it was made with,
+  Leelawadee UI and Georgia; the Spark's Linux has neither, so a scene rendered there was lettered otherwise
+  (measured on scene 24, 2026-10-23). `FILM_STYLE.letters = {thai, latin}` names a film's own (`LETTERS_THAI`,
+  `LETTERS_LATIN`, read by `subtitle()`, the credits and the names a film writes): Chang Ngu's are Noto Sans
+  Thai and Gelasio (made to Georgia's measure), web fonts every page of the film loads, so the laptop and the
+  Spark letter it alike (owner: "Same open fonts"). Left out, the kit's own: Maeng's stills before and after,
+  the same.

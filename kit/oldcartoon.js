@@ -36,6 +36,14 @@ var SIDE = (1920 - WIDE) / 2;
 // is painted once at the sheet's size (sets, clouds, the woven cloth) is scaled
 // up as it is drawn, as the lens scales it today.
 var PIX = (window.FILM_STYLE && window.FILM_STYLE.pixels) || 1;
+// The letters of a film's words: the font its Thai is written in, and its English (subtitle(), and the credits
+// and names a film writes as the subtitles do). The kit's own are the Windows fonts it was made with; a film that
+// sets FILM_STYLE.letters = {thai: "'Noto Sans Thai'", latin: "Gelasio"} (fonts its page loads from the web) is
+// lettered alike on any machine, so its scenes can be rendered on two (owner, 2026-10-23: Chang Ngu on the laptop
+// and the Spark, whose Linux has neither Leelawadee UI nor Georgia).
+var LETTERS = (window.FILM_STYLE && window.FILM_STYLE.letters) || {};
+var LETTERS_THAI = LETTERS.thai || "'Leelawadee UI'";
+var LETTERS_LATIN = LETTERS.latin || "Georgia";
 
 var GROUND = 900;
 
@@ -193,7 +201,8 @@ var STYLE = {
   wide: 1440,                           // the sheet's width: 1440 with black bars, 1920 to fill the screen (read before this sheet: see WIDE)
   film: 1,                              // how much of the old print shows: grain, flicker, dust, scratches, dark corners, the shake in the gate; 0 is a clean picture
   pixels: 1,                            // device pixels per film pixel: 2 draws everything at twice the size and lets the browser smooth it down (read before this sheet: see PIX)
-  light: null                           // where the light comes from, [across, down]: [-0.6, 0.5] throws a shadow to the right; null for the soft pool alone
+  light: null,                          // where the light comes from, [across, down]: [-0.6, 0.5] throws a shadow to the right; null for the soft pool alone
+  letters: null                         // the fonts of the film's words, {thai, latin}; null for the kit's own (read before this sheet: see LETTERS)
 };
 
 checkNames("FILM_STYLE's entry", window.FILM_STYLE || {}, STYLE);
@@ -10862,14 +10871,14 @@ function subtitle(big, small) {
   screen.save();
   screen.textAlign = "center";
   screen.lineJoin = "round";
-  screen.font = "bold 58px 'Leelawadee UI', 'Noto Sans Thai', Tahoma, sans-serif";
+  screen.font = "bold 58px " + LETTERS_THAI + ", 'Noto Sans Thai', Tahoma, sans-serif";
   screen.strokeStyle = "rgba(30, 18, 10, 0.9)";
   screen.lineWidth = 9;
   screen.strokeText(big, 960, 960);
   screen.fillStyle = "#fff6dc";
   screen.fillText(big, 960, 960);
   if (small) {
-    screen.font = "italic 36px Georgia, 'Times New Roman', serif";
+    screen.font = "italic 36px " + LETTERS_LATIN + ", 'Times New Roman', serif";
     screen.lineWidth = 7;
     screen.strokeText(small, 960, 1012);
     screen.fillStyle = "#ffe9a8";

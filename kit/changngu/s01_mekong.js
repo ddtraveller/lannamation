@@ -45,7 +45,7 @@ function c01Title(t) {
     pen.font = "700 124px 'Noto Sans Tai Tham', 'Sans Serif Collection', serif";
     pen.fillText(C01_STORY, WIDE / 2, 440);
     pen.shadowBlur = 0;
-    pen.font = "italic 42px Georgia, 'Times New Roman', serif";
+    pen.font = "italic 42px " + LETTERS_LATIN + ", 'Times New Roman', serif";
     pen.fillStyle = "#fff6dc";
     pen.fillText("Chang Ngu, the Snake that Became an Elephant", WIDE / 2, 530);
   }

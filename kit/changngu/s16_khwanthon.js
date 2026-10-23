@@ -21,7 +21,7 @@ function c16Name(t) {
   pen.font = "700 76px 'Noto Serif Thai', 'Leelawadee UI', serif";
   pen.fillText("ควานทน", 520, 230);
   pen.shadowBlur = 0;
-  pen.font = "italic 36px Georgia, serif";
+  pen.font = "italic 36px " + LETTERS_LATIN + ", serif";
   pen.fillStyle = "#fff6dc";
   pen.fillText("Khwan Thon", 520, 282);
   pen.restore();

@@ -112,7 +112,7 @@ function cngGoldName(name, english, x, y, a) {
   pen.fillStyle = "#f2d27a";
   pen.fillText(name, x, y);
   pen.shadowBlur = 0;
-  pen.font = "italic 38px Georgia, serif";
+  pen.font = "italic 38px " + LETTERS_LATIN + ", serif";
   pen.strokeStyle = "rgba(40, 30, 20, 0.7)"; pen.lineWidth = 5;
   pen.strokeText(english, x, y + 56);
   pen.fillStyle = "#fff6dc";

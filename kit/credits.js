@@ -44,7 +44,7 @@ function creditRow(row, y) {                            // one row, its middle a
   var serif = "'Noto Serif Thai', 'Leelawadee UI', serif", lanna = "'Noto Sans Tai Tham', 'Sans Serif Collection', serif";
   if (row[0] === "title") {
     creditText(row[1], WIDE / 2, y - 26, "700 72px " + lanna, CREDIT_GOLD);
-    creditText(row[2], WIDE / 2, y + 44, "italic 38px Georgia, 'Times New Roman', serif", CREDIT_INK);
+    creditText(row[2], WIDE / 2, y + 44, "italic 38px " + LETTERS_LATIN + ", 'Times New Roman', serif", CREDIT_INK);
   } else if (row[0] === "head") {
     creditText(row[1] + "  ·  " + row[2], WIDE / 2, y + 10, "600 40px " + serif, CREDIT_GOLD);
   } else if (row[0] === "line") {
@@ -56,17 +56,17 @@ function creditRow(row, y) {                            // one row, its middle a
       creditText(name, WIDE / 2 + (k + 0.5 - across / 2) * span / across, y, font, across === 4 ? CREDIT_INK : CREDIT_SOFT, "center", span / across - 24);
     });
   } else if (row[0] === "small") {
-    creditText(row[1], WIDE / 2, y, "italic 25px Georgia, " + serif, CREDIT_SOFT);
+    creditText(row[1], WIDE / 2, y, "italic 25px " + LETTERS_LATIN + ", " + serif, CREDIT_SOFT);
   } else if (row[0] === "pair") {                    // two of the maker's things, each over where it was drawn from
     [row[1], row[2]].forEach(function (one, side) {
       if (!one) { return; }
       var at = WIDE / 2 + (side ? 1 : -1) * 470;
       creditText(one[0] + "  ·  " + one[1], at, y - 14, "500 29px " + serif, CREDIT_INK);
-      creditText(one[2], at, y + 20, "italic 23px Georgia, " + serif, CREDIT_SOFT);
+      creditText(one[2], at, y + 20, "italic 23px " + LETTERS_LATIN + ", " + serif, CREDIT_SOFT);
     });
   } else if (row[0] === "end") {
     creditText(row[1], WIDE / 2, y - 70, "700 96px " + lanna, CREDIT_GOLD);
-    creditText(row[2], WIDE / 2, y + 30, "italic 44px Georgia, 'Times New Roman', serif", CREDIT_INK);
+    creditText(row[2], WIDE / 2, y + 30, "italic 44px " + LETTERS_LATIN + ", 'Times New Roman', serif", CREDIT_INK);
     creditText(row[3], WIDE / 2, y + 110, "500 36px " + serif, CREDIT_SOFT);
     creditText(row[4], WIDE / 2, y + 180, "500 30px " + serif, CREDIT_GOLD);
   }
@@ -281,7 +281,7 @@ function creditThanks(t, at, wais, words) {             // the three pandas and 
   pen.fillStyle = creditGlow(WIDE / 2, 980, 900, [[0, "rgba(255, 236, 190, 0.22)"], [1, "rgba(255, 236, 190, 0)"]]);   // a warm light behind them
   pen.fillRect(0, 0, WIDE, 1080);
   creditText(words[0], WIDE / 2, 150, "600 64px 'Noto Serif Thai', 'Leelawadee UI', serif", CREDIT_GOLD);
-  creditText(words[1], WIDE / 2, 232, "italic 42px Georgia, 'Times New Roman', serif", CREDIT_INK);
+  creditText(words[1], WIDE / 2, 232, "italic 42px " + LETTERS_LATIN + ", 'Times New Roman', serif", CREDIT_INK);
   pen.globalAlpha = 1;                               // the pandas rise in whole: one seen through shows its own layers
   CREDIT_PANDAS.forEach(function (look, n) {
     var bow = 0;
