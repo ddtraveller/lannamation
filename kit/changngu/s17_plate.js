@@ -24,9 +24,10 @@ function c17Yard(t) {
     }},
     {name: "seer", kind: "person", x: 1150, y: 870, draw: function () {
       person(1150, 870, poseEased(t, function (s) {          // his hand out while he speaks, eased in and out (poseEased)
-        var speaking = (s > 5.2 && s < 10.75) || (s > 11.35 && s < 16.71);
+        var speaking = (s > 5.2 && s < 10.75) || (s > 11.35 && s < 16.71);   // the hand grows out and back (a reach's third number)
+        var out = between(s, 5.2, 5.7) * (1 - between(s, 10.25, 10.75)) + between(s, 11.35, 11.85) * (1 - between(s, 16.21, 16.71));
         return cngPerson("elder", CNG_SEER, {id: "seer", face: -1, feel: "happy",
-                                             reachA: speaking ? [1060, 640 + 30 * Math.sin(s * 2)] : undefined,
+                                             reachA: speaking ? [1060, 640 + 30 * Math.sin(s * 2), out] : undefined,
                                              mouth: speaking ? {open: 0.06 + 0.22 * Math.abs(Math.sin(s * 7)), wide: 0.5, round: 0.2} : undefined,
                                              at: [820, 600]});
       }));

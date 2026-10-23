@@ -114,7 +114,7 @@ function cngSceneThird(t) {
       var at = k < 10 ? c15ChildAt(t, k, neck ? neck[0] : C15_HELD) : {x: 120 + (k % 7) * 70, y: CNG_BANK + 90 + Math.floor(k / 7) * 34, run: 0};
       if (at.swims) { return; }
       var x = at.x, y = at.y, cc = CNG_CHILDREN[k % CNG_CHILDREN.length];
-      onBank.push({name: "child " + k, kind: "person", x: x, y: y, draw: function () {
+      onBank.push({name: "child" + k, kind: "person", x: x, y: y, draw: function () {
         person(x, y, cngPerson(cc.kind, cc.look, {id: "child" + k, size: cngAgeSize(9 + (k % 4)), face: 1,
                                                   step: at.run > 0 && at.run < 1 ? t / BEAT * 1.4 + k : 0,
                                                   feel: t > 14 && t < 22 ? "fear" : "concerned", at: [hx, C15_SWIM - 80]}));
