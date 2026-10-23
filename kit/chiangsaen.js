@@ -41,7 +41,9 @@ function csBand(brush, x, y, wide, tall, top, bottom) {
 // under the parapet, two teak doors, a bridge of timber over the moat. Along the river there was no wall (the Mae
 // Khong was the east moat). The owner's pick, 2026-10-23 (of three gates).
 //   x, base: the left end and the foot of the high rampart (the moat's edge); wide: pixels; size: 1 is a rampart 150
-//   pixels high; look: gate (true), open (0 shut to 1 open; 0), outer (true: the low outer rampart and the moat).
+//   pixels high; look: gate (true), open (0 shut to 1 open; 0), outer (true: the low outer rampart and the moat), plain
+//   (true: a village's defences, earth and timber only, no brick: the chronicle's Wiang Phan, a moat dug and filled
+//   and "ประตูหับไข", gates that open and shut).
 // e.g. cityWall(pen, 200, 820, 1500, 1, {open: 0.8});
 function cityWall(brush, x, base, wide, size, look) {
   look = look || {};
@@ -50,12 +52,14 @@ function cityWall(brush, x, base, wide, size, look) {
   brush.fillStyle = "#8a8f52";                                              // the high rampart, its earth face
   brush.beginPath(); brush.moveTo(x, base); brush.lineTo(x + 30 * s, top + 20 * s); brush.lineTo(x + wide - 30 * s, top + 20 * s);
   brush.lineTo(x + wide, base); brush.closePath(); brush.fill();
-  csBand(brush, x + 30 * s, top - 14 * s, wide - 60 * s, 34 * s, "#b5664a", "#9a5440");   // the brick parapet
-  brush.fillStyle = "#b5664a";
-  for (n = x + 30 * s; n < x + wide - 40 * s; n += 28 * s) { brush.fillRect(n, top - 30 * s, 16 * s, 18 * s); }
-  brush.strokeStyle = "rgba(70, 30, 20, 0.35)";
-  brush.lineWidth = 1;
-  for (n = top - 12 * s; n < top + 20 * s; n += 8 * s) { brush.beginPath(); brush.moveTo(x + 30 * s, n); brush.lineTo(x + wide - 30 * s, n); brush.stroke(); }
+  if (!look.plain) {
+    csBand(brush, x + 30 * s, top - 14 * s, wide - 60 * s, 34 * s, "#b5664a", "#9a5440");   // the brick parapet
+    brush.fillStyle = "#b5664a";
+    for (n = x + 30 * s; n < x + wide - 40 * s; n += 28 * s) { brush.fillRect(n, top - 30 * s, 16 * s, 18 * s); }
+    brush.strokeStyle = "rgba(70, 30, 20, 0.35)";
+    brush.lineWidth = 1;
+    for (n = top - 12 * s; n < top + 20 * s; n += 8 * s) { brush.beginPath(); brush.moveTo(x + 30 * s, n); brush.lineTo(x + wide - 30 * s, n); brush.stroke(); }
+  }
   brush.fillStyle = "#7a5432";                                              // the teak palisade on the outer slope
   for (n = x + 20 * s; n < x + wide - 20 * s; n += 11 * s) {
     if (gate && Math.abs(n - gx) < gw / 2 + 10 * s) { continue; }
@@ -64,7 +68,7 @@ function cityWall(brush, x, base, wide, size, look) {
     brush.beginPath(); brush.moveTo(n, foot - 52 * s); brush.lineTo(n + 3.5 * s, foot - 60 * s); brush.lineTo(n + 7 * s, foot - 52 * s); brush.fill();
   }
   if (gate) {
-    brush.fillStyle = "#9a5440";                                            // the brick lining of the passage
+    brush.fillStyle = look.plain ? "#6a4a2a" : "#9a5440";                    // the lining of the passage: brick, or timber
     brush.fillRect(gx - gw / 2 - 12 * s, base - 116 * s, gw + 24 * s, 116 * s);
     brush.fillStyle = "#2a2018";
     brush.fillRect(gx - gw / 2, base - 104 * s, gw, 104 * s);
@@ -446,11 +450,12 @@ function goldPot(brush, x, base, size) {
 }
 
 // A hanging cradle (อู่) of cloth slung from a beam on two cords, swinging with t, a baby swaddled in it; the sling's
-// lowest point at (x, y); size 1 is 150 across. look: baby (true), beam (true: the beam it hangs from).
-// e.g. hangingCradle(pen, 900, 760, 1, t, {});
+// lowest point at (x, y); size 1 is 150 across. look: baby (true), beam (true: the beam it hangs from), top (the y of
+// the beam its cords go up to; 170 above it at size 1 when left out: a cradle hangs low, by someone sitting).
+// e.g. hangingCradle(pen, 900, 760, 1, t, {top: 300, beam: false});
 function hangingCradle(brush, x, y, size, t, look) {
   look = look || {};
-  var s = size, swing = Math.sin((t || 0) * 1.6) * 10 * s, top = y - 170 * s, w = 150 * s;
+  var s = size, swing = Math.sin((t || 0) * 1.6) * 10 * s, top = look.top !== undefined ? look.top : y - 170 * s, w = 150 * s;
   brush.strokeStyle = "#6a4a2a"; brush.lineWidth = 3 * s;
   brush.beginPath();
   brush.moveTo(x - w / 2 + swing, y - 20 * s); brush.lineTo(x - 20 * s, top);
