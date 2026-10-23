@@ -6526,12 +6526,14 @@ function headManHair(h) {
   }
 }
 
-// A hat (look.hat), loose: it lags the head and floats up as the body springs. // h: personHead()'s head (what it has worked out: see there).
+// A hat (look.hat), loose: it lags the head and floats up as the body springs; on one who stands still (STYLE.hop
+// false) it sits fast (owner, 2026-10-23, of the old farmer in a scene without the bounce: "The man's hat wobbles on
+// his head": it rocked 0.05 radians against his head on every beat). // h: personHead()'s head (what it has worked out: see there).
 function headHat(h) {
   var speed = h.speed, late = h.late;
   pen.save();                                                  // a hat is loose: it lags the head,
   pen.translate(0, -4 * clamp(speed / 10));                    // and floats up as the body springs
-  pen.rotate(Math.sin(late) * 0.05);
+  if (!h.still) { pen.rotate(Math.sin(late) * 0.05); }         // (speed is 0 for one who stands still, so the hat sits fast)
   pen.beginPath();
   pen.moveTo(-104, -316);
   pen.quadraticCurveTo(0, -412, 104, -316);

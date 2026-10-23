@@ -1144,7 +1144,10 @@ function flora(name, x, y, look) {
   checkNames("The flora's name", look, FLORA_KEYS);
   if (!FLORA[name]) { checkName("The flower or fruit", name, FLORA); return; }
   var size = look.size || 1;
-  LINE = STYLE.line * Math.max(0.5, Math.min(1, 0.4 + 0.4 * size)) / size;   // a small thing is not inked with a thick pen
+  // a small thing is not inked with a thick pen; below size 0.5 the pen thins faster, or a flower drawn as small as a
+  // real one beside the people (size 0.3 or so) is more ink than colour (living_scenes.html, 2026-10-23)
+  var weight = size < 0.5 ? 0.6 * Math.pow(size / 0.5, 1.5) : Math.min(1, 0.4 + 0.4 * size);
+  LINE = STYLE.line * weight / size;
   FINE = LINE / STYLE.line;
   if (look.ground !== false) {
     pen.fillStyle = "rgba(70, 45, 30, 0.18)";       // a soft shadow under it

@@ -89,9 +89,10 @@ canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
 <script>
 var BEAT = 0.5;                          // the kit reads this: how long one beat is
 STYLE.hop = false;                       // no 1930s bounce: people walk and stand still, as in the maker unless asked (owner, 2026-10-23)
-// the spine sways less, so a walker's head does not rock with each stride (owner, 2026-10-23: "The man's hat wobbles on
-// his head"): the hat sits fast on the head, but the head rocked 2.6 to 10 degrees as he walked, which tips a wide
-// brim up and down; at 0.3, 5.3 to 7.4 (measured 2026-10-23), the stride still in the hips and legs
+// the spine sways less, so a walker's head does not nod with each stride (owner, 2026-10-23: "The man's hat wobbles on
+// his head"): the hat rocked on the head on every beat, which the kit's headHat() no longer does for one who stands
+// still; and the head itself nodded 2.6 to 10 degrees as he walked, tipping the wide brim with it; at 0.3, 5.3 to 7.4
+// (measured 2026-10-23), the stride still in the hips and legs
 STYLE.sway = 0.3;
 var ASK = new URLSearchParams(location.search);
 
@@ -409,6 +410,16 @@ var FOOD_SIZES = {stickyrice: [15, 170], khaosoi: [20, 222], somtam: [22, 168], 
                   namphrik: [22, 208], curry: [18, 166], tomyum: [20, 172], padthai: [26, 202], muping: [25, 226],
                   khanomkrok: [26, 246], khantoke: [55, 402]};
 function foodSize(name) { var f = FOOD_SIZES[name]; return f ? 2.2 * f[0] * PX_PER_CM / f[1] : 2.2; }
+// Each flower's blooms as big as real ones (owner, 2026-10-23: "Fix ... the flowers"): [cm across its head or cluster,
+// pixels across it at the maker's size 1.2, the sprig's height in pixels at that size (measured 2026-10-23: each
+// bloom's colour, its ink lines closed)]: a ratchaphruek's hanging spray, a cluster of thong kwao, five frangipani, a
+// pair of orchid flowers, one hibiscus, a cluster of bougainvillea's bracts, of jasmine, and two marigold heads. At
+// 1.2 they were about three times too big (a hibiscus 42 cm across).
+var FLOWER_SIZES = {ratchaphruek: [25, 112, 216], thongkwao: [8, 60, 196], frangipani: [18, 156, 198], orchid: [10, 60, 196],
+                    hibiscus: [12, 89, 194], bougainvillea: [6, 43, 176], jasmine: [5, 36, 136], marigold: [16, 109, 186]};
+function flowerSize(name) { var f = FLOWER_SIZES[name]; return f ? 1.2 * f[0] * PX_PER_CM / f[1] : 1.2; }
+// how high its bloom is above its foot, where a sunbird sips: near the top of the sprig
+function bloomHigh(name) { var f = FLOWER_SIZES[name]; return f ? 0.85 * f[2] * flowerSize(name) / 1.2 : 70; }
 // A hanging khom as long as a real one, about 90 cm from its string to the end of its tassel (owner, 2026-10-23:
 // "lanterns up front are too big"): at the maker's size 0.9 it was drawn 394 pixels long (measured 2026-10-23).
 var KHOM = 0.9 * 90 * PX_PER_CM / 394;
@@ -771,7 +782,7 @@ function khomLine(t, time) {
 }
 // What stands and stirs, drawn every frame.
 function drawThing(t, time) {
-  var calls = {flower: function () { flora(t.flower, t.x, t.y, {size: 1.2}); }, grasstuft: function () { grassTuft(pen, t.x, t.y, 1.6, {t: time}); },
+  var calls = {flower: function () { flora(t.flower, t.x, t.y, {size: flowerSize(t.flower)}); }, grasstuft: function () { grassTuft(pen, t.x, t.y, 1.6, {t: time}); },
                reeds: function () { riverReeds(pen, t.x - 300, t.y, 600, 1, time, t.id); },
                tung: function () { tung(pen, t.x, t.y, time, true); }, huad: function () { huad(pen, t.x, t.y, 1.0, time, {fire: 1}); },
                khomline: function () { khomLine(t, time); },
@@ -833,7 +844,7 @@ function act(c, row, now) {
   else if (how === "surface" && P.water) { goal = inBand(x + between(-40, 40), P.water[0] + 15); }
   else if (how === "flower") {
     var f = scene.things.filter(function (t) { return t.name === "flower"; });
-    if (f.length) { var fl = pick(f); goal = [fl.x + between(-30, 30), fl.y - 70]; }
+    if (f.length) { var fl = pick(f); goal = [fl.x + between(-10, 10), fl.y - bloomHigh(fl.flower)]; }   // at its bloom
   } else if (how !== "stay") {
     var other = how === "mother" || how === "hens" ? nearest(c, "hen", 2000) : nearest(c, how === "herd" ? c.kind : how, how === "grasshopper" ? 320 : 2000);
     if (other && how === "grasshopper") {           // straight to it: its place now, the beak a little in front of the feet

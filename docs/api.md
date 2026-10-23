@@ -1488,7 +1488,9 @@ A man's hair, gathered up into a knot on the top of the head (his hair shown, no
 ### `headHat(h)`
 
 ```
-A hat (look.hat), loose: it lags the head and floats up as the body springs. // h: personHead()'s head (what it has worked out: see there).
+A hat (look.hat), loose: it lags the head and floats up as the body springs; on one who stands still (STYLE.hop
+false) it sits fast (owner, 2026-10-23, of the old farmer in a scene without the bounce: "The man's hat wobbles on
+his head": it rocked 0.05 radians against his head on every beat). // h: personHead()'s head (what it has worked out: see there).
 ```
 
 ### `headWrap(h)`
