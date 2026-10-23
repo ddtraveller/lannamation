@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>changngu - the whole film</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tai+Tham:wght@700&family=Noto+Serif+Thai:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; background: #111; color: #ddd; font: 14px sans-serif; }
+  canvas { display: block; width: 100vw; height: calc(100vh - 44px); object-fit: contain; }
+  #bar { display: flex; gap: 4px; align-items: center; padding: 6px 8px; flex-wrap: wrap; }
+  #bar button { background: #333; color: #ddd; border: 0; padding: 5px 9px; border-radius: 3px; cursor: pointer; }
+  #bar button.on { background: #a8435a; color: #fff; }
+  #clock { margin-left: auto; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<div id="bar"><button id="pause">pause</button><span id="scenes"></span><span id="clock"></span></div>
+<script src="style.js"></script>
+<script>var BEAT = 0.5;</script>
+<script src="../oldcartoon.js"></script>
+<script src="../backdrops.js"></script>
+<script src="../naga.js"></script>
+<script src="../beasts.js"></script>
+<script src="../myth.js"></script>
+<script src="../himmaphan.js"></script>
+<script src="../cumulus.js"></script>
+<script src="../highlands.js"></script>
+<script src="../pieces.js"></script>
+<script src="../sabai.js"></script>
+<script src="../northbirds.js"></script>
+<script src="../night.js"></script>
+<script src="../flora.js"></script>
+<script src="../chiangsaen.js"></script>
+<script src="../band.js"></script>
+<script src="../credits.js"></script>
+<script src="words.js"></script>
+<script src="sets.js"></script>
+<script src="s01_mekong.js"></script>
+<script src="s02_khom.js"></script>
+<script src="s03_situang.js"></script>
+<script src="s04_gold.js"></script>
+<script src="s05_thukkhita.js"></script>
+<script src="s06_novice.js"></script>
+<script src="s07_wish.js"></script>
+<script src="s08_dream.js"></script>
+<script src="s09_weapons.js"></script>
+<script src="s10_born.js"></script>
+<script src="s11_growing.js"></script>
+<script src="s12_deva.js"></script>
+<script src="s13_river.js"></script>
+<script src="s14_snakes.js"></script>
+<script src="s15_third.js"></script>
+<script src="s16_khwanthon.js"></script>
+<script src="s17_plate.js"></script>
+<script src="s18_ting.js"></script>
+<script src="s19_pots.js"></script>
+<script src="s20_three.js"></script>
+<script src="s21_sanchai.js"></script>
+<script src="s22_wall.js"></script>
+<script src="s23_doi.js"></script>
+<script src="s24_brothers.js"></script>
+<script src="s25_today.js"></script>
+<script src="s26_credits.js"></script>
+<script>
+// The film of Chang Ngu, its 26 scenes one after another, with their words. Each scene is its own file and
+// its own page (s01.html ... s26.html); this one only lays them end to end. Made by film_page.py.
+var PARTS = [[C01_LONG, cngSceneMekong, C01_LINES], [C02_LONG, cngSceneKhom, C02_LINES], [C03_LONG, cngSceneSituang, C03_LINES], [C04_LONG, cngSceneGold, C04_LINES], [C05_LONG, cngSceneThukkhita, C05_LINES], [C06_LONG, cngSceneNovice, C06_LINES], [C07_LONG, cngSceneWish, C07_LINES], [C08_LONG, cngSceneDream, C08_LINES], [C09_LONG, cngSceneWeapons, C09_LINES], [C10_LONG, cngSceneBorn, C10_LINES], [C11_LONG, cngSceneGrowing, C11_LINES], [C12_LONG, cngSceneDeva, C12_LINES], [C13_LONG, cngSceneRiver, C13_LINES], [C14_LONG, cngSceneSnakes, C14_LINES], [C15_LONG, cngSceneThird, C15_LINES], [C16_LONG, cngSceneKhwanthon, C16_LINES], [C17_LONG, cngScenePlate, C17_LINES], [C18_LONG, cngSceneTing, C18_LINES], [C19_LONG, cngScenePots, C19_LINES], [C20_LONG, cngSceneThree, C20_LINES], [C21_LONG, cngSceneSanchai, C21_LINES], [C22_LONG, cngSceneWall, C22_LINES], [C23_LONG, cngSceneDoi, C23_LINES], [C24_LONG, cngSceneBrothers, C24_LINES], [C25_LONG, cngSceneToday, C25_LINES], [C26_LONG, cngSceneCredits, C26_LINES]];
+var SCENES = [], at = 0;
+PARTS.forEach(function (part) { SCENES.push([at, at + part[0], part[1], part[2]]); at += part[0]; });
+var DURATION = at;
+// The film's lines, as the hero film lists them for its narrator (sash_narrate.py): [from, to, said, written,
+// English, the line's id] in the film's own seconds; the id names the line's voice file (--spoken).
+var WORDS = [];
+SCENES.forEach(function (s) {
+  s[3].forEach(function (line) {
+    var w = CHANGNGU_WORDS[line[2]];
+    WORDS.push([s[0] + line[0], s[0] + line[1], w[0], w[1], w[2], line[2]]);
+  });
+});
+function draw(t) {
+  if (rendering && document.getElementById("bar").style.display !== "none") {   // render.py photographs the page: the film alone
+    document.getElementById("bar").style.display = "none";
+    document.getElementById("stage").style.height = "100vh";
+  }
+  film(t, SCENES);
+  SCENES.forEach(function (s) { if (t >= s[0] && t < s[1]) { cngSubtitles(t - s[0], s[3]); } });
+}
+// To watch: pause, and a button for each scene's start.
+var rendering = false, paused = false, start = null, held = 0;
+SCENES.forEach(function (s, n) {
+  var b = document.createElement("button");
+  b.textContent = n + 1;
+  b.title = "scene " + (n + 1) + ", from " + s[0] + " s";
+  b.onclick = function () { start = null; held = s[0]; };
+  document.getElementById("scenes").appendChild(b);
+});
+document.getElementById("pause").onclick = function () {
+  paused = !paused;
+  this.textContent = paused ? "play" : "pause";
+  start = null;
+};
+function play(now) {
+  if (!rendering) {
+    if (!paused) {
+      if (start === null) { start = now - held * 1000; }
+      held = ((now - start) / 1000) % DURATION;
+    }
+    draw(held);
+    var mm = Math.floor(held / 60), ss = Math.floor(held % 60);
+    document.getElementById("clock").textContent = mm + ":" + (ss < 10 ? "0" : "") + ss + " / " +
+      Math.floor(DURATION / 60) + ":" + (DURATION % 60 < 10 ? "0" : "") + Math.floor(DURATION % 60);
+    var buttons = document.querySelectorAll("#scenes button");
+    SCENES.forEach(function (s, n) { buttons[n].className = held >= s[0] && held < s[1] ? "on" : ""; });
+  }
+  requestAnimationFrame(play);
+}
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

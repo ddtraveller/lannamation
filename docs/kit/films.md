@@ -280,3 +280,25 @@ credits roll have all the sprites used come out and take a bow when they are lis
   draws one of them; the pond's cat sits beside the maiden again.
 - **The maker** offers the hen and the black chickens, the cattle egret (northbirds.js `egret()`, moved out of the
   tale's fields), the four native fish, the bamboo house, grass, bananas and the fire stick.
+
+
+## Every tale's credits and music from one place (2026-10-23)
+
+The second tale, Chang Ngu, needed what the first tale's credits and music did, so both moved out of `maeng/` into
+the kit, and each film keeps only what is its own (the owner's rule: one tool, the film's data passed in, no copy
+for each film).
+
+- **`credits.js`**: the roll (`creditRoll(t, rows, roll, gone, figures)`), the kinds of row (`creditRow()`: a
+  title, a heading, a line, small print, a pair over where each was drawn from, names four or five across, the
+  end), the figures that come out to bow beside the pairs (`creditBow()`, the film's own figures by their English
+  names) and the thanks of the three pandas (`creditThanks(t, at, wais, words)`). `maeng/s15_credits.js` keeps its
+  rows, its figures and its night over the mountain; `changngu/s26_credits.js` its rows, its figures and its night
+  over the Mae Khong. Maeng's credits were drawn again after the move, eight seconds from the roll to the pandas'
+  wai: every pixel the same.
+- **`tale_music.py`**: what `maeng/feelings.py` did, for any tale: `run(folder, prefix, FEEL, SCENE_FEEL, out,
+  args)`. A film's `feelings.py` is now its feelings only, each line's, and the cues of its scenes with no words.
+  Maeng's music made again through it: every scene's samples the same. `checks/score_check.py --film changngu`
+  hears another tale's (`score_check` alone is still Maeng's); Chang Ngu's 122 lines all heard in their feelings.
+- **Chang Ngu's credits** run 150 s for the film's 21 minutes: fewer rows than Maeng's (no maker's list, no names
+  of the notebooks' people), so they roll at about 39 pixels a second against Maeng's 106, and each figure stays
+  out about 6 s. A monk does not wai the audience: the novice is named in the cast with no figure.

@@ -21,7 +21,7 @@ function c03Walk(t) {
 // near ground's fences over them. e.g. cngSceneSituang(12);
 function cngSceneSituang(t) {
   var w = c03Walk(t), cam = Math.max(0, Math.min(WIDE, w.x - 720));
-  var lift = between(t, C03_OFF[0], C03_OFF[0] + 0.7) * (1 - between(t, C03_OFF[1] - 0.2, C03_OFF[1] + 0.5));
+  var lift = between(t, C03_OFF[0] - 0.5, C03_OFF[0] + 0.7) * (1 - between(t, C03_OFF[1] - 0.2, C03_OFF[1] + 1.2));   // over 1.2 and 1.4 s: faster, the forearm's reach jumps (pop_check)
   var crowned = t < (C03_OFF[0] + C03_OFF[1]) / 2;       // the crown comes off while his hands are at his head
   var king = Object.assign({}, crowned ? CNG_KING : CNG_HEADMAN, crowned ? {} : {sarong: CNG_KING.sarong});
   pen.drawImage(cngSky("day"), 0, 0);

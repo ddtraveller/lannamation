@@ -19,12 +19,6 @@ var S15_ROLL = [3.0, 174.0];                          // the credits come up fro
 // after another, then all together.
 var S15_THANKS = [177.5, 179.0];                      // the roll's words go, and the pandas have come up
 var S15_WAIS = [[180.0, 181.0, 182.0], [184.5, 184.5, 184.5], [188.0, 188.0, 188.0]];   // when each of the three bows
-var S15_PANDAS = [
-  {bun: true, blouse: "#f7efe6", blouseDot: "#eadccb", sabai: "#d65a8a",
-   flowers: [[78, 24, 8, "#f2cf5a"], [122, 24, 8, "#f2cf5a"], [100, 8, 6, "#fffaf0"]]},
-  {bun: true, garland: true, blouse: "#e8f0e2", blouseDot: "#d0dfc4", sabai: "#7a4a9a", flowers: [[124, 22, 9, "#f6a6c0"]]},
-  {bun: false, blouse: "#fbe9d4", blouseDot: "#f0d4b4", sabai: "#a8243a", flowers: [[150, 56, 13, "#f2cf5a"], [136, 48, 8, "#fffaf0"]]}
-];
 var S15_THANK_YOU = ["ขอบคุณหลาย ๆ เจ้า", "Thank you, Amornrat Jaijar, for the voice of this tale"];
 
 // What rolls, in order: ["title", Lanna script, English], ["head", Thai, English], ["line", text], ["small", text],
@@ -184,335 +178,33 @@ var S15_MAKER = [
 ];
 var S15_END = ["end", "ᩁᩰᩫ᩠ᨦᨿᩉ᩠ᨶᩢᨦᨩᩦᩅᩥ᩠ᨲᨧ᩶ᩣ᩻", "Slow Life Studios", "แล้วปะกั๋นใหม่เจ้า · See you again",
                  "animated with lannamation: https://github.com/ddtraveller/lannamation"];   // the kit, where it is held
-var S15_TALL = {title: 150, head: 92, line: 52, small: 38, pair: 74, names4: 40, names5: 32, gap: 70, end: 300};
 var S15_ROWS = null;
-var S15_END_ROOM = 170;                              // from the row before the end to the end's middle: its name stands above that
-var S15_GOLD = "#e0b23a", S15_INK = "#f4ecd2", S15_SOFT = "#c9c2dc";
-
-// names: an array of strings (MAENG_THANKED, MAENG_SCHOLARS); across: 4 or 5 (S15_TALL and s15Row() know only
-// those). Gives back rows ["names4" or "names5", [up to "across" names]]. e.g. s15Names(MAENG_THANKED, 4);
-function s15Names(names, across) {                  // a long list of names as rows of "across" (thanks.js)
-  var rows = [];
-  for (var n = 0; n < names.length; n += across) { rows.push(["names" + across, names.slice(n, n + across)]); }
-  return rows;
-}
 
 // Gives back the whole list of rows, as S15_CREDITS describes them, made on the first call and kept in S15_ROWS
 // after. e.g. var rows = s15Rows();
 function s15Rows() {                                 // every row: the credits, the maker's list, the thanks, the end last
   if (!S15_ROWS) {
     S15_ROWS = S15_CREDITS.concat(S15_SOURCES, [["head", "ในโรงหนังการ์ตูน", "In the cartoon maker"], ["gap"]], S15_MAKER,
-      [["head", "ขอบคุณ", "With thanks to the people who made our sources"]], s15Names(MAENG_THANKED, 4), [["gap"]],
-      [["head", "และผู้รู้ที่งานของท่านเป็นรากฐาน", "and the scholars whose work they rest on"]], s15Names(MAENG_SCHOLARS, 5),
+      [["head", "ขอบคุณ", "With thanks to the people who made our sources"]], creditNames(MAENG_THANKED, 4), [["gap"]],
+      [["head", "และผู้รู้ที่งานของท่านเป็นรากฐาน", "and the scholars whose work they rest on"]], creditNames(MAENG_SCHOLARS, 5),
       [["gap"], S15_END]);
   }
   return S15_ROWS;
 }
 
-// text at x, y (pixels of the sheet, its middle line at y), in a CSS font and colour; align "center" when left out;
-// wide in pixels, or left out for no limit. Gives back nothing: it writes with pen and leaves pen's font, fill,
-// textAlign and textBaseline set. e.g. s15Text("Lanna Tales", WIDE / 2, 540, "italic 38px Georgia", S15_INK);
-function s15Text(text, x, y, font, colour, align, wide) {   // wide: the most it may take across (squeezed to it)
-  pen.font = font;
-  pen.textAlign = align || "center";
-  pen.textBaseline = "middle";
-  pen.fillStyle = colour;
-  if (wide) { pen.fillText(text, x, y, wide); } else { pen.fillText(text, x, y); }
-}
 
-// row: one of s15Rows(); y: its middle, in pixels of the sheet. Gives back nothing: it writes with pen (s15Text()).
-// e.g. s15Row(["head", "ตัวละคร", "The cast"], 540);
-function s15Row(row, y) {                            // one row, its middle at y
-  var serif = "'Noto Serif Thai', 'Leelawadee UI', serif", lanna = "'Noto Sans Tai Tham', 'Sans Serif Collection', serif";
-  if (row[0] === "title") {
-    s15Text(row[1], WIDE / 2, y - 26, "700 72px " + lanna, S15_GOLD);
-    s15Text(row[2], WIDE / 2, y + 44, "italic 38px Georgia, 'Times New Roman', serif", S15_INK);
-  } else if (row[0] === "head") {
-    s15Text(row[1] + "  ·  " + row[2], WIDE / 2, y + 10, "600 40px " + serif, S15_GOLD);
-  } else if (row[0] === "line") {
-    s15Text(row[1], WIDE / 2, y, "500 38px " + serif, S15_INK);
-  } else if (row[0] === "names4" || row[0] === "names5") {   // names, evenly across
-    var across = row[0] === "names4" ? 4 : 5, font = across === 4 ? "500 27px " + serif : "500 22px " + serif;
-    var span = WIDE * 0.78;                          // inside the frame's middle: the camera's slow push and the film's gate take its edges
-    row[1].forEach(function (name, k) {
-      s15Text(name, WIDE / 2 + (k + 0.5 - across / 2) * span / across, y, font, across === 4 ? S15_INK : S15_SOFT, "center", span / across - 24);
-    });
-  } else if (row[0] === "small") {
-    s15Text(row[1], WIDE / 2, y, "italic 25px Georgia, " + serif, S15_SOFT);
-  } else if (row[0] === "pair") {                    // two of the maker's things, each over where it was drawn from
-    [row[1], row[2]].forEach(function (one, side) {
-      if (!one) { return; }
-      var at = WIDE / 2 + (side ? 1 : -1) * 470;
-      s15Text(one[0] + "  ·  " + one[1], at, y - 14, "500 29px " + serif, S15_INK);
-      s15Text(one[2], at, y + 20, "italic 23px Georgia, " + serif, S15_SOFT);
-    });
-  } else if (row[0] === "end") {
-    s15Text(row[1], WIDE / 2, y - 70, "700 96px " + lanna, S15_GOLD);
-    s15Text(row[2], WIDE / 2, y + 30, "italic 44px Georgia, 'Times New Roman', serif", S15_INK);
-    s15Text(row[3], WIDE / 2, y + 110, "500 36px " + serif, S15_SOFT);
-    s15Text(row[4], WIDE / 2, y + 180, "500 30px " + serif, S15_GOLD);
-  }
-}
-
-// ---------- the pandas ----------
-// A panda in Teacher Piggy's manner, 200 by 240 of its own points with its waist at the bottom edge, drawn about
-// (x, base) "scale" times that, dressed by "look" (S15_PANDAS), bowing into its wai by "bow" (0 to 1): the head and
-// body go down, and at the deepest its eyes close in two smiling curves.
-var S15_PLUM = "#4a2a3a";
-
-// Begins a path of one ellipse (radii rx, ry; turn in radians, 0 when left out), in the panda's own points; it
-// fills nothing. e.g. s15Ell(100, 184, 3, 5); pen.fill();
-function s15Ell(x, y, rx, ry, turn) { pen.beginPath(); pen.ellipse(x, y, rx, ry, turn || 0, 0, Math.PI * 2); }
-
-// Fills pen's path with fill and strokes it in S15_PLUM, width 2.2 when left out. Gives back nothing.
-// e.g. s15Ell(100, 120, 20, 20); s15Inked("#ffffff");
-function s15Inked(fill, width) {
-  pen.fillStyle = fill;
-  pen.fill();
-  pen.lineWidth = width || 2.2;
-  pen.strokeStyle = S15_PLUM;
-  pen.lineJoin = "round";
-  pen.stroke();
-}
-
-// A radial gradient about x, y out to r; stops: [[0 to 1, colour], ...]. Gives back the gradient, for pen.fillStyle.
-// e.g. pen.fillStyle = s15Glow(84, 80, 110, [[0, "#ffffff"], [1, "#e6dfe2"]]);
-function s15Glow(x, y, r, stops) {
-  var g = pen.createRadialGradient(x, y, 0, x, y, r);
-  stops.forEach(function (one) { g.addColorStop(one[0], one[1]); });
-  return g;
-}
-
-// x, y: its middle, r its radius, in the panda's own points; petal: a CSS colour. Gives back nothing: it draws with
-// pen. e.g. s15Flower(78, 24, 8, "#f2cf5a");
-function s15Flower(x, y, r, petal) {                 // five petals and an orange heart
-  for (var k = 0; k < 5; k++) {
-    var a = k * Math.PI * 2 / 5 - Math.PI / 2;
-    s15Ell(x + Math.cos(a) * r * 0.55, y + Math.sin(a) * r * 0.55, r * 0.5, r * 0.36, a);
-    s15Inked(petal, 1.2);
-  }
-  s15Ell(x, y, r * 0.28, r * 0.28);
-  s15Inked("#e08a2a", 1);
-}
-
-// path: a function that makes pen's path (no arguments); base, gold: CSS colours; diamonds: true for diamonds,
-// false for dots. The motifs are laid from y 150 down, in the panda's own 200 by 240. Gives back nothing: it fills
-// and inks the path with pen. e.g. s15Cloth(torso, look.blouse, look.blouseDot, false);
-function s15Cloth(path, base, gold, diamonds) {      // a cloth: its colour, small gold motifs in rows, inside the path
-  pen.save();
-  path();
-  pen.clip();
-  pen.fillStyle = base;
-  pen.fillRect(0, 0, 200, 240);
-  pen.fillStyle = gold;
-  for (var y = 150; y < 240; y += 9) {
-    for (var x = -10; x < 210; x += 9) {
-      var ox = x + (Math.floor(y / 9) % 2) * 4.5;
-      pen.beginPath();
-      if (diamonds) { pen.moveTo(ox, y - 2.4); pen.lineTo(ox + 2.4, y); pen.lineTo(ox, y + 2.4); pen.lineTo(ox - 2.4, y); }
-      else { pen.arc(ox, y, 1.3, 0, 7); }
-      pen.fill();
-    }
-  }
-  pen.restore();
-  path();
-  pen.lineWidth = 2.2;
-  pen.strokeStyle = S15_PLUM;
-  pen.stroke();
-}
-
-// x, base: the middle of its waist, in pixels of the sheet; scale: 1 for 200 by 240; look: one of S15_PANDAS (bun,
-// garland, blouse, blouseDot, sabai, flowers); bow: 0 to 1. Gives back nothing: it draws with pen.
-// e.g. s15Panda(WIDE / 2, 1080, 2.5, S15_PANDAS[0], 0);
-function s15Panda(x, base, scale, look, bow) {
-  var fur = "#2b2630";
-  pen.save();
-  pen.translate(x - 100 * scale, base - 240 * scale + 14 * scale * bow);
-  pen.scale(scale, scale);
-  function torso() {
-    pen.beginPath();
-    pen.moveTo(18, 240); pen.quadraticCurveTo(14, 186, 44, 172); pen.quadraticCurveTo(100, 156, 156, 172);
-    pen.quadraticCurveTo(186, 186, 182, 240); pen.closePath();
-  }
-  s15Cloth(torso, look.blouse, look.blouseDot, false);   // the blouse, with a round collar edged in gold
-  pen.save();
-  torso();
-  pen.clip();
-  s15Ell(100, 166, 30, 12);
-  pen.fillStyle = "#f8f3ee";
-  pen.fill();
-  pen.lineWidth = 2.4;
-  pen.strokeStyle = "#e0b23a";
-  pen.stroke();
-  pen.restore();
-  function sabai() {                                 // over the left shoulder (our right), across the chest to the other side
-    pen.beginPath();
-    pen.moveTo(150, 166); pen.quadraticCurveTo(176, 174, 184, 196); pen.lineTo(186, 240); pen.lineTo(120, 240);
-    pen.quadraticCurveTo(84, 214, 44, 206); pen.quadraticCurveTo(40, 194, 50, 188); pen.quadraticCurveTo(96, 196, 150, 166);
-    pen.closePath();
-  }
-  s15Cloth(sabai, look.sabai, "#f2cf5a", true);
-  pen.beginPath();                                   // its gold border, and a gold necklace with its pendant
-  pen.moveTo(50, 190); pen.quadraticCurveTo(96, 198, 150, 168);
-  pen.lineWidth = 3.4;
-  pen.strokeStyle = "#e0b23a";
-  pen.stroke();
-  pen.beginPath();
-  pen.moveTo(74, 170); pen.quadraticCurveTo(100, 192, 126, 170);
-  pen.lineWidth = 2;
-  pen.stroke();
-  s15Ell(100, 184, 4, 5);
-  s15Inked("#f2cf5a", 1.2);
-  pen.save();                                        // the head nods deeper than the body bows
-  pen.translate(0, 8 * bow);
-  [-1, 1].forEach(function (side) {                  // the black ears
-    s15Ell(100 + side * 62, 40, 22, 21);
-    s15Inked(fur, 2.4);
-    s15Ell(100 + side * 62, 42, 11, 10);
-    pen.fillStyle = "#4a4250";
-    pen.fill();
-  });
-  s15Ell(100, 104, 82, 72);                          // the round white face
-  pen.fillStyle = s15Glow(84, 80, 110, [[0, "#ffffff"], [0.7, "#f6f2f0"], [1, "#e6dfe2"]]);
-  pen.fill();
-  pen.lineWidth = 2.6;
-  pen.strokeStyle = S15_PLUM;
-  pen.stroke();
-  if (look.bun) {                                    // a princess's bun of black fur, its gold pins hung with pearls
-    s15Ell(100, 30, 26, 18); s15Inked(fur, 2.4);
-    s15Ell(100, 16, 18, 13); s15Inked(fur, 2.2);
-    pen.strokeStyle = "rgba(255, 255, 255, 0.25)";
-    pen.lineWidth = 1.5;
-    pen.beginPath(); pen.arc(94, 26, 14, 3.6, 4.6); pen.stroke();
-    [-1, 1].forEach(function (side) {
-      pen.beginPath(); pen.moveTo(100 + side * 8, 24); pen.lineTo(100 + side * 40, 8);
-      pen.lineWidth = 2.4; pen.strokeStyle = "#e0b23a"; pen.stroke();
-      s15Ell(100 + side * 40, 8, 3.4, 3.4); s15Inked("#f2cf5a", 1);
-      for (var k = 1; k <= 3; k++) { s15Ell(100 + side * 40, 8 + k * 5, 1.6, 1.6); s15Inked("#fffaf0", 0.8); }
-    });
-  }
-  if (look.garland) {                                // a garland of jasmine round the bun
-    for (var g = -4; g <= 4; g++) { s15Ell(100 + g * 6.4, 40 - 8 * Math.cos(g / 4 * 1.2), 3.6, 3.6); s15Inked(g % 2 ? "#fffaf0" : "#f6e9b0", 0.9); }
-  }
-  look.flowers.forEach(function (one) { s15Flower(one[0], one[1], one[2], one[3]); });
-  [-1, 1].forEach(function (side) {                  // the eye patches, tipped outward and down
-    s15Ell(100 + side * 32, 104, 20, 26, side * -0.5);
-    pen.fillStyle = fur;
-    pen.fill();
-  });
-  [-1, 1].forEach(function (side) {                  // the eyes: big and glossy, with lashes; shut in two smiles at the deepest bow
-    var ex = 100 + side * 31, ey = 101;
-    if (bow > 0.6) {
-      pen.beginPath(); pen.moveTo(ex - 10, ey + 2); pen.quadraticCurveTo(ex, ey - 9, ex + 10, ey + 2);
-      pen.lineWidth = 3; pen.lineCap = "round"; pen.strokeStyle = "#f4ecd2"; pen.stroke();
-      return;
-    }
-    s15Ell(ex, ey, 12, 13);
-    pen.fillStyle = s15Glow(ex, ey + 4, 14, [[0, "#6b4a5a"], [0.6, "#3a2230"], [1, "#160c12"]]);
-    pen.fill();
-    pen.fillStyle = "#ffffff";
-    s15Ell(ex - side - 3.5, ey - 5, 4.2, 4.6); pen.fill();
-    s15Ell(ex + 4, ey + 5, 2, 2); pen.fill();
-    pen.strokeStyle = "#160c12"; pen.lineWidth = 1.8; pen.lineCap = "round";
-    for (var k = 0; k < 3; k++) {
-      var a = -Math.PI / 2 + side * (0.6 + k * 0.32);
-      pen.beginPath(); pen.moveTo(ex + Math.cos(a) * 12, ey + Math.sin(a) * 13); pen.lineTo(ex + Math.cos(a) * 18, ey + Math.sin(a) * 18 - 2); pen.stroke();
-    }
-  });
-  [-1, 1].forEach(function (side) { s15Ell(100 + side * 54, 134, 15, 10); pen.fillStyle = "rgba(246, 120, 150, 0.45)"; pen.fill(); });   // blush
-  s15Ell(100, 136, 26, 19); pen.fillStyle = "#fbf7f4"; pen.fill();     // the muzzle, the nose, the smile
-  pen.beginPath();
-  pen.moveTo(91, 128); pen.quadraticCurveTo(100, 124, 109, 128); pen.quadraticCurveTo(104, 137, 100, 138); pen.quadraticCurveTo(96, 137, 91, 128);
-  s15Inked(fur, 1.6);
-  pen.beginPath(); pen.moveTo(88, 145); pen.quadraticCurveTo(100, 160, 112, 145); pen.quadraticCurveTo(100, 150, 88, 145);
-  s15Inked("#8c2a48", 1.8);
-  s15Ell(100, 151, 5, 2.6); pen.fillStyle = "#ff8aa5"; pen.fill();
-  [-1, 1].forEach(function (side) { s15Ell(100 + side * 76, 118, 4.5, 4.5); s15Inked("#f2cf5a", 1.2); });   // gold ear plugs
-  pen.restore();
-  pen.lineCap = "round";                             // the wai: each arm down to the elbow and up, the paws palm to palm
-  [-1, 1].forEach(function (side) {
-    pen.beginPath(); pen.moveTo(100 + side * 62, 190); pen.quadraticCurveTo(100 + side * 58, 230, 100 + side * 34, 228);
-    pen.quadraticCurveTo(100 + side * 16, 226, 100 + side * 9, 206 - 6 * bow);
-    pen.lineWidth = 25; pen.strokeStyle = S15_PLUM; pen.stroke();
-    pen.lineWidth = 20.5; pen.strokeStyle = fur; pen.stroke();
-  });
-  pen.save();
-  pen.translate(0, -6 * bow);                        // the paws come up to the bowed face
-  [-1, 1].forEach(function (side) {
-    pen.beginPath(); pen.moveTo(100, 212); pen.quadraticCurveTo(100 + side * 15, 206, 100 + side * 12, 184);
-    pen.quadraticCurveTo(100 + side * 8, 168, 100, 164); pen.closePath();
-    s15Inked(fur, 2.2);
-    s15Ell(100 + side * 6, 184, 3, 5); pen.fillStyle = "#5a4a58"; pen.fill();
-  });
-  pen.strokeStyle = "#6a5a68"; pen.lineWidth = 1.2;
-  pen.beginPath(); pen.moveTo(100, 167); pen.lineTo(100, 210); pen.stroke();
-  pen.restore();
-  pen.restore();
-}
-
-// t: the scene's second: nothing before S15_THANKS[0]; then the warm light, S15_THANK_YOU, and the three pandas
-// rising, each bowing at its seconds in S15_WAIS (1.8 s a bow). Gives back nothing: it draws with pen.
-// e.g. s15Thanks(185);
-function s15Thanks(t) {                              // the three pandas and the thank-you, from S15_THANKS on
-  var come = clamp((t - S15_THANKS[0]) / (S15_THANKS[1] - S15_THANKS[0]));
-  if (come <= 0) { return; }
-  var rise = 1 - Math.pow(1 - come, 3);
-  pen.save();
-  pen.globalAlpha = come;
-  pen.fillStyle = s15Glow(WIDE / 2, 980, 900, [[0, "rgba(255, 236, 190, 0.22)"], [1, "rgba(255, 236, 190, 0)"]]);   // a warm light behind them
-  pen.fillRect(0, 0, WIDE, 1080);
-  s15Text(S15_THANK_YOU[0], WIDE / 2, 150, "600 64px 'Noto Serif Thai', 'Leelawadee UI', serif", S15_GOLD);
-  s15Text(S15_THANK_YOU[1], WIDE / 2, 232, "italic 42px Georgia, 'Times New Roman', serif", S15_INK);
-  pen.globalAlpha = 1;                               // the pandas rise in whole: one seen through shows its own layers
-  S15_PANDAS.forEach(function (look, n) {
-    var bow = 0;
-    S15_WAIS.forEach(function (wai) { var u = (t - wai[n]) / 1.8; if (u > 0 && u < 1) { bow = Math.max(bow, Math.sin(Math.PI * u)); } });
-    s15Panda(WIDE / 2 + (n - 1) * 600, 1080 + 320 * (1 - rise), 2.5, look, bow);
-  });
-  pen.restore();
-}
-
-// ---------- the bows ----------
-// Owner, 2026-10-20: "When the credits role have all the sprites use come out and take a bow when they are listed".
-// Each name of the cast and of the maker's list has its figure (S15_FIGURES, by its English name). As its row comes
-// up the frame, the figure comes out from the frame's edge beside it (the left one's on the left, the right one's on
-// the right, each facing in), bows as the row passes the middle (a person over a wai, a creature or a thing tipping
-// forward from its feet), and goes back out as the roll goes on. Each is drawn once onto a tile (sabai.js's
-// sabaiTile(), as the woven figures are), so the roll stays quick to draw; one that moves has its cycle.
-var S15_BOW_TILE = 256;                               // a tile's side
-var S15_BOW_TALL = 150;                               // the figure's height (or width, if wider) on the screen
-var S15_BOW_EDGE = 112;                               // its middle from the frame's edge when it is out
-var S15_BOW_AT = [680, 610, 520, 450];                // the row's height on the screen: it comes out from the first to the second, goes back from the third to
-                                                      // the fourth, so one is coming out as the one before goes back (a row is 74 below the one before)
-var S15_BOW_DEEP = [610, 520];                        // and bows while the row goes from the one to the other
-var S15_TILES = {};
-
-// u: 0 to 1 (held there outside it); gives back 0 to 1, eased in and out. e.g. var out = s15Ease(0.4);
-function s15Ease(u) { u = clamp(u); return u * u * (3 - 2 * u); }
 
 // kind: a name of the kit's cast; own: the film's look (MAENG_LAD, ...), or left out. Gives back a painter for
 // S15_FIGURES (it draws the person at 0, 0 when called). e.g. "Thukkhata": s15Who("boy", MAENG_LAD)
 function s15Who(kind, own) {                          // a person of the cast, in a wai
   return function () { person(0, 0, maengPerson(kind, own || {}, {wai: true, feel: "happy", face: 1, id: "bow-" + kind})); };
 }
-// list: [[offset across, in the painter's own pixels, painter], ...]. Gives back one painter (b, u) that draws them
-// all. e.g. s15Many([[-60, s15Who("inta")], [60, s15Who("khammun")]])
-function s15Many(list) {                              // a few side by side, each painter at its offset across
-  return function (b, u) { list.forEach(function (one) { b.save(); b.translate(one[0], 0); one[1](b, u); b.restore(); }); };
-}
-// size: how much smaller (0.5, half); painter: (b) for a still one, (b, u) for one that moves. Gives back a painter
-// of the same kind. e.g. "Temple": s15Small(0.5, function (b) { temple(b, 0, 0); })
-function s15Small(size, painter) {                    // a big thing drawn smaller, so its tile can hold it
-  var moving = painter.length >= 2;
-  return moving ? function (b, u) { b.save(); b.scale(size, size); painter(b, u); b.restore(); }
-                : function (b) { b.save(); b.scale(size, size); painter(b); b.restore(); };
-}
 var S15_FIGURES = {
   // the cast
   "Thukkhata": s15Who("boy", MAENG_LAD), "His father": s15Who("fellow", MAENG_FATHER), "His mother": s15Who("weaver", MAENG_MOTHER),
   "The creature": function (b, u) { maengSiHuHaTa(0, 0, {size: 0.6, step: u, feel: "happy"}); },
   "King Phanthumati": s15Who("noble", MAENG_KING), "Princess Sima": s15Who("lady", MAENG_SIMA), "The king's man": s15Who("fellow", MAENG_HERALD),
-  "The Haw traders": s15Many([[-60, function () { person(0, 0, maengTrader(0, {wai: true, face: 1, id: "bow-trader0"})); }],
+  "The Haw traders": creditMany([[-60, function () { person(0, 0, maengTrader(0, {wai: true, face: 1, id: "bow-trader0"})); }],
                               [60, function () { person(0, 0, maengTrader(1, {wai: true, face: 1, id: "bow-trader1"})); }]]),
   "The Righteous King": s15Who("noble", MAENG_KING_THUKKHATA), "Bua-kham": s15Who("buakham"),
   // the maker's people
@@ -521,14 +213,14 @@ var S15_FIGURES = {
   "Grandfather": s15Who("elder"), "Grandmother": s15Who("grandmother"), "Old farmer": s15Who("oldfarmer"),
   "Grandmother to the temple": s15Who("devotee"), "Dancer": s15Who("dancer"), "Celestial": s15Who("celestial"), "Drummer": s15Who("drummer"),
   "Scientist": s15Who("scientist"),
-  "Inta, Khammun, Bua-kham": s15Many([[-90, s15Who("inta")], [0, s15Who("khammun")], [90, s15Who("buakham")]]),
-  "Sinuan, Bunma, Dokkham": s15Many([[-80, s15Who("sinuan")], [0, s15Who("bunma")], [70, s15Who("dokkham")]]),
+  "Inta, Khammun, Bua-kham": creditMany([[-90, s15Who("inta")], [0, s15Who("khammun")], [90, s15Who("buakham")]]),
+  "Sinuan, Bunma, Dokkham": creditMany([[-80, s15Who("sinuan")], [0, s15Who("bunma")], [70, s15Who("dokkham")]]),
   // the maker's creatures and things
   "Dog": function (b, u) { dog(0, 0, u * 2); }, "Rooster": function (b, u) { rooster(0, 0, u * 2); },
   "Naga": function () { naga(0, -60, {size: 0.5, heads: 5}); }, "Dragon": function () { dragon(0, -80, {size: 0.4, breath: 0.5}); },
   "Mom": function (b, u) { mom(0, 0, {size: 0.6, step: u}); }, "Phaya Luang": function () { luang(0, 0, {size: 0.4}); },
   "Sun": function (b, u) { sun(0, -60, u * 2); }, "Birds": function (b, u) {                         // the kit's flock is drawn in its dark ink, which the night hides: here in the credits' own
-    b.save(); birds(u * 2, 0, -60); b.globalCompositeOperation = "source-in"; b.fillStyle = S15_INK; b.fillRect(-400, -400, 800, 800); b.restore();
+    b.save(); birds(u * 2, 0, -60); b.globalCompositeOperation = "source-in"; b.fillStyle = CREDIT_INK; b.fillRect(-400, -400, 800, 800); b.restore();
   },
   "Sky lantern": function (b) { b.save(); b.beginPath(); b.rect(-45, -190, 90, 140); b.clip(); lantern(0, -100, 70); b.restore(); },   // its glow runs past a tile: the lantern alone
   "Lanna lantern": function () { khom(0, -300, {lit: 0, sway: 0}); },
@@ -539,14 +231,14 @@ var S15_FIGURES = {
   "Pi chum": function (b, u) { musician(0, 0, "pichum", cast("elder", {size: 1.1}), u * 2); },
   "Phin phia": function (b, u) { musician(0, 0, "phinphia", cast("fellow", {size: 1.1}), u * 2); },
   "Turning lantern": function () { khomPhat(0, -300, {lit: 0}); },
-  "Star and lotus lanterns": s15Many([[-80, function () { khomDao(0, -300, {lit: 0, sway: 0}); }], [80, function () { khomBua(0, -300, {lit: 0}); }]]),
+  "Star and lotus lanterns": creditMany([[-80, function () { khomDao(0, -300, {lit: 0, sway: 0}); }], [80, function () { khomBua(0, -300, {lit: 0}); }]]),
   "Hand lantern": function () { khomThue(0, -200, {size: 1, lit: 0}); },
   "Tung sai mu": function (b, u) { tungSaiMu(b, 0, 0, 1.3, u * 2, 7, 7); }, "Tung yai": function (b, u) { tungYai(b, 0, 0, 0.8, u * 2); },
-  "Red truck": s15Small(0.6, function (b) { rotDaeng(b, 0, 0, 1, 0, 1, function () {}); }),
+  "Red truck": creditSmall(0.6, function (b) { rotDaeng(b, 0, 0, 1, 0, 1, function () {}); }),
   "Elephant": function (b, u) { elephant(0, 0, {size: 0.35, step: u}); }, "Tiger": function (b, u) { tiger(0, 0, {size: 0.6, step: u}); },
   "Cat": function (b, u) { cat(0, 0, {size: 1, step: u}); }, "Pig": function (b, u) { pig(0, 0, {size: 0.8, step: u}); },
   "Pack horse": function (b, u) { horse(0, 0, {size: 0.75, step: u, pack: true}); },
-  "House and field mice": s15Many([[-40, function (b, u) { mouse(0, 0, {kind: "house", size: 1.1, step: u}); }],
+  "House and field mice": creditMany([[-40, function (b, u) { mouse(0, 0, {kind: "house", size: 1.1, step: u}); }],
                                    [40, function (b, u) { mouse(0, 0, {kind: "field", size: 1.1, step: u}); }]]),
   "Tokay gecko": function (b, u) { gecko([[-90, 0], [90, 0]], 150 + 20 * u, {size: 1, t: u}); },
   "Green peafowl": function (b, u) { peafowl(0, 0, u, {size: 0.6, display: 1, shiver: 0.5}); },
@@ -554,54 +246,32 @@ var S15_FIGURES = {
   "Sunbird": function (b, u) { sunbird(0, 0, u / 13, {size: 2.4, hover: 1}); },
   "Blue magpie": function (b, u) { blueMagpie(0, 0, u, {size: 0.9, fly: true}); }, "Hornbill": function (b, u) { hornbill(0, 0, u, {size: 0.7, fly: true}); },
   "Maeng Si Hu Ha Ta": function (b, u) { maengSiHuHaTa(0, 0, {size: 0.6, step: u}); },
-  "Fire, rice steamer": s15Many([[-70, function (b, u) { campfire(b, 0, 0, 1, u * 2, {light: 0}); }], [70, function (b, u) { huad(b, 0, 0, 1, u * 2, {fire: 1}); }]]),
+  "Fire, rice steamer": creditMany([[-70, function (b, u) { campfire(b, 0, 0, 1, u * 2, {light: 0}); }], [70, function (b, u) { huad(b, 0, 0, 1, u * 2, {fire: 1}); }]]),
   // the maker's houses and places
   "House": function (b) { house(b, 0, 0, 0.6); },
-  "Trees, palm, banana": s15Small(0.5, s15Many([[-260, function (b) { tree(b, 0, 0, 1.1); }], [0, function (b) { palm(b, 0, 0, 400); }], [220, function (b) { banana(b, 0, 0); }]])),
-  "Temple": s15Small(0.5, function (b) { temple(b, 0, 0); }), "Giant": function (b) { yak(b, 0, 0, 1); },
-  "Water jar": function (b) { namton(b, 0, 0, 1.2); }, "Tung": s15Small(0.5, function (b) { tung(b, 0, 0, 0, true); }),
+  "Trees, palm, banana": creditSmall(0.5, creditMany([[-260, function (b) { tree(b, 0, 0, 1.1); }], [0, function (b) { palm(b, 0, 0, 400); }], [220, function (b) { banana(b, 0, 0); }]])),
+  "Temple": creditSmall(0.5, function (b) { temple(b, 0, 0); }), "Giant": function (b) { yak(b, 0, 0, 1); },
+  "Water jar": function (b) { namton(b, 0, 0, 1.2); }, "Tung": creditSmall(0.5, function (b) { tung(b, 0, 0, 0, true); }),
   "Great drum": function (b) { drumCart(b, 0, 0, 0.5, 1); }, "Granary": function (b) { longKhao(b, 0, 0, 0.6); },
   "Sawian": function (b) { sawian(b, 0, 0, 1.2); }, "Hut": function (b) { tub(b, 0, 0, 1.4); },
   "Ho Kham": function (b) { hoKham(b, 0, 0, 0.45, {part: "back", pediment: "peacock"}); hoKham(b, 0, 0, 0.45, {part: "front", pediment: "peacock"}); },
-  "Rice basket, basket": s15Many([[-50, function (b) { kongKhao(b, 0, 0, 1.1); }], [50, function (b) { krabung(b, 0, 0, 1.1); }]]),
+  "Rice basket, basket": creditMany([[-50, function (b) { kongKhao(b, 0, 0, 1.1); }], [50, function (b) { krabung(b, 0, 0, 1.1); }]]),
   "Mortar": function (b) { mortar(b, 0, 0, 1.1); }, "Ta laew": function (b) { taLaew(b, 0, 0, 1.1); },
-  "Hen, black chickens": s15Many([[-80, function (b, u) { rooster(0, 0, u * 2, {hen: true}); }], [0, function (b, u) { rooster(0, 0, u * 2, {black: true}); }],
+  "Hen, black chickens": creditMany([[-80, function (b, u) { rooster(0, 0, u * 2, {hen: true}); }], [0, function (b, u) { rooster(0, 0, u * 2, {black: true}); }],
                                   [80, function (b, u) { rooster(0, 0, u * 2, {black: true, hen: true}); }]]),
   "Cattle egret": function (b, u) { egret(0, 0, u, {size: 1, peck: 0.5 + 0.5 * Math.sin(u * Math.PI * 2)}); },
-  "Native fish": s15Many([[-60, function (b, u) { nativeFish(b, 0, -60, 1.6, 1, "gourami", u); }], [60, function (b, u) { nativeFish(b, 0, -40, 1.6, 1, "barb", u); }],
+  "Native fish": creditMany([[-60, function (b, u) { nativeFish(b, 0, -60, 1.6, 1, "gourami", u); }], [60, function (b, u) { nativeFish(b, 0, -40, 1.6, 1, "barb", u); }],
                           [-60, function (b, u) { nativeFish(b, 0, -10, 1.6, 1, "flying", u); }], [60, function (b, u) { nativeFish(b, 0, 10, 1.6, 1, "snakehead", u); }]]),
   "Bamboo house": function (b) { ruenPhuk(b, 0, 0, 1); },
-  "Grass, bananas": s15Many([[-50, function (b) { grassBundle(b, 0, -45, 1.2, {tied: true}); }], [50, function (b) { bananas(b, 0, -18, 1.2, {count: 5, ripe: 0.8}); }]]),
+  "Grass, bananas": creditMany([[-50, function (b) { grassBundle(b, 0, -45, 1.2, {tied: true}); }], [50, function (b) { bananas(b, 0, -18, 1.2, {count: 5, ripe: 0.8}); }]]),
   "Fire stick": function (b) { fireStick(b, [-60, 0], [60, -12], {hot: 0.6}); },
   "Eastern barn owl": function (b, u) { barnOwl(0, 0, u * 2, {size: 1}); },
   "Atlas moth": function (b, u) { atlasMoth(0, -80, u, {size: 0.42}); },
   "Bats": function (b, u) { batStream(u * 3, {from: [-90, -170], to: [90, -40], count: 12, every: 0.25, long: 3, size: 1.6, far: 0.6, spread: 50}); },
   "Fireflies": function (b, u) { farFireflies(u * 4, {box: [-90, -170, 90, -10], count: 24}); },
-  "Pen, gong, firewood, cave": s15Many([[-70, function (b) { gong(b, 0, 0, 1.1); }], [70, function (b) { firewood(b, 0, -8, 1.1, {loose: true}); }]])
+  "Pen, gong, firewood, cave": creditMany([[-70, function (b) { gong(b, 0, 0, 1.1); }], [70, function (b) { firewood(b, 0, -8, 1.1, {loose: true}); }]])
 };
 
-// row: a "pair" row; y: its middle, in pixels of the sheet; t: seconds (a moving figure's frame, 7.5 a second). Each
-// side's figure in S15_FIGURES (by its English name), if it has one, is drawn from its tile. It fills S15_TILES on
-// a figure's first call (sabaiTile()). Gives back nothing: it draws with pen. e.g. s15Bow(rows[n], 560, t);
-function s15Bow(row, y, t) {                          // the figures of a row whose middle is at y
-  [row[1], row[2]].forEach(function (one, side) {
-    var painter = one && S15_FIGURES[one[1]];
-    if (!painter) { return; }
-    var out = s15Ease((S15_BOW_AT[0] - y) / (S15_BOW_AT[0] - S15_BOW_AT[1])) * s15Ease((y - S15_BOW_AT[3]) / (S15_BOW_AT[2] - S15_BOW_AT[3]));
-    if (out <= 0) { return; }
-    var frames = S15_TILES[one[1]] || (S15_TILES[one[1]] = sabaiTile(painter, S15_BOW_TILE));
-    var frame = frames[Math.floor(t * 7.5) % frames.length];
-    var bow = Math.sin(Math.PI * clamp((S15_BOW_DEEP[0] - y) / (S15_BOW_DEEP[0] - S15_BOW_DEEP[1])));
-    var shown = S15_BOW_TALL / 0.86, face = side ? -1 : 1;   // the tile's picture fills 0.86 of it
-    var x = side ? WIDE - mix(-shown / 2, S15_BOW_EDGE, out) : mix(-shown / 2, S15_BOW_EDGE, out);
-    pen.save();
-    pen.translate(x, y + shown * 0.43 + 6 * bow);      // about its feet, at the foot of the tile
-    pen.rotate(face * 0.3 * bow);                      // tipping forward, toward the middle of the frame
-    pen.scale(face, 1);
-    pen.drawImage(frame, -shown / 2, -shown, shown, shown);
-    pen.restore();
-  });
-}
 
 // The night over the mountain while the credits roll (owner, 2026-10-21: "do the moth, the fireflies, the owl, maybe a
 // common bat and add them to the credits", then "Add a Moon and clouds and change the color of the owl when it is in
@@ -676,15 +346,15 @@ function s15NightNear(t, moon) {                      // in front of the mountai
   S15_OWLS.forEach(function (o) { if (o[2] === "front") { s15Owl(o, t, moon); } });   // coming down toward us, in front of the mountain
   S15_MOTHS.forEach(function (m) {
     if (t < m[0] || t > m[1]) { return; }
-    var u = (t - m[0]) / (m[1] - m[0]), x = mix(m[2][0], m[3][0], s15Ease(u * 1.6)) + 40 * Math.sin(t * 2.1), y = mix(m[2][1], m[3][1], u) + 30 * Math.sin(t * 2.9);
+    var u = (t - m[0]) / (m[1] - m[0]), x = mix(m[2][0], m[3][0], creditEase(u * 1.6)) + 40 * Math.sin(t * 2.1), y = mix(m[2][1], m[3][1], u) + 30 * Math.sin(t * 2.9);
     if (u > 0.62) { x += (m[3][0] < m[2][0] ? -1 : 1) * 1400 * (u - 0.62) * (u - 0.62); y -= 900 * (u - 0.62) * (u - 0.62); }   // it rests a moment, then flutters off and up
     // and as it flutters away it grows smaller, to nothing, by the end of its seconds (owner, 2026-10-22: "a moth that
     // disappears. It should slowly shrink into nothingness"; it was gone at its full size)
-    var size = 0.42 * (1 - s15Ease((u - 0.62) / 0.38));
+    var size = 0.42 * (1 - creditEase((u - 0.62) / 0.38));
     if (size > 0.004) { atlasMoth(x, y, t, {size: size, turn: 0.3 * Math.sin(t * 1.3), lit: moonLight(x, y, moon)}); }
   });
   if (t >= S15_PERCH[0]) {
-    var come = s15Ease((t - S15_PERCH[0]) / 1.5);     // the branch reaches in from the frame's left, the owl on it
+    var come = creditEase((t - S15_PERCH[0]) / 1.5);     // the branch reaches in from the frame's left, the owl on it
     pen.save();
     pen.translate(-260 * (1 - come), 0);
     pen.strokeStyle = "#1a1612";
@@ -700,7 +370,7 @@ function s15NightNear(t, moon) {                      // in front of the mountai
 
 // Scene 15, the entry the film calls (SCENES): t, its own second, 0 to S15_LONG (195 s): the night over the mountain;
 // the roll of s15Rows() from S15_ROLL[0] (3 s) until the end is held at S15_ROLL[1] (174 s), each "pair" row's
-// figures bowing as it passes (s15Bow()); the words go at S15_THANKS[0] (177.5 s) for the pandas' thanks; into black
+// figures bowing as it passes (creditBow()); the words go at S15_THANKS[0] (177.5 s) for the pandas' thanks; into black
 // from 192.6 s. Gives back nothing: it draws the whole sheet with pen. On the first call it adds backNight and
 // frontNight to MAENG_MOUNTAIN. From sets.js: maengMountain(), maengTinted(), maengSky("night"), MAENG_NIGHT,
 // maengDark(), maengPerson() and maengTrader() (the figures); from thanks.js MAENG_THANKED and MAENG_SCHOLARS. No
@@ -726,19 +396,8 @@ function sceneCredits(t) {
   s15NightBats(t, mountain.frontNight);
   // The roll: the first row comes in at the foot of the frame at S15_ROLL[0], and the end's middle reaches the
   // middle of the frame at S15_ROLL[1], and stays.
-  var rows = s15Rows(), tall = 0, n;
-  for (n = 0; n < rows.length - 1; n++) { tall += S15_TALL[rows[n][0]]; }
-  var from = 1080 + 60, to = 540 - S15_END_ROOM - tall, top = mix(from, to, clamp((t - S15_ROLL[0]) / (S15_ROLL[1] - S15_ROLL[0])));
-  var y = top;
-  pen.save();
-  pen.globalAlpha = 1 - clamp((t - S15_THANKS[0]) / 0.8);   // the words go before the thanks
-  for (n = 0; n < rows.length; n++) {                // the end is held with its middle in the frame's
-    var middle = rows[n][0] === "end" ? y + S15_END_ROOM : y + S15_TALL[rows[n][0]] / 2;
-    if (middle > -160 && middle < 1240) { s15Row(rows[n], middle); if (rows[n][0] === "pair") { s15Bow(rows[n], middle, t); } }
-    y += S15_TALL[rows[n][0]];
-  }
-  pen.restore();
-  s15Thanks(t);
+  creditRoll(t, s15Rows(), S15_ROLL, S15_THANKS[0], S15_FIGURES);
+  creditThanks(t, S15_THANKS, S15_WAIS, S15_THANK_YOU);
   maengDark(t, S15_LONG - 2.4, S15_LONG + 10);
   maengDark(t, -10, 0);
 }

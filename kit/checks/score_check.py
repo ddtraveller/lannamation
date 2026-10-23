@@ -1,6 +1,7 @@
 """score_check.py - does the music under every line carry that line's feeling? And a plot of it, scene by scene.
 
     python checks/score_check.py            # after python maeng/feelings.py: every scene in out/maeng_music/
+    python checks/score_check.py --film changngu   # another tale's: after changngu/feelings.py, out/changngu_music/
 
 It listens to the music, not to the cue sheet. Under each line, from the moment its feeling's music has fully come
 in (score.py turns EARLY before the line, over CROSS seconds) to the moment the next line's begins to come in,
@@ -15,7 +16,8 @@ when the music (out/maeng_music/), score.py, feelings.py and the scene files hav
 Exits 1 if any line's music is heard in another feeling's notes.
 
 It needs numpy and soundfile, and out/maeng_music/ (cues.json and a WAV for each scene, made by
-maeng/feelings.py) and maeng/words.js. It runs main() as it is loaded: do not import it.
+maeng/feelings.py) and maeng/words.js; for --film NAME, NAME's own (out/NAME_music/, NAME/feelings.py and
+NAME/words.js), recorded as score_check_NAME. It runs main() as it is loaded: do not import it.
 """
 import html
 import json
@@ -27,12 +29,12 @@ import soundfile
 
 KIT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(KIT))
-sys.path.insert(0, str(KIT / "maeng"))
 from score import CROSS, EARLY, FEELINGS, SETS  # noqa: E402
 from report import Report, fingerprint  # noqa: E402
 
-OUT = KIT / "out" / "maeng_music"
-WORDS = KIT / "maeng" / "words.js"
+FILM = sys.argv[sys.argv.index("--film") + 1] if "--film" in sys.argv else "maeng"   # the tale: its folder's name
+OUT = KIT / "out" / (FILM + "_music")
+WORDS = KIT / FILM / "words.js"
 COLOURS = {"calm": "#9fb8a0", "tender": "#e8b7c0", "sleepy": "#9a9ab8", "wonder": "#8fc8e8", "mystery": "#6a6a9a",
            "comic": "#f2c94c", "joy": "#f2994a", "hope": "#b8d86a", "bustle": "#d8a24a", "triumph": "#e0b23a",
            "royal": "#b06ab0", "sad": "#7a96b8", "grief": "#4a5a7a", "tense": "#c85a4a", "fear": "#9a2a2a"}
@@ -103,13 +105,13 @@ def busy(piece, rate):
 def english():
     """Each line's English, from words.js.
 
-    Gives back {line id ("M001" ...): its English}, from the lines of words.js that start with an id.
+    Gives back {line id ("M001", "C001" ...): its English}, from the lines of words.js that start with an id.
     e.g. words = english()"""
     text = WORDS.read_text(encoding="utf-8")
     found = {}
     for line in text.splitlines():
         line = line.strip()
-        if line[:1] == "M" and line[4:6] == ": ":
+        if line[:1].isupper() and line[1:4].isdigit() and line[4:6] == ": ":
             found[line[:4]] = json.loads(line[6:].rstrip(","))[2]
     return found
 
@@ -117,9 +119,10 @@ def english():
 def main():
     """The command line: score_check.py [--changed]: hear each line's music, print and record each, draw the plot,
     exit 1 if any line's music is in another feeling's notes."""
-    report = Report("score_check")
-    depends = sorted(OUT.glob("*.wav")) + [OUT / "cues.json", KIT / "score.py", KIT / "maeng" / "feelings.py", Path(__file__)]
-    depends += sorted((KIT / "maeng").glob("s[0-9][0-9]_*.js"))
+    report = Report("score_check" if FILM == "maeng" else "score_check_" + FILM)
+    depends = sorted(OUT.glob("*.wav")) + [OUT / "cues.json", KIT / "score.py", KIT / "tale_music.py", KIT / FILM / "feelings.py",
+                                           Path(__file__)]
+    depends += sorted((KIT / FILM).glob("s[0-9][0-9]_*.js"))
     mark = fingerprint(depends)
     if "--changed" in sys.argv and report.unchanged("music", mark):
         report.skip("music", "the music and what it is made from have not changed since it passed")
@@ -130,7 +133,7 @@ def main():
     for scene, info in sorted(sheet.items()):
         wav = OUT / (scene + ".wav")
         if not wav.exists():
-            print("%s: no music yet (python maeng/feelings.py)" % scene)
+            print("%s: no music yet (python %s/feelings.py)" % (scene, FILM))
             continue
         music, rate = soundfile.read(str(wav))
         lines, measured = info["lines"], []
@@ -169,7 +172,7 @@ def plot(rows):
     music's loudness and busyness along the time.
 
     rows: one (scene, its seconds, the lines measured) a scene, as main() makes them. It writes
-    out/maeng_music/plot.html; gives back nothing."""
+    out/FILM_music/plot.html; gives back nothing."""
     wide, out = 1500, []
     out.append("<!doctype html><html><head><meta charset='utf-8'><title>The film's music against its feelings</title>"
                "<style>body{font:15px Georgia,serif;background:#f3ead8;color:#3a2e22;margin:24px}"

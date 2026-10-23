@@ -7550,6 +7550,133 @@ where the statue stands. Its middle at (x, y); size 1 is 520 across. The owner's
 e.g. statuePool(pen, 960, 900, 1, t); changNgu(960, 840, {size: 0.4});
 ```
 
+## credits.js
+
+credits.js - a film's closing credits, for the kit's long films (the Lanna Tales): the words rolling up the frame, row by row (creditRow(): a title, a heading, a line, small print, a pair of the cast or of the things drawn, each over where it was drawn from, names four or five across, and the end, held); beside each pair its figures coming out from the frame's edges to take a bow (creditBow()); and last the thanks, three pandas in Teacher Piggy's manner dressed as Lanna princesses, rising and making a wai (creditThanks()). Made for the first tale (maeng/ s15_credits.js), whose owner's words it keeps; each film keeps its own rows, its figures and the night behind. It needs oldcartoon.js (pen, WIDE, mix, clamp) and, for the bows, sabai.js (sabaiTile()).
+
+### `creditNames(names, across)`
+
+```
+names: an array of strings (MAENG_THANKED, MAENG_SCHOLARS); across: 4 or 5 (CREDIT_TALL and creditRow() know only
+those). Gives back rows ["names4" or "names5", [up to "across" names]]. e.g. creditNames(MAENG_THANKED, 4);
+a long list of names as rows of "across" (thanks.js)
+```
+
+### `creditText(text, x, y, font, colour, align, wide)`
+
+```
+text at x, y (pixels of the sheet, its middle line at y), in a CSS font and colour; align "center" when left out;
+wide in pixels, or left out for no limit. Gives back nothing: it writes with pen and leaves pen's font, fill,
+textAlign and textBaseline set. e.g. creditText("Lanna Tales", WIDE / 2, 540, "italic 38px Georgia", CREDIT_INK);
+wide: the most it may take across (squeezed to it)
+```
+
+### `creditRow(row, y)`
+
+```
+row: one of the film's rows (creditRoll()); y: its middle, in pixels of the sheet. Gives back nothing: it writes with pen (creditText()).
+e.g. creditRow(["head", "ตัวละคร", "The cast"], 540);
+one row, its middle at y
+```
+
+### `creditEll(x, y, rx, ry, turn)`
+
+```
+Begins a path of one ellipse (radii rx, ry; turn in radians, 0 when left out), in the panda's own points; it
+fills nothing. e.g. creditEll(100, 184, 3, 5); pen.fill();
+```
+
+### `creditInked(fill, width)`
+
+```
+Fills pen's path with fill and strokes it in CREDIT_PLUM, width 2.2 when left out. Gives back nothing.
+e.g. creditEll(100, 120, 20, 20); creditInked("#ffffff");
+```
+
+### `creditGlow(x, y, r, stops)`
+
+```
+A radial gradient about x, y out to r; stops: [[0 to 1, colour], ...]. Gives back the gradient, for pen.fillStyle.
+e.g. pen.fillStyle = creditGlow(84, 80, 110, [[0, "#ffffff"], [1, "#e6dfe2"]]);
+```
+
+### `creditFlower(x, y, r, petal)`
+
+```
+x, y: its middle, r its radius, in the panda's own points; petal: a CSS colour. Gives back nothing: it draws with
+pen. e.g. creditFlower(78, 24, 8, "#f2cf5a");
+five petals and an orange heart
+```
+
+### `creditCloth(path, base, gold, diamonds)`
+
+```
+path: a function that makes pen's path (no arguments); base, gold: CSS colours; diamonds: true for diamonds,
+false for dots. The motifs are laid from y 150 down, in the panda's own 200 by 240. Gives back nothing: it fills
+and inks the path with pen. e.g. creditCloth(torso, look.blouse, look.blouseDot, false);
+a cloth: its colour, small gold motifs in rows, inside the path
+```
+
+### `creditPanda(x, base, scale, look, bow)`
+
+```
+x, base: the middle of its waist, in pixels of the sheet; scale: 1 for 200 by 240; look: one of CREDIT_PANDAS (bun,
+garland, blouse, blouseDot, sabai, flowers); bow: 0 to 1. Gives back nothing: it draws with pen.
+e.g. creditPanda(WIDE / 2, 1080, 2.5, CREDIT_PANDAS[0], 0);
+```
+
+### `creditThanks(t, at, wais, words)`
+
+```
+t: the scene's second; at: [when the words of the roll go and the light comes, when the pandas are up]; wais: when
+each of the three bows, [[first, second, third], ...] (1.8 s a bow); words: [Kam Mueang, English], the thank-you.
+Nothing before at[0]; then the warm light, the words and the three pandas (CREDIT_PANDAS) rising. Gives back
+nothing: it draws with pen. e.g. creditThanks(185, [177.5, 179], [[180, 181, 182]], ["ขอบคุณหลาย ๆ เจ้า", "Thank you"]);
+the three pandas and the thank-you, from at[0] on
+```
+
+### `creditEase(u)`
+
+```
+u: 0 to 1 (held there outside it); gives back 0 to 1, eased in and out. e.g. var out = creditEase(0.4);
+```
+
+### `creditMany(list)`
+
+```
+list: [[offset across, in the painter's own pixels, painter], ...]. Gives back one painter (b, u) that draws them
+all. e.g. creditMany([[-60, function () { person(0, 0, cast("inta", {wai: true})); }], [60, function () { person(0, 0, cast("khammun", {wai: true})); }]])
+a few side by side, each painter at its offset across
+```
+
+### `creditSmall(size, painter)`
+
+```
+size: how much smaller (0.5, half); painter: (b) for a still one, (b, u) for one that moves. Gives back a painter
+of the same kind. e.g. "Temple": creditSmall(0.5, function (b) { temple(b, 0, 0); })
+a big thing drawn smaller, so its tile can hold it
+```
+
+### `creditBow(row, y, t, figures)`
+
+```
+row: a "pair" row; y: its middle, in pixels of the sheet; t: seconds (a moving figure's frame, 7.5 a second). Each
+side's figure in figures (the film's: {English name: painter}), if it has one, is drawn from its tile. It fills
+CREDIT_TILES on a figure's first call (sabaiTile()). Gives back nothing: it draws with pen.
+e.g. creditBow(rows[n], 560, t, {"Boy": function () { person(0, 0, cast("boy", {wai: true})); }});
+the figures of a row whose middle is at y
+```
+
+### `creditRoll(t, rows, roll, gone, figures)`
+
+```
+---------- the roll ----------
+t: the scene's second; rows: what rolls (creditRow()'s kinds), the "end" row last; roll: [when the first row comes
+in at the foot of the frame, when the end's middle reaches the frame's middle and stays]; gone: when the words
+go (over 0.8 s), for the thanks; figures: the film's bowing figures for its "pair" rows (creditBow()), or left out.
+Gives back nothing: it writes with pen. e.g. creditRoll(t, rows, [3, 174], 177.5, figures);
+```
+
 # Tools (Python, from the command line)
 
 ## kit/api_index.py
@@ -8230,6 +8357,38 @@ the page reported an error, as render.py does (0 until 2026-10-21), else 0.
 - `sheet(pictures)`: One picture with all of pictures on it, two a row, each scaled to 960 x 540: a PIL image.
 - `main()`: The command line: stills.py PAGE OUT SECONDS...; saves the sheet and prints what it found.
 
+## kit/tale_music.py
+
+```
+tale_music.py - a Lanna tale's music, scene by scene, each line's music in the feeling its sentence has.
+
+A film's own feelings.py (maeng/feelings.py, changngu/feelings.py) holds what each of its lines feels (FEEL, by the
+line's id) and the feelings of its scenes with no words (SCENE_FEEL), and runs this:
+
+    python maeng/feelings.py                # every scene's music, into out/maeng_music/: sNN.wav, and cues.json
+    python maeng/feelings.py 4 9            # only scenes 4 and 9
+    python maeng/feelings.py --film         # then the film's: out/maeng_music/film.wav, the scenes' joined, with their calls
+
+The owner, 2026-10-19: "Plot each scene musically against the emotion of each sentence and make sure the music
+always reflects the emotion of the sentence. Start from the hero video for lanna_cartoon's music." So each line
+has a feeling (one of score.py's), and each scene's music (score.py, the hero film's sound) turns to a line's
+feeling a moment before the line is said, and holds it until the next line's comes in. A scene's first feeling
+holds from its start. The lines' seconds are the scene files' own (their LINES), so a scene's music is made as the
+scene is, on its own, and the film's music is the scenes' joined. checks/score_check.py --film NAME hears the
+music under every line and says whether it carries that line's feeling, and writes the plot of it (plot.html).
+
+It needs numpy, soundfile and the kit's score.py; --film needs the scenes' sNN.wav made first and sounds.py's
+out/sounds/NAME.wav for every call. It prints a line a scene (its cues) or a call, and ends with exit code 0; 1
+with a traceback when a line's feeling is not one score.py has (ValueError), a file is missing, or an argument is
+not a scene number.
+```
+
+- `scenes(folder, prefix)`: Each scene file's number, length and lines: {n: (seconds, [[from, to, id], ...], file)}.
+- `cues_of(lines, feel, scene_feel, n)`: A scene's cues: each line's feeling from its first second; the first from the scene's start. A scene with no
+- `bed(heard, seconds)`: A sound laid end to end for "seconds", each lap crossing into the next over LAP, faded in and out over EASE
+- `film(folder, prefix, out)`: The film's music: every scene's (sNN.wav, made first) one after another, as film.html lays the scenes, with
+- `run(folder, prefix, feel, scene_feel, out, args)`: A film's feelings.py's command line (the module's text says how): each wanted scene's music into out/sNN.wav
+
 ## kit/tale_plan.py
 
 ```
@@ -8637,6 +8796,7 @@ of a page differs between the two kits, else 0 (0 whatever it found, until 2026-
 score_check.py - does the music under every line carry that line's feeling? And a plot of it, scene by scene.
 
     python checks/score_check.py            # after python maeng/feelings.py: every scene in out/maeng_music/
+    python checks/score_check.py --film changngu   # another tale's: after changngu/feelings.py, out/changngu_music/
 
 It listens to the music, not to the cue sheet. Under each line, from the moment its feeling's music has fully come
 in (score.py turns EARLY before the line, over CROSS seconds) to the moment the next line's begins to come in,
@@ -8651,7 +8811,8 @@ when the music (out/maeng_music/), score.py, feelings.py and the scene files hav
 Exits 1 if any line's music is heard in another feeling's notes.
 
 It needs numpy and soundfile, and out/maeng_music/ (cues.json and a WAV for each scene, made by
-maeng/feelings.py) and maeng/words.js. It runs main() as it is loaded: do not import it.
+maeng/feelings.py) and maeng/words.js; for --film NAME, NAME's own (out/NAME_music/, NAME/feelings.py and
+NAME/words.js), recorded as score_check_NAME. It runs main() as it is loaded: do not import it.
 ```
 
 - `notes_heard(piece, rate)`: How strongly each of the twelve notes (A first) sounds, as an ear picks a note out: every note from 100 to

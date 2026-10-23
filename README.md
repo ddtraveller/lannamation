@@ -142,6 +142,8 @@ python scenes.py sash.html sash.mp4 --audio sash_voice.wav --scene 3  # after a 
 python sounds.py                                       # the creatures' voices, made from outlines (out/sounds/); sounds.html plays them
 python maeng/feelings.py                               # music that turns with each line's feeling (score.py), scene by scene
 python checks/score_check.py                           # is each line's music in its feeling's notes; plot.html
+python changngu/feelings.py                            # another tale's music (tale_music.py makes every tale's)
+python checks/score_check.py --film changngu           # and its check
 python checks/kit_check.py my_film.html --quick        # does the page draw, and draw right
 python checks/seek_check.py                            # no clock read, and every scene come back to the same
 python checks/snapshot.py save                         # key stills of every film scene, before a kit change; compare after
@@ -403,6 +405,7 @@ kit/              the kit and everything that uses it, side by side
   *_music.py        the films' music, every sound a sine wave
   *_sing.py         the films' Thai singing; singer.py sings a syllable on a note
   sash_narrate.py   the hero film's story, told in Kam Mueang (the Kam Mueang assistant's voice; or say.mjs, the extension's)
+  tale_music.py     a Lanna tale's music, each line in its feeling: run through the film's own feelings.py
   dance_track.py    a dancer's moves, read from a video, -> dance_track.js
 maker/            the cartoon maker, its film.py and its skill for agents
 docs/STYLE.md     the rules with their numbers, the framework, the checks, what is not done
@@ -435,6 +438,7 @@ Each loads after `oldcartoon.js` and adds drawings of its own; none changes the 
 | `beasts.js` | an elephant, a water buffalo, a cat, a tiger and a pig | `beasts.html`, `elephant.html`, `felines.html`, `pig.html` |
 | `myth.js` | three creatures of the myths of Lanna | `myth.html` |
 | `chiangsaen.js` | Chiang Saen and the things of its tale, Chang Ngu: the city wall and moat as Chiang Saen's were, the Mae Khong's sandbars with khrai nam scrub, reeds and their birds (pratincole, river lapwing, little ringed plover, red avadavat, spot-billed duck), a limestone hill with a cave, a forge, a dap and a fire-gun, the bamboo elephant hook, a carrying pole, a pan for gold, a gold salung and pot, a hanging cradle, Indra's rising wall, the statue's pool | `chiangsaen.html` |
+| `credits.js` | a long film's closing credits: the words rolling up, the cast and the things drawn each over where it was drawn from, their figures coming out to bow, and the thanks of three pandas in a wai (the Lanna Tales' credits: `maeng/s15_credits.js`, `changngu/s26_credits.js`); needs `sabai.js` | |
 | `paperdoll.js` | paperdolls: one character each, with cloth that flows | |
 | `fonlep.js`, `apsara.js`, `puman.js` | three paperdolls: the fingernail dancer, the celestial dancer, the whisperer | `fonlep.html`, `apsara.html`, `puman.html` |
 | `dance_track.js` | a whole dance as the kit's poses, for `poseAt()` | `dance.html` |

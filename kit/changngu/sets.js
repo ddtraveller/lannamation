@@ -64,6 +64,8 @@ var CNG_NOVICE = {size: 0.66, smile: 0.4};                    // the novice of S
 var CNG_THUKKHITA = {turban: "#2a5a8a", sabai: ["#7aa0c0", "#2a5a8a", "check"], sarong: "#4a3a2a"};   // the elder brother
 var CNG_PHROM = {turban: "#b8294a", sabai: ["#e0b23a", "#b8294a", "check"], sarong: "#5a3f32", skin: "#f6dcc0",
                  eyes: 1.06};                                  // Phrom: "fair, as if washed clean", "like a Brahma"
+var CNG_KAEO_SUPHA = {skirt: false, sin: 0, sabai: ["#e9c45c", "#2a5a8a"], bun: "ipun", pins: true, flower: "#f2cf5a",
+                      bangles: 5, earplug: "#e0b23a", size: 0.62, smile: 0.8};   // Phrom's wife, of Wiang Chai Narai (scene 24)
 var CNG_SMITH = {bare: true, turban: "#5a4a3a", sabai: false, sarong: "#3a2e24", size: 0.78, tattoo: true};
 // The village children (Phrom's fifty): a few looks, told apart by their cloths.
 var CNG_CHILDREN = [
@@ -93,6 +95,29 @@ function cngSubtitles(t, lines) {
   lines.forEach(function (line) {
     if (t >= line[0] && t < line[1]) { subtitle(CHANGNGU_WORDS[line[2]][1], CHANGNGU_WORDS[line[2]][2]); }
   });
+}
+
+// A place's name in gold over the picture as the voice says it, its English under it in italic; dark-edged so it reads
+// over a bright sky. a: how much it shows, 0 to 1 (nothing at 0). e.g. cngGoldName("ดอยช้างงู", "Doi Chang Ngu", 560, 220, a);
+function cngGoldName(name, english, x, y, a) {
+  if (a <= 0) { return; }
+  pen.save();
+  pen.globalAlpha = a;
+  pen.textAlign = "center";
+  pen.lineJoin = "round";
+  pen.font = "700 80px 'Noto Serif Thai', 'Leelawadee UI', serif";
+  pen.strokeStyle = "rgba(90, 52, 14, 0.85)"; pen.lineWidth = 8;
+  pen.strokeText(name, x, y);
+  pen.shadowColor = "rgba(255, 196, 90, 0.7)"; pen.shadowBlur = 16;
+  pen.fillStyle = "#f2d27a";
+  pen.fillText(name, x, y);
+  pen.shadowBlur = 0;
+  pen.font = "italic 38px Georgia, serif";
+  pen.strokeStyle = "rgba(40, 30, 20, 0.7)"; pen.lineWidth = 5;
+  pen.strokeText(english, x, y + 56);
+  pen.fillStyle = "#fff6dc";
+  pen.fillText(english, x, y + 56);
+  pen.restore();
 }
 
 // A fade through black at a scene's two ends (the kit's scene cuts fade through black: film()'s cutFade does it for
@@ -592,4 +617,26 @@ function cngStable(brush, x, base, size, part) {
     brush.fillStyle = "#7a5432";
     [-1, 1].forEach(function (k) { brush.fillRect(x + k * (wide / 2 + 30 * s) - 12 * s, base - tall + 30 * s, 24 * s, tall + 10 * s); });
   }
+}
+
+// The ring of light and the spray where the snake becomes the elephant, or the elephant the snake (scenes 15 and 23),
+// at (x, y), from change[0] to change[1] seconds. e.g. cngBurst(t, 1100, 700, [31, 34]);
+function cngBurst(t, x, y, change) {
+  var u = between(t, change[0], change[1]);
+  if (u <= 0 || u >= 1) { return; }
+  var r = 40 + 520 * u, a = Math.sin(Math.PI * u);
+  pen.save();
+  var glow = pen.createRadialGradient(x, y, 0, x, y, r);
+  glow.addColorStop(0, "rgba(255, 252, 230, " + (0.95 * a).toFixed(3) + ")");
+  glow.addColorStop(0.7, "rgba(255, 240, 190, " + (0.6 * a).toFixed(3) + ")");
+  glow.addColorStop(1, "rgba(255, 240, 190, 0)");
+  pen.fillStyle = glow; pen.beginPath(); pen.arc(x, y, r, 0, 7); pen.fill();
+  pen.strokeStyle = "rgba(255, 250, 220, " + (0.9 * a).toFixed(3) + ")"; pen.lineWidth = 8;
+  pen.beginPath(); pen.ellipse(x, y + 40, r * 0.9, r * 0.25, 0, 0, 7); pen.stroke();
+  pen.fillStyle = "rgba(240, 250, 248, " + (0.85 * a).toFixed(3) + ")";
+  for (var d = 0; d < 40; d++) {                           // the spray thrown up
+    var ang = dice(d) * Math.PI, far = (0.3 + 0.7 * dice(d + 7)) * r * 0.8;
+    pen.beginPath(); pen.arc(x + Math.cos(ang) * far * 1.4, y + 40 - Math.sin(ang) * far, 6 + 6 * dice(d + 3), 0, 7); pen.fill();
+  }
+  pen.restore();
 }

@@ -29,26 +29,6 @@ function c15InWater(x, look, rise) {
   person(x, feet, look);
 }
 
-// The ring of light and the spray at the change, at (x, y). e.g. c15Burst(t, 1100, 700);
-function c15Burst(t, x, y) {
-  var u = between(t, C15_CHANGE[0], C15_CHANGE[1]);
-  if (u <= 0 || u >= 1) { return; }
-  var r = 40 + 520 * u, a = Math.sin(Math.PI * u);
-  pen.save();
-  var glow = pen.createRadialGradient(x, y, 0, x, y, r);
-  glow.addColorStop(0, "rgba(255, 252, 230, " + (0.95 * a).toFixed(3) + ")");
-  glow.addColorStop(0.7, "rgba(255, 240, 190, " + (0.6 * a).toFixed(3) + ")");
-  glow.addColorStop(1, "rgba(255, 240, 190, 0)");
-  pen.fillStyle = glow; pen.beginPath(); pen.arc(x, y, r, 0, 7); pen.fill();
-  pen.strokeStyle = "rgba(255, 250, 220, " + (0.9 * a).toFixed(3) + ")"; pen.lineWidth = 8;
-  pen.beginPath(); pen.ellipse(x, y + 40, r * 0.9, r * 0.25, 0, 0, 7); pen.stroke();
-  pen.fillStyle = "rgba(240, 250, 248, " + (0.85 * a).toFixed(3) + ")";
-  for (var d = 0; d < 40; d++) {                           // the spray thrown up
-    var ang = dice(d) * Math.PI, far = (0.3 + 0.7 * dice(d + 7)) * r * 0.8;
-    pen.beginPath(); pen.arc(x + Math.cos(ang) * far * 1.4, y + 40 - Math.sin(ang) * far, 6 + 6 * dice(d + 3), 0, 7); pen.fill();
-  }
-  pen.restore();
-}
 
 // Scene 15, the entry the film calls (SCENES): t, its own second, 0 to C15_LONG (55 s). Gives back nothing: it draws the
 // whole sheet with pen. From sets.js: cngRiver(), cngRiverLife(), CNG_BANK, cngPerson() with CNG_PHROM and CNG_CHILDREN,
@@ -120,6 +100,6 @@ function cngSceneThird(t) {
     }});
   }
   drawByZ(onBank);
-  c15Burst(t, C15_HELD + 60, C15_SWIM - 60);
+  cngBurst(t, C15_HELD + 60, C15_SWIM - 60, C15_CHANGE);
   cngFadeIn(t, 1);
 }
