@@ -24,6 +24,20 @@ function c15Water(t) {
 }
 
 // Someone up to the chest in the river at x (the water line at C15_SWIM), drawn as a person standing lower.
+// Where child k (0 to 9) is at second t as the ten jump in after Phrom, a quarter second apart from 27 s: a run along
+// the bank to its edge, then a leap that comes down in the water where it holds on, beside neckX (the snake's neck).
+// Gives back {x, y: its feet, run, leap: 0 to 1, swims: true once it is low enough to go behind the water}.
+// e.g. c15ChildAt(28.9, 0, 1080).leap   // 0.5, high over the water
+function c15ChildAt(t, k, neckX) {
+  var from = 27 + 0.25 * k, run = between(t, from, from + 1.6), leap = between(t, from + 1.6, from + 2.2);
+  var bank = [120 + (k % 7) * 70, CNG_BANK + 90 + Math.floor(k / 7) * 34];
+  var water = [neckX + 80 + (k % 5) * 70 - Math.floor(k / 5) * 40, C15_SWIM + 230 * cngAgeSize(9 + (k % 4))];
+  var edge = [water[0] - 160, CNG_BANK + 30];
+  if (leap <= 0) { return {x: mix(bank[0], edge[0], run), y: mix(bank[1], edge[1], run), run: run, leap: 0, swims: false}; }
+  return {x: mix(edge[0], water[0], leap), y: mix(edge[1], water[1], leap) - 90 * Math.sin(Math.PI * leap), run: 1, leap: leap,
+          swims: leap > 0.6};
+}
+
 function c15InWater(x, look, rise) {
   var size = look.size || 1, feet = C15_SWIM + 230 * size - (rise || 0);
   person(x, feet, look);
@@ -51,7 +65,7 @@ function cngSceneThird(t) {
     elephantAt = elephant(ex, C15_SWIM + 210 + bob, {size: 0.62, face: -1, colour: "#f1ddd3", cloth: "#c9962a",
                                                     trunk: 0.5 + 0.4 * Math.sin(t * 1.1), mouth: 0.2});
   }
-  var leap = between(t, 22.4, 24.2), jumpIn = between(t, 27, 30);
+  var leap = between(t, 22.4, 24.2);
   var inRiver = [];                                        // who is in the water now, drawn before the water over them
   if (t >= 24.2 && !changed) {
     inRiver.push(function () {                             // Phrom holding the snake by its neck
@@ -61,12 +75,13 @@ function cngSceneThird(t) {
   }
   for (var k = 0; k < 10; k++) {
     (function (k) {
-      if (jumpIn * 10 <= k) { return; }
-      var c = CNG_CHILDREN[k % CNG_CHILDREN.length], x = (neck ? neck[0] : C15_HELD) + 80 + (k % 5) * 70 - Math.floor(k / 5) * 40;
+      var at = c15ChildAt(t, k, neck ? neck[0] : C15_HELD), c = CNG_CHILDREN[k % CNG_CHILDREN.length];
+      if (!at.swims) { return; }                           // still running, or high in the leap: drawn with the bank
       inRiver.push(function () {
-        c15InWater(x, cngPerson(c.kind, c.look, {id: "child" + k, size: cngAgeSize(9 + (k % 4)), face: -1,
-                                                 feel: changed ? "happy" : "fear",
-                                                 handA: k % 2 ? liftHand(liftEven(liftShare(0.8) * between(t, C15_CHANGE[1], C15_CHANGE[1] + 0.8))) : undefined}), 0);   // up for joy, eased
+        var look = cngPerson(c.kind, c.look, {id: "child" + k, size: cngAgeSize(9 + (k % 4)), face: at.leap < 1 ? 1 : -1,
+                                              feel: changed ? "happy" : "fear",
+                                              handA: k % 2 ? liftHand(liftEven(liftShare(0.8) * between(t, C15_CHANGE[1], C15_CHANGE[1] + 0.8))) : undefined});   // up for joy, eased
+        if (at.leap < 1) { person(at.x, at.y, look); } else { c15InWater(at.x, look, 0); }
       });
     })(k);
   }
@@ -96,10 +111,12 @@ function cngSceneThird(t) {
   var onBank = [];                                         // the children still on the bank, and Phrom before he leaps
   for (var c2 = 0; c2 < 14; c2++) {
     (function (k) {
-      if (k < 10 && jumpIn * 10 > k) { return; }
-      var x = 120 + (k % 7) * 70, y = CNG_BANK + 90 + Math.floor(k / 7) * 34, cc = CNG_CHILDREN[k % CNG_CHILDREN.length];
+      var at = k < 10 ? c15ChildAt(t, k, neck ? neck[0] : C15_HELD) : {x: 120 + (k % 7) * 70, y: CNG_BANK + 90 + Math.floor(k / 7) * 34, run: 0};
+      if (at.swims) { return; }
+      var x = at.x, y = at.y, cc = CNG_CHILDREN[k % CNG_CHILDREN.length];
       onBank.push({name: "child " + k, kind: "person", x: x, y: y, draw: function () {
         person(x, y, cngPerson(cc.kind, cc.look, {id: "child" + k, size: cngAgeSize(9 + (k % 4)), face: 1,
+                                                  step: at.run > 0 && at.run < 1 ? t / BEAT * 1.4 + k : 0,
                                                   feel: t > 14 && t < 22 ? "fear" : "concerned", at: [hx, C15_SWIM - 80]}));
       }});
     })(c2);
