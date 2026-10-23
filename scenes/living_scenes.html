@@ -326,7 +326,7 @@ var KINDS = {
   fish: {group: "swimmer", where: "water", speed: 45, call: null, who: "a small fish",
          draw: function (c, P, t) { nativeFish(pen, P[0], P[1], FISH_SIZE[c.fish] * c.s * (PLACES[scene.place].near || 1), P[3], c.fish, t); }},
   spotbill: {group: "swimmer", where: "water", speed: 35, call: null, who: "a spot-billed duck",
-             draw: function (c, P, t) { spotbill(pen, P[0], P[1], 2.4 * c.s, {face: P[3], t: t}); }},
+             draw: function (c, P, t) { spotbill(pen, P[0], P[1], 2.4 * 105 / 170 * c.s, {face: P[3], t: t}); }},   // SIZES measured it at this size
   grasshopper: {group: "insect", where: "ground", speed: 90, call: null, who: "a grasshopper",
                 draw: function (c, P, t) { grasshopper(P[0], P[1], t, {size: 0.9 * c.s, face: P[3], leap: P[2] ? Math.abs(Math.sin(t * 4)) : 0}); }},
   moth: {group: "insect", where: "sky", speed: 60, call: null, who: "an atlas moth",
@@ -351,7 +351,8 @@ var KINDS = {
          draw: function (c, P, t) { hongFlight(P[0], P[1], t, {size: 1.0 * c.s, face: P[3], seed: c.id, trail: trailOf(c)}); }},
   person: {group: "person", where: "ground", speed: 55, call: null, who: "a person of the village",
            draw: function (c, P, t) {
-             var look = {size: 0.8 * c.s, face: P[3], step: P[2] ? P[6] / (112 * 0.8 * c.s) : 0, late: c.late, spring: 0.5, id: "p" + c.id,
+             var size = PERSON * (CAST[c.cast].size || 1) * c.s;   // a child smaller than a grown one, as the kit has them
+             var look = {size: size, face: P[3], step: P[2] ? P[6] / (112 * size) : 0, late: c.late, spring: 0.5, id: "p" + c.id,
                          feel: c.doing === "rest" ? "satiated" : "happy"};
              if (c.doing === "wai" && !P[2]) { look.wai = Math.max(0, Math.min(1, (t - c.from) / 0.6, (c.until - t) / 0.6)); }   // the hands rise to the wai, and come down
              return person(P[0], P[1], cast(c.cast, look));
@@ -374,18 +375,50 @@ var KINDS = {
     });
   }}
 };
-// Each fish as long as its kind is beside the people and the buffalo (owner, 2026-10-23: "Fish should be sized
-// compared to boats and other animals nearby. Now, they are generally too big"): a person is drawn 340 pixels tall and
-// a buffalo 378 long, about 1.8 pixels a centimetre, so a flying barb of 10 cm is 20 pixels long, a gourami of 16 cm
-// 30, a silver barb of 25 cm 42 and a striped snakehead of 35 cm 64. At size 1.6 they were drawn 70, 74, 74 and 94
-// pixels long (measured 2026-10-23); the size of each is in proportion.
-var FISH_SIZE = {flying: 1.6 * 20 / 70, gourami: 1.6 * 30 / 74, barb: 1.6 * 42 / 74, snakehead: 1.6 * 64 / 94};
+// ---------- one scale for every creature ----------
+// Each kind as big as it really is beside the people (owner, 2026-10-23: "animals, people, birds, insects all seem
+// to be randomly sized"): a grown person is drawn 340 pixels tall and is about 160 cm, so a centimetre is PX_PER_CM
+// pixels. SIZES: [how big the kind really is, in cm; how many pixels it was drawn at the sizes the maker gives it,
+// standing (measured 2026-10-23)], each the same way: how high, from its feet to the top of its head (or horns, or
+// tail held up), for those that stand: the buffalo to the maeng, and the kinnari and thewada; how long, bill or nose
+// to tail, for the small birds, the mouse (its tail too), the pheasant and the hornbill; across the wings for the
+// moth. The beings of the old stories have no size of their own: a kinnari and a thewada are as tall as a person, the
+// mom as a lion and the maeng as a black bear; the dragon, luang, naga, hong and Chang Ngu are as the maker draws them.
+// The chickens were first given 40 cm for a hen and 60 for a rooster, and looked too big (owner, 2026-10-23: "Chickens
+// look very large"): a village hen stands about 32 cm, under a person's knee (the kit's people have their knees at
+// about a quarter of their height, as real ones do), a rooster about 48 with his tail up, a chick of a week or two 8.
+// So with the pig and the dog, first 65 cm each (owner: "pigs and dogs are still big"): a village pig of the north
+// is about 48 cm to the top of its ears (and so about 90 long), a village dog about 50 to the top of its head.
+var PX_PER_CM = 340 / 160;
+var SIZES = {buffalo: [150, 264], elephant: [260, 384], whiteelephant: [260, 384], pig: [48, 178], horse: [165, 382],
+             cat: [35, 154], dog: [50, 130], fieldmouse: [19, 158], hen: [32, 86], blackhen: [32, 86], rooster: [48, 106],
+             blackrooster: [48, 106], chick: [8, 78], peafowl: [100, 230], pheasant: [90, 226], sunbird: [10, 62],
+             magpie: [65, 140], hornbill: [110, 150], egret: [46, 110], plover: [15, 122], lapwing: [30, 124],
+             avadavat: [10, 64], owl: [34, 146], spotbill: [58, 104], grasshopper: [6, 52], moth: [25, 76],
+             kinnari: [155, 206], thewada: [160, 222], mom: [120, 240], maeng: [90, 200]};
+// Each dish as wide as it really is (owner, 2026-10-23: "food is gigantic"): [cm across, pixels across at the
+// maker's size 2.2 (measured 2026-10-23)]: a basket of sticky rice, a bowl of khao soi or a curry, a plate of som tam,
+// mango and sticky rice, sai ua, nam phrik, pad thai or mu ping, the pan of khanom krok, and a khantoke on its stand.
+var FOOD_SIZES = {stickyrice: [15, 170], khaosoi: [20, 222], somtam: [22, 168], mangorice: [24, 198], saiua: [25, 226],
+                  namphrik: [22, 208], curry: [18, 166], tomyum: [20, 172], padthai: [26, 202], muping: [25, 226],
+                  khanomkrok: [26, 246], khantoke: [55, 402]};
+function foodSize(name) { var f = FOOD_SIZES[name]; return f ? 2.2 * f[0] * PX_PER_CM / f[1] : 2.2; }
+// how many times the maker's size a kind is drawn: its own size against what it measured (1 for one not in SIZES)
+function sizeOf(kind) { return SIZES[kind] ? SIZES[kind][0] * PX_PER_CM / SIZES[kind][1] : 1; }
+// A person's size: the kit's own size for that one of the cast (a child is about 0.6 of a grown one) times PERSON,
+// which makes a grown one (size 1.3 in the kit) 340 pixels tall.
+var PERSON = 0.8 / 1.3;
+// Each fish as long as its kind is: a flying barb of 10 cm, a gourami of 16, a silver barb of 25 and a striped
+// snakehead of 35 (owner, 2026-10-23: "Fish should be sized compared to boats and other animals nearby"). At size 1.6
+// they were drawn 70, 74, 74 and 94 pixels long (measured 2026-10-23).
+var FISH_SIZE = {flying: 1.6 * 10 * PX_PER_CM / 70, gourami: 1.6 * 16 * PX_PER_CM / 74, barb: 1.6 * 25 * PX_PER_CM / 74,
+                 snakehead: 1.6 * 35 * PX_PER_CM / 94};
 // the people's cast names are kinds of the one "person"
 function kindOf(c) { return KINDS[c.kind]; }
 
 function fowlLook(c, P, base) {
   var look = Object.assign({}, base);
-  if (P[2]) { look.walk = P[6] / (base.hen ? 48 : 56); }
+  if (P[2]) { look.walk = P[6] / ((base.hen ? 48 : 56) * c.s); }   // a bigger bird, a longer stride
   if (c.doing === "peck") { look.peck = peckAt(clock, c); }
   if (c.doing === "gulp") {                         // the grasshopper it caught, kicking in its beak, then swallowed
     var u = 1 - (c.until - clock) / GULP;
@@ -547,22 +580,24 @@ function compose(seed, settingName) {
   var sc = {setting: name, place: place, night: !!P.night, hour: Math.floor(rng() * 3), creatures: [], things: [], seed: seed};
   COUNT = Number(ASK.get("count")) ? Math.max(1, Math.min(60, Number(ASK.get("count"))))
         : Math.round(between(COUNTS[name][0], COUNTS[name][1]));
-  // the set pieces, painted once on a sheet, from the back to the front
-  var sheet = document.createElement("canvas");
-  sheet.width = WIDE; sheet.height = 1080;
-  var brush = sheet.getContext("2d"), pieces = [];
+  // the set pieces, each painted once as a picture of its own (pieceSprite())
+  var pieces = [];
   if (P.ground) {
     s.pieces.forEach(function (row) {
       for (var n = 0; n < row[1]; n++) { if (rng() < 0.75) { pieces.push([row[0], between(80, WIDE - 80), between(P.ground[0], P.ground[0] + 50)]); } }
     });
   }
   sc.perches = [];
-  pieces.sort(function (a, b) { return a[2] - b[2]; }).forEach(function (p) {
-    var x = Math.round(p[1]), y = Math.round(p[2]);
-    paintPiece(brush, p[0], x, y);
+  sc.pieces = [];
+  pieces.forEach(function (p) {
+    var x = Math.round(p[1]), y = Math.round(p[2]), sprite = pieceSprite(p[0], x, y);
+    for (var tries = 0; sprite && BUILDINGS[p[0]] && standsIn(sc.pieces, sprite); tries++) {   // a building is not
+      if (tries === 6) { return; }                                                             // built into another:
+      x = Math.round(between(80, WIDE - 80)); sprite = pieceSprite(p[0], x, y);                // somewhere else, or not
+    }
+    if (sprite) { sc.pieces.push(sprite); }
     (PERCHES[p[0]] || []).forEach(function (o) { sc.perches.push([x + o[0], y + o[1] + 4]); });
   });
-  sc.sheet = sheet;
   // the clouds: a level picked at random (or ?clouds=), each cloud somewhere in the place's sky, one wind for all
   var level = !P.sky ? "clear" : CLOUDS[ASK.get("clouds")] ? ASK.get("clouds") : pick(Object.keys(CLOUDS)), wind = rng() < 0.5 ? -1 : 1;
   sc.clouds = level;
@@ -626,7 +661,7 @@ function spotFor(where, P, kind) {
   return P.ground ? [between(100, WIDE - 100), between(P.ground[0] + 10, P.ground[1])] : null;
 }
 function born(kind, spot, more) {
-  var c = Object.assign({kind: kind, id: nextId++, x: spot[0], y: spot[1], s: between(0.9, 1.1), late: rng() * 0.6,
+  var c = Object.assign({kind: kind, id: nextId++, x: spot[0], y: spot[1], s: between(0.95, 1.05) * sizeOf(kind), late: rng() * 0.6,
                          hunger: rng(), tired: rng() * 0.6, doing: "rest", until: 0, keys: [[0, spot[0], spot[1]]],
                          fish: pick(["gourami", "barb", "flying", "snakehead"]), flying: false}, more);
   c.until = between(0.5, 4);             // each decides first at a moment of its own
@@ -642,18 +677,58 @@ var PERCHES = {tree: [[-140, -394], [0, -515], [140, -419]], palm: [[0, -442]], 
 // sky"): each starts on a perch, and every flight ends on one, a tree's crown or the ground (how likely the ground).
 var PERCHERS = {magpie: 0.25, hornbill: 0, sunbird: 0, owl: 0};
 
-// The set pieces, as the cartoon maker paints them (its pieceCode), at (x, y), the foot.
+// A set piece as a picture of its own, drawn among the creatures by its foot (owner, 2026-10-23, of "an animal or a
+// person standing a little behind a house is drawn in front of it": "Yeah, the open items"), so one that walks behind
+// a house goes behind it. Painted once on a scratch sheet and cut to what it covers (read every second pixel, two
+// more kept round it). Returns {x, y, foot, picture}: where its picture's top left corner goes, the y of its foot, a
+// canvas; or null when nothing was painted.
+var SCRATCH = null;
+function pieceSprite(name, X, Y) {
+  if (!SCRATCH) { SCRATCH = document.createElement("canvas"); SCRATCH.width = WIDE; SCRATCH.height = 1080; }
+  var brush = SCRATCH.getContext("2d", {willReadFrequently: true});
+  brush.setTransform(1, 0, 0, 1, 0, 0);
+  brush.clearRect(0, 0, WIDE, 1080);
+  paintPiece(brush, name, X, Y);
+  var data = brush.getImageData(0, 0, WIDE, 1080).data, x0 = WIDE, y0 = 1080, x1 = -1, y1 = -1, x, y;
+  for (y = 0; y < 1080; y += 2) {
+    for (x = 0; x < WIDE; x += 2) {
+      if (data[(y * WIDE + x) * 4 + 3]) { if (x < x0) { x0 = x; } if (x > x1) { x1 = x; } if (y < y0) { y0 = y; } y1 = y; }
+    }
+  }
+  if (x1 < 0) { return null; }
+  x0 = Math.max(0, x0 - 2); y0 = Math.max(0, y0 - 2); x1 = Math.min(WIDE, x1 + 3); y1 = Math.min(1080, y1 + 3);
+  var picture = document.createElement("canvas");
+  picture.width = x1 - x0; picture.height = y1 - y0;
+  picture.getContext("2d").drawImage(SCRATCH, x0, y0, x1 - x0, y1 - y0, 0, 0, x1 - x0, y1 - y0);
+  return {name: name, x: x0, y: y0, foot: Y, picture: picture};
+}
+// The buildings as tall beside the people as they are (owner, 2026-10-23: "Houses are tiny compared to people"): a
+// person is drawn 340 pixels tall; at the maker's sizes the bamboo house on posts was drawn 277 pixels (0.81 of a
+// person), the granary 285, the field hut 365, the house 461 and the poor family's hut 525 (measured 2026-10-23). Each
+// is made [so many people tall, what it measured]: a house stands at the back of the ground, so 2.4 people tall
+// (about 820 pixels) is the most that keeps its roof inside the picture, and is a little less than a real one
+// (about 3), as if a few steps further away.
+var BUILDINGS = {house: [2.4, 461], ruenphuk: [2.4, 277], longkhao: [2.0, 285], fieldhut: [1.8, 365], tub: [1.8, 525]};
+function built(name) { return BUILDINGS[name][0] * 340 / BUILDINGS[name][1]; }   // how many times the maker's size
+// Whether a building's picture would cover more than a fifth of the width of another building already placed.
+function standsIn(placed, sprite) {
+  return placed.some(function (o) {
+    var w = Math.min(o.x + o.picture.width, sprite.x + sprite.picture.width) - Math.max(o.x, sprite.x);
+    return BUILDINGS[o.name] && w > 0.2 * Math.min(o.picture.width, sprite.picture.width);
+  });
+}
+// The set pieces, as the cartoon maker paints them (its pieceCode), at (x, y), the foot; the buildings larger (built()).
 function paintPiece(brush, name, X, Y) {
   var seed = nextId++;
-  var calls = {house: function () { house(brush, X, Y, 1); }, tree: function () { tree(brush, X, Y, 1.1); },
+  var calls = {house: function () { house(brush, X, Y, built("house")); }, tree: function () { tree(brush, X, Y, 1.1); },
                palm: function () { palm(brush, X, Y, 400); }, banana: function () { banana(brush, X, Y); },
-               namton: function () { namton(brush, X, Y, 1); }, longkhao: function () { longKhao(brush, X, Y, 1); },
-               sawian: function () { sawian(brush, X, Y, 1.2); }, tub: function () { tub(brush, X, Y, 2.2); },
+               namton: function () { namton(brush, X, Y, 1); }, longkhao: function () { longKhao(brush, X, Y, built("longkhao")); },
+               sawian: function () { sawian(brush, X, Y, 1.2); }, tub: function () { tub(brush, X, Y, 2.2 * built("tub")); },
                kok: function () { kok(brush, X, Y, 380, 1, {part: "back"}); kok(brush, X, Y, 380, 1, {part: "front"}); },
                mortar: function () { mortar(brush, X, Y, 1.1); }, krabung: function () { krabung(brush, X, Y, 1.1); },
                talaew: function () { taLaew(brush, X, Y, 1.1); }, firewood: function () { firewood(brush, X, Y - 8, 1.1, {loose: true}); },
-               ruenphuk: function () { ruenPhuk(brush, X, Y, 1); }, grass: function () { grassBundle(brush, X, Y - 45, 1.2, {tied: true}); },
-               fieldhut: function () { fieldHut(brush, X, Y, 4.5); }, talltree: function () { tallTree(brush, X, Y, 1.4, FOREST_GREENS[seed % 6], seed); },
+               ruenphuk: function () { ruenPhuk(brush, X, Y, built("ruenphuk")); }, grass: function () { grassBundle(brush, X, Y - 45, 1.2, {tied: true}); },
+               fieldhut: function () { fieldHut(brush, X, Y, 4.5 * built("fieldhut")); }, talltree: function () { tallTree(brush, X, Y, 1.4, FOREST_GREENS[seed % 6], seed); },
                bamboo: function () { bamboo(brush, X, Y, 1.4, seed); }, areca: function () { areca(brush, X, Y, 1.5, seed); },
                floratree: function () { if (FRUIT_TREES.length) { floraTree(brush, X, Y, 1, pick(FRUIT_TREES), seed); } }};
   if (calls[name]) { calls[name](); }
@@ -665,7 +740,7 @@ function drawThing(t, time) {
                reeds: function () { riverReeds(pen, t.x - 300, t.y, 600, 1, time, t.id); },
                tung: function () { tung(pen, t.x, t.y, time, true); }, huad: function () { huad(pen, t.x, t.y, 1.0, time, {fire: 1}); },
                khom: function () { khom(t.x, t.y, {size: 0.9, lit: scene.night ? 1 : 0, late: t.id * 0.7}); },
-               food: function () { food(t.food, t.x, t.y, {size: 2.2, steam: true}); },
+               food: function () { food(t.food, t.x, t.y, {size: foodSize(t.food), steam: true}); },
                chedisai: function () { chediSai(pen, t.x, t.y, 1.0, time, t.id); },
                pratheep: function () { pratheepRow(pen, t.x - 120, t.y, 5, 60, 1.2, time); },
                krathong: function () { krathong(pen, t.x + 20 * Math.sin(time * 0.2 + t.id), t.y, 1.2, time, true); },
@@ -822,7 +897,11 @@ function onward(c, t) {
       return ROAMS[row[0]] && row[0] !== c.kind &&
              scene.creatures.filter(function (o) { return o.kind === row[0]; }).length < row[1];
     });
-    if (others.length) { c.kind = pick(others)[0]; m = ROAMS[c.kind]; }
+    if (others.length) {
+      var was = c.kind;
+      c.kind = pick(others)[0]; m = ROAMS[c.kind];
+      c.s = c.s / sizeOf(was) * sizeOf(c.kind);    // as big as its new kind
+    }
   }
   var shift = (c.dir > 0 ? -m : WIDE + m) - x;
   c.keys = c.keys.map(function (key) { return [key[0], key[1] + shift].concat(key.slice(2)); });
@@ -992,10 +1071,13 @@ function frame(now) {
     var hangs = window.BACKDROP_HANGING && BACKDROP_HANGING[scene.place];
     pen.drawImage(backdrop(scene.place, !!hangs), 0, 0);
     if (hangs) { backdropSway(scene.place, at); }
-    // what is on the water is drawn before the set pieces' sheet, so a house or a tree on the bank in front covers a
-    // duck, a fish or a krathong on the water behind it (owner, 2026-10-23: "Check z order on swimming ducks. They
-    // are going in front of houses they should be behind"); the rest after it
+    // what is on the water is drawn first, so a house or a tree on the bank in front covers a duck, a fish or a
+    // krathong on the water behind it (owner, 2026-10-23: "Check z order on swimming ducks. They are going in front
+    // of houses they should be behind"); then the set pieces, the things and the creatures, each by its feet
     var onWater = [], who = [];
+    scene.pieces.forEach(function (piece) {
+      who.push({kind: "thing", y: piece.foot, name: piece.name, draw: function () { pen.drawImage(piece.picture, piece.x, piece.y); }});
+    });
     scene.things.forEach(function (thing) {
       (thing.name === "krathong" ? onWater : who).push({kind: thing.name === "khom" ? "khom" : "thing", z: thing.name === "khom" ? "front" : undefined, y: thing.y, draw: function () { drawThing(thing, at); }});
     });
@@ -1010,7 +1092,6 @@ function frame(now) {
       cloud(x, k.y, k.size, scene.night ? "#4d5274" : undefined);
     });
     drawByZ(onWater);
-    pen.drawImage(scene.sheet, 0, 0);
     drawByZ(who);
   });
   screen.fillStyle = "#000";
@@ -1054,6 +1135,15 @@ var still = 0;                            // the corner fades away when the poin
   document.addEventListener(name, function () { still = performance.now(); byId("corner").classList.remove("away"); });
 });
 setInterval(function () { if (performance.now() - still > 6000 && !byId("about").classList.contains("open")) { byId("corner").classList.add("away"); } }, 1000);
+
+// The sizes of SIZES change how fast a kind goes and how far past the edge it must go: its speed by the square root
+// of how much bigger it was made (as an animal's walking pace goes with its size), its margin by as much.
+Object.keys(SIZES).forEach(function (kind) {
+  var f = sizeOf(kind);
+  if (KINDS[kind].speed) { KINDS[kind].speed *= Math.sqrt(f); }
+  if (ROAMS[kind]) { ROAMS[kind] = Math.ceil(ROAMS[kind] * f); }
+  if (WRAPS[kind]) { WRAPS[kind] = Math.ceil(WRAPS[kind] * f); }
+});
 
 newScene(Number(ASK.get("seed")) || 0);
 requestAnimationFrame(frame);
