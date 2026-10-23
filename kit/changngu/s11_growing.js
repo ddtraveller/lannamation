@@ -41,7 +41,7 @@ function cngSceneGrowing(t) {
     var run = between(t, 1, 5), px = mix(300, 760, run);
     sprites.push({name: "phrom", kind: "person", x: px, y: 840, draw: function () {
       person(px, 840, cngPerson("boy", CNG_PHROM, {id: "phrom", size: size, face: 1, step: run > 0 && run < 1 ? t / BEAT * 1.3 : 0, feel: "happy",
-                                                   reachA: t > 6.5 ? [f[0] - 200, 640] : undefined, at: t > 6.5 ? [f[0], 700] : undefined}));
+                                                   reachA: [f[0] - 200, 640, between(t, 6.5, 6.9)], at: t > 6.5 ? [f[0], 700] : undefined}));   // he points, eased in
     }});
     sprites.push({name: "headman", kind: "person", x: 940, y: 850, draw: function () {
       person(940, 850, cngPerson("noble", Object.assign({}, CNG_HEADMAN, {sarong: CNG_KING.sarong}),

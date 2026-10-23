@@ -75,9 +75,12 @@ function c20Khom(t) {
     {name: "hall, back", kind: "palace", z: "set", y: floor - 1, draw: function () { cngPalace("back"); }},
     {name: "hall, front", kind: "palace", z: "set", y: floor, draw: function () { cngPalace("front"); }},
     {name: "khom king", kind: "person", x: p[0] - 100, y: floor + 60 - 6 * stamp, draw: function () {
-      person(p[0] - 100, floor + 60 - 6 * stamp, cngPerson("khomsoldier", CNG_KHOM_KING, {id: "khomking", face: -1, feel: "angry",
-                                                                                          handA: liftHand(shouts ? 0.9 : 0.4 * stamp),
-                                                                                          mouth: shouts ? {open: 0.2 + 0.3 * Math.abs(Math.sin(t * 8)), wide: 0.7, round: 0.3} : undefined}));
+      person(p[0] - 100, floor + 60 - 6 * stamp, poseEased(t, function (s) {   // his fist up as he stamps and shouts, eased (poseEased)
+        var shouting = s > 33.08 && s < 38.16;
+        var stamping = between(s, 27.4, 27.9) * (1 - between(s, 30.5, 31)) * (0.5 - 0.5 * Math.cos((s - 27.4) * 7));   // a smooth pump from rest, no corners
+        return cngPerson("khomsoldier", CNG_KHOM_KING, {id: "khomking", face: -1, feel: "angry", handA: liftHand(shouting ? 0.9 : 0.4 * stamping),
+                                                        mouth: shouting ? {open: 0.2 + 0.3 * Math.abs(Math.sin(s * 8)), wide: 0.7, round: 0.3} : undefined});
+      }));
     }},
     {name: "khom 1", kind: "person", x: mix(p[0] - 380, -200, go), y: floor + 130, draw: function () {
       person(mix(p[0] - 380, -200, go), floor + 130, cast("khomsoldier", {size: 0.76, id: "kc1", face: go > 0 ? -1 : 1, step: go > 0 ? t / BEAT / 1.6 : 0}));

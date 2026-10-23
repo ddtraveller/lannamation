@@ -21,16 +21,21 @@ function c23Home(t) {
   var ex = mix(980, WIDE + 400, go * go);
   var e = elephant(ex, 860, {size: 0.55, face: 1, colour: "#f1ddd3", cloth: off ? null : "#c9962a", sit: kneel,
                              step: go > 0 ? t / BEAT / 2.4 : 0, trunk: 0.3});
-  var down = between(t, 3.2, 5.2), px = mix(e.seat[0], 760, down), py = mix(e.seat[1], 880, down);
+  var down = between(t, 3.2, 5.2), px = mix(e.seat[0], 620, down), py = mix(e.seat[1], 880, down);
   if (down < 1) {
     person(px, py, cngPerson("boy", CNG_PHROM, {id: "phromdown", size: cngAgeSize(16), face: -1, floor: down < 0.3 ? "astride" : undefined, feel: "happy"}));
+    if (down > 0) {                                         // he slides down its far side to the ground clear of it: its body before
+                                                            // him all the way, so his legs'
+      elephant(ex, 860, {size: 0.55, face: 1, colour: "#f1ddd3", cloth: off ? null : "#c9962a", sit: kneel,   // change from astride
+                         step: go > 0 ? t / BEAT / 2.4 : 0, trunk: 0.3});                                 // to standing is not seen
+    }
   } else {
     var lifts = t > 5.4 && t < 6.6;                         // he lifts the harness off, then stands watching it go
-    person(760, 880, cngPerson("boy", CNG_PHROM, {id: "phromdown", size: cngAgeSize(16), face: 1, feel: go > 0 ? "sad" : "happy",
+    person(620, 880, cngPerson("boy", CNG_PHROM, {id: "phromdown", size: cngAgeSize(16), face: 1, feel: go > 0 ? "sad" : "happy",
                                                  handA: lifts ? liftHand(0.8) : undefined, at: [ex, 640]}));
     if (off) {
-      pen.fillStyle = "#c9962a"; pen.fillRect(640, 860, 120, 22);   // the harness, folded on the ground beside him
-      pen.strokeStyle = "#8a5a1a"; pen.lineWidth = 2; pen.strokeRect(640, 860, 120, 22);
+      pen.fillStyle = "#c9962a"; pen.fillRect(480, 860, 120, 22);   // the harness, folded on the ground beside him
+      pen.strokeStyle = "#8a5a1a"; pen.lineWidth = 2; pen.strokeRect(480, 860, 120, 22);
     }
   }
 }

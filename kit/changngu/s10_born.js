@@ -50,7 +50,7 @@ function cngSceneBorn(t) {
     }},
     {name: "elder in white", kind: "person", x: 600, y: CNG_FLOOR + 20, draw: function () {
       person(600, CNG_FLOOR + 20, cngPerson("elder", CNG_SEER, {id: "namer", face: 1, feel: "happy",
-                                                               reachA: names > 0 ? [mix(660, 720, names), CNG_FLOOR - 330] : undefined,
+                                                               reachA: [mix(660, 720, names), CNG_FLOOR - 330, names],   // the reach's third number: out and back, no jump
                                                                at: C10_BABY}));
     }},
     {name: "woman", kind: "person", x: 1330, y: CNG_FLOOR + 10, draw: function () {

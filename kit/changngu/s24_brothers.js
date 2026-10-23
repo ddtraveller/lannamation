@@ -21,23 +21,29 @@ function c24Court(t) {
   pen.drawImage(cngSky("day"), 0, 0);
   cumulus(pen, t + 30, CNG_CLOUDS.day);
   pen.drawImage(cngCourt(), 0, 0);
-  var offers = between(t, 6.2, 7.2) * (1 - between(t, 10.4, 11.2));   // the king's hand out to Phrom
-  var gives = t > 10.6 && t < 12.4;                                     // Phrom's hand toward his brother
   var go = between(t, 11.6, 13.8), tx = mix(420, 760, go), wai = between(t, 13.9, 14.6);
+  function kingAt(s) {                                                  // the king's look at second s: his hand out to Phrom
+    var offers = between(s, 6.2, 7.2) * (1 - between(s, 10.4, 11.2)), going = between(s, 11.6, 13.8);
+    return cngPerson("noble", C24_PHANG, {id: "phangagain", floor: "cross", face: -1, feel: "happy",
+                                          reachA: offers > 0 ? [mix(p[0] - 110, p[0] - 230, offers), dais - 120 + 20 * offers] : undefined,
+                                          at: [going > 0 ? mix(420, 760, going) : 560, 700]});
+  }
+  function phromAt(s) {                                                 // Phrom's at s: his hand toward his brother, then a wai
+    var gives = s > 10.6 && s < 12.4, going = between(s, 11.6, 13.8);
+    return cngPerson("boy", CNG_PHROM, {id: "phromcourt", size: cngAgeSize(16), face: gives || going > 0 ? -1 : 1, feel: "happy",
+                                        reachA: gives ? [470, 760] : undefined, wai: going >= 1 ? between(s, 13.9, 14.6) : undefined});
+  }
   drawByZ([
     {name: "hall, back", kind: "palace", z: "set", y: dais - 1, draw: function () { cngPalace("back"); }},
     {name: "king", kind: "person", z: "set", x: p[0] - 60, y: dais, draw: function () {
-      person(p[0] - 60, dais, cngPerson("noble", C24_PHANG, {id: "phangagain", floor: "cross", face: -1, feel: "happy",
-                                                               reachA: offers > 0 ? [mix(p[0] - 110, p[0] - 230, offers), dais - 120 + 20 * offers] : undefined,
-                                                               at: [go > 0 ? tx : 560, 700]}));
+      person(p[0] - 60, dais, poseEased(t, kingAt));          // eased wherever his look steps (poseEased)
     }},
     {name: "queen", kind: "person", z: "set", x: p[0] + 90, y: dais, draw: function () {
       person(p[0] + 90, dais, cngPerson("maiden", CNG_QUEEN, {id: "thewiagain", floor: "side", face: -1, feel: "happy", age: 0.4}));
     }},
     {name: "hall, front", kind: "palace", z: "set", y: dais + 1, draw: function () { cngPalace("front"); }},
     {name: "phrom", kind: "person", x: 560, y: 900, draw: function () {
-      person(560, 900, cngPerson("boy", CNG_PHROM, {id: "phromcourt", size: cngAgeSize(16), face: gives || go > 0 ? -1 : 1, feel: "happy",
-                                                   reachA: gives ? [470, 760] : undefined, wai: go >= 1 ? wai : undefined}));
+      person(560, 900, poseEased(t, phromAt));
     }},
     {name: "thukkhita", kind: "person", x: tx, y: 905, draw: function () {
       person(tx, 905, cngPerson("boy", CNG_THUKKHITA, {id: "thukkhitacourt", size: cngAgeSize(16), face: 1,

@@ -52,7 +52,7 @@ function c13Children(t) {
   var px = WIDE + 400, calls = t > 10.4 && t < 12.6;
   var sprites = [{name: "phrom", kind: "person", x: px, y: CNG_GROUND, draw: function () {
     c13Phrom(px, CNG_GROUND, {face: 1, feel: "happy", mouth: calls ? {open: 0.3, wide: 0.6, round: 0.3} : undefined,
-                              reachB: calls ? [px + 80, CNG_GROUND - 360] : undefined});
+                              reachB: [px + 80, CNG_GROUND - 360, between(t, 10.4, 10.7) * (1 - between(t, 12.3, 12.6))]});   // his arm up as he calls, eased
   }}];
   for (var k = 0; k < 12; k++) {
     (function (k) {

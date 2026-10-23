@@ -986,6 +986,22 @@ armJoints() does.
 e.g. var at = liftJoints(0.5, 1);
 ```
 
+### `liftTable()`
+
+(no comment)
+
+### `liftShare(u)`
+
+```
+u: a lift, 0 to 1. Returns how far along the whole way it is, 0 to 1. e.g. liftShare(0.5)
+```
+
+### `liftEven(share)`
+
+```
+share: 0 to 1 of the whole way. Returns the lift u that far along. e.g. liftEven(0.5)
+```
+
 ### `liftHand(u, outward, from)`
 
 ```
@@ -1199,6 +1215,24 @@ A step [second, look, "snap"] is hit as poseAt()'s "snap" keys are, with anticip
   mix    seconds, 0.25 unless told: how long each change takes
 Returns a new look (a copy of a step's, or poseBlend()'s between two); the steps are not changed.
 e.g. person(700, GROUND, Object.assign(cast("king"), poseSteps(t, [[0, {handA: [20, -60]}], [5, {handA: [-40, -120]}]])));
+```
+
+### `poseEased(t, lookAt, mix, depth)`
+
+(no comment)
+
+### `poseMoved(a, b, key)`
+
+```
+How far a key of a pose went from look a to look b, in steps of POSE_JUMP: Infinity when it came or went, 0 when
+neither has it. e.g. poseMoved({handA: [20, 60]}, {handA: [70, -40]}, "handA")   // 11.2
+```
+
+### `poseValue(look, key)`
+
+```
+A key of a pose as poseMoved() compares it: undefined when it is not set (a number key not set is 0, a reach whose
+third number is 0 is not set, true is 1). e.g. poseValue({wai: true}, "wai")   // 1
 ```
 
 ### `jointOf(x1, y1, x2, y2, upper, lower, prefer)`

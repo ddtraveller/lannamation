@@ -189,6 +189,18 @@ arm or a leg jumps. The owner: "I don't need things to be identical, I want to i
   held up) s10 (the lad's hand to the heap, the trader getting up at dawn) and s14 (Buakham's goodbye wai, now the kit's wai by how far it has come)
   were switched at a second: now eased by `poseSteps()`, a reach's third number or `between()`. s01, s09, s12 and s15 had none. Left: in s03 the lad's elbow swings across in one frame as he lifts the
   bundle to his shoulder (23.73 s; arms_check; it was there before).
+- **Pops eased by the model (2026-10-23).** The owner: "Is there some easing code you could write into the model to
+  prevent pops? ... don't inhibit spontaneous movement but see if there is similarity in the kinds of pops you're
+  finding." Chang Ngu's render found 10 more, and with Maeng's they are two kinds. (1) A pose key that is a function of
+  the second with a step in it (a reach or a wai on only within a while, a hand switched from one place to another at
+  a second): `poseEased(t, lookAt, mix)` takes the look as that function, reads it at the frames around t, and eases
+  only a key that stepped (far in one frame, and twice as far as both the frame before and the frame after went), from
+  where it had got to; every other key comes as given. A fast smooth whirl came back unchanged on 600 of 600 frames, a
+  walk's step is never touched, and it reads nothing but t (a still and a render agree). (2) A lift eased in time still
+  raced where `liftJoints()` brings the elbow forward (an eighth of its u): `poseBlend()` now moves a lift by how far
+  along the arm's way it is (`liftShare()`, `liftEven()`), so every eased lift goes at an even pace and takes longer the
+  further it goes (`POSE_LIFT_MIX`, 0.8 s for a whole one); a lift held still is where it always was. A word key
+  (`floor: "astride"`) cannot be blended: Chang Ngu s23 hides Phrom's change behind the elephant.
 - **What it cannot see**: a person not drawn by `person()`; a pop smaller than a third of a torso (a hand's curl, a
   face).
 

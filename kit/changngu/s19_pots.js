@@ -19,10 +19,13 @@ function c19Yard(t) {
   elephant(1420, 830, {size: 0.5, face: -1, colour: "#f1ddd3", cloth: "#c9962a", trunk: 0.2 + 0.2 * Math.sin(t)});
   drawByZ([
     {name: "phrom", kind: "person", x: 980, y: 870, draw: function () {
-      person(980, 870, cngPerson("boy", CNG_PHROM, {id: "phrom", size: cngAgeSize(14), face: -1, feel: "happy",
-                                                   reachA: speaks ? [900, 640 + 20 * Math.sin(t * 2)] : undefined,
-                                                   mouth: speaks ? {open: 0.06 + 0.24 * Math.abs(Math.sin(t * 7)), wide: 0.5, round: 0.2} : undefined,
-                                                   at: [680, 600]}));
+      person(980, 870, poseEased(t, function (s) {           // his hand out while he speaks, eased in and out (poseEased)
+        var speaking = s > 6.2 && s < 14.2;
+        return cngPerson("boy", CNG_PHROM, {id: "phrom", size: cngAgeSize(14), face: -1, feel: "happy",
+                                            reachA: speaking ? [900, 640 + 20 * Math.sin(s * 2)] : undefined,
+                                            mouth: speaking ? {open: 0.06 + 0.24 * Math.abs(Math.sin(s * 7)), wide: 0.5, round: 0.2} : undefined,
+                                            at: [680, 600]});
+      }));
     }},
     {name: "headman", kind: "person", x: 680, y: 860, draw: function () {
       person(680, 860, cngPerson("noble", Object.assign({}, CNG_HEADMAN, {sarong: CNG_KING.sarong, age: 0.45}),

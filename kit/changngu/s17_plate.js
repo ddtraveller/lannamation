@@ -23,10 +23,13 @@ function c17Yard(t) {
                                  {id: "phang", face: 1, feel: t < 4 ? "surprised" : "concerned", at: [1150, 600]}));
     }},
     {name: "seer", kind: "person", x: 1150, y: 870, draw: function () {
-      person(1150, 870, cngPerson("elder", CNG_SEER, {id: "seer", face: -1, feel: "happy",
-                                                     reachA: speaks ? [1060, 640 + 30 * Math.sin(t * 2)] : undefined,
-                                                     mouth: speaks ? {open: 0.06 + 0.22 * Math.abs(Math.sin(t * 7)), wide: 0.5, round: 0.2} : undefined,
-                                                     at: [820, 600]}));
+      person(1150, 870, poseEased(t, function (s) {          // his hand out while he speaks, eased in and out (poseEased)
+        var speaking = (s > 5.2 && s < 10.75) || (s > 11.35 && s < 16.71);
+        return cngPerson("elder", CNG_SEER, {id: "seer", face: -1, feel: "happy",
+                                             reachA: speaking ? [1060, 640 + 30 * Math.sin(s * 2)] : undefined,
+                                             mouth: speaking ? {open: 0.06 + 0.22 * Math.abs(Math.sin(s * 7)), wide: 0.5, round: 0.2} : undefined,
+                                             at: [820, 600]});
+      }));
     }},
     {name: "runner", kind: "person", x: 600, y: 880, draw: function () {
       var c = CNG_CHILDREN[3];

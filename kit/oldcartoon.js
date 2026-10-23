@@ -3368,6 +3368,43 @@ function liftJoints(u, outward, start) {
   return [ex + Math.sin(fore) * outward * 58, ey + Math.cos(fore) * 58, ex, ey];
 }
 
+// A lift that moves goes at an even pace (owner, 2026-10-23, of pops: "see if there is similarity in the kinds of
+// pops you're finding"): liftJoints() turns the arm's two angles in turn, and the elbow's coming forward between them
+// takes an eighth of its u, so a lift eased from one u to another raced through that stretch and the arm jumped in a
+// frame (a fist lowered after a shout, Chang Ngu s20: 0.4 of a torso). liftShare(u) is how far along the whole way the
+// wrist and the elbow are at u, 0 to 1, and liftEven(share) the u that far along; poseBlend() eases a lift in shares,
+// so it goes at an even pace. A lift held still (liftHand(0.7)) is where it always was. The man's arm and the right
+// side are measured, once (LIFT_EVEN); a woman's or the left arm keeps nearly the same pace.
+// e.g. liftHand(liftEven(mix(liftShare(0.9), liftShare(0), u)))   // a fist lowered at an even pace
+var LIFT_EVEN = null;
+function liftTable() {
+  if (!LIFT_EVEN) {
+    var keep = ARM_TOP, steps = 48, was, n;
+    ARM_TOP = null;                                   // measured for MAN_ARM
+    LIFT_EVEN = [0];
+    was = liftJoints(0, 1, null);
+    for (n = 1; n <= steps; n++) {
+      var at = liftJoints(n / steps, 1, null);
+      LIFT_EVEN.push(LIFT_EVEN[n - 1] + Math.hypot(at[0] - was[0], at[1] - was[1]) + Math.hypot(at[2] - was[2], at[3] - was[3]));
+      was = at;
+    }
+    for (n = 1; n <= steps; n++) { LIFT_EVEN[n] /= LIFT_EVEN[steps]; }
+    ARM_TOP = keep;
+  }
+  return LIFT_EVEN;
+}
+// u: a lift, 0 to 1. Returns how far along the whole way it is, 0 to 1. e.g. liftShare(0.5)
+function liftShare(u) {
+  var table = liftTable(), steps = table.length - 1, at = clamp(u) * steps, k = Math.min(steps - 1, Math.floor(at));
+  return table[k] + (table[k + 1] - table[k]) * (at - k);
+}
+// share: 0 to 1 of the whole way. Returns the lift u that far along. e.g. liftEven(0.5)
+function liftEven(share) {
+  var table = liftTable(), steps = table.length - 1, want = clamp(share), k = 0;
+  while (k < steps - 1 && table[k + 1] < want) { k++; }
+  return (k + (table[k + 1] > table[k] ? clamp((want - table[k]) / (table[k + 1] - table[k])) : 0)) / steps;
+}
+
 // The hand to give an arm (a look's handA or handB) for a lift: its wrist
 // where liftJoints() puts it, with the lift kept on it, so that arm() takes
 // the lift's own angles and the hand turns as it goes (the back of the hand
@@ -3834,8 +3871,8 @@ function poseBlend(a, b, u) {
       // to or from a lift (liftHand) from or to a low hand: the arm lifts the natural way, from the hand it had or
       // down to the next (between a lift and a hand already up, the hand goes straight there, as any)
       var side = key === "handB" ? -1 : 1, liftFrom = from && from.lift !== undefined, liftTo = to.lift !== undefined;
-      out[key] = liftFrom && liftTo ? liftHand(mix(from.lift, to.lift, u), side)
-               : liftTo ? liftHand(to.lift * u, side, from) : liftHand(from.lift * (1 - u), side, to);
+      out[key] = liftFrom && liftTo ? liftHand(liftEven(mix(liftShare(from.lift), liftShare(to.lift), u)), side)   // at an even pace (liftEven)
+               : liftTo ? liftHand(liftEven(liftShare(to.lift) * u), side, from) : liftHand(liftEven(liftShare(from.lift) * (1 - u)), side, to);
     } else if (to && to.length && typeof to[0] === "number") {   // a pair, or a list of numbers such as a hand's curls
       if (key === "handA" || key === "handB") {     // a lift's hand and a plain one: the lift's as the hand that brings its wrist there
         if (to.lift !== undefined) { to = handFor(to[0], to[1]); }
@@ -4053,6 +4090,84 @@ function poseSteps(t, steps, mix) {
   var u = clamp((t - steps[i][0]) / mix);
   u = steps[i][2] === "snap" ? snap(u) : u * u * (3 - 2 * u);
   return poseBlend(steps[i - 1][1], steps[i][1], u);
+}
+
+// A look that eases itself wherever it changes at once (owner, 2026-10-23: "Is there some easing code you could write
+// into the model to prevent pops? ... don't inhibit spontaneous movement but see if there is similarity in the kinds
+// of pops you're finding"). Nearly every pop the checks found was one shape: a pose key that is a function of the
+// second with a step in it (a reach or a wai on only within a while, "t > 23.5 ? point : rest", a hand switched
+// from one place to another at a second); poseSteps() mends one when the scene's writer sees it. Here the look is
+// given as what it is, a function of the second, and the kit finds the steps: it reads the look at the frames before
+// t (POSE_FPS a second, as far back as mix), and finds the last frame in which a key of POSE_KEYS changed at once:
+// it came or went, or moved its POSE_JUMP or more when it had moved less than 1 / POSE_SUDDEN of that the frame
+// before. From the look of the frame before that change it eases into the look of t over mix (poseBlend()), and
+// a change that comes while another is easing eases from where that one had got to. A key that moves smoothly,
+// however fast, is never touched, and a look with no step in the last mix seconds comes back as lookAt(t) gave it.
+// It reads nothing but t and lookAt, so a still and a render agree (checks/seek_check.py). A walk's step and the
+// keys that are words (floor, feel) are not eased: a step is a phase, and a word cannot go half way.
+//   t       seconds
+//   lookAt  function (seconds) giving the look then, as person() takes it; read about ten times a frame, so keep
+//           it to building the look (no drawing)
+//   mix     seconds, 0.25 unless told: how long each change takes
+// Returns a look. e.g. person(x, y, poseEased(t, function (s) { return cast("lad", {reachA: s > 5 ? [900, 600] : undefined}); }));
+var POSE_KEYS = ["handA", "handB", "reachA", "reachB", "wai", "bend", "sit", "tilt", "raise"];
+var POSE_JUMP = {pair: 10, number: 0.12};             // a step: a pair (pixels of the sheet, or of the shoulder) or a number moved this far in a frame
+var POSE_SUDDEN = 2;                                  // and at least twice as far as it moved the frame before
+var POSE_FPS = 30;
+var POSE_LIFT_MIX = 0.8;                              // seconds a whole lift (liftHand 0 to 1) takes to ease, as far as it goes: an arm's way up is long
+var POSE_JUMP_NUMBER_KEYS = {wai: 0, bend: 0, sit: 0, tilt: 0};   // the number keys, 0 when not set
+function poseEased(t, lookAt, mix, depth) {
+  mix = mix === undefined ? 0.25 : mix;
+  var dt = 1 / POSE_FPS, count = Math.ceil(Math.max(mix, POSE_LIFT_MIX) / dt) + 2, looks = [], out = null;
+  for (var k = -1; k <= count + 1; k++) { looks.push(lookAt(t - k * dt)); }   // looks[1] is t's, looks[0] the frame after
+  for (var n = 0; n < POSE_KEYS.length; n++) {       // each key on its own: only a key that stepped is eased
+    var key = POSE_KEYS[n];
+    for (k = 1; k <= count; k++) {                   // from looks[k + 1] to looks[k]: its newest step first
+      var step = poseMoved(looks[k], looks[k + 1], key);
+      // a step: far in one frame, and twice as far as both the frame before and the frame after went (a smooth move
+      // that gathers speed goes as far again the next frame, so it is never one)
+      if (step >= 1 && step > POSE_SUDDEN * Math.max(poseMoved(looks[k + 1], looks[k + 2], key), poseMoved(looks[k - 1], looks[k], key))) {
+        var newer = looks[k][key], older = looks[k + 1][key];
+        var lifted = Math.abs((newer && newer.lift || 0) - (older && older.lift || 0));   // a lift eases over longer, as far as it goes
+        var since = t - (k - 1) * dt, u = clamp((t - since + dt) / Math.max(mix, POSE_LIFT_MIX * lifted));   // since: the first frame with the new look
+        if (u < 1) {
+          var from = (depth || 0) < 3 ? poseEased(since - dt, lookAt, mix, (depth || 0) + 1) : looks[k + 1];   // from where it had got to
+          var one = {}, other = {}, body = looks[1].body || from.body;
+          one[key] = from[key]; other[key] = looks[1][key]; one.body = other.body = body;
+          var eased = poseBlend(one, other, u * u * (3 - 2 * u));
+          out = out || Object.assign({}, looks[1]);
+          if (eased[key] === undefined) { delete out[key]; } else { out[key] = eased[key]; }
+        }
+        break;
+      }
+    }
+  }
+  return out || looks[1];
+}
+
+// How far a key of a pose went from look a to look b, in steps of POSE_JUMP: Infinity when it came or went, 0 when
+// neither has it. e.g. poseMoved({handA: [20, 60]}, {handA: [70, -40]}, "handA")   // 11.2
+function poseMoved(a, b, key) {
+  var va = poseValue(a, key), vb = poseValue(b, key);
+  if (va === undefined && vb === undefined) { return 0; }
+  if (va === undefined || vb === undefined) { return Infinity; }
+  if (typeof va === "number" && typeof vb === "number") { return Math.abs(va - vb) / POSE_JUMP.number; }
+  if (va.length && vb.length) {
+    var far = Math.sqrt((va[0] - vb[0]) * (va[0] - vb[0]) + (va[1] - vb[1]) * (va[1] - vb[1])) / POSE_JUMP.pair;
+    if (typeof va[2] === "number" && typeof vb[2] === "number") { far = Math.max(far, Math.abs(va[2] - vb[2]) / POSE_JUMP.number); }
+    return far;
+  }
+  return 0;
+}
+
+// A key of a pose as poseMoved() compares it: undefined when it is not set (a number key not set is 0, a reach whose
+// third number is 0 is not set, true is 1). e.g. poseValue({wai: true}, "wai")   // 1
+function poseValue(look, key) {
+  var v = look[key];
+  if (v === undefined || v === null || v === false) { return key in POSE_JUMP_NUMBER_KEYS ? 0 : undefined; }
+  if (v === true) { return 1; }
+  if ((key === "reachA" || key === "reachB") && v[2] === 0) { return undefined; }
+  return v;
 }
 
 // where the joint of two bones lies, from (x1, y1) toward (x2, y2); the

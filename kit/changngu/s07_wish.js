@@ -17,7 +17,7 @@ function c07Climb(t) {
   var u = between(t, 0.5, 8), size = mix(0.42, 0.3, u);
   var x = mix(760, CNG_CHEDI[0] - 110, u), y = mix(800, CNG_CHEDI[1] + 8, Math.pow(u, 0.8));
   var lift = between(t, 8.6, 10.2), face = 1;
-  var bowl = lift > 0 ? [x + 6 * face, y - mix(150, 330, lift) * size] : [x + 34 * size * face, y - 236 * size];
+  var bowl = [mix(x + 34 * size * face, x + 6 * face, lift), y - mix(236, 330, lift) * size];   // from his waist up over his head, no jump
   person(x, y, cngPerson("monk", CNG_NOVICE, {id: "novice", size: size, face: face, step: u > 0 && u < 1 ? (t - 0.5) / BEAT / 2 : 0,
                                               reachA: [bowl[0] - 20 * size, bowl[1] + 10 * size], reachB: [bowl[0] + 20 * size, bowl[1] + 10 * size]}));
   almsBowl(pen, bowl[0], bowl[1], size * 0.8);
