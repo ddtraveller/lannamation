@@ -254,7 +254,7 @@ var SETTINGS = {
              people: []},
   town: {names: ["ในเมือง", "The town", "城镇"], places: ["market", "village", "yipeng"],
          pieces: [["house", 1], ["tree", 1], ["palm", 1], ["namton", 1]],
-         things: [["tungsaimu", 2], ["tungyai", 1], ["khom", 3], ["food", 3], ["chedisai", 1], ["pratheep", 1], ["krathong", 2]],
+         things: [["tungsaimu", 2], ["tungyai", 1], ["khomline", 2], ["food", 3], ["chedisai", 1], ["pratheep", 1], ["krathong", 2]],
          creatures: [["dog", 2, 0.8], ["cat", 1, 0.6], ["hen", 2, 0.5], ["chick", 2, 0.4], ["magpie", 1, 0.4], ["flock", 1, 0.5],
                      ["band", 1, 0.5], ["rotdaeng", 1, 0.5]],
          people: ["lady", "fellow", "villager", "girl", "boy", "grandmother", "inta", "buakham", "sinuan", "bunma", "dokkham", "devotee"]},
@@ -389,8 +389,10 @@ var KINDS = {
 // about a quarter of their height, as real ones do), a rooster about 48 with his tail up, a chick of a week or two 8.
 // So with the pig and the dog, first 65 cm each (owner: "pigs and dogs are still big"): a village pig of the north
 // is about 48 cm to the top of its ears (and so about 90 long), a village dog about 50 to the top of its head.
+// And the buffalo, first 150 (owner: "buffalo are big"): the swamp buffalo of the paddies stands about 125 cm,
+// its horns sweeping back rather than up.
 var PX_PER_CM = 340 / 160;
-var SIZES = {buffalo: [150, 264], elephant: [260, 384], whiteelephant: [260, 384], pig: [48, 178], horse: [165, 382],
+var SIZES = {buffalo: [125, 264], elephant: [260, 384], whiteelephant: [260, 384], pig: [48, 178], horse: [165, 382],
              cat: [35, 154], dog: [50, 130], fieldmouse: [19, 158], hen: [32, 86], blackhen: [32, 86], rooster: [48, 106],
              blackrooster: [48, 106], chick: [8, 78], peafowl: [100, 230], pheasant: [90, 226], sunbird: [10, 62],
              magpie: [65, 140], hornbill: [110, 150], egret: [46, 110], plover: [15, 122], lapwing: [30, 124],
@@ -616,7 +618,11 @@ function compose(seed, settingName) {
     for (var n = 0; n < row[1]; n++) {
       if (rng() > 0.7) { continue; }
       var t = {name: row[0], x: between(90, WIDE - 90), id: nextId++};
-      if (row[0] === "khom") { t.y = between(120, 320); }
+      if (row[0] === "khomline") {             // a rope of khom: its left pole at x, span wide, count lanterns
+        if (!P.ground) { continue; }
+        t.span = between(600, 1000); t.x = between(80, WIDE - 80 - t.span); t.count = 3 + Math.floor(rng() * 3);
+        t.y = between(P.ground[0] + 10, P.ground[0] + 60);
+      }
       else if (row[0] === "krathong") { if (!P.water) { continue; } t.y = between(P.water[0] + 20, P.water[1]); }
       else if (row[0] === "weed" || row[0] === "bubbles") { if (!P.bed) { continue; } t.y = between(P.bed + 10, P.bed + 70); }
       else if (!P.ground) { continue; }
@@ -737,12 +743,34 @@ function paintPiece(brush, name, X, Y) {
   if (calls[name]) { calls[name](); }
 }
 
+// A rope of khom between two bamboo poles standing on the ground, as over the market in its picture (owner,
+// 2026-10-23: "Those lanterns shouldn't hang in just air"): the poles 3 m tall at t.x and t.x + t.span, their feet at
+// t.y; the rope sagging between their tops, an eighth of its span; t.count khom tied along it (each sways as the kit's
+// khom does, and is lit at night). At 3 m the khom hang just over a grown person's head.
+function khomLine(t, time) {
+  var top = t.y - 300 * PX_PER_CM, sag = t.span / 8, x0 = t.x, x1 = t.x + t.span, n;
+  [x0, x1].forEach(function (x) {
+    pen.fillStyle = "#8a6a3c";
+    pen.fillRect(x - 5, top, 10, t.y - top);
+    pen.strokeStyle = "#5a4222"; pen.lineWidth = 1.4;
+    pen.strokeRect(x - 5, top, 10, t.y - top);
+  });
+  pen.strokeStyle = "rgba(70, 45, 25, 0.85)"; pen.lineWidth = 2;
+  pen.beginPath();
+  pen.moveTo(x0, top + 6);
+  pen.quadraticCurveTo((x0 + x1) / 2, top + 6 + 2 * sag, x1, top + 6);   // its middle sag below the tops
+  pen.stroke();
+  for (n = 0; n < t.count; n++) {
+    var u = (n + 0.5) / t.count;
+    khom(x0 + t.span * u, top + 6 + 4 * sag * u * (1 - u), {size: KHOM, lit: scene.night ? 1 : 0, late: t.id * 0.7 + n});
+  }
+}
 // What stands and stirs, drawn every frame.
 function drawThing(t, time) {
   var calls = {flower: function () { flora(t.flower, t.x, t.y, {size: 1.2}); }, grasstuft: function () { grassTuft(pen, t.x, t.y, 1.6, {t: time}); },
                reeds: function () { riverReeds(pen, t.x - 300, t.y, 600, 1, time, t.id); },
                tung: function () { tung(pen, t.x, t.y, time, true); }, huad: function () { huad(pen, t.x, t.y, 1.0, time, {fire: 1}); },
-               khom: function () { khom(t.x, t.y, {size: KHOM, lit: scene.night ? 1 : 0, late: t.id * 0.7}); },
+               khomline: function () { khomLine(t, time); },
                food: function () { food(t.food, t.x, t.y, {size: foodSize(t.food), steam: true}); },
                chedisai: function () { chediSai(pen, t.x, t.y, 1.0, time, t.id); },
                pratheep: function () { pratheepRow(pen, t.x - 120, t.y, 5, 60, 1.2, time); },
@@ -1082,7 +1110,7 @@ function frame(now) {
       who.push({kind: "thing", y: piece.foot, name: piece.name, draw: function () { pen.drawImage(piece.picture, piece.x, piece.y); }});
     });
     scene.things.forEach(function (thing) {
-      (thing.name === "krathong" ? onWater : who).push({kind: thing.name === "khom" ? "khom" : "thing", z: thing.name === "khom" ? "front" : undefined, y: thing.y, draw: function () { drawThing(thing, at); }});
+      (thing.name === "krathong" ? onWater : who).push({kind: "thing", y: thing.y, draw: function () { drawThing(thing, at); }});
     });
     scene.creatures.forEach(function (c) {
       var k = kindOf(c), P = k.group === "ambient" ? [c.x, c.y, false, 1] : where(c.keys, at);
