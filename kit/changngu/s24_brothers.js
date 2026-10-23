@@ -29,9 +29,9 @@ function c24Court(t) {
                                           at: [going > 0 ? mix(420, 760, going) : 560, 700]});
   }
   function phromAt(s) {                                                 // Phrom's at s: his hand toward his brother, then a wai
-    var gives = s > 10.6 && s < 12.4, going = between(s, 11.6, 13.8);
+    var gives = s > 10.6 && s < 12.4, going = between(s, 11.6, 13.8), out = between(s, 10.6, 11.1) * (1 - between(s, 11.9, 12.4));
     return cngPerson("boy", CNG_PHROM, {id: "phromcourt", size: cngAgeSize(16), face: gives || going > 0 ? -1 : 1, feel: "happy",
-                                        reachA: gives ? [470, 760] : undefined, wai: going >= 1 ? between(s, 13.9, 14.6) : undefined});
+                                        reachA: gives ? [470, 760, out] : undefined, wai: going >= 1 ? between(s, 13.9, 14.6) : undefined});
   }
   drawByZ([
     {name: "hall, back", kind: "palace", z: "set", y: dais - 1, draw: function () { cngPalace("back"); }},
