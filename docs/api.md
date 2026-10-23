@@ -408,7 +408,27 @@ set during a yawn or a laugh.
 e.g. var f = feelingOverTime({sleepy: 1, full: 0, laugh: 0, bend: 0, tilt: 0}, clock);
 ```
 
-### `feelingOf(look, at)`
+### `feelingBetween(a, b, u)`
+
+```
+The numbers u of the way from feeling a to feeling b; a mouth a feeling opens (surprise, fear) opens and shuts by
+degrees, and is gone when it is shut.
+a, b: feelingOf()'s numbers before feelingOverTime() adds to them (FEEL_NUMBERS, open, eyes, lips); u: 0 to 1.
+Returns a new object, the numbers of b when u is 1.
+e.g. feelingBetween(was, now, between(clock, since, since + FEEL_EASE))
+```
+
+### `easedFeeling(key, f)`
+
+```
+The numbers a face shows now, eased from what it showed (above).
+key: a name kept across frames (a person's id); f: the numbers its look asks for now, as feelingBetween() takes
+them. Returns a new object: f's numbers, or part way to them for FEEL_EASE seconds after they jumped. Reads clock;
+keeps its state in FELT[key], so call it once a frame for each key.
+e.g. var shown = easedFeeling("lad", {wonder: 0, smile: 1, ...});
+```
+
+### `feelingOf(look, at, key)`
 
 ```
 The feeling a look asks for, as the numbers the face and the body read.
@@ -416,12 +436,14 @@ The feeling a look asks for, as the numbers the face and the body read.
   look   the look: it reads feel (a name of FEELINGS, or one of FEELING_WAS) and the numbers wonder, smile,
          fear, anger, sad, sleepy, full, worry, laugh (0 to 1, each beating the name's own), eyes and lips
   at     the person's own time in seconds, default clock
+  key    a name kept across frames (person() gives the person's id): with one, a change of feeling is eased
+         over FEEL_EASE seconds (easedFeeling()); left out, the face shows the new feeling at once
 Returns {wonder, smile, fear, anger, sad, sleepy, full, worry, laugh, open, bend, tilt, eyes, lips} and what
 feelingOverTime() adds (lids, browUp, ha). It warns once for a feeling's name it does not know.
-e.g. var f = feelingOf({feel: "sleepy"}, clock + ownTime("yai"));
+e.g. var f = feelingOf({feel: "sleepy"}, clock + ownTime("yai"), "yai");
 ```
 
-### `creatureFeel(look, at)`
+### `creatureFeel(look, at, key)`
 
 ```
 ---------- a creature's feeling ----------
@@ -450,8 +472,11 @@ show; each creature draws what it has. With no feeling all of it is 0
          yawn back, a laugh's toss)
   startle  0 to 1: a fright, for a creature that has one of its own
   jaw(usual)  how far a jaw opens, given how far it would otherwise
+  key      the name its feeling is eased under (feelingOf()): "c/" and its look's id, or else the n-th creature
+           whose feeling is asked for in the frame, as person() counts the people it draws
 look: the creature's look (feel and the numbers, as feelingOf() reads them); at: its own time in seconds,
-default clock. Returns the object above.
+default clock; key: optional, a name of its own for a second feeling of one creature (maengEyes()). Returns the
+object above.
 e.g. var e = creatureFeel({feel: "angry"}, clock + ownTime("dog"));
 ```
 
@@ -3364,6 +3389,32 @@ fill and line set.
 e.g. kok(pen, 700, 930, 380, 1, {part: "back"}); pig(700, 900, {}); kok(pen, 700, 930, 380, 1, {part: "front"});
 ```
 
+### `cord(brush, points, wide, colour)`
+
+```
+A cord of twisted rattan along a row of points, as the snare's (below): its colour, and the twist on it, short
+pale strands slanting across it one after another. Owner, 2026-10-23, of the rope Thukkhata pulls up the hill:
+"Change the rope he pulls ... to look more like the snare rope".
+brush: a canvas 2D context; points: two or more [x, y] in brush's frame; wide: how thick, in those pixels; colour:
+"#rrggbb", the snare's rattan ("#7a5a2e") when left out. Returns nothing: it draws with brush, and leaves its
+line set.
+e.g. cord(pen, [[100, 900], [180, 930], [260, 910]], 4, "#7a5a2e");
+```
+
+### `vine(brush, from, to, sag, look)`
+
+```
+A vine (เถาวัลย์), a woody creeper pulled from the forest, from one point to another and sagging between them: a
+stem of brown and green with a thinner strand twisting round it, leaves on short stalks to either side, and a
+curl of tendril here and there. Owner, 2026-10-23, of the vine Thukkhata ties round the creature's neck: "to look
+more like ... a real vine". look.round: the width of what its end is tied round (a neck), so that its last turn
+goes round that.
+brush: a canvas 2D context; from, to: [x, y] in brush's frame; sag: how far it hangs below the straight line
+(pixels); look: optional, wide (3.2), round (pixels), seed (1). Returns nothing: it draws with brush, and leaves
+its fill and line set.
+e.g. vine(pen, [600, 760], [900, 790], 30, {round: 40});
+```
+
 ### `snare(brush, x, base, size, look)`
 
 ```
@@ -3371,13 +3422,15 @@ A snare (แร้ว) as the north set one for a small animal, its foot's middl
 pushed into the ground and bent over, held down by a cord to a trigger peg; from the pole's tip a noose of
 rattan lies open on the ground under it. look.sprung (0 to 1): the trigger let go, the pole flies up
 straight and the noose with it, closed; look.caught: a point of the scene (a foot, a paw) the noose holds,
-so that it closes round it there instead of in the air; look.t stirs the cord; look.tint as the hut's.
+so that it closes round it there instead of in the air, or [x, y, wide, lean], a leg that wide whose way up
+is the angle lean (maengSiHuHaTa()'s shin), and the noose is pulled tight round it in three turns and knotted;
+look.t stirs the cord; look.tint as the hut's. Its cord is cord()'s, twisted rattan.
 Stout, and drawn 1.3 times its size (owner, 2026-10-20: "Increase the size of the snare and make it look a little
 stronger"; of the snare as it was and this, "Stout, 1.3x larger"): a thick pole, a cord of twisted rattan, a
 thick noose, a trigger of a hooked peg and a crossbar under the hook, and a stake at the pole's root, lashed to it.
 About 210 wide and 260 high at size 1.
 brush: a canvas 2D context; x, base: pixels of the sheet; size: needed (drawn 1.3 times it); look:
-optional, sprung (0 to 1), caught ([x, y], pixels of the sheet), t (seconds), tint. Returns nothing:
+optional, sprung (0 to 1), caught ([x, y] or [x, y, wide, lean], pixels of the sheet), t (seconds), tint. Returns nothing:
 it draws with brush, and leaves brush as it found it.
 e.g. snare(pen, 900, 940, 0.8, {sprung: between(t, 4, 4.4), t: t});
 ```
@@ -3513,9 +3566,10 @@ gold, lit along its upper lip, raised "high" (46 unless told) above the ground o
 every "gap" (80). It runs along "ground", a row of points of the scene on the ground (the first at its start),
 and is drawn only "built" of the way along it (0 to 1): a trough as it grows. look.sag: [where (0 to 1 of
 the way), how far (px)] for a trough that bends down in its middle; look.size scales its width and its posts;
-look.tint as the hut's.
+look.tint as the hut's. While it grows (built under 1) its open end shows dark where it stops; laid whole, none.
+look.joined: it starts on the end of another trough, and its first post has no fork (it would poke out at a turn).
 brush: a canvas 2D context; ground: a list of two or more [x, y], pixels of the sheet; built: 0 to 1;
-look: optional, high (46), gap (80), sag ([where, pixels]), size (1), tint. Returns nothing: it
+look: optional, high (46), gap (80), sag ([where, pixels]), size (1), tint, joined. Returns nothing: it
 draws with brush, and leaves its fill and line set.
 e.g. linKham(pen, [[200, 940], [700, 930], [1100, 945]], between(t, 2, 12), {sag: [0.5, 12]});
 ```
@@ -6357,7 +6411,8 @@ maengSiHuHaTa(x, y, look): the creature with four ears and five eyes (described 
   look   an object, never left out ({} gives the dark grey creature standing, size 1, facing right, five eyes
          open and watching): it reads size, face, colour, eyes, step, mouth, glow, wake, watch, eyeFeel, id,
          feel (MYTH_KEYS above)
-Returns {head, mouth, paw, neck}, each [x, y], points of the sheet. It draws with pen at the film's clock;
+Returns {head, mouth, paw, shin, neck}, each [x, y] (shin [x, y, wide, lean], as snare()'s look.caught takes it),
+points of the sheet. It draws with pen at the film's clock;
 it sets FINE and LINE while it draws and leaves them at 1 and STYLE.line. Its watching eyes look at what
 the film has drawn in the frame (sightsNow() in the kit).
 e.g. var m = maengSiHuHaTa(700, GROUND, {size: 0.9, glow: 0.6, wake: 3.5, feel: "happy"});

@@ -101,14 +101,15 @@ function s05Lad(t, x, ground, lad, roping, tint) {
     var joints = person(x, ground, lad), end = pen.getTransform().transformPoint(new DOMPoint(210, 960));   // behind the rock
     pen.save();
     pen.setTransform(1, 0, 0, 1, 0, 0);             // the joints are in the film's own pixels
-    pen.strokeStyle = blend("#e2c896", tint[0], tint[1] * 0.6);
-    pen.lineWidth = 4.2 * PIX;
-    pen.lineCap = "round";
-    pen.beginPath();
-    pen.moveTo(joints.wristB[0], joints.wristB[1]);
+    // A cord of twisted rattan, as the snare's (owner, 2026-10-23: "Change the rope he pulls up the hill ... to look
+    // more like the snare rope"; it was a pale line)
     var tight = t > 21 ? 0.15 : 0.6;                // pulled taut when it catches
-    pen.quadraticCurveTo((joints.wristB[0] + end.x) / 2, Math.max(joints.wristB[1], end.y) + 40 * PIX * tight, end.x, end.y);
-    pen.stroke();
+    var a = joints.wristB, c = [(a[0] + end.x) / 2, Math.max(a[1], end.y) + 40 * PIX * tight], rope = [];
+    for (var k = 0; k <= 24; k++) {
+      var u = k / 24, v = 1 - u;
+      rope.push([v * v * a[0] + 2 * v * u * c[0] + u * u * end.x, v * v * a[1] + 2 * v * u * c[1] + u * u * end.y]);
+    }
+    cord(pen, rope, 4.2 * PIX, blend("#7a5a2e", tint[0], tint[1] * 0.6));
     pen.restore();
   } else {
     person(x, ground, lad);

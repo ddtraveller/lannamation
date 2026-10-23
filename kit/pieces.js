@@ -1251,13 +1251,14 @@ function firewood(brush, x, y, size, look) {
 
 // ---------- pieces for a tale: the creature with four ears and five eyes ----------
 // Things of the tale of Maeng Si Hu Ha Ta (the film in maeng/), each a painter on a brush as the others are: kok, a
-// pen of bamboo for an animal, in two parts so that what is kept in it stands inside; snare, a noose of rope on a
-// bent sapling, set or sprung; campfire, a yard's fire in a ring of stones, its flames moving with t, and ember and
+// pen of bamboo for an animal, in two parts so that what is kept in it stands inside; cord, a twisted rattan rope
+// along a row of points; vine, a forest creeper hung between two points; snare, a noose of rope on a bent sapling,
+// set or sprung; campfire, a yard's fire in a ring of stones, its flames moving with t, and ember and
 // emberFlight, a coal and a coal flying on an arc (thrown to a creature that eats them); goldNugget, a nugget of
 // gold that glints; hoKham, a hall of a Lanna palace (ho kham), open at the front, in two parts so that whoever
 // sits in it is inside; gong, a gong on its stand that swings and rings when struck; linKham, a trough of gold on
 // forked posts along a row of points on the ground, drawn as far as it is built.
-PIECES_KIT.push("tub", "firewood", "kok", "snare", "campfire", "ember", "emberFlight", "goldNugget", "hoKham", "gong", "linKham");
+PIECES_KIT.push("tub", "firewood", "kok", "cord", "vine", "snare", "campfire", "ember", "emberFlight", "goldNugget", "hoKham", "gong", "linKham");
 
 // A pen (คอก) of bamboo for an animal, its front's middle on (x, base), "wide" across and two-thirds as deep:
 // posts at its corners and along its sides, two rails of split bamboo round it, bound at each post. A pen is
@@ -1305,17 +1306,139 @@ function kok(brush, x, base, wide, size, look) {
   }
 }
 
+// A cord of twisted rattan along a row of points, as the snare's (below): its colour, and the twist on it, short
+// pale strands slanting across it one after another. Owner, 2026-10-23, of the rope Thukkhata pulls up the hill:
+// "Change the rope he pulls ... to look more like the snare rope".
+// brush: a canvas 2D context; points: two or more [x, y] in brush's frame; wide: how thick, in those pixels; colour:
+// "#rrggbb", the snare's rattan ("#7a5a2e") when left out. Returns nothing: it draws with brush, and leaves its
+// line set.
+// e.g. cord(pen, [[100, 900], [180, 930], [260, 910]], 4, "#7a5a2e");
+function cord(brush, points, wide, colour) {
+  colour = colour || "#7a5a2e";
+  brush.lineCap = "round";
+  brush.lineJoin = "round";
+  brush.beginPath();
+  points.forEach(function (p, n) { if (n) { brush.lineTo(p[0], p[1]); } else { brush.moveTo(p[0], p[1]); } });
+  brush.strokeStyle = blend(colour, "#1e140a", 0.45);   // a darker edge, so it holds against the ground and the fur
+  brush.lineWidth = wide * 1.3;
+  brush.stroke();
+  brush.strokeStyle = colour;
+  brush.lineWidth = wide;
+  brush.stroke();
+  brush.strokeStyle = blend(colour, "#e0c080", 0.4);    // the twist: a strand every wide along it, slanting
+  brush.lineWidth = Math.max(0.6, wide * 0.24);
+  brush.beginPath();
+  var left = 0;
+  for (var n = 1; n < points.length; n++) {
+    var a = points[n - 1], b = points[n], long = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    var ux = (b[0] - a[0]) / long, uy = (b[1] - a[1]) / long, d;
+    for (d = left; d < long; d += wide * 1.1) {
+      var cx = a[0] + ux * d, cy = a[1] + uy * d, h = wide * 0.38;
+      brush.moveTo(cx - uy * h - ux * h * 0.6, cy + ux * h - uy * h * 0.6);
+      brush.lineTo(cx + uy * h + ux * h * 0.6, cy - ux * h + uy * h * 0.6);
+    }
+    left = d - long;
+  }
+  brush.stroke();
+}
+
+// A vine (เถาวัลย์), a woody creeper pulled from the forest, from one point to another and sagging between them: a
+// stem of brown and green with a thinner strand twisting round it, leaves on short stalks to either side, and a
+// curl of tendril here and there. Owner, 2026-10-23, of the vine Thukkhata ties round the creature's neck: "to look
+// more like ... a real vine". look.round: the width of what its end is tied round (a neck), so that its last turn
+// goes round that.
+// brush: a canvas 2D context; from, to: [x, y] in brush's frame; sag: how far it hangs below the straight line
+// (pixels); look: optional, wide (3.2), round (pixels), seed (1). Returns nothing: it draws with brush, and leaves
+// its fill and line set.
+// e.g. vine(pen, [600, 760], [900, 790], 30, {round: 40});
+function vine(brush, from, to, sag, look) {
+  look = look || {};
+  var wide = look.wide || 3.2, seed = look.seed || 1, stem = "#6a5a2a", green = "#4f7a2c", n;
+  var mid = [(from[0] + to[0]) / 2, Math.max(from[1], to[1]) + sag];
+  function at(u) {                                  // a point u of the way along it, and which way it runs there
+    var v = 1 - u;
+    return [v * v * from[0] + 2 * v * u * mid[0] + u * u * to[0], v * v * from[1] + 2 * v * u * mid[1] + u * u * to[1],
+            Math.atan2(2 * v * (mid[1] - from[1]) + 2 * u * (to[1] - mid[1]), 2 * v * (mid[0] - from[0]) + 2 * u * (to[0] - mid[0]))];
+  }
+  var long = Math.hypot(to[0] - from[0], to[1] - from[1]) + sag, steps = Math.max(8, Math.round(long / 6)), main = [], twist = [];
+  for (n = 0; n <= steps; n++) {
+    var p = at(n / steps), wobble = 1.2 * Math.sin(n * 0.9 + seed), turn = wide * 0.75 * Math.sin(n * 1.3 + seed * 2);
+    main.push([p[0] - Math.sin(p[2]) * wobble, p[1] + Math.cos(p[2]) * wobble]);
+    twist.push([p[0] - Math.sin(p[2]) * turn, p[1] + Math.cos(p[2]) * turn]);
+  }
+  if (look.round) {                                 // its end goes round the neck: the near half of a loop, a little down
+    var r = look.round / 2;
+    for (n = 0; n <= 10; n++) {
+      var a = Math.PI * n / 10;
+      main.push([to[0] + r * Math.cos(a), to[1] + r * 0.3 * Math.sin(a)]);
+    }
+  }
+  function line(points, width, colour) {
+    brush.beginPath();
+    points.forEach(function (q, k) { if (k) { brush.lineTo(q[0], q[1]); } else { brush.moveTo(q[0], q[1]); } });
+    brush.strokeStyle = colour;
+    brush.lineWidth = width;
+    brush.lineCap = "round";
+    brush.lineJoin = "round";
+    brush.stroke();
+  }
+  line(main, wide * 1.4, inkFor(stem));             // the stem, inked
+  line(main, wide, stem);
+  line(twist, wide * 0.45, blend(stem, green, 0.6));   // the strand twisting round it
+  for (n = 1; n < 12; n++) {                        // leaves on short stalks, to one side and then the other
+    var u = (n + 0.3 * (dice(seed * 7 + n) - 0.5)) / 12, q = at(u), side = n % 2 ? 1 : -1;
+    if (dice(seed * 3 + n) < 0.2) { continue; }    // here and there none
+    var size = 0.8 + 0.4 * dice(seed * 5 + n), out = q[2] + side * (1.1 + 0.4 * dice(seed * 9 + n));
+    brush.save();
+    brush.translate(q[0], q[1]);
+    brush.rotate(out);
+    brush.strokeStyle = inkFor(stem);
+    brush.lineWidth = 1;
+    brush.beginPath();
+    brush.moveTo(0, 0);
+    brush.lineTo(5 * size, 0);
+    brush.stroke();
+    brush.translate(5 * size, 0);
+    brush.rotate(Math.PI / 2);                      // leafPath() grows up its -y: along the stalk
+    leafPath(brush, 13 * size, 4.6 * size, 0.12 * side);
+    brush.fillStyle = n % 3 ? green : blend(green, "#c8dc80", 0.35);
+    brush.fill();
+    brush.strokeStyle = inkFor(green);
+    brush.lineWidth = 0.9;
+    brush.stroke();
+    brush.restore();
+  }
+  [0.3, 0.72].forEach(function (u, k) {            // two curls of tendril
+    var q = at(u), side = k ? -1 : 1;
+    brush.save();
+    brush.translate(q[0], q[1]);
+    brush.rotate(q[2] + side * 1.9);
+    brush.strokeStyle = blend(green, stem, 0.3);
+    brush.lineWidth = 1;
+    brush.beginPath();
+    for (var s = 0; s <= 16; s++) {
+      var ang = s * 0.55, rad = 7 - s * 0.38;
+      var tx = 4 + s * 0.7 + Math.cos(ang) * rad * 0.5, ty = Math.sin(ang) * rad * 0.5 * side;
+      if (s) { brush.lineTo(tx, ty); } else { brush.moveTo(tx, ty); }
+    }
+    brush.stroke();
+    brush.restore();
+  });
+}
+
 // A snare (แร้ว) as the north set one for a small animal, its foot's middle on (x, base): a pole of bamboo
 // pushed into the ground and bent over, held down by a cord to a trigger peg; from the pole's tip a noose of
 // rattan lies open on the ground under it. look.sprung (0 to 1): the trigger let go, the pole flies up
 // straight and the noose with it, closed; look.caught: a point of the scene (a foot, a paw) the noose holds,
-// so that it closes round it there instead of in the air; look.t stirs the cord; look.tint as the hut's.
+// so that it closes round it there instead of in the air, or [x, y, wide, lean], a leg that wide whose way up
+// is the angle lean (maengSiHuHaTa()'s shin), and the noose is pulled tight round it in three turns and knotted;
+// look.t stirs the cord; look.tint as the hut's. Its cord is cord()'s, twisted rattan.
 // Stout, and drawn 1.3 times its size (owner, 2026-10-20: "Increase the size of the snare and make it look a little
 // stronger"; of the snare as it was and this, "Stout, 1.3x larger"): a thick pole, a cord of twisted rattan, a
 // thick noose, a trigger of a hooked peg and a crossbar under the hook, and a stake at the pole's root, lashed to it.
 // About 210 wide and 260 high at size 1.
 // brush: a canvas 2D context; x, base: pixels of the sheet; size: needed (drawn 1.3 times it); look:
-// optional, sprung (0 to 1), caught ([x, y], pixels of the sheet), t (seconds), tint. Returns nothing:
+// optional, sprung (0 to 1), caught ([x, y] or [x, y, wide, lean], pixels of the sheet), t (seconds), tint. Returns nothing:
 // it draws with brush, and leaves brush as it found it.
 // e.g. snare(pen, 900, 940, 0.8, {sprung: between(t, 4, 4.4), t: t});
 function snare(brush, x, base, size, look) {
@@ -1382,15 +1505,52 @@ function snare(brush, x, base, size, look) {
     brush.stroke();
   }
   var loop, hold = look.caught ? [(look.caught[0] - x) / size, (look.caught[1] - base) / size] : null;
+  function line(to, bow) {                          // the line from the tip, a twisted cord, bowed a little
+    var c = [mix(tip[0], to[0], 0.5) + 6, mix(tip[1], to[1], 0.5) + bow], points = [];
+    for (var k = 0; k <= 12; k++) {
+      var u = k / 12, v = 1 - u;
+      points.push([v * v * tip[0] + 2 * v * u * c[0] + u * u * to[0], v * v * tip[1] + 2 * v * u * c[1] + u * u * to[1]]);
+    }
+    cord(brush, points, 4.8, rattan);
+  }
+  if (hold && look.caught.length > 3) {             // round a leg: pulled tight in three turns, knotted on the side the line pulls from
+    // (owner, 2026-10-23: "When the snare is around the monster's leg make the rope really look like it is there instead
+    // of being to small and just near the leg"; it was a ring 9 by 5 by the paw.) Each turn is the near half of a ring
+    // round the leg, a shadow of it pressed into the fur under it.
+    var up = look.caught[3], ux = Math.cos(up + Math.PI / 2), uy = Math.sin(up + Math.PI / 2);   // across the leg
+    var dx = -Math.cos(up), dy = -Math.sin(up), rx = look.caught[2] / size / 2 + 2.5, ry = rx * 0.3;   // down it
+    var side = (tip[0] - hold[0]) * ux + (tip[1] - hold[1]) * uy > 0 ? 1 : -1;
+    var knot = [hold[0] + ux * rx * side, hold[1] + uy * rx * side];
+    line(knot, -2);
+    [-1, 0, 1].forEach(function (k) {
+      var cx = hold[0] - dx * k * 6.5, cy = hold[1] - dy * k * 6.5, turn = [];
+      for (var a = 0; a <= 16; a++) {
+        var th = Math.PI * a / 16;
+        turn.push([cx + ux * rx * Math.cos(th) + dx * ry * Math.sin(th), cy + uy * rx * Math.cos(th) + dy * ry * Math.sin(th)]);
+      }
+      brush.strokeStyle = "rgba(20, 14, 10, 0.35)";
+      brush.lineWidth = 7.5;
+      brush.beginPath();
+      turn.forEach(function (p, j) { if (j) { brush.lineTo(p[0] + dx * 2.5, p[1] + dy * 2.5); } else { brush.moveTo(p[0] + dx * 2.5, p[1] + dy * 2.5); } });
+      brush.stroke();
+      cord(brush, turn, 5.6, rattan);
+    });
+    brush.fillStyle = rattan;                       // the knot, and its loose end
+    brush.strokeStyle = blend(rattan, "#1e140a", 0.45);
+    brush.lineWidth = 1.6;
+    brush.beginPath();
+    brush.arc(knot[0], knot[1], 5.5, 0, 7);
+    brush.fill();
+    brush.stroke();
+    cord(brush, [knot, [knot[0] + ux * side * 6 + dx * 8, knot[1] + uy * side * 6 + dy * 8], [knot[0] + ux * side * 7 + dx * 15, knot[1] + uy * side * 7 + dy * 15]], 3.6, rattan);
+    brush.restore();
+    return;
+  }
   if (sprung < 0.05) { loop = {x: 34, y: -2, rx: 30, ry: 7}; }              // the noose open on the ground under the tip
   else if (hold) { loop = {x: hold[0], y: hold[1], rx: 9, ry: 5}; }        // closed round what it caught
   else { loop = {x: tip[0] + 4, y: tip[1] + 40, rx: 6, ry: 10}; }          // closed on nothing, hanging from the tip
-  brush.strokeStyle = rattan;                       // the line from the tip to the noose, and the noose
-  brush.lineWidth = 4.8;
-  brush.beginPath();
-  brush.moveTo(tip[0], tip[1]);
-  brush.quadraticCurveTo(mix(tip[0], loop.x, 0.5) + 6, mix(tip[1], loop.y, 0.5) - 4 * (1 - ease), loop.x, loop.y - loop.ry);
-  brush.stroke();
+  line([loop.x, loop.y - loop.ry], -4 * (1 - ease));   // the line from the tip to the noose, and the noose
+  brush.strokeStyle = rattan;
   brush.lineWidth = 5.6;
   brush.beginPath();
   brush.ellipse(loop.x, loop.y, loop.rx, loop.ry, 0, 0, 7);
@@ -1906,9 +2066,10 @@ function kangsadan(brush, x, base, size, look) {
 // every "gap" (80). It runs along "ground", a row of points of the scene on the ground (the first at its start),
 // and is drawn only "built" of the way along it (0 to 1): a trough as it grows. look.sag: [where (0 to 1 of
 // the way), how far (px)] for a trough that bends down in its middle; look.size scales its width and its posts;
-// look.tint as the hut's.
+// look.tint as the hut's. While it grows (built under 1) its open end shows dark where it stops; laid whole, none.
+// look.joined: it starts on the end of another trough, and its first post has no fork (it would poke out at a turn).
 // brush: a canvas 2D context; ground: a list of two or more [x, y], pixels of the sheet; built: 0 to 1;
-// look: optional, high (46), gap (80), sag ([where, pixels]), size (1), tint. Returns nothing: it
+// look: optional, high (46), gap (80), sag ([where, pixels]), size (1), tint, joined. Returns nothing: it
 // draws with brush, and leaves its fill and line set.
 // e.g. linKham(pen, [[200, 940], [700, 930], [1100, 945]], between(t, 2, 12), {sag: [0.5, 12]});
 function linKham(brush, ground, built, look) {
@@ -1937,8 +2098,10 @@ function linKham(brush, ground, built, look) {
     brush.beginPath();
     brush.moveTo(foot[0], foot[1]);
     brush.lineTo(top[0], top[1] + 4 * size);
-    brush.moveTo(top[0], top[1] + 4 * size); brush.lineTo(top[0] - 7 * size, top[1] - 4 * size);
-    brush.moveTo(top[0], top[1] + 4 * size); brush.lineTo(top[0] + 7 * size, top[1] - 4 * size);
+    if (d > 0 || !look.joined) {
+      brush.moveTo(top[0], top[1] + 4 * size); brush.lineTo(top[0] - 7 * size, top[1] - 4 * size);
+      brush.moveTo(top[0], top[1] + 4 * size); brush.lineTo(top[0] + 7 * size, top[1] - 4 * size);
+    }
     brush.stroke();
   }
   var pts = [];
@@ -1952,7 +2115,11 @@ function linKham(brush, ground, built, look) {
     pts.forEach(function (p, j) { var y = p[1] - (i === 2 ? 5 * size : 0); if (j) { brush.lineTo(p[0], y); } else { brush.moveTo(p[0], y); } });
     brush.stroke();
   });
-  var end = at(upTo);                               // its open end, where it is still being built
+  // Its open end, only while it is still being built. A trough laid whole shows none: the yard's is two parts laid
+  // end to end, and the first one's dark mouth sat on the joint where the second turns up across the fields
+  // (owner, 2026-10-23: "the golden trough looks broken").
+  if (built >= 1) { return; }
+  var end = at(upTo);
   brush.fillStyle = tone("#7a5414");
   brush.beginPath();
   brush.ellipse(end[0], end[1], 5 * size, 9 * size, 0, 0, 7);

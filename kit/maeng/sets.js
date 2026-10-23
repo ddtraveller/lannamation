@@ -273,8 +273,21 @@ function maengYard() {
   brush.stroke();
   var keep = pen;                                   // the banana and the bamboo are drawn on "pen"
   pen = brush;
-  bamboo(brush, 250, 925, 1.1, 7);
-  banana(brush, 1200, 850);                         // past the ta laew and back at the fields edge, clear of the ladder (owner, 2026-10-22: it grew up between its rungs at 880; "move it up a bit")
+  // The bamboo behind the hut, its foot behind the hut's posts and small enough that its leaves show under the
+  // floor; a second clump beside it, at the hut's corner. Owner, 2026-10-23: "The bamboo behind the house appears in
+  // front of some items it should be behind ... Move it up without moving horizontally and shrink it so the leaves
+  // can still be seen. Think about adding another one beside it." (It stood at 925, 1.1: its foot in front of the
+  // posts at 905, so the hut and its firewood, drawn after, cut into a bamboo nearer than they are.)
+  bamboo(brush, 250, 893, 0.7, 7);
+  bamboo(brush, 105, 899, 0.62, 4);
+  // The banana by the house, right of the ladder's foot and behind it, before the pen (owner, 2026-10-23: "Move the
+  // banana tree out of the rice field ... put it to the right and above the base of the ladder so it looks like its
+  // near to the house"; it stood at 1200, 850, among the plots). A patch of the yard's earth under its foot.
+  brush.fillStyle = "#c4a272";
+  brush.beginPath();
+  brush.ellipse(916, 899, 34, 7, 0, 0, 7);
+  brush.fill();
+  banana(brush, 916, 898);
   pen = keep;
   MAENG_YARD = {back: back, front: front, backNight: maengTinted(back, MAENG_NIGHT[0], MAENG_NIGHT[1] + 0.1),
                 frontNight: maengTinted(front, MAENG_NIGHT[0], MAENG_NIGHT[1])};
@@ -715,7 +728,9 @@ function maengTroughAt(x) {                         // the ground under the trou
 // e.g. maengYardTrough(1, "far"); maengGarden(t, 6, 0, null); maengYardTrough(1, "near");
 function maengYardTrough(built, part, tint) {
   var route = maengTroughRoute(), all = built * (route.nearLong + route.farLong);
-  if (part === "far") { linKham(pen, route.far, clamp((all - route.nearLong) / route.farLong), {size: 0.9, tint: tint}); }
+  // The far part starts on the near one's end: its first post there has no forked top, which poked out over the near
+  // part's gold where the trough turns up (2026-10-23).
+  if (part === "far") { linKham(pen, route.far, clamp((all - route.nearLong) / route.farLong), {size: 0.9, tint: tint, joined: true}); }
   else { linKham(pen, route.near, clamp(all / route.nearLong), {size: 0.9, tint: tint}); }
 }
 

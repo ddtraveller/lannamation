@@ -81,7 +81,7 @@ function sceneCreature(t) {
     {name: "creature", kind: "maengSiHuHaTa", x: where[0], y: where[1], draw: function () {
       beast = maengSiHuHaTa(where[0], where[1], {size: 0.5, face: -1, feel: feel, wake: t < 17.5 ? 0 : wake,
                                                  step: step !== undefined ? step : (t > 9.5 && t < 12.5 ? (t - 9.5) * 1.2 : undefined)});
-      snare(pen, S06_SNARE[0], S06_SNARE[1], 0.62, {sprung: 1, t: t, caught: t < 34 ? beast.paw : null});
+      snare(pen, S06_SNARE[0], S06_SNARE[1], 0.62, {sprung: 1, t: t, caught: t < 34 ? beast.shin : null});   // tight round its shin
     }},
     {name: "crowns before", kind: "trees", x: MAENG_SLOPE_CAVE[0], y: crowns, draw: function () {
       s06Crowns(S06_BEFORE, size * 1.6, 9, struggle * 3);
@@ -103,16 +103,12 @@ function sceneCreature(t) {
   }
   var feet = maengTrail(x) + 8;
   sprites.push({name: "lad", kind: "person", x: x, y: feet, draw: function () { joints = person(x, feet, lad); }});
-  if (t > 33.5) {                                   // the vine, from his hand to the creature's neck, sagging a little
+  if (t > 33.5) {                                   // the vine, from his hand to the creature's neck, sagging a little: a
+    // real creeper with its leaves, its end round the neck (owner, 2026-10-23: "Change ... the vine to look more like
+    // the snare rope and a real vine"; it was a green line)
     sprites.push({name: "vine", kind: "vine", y: Math.max(feet, where[1], crowns) + 0.01, draw: function () {
       var wrist = maengAt(joints.wristB), neck = beast.neck;   // his wrist in the film's pixels, back in the scene's
-      pen.strokeStyle = "#5d7a32";
-      pen.lineWidth = 3.2;
-      pen.lineCap = "round";
-      pen.beginPath();
-      pen.moveTo(wrist[0], wrist[1]);
-      pen.quadraticCurveTo((wrist[0] + neck[0]) / 2, Math.max(wrist[1], neck[1]) + 30, neck[0], neck[1]);
-      pen.stroke();
+      vine(pen, wrist, neck, 30, {round: 44, seed: 3});
     }});
   }
   drawByZ(sprites);

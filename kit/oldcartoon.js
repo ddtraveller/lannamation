@@ -990,15 +990,67 @@ function feelingOverTime(f, at) {
   return f;
 }
 
+// ---------- a feeling eased ----------
+// A face does not jump from one feeling to the next (owner, 2026-10-23: "Add facial expression easing to the kit so
+// when a sprite changes facial expressions it doesn't instantly pop from one expression to the next"; the fellow at
+// the pond went from angry to happy in one frame). What a look asks for is kept from frame to frame under a key (a
+// person's id, a creature's); when it jumps (a number by more than FEEL_JUMP in one frame, as a new feeling's name
+// does), the face goes from where it is to the new numbers over FEEL_EASE seconds, eased in and out, and the body's
+// lean and tilt with it. A number a scene moves smoothly (wonder rising over two seconds) is followed as it moves.
+// As follow()'s springs: a key whose clock runs backward or skips more than a quarter of a second starts at the new
+// feeling, and forget() clears them all, so a render and a still (settled() paints two seconds before a jump) show
+// the change as the film does.
+var FELT = {}, FELT_N = 0, FELT_AT = -1, FEEL_EASE = 0.4, FEEL_JUMP = 0.12;
+var FEEL_NUMBERS = ["wonder", "smile", "fear", "anger", "sad", "sleepy", "full", "worry", "laugh", "bend", "tilt"];
+
+// The numbers u of the way from feeling a to feeling b; a mouth a feeling opens (surprise, fear) opens and shuts by
+// degrees, and is gone when it is shut.
+// a, b: feelingOf()'s numbers before feelingOverTime() adds to them (FEEL_NUMBERS, open, eyes, lips); u: 0 to 1.
+// Returns a new object, the numbers of b when u is 1.
+// e.g. feelingBetween(was, now, between(clock, since, since + FEEL_EASE))
+function feelingBetween(a, b, u) {
+  if (u >= 1) { return Object.assign({}, b); }
+  var f = {eyes: b.eyes, lips: b.lips};
+  FEEL_NUMBERS.forEach(function (k) { f[k] = mix(a[k], b[k], u); });
+  if (a.open || b.open) {
+    var from = a.open || [0, b.open[1], b.open[2]], to = b.open || [0, from[1], from[2]];
+    var open = [mix(from[0], to[0], u), mix(from[1], to[1], u), mix(from[2], to[2], u)];
+    if (open[0] > 0.05) { f.open = open; }
+  }
+  return f;
+}
+
+// The numbers a face shows now, eased from what it showed (above).
+// key: a name kept across frames (a person's id); f: the numbers its look asks for now, as feelingBetween() takes
+// them. Returns a new object: f's numbers, or part way to them for FEEL_EASE seconds after they jumped. Reads clock;
+// keeps its state in FELT[key], so call it once a frame for each key.
+// e.g. var shown = easedFeeling("lad", {wonder: 0, smile: 1, ...});
+function easedFeeling(key, f) {
+  var s = FELT[key];
+  if (!s || clock < s.t || clock - s.t > 0.25) { s = FELT[key] = {t: clock, from: f, to: f, since: -1e9}; }
+  function opened(o, n) { return o ? o[n] : 0; }
+  var jump = [0, 1, 2].some(function (n) { return Math.abs(opened(s.to.open, n) - opened(f.open, n)) > FEEL_JUMP; }) ||
+             FEEL_NUMBERS.some(function (k) { return Math.abs(s.to[k] - f[k]) > FEEL_JUMP; });
+  if (jump) {                                       // from where the face is now, toward the new feeling
+    s.from = feelingBetween(s.from, s.to, between(clock, s.since, s.since + FEEL_EASE));
+    s.since = clock;
+  }
+  s.to = f;
+  s.t = clock;
+  return feelingBetween(s.from, s.to, between(clock, s.since, s.since + FEEL_EASE));
+}
+
 // The feeling a look asks for, as the numbers the face and the body read.
 // "at" is the person's own time (ownTime() added to the clock).
 //   look   the look: it reads feel (a name of FEELINGS, or one of FEELING_WAS) and the numbers wonder, smile,
 //          fear, anger, sad, sleepy, full, worry, laugh (0 to 1, each beating the name's own), eyes and lips
 //   at     the person's own time in seconds, default clock
+//   key    a name kept across frames (person() gives the person's id): with one, a change of feeling is eased
+//          over FEEL_EASE seconds (easedFeeling()); left out, the face shows the new feeling at once
 // Returns {wonder, smile, fear, anger, sad, sleepy, full, worry, laugh, open, bend, tilt, eyes, lips} and what
 // feelingOverTime() adds (lids, browUp, ha). It warns once for a feeling's name it does not know.
-// e.g. var f = feelingOf({feel: "sleepy"}, clock + ownTime("yai"));
-function feelingOf(look, at) {
+// e.g. var f = feelingOf({feel: "sleepy"}, clock + ownTime("yai"), "yai");
+function feelingOf(look, at, key) {
   var name = FEELING_WAS[look.feel] || look.feel;
   if (look.feel !== undefined) { checkName("The feeling", name, FEELINGS); }
   var named = FEELINGS[name] || {};
@@ -1006,12 +1058,13 @@ function feelingOf(look, at) {
   // A cast member's resting smile (the boy's smile: 1) gives way to a sad, worried, frightened or cross feeling:
   // the boy told to be sad smiled through his tears (2026-10-20).
   var unhappy = look.feel !== undefined && (named.sad || named.worry || named.fear || named.anger);
-  return feelingOverTime({wonder: amount(look.wonder, "wonder"), smile: unhappy ? clamp(named.smile || 0) : amount(look.smile, "smile"),
-          fear: amount(look.fear, "fear"), anger: amount(look.anger, "anger"), sad: amount(look.sad, "sad"),
-          sleepy: amount(look.sleepy, "sleepy"), full: amount(look.full, "full"), worry: amount(look.worry, "worry"),
-          laugh: amount(look.laugh, "laugh"),
-          open: named.open, bend: named.bend || 0, tilt: named.tilt || 0,
-          eyes: look.eyes || 1, lips: look.lips || 1}, at === undefined ? clock : at);   // and the face's own measure: how large its eyes and its mouth are
+  var f = {wonder: amount(look.wonder, "wonder"), smile: unhappy ? clamp(named.smile || 0) : amount(look.smile, "smile"),
+           fear: amount(look.fear, "fear"), anger: amount(look.anger, "anger"), sad: amount(look.sad, "sad"),
+           sleepy: amount(look.sleepy, "sleepy"), full: amount(look.full, "full"), worry: amount(look.worry, "worry"),
+           laugh: amount(look.laugh, "laugh"),
+           open: named.open, bend: named.bend || 0, tilt: named.tilt || 0,
+           eyes: look.eyes || 1, lips: look.lips || 1};   // and the face's own measure: how large its eyes and its mouth are
+  return feelingOverTime(key === undefined ? f : easedFeeling(key, f), at === undefined ? clock : at);
 }
 
 // ---------- a creature's feeling ----------
@@ -1040,13 +1093,18 @@ function feelingOf(look, at) {
 //          yawn back, a laugh's toss)
 //   startle  0 to 1: a fright, for a creature that has one of its own
 //   jaw(usual)  how far a jaw opens, given how far it would otherwise
+//   key      the name its feeling is eased under (feelingOf()): "c/" and its look's id, or else the n-th creature
+//            whose feeling is asked for in the frame, as person() counts the people it draws
 // look: the creature's look (feel and the numbers, as feelingOf() reads them); at: its own time in seconds,
-// default clock. Returns the object above.
+// default clock; key: optional, a name of its own for a second feeling of one creature (maengEyes()). Returns the
+// object above.
 // e.g. var e = creatureFeel({feel: "angry"}, clock + ownTime("dog"));
-function creatureFeel(look, at) {
-  var f = feelingOf(look, at);
+function creatureFeel(look, at, key) {
+  if (clock !== FELT_AT) { FELT_N = 0; FELT_AT = clock; }
+  if (key === undefined) { key = "c/" + (look.id !== undefined ? look.id : FELT_N++); }
+  var f = feelingOf(look, at, key);
   var frown = clamp(f.sad + 0.6 * f.anger + 0.45 * f.worry);
-  return {f: f, lid: f.lids, bowed: f.laugh > 0.5,
+  return {f: f, key: key, lid: f.lids, bowed: f.laugh > 0.5,
           slant: Math.max(-1, Math.min(1, 0.9 * f.anger - 0.7 * f.sad - 0.45 * f.worry)),
           wide: 1 + 0.3 * f.wonder + 0.45 * f.fear - 0.15 * f.anger - 0.3 * f.sad + 0.1 * f.worry,
           brow: [(7 * f.wonder + 6 * f.fear - 4 * f.anger + f.browUp + 2 * f.worry) / 9, 0.35 * f.anger - 0.3 * f.sad + 0.15 * f.fear - 0.38 * f.worry],
@@ -4539,7 +4597,7 @@ function personLook(fig) {
   if (seat) { tallness = 1 + (tallness - 1) * 0.4; }   // one who sits is squashed and stretched less
   var walk = (look.step || 0) * Math.PI * 2;
   var gait = look.step ? (look.stride === undefined ? 1 : look.stride) : 0;   // how long the steps are; 0 for one who stands
-  var feel = feelingOf(look, clock + ownTime(who)); // the feeling on the face, and what it does to the body
+  var feel = feelingOf(look, clock + ownTime(who), who);   // the feeling on the face, and what it does to the body, eased from the last
   // Arms hang unless a scene places them: almost straight, a little out from
   // the body, the hand at rest. A walker swings each with the leg on the
   // other side, from the shoulder: the arm going forward bends a little more
@@ -11083,7 +11141,7 @@ function cutFade(dark) {
 var SETTLE = 60, SETTLED_AT = null;
 
 // What the kit remembers from one frame to the next: the springs of what hangs (FOLLOWS), how each arm last bent
-// (BENDS), who was drawn n-th (DRAWN), what the eyes saw (SIGHTS); a module that remembers more puts a function
+// (BENDS), who was drawn n-th (DRAWN), what the eyes saw (SIGHTS), each face's feeling as it eases (FELT); a module that remembers more puts a function
 // that forgets it in FORGET (paperdoll.js: the dolls' chains). When a render jumps the clock, settled() forgets it
 // all before the frames it paints unseen, so that they start from rest, as the numbers above assume, and not from
 // whatever the page drew live while it loaded: a render gives the same pixels every time. (2026-10-21: before, the
@@ -11095,6 +11153,9 @@ function forget() {
   BENDS = {};
   DRAWN = 0;
   DRAWN_AT = -1;
+  FELT = {};
+  FELT_N = 0;
+  FELT_AT = -1;
   SIGHTS.whole = null;
   FORGET.forEach(function (more) { more(); });
 }

@@ -181,3 +181,18 @@ in the scene after everyone, so the camera and the lens take it as they take the
   under the picture, with a line for a child on what each one is.
 - **Not done.** Bubbles for the creatures (they have no joints to point at yet; an `[x, y]` works
   meanwhile); two bubbles at once can overlap: the kit does not move one out of another's way.
+
+## Feelings eased (2026-10-23)
+
+The owner, watching the hero film: "Add facial expression easing to the kit so when a sprite changes facial
+expressions it doesn't instantly pop from one expression to the next. If you look at the man looking at the Chinese
+dragon in the hero video his angry face pops to happy instantly." His `feel` changed by the scene's seconds, and the
+face read the new name in the next frame.
+
+| What | How |
+|---|---|
+| Kept from frame to frame | `easedFeeling(key, f)` in `oldcartoon.js`: each face's numbers (`FEEL_NUMBERS`: wonder, smile, fear, anger, sad, sleepy, full, worry, laugh, and the body's bend and tilt, and the mouth a feeling opens) under a key, in `FELT` |
+| When it eases | when what the look asks for jumps: a number by more than `FEEL_JUMP` (0.12) in one frame, as a new name does. Then the face goes from where it is to the new numbers over `FEEL_EASE` (0.4 s), eased in and out (`between()`); a change in the middle of one starts from where the face has got to. A number a scene moves smoothly (the pond woman's wonder, rising with the dragon) is followed as it moves, so no film's slow change lags |
+| Whose | every person (`person()` passes its id, or "n" and its place in the frame's drawing order, the name `follow()` already keys by), and every creature (`creatureFeel(look, at, key)`: "c/" and its id, or the n-th creature whose feeling is asked in the frame). The creature with five eyes keeps its second feeling (`maengEyes()`) under a key of its own. `feelingOf(look, at)` with no key, as `paperdoll.js` calls it, shows the new feeling at once, as before |
+| Stills match the film | as `follow()`'s springs: a key whose clock runs backward or skips more than a quarter of a second starts at the new feeling, and `forget()` clears `FELT`; `settled()` paints two seconds before a jump, longer than the ease, so a still in the middle of a change shows what the film shows (checked: frames of the pond, seeked one by one, step from angry to happy over 0.4 s) |
+| What still switches | the shapes a face picks by a threshold: a lady's shut mouth is a smile above `smile` 0.5 and a bow below, and a laugh's bowed eyes and D mouth come at `laugh` 0.5; these switch at the middle of the ease, while the brows, the lids, the fold, a fellow's mouth (`grin`), the lean and the tilt glide |

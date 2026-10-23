@@ -552,3 +552,28 @@ comment names its source.
   which is kit only and never in the maker.
 
 The tale's people are looks over the cast in the film's own `changngu/sets.js` (the Black Khom king, the seer).
+
+## A cord, a vine, a snare that holds, and the trough's ends (2026-10-23)
+
+The owner, on the Maeng film: "When the snare is around the monster's leg make the rope really look like it is there
+instead of being to small and just near the leg. Change the rope he pulls up the hill and the vine to look more like
+the snare rope and a real vine." And: "the golden trough looks broken because when it curves upwards the horizontal
+trough places and end pipe brown colored image on the pipe."
+
+- **`cord(brush, points, wide, colour)`** (`pieces.js`): twisted rattan along a row of points: a darker edge, its
+  colour (the snare's `#7a5a2e` unless told), and the twist, a short pale strand slanting across it every `wide`.
+  The snare's line and the rope Thukkhata pulls up the hill (s05) are cords.
+- **`vine(brush, from, to, sag, look)`** (`pieces.js`): a forest creeper hung between two points: a stem of brown and
+  green with a thinner strand twisting round it, leaves on short stalks to either side (here and there none), two
+  curls of tendril; `look.round` loops its end round something that wide (a neck), `look.wide`, `look.seed`. The vine
+  tied round the creature's neck in s06 is one; it was a green line.
+- **The snare holds a leg.** `snare()`'s `look.caught` may be `[x, y, wide, lean]`: a leg that wide, running up at
+  the angle lean, and the noose is three turns of cord pulled tight round it, each the near half of a ring with its
+  shadow pressed into the fur, knotted on the side the line pulls from, a loose end hanging. `maengSiHuHaTa()` gives
+  that for its near fore leg just over the paw, where the leg is as it steps (`shin`, beside `paw`). It was a ring 9 by
+  5 by the paw: at the film's size a few pixels beside the leg.
+- **The trough's ends.** `linKham()` draws its dark open end only while it is still being built (`built` under 1).
+  The yard's trough is two parts laid end to end, and the near one's end sat on the joint where the far one turns up
+  across the fields. A second thing showed there, once the end was gone: the far part's first post, whose forked top
+  poked out over the near part's gold at the turn; `look.joined` gives a trough that starts on another's end a first
+  post with no fork, and `maengYardTrough()` sets it for the far part.

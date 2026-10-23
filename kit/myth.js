@@ -1250,8 +1250,9 @@ function maengFace(c, e, open, shut, glow, seed, wake, eyes) {
 // The creature with four ears and five eyes, standing on (x, y), its body side on and its face turned to the
 // viewer: see the top of this file. 470 long and 290 high at size 1. It walks (step, as amble() gives it), blinks,
 // feels (feel), opens its jaw (mouth, 0 to 1), lights its eyes (glow) and opens them one by one (wake). Gives
-// back {head, mouth, paw, neck}, points of the scene: the middle of its face; of its mouth, where an ember goes
-// in; its near fore paw on the ground; and its neck under the head, where a vine is tied.
+// back {head, mouth, paw, shin, neck}, points of the scene: the middle of its face; of its mouth, where an ember
+// goes in; its near fore paw on the ground; that leg just over the paw, [x, y, wide, lean], where a snare holds it;
+// and its neck under the head, where a vine is tied.
 // ---------- its eyes, each its own ----------
 // Where the five are on its face (the head's own pixels) and the order they open in: the top, the two upper, the
 // two lower, as the points of a star.
@@ -1282,7 +1283,7 @@ function maengEyes(look, at, own) {
   for (n = 0; n < key.length; n++) { id = (id * 31 + key.charCodeAt(n)) % 997; }
   var order = [0, 1, 2, 3, 4].sort(function (a, b) { return maengHash(id + a * 11) - maengHash(id + b * 11); });
   var second = look.eyeFeel || MAENG_EYE_FEEL[FEELING_WAS[look.feel] || look.feel || "neutral"] || "concerned";
-  var other = creatureFeel(Object.assign({}, look, {feel: second}), at);
+  var other = creatureFeel(Object.assign({}, look, {feel: second}), at, (own.key || "maeng") + "/second");   // eased under a name of its own
   var turn = Math.floor(clock / MAENG_EYE_TURN), stare = Math.floor(maengHash(turn * 13 + id) * 5);
   var wander = (stare + 1 + Math.floor(maengHash(turn * 17 + id + 5) * 4)) % 5, into = clock - turn * MAENG_EYE_TURN;
   return MAENG_EYES.map(function (place, k) {
@@ -1325,7 +1326,8 @@ function maengGaze(place, eye) {
 //   look   an object, never left out ({} gives the dark grey creature standing, size 1, facing right, five eyes
 //          open and watching): it reads size, face, colour, eyes, step, mouth, glow, wake, watch, eyeFeel, id,
 //          feel (MYTH_KEYS above)
-// Returns {head, mouth, paw, neck}, each [x, y], points of the sheet. It draws with pen at the film's clock;
+// Returns {head, mouth, paw, shin, neck}, each [x, y] (shin [x, y, wide, lean], as snare()'s look.caught takes it),
+// points of the sheet. It draws with pen at the film's clock;
 // it sets FINE and LINE while it draws and leaves them at 1 and STYLE.line. Its watching eyes look at what
 // the film has drawn in the frame (sightsNow() in the kit).
 // e.g. var m = maengSiHuHaTa(700, GROUND, {size: 0.9, glow: 0.6, wake: 3.5, feel: "happy"});
@@ -1350,10 +1352,14 @@ function maengSiHuHaTa(x, y, look) {
   pen.scale(size * face, size);
   var hind = [[-130, legY, 0, -1, false], [-106, legY - 4, 0.5, -1, true]];
   var fore = [[92, legY, 0.25, 1, false], [117, legY - 4, 0.75, 1, true]];
+  var shin = null;                                  // the near fore leg just over its paw, where a snare's noose holds it
   function legs(far) {
     var skin = far ? blend(c.fur, "#1c1c22", 0.2) : c.fur;
     beastLegs(hind, far, look, [46, 42, 12], [34, 27, 21], skin, GAITS.maengSiHuHaTa[1], 16, maengPaw);
-    beastLegs(fore, far, look, [46, 42, 12], [34, 27, 21], skin, GAITS.maengSiHuHaTa[1], 16, maengPaw);
+    beastLegs(fore, far, look, [46, 42, 12], [34, 27, 21], skin, GAITS.maengSiHuHaTa[1], 16, far ? maengPaw : function (ax, ay, skin, lifted, kx, ky) {
+      shin = [mix(ax, kx, 0.62), mix(ay, ky, 0.62), Math.atan2(ky - ay, kx - ax)];   // above the paw's top (it is 26 high at the ankle)
+      maengPaw(ax, ay, skin);
+    });
   }
   legs(true);
   var bob = look.step !== undefined ? 2.5 * Math.abs(Math.sin(look.step * Math.PI * 2)) : 0;
@@ -1403,6 +1409,8 @@ function maengSiHuHaTa(x, y, look) {
   return {head: [x + headAt[0] * size * face, y + (headAt[1] - lift) * size],
           mouth: [x + headAt[0] * size * face, y + (headAt[1] + 1.24 * (44 + 40 * open) - lift) * size],
           paw: [x + 92 * size * face, y - 6 * size],                    // the near fore paw, on the ground
+          shin: [x + shin[0] * size * face, y + (shin[1] - lift) * size,   // the near fore leg over its paw, as it is now (it steps):
+                 49 * size, Math.atan2(Math.sin(shin[2]), Math.cos(shin[2]) * face)],   // its middle, how wide it is there, which way it runs up
           neck: [x + 110 * size * face, y + (-110 - lift) * size]};      // under its head, where a vine is tied
 }
 
