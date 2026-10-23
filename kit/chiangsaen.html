@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>chiangsaen - Chiang Saen and the things of its tale</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920, hop: false};</script>
+<script src="oldcartoon.js"></script>
+<script src="beasts.js"></script>
+<script src="naga.js"></script>
+<script src="myth.js"></script>
+<script src="chiangsaen.js"></script>
+<script>
+// The "chiangsaen" sheet: chiangsaen.js, in three bands. Above, the Mae Khong in the dry season: a sandbar under
+// khrai nam scrub, pratincoles that rise and fly off and settle, a river lapwing, a little ringed plover pecking,
+// spot-billed ducks; reeds at the left with red avadavats at the water's edge. Across the middle, the city wall with
+// its gate opening and closing, and Doi Chang Ngu, the limestone hill with its cave. Below, the tale's things: the
+// forge at work, a dap and a fire-gun, the bamboo hook, the carrying pole with gold, a pan for gold swirling, the
+// salung and the gold pot, the hanging cradle, Indra's wall rising, and the statue's pool with Chang Ngu on it.
+var DURATION = 12;
+
+var BEAT = 0.5;
+
+function caption(text, x, y, colour) {
+  pen.fillStyle = colour || "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "21px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  // the river
+  csBand(pen, 0, 0, WIDE, 160, "#a9d3cc", "#f1e3c4");
+  csBand(pen, 0, 160, WIDE, 200, "#a8906a", "#7e6546");
+  waves(pen, 0, 168, WIDE, 190, "rgba(250, 238, 210, 0.35)", t);
+  sandbar(pen, 520, 230, 900, 60, 3);
+  khraiNam(pen, 1200, 270, 0.6, t, 1);
+  khraiNam(pen, 1330, 278, 0.5, t, 4);
+  var lift = between(t, 4, 5.5) * (1 - between(t, 8, 9.5));                 // the pratincoles rise, fly round and settle
+  [[640, 1], [700, -1], [760, 1], [820, 1]].forEach(function (p, i) {
+    var fx = p[0] + 120 * Math.sin(lift * 3 + i) * lift, fy = 262 - 120 * lift - 10 * Math.sin(t * 3 + i) * lift;
+    pratincole(pen, fx, fy, 1.4, {face: p[1], fly: lift > 0.05, t: t + i});
+  });
+  riverLapwing(pen, 980, 262, 1.5, {face: -1});
+  ringedPlover(pen, 560, 268, 1.4, {face: 1, peck: Math.max(0, Math.sin(t * 2))});
+  spotbill(pen, 300, 320, 1.4, {face: 1, t: t});
+  spotbill(pen, 380, 336, 1.3, {face: 1, t: t + 1});
+  riverReeds(pen, 0, 360, 200, 1, t, 2);
+  redAvadavat(pen, 220, 356, 2.4, {face: 1, peck: Math.max(0, Math.sin(t * 2.6))});
+  pen.fillStyle = "#f3ead8"; pen.fillRect(0, 360, WIDE, 45);
+  caption("sandbar, khraiNam, pratincole (flies), riverLapwing, ringedPlover, spotbill, riverReeds, redAvadavat", 960, 395);
+  // the wall and the hill
+  csBand(pen, 0, 405, WIDE, 330, "#b9dcd3", "#f0e6c8");
+  pen.fillStyle = "#9fb37a"; pen.fillRect(0, 690, WIDE, 45);
+  cityWall(pen, 60, 620, 1000, 1, {open: 0.5 + 0.5 * Math.sin(t * 0.8)});
+  karstHill(pen, 1450, 700, 1.1, {});
+  caption("cityWall: the gate opens and shuts", 560, 728);
+  caption("karstHill, its cave", 1450, 728);
+  // the things
+  pen.fillStyle = "#f3ead8"; pen.fillRect(0, 735, WIDE, 345);
+  pen.fillStyle = "#e3d6b8"; pen.fillRect(0, 1000, WIDE, 30);
+  forge(pen, 200, 1000, 0.8, t);
+  caption("forge", 200, 1060);
+  dap(pen, 400, 900, 0.4, {});
+  fireGun(pen, 440, 990, 0.55, {t: t});
+  caption("dap, fireGun", 470, 1060);
+  elephantHook(pen, 640, 1000, 1, {});
+  caption("elephantHook", 650, 1060);
+  carryPole(pen, 820, 860, 0.6, {gold: true});
+  caption("carryPole", 820, 1060);
+  goldPan(pen, 1000, 980, 1, {tilt: 0.15 * Math.sin(t * 2), gold: true, t: t});
+  caption("goldPan", 1000, 1060);
+  salung(pen, 1160, 1000, 0.8, {grass: true});
+  goldPot(pen, 1270, 1000, 0.7);
+  caption("salung, goldPot", 1215, 1060);
+  hangingCradle(pen, 1430, 960, 0.6, t, {});
+  caption("hangingCradle", 1430, 1060);
+  risingWall(pen, 1540, 1000, 150, 200, between(t % 6, 1, 4));
+  caption("risingWall", 1615, 1060);
+  statuePool(pen, 1810, 990, 0.38, t);
+  changNgu(1810, 960, {size: 0.12});
+  caption("statuePool", 1810, 1060);
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

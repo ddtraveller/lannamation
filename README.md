@@ -434,6 +434,7 @@ Each loads after `oldcartoon.js` and adds drawings of its own; none changes the 
 | `dragon.js` | a dragon of the Himalayan paintings, and a Chinese one (`kind: "chinese"`); needs `naga.js` | `dragon.html`, `dragon_china.html`, `dragon_flight.html` |
 | `beasts.js` | an elephant, a water buffalo, a cat, a tiger and a pig | `beasts.html`, `elephant.html`, `felines.html`, `pig.html` |
 | `myth.js` | three creatures of the myths of Lanna | `myth.html` |
+| `chiangsaen.js` | Chiang Saen and the things of its tale, Chang Ngu: the city wall and moat as Chiang Saen's were, the Mae Khong's sandbars with khrai nam scrub, reeds and their birds (pratincole, river lapwing, little ringed plover, red avadavat, spot-billed duck), a limestone hill with a cave, a forge, a dap and a fire-gun, the bamboo elephant hook, a carrying pole, a pan for gold, a gold salung and pot, a hanging cradle, Indra's rising wall, the statue's pool | `chiangsaen.html` |
 | `paperdoll.js` | paperdolls: one character each, with cloth that flows | |
 | `fonlep.js`, `apsara.js`, `puman.js` | three paperdolls: the fingernail dancer, the celestial dancer, the whisperer | `fonlep.html`, `apsara.html`, `puman.html` |
 | `dance_track.js` | a whole dance as the kit's poses, for `poseAt()` | `dance.html` |

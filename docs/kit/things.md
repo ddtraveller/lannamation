@@ -524,3 +524,31 @@ Two things of the tale of Chang Ngu (its creatures are in creatures.md), each pi
 
 The tale's soldiers (Tai and the Khom Dam, told apart by dress only), their spears and the Khom's pointed cap are in
 figures.md; the cartoon maker's palette for all of these is in the maker's notes.
+
+## Chiang Saen and the things of Chang Ngu (2026-10-23)
+
+`chiangsaen.js` (sheet `chiangsaen.html`): what the second tale, Chang Ngu (`changngu/`), needs that the kit did not
+draw. Each was drawn as two or three candidates and picked by the owner, and each is drawn from what is known of the
+real thing (owner, 2026-10-23: "In reference to things like walls, pots, etc. try to be accurate"); every function's
+comment names its source.
+
+- **The city wall** (`cityWall`): Chiang Saen's fortifications as Hans Penth gathers them ("Again: the fortifications
+  of Chiang San", JSS 63.2, 1975, from Hallett 1884 and Hosseus 1904): a low outer rampart of earth, the moat, then
+  the high rampart, its outer face earth behind a teak palisade, its top a crenellated parapet of brick; no wall along
+  the river, which was the east moat. Nobody knows what its gates looked like, so the gate claims the least: a passage
+  lined with brick under the parapet, two teak doors, a timber bridge.
+- **The Mae Khong in the dry season**: `sandbar`, `khraiNam` (Homonoia riparia, the shrub that covers the larger
+  sandbanks), `riverReeds`, and the birds recorded on the Chiang Saen stretch (thaibirding.com; BirdLife's factsheet
+  for the Mekong channel near Pakchom): `pratincole` (sits close on the sand; `fly: true` beats its wings),
+  `riverLapwing`, `ringedPlover` (`peck` 0 to 1), `redAvadavat` (drinks at the margin), `spotbill` (swims and bobs).
+- **Doi Chang Ngu** (`karstHill`): a tower of grey limestone out of the paddies with a cave at its foot, as the karst
+  of Doi Chiang Dao; the elephant goes into it as a snake.
+- **The tale's things**: `forge` (the upright bamboo piston bellows of mainland Southeast Asia), `dap`, `fireGun`
+  (the chronicle's ปืนไฟ, a matchlock), `elephantHook` (the chronicle's own footnote: a thornless bamboo whose side
+  branches make good hooks), `carryPole`, `goldPan` (another copy of the chronicle has the villagers panning the gold
+  of the tribute), `salung` and `goldPot` (the elephant's vessels of gold, in the forms of Lanna metalwork, since the
+  chronicle's word for them is not known), `hangingCradle` with `swaddledBaby`, `risingWall` (Indra's wall, the
+  deva's light along its top), `statuePool` (the fountain round the statue's base before Chiang Saen), and `almsBowl`,
+  which is kit only and never in the maker.
+
+The tale's people are looks over the cast in the film's own `changngu/sets.js` (the Black Khom king, the seer).

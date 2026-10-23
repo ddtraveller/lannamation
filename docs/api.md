@@ -7335,6 +7335,218 @@ e.g. fingerDancer(400, 900, "pink", {size: 1.2, id: "dancer-0-1"}, -0.05);
 
 The dancer's moves, read from the reference video by dance_track.py (MediaPipe Pose), 804 frames at 10 a second: [second, pose] for the kit's poseAt().
 
+## chiangsaen.js
+
+chiangsaen.js - Chiang Saen and the things of its tale, Chang Ngu, for the Lanna cartoon kit: the city's wall and moat, the Mae Khong's sandbars with their scrub, reeds and birds, the limestone hill the elephant goes back into, and the tale's things (a forge, a sword and a fire-gun, the hook of bamboo, a carrying pole, a pan for gold, the gold vessels, a hanging cradle, Indra's wall, the statue's pool). Load it after oldcartoon.js. Each is a painter on a brush, as pieces.js's are: (brush, x, base or y, size, look), size 1 the kit's own scale, look optional, and t the film's second where something moves. Each was picked by the owner from candidates (2026-10-23: "try to be accurate"), and each comment says what it is drawn from. The novice's alms bowl is kit only: never in the maker.  cityWall(brush, x, base, wide, size, look)       the wall as Chiang Saen's was, a gate in its middle karstHill(brush, x, base, size, look)            a tower of limestone out of the paddies, a cave at its foot sandbar(brush, x, y, wide, tall, seed)           a bar of sand and gravel in the river khraiNam(brush, x, base, size, t, seed)          khrai nam scrub, Homonoia riparia, on a sandbar or among roc
+
+### `csBand(brush, x, y, wide, tall, top, bottom)`
+
+```
+A vertical gradient over a rectangle, top colour to bottom colour, filled with brush.
+e.g. csBand(pen, 0, 700, WIDE, 200, "#a8906a", "#7e6546");
+```
+
+### `cityWall(brush, x, base, wide, size, look)`
+
+```
+---------- the city wall ----------
+The wall of a city as Chiang Saen's was, after Hans Penth, "Again: the fortifications of Chiang San" (JSS 63.2,
+1975), from Hallett (1884) and Hosseus (1904): a double wall, "the higher wall facing the town, the lower wall the
+outside", a moat between; the high rampart "at its inner side ... of bricks, while its outer side is surrounded by a
+palisade" of teak (Hallett: "a strong teak palisade 6 feet high"), its top crenellated. Seen from outside: the low
+outer rampart of earth nearest, the moat, the high rampart's earth face behind its palisade, a parapet of brick on
+top. A gate in its middle (look.gate, true unless false): how a gate looked is not known ("we do not know what a
+gate looked like in those times"), so this claims the least: a passage through the rampart, lined with brick,
+under the parapet, two teak doors, a bridge of timber over the moat. Along the river there was no wall (the Mae
+Khong was the east moat). The owner's pick, 2026-10-23 (of three gates).
+  x, base: the left end and the foot of the high rampart (the moat's edge); wide: pixels; size: 1 is a rampart 150
+  pixels high; look: gate (true), open (0 shut to 1 open; 0), outer (true: the low outer rampart and the moat).
+e.g. cityWall(pen, 200, 820, 1500, 1, {open: 0.8});
+```
+
+### `karstHill(brush, x, base, size, look)`
+
+```
+---------- Doi Chang Ngu ----------
+A tower of grey limestone standing up out of the paddies, sheer cliffs streaked by the rain, forest on its top and on
+a ledge, a cave at its foot: the karst of the north (Doi Chiang Dao, a limestone massif with vertical cliffs; GEOLEX,
+"Doi Chiang Dao Limestone Fm": pale-grey massive limestone). Doi Chang Ngu stands "in the middle of the plain"
+(the chronicle) and the elephant goes into it as a snake. The owner's pick, 2026-10-23 (of three landforms).
+  x, base: the middle of its foot; size 1 is 300 wide and 220 high; look: cave (true).
+e.g. karstHill(pen, 1200, 880, 1.6, {});
+```
+
+### `sandbar(brush, x, y, wide, tall, seed)`
+
+```
+A bar of sand and gravel in the river, from x to x + wide, its top at y, tall pixels to the water; pebbles on it.
+e.g. sandbar(pen, 600, 760, 700, 50, 3);
+```
+
+### `khraiNam(brush, x, base, size, t, seed)`
+
+```
+Khrai nam (ไคร้น้ำ, Homonoia riparia; PROSEA: a shrub 1 to 4 m, planted to hold river banks): a clump of willow-like
+stems leaning downstream, narrow grey-green leaves, moving a little with t. Its foot at (x, base); size 1 is 150
+pixels tall; seed varies the clump. e.g. khraiNam(pen, 1300, 780, 0.6, t, 1);
+```
+
+### `riverReeds(brush, x, base, wide, size, t, seed)`
+
+```
+Tall reeds and wild cane along a bank from x to x + wide, their feet on base, the plumes nodding with t.
+e.g. riverReeds(pen, 0, 900, 600, 1, t, 2);
+```
+
+### `csBird(brush, x, y, size, look, c)`
+
+```
+One small bird of the sandbar, the shared shape: an oval body, a round head, a short tail, on two thin legs, or in
+flight with its wings up or down. c holds its colours and parts; look: face (1 right, -1 left), peck (0 to 1: its
+head down to the sand), fly (true: in the air, wings beating with t), t.
+```
+
+### `pratincole(brush, x, y, size, look)`
+
+```
+The small pratincole: sandy grey, a black line from the bill through the eye, a short black bill, short legs; it sits
+close on the sand and flies like a swallow. At (x, y), its feet. e.g. pratincole(pen, 700, 770, 1, {face: -1, t: t});
+```
+
+### `riverLapwing(brush, x, y, size, look)`
+
+```
+The river lapwing: a black cap and throat, grey-brown back, white belly with a black patch, long black legs.
+e.g. riverLapwing(pen, 900, 770, 1, {face: 1});
+```
+
+### `ringedPlover(brush, x, y, size, look)`
+
+```
+The little ringed plover: brown back, a white collar and a black band across the breast, a yellow ring round the eye.
+e.g. ringedPlover(pen, 640, 775, 1, {peck: 0.6});
+```
+
+### `redAvadavat(brush, x, y, size, look)`
+
+```
+The red avadavat: a tiny finch, the male crimson with white spots and a red bill; drinking at the margin.
+e.g. redAvadavat(pen, 500, 900, 1, {peck: 0.8});
+```
+
+### `spotbill(brush, x, y, size, look)`
+
+```
+The Indian spot-billed duck, swimming: a brown scaled body, a pale face, a dark crown, a black bill tipped yellow;
+it bobs with t. At (x, y), the waterline. e.g. spotbill(pen, 300, 800, 1, {face: 1, t: t});
+```
+
+### `forge(brush, x, base, size, t)`
+
+```
+The smiths' forge: a clay hearth with its fire, the upright bellows of mainland Southeast Asia (two tubes of bamboo,
+a plunger in each, worked turn and turn about) and an anvil of iron on a log. The hearth's foot's middle on (x, base),
+size 1 about 340 wide; t moves the fire and the plungers. e.g. forge(pen, 800, 900, 1, t);
+```
+
+### `dap(brush, x, y, size, look)`
+
+```
+A dap (ดาบ), the long Lanna sword, point up, its hilt's top at (x, y): a long, slightly curved blade, a wooden hilt
+bound with cord. size 1 is 300 long; look: angle (radians, 0 upright), sheath (true: its sheath beside it).
+e.g. dap(pen, 900, 600, 0.5, {angle: 0.3});
+```
+
+### `fireGun(brush, x, y, size, look)`
+
+```
+A fire-gun (ปืนไฟ, the chronicle's), a long matchlock, its butt at (x, y): a wooden stock, an iron barrel, a match
+cord smoking a little at the lock. size 1 is 280 long; look: angle (radians; -0.5 by default, raised), t.
+e.g. fireGun(pen, 1000, 700, 0.8, {angle: -0.3, t: t});
+```
+
+### `elephantHook(brush, x, base, size, look)`
+
+```
+The hook Phrom cuts (ขอไม้ไล่): the chronicle's footnote (Prachum Phongsawadan 61, 1936, note 70) says of it "ชื่อไม้
+ชะนิดหนึ่งในจำพวกไม้ไผ่ แต่ไม่มีหนามลำเล็ก ๆ มีแขนงเป็นขอดีนัก", a kind of bamboo with no thorns, small culms, whose
+side branches make very good hooks: a culm of bamboo, its nodes showing, a side branch left on near the top and cut
+short to make the hook. Its foot at (x, base); size 1 is 190 tall; look: angle (radians, 0 upright).
+e.g. elephantHook(pen, 700, 900, 1, {angle: 0.2});
+```
+
+### `carryPole(brush, x, y, size, look)`
+
+```
+A carrying pole (คาน) across the shoulder with a basket at each end on cords; the pole's middle at (x, y). size 1 is
+260 wide; look: gold (true: the tribute's gold showing in the baskets).
+e.g. carryPole(pen, 600, 700, 0.8, {gold: true});
+```
+
+### `goldPan(brush, x, y, size, look)`
+
+```
+A pan for gold (the chronicle: another copy has "หาร่อนคำ", panning for gold, for the tribute): a wide shallow pan of
+wood, its middle at (x, y), tilted with look.tilt (radians), water swirling in it with t and, with look.gold, a
+few grains shining in the bottom. size 1 is 120 across. e.g. goldPan(pen, 700, 880, 1, {tilt: 0.2, gold: true, t: t});
+```
+
+### `salung(brush, x, base, size, look)`
+
+```
+A salung (สลุง), the wide Lanna bowl of beaten metal with a flared lip and a band of beaten figures, here of gold
+and heaped with grass, as the elephant's vessels were: the chronicle has all its vessels of gold, for its grass and
+even for its dung (their word, รวงทวง, is "not known" to the 1936 editors, note 73), so they take the forms of Lanna
+metalwork. Its foot's middle on (x, base); size 1 is 140 across; look: grass (true).
+e.g. salung(pen, 800, 900, 1, {grass: true});
+```
+
+### `goldPot(brush, x, base, size)`
+
+```
+A round pot of gold with its lid, the form of the north's round-bellied pots: the elephant's other vessel. Its foot's
+middle on (x, base); size 1 is 110 across. e.g. goldPot(pen, 980, 900, 1);
+```
+
+### `hangingCradle(brush, x, y, size, t, look)`
+
+```
+A hanging cradle (อู่) of cloth slung from a beam on two cords, swinging with t, a baby swaddled in it; the sling's
+lowest point at (x, y); size 1 is 150 across. look: baby (true), beam (true: the beam it hangs from).
+e.g. hangingCradle(pen, 900, 760, 1, t, {});
+```
+
+### `swaddledBaby(brush, x, y, size)`
+
+```
+A baby swaddled in cloth, lying, its head to the left, eyes shut, a tuft of hair. At (x, y), its middle.
+e.g. swaddledBaby(pen, 900, 730, 1);
+```
+
+### `almsBowl(brush, x, y, size)`
+
+```
+A novice's alms bowl of dark lacquer, its lid off, on its cloth sling, held at the waist: at (x, y), its rim's middle.
+Kit only: never in the maker (the respect rule). size 1 is 60 across. e.g. almsBowl(pen, 820, 700, 1);
+```
+
+### `risingWall(brush, x, base, wide, tall, u)`
+
+```
+Indra's wall (the chronicle: a deva "เนรมิตกำแพงหินศิลา", raises a wall of stone before Phrom): cut stone rising out
+of the ground across x..x + wide, u 0 (none) to 1 (risen to tall pixels), a deva's light along its top as it rises,
+dust at its foot. The owner's pick, 2026-10-23. e.g. risingWall(pen, 600, 900, 700, 360, between(t, 2, 5));
+```
+
+### `statuePool(brush, x, y, size, t)`
+
+```
+The pool round the base of the Chang Ngu statue at the roundabout before Chiang Saen (the Ministry of Culture's page:
+a fountain, lit 18:00 to 21:00), its jets playing with t; the plinth in its middle, its top at (x, y - 60 * size),
+where the statue stands. Its middle at (x, y); size 1 is 520 across. The owner's pick, 2026-10-23.
+e.g. statuePool(pen, 960, 900, 1, t); changNgu(960, 840, {size: 0.4});
+```
+
 # Tools (Python, from the command line)
 
 ## kit/api_index.py

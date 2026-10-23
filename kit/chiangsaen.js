@@ -1,0 +1,538 @@
+// chiangsaen.js - Chiang Saen and the things of its tale, Chang Ngu, for the Lanna cartoon kit: the city's wall and
+// moat, the Mae Khong's sandbars with their scrub, reeds and birds, the limestone hill the elephant goes back into,
+// and the tale's things (a forge, a sword and a fire-gun, the hook of bamboo, a carrying pole, a pan for gold, the gold
+// vessels, a hanging cradle, Indra's wall, the statue's pool). Load it after oldcartoon.js. Each is a painter on a
+// brush, as pieces.js's are: (brush, x, base or y, size, look), size 1 the kit's own scale, look optional, and t the
+// film's second where something moves. Each was picked by the owner from candidates (2026-10-23: "try to be
+// accurate"), and each comment says what it is drawn from. The novice's alms bowl is kit only: never in the maker.
+//
+//   cityWall(brush, x, base, wide, size, look)       the wall as Chiang Saen's was, a gate in its middle
+//   karstHill(brush, x, base, size, look)            a tower of limestone out of the paddies, a cave at its foot
+//   sandbar(brush, x, y, wide, tall, seed)           a bar of sand and gravel in the river
+//   khraiNam(brush, x, base, size, t, seed)          khrai nam scrub, Homonoia riparia, on a sandbar or among rocks
+//   riverReeds(brush, x, base, wide, size, t, seed)  tall reeds and wild cane along a bank
+//   pratincole, riverLapwing, ringedPlover, redAvadavat (brush, x, y, size, look)   the birds of the sandbar
+//   spotbill(brush, x, y, size, look)                the Indian spot-billed duck, swimming
+//   forge, dap, fireGun, elephantHook, carryPole, goldPan, salung, goldPot, hangingCradle, almsBowl, risingWall,
+//   statuePool: the tale's things, each below.
+
+var CHIANGSAEN_KIT = ["cityWall", "karstHill", "sandbar", "khraiNam", "riverReeds", "pratincole", "riverLapwing",
+                      "ringedPlover", "redAvadavat", "spotbill", "forge", "dap", "fireGun", "elephantHook", "carryPole",
+                      "goldPan", "salung", "goldPot", "hangingCradle", "almsBowl", "risingWall", "statuePool"];
+
+// A vertical gradient over a rectangle, top colour to bottom colour, filled with brush.
+// e.g. csBand(pen, 0, 700, WIDE, 200, "#a8906a", "#7e6546");
+function csBand(brush, x, y, wide, tall, top, bottom) {
+  var g = brush.createLinearGradient(0, y, 0, y + tall);
+  g.addColorStop(0, top);
+  g.addColorStop(1, bottom);
+  brush.fillStyle = g;
+  brush.fillRect(x, y, wide, tall);
+}
+
+// ---------- the city wall ----------
+// The wall of a city as Chiang Saen's was, after Hans Penth, "Again: the fortifications of Chiang San" (JSS 63.2,
+// 1975), from Hallett (1884) and Hosseus (1904): a double wall, "the higher wall facing the town, the lower wall the
+// outside", a moat between; the high rampart "at its inner side ... of bricks, while its outer side is surrounded by a
+// palisade" of teak (Hallett: "a strong teak palisade 6 feet high"), its top crenellated. Seen from outside: the low
+// outer rampart of earth nearest, the moat, the high rampart's earth face behind its palisade, a parapet of brick on
+// top. A gate in its middle (look.gate, true unless false): how a gate looked is not known ("we do not know what a
+// gate looked like in those times"), so this claims the least: a passage through the rampart, lined with brick,
+// under the parapet, two teak doors, a bridge of timber over the moat. Along the river there was no wall (the Mae
+// Khong was the east moat). The owner's pick, 2026-10-23 (of three gates).
+//   x, base: the left end and the foot of the high rampart (the moat's edge); wide: pixels; size: 1 is a rampart 150
+//   pixels high; look: gate (true), open (0 shut to 1 open; 0), outer (true: the low outer rampart and the moat).
+// e.g. cityWall(pen, 200, 820, 1500, 1, {open: 0.8});
+function cityWall(brush, x, base, wide, size, look) {
+  look = look || {};
+  var s = size, top = base - 150 * s, gx = x + wide / 2, gw = 96 * s, n;
+  var gate = look.gate !== false, open = look.open || 0;
+  brush.fillStyle = "#8a8f52";                                              // the high rampart, its earth face
+  brush.beginPath(); brush.moveTo(x, base); brush.lineTo(x + 30 * s, top + 20 * s); brush.lineTo(x + wide - 30 * s, top + 20 * s);
+  brush.lineTo(x + wide, base); brush.closePath(); brush.fill();
+  csBand(brush, x + 30 * s, top - 14 * s, wide - 60 * s, 34 * s, "#b5664a", "#9a5440");   // the brick parapet
+  brush.fillStyle = "#b5664a";
+  for (n = x + 30 * s; n < x + wide - 40 * s; n += 28 * s) { brush.fillRect(n, top - 30 * s, 16 * s, 18 * s); }
+  brush.strokeStyle = "rgba(70, 30, 20, 0.35)";
+  brush.lineWidth = 1;
+  for (n = top - 12 * s; n < top + 20 * s; n += 8 * s) { brush.beginPath(); brush.moveTo(x + 30 * s, n); brush.lineTo(x + wide - 30 * s, n); brush.stroke(); }
+  brush.fillStyle = "#7a5432";                                              // the teak palisade on the outer slope
+  for (n = x + 20 * s; n < x + wide - 20 * s; n += 11 * s) {
+    if (gate && Math.abs(n - gx) < gw / 2 + 10 * s) { continue; }
+    var foot = base - 40 * s - 50 * s * Math.min(1, Math.min(n - x, x + wide - n) / (60 * s));
+    brush.fillRect(n, foot - 52 * s, 7 * s, 52 * s);
+    brush.beginPath(); brush.moveTo(n, foot - 52 * s); brush.lineTo(n + 3.5 * s, foot - 60 * s); brush.lineTo(n + 7 * s, foot - 52 * s); brush.fill();
+  }
+  if (gate) {
+    brush.fillStyle = "#9a5440";                                            // the brick lining of the passage
+    brush.fillRect(gx - gw / 2 - 12 * s, base - 116 * s, gw + 24 * s, 116 * s);
+    brush.fillStyle = "#2a2018";
+    brush.fillRect(gx - gw / 2, base - 104 * s, gw, 104 * s);
+    brush.fillStyle = "#7a4a26";                                            // the two teak doors, swung in
+    var leaf = (gw / 2) * (1 - 0.85 * open);
+    brush.fillRect(gx - gw / 2, base - 104 * s, leaf, 104 * s);
+    brush.fillRect(gx + gw / 2 - leaf, base - 104 * s, leaf, 104 * s);
+    brush.strokeStyle = "#4a2c14"; brush.lineWidth = 2 * s;
+    brush.strokeRect(gx - gw / 2, base - 104 * s, leaf, 104 * s);
+    brush.strokeRect(gx + gw / 2 - leaf, base - 104 * s, leaf, 104 * s);
+  }
+  if (look.outer !== false) {
+    csBand(brush, x - 10 * s, base, wide + 20 * s, 46 * s, "#5f8e8a", "#3f6e6c");          // the moat
+    waves(brush, x - 10 * s, base + 4 * s, wide + 20 * s, 40 * s, "rgba(240, 250, 240, 0.35)", 0);
+    if (gate) { brush.fillStyle = "#8a6a44"; brush.fillRect(gx - 34 * s, base - 2 * s, 68 * s, 48 * s); }   // the bridge
+    brush.fillStyle = "#93ab5e";                                            // the low outer rampart, nearest us
+    brush.beginPath(); brush.moveTo(x - 10 * s, base + 76 * s); brush.lineTo(x - 10 * s, base + 52 * s);
+    brush.quadraticCurveTo(x + wide / 2, base + 38 * s, x + wide + 10 * s, base + 52 * s);
+    brush.lineTo(x + wide + 10 * s, base + 76 * s); brush.closePath(); brush.fill();
+  }
+}
+
+// ---------- Doi Chang Ngu ----------
+// A tower of grey limestone standing up out of the paddies, sheer cliffs streaked by the rain, forest on its top and on
+// a ledge, a cave at its foot: the karst of the north (Doi Chiang Dao, a limestone massif with vertical cliffs; GEOLEX,
+// "Doi Chiang Dao Limestone Fm": pale-grey massive limestone). Doi Chang Ngu stands "in the middle of the plain"
+// (the chronicle) and the elephant goes into it as a snake. The owner's pick, 2026-10-23 (of three landforms).
+//   x, base: the middle of its foot; size 1 is 300 wide and 220 high; look: cave (true).
+// e.g. karstHill(pen, 1200, 880, 1.6, {});
+function karstHill(brush, x, base, size, look) {
+  look = look || {};
+  var s = size, half = 150 * s, tall = 220 * s, pts = [], k;
+  for (k = 0; k <= 40; k++) {
+    var u = k / 40;
+    var up = Math.min(1, Math.pow(Math.sin(Math.PI * u), 0.25)) * (0.9 + 0.1 * Math.sin(u * 9));
+    pts.push([x - half + u * 2 * half, base - tall * up - 18 * s * (dice(k + 4) - 0.5)]);
+  }
+  var g = brush.createLinearGradient(x - half, 0, x + half, 0);
+  g.addColorStop(0, "#d2cfc2"); g.addColorStop(0.6, "#a8a598"); g.addColorStop(1, "#86837a");
+  brush.fillStyle = g;
+  brush.beginPath(); brush.moveTo(pts[0][0], base);
+  pts.forEach(function (p) { brush.lineTo(p[0], p[1]); });
+  brush.lineTo(pts[40][0], base); brush.closePath(); brush.fill();
+  brush.strokeStyle = "rgba(90, 86, 76, 0.45)";                             // streaks where the rain runs down
+  brush.lineWidth = 2 * s;
+  for (k = 3; k < 38; k += 3) { brush.beginPath(); brush.moveTo(pts[k][0], pts[k][1] + 10 * s); brush.lineTo(pts[k][0] + 3 * s, base - 8 * s - 30 * s * dice(k)); brush.stroke(); }
+  for (k = 2; k <= 38; k += 2) {                                            // the forest on its top
+    for (var j = 0; j < 3; j++) {
+      brush.fillStyle = ["#5d8c44", "#79a856", "#4a7638"][(k + j) % 3];
+      brush.beginPath(); brush.arc(pts[k][0] + (j - 1) * 8 * s, pts[k][1] - 4 * s - 6 * s * dice(k * 3 + j), (8 + 4 * dice(k + j)) * s, 0, 7); brush.fill();
+    }
+  }
+  for (k = 0; k < 9; k++) {                                                 // a ledge of trees across its face
+    brush.fillStyle = ["#5d8c44", "#4a7638"][k % 2];
+    brush.beginPath(); brush.arc(x - 90 * s + k * 14 * s, base - tall * 0.5 - 4 * s * dice(k), 8 * s, 0, 7); brush.fill();
+  }
+  if (look.cave !== false) {                                                // the cave at its foot
+    brush.fillStyle = "#1e1c18";
+    brush.beginPath(); brush.moveTo(x - 24 * s, base); brush.quadraticCurveTo(x - 22 * s, base - 66 * s, x + 10 * s, base - 72 * s);
+    brush.quadraticCurveTo(x + 40 * s, base - 52 * s, x + 44 * s, base); brush.closePath(); brush.fill();
+  }
+}
+
+// ---------- the Mae Khong's sandbars ----------
+// The river at Chiang Saen in the dry season, as thaibirding.com's Chiang Saen page and BirdLife's factsheet for the
+// Mekong channel near Pakchom have it: bars of sand and gravel, "the larger sandbanks ... covered in Homonoia riparia
+// scrub", small pratincoles "if there is any sand or gravel exposed", the river lapwing, little ringed plovers,
+// spot-billed ducks "often easily seen on the river", and prinias and red avadavats in the fringing grass, which
+// "drink and bathe in the river's margins". The owner's pick, 2026-10-23.
+
+// A bar of sand and gravel in the river, from x to x + wide, its top at y, tall pixels to the water; pebbles on it.
+// e.g. sandbar(pen, 600, 760, 700, 50, 3);
+function sandbar(brush, x, y, wide, tall, seed) {
+  brush.fillStyle = "#d9c79a";
+  brush.beginPath(); brush.moveTo(x, y + tall); brush.quadraticCurveTo(x + wide * 0.15, y, x + wide * 0.5, y + 2);
+  brush.quadraticCurveTo(x + wide * 0.85, y + 1, x + wide, y + tall); brush.closePath(); brush.fill();
+  brush.fillStyle = "#c2ad80";
+  brush.beginPath(); brush.moveTo(x + wide * 0.1, y + tall); brush.quadraticCurveTo(x + wide * 0.5, y + tall * 0.4, x + wide * 0.9, y + tall); brush.fill();
+  for (var p = 0; p < wide / 9; p++) {
+    brush.fillStyle = ["#9a8a70", "#b0a088", "#7d7060"][p % 3];
+    brush.beginPath(); brush.arc(x + wide * (0.1 + 0.8 * dice(seed + p)), y + tall * (0.4 + 0.5 * dice(seed * 2 + p)), 2 + 2 * dice(p), 0, 7); brush.fill();
+  }
+}
+
+// Khrai nam (ไคร้น้ำ, Homonoia riparia; PROSEA: a shrub 1 to 4 m, planted to hold river banks): a clump of willow-like
+// stems leaning downstream, narrow grey-green leaves, moving a little with t. Its foot at (x, base); size 1 is 150
+// pixels tall; seed varies the clump. e.g. khraiNam(pen, 1300, 780, 0.6, t, 1);
+function khraiNam(brush, x, base, size, t, seed) {
+  var lean = 0.25 + 0.05 * Math.sin((t || 0) * 1.3 + seed);
+  for (var s = 0; s < 9; s++) {
+    var sx = x + (dice(seed * 13 + s) - 0.5) * 60 * size, tall = (90 + 70 * dice(seed * 7 + s)) * size;
+    var tx = sx + tall * lean * (0.6 + 0.6 * dice(s + seed)), ty = base - tall;
+    brush.strokeStyle = "#6a5a40";
+    brush.lineWidth = 2.2 * size;
+    brush.beginPath(); brush.moveTo(sx, base); brush.quadraticCurveTo(sx + tall * lean * 0.2, base - tall * 0.6, tx, ty); brush.stroke();
+    for (var l = 0; l < 7; l++) {
+      var u = 0.35 + l * 0.09, lx = sx + (tx - sx) * u, ly = base + (ty - base) * u, side = l % 2 ? 1 : -1;
+      brush.fillStyle = ["#8a9e7a", "#a7b892", "#6f8662"][(l + s) % 3];
+      brush.beginPath(); brush.ellipse(lx + side * 9 * size, ly, 13 * size, 3.2 * size, side * 0.5 + lean, 0, 7); brush.fill();
+    }
+  }
+}
+
+// Tall reeds and wild cane along a bank from x to x + wide, their feet on base, the plumes nodding with t.
+// e.g. riverReeds(pen, 0, 900, 600, 1, t, 2);
+function riverReeds(brush, x, base, wide, size, t, seed) {
+  for (var r = 0; r < wide / 7; r++) {
+    var rx = x + r * 7 + 4 * dice(seed + r), tall = (110 + 70 * dice(seed * 3 + r)) * size;
+    var sway = 6 * Math.sin((t || 0) * 1.1 + r * 0.4) * size;
+    brush.strokeStyle = r % 3 ? "#7f8f4a" : "#9aa65a";
+    brush.lineWidth = 2;
+    brush.beginPath(); brush.moveTo(rx, base); brush.quadraticCurveTo(rx + 3, base - tall * 0.6, rx + sway, base - tall); brush.stroke();
+    if (r % 4 === 0) {
+      brush.fillStyle = "rgba(236, 226, 200, 0.85)";
+      brush.beginPath(); brush.ellipse(rx + sway + 4, base - tall - 12 * size, 5 * size, 16 * size, 0.3, 0, 7); brush.fill();
+    }
+  }
+}
+
+// One small bird of the sandbar, the shared shape: an oval body, a round head, a short tail, on two thin legs, or in
+// flight with its wings up or down. c holds its colours and parts; look: face (1 right, -1 left), peck (0 to 1: its
+// head down to the sand), fly (true: in the air, wings beating with t), t.
+function csBird(brush, x, y, size, look, c) {
+  look = look || {};
+  var face = look.face || 1, peck = look.peck || 0, t = look.t || 0, legs = look.fly ? 0 : c.legs;
+  brush.save(); brush.translate(x, y); brush.scale(face * size, size);
+  if (!look.fly) {
+    brush.strokeStyle = c.leg; brush.lineWidth = 1.6;
+    brush.beginPath(); brush.moveTo(-2, -legs); brush.lineTo(-4, 0); brush.moveTo(3, -legs); brush.lineTo(4, 0); brush.stroke();
+  }
+  brush.fillStyle = c.back;
+  brush.beginPath(); brush.ellipse(0, -legs - 9, 16, 9, -0.15 + 0.3 * peck, 0, 7); brush.fill();
+  brush.fillStyle = c.belly;
+  brush.beginPath(); brush.ellipse(2, -legs - 5, 12, 5, -0.1, 0, Math.PI); brush.fill();
+  brush.fillStyle = c.back;
+  brush.beginPath(); brush.moveTo(-14, -legs - 11); brush.lineTo(-26 - c.tail, -legs - 8 - 6 * peck); brush.lineTo(-14, -legs - 6); brush.fill();
+  if (look.fly) {                                                           // the wings, beating
+    var beat = Math.sin(t * 18) * 0.9;
+    brush.fillStyle = c.wing || c.back;
+    [1, -1].forEach(function (side) {
+      brush.beginPath(); brush.moveTo(-4, -legs - 12); brush.lineTo(-18, -legs - 12 - side * 26 * beat); brush.lineTo(8, -legs - 12); brush.fill();
+    });
+  }
+  var hx = 14 - 4 * peck, hy = -legs - 18 + 14 * peck;
+  brush.fillStyle = c.head;
+  brush.beginPath(); brush.arc(hx, hy, 7, 0, 7); brush.fill();
+  brush.fillStyle = c.bill;
+  brush.beginPath(); brush.moveTo(hx + 6, hy - 1); brush.lineTo(hx + 6 + c.billLong, hy + 0.5 + 3 * peck); brush.lineTo(hx + 6, hy + 2); brush.fill();
+  brush.fillStyle = "#1a1612"; brush.beginPath(); brush.arc(hx + 2, hy - 1, 1.6, 0, 7); brush.fill();
+  if (c.mark) { c.mark(brush, legs, hx, hy); }
+  brush.restore();
+}
+
+// The small pratincole: sandy grey, a black line from the bill through the eye, a short black bill, short legs; it sits
+// close on the sand and flies like a swallow. At (x, y), its feet. e.g. pratincole(pen, 700, 770, 1, {face: -1, t: t});
+function pratincole(brush, x, y, size, look) {
+  csBird(brush, x, y, size, look, {legs: 6, back: "#b8ab94", belly: "#efe7d6", head: "#b8ab94", bill: "#2a2420", wing: "#8a7e6a",
+    leg: "#3a3430", tail: 4, billLong: 5, mark: function (b, legs, hx, hy) {
+      b.strokeStyle = "#1a1612"; b.lineWidth = 1.6; b.beginPath(); b.moveTo(hx + 6, hy); b.lineTo(hx - 5, hy + 2); b.stroke();
+      b.fillStyle = "#2a2420"; b.fillRect(-24, -legs - 10, 8, 3); }});
+}
+
+// The river lapwing: a black cap and throat, grey-brown back, white belly with a black patch, long black legs.
+// e.g. riverLapwing(pen, 900, 770, 1, {face: 1});
+function riverLapwing(brush, x, y, size, look) {
+  csBird(brush, x, y, size, look, {legs: 22, back: "#9a8a70", belly: "#f4f2ea", head: "#f0ece2", bill: "#1a1612", wing: "#3a3430",
+    leg: "#1a1612", tail: 0, billLong: 7, mark: function (b, legs, hx, hy) {
+      b.fillStyle = "#1a1612"; b.beginPath(); b.arc(hx, hy - 3, 6, Math.PI, 0); b.fill();
+      b.fillRect(hx - 2, hy + 3, 5, 7); b.beginPath(); b.arc(6, -legs - 4, 3.5, 0, 7); b.fill(); }});
+}
+
+// The little ringed plover: brown back, a white collar and a black band across the breast, a yellow ring round the eye.
+// e.g. ringedPlover(pen, 640, 775, 1, {peck: 0.6});
+function ringedPlover(brush, x, y, size, look) {
+  csBird(brush, x, y, size, look, {legs: 10, back: "#a08868", belly: "#f6f2e8", head: "#a08868", bill: "#1a1612",
+    leg: "#c9a84a", tail: 2, billLong: 4, mark: function (b, legs, hx, hy) {
+      b.fillStyle = "#1a1612"; b.fillRect(hx - 6, hy + 5, 6, 4);
+      b.strokeStyle = "#e8c83a"; b.lineWidth = 1; b.beginPath(); b.arc(hx + 2, hy - 1, 2.6, 0, 7); b.stroke(); }});
+}
+
+// The red avadavat: a tiny finch, the male crimson with white spots and a red bill; drinking at the margin.
+// e.g. redAvadavat(pen, 500, 900, 1, {peck: 0.8});
+function redAvadavat(brush, x, y, size, look) {
+  csBird(brush, x, y, size * 0.55, look, {legs: 6, back: "#c0303a", belly: "#a02a32", head: "#c8343e", bill: "#e04a3a",
+    leg: "#b08a7a", tail: 2, billLong: 4, mark: function (b, legs) {
+      b.fillStyle = "#fff"; [[-4, -legs - 12], [2, -legs - 7], [-8, -legs - 6]].forEach(function (p) { b.beginPath(); b.arc(p[0], p[1], 1.3, 0, 7); b.fill(); }); }});
+}
+
+// The Indian spot-billed duck, swimming: a brown scaled body, a pale face, a dark crown, a black bill tipped yellow;
+// it bobs with t. At (x, y), the waterline. e.g. spotbill(pen, 300, 800, 1, {face: 1, t: t});
+function spotbill(brush, x, y, size, look) {
+  look = look || {};
+  var face = look.face || 1, bob = Math.sin((look.t || 0) * 2 + x) * 1.5;
+  brush.save(); brush.translate(x, y + bob); brush.scale(face * size, size);
+  brush.fillStyle = "#6a5440"; brush.beginPath(); brush.ellipse(0, -8, 26, 10, 0, Math.PI, 0); brush.fill();
+  brush.fillStyle = "#4a3a2c"; brush.beginPath(); brush.moveTo(-26, -8); brush.lineTo(-34, -14); brush.lineTo(-22, -12); brush.fill();
+  brush.fillStyle = "#d8c8a8"; brush.beginPath(); brush.ellipse(18, -24, 8, 7, 0, 0, 7); brush.fill();
+  brush.fillRect(14, -20, 6, 12);
+  brush.fillStyle = "#3a2c22"; brush.beginPath(); brush.arc(18, -27, 6, Math.PI, 0); brush.fill();
+  brush.fillStyle = "#1a1612"; brush.fillRect(25, -25, 11, 4);
+  brush.fillStyle = "#e8c83a"; brush.fillRect(33, -25, 4, 4);
+  brush.strokeStyle = "rgba(240, 236, 220, 0.6)"; brush.lineWidth = 1.5;
+  brush.beginPath(); brush.ellipse(0, -2, 32, 4, 0, 0, Math.PI); brush.stroke();
+  brush.restore();
+}
+
+// ---------- the tale's things ----------
+
+// The smiths' forge: a clay hearth with its fire, the upright bellows of mainland Southeast Asia (two tubes of bamboo,
+// a plunger in each, worked turn and turn about) and an anvil of iron on a log. The hearth's foot's middle on (x, base),
+// size 1 about 340 wide; t moves the fire and the plungers. e.g. forge(pen, 800, 900, 1, t);
+function forge(brush, x, base, size, t) {
+  var s = size;
+  brush.fillStyle = "#9a6a4a";
+  brush.beginPath(); brush.moveTo(x - 70 * s, base); brush.lineTo(x - 60 * s, base - 60 * s); brush.lineTo(x + 60 * s, base - 60 * s); brush.lineTo(x + 70 * s, base); brush.fill();
+  for (var f = 0; f < 5; f++) {
+    var fx = x - 30 * s + f * 15 * s, fh = (30 + 18 * Math.sin((t || 0) * 9 + f * 1.7)) * s;
+    brush.fillStyle = f % 2 ? "#f2a23c" : "#e0582a";
+    brush.beginPath(); brush.moveTo(fx - 10 * s, base - 58 * s); brush.quadraticCurveTo(fx, base - 58 * s - fh, fx + 10 * s, base - 58 * s); brush.fill();
+  }
+  brush.fillStyle = "#f6d06a";
+  brush.beginPath(); brush.arc(x, base - 64 * s, 10 * s, 0, 7); brush.fill();
+  for (var b = 0; b < 2; b++) {
+    var bx = x - 120 * s + b * 26 * s, up = 20 * s * Math.sin((t || 0) * 4 + b * Math.PI);
+    brush.fillStyle = "#b8a058"; brush.fillRect(bx, base - 110 * s, 20 * s, 110 * s);
+    brush.strokeStyle = "#7a6a30"; brush.lineWidth = 2; brush.strokeRect(bx, base - 110 * s, 20 * s, 110 * s);
+    brush.fillStyle = "#6a4a2a"; brush.fillRect(bx + 8 * s, base - 150 * s + up, 4 * s, 50 * s);
+  }
+  brush.fillStyle = "#6a4a2a"; brush.fillRect(x + 100 * s, base - 40 * s, 50 * s, 40 * s);
+  brush.fillStyle = "#3a3a40";
+  brush.beginPath(); brush.moveTo(x + 92 * s, base - 40 * s); brush.lineTo(x + 160 * s, base - 40 * s); brush.lineTo(x + 150 * s, base - 62 * s);
+  brush.lineTo(x + 102 * s, base - 62 * s); brush.closePath(); brush.fill();
+}
+
+// A dap (ดาบ), the long Lanna sword, point up, its hilt's top at (x, y): a long, slightly curved blade, a wooden hilt
+// bound with cord. size 1 is 300 long; look: angle (radians, 0 upright), sheath (true: its sheath beside it).
+// e.g. dap(pen, 900, 600, 0.5, {angle: 0.3});
+function dap(brush, x, y, size, look) {
+  look = look || {};
+  var s = size;
+  brush.save(); brush.translate(x, y); brush.rotate(look.angle || 0);
+  brush.fillStyle = "#c9ccd2";
+  brush.beginPath(); brush.moveTo(-5 * s, 0); brush.quadraticCurveTo(-14 * s, -140 * s, 4 * s, -230 * s);
+  brush.quadraticCurveTo(8 * s, -120 * s, 5 * s, 0); brush.closePath(); brush.fill();
+  brush.strokeStyle = "#7a7c84"; brush.lineWidth = 1.5; brush.stroke();
+  brush.fillStyle = "#6a4a2a"; brush.fillRect(-5 * s, 0, 10 * s, 70 * s);
+  brush.fillStyle = "#3a2a1a";
+  for (var k = 0; k < 6; k++) { brush.fillRect(-5 * s, 8 * s + k * 10 * s, 10 * s, 3 * s); }
+  if (look.sheath) {
+    brush.fillStyle = "#5a2e1e";
+    brush.beginPath(); brush.moveTo(30 * s, 70 * s); brush.quadraticCurveTo(22 * s, -140 * s, 40 * s, -230 * s);
+    brush.lineTo(50 * s, -228 * s); brush.quadraticCurveTo(40 * s, -120 * s, 44 * s, 70 * s); brush.fill();
+  }
+  brush.restore();
+}
+
+// A fire-gun (ปืนไฟ, the chronicle's), a long matchlock, its butt at (x, y): a wooden stock, an iron barrel, a match
+// cord smoking a little at the lock. size 1 is 280 long; look: angle (radians; -0.5 by default, raised), t.
+// e.g. fireGun(pen, 1000, 700, 0.8, {angle: -0.3, t: t});
+function fireGun(brush, x, y, size, look) {
+  look = look || {};
+  var s = size;
+  brush.save(); brush.translate(x, y); brush.rotate(look.angle === undefined ? -0.5 : look.angle);
+  brush.fillStyle = "#7a4a26";
+  brush.beginPath(); brush.moveTo(0, -8 * s); brush.lineTo(60 * s, -6 * s); brush.lineTo(120 * s, -4 * s);
+  brush.lineTo(120 * s, 4 * s); brush.lineTo(50 * s, 6 * s); brush.lineTo(0, 14 * s); brush.closePath(); brush.fill();
+  brush.fillStyle = "#4a4a50"; brush.fillRect(80 * s, -6 * s, 200 * s, 7 * s);
+  brush.fillStyle = "#3a3a40"; brush.fillRect(272 * s, -8 * s, 8 * s, 11 * s);
+  brush.strokeStyle = "#c9b48a"; brush.lineWidth = 2;
+  brush.beginPath(); brush.moveTo(70 * s, -6 * s); brush.quadraticCurveTo(60 * s, -30 * s, 76 * s, -36 * s); brush.stroke();
+  brush.fillStyle = "rgba(200, 200, 200, 0.5)";
+  brush.beginPath(); brush.arc(78 * s, -44 * s - 6 * Math.sin((look.t || 0) * 2), 5 * s, 0, 7); brush.fill();
+  brush.restore();
+}
+
+// The hook Phrom cuts (ขอไม้ไล่): the chronicle's footnote (Prachum Phongsawadan 61, 1936, note 70) says of it "ชื่อไม้
+// ชะนิดหนึ่งในจำพวกไม้ไผ่ แต่ไม่มีหนามลำเล็ก ๆ มีแขนงเป็นขอดีนัก", a kind of bamboo with no thorns, small culms, whose
+// side branches make very good hooks: a culm of bamboo, its nodes showing, a side branch left on near the top and cut
+// short to make the hook. Its foot at (x, base); size 1 is 190 tall; look: angle (radians, 0 upright).
+// e.g. elephantHook(pen, 700, 900, 1, {angle: 0.2});
+function elephantHook(brush, x, base, size, look) {
+  look = look || {};
+  var s = size;
+  brush.save(); brush.translate(x, base); brush.rotate(look.angle || 0);
+  brush.lineCap = "round";
+  brush.strokeStyle = "#a8a050";                                            // the culm
+  brush.lineWidth = 8 * s;
+  brush.beginPath(); brush.moveTo(0, 0); brush.lineTo(4 * s, -190 * s); brush.stroke();
+  brush.strokeStyle = "#7a7430";                                            // its nodes
+  brush.lineWidth = 2 * s;
+  for (var k = 1; k < 6; k++) { brush.beginPath(); brush.moveTo(-5 * s, -k * 32 * s); brush.lineTo(9 * s, -k * 32 * s - 1); brush.stroke(); }
+  brush.strokeStyle = "#a8a050";                                            // the side branch, cut short: the hook
+  brush.lineWidth = 5 * s;
+  brush.beginPath(); brush.moveTo(3 * s, -160 * s); brush.quadraticCurveTo(24 * s, -168 * s, 30 * s, -146 * s); brush.stroke();
+  brush.lineCap = "butt";
+  brush.restore();
+}
+
+// A carrying pole (คาน) across the shoulder with a basket at each end on cords; the pole's middle at (x, y). size 1 is
+// 260 wide; look: gold (true: the tribute's gold showing in the baskets).
+// e.g. carryPole(pen, 600, 700, 0.8, {gold: true});
+function carryPole(brush, x, y, size, look) {
+  look = look || {};
+  var s = size;
+  brush.strokeStyle = "#a8884a"; brush.lineWidth = 7 * s;
+  brush.beginPath(); brush.moveTo(x - 130 * s, y); brush.quadraticCurveTo(x, y - 12 * s, x + 130 * s, y); brush.stroke();
+  [-1, 1].forEach(function (side) {
+    var bx = x + side * 118 * s;
+    brush.strokeStyle = "#5a4a30"; brush.lineWidth = 2;
+    brush.beginPath(); brush.moveTo(bx, y); brush.lineTo(bx - 22 * s, y + 70 * s); brush.moveTo(bx, y); brush.lineTo(bx + 22 * s, y + 70 * s); brush.stroke();
+    brush.fillStyle = "#c79a5a";
+    brush.beginPath(); brush.moveTo(bx - 30 * s, y + 70 * s); brush.lineTo(bx + 30 * s, y + 70 * s);
+    brush.lineTo(bx + 24 * s, y + 110 * s); brush.lineTo(bx - 24 * s, y + 110 * s); brush.closePath(); brush.fill();
+    if (look.gold) {
+      brush.fillStyle = "#e8c044";
+      for (var g = 0; g < 4; g++) { brush.beginPath(); brush.arc(bx - 15 * s + g * 10 * s, y + 68 * s, 7 * s, 0, 7); brush.fill(); }
+    }
+  });
+}
+
+// A pan for gold (the chronicle: another copy has "หาร่อนคำ", panning for gold, for the tribute): a wide shallow pan of
+// wood, its middle at (x, y), tilted with look.tilt (radians), water swirling in it with t and, with look.gold, a
+// few grains shining in the bottom. size 1 is 120 across. e.g. goldPan(pen, 700, 880, 1, {tilt: 0.2, gold: true, t: t});
+function goldPan(brush, x, y, size, look) {
+  look = look || {};
+  var s = size;
+  brush.save(); brush.translate(x, y); brush.rotate(look.tilt || 0);
+  brush.fillStyle = "#7a5432";
+  brush.beginPath(); brush.ellipse(0, 0, 60 * s, 16 * s, 0, 0, 7); brush.fill();
+  brush.fillStyle = "#9a6e44";
+  brush.beginPath(); brush.ellipse(0, -2 * s, 52 * s, 11 * s, 0, 0, 7); brush.fill();
+  brush.strokeStyle = "rgba(220, 235, 240, 0.7)"; brush.lineWidth = 1.5;
+  brush.beginPath(); brush.ellipse(0, -2 * s, 34 * s, 6 * s, (look.t || 0) * 2, 0.4, 4.2); brush.stroke();
+  if (look.gold) {
+    brush.fillStyle = "#f2d04a";
+    for (var g = 0; g < 5; g++) { brush.beginPath(); brush.arc((g - 2) * 6 * s, 2 * s + (g % 2) * 2 * s, 1.8 * s, 0, 7); brush.fill(); }
+  }
+  brush.restore();
+}
+
+// A salung (สลุง), the wide Lanna bowl of beaten metal with a flared lip and a band of beaten figures, here of gold
+// and heaped with grass, as the elephant's vessels were: the chronicle has all its vessels of gold, for its grass and
+// even for its dung (their word, รวงทวง, is "not known" to the 1936 editors, note 73), so they take the forms of Lanna
+// metalwork. Its foot's middle on (x, base); size 1 is 140 across; look: grass (true).
+// e.g. salung(pen, 800, 900, 1, {grass: true});
+function salung(brush, x, base, size, look) {
+  look = look || {};
+  var s = size;
+  brush.fillStyle = "#c9962a";
+  brush.beginPath(); brush.moveTo(x - 70 * s, base - 46 * s); brush.quadraticCurveTo(x - 60 * s, base, x, base);
+  brush.quadraticCurveTo(x + 60 * s, base, x + 70 * s, base - 46 * s); brush.closePath(); brush.fill();
+  brush.fillStyle = "#e8bc4a";                                              // the band of beaten figures
+  brush.fillRect(x - 64 * s, base - 36 * s, 128 * s, 12 * s);
+  brush.fillStyle = "#b8862a";
+  for (var k = 0; k < 7; k++) { brush.beginPath(); brush.arc(x - 54 * s + k * 18 * s, base - 30 * s, 4 * s, 0, 7); brush.fill(); }
+  brush.fillStyle = "#f2d27a";                                              // the flared lip
+  brush.beginPath(); brush.ellipse(x, base - 46 * s, 74 * s, 10 * s, 0, 0, 7); brush.fill();
+  if (look.grass !== false) {
+    brush.strokeStyle = "#7aa04c"; brush.lineWidth = 2.5;
+    for (var g = 0; g < 18; g++) {
+      var gx = x - 54 * s + g * 6 * s;
+      brush.beginPath(); brush.moveTo(gx, base - 48 * s); brush.quadraticCurveTo(gx + 8 * s, base - 72 * s, gx + 14 * s * dice(g), base - 82 * s); brush.stroke();
+    }
+  }
+}
+
+// A round pot of gold with its lid, the form of the north's round-bellied pots: the elephant's other vessel. Its foot's
+// middle on (x, base); size 1 is 110 across. e.g. goldPot(pen, 980, 900, 1);
+function goldPot(brush, x, base, size) {
+  var s = size;
+  brush.fillStyle = "#d9a83a";
+  brush.beginPath(); brush.moveTo(x - 26 * s, base - 70 * s);
+  brush.bezierCurveTo(x - 60 * s, base - 50 * s, x - 50 * s, base, x, base);
+  brush.bezierCurveTo(x + 50 * s, base, x + 60 * s, base - 50 * s, x + 26 * s, base - 70 * s); brush.closePath(); brush.fill();
+  brush.strokeStyle = "#a8782a"; brush.lineWidth = 2; brush.stroke();
+  brush.fillStyle = "#f2d27a"; brush.beginPath(); brush.ellipse(x - 18 * s, base - 40 * s, 8 * s, 18 * s, -0.3, 0, 7); brush.fill();
+  brush.fillStyle = "#c9962a"; brush.beginPath(); brush.ellipse(x, base - 72 * s, 28 * s, 7 * s, 0, 0, 7); brush.fill();
+  brush.beginPath(); brush.arc(x, base - 80 * s, 6 * s, 0, 7); brush.fill();
+}
+
+// A hanging cradle (อู่) of cloth slung from a beam on two cords, swinging with t, a baby swaddled in it; the sling's
+// lowest point at (x, y); size 1 is 150 across. look: baby (true), beam (true: the beam it hangs from).
+// e.g. hangingCradle(pen, 900, 760, 1, t, {});
+function hangingCradle(brush, x, y, size, t, look) {
+  look = look || {};
+  var s = size, swing = Math.sin((t || 0) * 1.6) * 10 * s, top = y - 170 * s, w = 150 * s;
+  brush.strokeStyle = "#6a4a2a"; brush.lineWidth = 3 * s;
+  brush.beginPath();
+  brush.moveTo(x - w / 2 + swing, y - 20 * s); brush.lineTo(x - 20 * s, top);
+  brush.moveTo(x + w / 2 + swing, y - 20 * s); brush.lineTo(x + 20 * s, top);
+  brush.stroke();
+  if (look.beam !== false) { brush.fillStyle = "#7a5432"; brush.fillRect(x - 160 * s, top - 10 * s, 320 * s, 12 * s); }
+  brush.fillStyle = "#d8b878";
+  brush.beginPath();
+  brush.moveTo(x - w / 2 + swing, y - 22 * s);
+  brush.quadraticCurveTo(x + swing, y + 22 * s, x + w / 2 + swing, y - 22 * s);
+  brush.quadraticCurveTo(x + swing, y - 6 * s, x - w / 2 + swing, y - 22 * s);
+  brush.fill();
+  brush.strokeStyle = "#a8323a"; brush.lineWidth = 3 * s; brush.stroke();
+  if (look.baby !== false) { swaddledBaby(brush, x + swing, y - 26 * s, s * 0.9); }
+}
+
+// A baby swaddled in cloth, lying, its head to the left, eyes shut, a tuft of hair. At (x, y), its middle.
+// e.g. swaddledBaby(pen, 900, 730, 1);
+function swaddledBaby(brush, x, y, size) {
+  var s = size;
+  brush.fillStyle = "#f2ead8";
+  brush.beginPath(); brush.ellipse(x + 12 * s, y, 46 * s, 18 * s, 0, 0, 7); brush.fill();
+  brush.fillStyle = "#f1cda8";
+  brush.beginPath(); brush.arc(x - 34 * s, y - 4 * s, 18 * s, 0, 7); brush.fill();
+  brush.strokeStyle = "#5a3a2a"; brush.lineWidth = 2 * s;
+  brush.beginPath(); brush.arc(x - 38 * s, y - 4 * s, 4 * s, 0.2, Math.PI - 0.2); brush.stroke();
+  brush.beginPath(); brush.arc(x - 28 * s, y - 4 * s, 4 * s, 0.2, Math.PI - 0.2); brush.stroke();
+  brush.fillStyle = "#2a2220";
+  brush.beginPath(); brush.arc(x - 36 * s, y - 21 * s, 5 * s, 0, 7); brush.fill();
+}
+
+// A novice's alms bowl of dark lacquer, its lid off, on its cloth sling, held at the waist: at (x, y), its rim's middle.
+// Kit only: never in the maker (the respect rule). size 1 is 60 across. e.g. almsBowl(pen, 820, 700, 1);
+function almsBowl(brush, x, y, size) {
+  var s = size;
+  brush.fillStyle = "#2a2622";
+  brush.beginPath(); brush.ellipse(x, y + 16 * s, 30 * s, 26 * s, 0, 0, Math.PI); brush.fill();
+  brush.fillRect(x - 30 * s, y + 2 * s, 60 * s, 14 * s);
+  brush.fillStyle = "#4a443c";
+  brush.beginPath(); brush.ellipse(x, y + 2 * s, 30 * s, 8 * s, 0, 0, 7); brush.fill();
+  brush.strokeStyle = "#b8732a"; brush.lineWidth = 4 * s;
+  brush.beginPath(); brush.moveTo(x - 30 * s, y + 8 * s); brush.quadraticCurveTo(x - 50 * s, y - 60 * s, x - 10 * s, y - 120 * s); brush.stroke();
+}
+
+// Indra's wall (the chronicle: a deva "เนรมิตกำแพงหินศิลา", raises a wall of stone before Phrom): cut stone rising out
+// of the ground across x..x + wide, u 0 (none) to 1 (risen to tall pixels), a deva's light along its top as it rises,
+// dust at its foot. The owner's pick, 2026-10-23. e.g. risingWall(pen, 600, 900, 700, 360, between(t, 2, 5));
+function risingWall(brush, x, base, wide, tall, u) {
+  var h = tall * Math.max(0, Math.min(1, u));
+  if (h <= 0) { return; }
+  brush.save();
+  brush.beginPath(); brush.rect(x - 20, base - h, wide + 40, h); brush.clip();
+  for (var row = 0; row * 40 < tall; row++) {
+    for (var k = 0; k < wide / 70 + 1; k++) {
+      var bx = x + k * 70 - (row % 2) * 35, by = base - (row + 1) * 40 + (tall - h);
+      brush.fillStyle = ["#9a968a", "#8a8678", "#a8a496"][(row + k) % 3];
+      brush.fillRect(bx + 2, by + 2, 66, 36);
+      brush.strokeStyle = "#6a665a"; brush.lineWidth = 1.5; brush.strokeRect(bx + 2, by + 2, 66, 36);
+    }
+  }
+  brush.restore();
+  if (u < 1) {
+    var glow = brush.createLinearGradient(0, base - h - 30, 0, base - h + 10);
+    glow.addColorStop(0, "rgba(255, 240, 180, 0)"); glow.addColorStop(1, "rgba(255, 240, 180, 0.8)");
+    brush.fillStyle = glow; brush.fillRect(x - 20, base - h - 30, wide + 40, 40);
+  }
+  brush.fillStyle = "rgba(140, 120, 90, " + (0.5 * (1 - u * 0.6)) + ")";
+  brush.beginPath(); brush.ellipse(x + wide / 2, base, wide / 2 + 30, 14, 0, 0, 7); brush.fill();
+}
+
+// The pool round the base of the Chang Ngu statue at the roundabout before Chiang Saen (the Ministry of Culture's page:
+// a fountain, lit 18:00 to 21:00), its jets playing with t; the plinth in its middle, its top at (x, y - 60 * size),
+// where the statue stands. Its middle at (x, y); size 1 is 520 across. The owner's pick, 2026-10-23.
+// e.g. statuePool(pen, 960, 900, 1, t); changNgu(960, 840, {size: 0.4});
+function statuePool(brush, x, y, size, t) {
+  var s = size;
+  brush.fillStyle = "#cfc6b4"; brush.beginPath(); brush.ellipse(x, y, 260 * s, 46 * s, 0, 0, 7); brush.fill();
+  brush.fillStyle = "#5f9eae"; brush.beginPath(); brush.ellipse(x, y - 6 * s, 236 * s, 36 * s, 0, 0, 7); brush.fill();
+  for (var j = 0; j < 7; j++) {
+    var jx = x - 180 * s + j * 60 * s, jh = (60 + 20 * Math.sin((t || 0) * 3 + j)) * s;
+    brush.strokeStyle = "rgba(230, 245, 250, 0.8)"; brush.lineWidth = 3;
+    brush.beginPath(); brush.moveTo(jx, y - 6 * s); brush.quadraticCurveTo(jx + 10 * s, y - 6 * s - jh, jx + 24 * s, y - 10 * s); brush.stroke();
+  }
+  brush.fillStyle = "#e6dfcf"; brush.fillRect(x - 70 * s, y - 60 * s, 140 * s, 54 * s);
+}
