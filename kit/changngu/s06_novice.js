@@ -32,10 +32,10 @@ function c06Lane(t) {
     }},
     {name: "woman", kind: "person", x: 1090, y: CNG_LANE_Y + 10, draw: function () {
       person(1090, CNG_LANE_Y + 10, cngPerson("weaver", {size: 0.72, id: "giver", face: -1, feel: "happy",
-                                                       reachA: giving > 0 ? [mix(1050, 960, giving), CNG_LANE_Y - 165] : [1060, CNG_LANE_Y - 130],
+                                                       reachA: [mix(1060, 960, giving), mix(CNG_LANE_Y - 130, CNG_LANE_Y - 165, giving)],   // from rest to his bowl and back: no jump (pop_check)
                                                        at: [x, CNG_LANE_Y - 200]}));
       pen.fillStyle = "#f6f0e2";                           // a ball of sticky rice in her hand
-      pen.beginPath(); pen.arc(giving > 0 ? mix(1050, 960, giving) : 1060, (giving > 0 ? CNG_LANE_Y - 168 : CNG_LANE_Y - 132), 8, 0, 7); pen.fill();
+      pen.beginPath(); pen.arc(mix(1060, 960, giving), mix(CNG_LANE_Y - 132, CNG_LANE_Y - 168, giving), 8, 0, 7); pen.fill();
     }}
   ]);
 }
@@ -48,13 +48,15 @@ function c06Court(t) {
   cumulus(pen, t + 70, CNG_CLOUDS.day);
   pen.drawImage(cngCourt(), 0, 0);
   var speaking = C06_SPEAKS.some(function (s) { return t >= s[0] && t < s[1]; });
+  var rest = [p[0] - 150, floor - 55], points = [p[0] - 330, floor - 160];   // his hand at his side; pointing at the novice
+  var arm = poseSteps(t, [[0, {reachA: rest}], [23.56, {reachA: points}], [32.0, {reachA: rest}]], 0.35);   // eased, not switched (pop_check)
   var turned = t > 30.7, goes = between(t, 32.2, 41.2), nx = mix(620, -200, goes);
   drawByZ([
     {name: "hall, back", kind: "palace", z: "set", y: floor - 1, draw: function () { cngPalace("back"); }},
     {name: "hall, front", kind: "palace", z: "set", y: floor, draw: function () { cngPalace("front"); }},
     {name: "khom king", kind: "person", x: p[0] - 120, y: floor + 60, draw: function () {
       person(p[0] - 120, floor + 60, cngPerson("khomsoldier", CNG_KHOM_KING, {id: "khomking", face: -1, feel: speaking || t > 22 ? "angry" : undefined,
-                                                                             reachA: t > 23.56 && t < 32.0 ? [p[0] - 330, floor - 160] : undefined,
+                                                                             reachA: arm.reachA,
                                                                              mouth: speaking ? {open: 0.06 + 0.26 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined,
                                                                              at: [nx, CNG_LANE_Y - 200]}));
     }},
