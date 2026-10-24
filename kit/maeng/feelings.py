@@ -27,7 +27,7 @@ FEEL = {
     # 3: work for the headman, never a complaint
     "M012": "calm", "M013": "calm", "M014": "tender",
     # 4: the father's illness, his wish, his death
-    "M015": "sad", "M016": "tender", "M017": "tender", "M018": "tender", "M019": "sad", "M020": "mystery",
+    "M015": "sad", "M016": "tender", "M017": "tender", "M018": "tender", "M019": "sad", "M020": "sad",
     "M021": "tender", "M022": "grief", "M023": "grief",
     # 5: up the mountain with the rope; the snare at the cave
     "M024": "calm", "M025": "tense", "M026": "mystery", "M027": "calm",

@@ -2,11 +2,11 @@
 // Dusk. Thukkhata, older, climbs the path up Doi Khao Khwai, pulling a rope behind him; it runs back out of
 // sight behind the rock at the foot of the path, and nothing of what it pulls is shown. At the cave's mouth the
 // rope catches and will not come. He lets it go, sets his snare there as his father asked, and goes home.
-var S05_LONG = 45;
+var S05_LONG = 45.79;   // 45 until 2026-10-24: 0.79 s inserted for the narrator's own reading of M024 (scene_retime.py)
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the crickets of dusk on the mountain.
-var S05_SOUND = {calls: [[0, "crickets", 0.3, 45]]};
-var S05_LINES = [[3.0, 6.68, "M024"], [8.0, 13.0, "M025"], [21.5, 27.44, "M026"], [32.0, 36.82, "M027"]];
+var S05_SOUND = {calls: [[0, "crickets", 0.3, 45.79]]};
+var S05_LINES = [[3.0, 8.59, "M024"], [8.79, 12.89, "M025"], [22.29, 28.27, "M026"], [32.79, 36.47, "M027"]];
 var S05_TOP = MAENG_SLOPE_CAVE[0] - 140;            // where he stops, below the cave's ledge
 var S05_SNARE = [MAENG_SLOPE_CAVE[0] - 60, MAENG_SLOPE_CAVE[1] + 8];
 var S05_CLOUDS = {count: 5, lit: "#f6b07a", shade: "#9a5a6a", below: true};
@@ -26,10 +26,10 @@ function s05Crowns(list, size, seed, tint) {          // the forest's own crowns
 // Its life: a band of mist drifting across the slope at dusk, below the cave; and a great hornbill crossing the
 // sky on its slow heavy wings, in the quiet between "pulling the rope behind him" (M025) and the rope catching (M026).
 var S05_LIFE = [
-  {name: "great hornbill", kind: "hornbill", z: "sky", look: {size: 0.5}, course: [[13.6, 2150, 230], [21.0, -260, 150]]},
+  {name: "great hornbill", kind: "hornbill", z: "sky", look: {size: 0.5}, course: [[14.39, 2150, 230], [21.79, -260, 150]]},
   // the creature, unseen in its cave, howls once as the snare is set and dusk comes on (sounds.py, maeng-base)
   {name: "the creature's howl", kind: "flock", z: "sky", course: [[0, -999, -999], [0.1, -999, -999]],
-   calls: [[38.0, "maeng-base", 0.87]]}
+   calls: [[38.79, "maeng-base", 0.87]]}
 ];
 
 // Scene 5, the entry the film calls (SCENES): t, its own second, 0 to S05_LONG (45 s): he climbs to 21 s, the rope
@@ -56,28 +56,28 @@ function sceneClimb(t) {
     }},
     {name: "crowns before", kind: "trees", z: "set", draw: function () { s05Crowns(S05_BEFORE, size * 1.6, 9, tint); }}
   ]);
-  var set = between(t, 29, 33);                     // the snare: he bends the pole down and sets it
-  if (t > 28.5) {
+  var set = between(t, 29.79, 33.79);                     // the snare: he bends the pole down and sets it
+  if (t > 29.29) {
     sprites.push({name: "snare", kind: "snare", x: S05_SNARE[0], y: S05_SNARE[1], draw: function () {
       snare(pen, S05_SNARE[0], S05_SNARE[1], 0.62, {sprung: 1 - set, t: t, tint: tint});
     }});
   }
-  var lad = maengPerson("boy", MAENG_LAD, {id: "lad", feel: t < 21 ? "concerned" : t < 27 ? "surprised" : "concerned"});
-  var go, x, ground, roping = t < 27;
-  if (t < 21) {                                     // up the path, leaning into the pull
+  var lad = maengPerson("boy", MAENG_LAD, {id: "lad", feel: t < 21.79 ? "concerned" : t < 27.79 ? "surprised" : "concerned"});
+  var go, x, ground, roping = t < 27.79;
+  if (t < 21.79) {                                     // up the path, leaning into the pull
     go = stroll(t, 110, S05_TOP, 2, Object.assign(lad, {stride: 0.62}));   // slow, up the hill
     lad = Object.assign(go.look, {bend: 0.16});
-  } else if (t < 38) {                              // at the top: the rope will not come; then the snare
+  } else if (t < 38.79) {                              // at the top: the rope will not come; then the snare
     go = {x: S05_TOP, look: lad};
-    if (t < 27) {
-      var tug = Math.max(0, Math.sin((t - 21) * 3.2));
+    if (t < 27.79) {
+      var tug = Math.max(0, Math.sin((t - 21.79) * 3.2));
       lad = Object.assign(lad, {face: -1, bend: -0.12 * tug});
     } else {                                        // down to the snare, and up again: each eased over half a second (poseSteps;
       lad = Object.assign(lad, {face: 1}, poseSteps(t, [   // he once stood up in one frame, a pop: checks/pop_check.py)
-        [0, {}], [27, {sit: 1, bend: 0.7, reachA: [S05_SNARE[0] - 10, S05_SNARE[1] - 30]}], [34, {smile: 0.2}]], 0.5));
+        [0, {}], [27.79, {sit: 1, bend: 0.7, reachA: [S05_SNARE[0] - 10, S05_SNARE[1] - 30]}], [34.79, {smile: 0.2}]], 0.5));
     }
   } else {                                          // home again, down the path
-    go = stroll(t, S05_TOP, -200, 38, lad);
+    go = stroll(t, S05_TOP, -200, 38.79, lad);
     lad = go.look;
   }
   x = go.x;
@@ -85,7 +85,7 @@ function sceneClimb(t) {
   sprites.push({name: "lad", kind: "person", x: x, y: ground, draw: function () { s05Lad(t, x, ground, lad, roping, tint); }});
   drawByZ(sprites);
   pen.drawImage(slope.foreDusk, 0, 0);              // the rock before it all: the rope goes behind it
-  var dark = Math.max(1 - between(t, 0, 2), between(t, 43, 45));
+  var dark = Math.max(1 - between(t, 0, 2), between(t, 43.79, 45.79));
   if (dark > 0) {
     pen.fillStyle = "rgba(0, 0, 0, " + dark.toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);
@@ -103,7 +103,7 @@ function s05Lad(t, x, ground, lad, roping, tint) {
     pen.setTransform(1, 0, 0, 1, 0, 0);             // the joints are in the film's own pixels
     // A cord of twisted rattan, as the snare's (owner, 2026-10-23: "Change the rope he pulls up the hill ... to look
     // more like the snare rope"; it was a pale line)
-    var tight = t > 21 ? 0.15 : 0.6;                // pulled taut when it catches
+    var tight = t > 21.79 ? 0.15 : 0.6;                // pulled taut when it catches
     var a = joints.wristB, c = [(a[0] + end.x) / 2, Math.max(a[1], end.y) + 40 * PIX * tight], rope = [];
     for (var k = 0; k <= 24; k++) {
       var u = k / 24, v = 1 - u;

@@ -1,18 +1,21 @@
-// s07_embers.js - scene 7 of the film of the creature with four ears and five eyes: what it eats (55 s).
+// s07_embers.js - scene 7 of the film of the creature with four ears and five eyes: what it eats (57.52 s; 55 s
+// until 2026-10-24, when the narrator's own words for M041 and M042 came in longer: 1.32 s inserted at 29.0 s,
+// before the first ember jumps, 1.2 s at 34.5 s, before he laughs, every moment after them moved with them,
+// film_relayout.py in the voice project).
 // By day, in a pen by the hut where no one can see it: Thukkhata holds out grass, then a banana, and the
 // creature turns away from each, and sleeps all day. A cold night: he lights a fire to keep warm; pop, an ember
 // jumps out of it, and the creature catches it, crunches it, and its five eyes light up. He laughs. From then on
 // he feeds it embers every day.
-var S07_LONG = 55;
+var S07_LONG = 57.52;
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the cicadas by day at the pen; the crickets of the cold night.
-var S07_SOUND = {calls: [[0, "cicadas", 0.5, 18.5], [18.5, "crickets", 0.35, 36.5]]};
-var S07_LINES = [[2.0, 8.3, "M036"], [8.4, 12.6, "M037"], [12.8, 15.9, "M038"], [16.1, 18.22, "M039"], [19.6, 26.2, "M040"],
-                 [26.3, 30.16, "M041"], [30.36, 34.5, "M042"], [34.7, 38.38, "M043"], [38.58, 43.2, "M044"]];
+var S07_SOUND = {calls: [[0, "cicadas", 0.5, 18.5], [18.5, "crickets", 0.35, 39.02]]};
+var S07_LINES = [[2.0, 6.84, "M036"], [8.4, 11.62, "M037"], [12.8, 16.08, "M038"], [16.28, 18.46, "M039"], [19.6, 24.62, "M040"],
+                 [26.3, 31.48, "M041"], [31.68, 37.02, "M042"], [37.22, 41.1, "M043"], [41.3, 46.0, "M044"]];
 var S07_FIRE = [1430, 952];
 var S07_CAMERA = [1220, 740, 1.6];                  // the camera close on the pen and the fire: its middle and its nearness (no lower than 1080 - 540 / 1.6, or the sheet's foot shows)
 var S07_NIGHT = 18.5;                               // the cut to night
-var S07_FEEDS = [29.4, 44.1, 47.1, 50.1];           // the seconds an ember leaves the fire for its mouth: the first on "Pop!", caught as the next line begins
+var S07_FEEDS = [30.72, 46.62, 49.62, 52.62];           // the seconds an ember leaves the fire for its mouth: the first on "Pop!", caught as the next line begins
 
 // Its life: by day two hens left of the pen, and a grasshopper (owner, 2026-10-22: "The grasshopper should be farther
 // away and the hen should see it then stalk it and then it should jump away to get eaten by the second hen"): the hen
@@ -29,11 +32,11 @@ var S07_LIFE = [
   {name: "grasshopper", kind: "grasshopper",
    course: [[0, 850, 976], [9.0, 850, 976], [9.6, 720, 966], [10.1, 720, 966, "caught"], [10.25, 720, 966, "hide"], [18.4, 720, 966, "hide"]]},
   {name: "house mouse", kind: "mouse", look: {kind: "house", size: 0.55},
-   course: [[20.5, 600, 978, "hide"], [21.0, 600, 978], [23.6, 860, 982, "sniff"], [25.2, 860, 982, "up"], [30.6, 860, 982],
-            [31.6, 560, 978, "hide"], [31.8, 560, 978, "hide"]]},
+   course: [[20.5, 600, 978, "hide"], [21.0, 600, 978], [23.6, 860, 982, "sniff"], [25.2, 860, 982, "up"], [31.92, 860, 982],
+            [32.92, 560, 978, "hide"], [33.12, 560, 978, "hide"]]},
   // its happy howls once the first ember is eaten and its eyes light (sounds.py, maeng-happy)
   {name: "the creature's joy", kind: "flock", z: "sky", course: [[0, -999, -999], [0.1, -999, -999]],
-   calls: [[31.9, "maeng-happy", 2.8]]}
+   calls: [[33.22, "maeng-happy", 2.8]]}
 ];
 
 // point: [x, y] in the film's own pixels; gives back [x, y] under pen's camera now (as maengAt() does).
@@ -80,14 +83,14 @@ function sceneEmbers(t) {
     }}
   ]);
   if (night) {                                      // the fire, and Thukkhata by it
-    var laughs = t > 34.7 && t < 38.0;
+    var laughs = t > 37.22 && t < 40.52;
     // From the second ember on he feeds it himself: a fire stick in the coals, and on each feed a flick that throws
     // the ember up from the stick's end (owner, 2026-10-20: "have the boy flip them up with a stick"). The first,
     // on "Pop!", jumps out of the fire by itself, as the words say.
-    var stickFrom = t > 38.6, flick = feed !== null && feed > 30 && since < 0.35 ? Math.sin(since / 0.35 * Math.PI) : 0;
+    var stickFrom = t > 41.12, flick = feed !== null && feed > 30 && since < 0.35 ? Math.sin(since / 0.35 * Math.PI) : 0;
     var tip = [S07_FIRE[0] + 12 + 14 * flick, S07_FIRE[1] - 12 - 70 * flick];
-    var lad = maengPerson("boy", MAENG_LAD, {id: "lad", floor: "cross", face: -1, feel: laughs ? "laughing" : t > 26.3 && t < 30.4 ? "surprised" : "happy",
-                                             reachA: stickFrom ? [S07_FIRE[0] + 96, S07_FIRE[1] - 44 - 16 * flick, between(t, 38.6, 39.0)] : undefined, grip: stickFrom});   // to the stick, eased
+    var lad = maengPerson("boy", MAENG_LAD, {id: "lad", floor: "cross", face: -1, feel: laughs ? "laughing" : t > 26.3 && t < 31.72 ? "surprised" : "happy",
+                                             reachA: stickFrom ? [S07_FIRE[0] + 96, S07_FIRE[1] - 44 - 16 * flick, between(t, 41.12, 41.52)] : undefined, grip: stickFrom});   // to the stick, eased
     sprites.push({name: "fire and lad", kind: "person", x: S07_FIRE[0] + 170, y: S07_FIRE[1] - 6, draw: function () {
       campfire(pen, S07_FIRE[0], S07_FIRE[1], 0.8, t, {light: 1});
       var ladAt = person(S07_FIRE[0] + 170, S07_FIRE[1] - 6, lad);
@@ -119,8 +122,8 @@ function sceneEmbers(t) {
     pen.fillStyle = "rgba(0, 0, 0, " + dark.toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);
   }
-  if (t < 1.5 || t > 53) {
-    pen.fillStyle = "rgba(0, 0, 0, " + Math.max(1 - t / 1.5, between(t, 53, 55)).toFixed(3) + ")";
+  if (t < 1.5 || t > 55.52) {
+    pen.fillStyle = "rgba(0, 0, 0, " + Math.max(1 - t / 1.5, between(t, 55.52, 57.52)).toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);
   }
 }

@@ -10,8 +10,8 @@ var S10_LONG = 60;
 // seconds after them): the cicadas by day; the flock going home and a pack horse at dusk; the crickets and the frogs
 // of the night; the rooster at dawn.
 var S10_SOUND = {calls: [[0, "cicadas", 0.5, 15], [15.5, "flock", 0.3], [19, "horse", 0.35], [29, "crickets", 0.35, 21], [29, "frogs", 0.45, 21], [51, "rooster-crow", 0.28]]};
-var S10_LINES = [[1.5, 4.5, "M057"], [6.0, 10.0, "M058"], [16.2, 22.28, "M059"], [24.4, 29.68, "M060"], [31.0, 36.86, "M061"],
-                 [38.0, 43.0, "M062"], [53.5, 57.0, "M063"]];
+var S10_LINES = [[1.5, 3.87, "M057"], [6.0, 9.46, "M058"], [16.2, 22.98, "M059"], [24.4, 28.86, "M060"], [31.0, 36.98, "M061"],
+                 [38.0, 41.84, "M062"], [53.5, 57.76, "M063"]];
 var S10_SHOTS = [15, 29, 50];                       // day by the pen; dusk on the path; night; dawn at the palace
 var S10_CAMERA = [1234, 690, 1.4];                  // the first shot, close on the pen and the garden, as scene 8's
 var S10_HEAP = [1330, 962];                         // where he heaps the gold he digs up
@@ -133,7 +133,7 @@ function s10Garden(t) {                             // the crier goes by calling
   }
   sprites.push({name: "lad", kind: "person", x: lx, y: ly, draw: function () { person(lx, ly, lad); }});
   var crier = stroll(t, 2150, 380, -4, maengPerson("fellow", MAENG_HERALD, {id: "herald"}));   // the king's man crying the news, along the path
-  var calling = t > 1.5 && t < 4.5, walks = maengWay(crier.x) + 12;
+  var calling = t > 1.5 && t < 3.47, walks = maengWay(crier.x) + 12;
   if (calling) { crier.look.mouth = {open: 0.1 + 0.3 * Math.abs(Math.sin(t * 7)), wide: 0.5, round: 0.2}; }
   sprites.push({name: "herald", kind: "person", x: crier.x, y: walks, draw: function () { person(crier.x, walks, crier.look); }});
   drawByZ(sprites);
@@ -159,7 +159,9 @@ function s10Caravan(t) {                            // dusk: the Haw caravan com
   var tint = [MAENG_NIGHT[0], MAENG_NIGHT[1] * dusk];
   ruenPhuk(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2] * 0.92, {glow: 0.3, tint: tint});
   maengGarden(t, MAENG_MOUNDS.length, MAENG_MOUNDS.length, tint);
-  var asks = t > 24.4 && t < 29.28, start = 15.6, file = maengWay(1360) + 12;   // the caravan's one depth
+  // asks: his hand out to the heap, to the cut (29.3 s); speaks: his mouth, to the end of the narrator's voice (2026-10-24:
+  // the hand once went back with the voice, at 28.46 s, in view: the pop check)
+  var asks = t > 24.4 && t < 29.28, speaks = t > 24.4 && t < 28.46, start = 15.6, file = maengWay(1360) + 12;   // the caravan's one depth
   var sprites = lifeSprites(t, S10_LIFE).concat([
     {name: "pen", kind: "kok", x: k[0], y: k[1], draw: function () {
       kok(pen, k[0], k[1], k[2], 1, {part: "back", tint: tint});
@@ -170,7 +172,7 @@ function s10Caravan(t) {                            // dusk: the Haw caravan com
     {name: "lad", kind: "person", x: 700, y: 962, draw: function () {
       person(700, 962, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: asks ? "concerned" : "happy",
                                                        reachA: asks ? [820, 780, between(t, 24.4, 24.8)] : undefined,   // out to the heap, eased (once in one frame, a pop)
-                                                       mouth: asks ? {open: 0.08 + 0.26 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined}));
+                                                       mouth: speaks ? {open: 0.08 + 0.26 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined}));
     }}
   ]);
   // Three horses in a line, the first two led; they stop by the pen.

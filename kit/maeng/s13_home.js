@@ -8,7 +8,7 @@ var S13_LONG = 40;
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the cicadas by day at the pen.
 var S13_SOUND = {calls: [[0, "cicadas", 0.5, 22]]};
-var S13_LINES = [[1.5, 4.8, "M073"], [5.6, 10.6, "M074"], [16.6, 21.0, "M075"], [24.2, 28.0, "M076"], [31.0, 38.0, "M077"]];
+var S13_LINES = [[1.5, 4.48, "M073"], [5.6, 10.5, "M074"], [16.6, 20.2, "M075"], [24.2, 27.3, "M076"], [31.0, 38.07, "M077"]];
 var S13_SHOTS = [15.5, 30.0];                       // the crowd at the pen; the run home; the mountain today
 var S13_CAMERA = [1234, 690, 1.4];                  // close on the pen, as scene 8's
 var S13_BOLT = 12.4;                                // when it leaps the fence

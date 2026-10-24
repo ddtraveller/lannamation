@@ -1,0 +1,1360 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>sash (first Lanna Tale) - the cloth that holds a village</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>
+// The film's style, read by the kit as it loads: nobody hops (the dance turns
+// it on for its own scene), the old print shows at six tenths, the light comes
+// from the upper left and throws a shadow to the right, and the sheet is drawn
+// at two device pixels per film pixel and smoothed down to the picture.
+window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6, 0.5]};
+// The film was staged on the kit's 1440 sheet. On the 1920 one, the sets are
+// painted across the whole width with what stands on them moved in by SIDE,
+// the old bar's width, and each scene draws its figures under a translation
+// by SIDE: every old coordinate keeps its place in the picture.
+</script>
+<script src="oldcartoon.js"></script>
+<script src="weaving.js"></script>
+<script src="backdrops.js"></script>
+<script src="beasts.js"></script>
+<script src="naga.js"></script>
+<script src="dragon.js"></script>
+<script src="myth.js"></script>
+<script src="motion.js"></script>
+<script src="cumulus.js"></script>
+<script src="sabai.js"></script>
+<script src="khom.js"></script>
+<script src="pieces.js"></script>
+<script src="band.js"></script>
+<script src="flora.js"></script>
+<script src="highlands.js"></script>
+<script src="northbirds.js"></script>
+<script src="food.js"></script>
+<script src="paperdoll.js"></script>
+<script src="apsara.js"></script>
+<script src="puman.js"></script>
+<script>
+// sash.html - a film of the kit. It opens on a cloth, close up: twelve rows
+// of the small things of Thai life, woven across it. Music begins, and the
+// things on the cloth begin to dance. The camera pulls back: the rows were a
+// sabai, the shoulder cloth of a Lanna woman, and she stands in a village.
+// Then four scenes of the life the cloth showed: the lane, the pond, the
+// rice fields in a rain that clears, a night of dancing by a spinning
+// lantern. A grandmother's
+// voice tells the story in Kam Mueang over the music (WORDS, at the end; the
+// voice is the Kam Mueang assistant's since 2026-10-18, before that the Kam
+// Mueang Voice extension's, made by sash_narrate.py --voice assistant), and the
+// film ends on the dance, with no card (owner, 2026-10-16). It is 82 s since
+// the owner's own story (2026-10-17): its last line takes 5.6 s, and the dance
+// ran three seconds longer so that it is said before the music's fade.
+// sash_maeng.html: the hero film as it opens the first Lanna Tale (maeng/), read by the narrator herself (2026-10-24,
+// owner: "make a different version for the first cartoon so it doesn't conflict"); sash.html is the hero film for
+// the tales after it. Its music: python sash_music.py 207 sash_maeng.wav.
+var DURATION = 106.5;   // 85 until 2026-10-24, when the narrator read the film herself: 21.07 s inserted before her lines
+                        // in every scene (cloth 4.67, lane 2.92, pond 9.35, paddy 3.53, dance 0.6), each scene's moments moved
+                        // with them (scene_retime.py in the voice project; the owner: "Fit the video to the voice more than anything")
+// SLOW: the film played slower by that much, its words on their own clock (owner, 2026-10-19: the hero film in the
+// Lanna Tales film, told in Pan's voice, which speaks more slowly than the assistant's: every scene held 15%
+// longer, its subtitles recut to her lines). 1 here; a render sets SLOW, LENGTH (DURATION x SLOW) and WORDS
+// (render.py --set), and this page as it is, and its video, stay as they are.
+var SLOW = 1, LENGTH = DURATION;
+
+var BEAT = 0.5;                         // the same number as in sash_music.py
+
+var MUSIC_AT = 3;                       // the second the music begins and the cloth starts to move (sash_music.py leaves three seconds of silence)
+
+// ---------- the men ----------
+// The men of Chiang Mai as the record has them. Holt Hallett (1890): no chignon
+// and no head-cloth, the hair shaved at the sides with a brush at the crown,
+// "tattooed from the waist downwards". Lillian Curtis (1903): the pa toi, plain
+// or plaid, "should fall to the knee", a scarf over the shoulders in the cool
+// season, "the feet are always bare, and the head uncovered". Manop Manasaem
+// (Fine Arts Journal 1:1): shirts only from the reign of Rama V on, round-necked,
+// open down the front and tied or buttoned, undyed cotton or indigo; the pha ta
+// kong in black and white checks; a pha khao ma at the waist or over the shoulder.
+// Since 2026-10-14 the kit's men are drawn from the owner's reference picture
+// (a Chiang Mai costume studio's revival of the old dress): the hair in a knot
+// on top under a red head-cloth, the chest bare and tattooed, a checked cloth
+// over the shoulder, a brown cloth hitched high over tattooed thighs. The film
+// takes them as the kit draws them.
+var LANNA_MAN = {};
+
+// ---------- the woman and her cloth ----------
+// The cloth is the kit's woven sabai (sabai.js): its twelve rows, with the
+// woman herself woven into one row of her own, in the same look. The film opens
+// on that row.
+var WOMAN = cast("lady", {size: 1.45, shirt: "#f2ead8", legs: "#2f3f6e", sin: 0, sabai: false, weave: 1,   // no band of the kit's own: the woven cloth of sabai.js is her sabai
+                          flower: "#f28fa8", pins: true, smile: 1, id: "woman", at: [720 + SIDE, 380]});
+
+var WOMAN_ROW = 4;
+
+var ROWS = SABAI_ROWS.slice();
+ROWS[WOMAN_ROW] = SABAI_ROWS[WOMAN_ROW].slice(0, 3).concat([function (b, u) { person(0, 0, Object.assign({}, WOMAN, {size: 1.1, step: u, id: "woman-woven", at: undefined})); }]);
+// Every figure on the cloth its own (owner, 2026-10-20: "make sure each sprite on the sash is unique"): each row is
+// filled to the 24 figures it holds with the kit's pool (sabaiUnique), none twice. The rooster of row 1 and the maiden
+// of row 8 are the woman's row's rooster and row 2's maiden again, so they go; "shown" is what the rows weave already.
+ROWS[1] = ROWS[1].filter(function (painter, k) { return k !== 3; });
+ROWS[8] = ROWS[8].filter(function (painter, k) { return k !== 3; });
+// and no item twice in another colour (owner, 2026-10-20: "There are lanterns of differnt colors but I'd like totally
+// unique items"): row 2's second lotus, row 5's blue lantern, row 7's green one, row 8's yak (row 7's, facing the
+// other way) and its five-headed naga (its three-headed one is the naga) go
+ROWS[2] = ROWS[2].filter(function (painter, k) { return k !== 2; });
+ROWS[5] = ROWS[5].filter(function (painter, k) { return k !== 2; });
+ROWS[7] = ROWS[7].filter(function (painter, k) { return k !== 2; });
+ROWS[8] = ROWS[8].filter(function (painter, k) { return k !== 1 && k !== 2; });
+// The tale's own people, as the tale draws them (maeng/sets.js: MAENG_KING, MAENG_GROOM, MAENG_SIMA), woven in the rows
+// the film opens on (owner, 2026-10-20: "add the king and princess of the story and the hero of the story just after
+// marriage"): King Phanthumati in his silk head-cloth, and Thukkhata with Princess Sima, just married, side by side.
+var SASH_KING = {turban: null, wrap: "#6a2a5a", sarong: ["#5a2a6a", BROCADE], size: 1.1, age: 0.45, beard: "#2a2220", smile: 0.6};
+var SASH_GROOM = {turban: "#e8d8a0", sarong: ["#2a6a5a", BROCADE], size: 1.1, smile: 0.8};
+var SASH_SIMA = {skirt: false, sin: 0, sabai: ["#e0b23a", "#8a2a3a"], bun: "ipun", pins: true, flower: "#f2cf5a", dance: false,
+                 bangles: 5, earplug: "#e0b23a", size: 1.05, smile: 0.9};
+ROWS[3] = ROWS[3].concat([function (b, u) { person(0, 0, cast("noble", Object.assign({step: u, id: "woven-king"}, SASH_KING))); }]);
+ROWS[5] = ROWS[5].concat([function (b, u) {
+  person(-45, 0, cast("noble", Object.assign({step: u, id: "woven-groom"}, SASH_GROOM)));
+  person(45, 0, cast("lady", Object.assign({step: u, id: "woven-sima"}, SASH_SIMA)));
+}]);
+var SHOWN = ["villager walk", "child walk", "maiden walk", "fellow walk", "weaver walk", "celestial walk", "drummer walk",
+             "lady sit", "child sit", "rooster", "sunbird", "buffalo", "elephant", "peafowl", "mom", "luang", "naga",
+             "yak", "hong", "lotus", "lotus leaf", "longan", "orchid", "thongkwao", "house", "granary", "oxcart", "namton", "temple", "tung",
+             "chedi sai", "krathong", "khom", "khom dao", "sueng", "pig"];
+ROWS = sabaiUnique(ROWS, 24, SHOWN, [WOMAN_ROW, 8]);   // dealt outward from where the film opens, her figure (WOMAN_AT, below)
+// Her own woven figure at slot WOMAN_AT of her row: the row flows toward the cloth's cut end as the music plays, and from
+// there she does not reach it before the camera has pulled back (from slot 3, where she was, she would have walked off
+// that end at 12.6 s and come on again at the other, the camera jumping with her).
+var WOMAN_AT = 8;
+ROWS[WOMAN_ROW].splice(WOMAN_AT, 0, ROWS[WOMAN_ROW].splice(3, 1)[0]);
+// Two places to her right the oil lamp (pratheep), a flame on its dish, read as a campfire at the size it is woven: a
+// naga there instead (owner, 2026-10-21: "replace the camp fire icon in the sash with the naga"); then the tattooed man
+// beside it (pu man) flickered red rectangles as the camera pulled back, so a temple and a yak giant in their places
+// (owner, 2026-10-21: "Try swapping them for a temple and a yak giant").
+ROWS[WOMAN_ROW] = ROWS[WOMAN_ROW].map(function (painter) {
+  if (painter.key === "pratheep") { return function (b) { temple(b, 0, 0); }; }
+  if (painter.key === "pu man") { return function (b) { yak(b, 0, 0, 1); }; }
+  return painter;
+});
+
+// The rows flow and the figures walk when the music begins; the rows the film opens on are woven fine, the rest at half.
+// The camera opens on her own woven figure (ROWS[WOMAN_ROW][WOMAN_AT]) and keeps it in the middle as the row moves, until it
+// pulls back to her standing there wearing the cloth (owner, 2026-10-20: "Make sure the central sprite that starts out
+// being focused on is the same one that is the woman standing there wearing the sash when the video pulls out").
+var CLOTH = {rows: ROWS, from: MUSIC_AT, row: WOMAN_ROW, fine: 1, follow: WOMAN_AT};
+
+// ---------- the sets ----------
+// The sky of a scene, painted once: day, dusk or night, with the stars at
+// night. The clouds are not on it: cumulus.js drifts them over it, under the
+// land, in every frame.
+function paintSky(kind) {
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var brush = paper.getContext("2d"), n;
+  var sky = brush.createLinearGradient(0, 0, 0, 1080);
+  if (kind === "night") {
+    sky.addColorStop(0, "#070b24"); sky.addColorStop(0.6, "#1b2350"); sky.addColorStop(1, "#40336b");
+  } else if (kind === "dusk") {
+    sky.addColorStop(0, "#f0642a"); sky.addColorStop(0.5, "#f2a23c"); sky.addColorStop(1, "#7fb89a");
+  } else {
+    sky.addColorStop(0, "#8ccfc6"); sky.addColorStop(0.6, "#f4ecd2"); sky.addColorStop(1, "#f1d3bd");
+  }
+  brush.fillStyle = sky;
+  brush.fillRect(0, 0, WIDE, 1080);
+  if (kind === "night") {
+    for (n = 0; n < 70; n++) {
+      brush.fillStyle = "rgba(255, 250, 220, " + (0.4 + 0.6 * dice(n + 70)) + ")";
+      brush.beginPath();
+      brush.arc(dice(n) * WIDE, dice(n + 90) * 620, 1.5 + dice(n + 20) * 1.5, 0, 7);
+      brush.fill();
+    }
+  }
+  return paper;
+}
+
+// The land of a set, on two clear sheets: "back", the far and the middle ranges
+// under the air between them, and "front", the near range, the ground and what
+// stands on it. A scene lays the back, then what is between them (the mist, the
+// pond's elephants), then the front. Every range is clothed in forest, fainter
+// the further it is, and by day the middle one has a patch of rice terraces cut
+// into it where it stands highest in the part of the picture its set leaves
+// open, from highlands.js (owner, 2026-10-17: "decorate all the mountains like
+// that", of the rice fields' mountains).
+var TERRACES_AT = {village: [420, 880], pond: [380, 1000]};   // where a set's own trees, house, banana and grove leave the middle range open
+
+function paintSet(kind) {
+  function sheet() {
+    var paper = document.createElement("canvas");
+    paper.width = WIDE;
+    paper.height = 1080;
+    return paper;
+  }
+  function line(tops) { return function (x) { return tops[Math.max(0, Math.min(WIDE - 1, Math.round(x)))]; }; }
+  var back = sheet(), front = sheet(), brush = back.getContext("2d"), n;
+  var far = kind === "night" ? ["#223a4a", "#1a2e3c", "#142430", "#2a4a3a"] : kind === "dusk" ? ["#7a8a9a", "#5f7a6a", "#4f6a52", "#6f8a4a"] : ["#a9cfc9", "#8dbfa9", "#79ad84", "#8fc47a"];
+  function wooded(b, tops, foot, look) {           // a range's forest; at night only its shape, laid faint on the dark hill, for its crowns are lit by day
+    if (kind !== "night") { forestSlope(b, line(tops), 0, WIDE, foot, look); return; }
+    var shade = sheet();
+    forestSlope(shade.getContext("2d"), line(tops), 0, WIDE, foot, look);
+    b.globalAlpha = 0.3;
+    b.drawImage(shade, 0, 0);
+    b.globalAlpha = 1;
+  }
+  hills(brush, WIDE, 720, 400, 1.0, far[0]);
+  wooded(brush, withoutTufts(ridgeOf(720, 400, 1.0)), 800, {far: 0.8, small: 3, large: 6, haze: far[0], seed: 21});
+  hills(brush, WIDE, 790, 280, 2.6, far[1]);
+  wooded(brush, GROUND, 870, {far: 0.5, small: 4, large: 9, haze: far[1], seed: 22});
+  if (TERRACES_AT[kind]) {
+    var top = Infinity, at = 0, x;
+    for (x = TERRACES_AT[kind][0] + SIDE; x < TERRACES_AT[kind][1] + SIDE; x++) { if (GROUND[x] < top) { top = GROUND[x]; at = x; } }
+    terraces(brush, at, top + 24, 360, Math.min(170, 790 - top), {season: "green", hut: true, seed: kind === "pond" ? 6 : 5, count: 7});
+  }
+  if (kind === "dusk") {                           // trees on the middle range, where its ridge is
+    [[130, 0.3], [215, 0.26], [600, 0.3], [690, 0.27], [1250, 0.3], [1440, 0.28]].forEach(function (one) {
+      tree(brush, one[0] + SIDE, ridgeAt(one[0] + SIDE) + 6, one[1]);
+    });
+  }
+  // The air between: a veil of the sky's colour over the far ranges, thick at
+  // the horizon and gone by the near range, so the far hills sit further off.
+  // It comes in over its first 40 rows: begun whole at y 640, it drew a ruled
+  // line across the forest on the slopes (row 639 to 640 changed six times as
+  // much as any other row of the set).
+  var haze = brush.createLinearGradient(0, 640, 0, 880);
+  var veil = kind === "night" ? "20, 30, 60" : kind === "dusk" ? "245, 190, 120" : "226, 238, 240";
+  haze.addColorStop(0, "rgba(" + veil + ", 0)");
+  haze.addColorStop(1 / 6, "rgba(" + veil + ", 0.42)");
+  haze.addColorStop(1, "rgba(" + veil + ", 0)");
+  brush.fillStyle = haze;
+  brush.fillRect(0, 640, WIDE, 240);
+  brush = front.getContext("2d");
+  hills(brush, WIDE, 860, 170, 4.4, far[2]);
+  wooded(brush, withoutTufts(ridgeOf(860, 170, 4.4)), 885, {far: 0.25, small: 6, large: 12, haze: far[2], seed: 23});
+  brush.fillStyle = far[3];
+  brush.fillRect(0, 880, WIDE, 200);
+  // What grows in each place (owner, 2026-10-17: "Also add plants and flowers that are special to the
+  // different scenes as appropriate", from flora.js); a flower is drawn on "pen", so the pen is this sheet
+  // for the length of it.
+  var keep = pen;
+  pen = brush;
+  if (kind === "village" || kind === "day") {
+    floraTree(brush, 200 + SIDE, 900, 1.1, "longan", 7);   // a longan in fruit, the fruit of Lamphun and Chiang Mai, where a plain tree stood
+    house(brush, 1180 + SIDE, 905, 1);
+    banana(brush, 1000 + SIDE, 915);
+    namton(brush, 1425 + SIDE, 912, 1.1);          // the water jar at the gate, beside the house's ladder (pieces.js)
+    flora("marigold", 1080 + SIDE, 922, {size: 0.9});   // marigolds for the offerings at the house's foot, jasmine for the garlands by the jar
+    flora("marigold", 1128 + SIDE, 928, {size: 0.75});
+    flora("jasmine", 1490 + SIDE, 924, {size: 0.9});
+    floraTree(brush, 1830 + SIDE, 905, 0.75, "bougainvillea", 8);   // and a bougainvillea at the edge of the yard
+  }
+  if (kind === "night") {                          // a frangipani, the temple's tree, its white flowers pale in the lantern light
+    floraTree(brush, 1790 + SIDE, 885, 0.95, "frangipani", 9);
+  }
+  pen = keep;
+  if (kind === "pond") {                            // the water, the lotus and the fish are drawn live, in scenePond
+    // Special trees of the north (owner, 2026-10-17: "Change cats to some special plant the Lanna did
+    // have and add it to the scene", then "Add some other special plants or animals as well"): on the
+    // left bank, where a plain tree stood, a ratchaphruek in flower, the golden shower, the national tree;
+    // on the right bank a thong kwao, the flame of the forest, Chiang Mai's own tree, which the voice
+    // names (flora.js); wild orchids on both trunks (scenePond).
+    floraTree(brush, 160 + SIDE, 880, 1.0, "ratchaphruek", 3);
+    floraTree(brush, 1540 + SIDE, 884, 0.95, "thongkwao", 5);
+  }
+  return {back: back, front: front};
+}
+
+// The mist between the ranges, laid between a set's back and its front: bands
+// along the middle range's slopes, and wider ones in patches at its foot (the
+// rice fields' scene has its own). T is the film's clock, so the mist drifts on
+// across a cut between two scenes of one set. At night it is moonlit, and faint.
+function hillMist(T, night) {
+  var look = night ? {colour: "#c4cee4", shade: "#4a5a7a"} : {};
+  mistDrift(pen, T, Object.assign({left: 0, right: WIDE, top: 560, bottom: 700, count: 6, drift: 8, seed: 31, alpha: night ? 0.3 : 0.6}, look));
+  mistDrift(pen, T, Object.assign({left: 0, right: WIDE, top: 768, bottom: 800, count: 5, wide: 560, drift: 5, seed: 32, alpha: night ? 0.25 : 0.55}, look));
+}
+
+// The front of the dusk set on a clear sheet: the temple, the yak and the tung.
+// The elephant on the hill is drawn between this and the dusk sheet, so it walks behind them.
+function paintTempleFront() {
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var brush = paper.getContext("2d");
+  temple(brush, 1050 + SIDE, 905);
+  yak(brush, 760 + SIDE, 910, -1);
+  tung(brush, 300 + SIDE, 900, 0);
+  tung(brush, 420 + SIDE, 900, 0);
+  return paper;
+}
+
+// The ridge of a range of hills, column by column: the range is painted alone
+// on a scratch sheet, as hills(brush, WIDE, base, tall, shape) paints it, and
+// the first painted pixel of each column is the ridge.
+function ridgeOf(base, tall, shape) {
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var brush = paper.getContext("2d");
+  hills(brush, WIDE, base, tall, shape, "#000000");
+  var data = brush.getImageData(0, 0, WIDE, 1080).data, tops = [];
+  for (var x = 0; x < WIDE; x++) {
+    var y = 0;
+    while (y < 1080 && data[(y * WIDE + x) * 4 + 3] < 60) { y++; }
+    tops.push(y);
+  }
+  return tops;
+}
+
+// The middle range's ridge: trees and the elephant stand on it.
+var RIDGE = ridgeOf(790, 280, 2.6);
+
+function ridgeAt(x) { return RIDGE[Math.max(0, Math.min(WIDE - 1, Math.round(x)))]; }
+
+// The ridge with its tufts of grass taken off, for what walks along it. A tuft
+// stands up to 13 pixels above the ridge and is at most 15 wide, so each column
+// is first lowered to the lowest of the ridge within 9 columns each side, and
+// then raised to the highest of that within 9 columns each side (a closing):
+// what is narrower than 19 columns goes, and a straight or gently curved ridge
+// comes back as it was.
+function withoutTufts(tops) {
+  function pass(from, pick) {
+    return from.map(function (y, x) {
+      for (var d = -9; d <= 9; d++) { y = pick(y, from[Math.max(0, Math.min(from.length - 1, x + d))]); }
+      return y;
+    });
+  }
+  return pass(pass(tops, Math.max), Math.min);
+}
+
+var GROUND = withoutTufts(RIDGE);
+
+function groundAt(x) { return GROUND[Math.max(0, Math.min(WIDE - 1, Math.round(x)))]; }
+
+// A Siamese cat sitting, facing right: cream coat, seal-brown points on the face,
+// the ears, the legs and the tail, blue eyes. "t" sways the tail and blinks.
+function siamese(x, base, size, t) {
+  var CREAM = "#efe2c8", POINT = "#4a3028", sway = Math.sin(t * 1.3) * 0.25;
+  var blink = (t % 4) > 3.7 ? 0.15 : 1;
+  pen.save();
+  pen.translate(x, base);
+  pen.scale(size, size);
+  hose(-30, -42, -74, -112, 0.45 + sway, 13, POINT);            // the tail, curling up behind
+  oval(-16, -46, 36, 40, CREAM);                                // the haunch
+  hose(6, -56, 4, -6, 0, 15, POINT);                            // the front legs, dark to the paws
+  hose(26, -56, 26, -6, 0, 15, POINT);
+  oval(12, -78, 30, 46, CREAM);                                 // the chest
+  oval(28, -124, 30, 27, CREAM);                                // the head
+  pen.fillStyle = POINT;                                        // the ears
+  pen.strokeStyle = INK;
+  pen.lineWidth = 2;
+  pen.lineJoin = "round";
+  [[8, -142, 12, -172, 28, -146], [38, -146, 52, -172, 56, -140]].forEach(function (e) {
+    pen.beginPath();
+    pen.moveTo(e[0], e[1]);
+    pen.lineTo(e[2], e[3]);
+    pen.lineTo(e[4], e[5]);
+    pen.closePath();
+    pen.fill();
+    pen.stroke();
+  });
+  oval(36, -118, 21, 16, POINT);                                // the mask
+  oval(30, -121, 5, 6 * blink, "#6fb7e6");                      // blue eyes
+  oval(46, -120, 5, 6 * blink, "#6fb7e6");
+  pen.fillStyle = INK;
+  pen.beginPath();
+  pen.ellipse(31, -121, 1.6, 5 * blink, 0, 0, 7);
+  pen.ellipse(47, -120, 1.6, 5 * blink, 0, 0, 7);
+  pen.fill();
+  pen.fillStyle = "#d98a90";                                    // the nose
+  pen.beginPath();
+  pen.moveTo(52, -112);
+  pen.lineTo(58, -112);
+  pen.lineTo(55, -108);
+  pen.closePath();
+  pen.fill();
+  pen.strokeStyle = "rgba(60, 40, 30, 0.6)";                    // whiskers
+  pen.lineWidth = 1.2;
+  pen.beginPath();
+  pen.moveTo(56, -110); pen.lineTo(78, -116);
+  pen.moveTo(56, -108); pen.lineTo(78, -104);
+  pen.moveTo(16, -112); pen.lineTo(-4, -118);
+  pen.moveTo(16, -110); pen.lineTo(-4, -106);
+  pen.stroke();
+  pen.restore();
+}
+
+var SKY_DAY = paintSky("day"), SKY_DUSK = paintSky("dusk"), SKY_NIGHT = paintSky("night");
+var VILLAGE = paintSet("village"), POND = paintSet("pond"), TEMPLE = paintSet("dusk"), TEMPLE_FRONT = paintTempleFront(), NIGHT = paintSet("night");
+
+// A scene's sky: its sheet, then the cumulus drifting by the film's clock T,
+// so that the same clouds cross the sky from one scene to the next.
+function skyOf(sheet, look, T) {
+  pen.drawImage(sheet, 0, 0);
+  cumulus(pen, T, look);
+}
+
+// The tung by the house is drawn live, not on the village set, so that its
+// cloth sways in the breeze from the top of the pole, the kit's tung() given
+// the film's clock. The pole and the hong on it stand still (owner,
+// 2026-10-16: "the one with the yellow rooster at the top has a swaying stick
+// but the flag doesn't sway. I'd prefer the stick not to sway or barely at
+// all"; it had leaned the whole tung about its foot).
+function villageTung(T) {               // T: the film's clock, so the sway goes on across the cut
+  tung(pen, 1570 + SIDE, 905, T, true);
+}
+
+// The birds of the north (owner, 2026-10-17: "Add some birds to the hero
+// video"), from northbirds.js, each where it lives and none in the night: red-
+// billed blue magpies cross the village's sky as the camera pulls back; a green-
+// tailed sunbird visits the bougainvillea at the edge of the yard in the lane,
+// and the thong kwao at the pond while the voice names it; over the rice fields,
+// once the sky clears, a great hornbill flies by, and a green peafowl walks into
+// the far field and raises its train as the women walk off. The words are as
+// they were. A sunbird's visits are [second of its scene, [x, y]]: it comes in
+// from the right, hovers at a flower (the spots floraTree() gives the tree's
+// flowers, its bill to the flower), at a second one, and goes off to the right;
+// two keys at one place are a stay, where it sips.
+var SUNBIRD_LANE = [[0.8, [1990, 600]], [1.6, [1847, 725]], [3.6, [1847, 725]], [4.1, [1748, 703]], [6.4, [1748, 703]], [7.2, [1990, 560]]];
+var SUNBIRD_POND = [[3.5, [1990, 560]], [6.08, [1691, 651]], [8.48, [1691, 651]], [8.98, [1630, 660]], [13.29, [1630, 660]], [14.29, [1990, 520]]];
+
+function sunbirdVisit(t, visits) {       // the sunbird at second t of its scene, on its round of the flowers
+  var last = visits.length - 1;
+  if (t <= visits[0][0] || t >= visits[last][0]) { return; }
+  var at = tween(t, visits, "smooth"), sip = 0;
+  for (var i = 0; i < last; i++) {
+    var a = visits[i], b = visits[i + 1];
+    if (t >= a[0] && t < b[0] && a[1][0] === b[1][0] && a[1][1] === b[1][1]) { sip = between(t, a[0], a[0] + 0.3); }
+  }
+  sunbird(at[0], at[1] + 2 * Math.sin(t * 5), t, {size: 1.3, face: t > visits[last - 1][0] ? 1 : -1, hover: 1, sip: sip});
+}
+
+function villageMagpies(t) {             // three magpies, one after another, across the sky over the village (the cloth scene, 18.6 to 26.67)
+  for (var m = 0; m < 3; m++) {
+    var u = (t - 18.6 - m * 0.45) / 6.5;
+    if (u > 0 && u < 1) { blueMagpie(mix(-260, WIDE + 260, u), 250 + m * 26 + 12 * Math.sin(u * 5), t + m * 0.4, {size: 0.85, fly: true}); }
+  }
+}
+
+function paddyBirds(t) {                 // the rice fields, once the storm has cleared: the hornbill over the hills, the peafowl in the far field
+  var over = (t - 6.5) / 7.5;
+  if (over > 0 && over < 1) { hornbill(mix(WIDE + 300, -300, over), 235 + 14 * Math.sin(t * 0.8), t, {size: 0.6, face: -1, fly: true}); }
+  if (t < 15.6) { return; }
+  var gone = Math.min(420, (t - 15.6) * 135), size = 0.4;   // it walks in from the left, 135 a second, and stops clear of the edge the camera's push crops
+  peafowl(-160 + gone, 790, t, {size: size, step: gone < 420 ? gone / (88 * size) : undefined,
+                                display: smooth((t - 18.9) / 1.4), shiver: smooth((t - 21.97) / 0.3)});
+}
+
+// The women's hair (owner, 2026-10-17: "Give women some different hair styles
+// in the hero video"), from the kit's ways of a lady's hair (BUN_STYLES) and
+// the ornaments of the hair notebook: the weaver of the lane and of the fields
+// wears the everyday knot at the nape with a spray of golden orchid; the
+// maiden at the pond, the knot of the murals on her crown with flowers on
+// springs that tremble; in the fields a lady wears Dara Rasami's raised frame
+// with jasmine bound round her knot, and a Tai Lue maiden her knot on the
+// crown under a pink head-cloth; at night the dancer wears the trembling
+// flowers and the jasmine, and the grandmother her knot at the nape. The woman
+// of the cloth keeps the high bun she is woven with.
+var HAIR_OF = {weaver: {bun: "low", ueang: true}, maiden: {bun: "wong", maiwai: "#dfe4ea"}};   // silver: gold flowers were lost against the golden shower behind her at the pond
+// Every face in a scene its own (owner, 2026-10-21: "make the faces different from each other in each scene"): each
+// person a face of the north (NORTH_FACES: the Thai face and the five shapes of the photograph of about 1909), a skin
+// of their own, and eyes and lips a little larger or smaller. No two of these are the same; a scene gives each of its
+// people a different one, FACE(n).
+var FACES = [
+  {north: "thai", skin: "#d9a676"}, {north: "round", skin: "#f1cda8", eyes: 1.1}, {north: "square", skin: "#c99668", lips: 1.1},
+  {north: "soft", skin: "#eebf96", eyes: 0.95}, {north: "broad", skin: "#d6a272", lips: 1.15}, {north: "full", skin: "#e8bf98", eyes: 1.15, lips: 0.9},
+  {north: "thai", skin: "#c4905f", eyes: 0.92, lips: 1.2}, {north: "round", skin: "#dcae84", eyes: 0.9, lips: 1.1},
+  {north: "soft", skin: "#f6e2d0", eyes: 1.05, lips: 0.9}, {north: "square", skin: "#e6bd95", eyes: 1.08},
+  {north: "broad", skin: "#f0c9a0", eyes: 0.95, lips: 0.95}, {north: "full", skin: "#d4a070", lips: 1.2},
+  {north: "thai", skin: "#f1d0ae", eyes: 1.08}, {north: "round", skin: "#c99668", lips: 0.95},
+  {north: "soft", skin: "#d6a272", eyes: 0.9, lips: 1.15}, {north: "square", skin: "#f4d6b8", eyes: 0.95, lips: 1.2},
+  // the man at the pond: the broad face (4) looked strange on him (owner, 2026-10-21: "change the face of the man by the
+  // pond. His face looks strange to me"; of four drawn, the Thai face); the old pi chum player darker (owner: "one of
+  // the old musicians is very pale. Give him darker skin"; he had 8)
+  {north: "thai", skin: "#c48a58"}, {north: "thai", skin: "#a87048", eyes: 0.95, lips: 1.05}
+];
+function FACE(n) { return FACES[n % FACES.length]; }
+
+// ---------- the scenes ----------
+// Two weavers and a cloth in the yard (owner, 2026-10-24: "It would be cool to have 2 weavers and the sample cloth you
+// made blowing in the wind in the background", for the line "the patterns woven into the cloth"): the Tai Lue's
+// flowing water woven thread by thread (weaving.js, threadCloth) hung to dry on a bamboo frame between her and the
+// house, rippling in the wind, seen large as the camera pulls back past it; a woman at her spinning wheel in the yard
+// to the left (spinningWheel; owner: "Make one of the women at a spinning wheel"), and one in the yard right of the
+// house at her frame loom pulling the beater (frameLoom), in the house's scale. Sprites of drawByZ, so they sort
+// behind her by their feet.
+function sashYardFrame(x, base, tall, wide) {     // a drying frame of bamboo: two posts under the cloth's pole
+  weaveBeam(pen, x - wide / 2, base, x - wide / 2, base - tall, 5, "#8a6a3a");
+  weaveBeam(pen, x + wide / 2, base, x + wide / 2, base - tall, 5, "#8a6a3a");
+}
+
+function sashYard(t) {                           // t: the scene's second. Gives back the sprites for drawByZ
+  function loom(name, x, y, work, cloth) {
+    return {name: name, kind: "person", x: x, y: y, draw: function () { frameLoom(pen, x, y, 0.5, t, {id: name, work: work, cloth: cloth}); }};
+  }
+  return [loom("weaver-yard-1", 1545, 940, null, "maechaem"),
+          {name: "spinner-yard", kind: "person", x: 360, y: 946, draw: function () { spinningWheel(pen, 360, 946, 0.5, t, {id: "spinner-yard"}); }},
+          {name: "yard-cloth", kind: "tung", x: 912, y: 902, draw: function () {
+            sashYardFrame(912, 902, 300, 116);
+            threadCloth(pen, 912, 902 - 294, t, {warps: 40, picks: 80, gap: 2.6, wind: 0.8});
+          }}];
+}
+
+function sceneCloth(t) {                // 0-26.67 (22 until 2026-10-24, the narrator's own pace): one row, still; the music and the walk; one steady pull-back
+  // She stands still while the cloth dances and the camera pulls back; once it
+  // is back she keeps the beat, and makes a wai (owner: "have the woman wai
+  // instead of raise her arm and wave"). The wai comes in over 0.4 s (wai: a number; it once came in one frame, a
+  // pop: checks/pop_check.py).
+  var look = t < 24.67 ? WOMAN : Object.assign({}, WOMAN, {late: 0, spring: 0.5, wai: between(t, 24.67, 25.07)});
+  var where = sabaiOf(t, 720 + SIDE, 1010, look);
+  pen.save();
+  sabaiCamera(t, where, CLOTH, 6, 20);
+  skyOf(SKY_DAY, CLOUD_LOOKS.day, t);
+  pen.drawImage(VILLAGE.back, 0, 0);
+  hillMist(t);
+  pen.drawImage(VILLAGE.front, 0, 0);
+  // The z plan (the kit's drawByZ(), oldcartoon.js Z): the village's sheets, its sky and mist first, as painted (the
+  // set). The magpies, which can be anywhere, in "sky": crossing the sky over the village, behind the tung and the
+  // woman. In "people", by their feet: the tung at its foot, 905, and the woman at hers, 1010, the end of her cloth
+  // that hangs behind her shoulder drawn with her, just before her, so that nothing comes between them.
+  drawByZ(sashYard(t).concat([
+    {name: "tung", kind: "tung", x: 1570 + SIDE, y: 905, draw: function () { villageTung(t); }},
+    {name: "magpies", kind: "magpie", z: "sky", y: 280, draw: function () { villageMagpies(t); }},
+    {name: "woman", kind: "person", x: 720 + SIDE, y: 1010, draw: function () {
+      sabai(t, where, CLOTH, "back");     // the end of the cloth that hangs behind her shoulder
+      person(720 + SIDE, 1010, sabaiWorn(look, t, where, CLOTH));   // the cloth across her chest, worn under her arm
+    }}
+  ]));
+  pen.restore();
+}
+
+// The rooster and the hen in the lane (owner, 2026-10-17: "have the chicken
+// run a few steps and then jump into the air flapping its wings but then come
+// down and scurry off until it is off screen. The dog should increase speed as
+// soon as the chicken starts to run"; "When the chicken jumps have a small
+// feather fall and descend to the ground and fade away"; "Add a second chicken
+// a little to the right of the first that startles and scurries off screen").
+// The rooster crows, then forages about the lane (roosterPeck: a few pecks,
+// then a look about, a few steps to one side or a crow); the hen, a little to its
+// right and a step farther back, forages all along. When the dog
+// comes near, the rooster takes fright (FRIGHT) and bolts (the kit's
+// roosterBolt(): a start, a few running steps, a hop with its wings beating,
+// and away), and a feather comes loose at the top of its hop and drifts down;
+// the hen takes fright a moment after it and runs straight off. The dog, from
+// the second the rooster starts to run, goes from its trot to a run more than
+// twice as fast, its legs quicker with it, and follows them out of the picture.
+// The rooster stood at 1060, under the words; it stands at 1300 now, so the
+// fright is not behind them.
+var FRIGHT = 6.2;                        // the second of the lane scene the rooster takes fright: the dog's nose is 250 from its tail
+var CROWED = 3;                          // when the rooster stops crowing and starts to peck (at the end of a crow)
+var COOP = [{x: 1300, y: 1000, late: 0, seed: 1}, {x: 1490, y: 988, late: 0.08, seed: 2, hen: true}];
+
+function foraging(c, t) {                // one of COOP foraging at second t of the lane scene (the rooster from when it stops crowing): roosterPeck()'s {x, look}
+  return roosterPeck(t - (c.hen ? 0 : CROWED), {seed: c.seed, hen: c.hen});
+}
+
+function chicken(t, c) {                 // one of COOP at second t of the lane scene: foraging, then off
+  var fright = FRIGHT + c.late;
+  if (t < fright) {
+    var now = c.hen || t >= CROWED ? foraging(c, t) : {x: 0, look: {}};   // the rooster crows first
+    rooster(c.x + now.x, c.y, t, now.look);
+    return;
+  }
+  var was = foraging(c, fright), off = roosterBolt(t - fright, {hop: !c.hen, hen: c.hen, peck: was.look.peck});
+  if (c.x + was.x + off.x < WIDE + 80) { rooster(c.x + was.x + off.x, c.y + off.y, t, off.look); }
+}
+
+function looseFeather(t) {               // the feather the rooster loses at the top of its hop
+  var c = COOP[0], top = roosterBolt(BOLT.top);
+  fallingFeather(c.x + foraging(c, FRIGHT).x + top.x - 8, c.y + top.y - 40, c.y + 6, t - FRIGHT - BOLT.top, 3, ROOSTER_COAT.body, 40);
+}
+
+function chase(t) {                      // how far past its steady trot the dog has gone, in seconds of trot: it runs 420 a second once the rooster runs, not 195
+  var s = t - FRIGHT - BOLT.run;
+  if (s <= 0) { return 0; }
+  var u = Math.min(1, s / 0.5);
+  return (225 / 195) * (s < 0.5 ? 0.5 * (u * u * u - u * u * u * u / 2) : 0.25 + (s - 0.5));   // the speed eases up over half a second
+}
+
+function sceneLane(t) {                 // 26.67-42.59 (22-35 until 2026-10-24: 2.92 s more after the greeting, for the narrator's own pace): the lane: a man and a child come one way, a woman the other
+  skyOf(SKY_DAY, CLOUD_LOOKS.day, t + 22);
+  pen.drawImage(VILLAGE.back, 0, 0);
+  hillMist(t + 22);
+  pen.drawImage(VILLAGE.front, 0, 0);
+  // The z plan (the kit's drawByZ(), oldcartoon.js Z): the village's sheets, sky and mist first, as painted. The
+  // sunbird, which can be anywhere, in "set": it sips at the bougainvillea painted on the sheet. The flock in "sky".
+  // In "people", by their feet: the tung (905), the woman (950), the man (960), the child (985), the hen (988), the
+  // rooster (1000), the dog (1005) and the feather that falls to the ground (1006). The man, the woman and the child
+  // have the ids their old order gave them (n0, n1, n2), so they move as the film was passed. The figures stand on
+  // the old sheet (shifted by SIDE); the tung and the sunbird on this one.
+  function onOldSheet(draw) { return function () { pen.save(); pen.translate(SIDE, 0); draw(); pen.restore(); }; }
+  // The man and the child walk in from the left and stop; the woman walks in
+  // from the right, her hands down, and stops before them. She wais them; the
+  // child wais her back; the man nods his head to her, twice.
+  // Each walks with stroll(): a step a beat, the foot on the ground planted, a
+  // short first and last step; the stride is set so each arrives about when
+  // the old walk did. The nod is a tween: a small dip back first, two bows.
+  var nod = tween(t, [[7, 0], [7.2, -0.06], [7.6, 0.35], [8.1, 0.05], [8.5, 0.3], [9, 0]], "smooth");
+  var man = stroll(t, -100, 420, 0, cast("farmer", Object.assign({id: "n0", stride: 0.9, late: 0, spring: 0.4, feel: "joy", at: [820, 700], bend: nod}, FACE(0))));
+  var woman = stroll(t, 1500, 820, 0.5, cast("weaver", Object.assign({id: "n1", stride: 0.9, late: 0.3, spring: 0.4, at: [420, 700], wai: between(t, 6.3, 6.7)}, HAIR_OF.weaver, FACE(1))));
+  var kid = stroll(t, -200, 300, 1, cast("child", Object.assign({id: "n2", stride: 0.9, late: 0.5, spring: 0.7, smile: 1, at: [820, 700], wai: between(t, 7.2, 7.6),
+                                                   wonder: tween(t, [[6, 0.3], [6.5, 1], [7.4, 1], [8, 0.4]], "smooth")}, FACE(2))));   // her wai takes him
+  drawByZ([
+    {name: "tung", kind: "tung", y: 905, draw: function () { villageTung(t + 22); }},
+    {name: "sunbird", kind: "sunbird", z: "set", y: 700, draw: function () { sunbirdVisit(t, SUNBIRD_LANE); }},   // at the bougainvillea
+    {name: "hen", kind: "hen", x: COOP[1].x, y: COOP[1].y, draw: onOldSheet(function () { chicken(t, COOP[1]); })},
+    {name: "rooster", kind: "rooster", x: COOP[0].x, y: COOP[0].y, draw: onOldSheet(function () { chicken(t, COOP[0]); })},
+    {name: "man", kind: "person", x: man.x, y: 960, draw: onOldSheet(function () { person(man.x, 960, man.look); })},
+    {name: "woman", kind: "person", x: woman.x, y: 950, draw: onOldSheet(function () { person(woman.x, 950, woman.look); })},
+    {name: "child", kind: "person", x: kid.x, y: 985, draw: onOldSheet(function () { person(kid.x, 985, kid.look); })},
+    {name: "dog", kind: "dog", y: 1005, draw: onOldSheet(function () { dog(-300 + 195 * (t + chase(t)), 1005, t + chase(t)); })},   // it trots on through the lane and out of the picture (owner, 2026-10-17: it stopped going forward with its legs still walking), and runs once the rooster bolts, its legs quicker with it
+    {name: "feather", kind: "feather", y: COOP[0].y + 6, draw: onOldSheet(function () { looseFeather(t); })},
+    {name: "flock", kind: "birds", z: "sky", y: 220, draw: onOldSheet(function () { birds(t, 300 + t * 40, 220); })}
+  ]);
+}
+
+// The dragon's course through the pond scene (35 to 50), in the film's time:
+// [second, x, y, depth], where depth is 0 far from the screen and 1 near. It
+// comes in small and faint over the far hills and sweeps nearer and bigger
+// across the pond. motion.js's where() leads it along one smooth curve through
+// these points, and dragon.js leads the body along the same course as its trail.
+// It comes five seconds into the scene later than it did, so that the voice
+// can say where it is from before the two at the pond look up at it.
+var POND_AT = 35;
+
+var DRAGON_COURSE = [[41.28, -700, 330, 0.05], [48.39, 250, 260, 0.3], [53.76, 900, 340, 0.6], [60.04, 2200, 230, 0.9],   // a touch slower than it was (owner, 2026-10-15)
+                     [64.35, 2900, 170, 0.95]];   // and on out of the picture, at its own pace: the pond is 3 s longer, and the dragon stopped at 52.3 with its body in view (owner, 2026-10-21)
+
+function dragonFly(T) { return where(DRAGON_COURSE, T); }
+
+// The dragon's joke (owner, 2026-10-16: "Have a people's republic of China flag
+// appear in the dragon's claw for a moment and wave back and forth a few times
+// and then disappear"): the flag of the People's Republic of China on a short
+// pole in its near front claw (dragon() gives back where that claw is), from
+// FLAG[0] to FLAG[1] of the pond scene, while the two at the pond look up. It
+// grows out of the claw, the pole rocks back and forth three times as the cloth
+// ripples, and it shrinks away. The flag as its law draws it: 3 by 2, red, one
+// large gold star and four small ones in an arc toward the fly, each small one
+// pointing a tip at the large one's centre (on a grid of 30 by 20: the large
+// star at (5, 5), radius 3; the small at (10, 2), (12, 4), (12, 7), (10, 9),
+// radius 1).
+var FLAG = [13.69, 18.06];
+var FLAG_LEAN = 0.4;                    // how far the pole leans forward from upright: more and the flag reads as falling
+
+function flagStar(cx, cy, r, toward) {   // a five-pointed star with one tip toward the angle "toward"
+  pen.beginPath();
+  for (var k = 0; k < 10; k++) {
+    var a = toward + k * Math.PI / 5, d = k % 2 ? r * 0.382 : r;
+    if (k) { pen.lineTo(cx + Math.cos(a) * d, cy + Math.sin(a) * d); } else { pen.moveTo(cx + Math.cos(a) * d, cy + Math.sin(a) * d); }
+  }
+  pen.closePath();
+  pen.fill();
+}
+
+function chinaFlag(x, y, size, t) {     // the flag in the claw at (x, y), at second t of the pond scene
+  var u = (t - FLAG[0]) / (FLAG[1] - FLAG[0]);
+  if (u <= 0 || u >= 1) { return; }
+  var grow = smooth(Math.min(u, 1 - u) / 0.1);                 // it pops out of the claw, and back into it
+  var sway = Math.sin(u * Math.PI * 6) * 0.35;                  // three times back and forth
+  var g = 3, W = 30 * g, H = 20 * g, top = -190;               // the cloth, 90 by 60, from the pole's top, high enough to fly above the head
+  function ripple(fx) { return 6 * Math.sin(fx / W * Math.PI * 2.4 - t * 9) * (fx / W); }   // still at the pole, most at the fly
+  pen.save();
+  pen.translate(x, y);
+  pen.scale(size * 2.6 * grow, size * 2.6 * grow);
+  pen.rotate(FLAG_LEAN + sway);
+  pen.lineCap = "round";
+  pen.strokeStyle = "#5a3b22";                                  // the pole, gripped by the claw
+  pen.lineWidth = 6;
+  pen.beginPath();
+  pen.moveTo(0, 18);
+  pen.lineTo(0, top);
+  pen.stroke();
+  pen.fillStyle = STYLE.gold;                                   // its knob
+  pen.beginPath();
+  pen.arc(0, top - 4, 5, 0, Math.PI * 2);
+  pen.fill();
+  pen.beginPath();                                              // the cloth: the top edge out, the bottom edge back
+  for (var n = 0; n <= 24; n++) { var fx = W * n / 24; pen.lineTo(fx, top + ripple(fx)); }
+  for (n = 24; n >= 0; n--) { fx = W * n / 24; pen.lineTo(fx, top + H + ripple(fx)); }
+  pen.closePath();
+  pen.fillStyle = "#de2910";
+  pen.fill();
+  pen.strokeStyle = inkFor("#de2910");
+  pen.lineWidth = 2;
+  pen.stroke();
+  pen.fillStyle = "#ffde00";
+  flagStar(5 * g, top + 5 * g + ripple(5 * g), 3 * g, -Math.PI / 2);
+  [[10, 2], [12, 4], [12, 7], [10, 9]].forEach(function (s) {
+    var cx = s[0] * g, cy = top + s[1] * g + ripple(s[0] * g);
+    flagStar(cx, cy, g, Math.atan2(top + 5 * g + ripple(5 * g) - cy, 5 * g - cx));
+  });
+  pen.restore();
+}
+
+// Drops on the pond, in the scene's seconds: a fish rising, twice, and a drop from a leaf.
+var POND_RINGS = [[760, 905, 3.7], [1000, 960, 8.78], [640, 985, 12.69]];
+
+// Far off on the middle range, behind a grove of banana trees, an elephant and
+// her calf amble along the ridge, right to left, the calf a little behind. They
+// are drawn on the set's own ridge (ridgeAt) and the grove over them, so they
+// show between its stems and leaves; all of it is drawn on a sheet of its own
+// and veiled there with the set's haze, over the figures alone, so they sit as
+// far off as the hills they walk on and the veil has no edge.
+var POND_GROVE = [[1040, 0.42], [1110, 0.5], [1190, 0.46], [1270, 0.4]];   // each banana tree: x on the old sheet, its scale
+var FAR = document.createElement("canvas");
+FAR.width = WIDE;
+FAR.height = 1080;
+var FAR_PEN = FAR.getContext("2d");
+
+// The line of the hill under a beast at x facing "face": a straight line fitted
+// to the ground (the ridge without its tufts, GROUND) under its length (half to
+// each side). It gives where the beast stands, y, and how far the hill falls
+// away ahead of it, slope (radians, as the beasts' "slope" takes it). Owner,
+// 2026-10-17: the elephant walking down the hill had its front feet in the air
+// (the kit's elephant pitches with a slope, and the film gave it none); then,
+// "it pops up into the air a couple of times while walking down the hill. It
+// should maintain course along a line": it stood on the ridge's first painted
+// pixel, which a tuft lifts by up to 13 pixels.
+function ridgeLine(x, face, half) {
+  var n = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+  for (var dx = -half; dx <= half; dx += 2) {
+    var at = Math.round(x + dx) - x, y = groundAt(x + dx);   // each at its own column, so the fit does not jump as x passes a half pixel
+    n++; sx += at; sy += y; sxx += at * at; sxy += at * y;
+  }
+  var b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+  return {y: (sy - b * sx) / n, slope: Math.atan(face * b)};
+}
+
+function pondElephants(t) {
+  // a little smaller than they were, and walking through the forest's edge rather than on top of it (owner,
+  // 2026-10-20: "make them a bit smaller and make it look like they are walking through the foliage"): set a
+  // little into the ridge, and a band of leaves drawn after them, over their legs
+  var cow = amble("elephant", t, 1180 + SIDE, 1000 + SIDE, 0, {size: 0.068, late: 0});
+  var calf = amble("elephant", t, 1290 + SIDE, 1110 + SIDE, 0.7, {size: 0.04, late: 0.3, tusks: false});
+  var film = pen;
+  pen = FAR_PEN;                                  // the kit's painters draw on "pen": the far sheet for the length of this
+  pen.clearRect(0, 0, WIDE, 1080);
+  var cowOn = ridgeLine(cow.x, cow.look.face, 32), calfOn = ridgeLine(calf.x, calf.look.face, 18);
+  elephant(cow.x, cowOn.y + 11, Object.assign({}, cow.look, {slope: cowOn.slope}));   // on the hill's line, pitched with it, a little sunk into the leaves
+  elephant(calf.x, calfOn.y + 9, Object.assign({}, calf.look, {slope: calfOn.slope}));
+  for (var leafX = 940 + SIDE; leafX < 1480 + SIDE; leafX += 7) {   // the forest's edge before them: leaves over their legs
+    var ly = ridgeAt(leafX) + 6, r = 6 + 4 * dice(leafX);
+    pen.fillStyle = dice(leafX + 1) > 0.5 ? "#6f9a52" : "#5f8a48";
+    pen.beginPath(); pen.ellipse(leafX, ly - r * 0.6, r * 1.3, r, 0, 0, 7); pen.fill();
+  }
+  POND_GROVE.forEach(function (one) {
+    pen.save();
+    pen.translate(one[0] + SIDE, ridgeAt(one[0] + SIDE) + 14);
+    pen.scale(one[1], one[1]);
+    banana(pen, 0, 0);
+    pen.restore();
+  });
+  pen.globalCompositeOperation = "source-atop";  // the haze on what was drawn, and nowhere else
+  pen.fillStyle = "rgba(226, 238, 240, 0.4)";
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.globalCompositeOperation = "source-over";
+  pen = film;
+  pen.drawImage(FAR, 0, 0);
+}
+
+// The two at the pond, as the dragon goes by (owner, 2026-10-18: "the man should look surprised when the
+// dragon appears and then angry when it shows a Chinese flag for a moment and then go back to being happy.
+// The woman should laugh when the flag comes out and put her hands in her lap"). Seconds of the scene: the
+// dragon's head comes into the picture at 7.2 (DRAGON_COURSE), the flag is out from FLAG[0] to FLAG[1].
+var POND_SEEN = 12.29;                    // he sees it, a beat after it comes in
+var POND_FLAG = FLAG[0] + 0.2;          // the flag is out of the claw: he is angry, she laughs and puts her hands in her lap
+var POND_CALM = FLAG[1] + 0.3;          // it is gone: he is glad again
+var POND_LAUGHED = FLAG[1] + 0.6;       // and her laugh dies away a moment after
+// Her hands in her lap are the kit's own for one who sits (person(), "Hands that a scene does not place"):
+// turned in toward each other, the far arm (A, her left, the cloth's shoulder) under the sabai with only its
+// hand showing, and nothing crossed (owner, 2026-10-18: "the woman crosses her arms but she should look like
+// she is sitting naturally and her left arm should be below the sash").
+
+// Reeds at the pond's edge, a clump of sedge, their blades swaying; "back" the ones behind what stands in them,
+// "front" the ones before it.
+function pondReeds(x, base, size, t, part) {
+  pen.save();
+  pen.translate(x, base);
+  pen.scale(size, size);
+  pen.lineCap = "round";
+  for (var n = 0; n < 14; n++) {
+    var front = n % 2 === 1;
+    if ((part === "front") !== front) { continue; }
+    var at = (n - 7) * 11 + 6 * Math.sin(n * 2.1), tall = 130 + 70 * dice(n + 3), lean = 0.18 * Math.sin(n * 1.3) + 0.04 * Math.sin(t * 1.4 + n);
+    pen.strokeStyle = front ? "#5f8a34" : "#3f6a24";
+    pen.lineWidth = 4;
+    pen.beginPath();
+    pen.moveTo(at, 0);
+    pen.quadraticCurveTo(at + lean * tall * 0.3, -tall * 0.6, at + lean * tall, -tall);
+    pen.stroke();
+    if (n % 4 === 0) {                              // a seed head here and there
+      pen.fillStyle = "#8a6a3a";
+      pen.beginPath(); pen.ellipse(at + lean * tall, -tall - 4, 3, 8, lean, 0, 7); pen.fill();
+    }
+  }
+  pen.restore();
+}
+
+function scenePond(t) {                 // 42.59-69.94 (35-53 until 2026-10-24; 3 s longer since 2026-10-21, the elephants pointed out; 9.35 s more for the narrator's own pace): the pond: lotus, fish, a maiden at the bank who wais; a Chinese dragon flies by with a flag; elephants far off
+  skyOf(SKY_DAY, CLOUD_LOOKS.day, t + POND_AT);
+  pen.drawImage(POND.back, 0, 0);
+  pondElephants(t);                       // on the middle range's ridge, and the mist may lie over them
+  hillMist(t + POND_AT);
+  pen.drawImage(POND.front, 0, 0);
+  sunbirdVisit(t, SUNBIRD_POND);          // at the thong kwao, as the voice names it
+  pen.save();
+  pen.translate(SIDE, 0);                 // the figures, the water and the dragon, at their places on the old sheet
+  // The pond's z plan, drawn by the kit's drawByZ() (oldcartoon.js, Z). In "set", as painted: the water, and the
+  // orchids on the sheet's tree trunks. The flock in "sky". The fish, which can be anywhere, in "back", in the water,
+  // by how deep each swims and not by their feet (a fish's y on the sheet is not its depth in the pond): the snakehead
+  // lying deep at 3, the barbs 3.1, the flying barbs just under the surface 3.2, the gouramis 3.3. The dragon "*",
+  // its band from its depth (far behind everyone, near in front), its flag with it. In "people", by their feet, what
+  // grows in the water, the lotus and the reeds, each by its base: over every fish (owner, 2026-10-20: "Make sure the
+  // fish are behind the lotus on the z scale"), and the right lotus, whose base is lower than his feet, in front of
+  // the fellow (owner, 2026-10-21: "Lotus should be in front of the man in this scene but the base of the lotus should
+  // be the comparison point in general"). Also in "people":
+  // the cat, the maiden and the fellow, each given an id, as a person drawn by drawByZ must be: one with none is
+  // known by the order the people are drawn in, and their own time (ownTime()) and what hangs from them would change
+  // with it. Theirs are the names that order gave them, n0 and n1, so they move as the film was passed. The falling
+  // blossom in "front".
+  var sprites = [{name: "water", kind: "pond", z: "set", y: 700, draw: function () { pond(pen, 380, 700, 900, 340, {t: t, rings: POND_RINGS}); }}];
+  // The fish of a Lanna pond (the kit's nativeFish(), side on and true to the species, from the "Lanna fish"
+  // notebook): a snakehead lying deep, two mud barbs below, a school of flying barbs just under the surface, and two
+  // gouramis, the one she watches first (owner, 2026-10-20: "Work to improve the fish in the pond scene", then "try
+  // again with a side view but more realistic and as true to the real fish as possible").
+  var DEEP = {snakehead: 3, barb: 3.1, flying: 3.2, gourami: 3.3};        // Z.back and how near the surface
+  function fish(x, y, size, face, kind, tt) {        // the school of flying barbs as one, at 800: in the order listed
+    sprites.push({name: kind, kind: kind === "flying" ? "flyingbarb" : kind, z: DEEP[kind], y: kind === "flying" ? 800 : y, draw: function () { nativeFish(pen, x, y, size, face, kind, tt); }});
+  }
+  fish(980 + Math.sin(t * 0.15) * 30, 935, 1.5, -1, "snakehead", t);
+  fish(760 + Math.sin(t * 0.4) * 60, 900, 1.3, Math.cos(t * 0.4) > 0 ? 1 : -1, "barb", t);
+  fish(1060 - Math.sin(t * 0.35 + 1) * 50, 912, 1.15, Math.cos(t * 0.35 + 1) > 0 ? -1 : 1, "barb", t + 1);
+  for (var school = 0; school < 6; school++) {     // the flying barbs, quick, together
+    fish(600 + ((t * 70 + school * 23) % 600), 800 + 9 * Math.sin(school * 1.7 + t * 2), 1.0, 1, "flying", t + school * 0.3);
+  }
+  var watched = [700 + Math.sin(t * 0.6) * 60, 850 + 6 * Math.sin(t * 1.1)];   // the gourami she watches
+  fish(watched[0], watched[1], 1.7, Math.cos(t * 0.6) > 0 ? 1 : -1, "gourami", t);
+  fish(900 - Math.sin(t * 0.5) * 40, 868, 1.4, Math.cos(t * 0.5) > 0 ? -1 : 1, "gourami", t + 2);
+  sprites.push({name: "lotus", kind: "lotus", y: 1010, draw: function () { lotusClump(pen, 520, 1010, 0.9, 4, "#ee7f9c", t); }},   // it stirs in the breeze
+               {name: "lotus", kind: "lotus", y: 1030, draw: function () { lotusClump(pen, 1150, 1030, 1.2, 1, "#e9627f", t); }},
+               {name: "flock", kind: "birds", z: "sky", y: 180, draw: function () { birds(t, 100 + t * 60, 180); }});
+  var head = dragonFly(t + POND_AT);
+  sprites.push({name: "dragon", kind: "dragon", depth: head[4], y: head[1], draw: function () {
+    var drake = dragon(head[0], head[1], {size: 0.34, depth: head[4], trail: dragonFly, fly: "glide", breath: 0.3 + 0.3 * Math.sin(t * 2), late: 0.5,
+                                          corkscrew: [POND_AT + 13.89], kind: "chinese", chase: false});   // a Chinese dragon, as the voice says, with no flaming pearl before its mouth (owner, 2026-10-16)
+    pen.save();
+    pen.globalAlpha = 0.8 + 0.2 * head[4];                        // far off, a little faded, but not so much that the dragon shows through it
+    chinaFlag(drake.claw[0], drake.claw[1], drake.size, t);
+    pen.restore();
+  }});
+  // reeds at the water's edge; her Siamese cat sits beside her again (owner, 2026-10-20: "move the cat to be back
+  // beside the woman", after it had been put in the reeds)
+  sprites.push({name: "reeds", kind: "reeds", y: 1010, draw: function () { pondReeds(445, 1010, 0.9, t, "back"); pondReeds(445, 1010, 0.9, t, "front"); }},
+               {name: "cat", kind: "cat", y: 1012, draw: function () { siamese(130, 1012, 0.9, t); }},
+               {name: "orchids", kind: "orchid", z: "set", y: 806, draw: function () {   // wild orchids (dok ueang), as they grow, on the trunks of the trees
+                 flora("orchid", 172, 800, {size: 0.9, ground: false});
+                 flora("orchid", 1552, 806, {size: 0.9, colour: "#f2f0f6", ground: false});
+               }});
+  var awe = tween(t, [[12.89, 0], [13.49, 1], [17.46, 1], [18.26, 0]], "smooth");           // the dragon passes over: eyes up, brows up
+  var sky = [head[0], head[1]];
+  // She begins looking down into the pond, watching a gourami swim; when the man comes along the bank she looks up
+  // to him and gives him a wai, and then the dragon (owner, 2026-10-20: "starts with the woman looking into the pond
+  // and watching fish swim and then she looks up to see the man and dragon").
+  var POND_LOOKS_UP = 8.48;
+  var her = t >= POND_FLAG && t < POND_LAUGHED ? {feel: "laughing", at: sky}
+          : {smile: 1, wonder: t < POND_FLAG ? awe : 0, at: awe > 0.5 ? sky : t < POND_LOOKS_UP ? watched : [1330, 800]};
+  var hands = {wai: between(t, POND_LOOKS_UP + 0.3, POND_LOOKS_UP + 0.7) * (1 - between(t, POND_FLAG, POND_FLAG + 0.4))};   // her hands in her lap; the wai to him, eased in; in her lap again at the flag
+  var his = t < POND_SEEN || t >= POND_CALM ? "happy" : t < POND_FLAG ? "surprised" : "angry";
+  var fellow = stroll(t, 1600, 1330, 0, cast("fellow", Object.assign({id: "n1", stride: 0.8, late: 0.25, spring: 0.4, feel: his,
+                                                        at: t >= POND_SEEN && t < POND_CALM ? sky : [300, 800]}, FACE(16))));   // he stops short of the water's edge
+  sprites.push({name: "maiden", kind: "person", y: 1000, draw: function () {
+                 person(300, 1000, cast("maiden", Object.assign({id: "n0", floor: true, late: 0, spring: 0.4}, her, hands, HAIR_OF.maiden, FACE(3))));
+               }},
+               {name: "fellow", kind: "person", y: 990, draw: function () { person(fellow.x, 990, fellow.look); }},
+               {name: "blossom", kind: "blossom", z: "front", y: 700 + t * 20, draw: function () { blossom(pen, 1300 + Math.sin(t) * 10, 700 + t * 20, 10, "#ee7f9c"); }});
+  drawByZ(sprites);
+  pen.restore();
+}
+
+// 50-70: the rice fields in a rain storm that clears. Three women walk in
+// under their parasols (the Thai borders, the yantra, the elephants round the
+// Buddha), dark cumulus over the hills and rain slanting down, one flash of
+// lightning; the clouds thin and blow away and the sun comes out; the women
+// stop, tip their parasols to the viewer and spin them, the rain flying off
+// the rims; close them, snap them open to shake the rain off, close them and
+// swing them to their sides; and walk on, until the first of them has left
+// the frame. The same scene, on its own, is parasol_rain.html.
+var PADDY_WOMEN = [
+  {name: "lady", kind: "lai", from: 60, to: 400, start: 0, late: 0, hair: {bun: "ipun", malai: true}},
+  {name: "maiden", kind: "yantra", from: 360, to: 720, start: 0.3, late: 0.3, hair: {bun: "wong", turban: "#f2b8c6"}},   // a Tai Lue maiden: her knot on the crown, a pink head-cloth
+  {name: "weaver", kind: "buddha", from: 680, to: 1040, start: 0.6, late: 0.6, hair: HAIR_OF.weaver}
+];
+var PADDY_TWIRL = 4.52;                 // the spin begins, each woman a little after the one before
+var PADDY_FOLD = 11.69;                  // tipped down still: close, snap open, close, and swing the parasol to the side (5.6 s)
+var PADDY_WALK = 18.53;                  // they walk on, the parasols carried
+
+var STORM_LOOK = {count: 8, lit: "#9aa2b4", shade: "#55607a", below: false, ink: "#2b3142"};
+var STORM = document.createElement("canvas");    // the storm clouds are drawn whole here, then laid on at the storm's strength
+STORM.width = WIDE;
+STORM.height = 1080;
+var STORM_PEN = STORM.getContext("2d");
+
+function smooth(u) { u = clamp(u); return u * u * (3 - 2 * u); }
+
+function storm(t) { return 1 - smooth((t - 3.82) / 3); }       // the dark and the clouds, 1 to 0
+function rainfall(t) { return 1 - smooth((t - 2.0) / 2.5); }  // the rain, which stops a little before the sky clears
+
+function rain(brush, t, amount, layer) {   // streaks that fall slanting, each on its own course, behind the women (0) and before them (1)
+  if (amount <= 0) { return; }
+  var n = Math.round(300 * amount), i;
+  brush.strokeStyle = layer ? "rgba(230, 238, 250, 0.6)" : "rgba(220, 230, 245, 0.45)";
+  brush.lineWidth = layer ? 2 : 1.4;
+  brush.lineCap = "round";
+  brush.beginPath();
+  for (i = 0; i < n; i++) {
+    var seed = i * 7 + layer * 3, quick = 900 + 500 * dice(seed + 2);
+    var y = (dice(seed) * 1200 + t * quick) % 1200 - 60;
+    var x = ((dice(seed + 1) * (WIDE + 300) - t * quick * 0.14) % (WIDE + 300) + (WIDE + 300)) % (WIDE + 300) - 150;
+    brush.moveTo(x, y);
+    brush.lineTo(x + 4, y - 28);
+  }
+  brush.stroke();
+}
+
+function rainOff(brush, w, t, joints) {    // drops leave the rim: many as it spins, a last few as it snaps open
+  // Made plainer (owner, 2026-10-16: "make the rain that spins off more
+  // evident"): 150 drops a parasol, not 60, living 0.9 s, thrown faster and a
+  // little outward so they leave the rim, each a teardrop with a dark edge and a
+  // glint, so they read on a pale parasol, a black one and the sky alike.
+  // And when the parasol is closed and snapped open one last time (the "fold"
+  // show), a last 24 drops are flung off its rim, outward and a little up, and
+  // fall (owner, 2026-10-17: "When they open their parasols have a few last rain
+  // drops fly off").
+  // The rim is given in the film's own pixels, so the drops are drawn there,
+  // PIX to a film pixel (with pixels: 2 they had been drawn twice as far out).
+  var d = t - (PADDY_TWIRL + w.late), f = t - (PADDY_FOLD + w.late), i;
+  if (!joints.parasol || (d < 1.8 || d > 5.4) && (f < 1.8 || f > 3.1)) { return; }
+  var cx = joints.parasol[0], cy = joints.parasol[1], R = Math.hypot(joints.parasolRim[0] - cx, joints.parasolRim[1] - cy);
+  var fall = 1400 * PIX;
+  brush.save();
+  brush.setTransform(1, 0, 0, 1, 0, 0);
+  brush.lineCap = "round";
+  function drop(x, y, vx, vy, fade, r) {      // a teardrop: a round head, and a tail that thins behind it along its way
+    var speed = Math.hypot(vx, vy) || 1, ex = vx / speed, ey = vy / speed, heading = Math.atan2(ey, ex);
+    var tail = Math.min(speed * 0.05, 60 * PIX) + r;
+    brush.beginPath();
+    brush.moveTo(x - ex * tail, y - ey * tail);
+    brush.lineTo(x - ey * r, y + ex * r);
+    brush.arc(x, y, r, heading + Math.PI / 2, heading - Math.PI / 2, true);
+    brush.closePath();
+    brush.fillStyle = "rgba(125, 180, 240, " + fade.toFixed(2) + ")";
+    brush.fill();
+    brush.strokeStyle = "rgba(30, 70, 140, " + (0.85 * fade).toFixed(2) + ")";
+    brush.lineWidth = 1.6 * PIX;
+    brush.stroke();
+    brush.beginPath();                           // a glint in the head
+    brush.arc(x - ex * r * 0.2 - ey * r * 0.35, y - ey * r * 0.2 + ex * r * 0.35, r * 0.32, 0, Math.PI * 2);
+    brush.fillStyle = "rgba(250, 252, 255, " + fade.toFixed(2) + ")";
+    brush.fill();
+  }
+  for (i = 0; i < 150 && d >= 1.8 && d <= 5.4; i++) {   // the spin: along the rim's turn, outward, and down
+    var born = 1.8 + dice(i * 3 + 11) * 2.6, age = d - born;
+    if (age < 0 || age > 0.9) { continue; }
+    var angle = parasolAt(born, 0, undefined, undefined, "spin").spin + i * 0.9, ux = Math.cos(angle), uy = Math.sin(angle);
+    var turn = (450 + 300 * dice(i * 3 + 12)) * PIX, out = (60 + 80 * dice(i * 3 + 13)) * PIX;
+    drop(cx + ux * R + (-uy * turn + ux * out) * age, cy + uy * R + (ux * turn + uy * out) * age + fall / 2 * age * age,
+         -uy * turn + ux * out, ux * turn + uy * out + fall * age,
+         1 - age / 0.9, (5 + 3 * dice(i * 3 + 14)) * PIX * (1 - age / 1.6));
+  }
+  for (i = 0; i < 24 && f >= 1.8 && f <= 3.1; i++) {    // the last snap open: flung straight out from all round the rim, a little up, and down
+    var flung = 1.85 + dice(i * 5 + 31) * 0.3, after = f - flung;
+    if (after < 0 || after > 0.8) { continue; }
+    var round = i * 2.39996 + dice(i * 5 + 32) * 0.5, vx = Math.cos(round), vy = Math.sin(round);   // the golden angle: spread evenly round the rim
+    var fling = (260 + 200 * dice(i * 5 + 33)) * PIX, rise = (80 + 120 * dice(i * 5 + 34)) * PIX;
+    drop(cx + vx * R + vx * fling * after, cy + vy * R + (vy * fling - rise) * after + fall / 2 * after * after,
+         vx * fling, vy * fling - rise + fall * after,
+         1 - after / 0.8, (4 + 3 * dice(i * 5 + 35)) * PIX * (1 - after / 1.6));
+  }
+  brush.restore();
+}
+
+// The rice fields' mountains, from highlands.js (owner, 2026-10-17: "use the new background decorator
+// and see if you can add some items to the background of the hero video mountains. Try one scene
+// first"): the backdrop's two ranges clothed in forest, the far one faint and blue with distance, and
+// a patch of rice terraces with a hut cut into the near one where it stands highest; then the
+// backdrop's palms laid again over them, as they stand in front. Painted once, above the fields, which
+// are the backdrop's own. As the storm clears, mist rises along the slopes and lies low at their foot.
+var PADDY_SET = null, PADDY_FIELDS = 652;   // where the backdrop's fields begin: nothing of the mountains goes below it
+
+function paddySet() {
+  var sheet = document.createElement("canvas");
+  sheet.width = WIDE;
+  sheet.height = 1080;
+  var b = sheet.getContext("2d"), far = withoutTufts(ridgeOf(656, 300, 0.6)), near = withoutTufts(ridgeOf(664, 180, 2.2));
+  function line(tops) { return function (x) { return tops[Math.max(0, Math.min(WIDE - 1, Math.round(x)))]; }; }
+  b.drawImage(backdrop("paddy"), 0, 0);
+  b.save();
+  b.beginPath();
+  b.rect(0, 0, WIDE, PADDY_FIELDS);
+  b.clip();
+  forestSlope(b, line(far), 0, WIDE, PADDY_FIELDS + 8, {far: 0.8, small: 3, large: 5, haze: "#a9c8d8", seed: 11});
+  forestSlope(b, line(near), 0, WIDE, PADDY_FIELDS + 8, {far: 0.4, small: 4, large: 8, haze: "#8fbfae", seed: 12});
+  var top = Infinity, at = 0;
+  for (var x = 300; x < WIDE - 300; x++) { if (near[x] < top) { top = near[x]; at = x; } }   // where the near range stands highest
+  terraces(b, at, top + 26, 380, PADDY_FIELDS - top - 34, {season: "green", hut: true, seed: 4, count: 6});
+  b.restore();
+  [[250, 748, 0.5, 380], [330, 716, 0.34, 360], [1330, 800, 0.8, 400]].forEach(function (p) {   // the backdrop's palms, in front again
+    bdSized(b, p[0], p[1], p[2], function () { palm(b, 0, 0, p[3]); });
+  });
+  floraTree(b, 1650, 832, 0.6, "mango", 10);       // a mango on a bund, as one stands at the edge of the fields (owner: "plants and flowers that are special to the different scenes")
+  return sheet;
+}
+
+function scenePaddy(t) {                // 50-70: the rice fields: a storm that clears, the parasols spun, closed and carried off
+  var dark = storm(t), wet = rainfall(t);
+  if (!PADDY_SET) { PADDY_SET = paddySet(); }
+  pen.drawImage(PADDY_SET, 0, 0);
+  if (dark > 0) {
+    STORM_PEN.clearRect(0, 0, WIDE, 1080);
+    cumulus(STORM_PEN, (t + 40) * (1 + 2 * (1 - dark)), STORM_LOOK);
+    pen.globalAlpha = dark;
+    pen.drawImage(STORM, 0, 0);
+    pen.globalAlpha = 1;
+    pen.fillStyle = "rgba(50, 60, 85, " + (0.42 * dark).toFixed(3) + ")";
+    pen.fillRect(0, 0, WIDE, 1080);
+  }
+  if (dark < 1) {
+    pen.fillStyle = "rgba(255, 222, 140, " + (0.1 * (1 - dark)).toFixed(3) + ")";
+    pen.fillRect(0, 0, WIDE, 1080);
+    // the mist the rain leaves, as the storm clears: bands along the slopes, and wider, lower ones in
+    // patches at their foot (a sea of mist there, the whole width, read as a ruled white stripe)
+    mistDrift(pen, t, {left: 0, right: WIDE, top: 470, bottom: 620, count: 6, drift: 9, seed: 5, alpha: 0.75 * (1 - dark)});
+    mistDrift(pen, t, {left: 0, right: WIDE, top: 630, bottom: 652, count: 5, wide: 560, drift: 6, seed: 6, alpha: 0.65 * (1 - dark)});
+  }
+  rain(pen, t, wet, 0);
+  if (t > 1.0 && t < 1.12) {
+    pen.fillStyle = "rgba(255, 255, 255, 0.55)";
+    pen.fillRect(0, 0, WIDE, 1080);
+  }
+  // The z plan (drawByZ): the set, the storm, its mist and the far rain first, as painted, and the near rain last, over
+  // everyone. The hornbill and the peafowl of the far fields in "far". In "people", by their feet: the boy leading the
+  // buffalo and its cart (884; one sprite, the rope tied from his hand to its nose), and the three women (1000 each,
+  // in the order listed), each with the drops her parasol throws off.
+  var sprites = [{name: "birds of the far fields", kind: "hornbill", z: "far", y: 790, draw: function () { paddyBirds(t); }}];
+  sprites.push({name: "the boy, the buffalo and the cart", kind: "oxcart", y: 884, draw: function () {
+    pen.save();
+    pen.translate(SIDE, 0);
+    // Along the back of the wide bund, behind the women, a buffalo pulls the ox
+    // cart (pieces.js) from the right, through the rain and on under the
+    // clearing sky: amble() gives its place and step, the cart's axle sits 460
+    // of its scale behind it, the yoke on its withers, and the wheels turn with
+    // the ground covered.
+    var ox = amble("buffalo", t, 2100, 1050, 2.89, {size: 0.55}), oxScale = 0.55 * GAITS.buffalo[0];
+    oxcart(pen, ox.x - 460 * oxScale * ox.look.face, 872, 1.3, (2100 - ox.x) / (62 * 1.3), ox.look.face,
+           [ox.x + 150 * oxScale * ox.look.face, 872 - 310 * oxScale]);
+    var nose = buffalo(ox.x, 872, ox.look).head;   // the crown of its head, in the film's own pixels
+    // A small boy leads it by a rope through its nose (owner, 2026-10-15):
+    // he walks ahead of its head at its own pace, his feet planted by the
+    // ground it has covered, and stands when it stands. His back hand holds
+    // the rope, which runs from his wrist to the nose with a little sag.
+    var lead = ox.look.face, boyX = ox.x + lead * 330, boyLook = cast("boy", Object.assign({size: 0.58, id: "boy-paddy", face: lead, smile: 1,
+                                                                              at: [boyX + lead * 300, 760], handB: [-56, 26],
+                                                                              fingersB: [0.75, 0.85, 0.9, 0.95, 0.7]}, FACE(5)));
+    if (ox.look.step !== undefined) {
+      boyLook.stride = 1.4;
+      boyLook.step = (2100 - ox.x) / (136 * boyLook.stride * 0.82 * boyLook.size);
+    }
+    var led = person(boyX, 884, boyLook);
+    pen.save();                             // the rope is drawn in the film's own pixels, as the joints and the crown are given
+    pen.setTransform(1, 0, 0, 1, 0, 0);
+    var oxS = 0.55 * GAITS.buffalo[0] * PIX, noseAt = [nose[0] + lead * 104 * oxS, nose[1] + 92 * oxS];
+    pen.strokeStyle = "#c9a878";
+    pen.lineWidth = 3 * PIX;
+    pen.lineCap = "round";
+    pen.beginPath();
+    pen.moveTo(led.wristB[0], led.wristB[1]);
+    pen.quadraticCurveTo((led.wristB[0] + noseAt[0]) / 2, Math.max(led.wristB[1], noseAt[1]) + 26 * PIX, noseAt[0], noseAt[1]);
+    pen.stroke();
+    pen.restore();
+    pen.restore();
+  }});
+  PADDY_WOMEN.forEach(function (w) {
+    sprites.push({name: w.name, kind: "person", y: 1000, draw: function () { paddyWoman(t, w); }});
+  });
+  drawByZ(sprites);
+  rain(pen, t, wet, 1);
+}
+
+// One of the women of the rice fields (PADDY_WOMEN) at second t of the scene, under her parasol, and the drops it
+// throws off. Gives back nothing: it draws with pen, on the old sheet (shifted by SIDE), the drops in the film's pixels.
+// e.g. paddyWoman(5, PADDY_WOMEN[0]);
+function paddyWoman(t, w) {
+  var n = PADDY_WOMEN.indexOf(w), go, joints;
+  pen.save();
+  pen.translate(SIDE, 0);
+  var umbrella = t < PADDY_TWIRL + w.late ? w.kind
+               : t < PADDY_FOLD + w.late ? parasolAt(t, PADDY_TWIRL + w.late, w.kind, undefined, "spin")
+               : parasolAt(t, PADDY_FOLD + w.late, w.kind, undefined, "fold");
+  var look = cast(w.name, Object.assign({size: 1.3, smile: 1, id: w.name + "-paddy", parasol: umbrella}, w.hair, FACE(6 + n)));
+  go = t < PADDY_WALK + w.late ? stroll(t, w.from, w.to, w.start, look) : stroll(t, w.to, w.to + 1400, PADDY_WALK + w.late, look);
+  joints = person(go.x, 1000, go.look);
+  pen.restore();                            // the drops are in the film's own pixels, as the joints are
+  rainOff(pen, w, t, joints);
+}
+
+// The string of khom over the night: a cord tied between two bamboo poles,
+// sagging a little in the middle, and the hanging lanterns of khom.js along it,
+// lit, in the three colours, each swinging a little out of step with the next.
+var KHOM_STRING = [KHOM_RED, KHOM_BLUE, KHOM_GREEN, KHOM_GOLD, KHOM_RED, KHOM_GREEN, KHOM_BLUE, KHOM_RED, KHOM_GREEN];
+
+function cordAt(x) { return 64 + 48 * Math.sin(Math.PI * (x - 60) / 1800); }   // the cord's height across the picture
+
+function khomString(t) {
+  pen.strokeStyle = "#6a4a2a";                                  // the two poles, and the cord between them
+  pen.lineCap = "round";
+  pen.lineWidth = 9;
+  pen.beginPath();
+  pen.moveTo(60, 54); pen.lineTo(60, 990);
+  pen.moveTo(1860, 54); pen.lineTo(1860, 990);
+  pen.stroke();
+  pen.strokeStyle = "#4a3420";
+  pen.lineWidth = 3;
+  pen.beginPath();
+  pen.moveTo(60, 64);
+  for (var x = 60; x <= 1860; x += 30) { pen.lineTo(x, cordAt(x)); }
+  pen.stroke();
+  KHOM_STRING.forEach(function (colour, n) {
+    var x = 210 + n * 187.5;
+    khom(x, cordAt(x), {size: 0.5, colour: colour, lit: 1, late: n * 1.1});
+  });
+}
+
+// Khom hung from bamboo poles planted among the crowd, each pole with a short
+// arm at the top and the lantern tied to its end, lit, in the four colours:
+// [the pole's x, the height of its top, the lantern's colour].
+var KHOM_POLES = [[220, 600, KHOM_GOLD], [580, 640, KHOM_RED], [1260, 620, KHOM_GREEN], [1700, 650, KHOM_BLUE]];
+
+function khomPoles(t) {
+  KHOM_POLES.forEach(function (one, n) {
+    pen.strokeStyle = "#6a4a2a";
+    pen.lineCap = "round";
+    pen.lineWidth = 7;
+    pen.beginPath();
+    pen.moveTo(one[0], 985);
+    pen.lineTo(one[0], one[1]);
+    pen.lineTo(one[0] + 46, one[1] + 10);
+    pen.stroke();
+    khom(one[0] + 46, one[1] + 10, {size: 0.55, colour: one[2], lit: 1, late: 2 + n * 0.9});
+  });
+}
+
+// ---------- the spinning lantern ----------
+// A khom phat (khom.js), the spinning lantern of Yi Peng, hangs at the left of
+// the night of dancing, opposite the band, from an arm on the lantern string's
+// pole, and three children stand behind the great drum looking up at it (owner,
+// 2026-10-16: "Take the spinning lantern and add it to the final scene and
+// remove the scene with the close up of the lantern. Just add one and a few
+// children looking at it so they are on the left side of the screen", and
+// "Opposite the band"). Its figures are of light (khomPhat's "light": a dark
+// drum inside, the figures cut out of it), and they are the film's own: the
+// woman of the cloth, an elephant, a child and a dancer, a quarter turn apart,
+// each cut whole, with no shadow on the ground (ground: false), walking as the
+// frame turns.
+var PHAT = [145, 360, 1.1];              // where its string is tied, and its size
+var PHAT_FIGURE = 0.22;                  // the figures on the paper: the woman about 95 tall at size 1
+var phatWalk;                            // how far the figures have walked as the frame turns: set before it is drawn
+
+function phatFigure(draw) {              // one figure of the lantern, at its size on the paper
+  return function () { pen.scale(PHAT_FIGURE, PHAT_FIGURE); draw(); };
+}
+
+var PHAT_FIGURES = [
+  phatFigure(function () { person(0, 0, Object.assign({}, WOMAN, {size: 1, id: "phat-woman", at: undefined, late: undefined, ground: false, step: phatWalk})); }),
+  phatFigure(function () { elephant(0, 0, {size: 0.45, ground: false, step: phatWalk}); }),
+  phatFigure(function () { person(0, 0, cast("child", {size: 0.85, id: "phat-child", late: undefined, ground: false, step: phatWalk})); }),
+  phatFigure(function () { person(0, 0, cast("dancer", {size: 1, id: "phat-dancer", late: undefined, ground: false, handA: [60, -130], handB: [-60, -110]})); })
+];
+
+// The boy's wrist on its way down, from pointing at the lantern to beside his
+// hip, as a course for motion.js's where(): [second of the scene, x, y]. His
+// face and the face of the girl in yellow stand about 55 apart on the sheet
+// (x 160 and 215), so the wrist goes up through that gap beside his face, out
+// under her chin at the height of his shoulder (150, 787 as person() draws it)
+// and down; it is never nearer his shoulder than 42 (the wrist is 68 from it
+// with the arm straight), so the elbow keeps its side. Swung round the shoulder
+// as the girls' arms are, his hand went over her mouth: she is within an arm of him.
+var BOY_DOWN = [[3, 165, 480], [3.25, 180, 715], [3.5, 192, 790], [3.75, 175, 870], [4, 150, 940]];
+
+function spinningLantern(t) {            // the khom phat on its arm, and the three children under it, drawn before the great drum
+  pen.strokeStyle = "#6a4a2a";          // the arm, from the string's pole at x 60
+  pen.lineCap = "round";
+  pen.lineWidth = 7;
+  pen.beginPath();
+  pen.moveTo(60, PHAT[1] - 10);
+  pen.lineTo(PHAT[0] + 6, PHAT[1] - 4);
+  pen.stroke();
+  phatWalk = 0.45 * clock * 1.3;         // the frame turns 0.45 a second (khomPhat's own spin), and they walk with it
+  khomPhat(PHAT[0], PHAT[1], {size: PHAT[2], lit: 1, light: true, figures: PHAT_FIGURES});
+  var look = [PHAT[0], PHAT[1] + 150];  // the lantern's middle
+  var gaze = {late: 0.45, spring: 0.5, smile: 1, wonder: 0.7, tilt: -0.12, at: look};   // eyes on it, in wonder
+  var girlGaze = Object.assign({}, gaze, {tilt: -0.24});   // the girls' heads further back, looking up at it (owner, 2026-10-17: "tilt the girls heads back just a bit")
+  // After a few seconds they put their arms down (owner, 2026-10-17): from
+  // 3 s to 4 s each arm comes down, from the lantern to
+  // beside the hip, the boy's pointing finger loosening as it goes. A girl's hand
+  // turns about the shoulder ("way": 1 by the right of it as we see it, the
+  // girl at the left; -1 by the left, the girl in yellow), its
+  // distance from the shoulder dipping, early in the way, to "bend" (on the
+  // sheet; an arm is about 80): 60. Sent straight from up to down, a hand came
+  // within a third of an arm of its own shoulder, where the elbow has no side
+  // to bend to, and it jumped (kit_check: one flip, at 73.63 s); it passed
+  // the boy's chin and the mouth of the girl in yellow too. Each girl's hand
+  // now goes behind the boy, who is drawn last; his own goes by BOY_DOWN.
+  var down = between(t, 3, 4);
+  function child(x, y, look, up, low, way, bend) {   // one child, its arm on the way down; the shoulder as person() first sets it (its about())
+    var size = (look.size || 1) * 0.82;
+    var S = [x + 40 * size * (look.face || 1), y - ((look.skirt ? 190 : 216) * leggyOf(look.build) + 126) * size];
+    var a0 = Math.atan2(up[1] - S[1], up[0] - S[0]), a1 = Math.atan2(low[1] - S[1], low[0] - S[0]);
+    while (way * (a1 - a0) < 0) { a1 += way * 2 * Math.PI; }
+    var far = mix(Math.hypot(up[0] - S[0], up[1] - S[1]), Math.hypot(low[0] - S[0], low[1] - S[1]), down);
+    var r = mix(far, bend, Math.sqrt(Math.sin(Math.PI * down))), a = mix(a0, a1, down);
+    look.reachA = [S[0] + r * Math.cos(a), S[1] + r * Math.sin(a)];
+    person(x, y, look);
+  }
+  var pointing = [0, 1, 1, 1, 0.8].map(function (c, i) { return mix(c, REST[i], down); });
+  child(235, 975, cast("girl", Object.assign({id: "phat-girl-2", face: -1, shirt: "#e9c45c", flower: "#f6c445"}, girlGaze, {late: 0.7}, FACE(12))), [175, 540], [225, 935], -1, 60);   // she reaches up to it
+  child(55, 975, cast("girl", Object.assign({id: "phat-girl"}, girlGaze, {late: 0.2}, FACE(13))), [115, 540], [70, 935], 1, 60);   // and so does she
+  var wrist = where(BOY_DOWN, t);
+  person(140, 980, cast("boy", Object.assign({id: "phat-boy", reachA: [wrist[0], wrist[1]], fingersA: pointing}, gaze, FACE(14))));   // he points up at it, drawn last so his hand shows
+}
+
+function sceneDance(t) {                // 70-79: a night of dancing: a dancer, a drummer, a celestial; the khom phat at the left
+  skyOf(SKY_NIGHT, CLOUD_LOOKS.night, t + 60);
+  pen.drawImage(NIGHT.back, 0, 0);
+  hillMist(t + 70, true);
+  pen.drawImage(NIGHT.front, 0, 0);
+  // The z plan (drawByZ): the night's sheets, sky and mist first, as painted. Behind the dancing ground, in the order
+  // they stand back to front: the string of khom across the sky (1), the khom loi rising from the crowd (1.1), the
+  // crowd (3, "back"), the poles of khom (3.1), the khom phat at the left with the children behind the drum looking up
+  // at it (3.2). On the ground, in "people", by their feet: the grandmother (950), the old man (955), the three
+  // dancers (962), the dancer in the middle (985), the drum on its cart (988), the drummer and the celestial (990) and
+  // the band (1005). The drummer, the middle dancer and the celestial have the ids their old order gave them.
+  function onOldSheet(draw) { return function () { pen.save(); pen.translate(SIDE, 0); draw(); pen.restore(); }; }
+  var sprites = [
+    {name: "khom string", kind: "khom", z: 1, y: 0, draw: function () { khomString(t); }},
+    {name: "khom loi", kind: "lantern", z: 1.1, y: 0, draw: function () {
+      // Six khom loi leave the ground behind the crowd one after another, from the
+      // scene's first second, and climb through the night, smaller as they go;
+      // the rest of the night's lanterns hang, on the string and on the poles.
+      for (var n = 0; n < 6; n++) {
+        var age = t - 0.3 - n * 0.45;
+        if (age > 0) { lantern(120 + ((n * 7) % 11) * 168 + Math.sin(age * 0.8 + n) * 30, 975 - age * 115, 46 - age * 1.5); }
+      }
+    }},
+    {name: "crowd", kind: "crowd", z: "back", y: 985, draw: function () { crowd(t, 985, 30, true); }},
+    {name: "khom poles", kind: "khom", z: 3.1, y: 0, draw: function () { khomPoles(t); }},
+    {name: "khom phat", kind: "khomphat", z: 3.2, y: 0, draw: onOldSheet(function () { spinningLantern(t); })},
+    {name: "drum", kind: "drumcart", y: 988, draw: onOldSheet(function () { drumCart(pen, 110, 988, 0.75, 1); })}   // the temple's great drum on its cart (pieces.js), brought out for the night, beside the drummer
+  ];
+  function onGround(x, y, look) { sprites.push({name: look.id, kind: "person", x: x, y: y, draw: onOldSheet(function () { person(x, y, look); })}); }
+  // More dancers, a step behind the three and a little smaller, each in her own colours and a beat apart (owner,
+  // 2026-10-20: "Add a few more dancers to the night scene")
+  [[560, "#6a3f8f", "#2a1a3a", 0.15, 1, {sabai: ["#e0b23a", "#8a2a3a"], bun: "wong", flower: "#f6c445"}], [890, "#2a6a8a", "#1f2a3a", 0.4, -1], [1230, "#b8457a", "#5a1e2a", 0.65, 1]].forEach(function (d, k) {   // the third pink, not the gold of the celestial before her (owner, 2026-10-21)
+    onGround(d[0], 962, cast("dancer", Object.assign({size: 0.86, late: d[3], spring: 0.7, smile: 1, dance: true, face: d[4], shirt: d[1], legs: d[2],
+                                     id: "night-dancer" + k, at: [720, 520],
+                                     handA: [64 + Math.sin(t * 3 + k) * 18, -126 - hop(t, d[3]) * 26], handB: [-56, -104 + Math.cos(t * 3 + k) * 18]}, d[5] || {}, FACE(k))));
+  });
+  onGround(380, 990, cast("drummer", Object.assign({id: "n0", late: 0, spring: 0.6, smile: 1, at: [720, 700]}, LANNA_MAN, FACE(3))));
+  onGround(720, 985, cast("dancer", Object.assign({id: "n1", late: 0.25, spring: 0.7, smile: 1, dance: true, at: [900, 500], maiwai: true, malai: true,
+                                  handA: [70 + Math.sin(t * 3) * 20, -130 - hop(t, 0.25) * 30], handB: [-60, -110 + Math.cos(t * 3) * 20]}, FACE(4))));
+  onGround(1060, 990, cast("celestial", Object.assign({id: "n2", late: 0.5, spring: 0.6, smile: 1, face: -1, at: [720, 500], handA: [50, -120 - hop(t, 0.5) * 25]}, FACE(5))));
+  // An old couple watches the dancing, side by side and turned to us, holding hands, their eyes on the dancer
+  // (owner, 2026-10-16: "Add an old couple to the end scene too"): the cast's grandmother, and its elder, who
+  // leaves his stick for the night. They stand a step behind the band, so the players sitting in front hide
+  // only their legs; their hands meet in the gap between the salo's and the sueng's players' heads. One point
+  // given to both is their two hands, swinging a little, high enough for his reach (his arm is 108 from shoulder
+  // to wrist; a point at hanging height was 117 off and his hand stopped short of hers). They do not hop on the
+  // beat, as the dancers do: the stretch of a hop would take his hand away from hers.
+  var hands = [1646, 772 + 4 * Math.sin(t * 1.4)];
+  onGround(1715, 950, cast("grandmother", Object.assign({size: 1.0, twist: 1, face: -1, spring: 0, at: [720, 640], reachA: hands, id: "old-woman", bun: "low"}, FACE(6))));
+  onGround(1575, 955, cast("elder", Object.assign({size: 1.1, twist: 1, holding: null, spring: 0, at: [720, 640], reachA: hands, id: "old-man"}, FACE(7))));
+  // The band of the north (band.js), sitting cross-legged on the ground at the right, a step nearer than the
+  // dancers, facing them, each on the beat (owner, 2026-10-16: "Add the band members to the night scene"): the
+  // pi chum, the salo (its bow across the piper's empty lap), the sueng (its neck behind the next player) and the
+  // phin phia, as far right as the words under the picture allow.
+  [["pichum", "elder", 1420, 0.31], ["salo", "fellow", 1570, 0], ["sueng", "farmer", 1715, 0.13], ["phinphia", "fellow", 1850, 0.07]].forEach(function (b, k) {
+    var player = cast(b[1], Object.assign({size: 1.0, face: -1, smile: 1, id: "band-" + b[0]}, FACE(k ? 8 + k : 17)));
+    sprites.push({name: player.id, kind: "person", x: b[2], y: 1005, draw: onOldSheet(function () { musician(b[2], 1005, b[0], player, b[3]); })});
+  });
+  drawByZ(sprites);
+}
+
+var SCENES = [[0, 26.67, sceneCloth], [26.67, 42.59, sceneLane], [42.59, 69.94, scenePond], [69.94, 93.47, scenePaddy], [93.47, DURATION, sceneDance]];
+
+// The words, in one list (owner, 2026-10-16: the song gave way to the story of
+// Lanna told in Kam Mueang, "like it was for little kids", about what is on
+// screen, "then go on explaining the special artifacts that are uniquely
+// Lanna", and a joke about the dragon). On 2026-10-17 the owner wrote the story
+// anew, in English, scene by scene ("change the text of the video to be that"),
+// and it is told in Kam Mueang still: the English below is theirs, spelling
+// mended, with "cats" made a tree Lanna had (owner: "Change cats to some special
+// plant the Lanna did have"): the thong kwao, Chiang Mai's own tree, ต้นกว๋าว in
+// Kam Mueang, which stands by the pond. Ten lines kept their Kam Mueang, whose
+// meaning had not changed; eight are new. Each line: the seconds it shows under
+// the picture, what the voice is given (the written line with ๆ said out, for
+// the voice drops the mark), the line as written, and its English. The facts
+// come from a NotebookLM notebook of Lanna's history (Wikipedia on Mangrai,
+// Chiang Mai, the sabai, the tung, the kwian, Bo Sang, khom loi, Yi Peng and the
+// Chinese dragon; for the new story also Siamese cats and the Tamra Maew, which
+// put those cats in Siam and not in Lanna); the Kam Mueang from a second
+// notebook, with its words read from pythainlp/lanna_dict, the Charatrit
+// KamMuang-Thai-English pairs and a guide to speaking Lanna, and each new line
+// put to that notebook as it stood and taken in its corrected form (it changed
+// เอิ้น, which is Isan, to ฮ้อง, and ใจดี to ใจ๋ดี, among others). A native
+// speaker, the narrator's own voice, checked every line on 2026-10-24 and changed 16
+// of the 18: the subtitle is hers, and the spoken form hers with each ๆ said out.
+// sash_narrate.py reads WORDS out of this page, speaks each line at its second
+// over sash.wav and says whether each fits before the next. CUES is the kit's
+// cue sheet made from it, [beat, words, line, meaning, end], so that
+// kit_check.py can say whether a cut falls in the middle of a line.
+var WORDS = [[3.6, 8.95, "สมัยตะก่อน ชีวิตเตวไปอย่างจ๊า จ๊า", "สมัยตะก่อน ชีวิตเตวไปอย่างจ๊าๆ", "In ancient times, things moved more slowly."],
+             [9.12, 14.34, "แม่หญิงป๊าดผ้าสะปาย ฮ้องว่าสไบเจ้า", "แม่หญิงป๊าดผ้าสะปาย ฮ้องว่าสไบเจ้า", "Women wore a long sash called a sabai."],
+             [14.51, 21.1, "ลายตี้ทอไว้ตี้ผืนผ้า มีความหมายกับชีวิตคนเมืองเน้อเจ้า", "ลายตี้ทอไว้ตี้ผืนผ้า มีความหมายกับชีวิตคนเมืองเน้อเจ้า", "The patterns and symbols woven into it were meaningful to the daily life of the people."],
+             [21.27, 26.36, "พญามังรายตั้งล้านนาแป๋งเมืองเจียงใหม่", "พญามังรายตั้งล้านนาแป๋งเมืองเจียงใหม่", "King Mangrai founded Lanna and built Chiang Mai."],
+             [27.68, 35.72, "ชีวิตตี้เฮือนเฮาอยู่เงียบ เงียบ จ๊า จ๊า แต่คนเฮือนเฮาใจ๋ดี นับถือกั๋นเน้อเจ้า", "ชีวิตตี้เฮือนเฮาอยู่เงียบๆ จ๊าๆ แต่คนเฮือนเฮาใจ๋ดี นับถือกั๋นเน้อเจ้า", "Village life was quiet and slow but people treated each other with kindness and respect."],
+             [35.9, 39.32, "หันตุงสูงข้างเฮือนฮั้นก่อลูก", "หันตุงสูงข้างเฮือนฮั้นก่อลูก", "Do you see the tall tung banner over there by the house, child?"],
+             [39.5, 44.32, "ตุงแขวนไว้ตี้งานปอยละก่อวันศีลเจ้า", "ตุงแขวนไว้ตี้งานปอยละก่อวันศีลเจ้า", "Tungs are hung for temple and festival days."],
+             [44.5, 48.15, "คนเฮาอยู่กับธรรมชาติ", "คนเฮาอยู่กับธรรมชาติ", "People were more in harmony with nature."],
+             [48.32, 54.7, "มีต้นกว๋าว จ๊าง ดอกบัว ละก่อของดีนักขนาดเน้อเจ้า", "มีต้นกว๋าว จ๊าง ดอกบัว ละก่อของดีนักขนาดเน้อเจ้า", "They had flame-of-the-forest trees, elephants, lotus flowers and many special things."],
+             [54.87, 59.39, "ผ่อฮั้นก่อน ตัวหลงนี้มาจากเมืองจีนนา", "ผ่อฮั้นก่อน ตัวหลงนี้มาจากเมืองจีนนา", "Look over there! This dragon came from China."],
+             [59.57, 64.39, "ตัวหลงเมืองจีนนี้มักจะก๋ำแก้ว บะใจ้ธง", "ตัวหลงเมืองจีนนี้มักจะก๋ำแก้ว บะใจ้ธง", "This Chinese dragon usually holds a pearl, not a flag!"],
+             [64.57, 69.39, "ตางปู๊น หมู่จ๊างเตวตางหลังเก๊ากล้วย", "ตางปู๊น หมู่จ๊างเตวตางหลังเก๊ากล้วย", "Over there, the elephants are walking behind the banana trees."],
+             [69.57, 73.39, "ฝนเอื้อนแล้วตี้เหนือก๋างโต้งเน้อ", "ฝนเอื้อนแล้วตี้เหนือก๋างโต้งเน้อ", "The rain has eased over the middle of the rice fields."],
+             [73.57, 79.8, "แม่หญิงหมุนจ้องสลัดหยัดน้ำฝน เหมือนจ้องตี้บ่อสร้างเน้อเจ้า", "แม่หญิงหมุนจ้องสลัดหยัดน้ำฝน เหมือนจ้องตี้บ่อสร้างเน้อเจ้า", "The women spin their umbrellas to shake off the rain, like those of Bo Sang."],
+             [79.97, 83.8, "ล้านนา หมายถึง นาเป๋นล้านทุ่ง", "ล้านนา หมายถึง นาเป๋นล้านทุ่ง", "Lanna means a million rice fields."],
+             [83.97, 88.33, "ละอ่อนจู๋งควายลากเกวี๋ยนไม้เจ้า", "ละอ่อนจู๋งควายลากเกวี๋ยนไม้เจ้า", "That boy is leading a water buffalo pulling a traditional wooden cart called a kwian."],
+             [90.87, 95.71, "หันโกมสามอย่าง ช่างดนตรี กับช่างฟ้อนก่อเจ้า", "หันโกมสามอย่าง ช่างดนตรี กับช่างฟ้อนก่อเจ้า", "Do you see the three different kinds of lanterns and the musicians and the dancers?"],
+             [95.89, 103.58, "สมัยก่อน งานปอยม่วนขนาด มีของดีตี้คนเฮาแป๋งกั๋นคนเดียวเน้อเจ้า", "สมัยก่อน งานปอยม่วนขนาด มีของดีตี้คนเฮาแป๋งกั๋นคนเดียวเน้อเจ้า", "In ancient times the celebrations were quite lively and full of special things the people created themselves."]];
+var CUES = WORDS.map(function (w) { return [w[0] / BEAT, w[2], w[3], w[4], w[1]]; });
+
+function draw(t) {
+  var at = t / SLOW;                      // the film's own second (SLOW, above); the words are on t
+  STYLE.hop = at >= 93.47;                   // only the dance hops on the beat
+  film(at, SCENES);
+  WORDS.forEach(function (w) { if (t >= w[0] && t < w[1]) { subtitle(w[3], w[4]); } });
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % LENGTH); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

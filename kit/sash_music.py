@@ -22,6 +22,7 @@ It writes sash.wav in the folder it is run from (stereo, 32-bit float, 44.1 kHz)
 and ends with exit code 0. score.py imports its instruments (string, pad, drum, ching, room, place, lowpass).
 """
 import random
+import sys
 
 import numpy
 import soundfile
@@ -198,11 +199,17 @@ def compose():
 
 
 def main():
-    """The command line: compose the music and write it as sash.wav (32-bit float), print its length."""
+    """The command line: compose the music and write it as sash.wav (32-bit float), print its length.
+    python sash_music.py [BEATS] [OUT]: another length and file, for another cut of the hero film (2026-10-24: the
+    first Lanna Tale's, sash_maeng.html, read by the narrator herself: python sash_music.py 207 sash_maeng.wav)."""
+    global BEATS
+    if len(sys.argv) > 1:
+        BEATS = int(sys.argv[1])
+    out = sys.argv[2] if len(sys.argv) > 2 else "sash.wav"
     track = compose()
-    soundfile.write("sash.wav", track.T, RATE, subtype="FLOAT")
-    print("sash.wav: %.1f seconds, stereo, music from %.1f s, %d beats of %.1f s"
-          % (track.shape[1] / RATE, SILENCE, BEATS, BEAT))
+    soundfile.write(out, track.T, RATE, subtype="FLOAT")
+    print("%s: %.1f seconds, stereo, music from %.1f s, %d beats of %.1f s"
+          % (out, track.shape[1] / RATE, SILENCE, BEATS, BEAT))
 
 
 if __name__ == "__main__":

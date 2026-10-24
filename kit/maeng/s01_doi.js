@@ -5,17 +5,17 @@
 // valleys between the far ranges, its top lit by the sunrise; a band drifting at the mountain's foot; one lying
 // along its side below the cave; and the film opens inside a thick fog that sinks and thins over the first
 // twelve seconds, so the mountain comes out of it under the title.
-var S01_LONG = 30;
+var S01_LONG = 36.27;   // 30 until 2026-10-24: 6.27 s inserted for the narrator's own reading (scene_retime.py)
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the crickets of the hour before dawn, gone before the howl.
-var S01_SOUND = {calls: [[0, "crickets", 0.35, 22]]};
-var S01_LINES = [[8.0, 11.34, "M001"], [11.6, 15.28, "M002"], [15.48, 19.4, "M003"], [19.8, 24.0, "M004"]];
+var S01_SOUND = {calls: [[0, "crickets", 0.35, 28.27]]};
+var S01_LINES = [[8.0, 12.55, "M001"], [12.75, 18.7, "M002"], [18.9, 25.87, "M003"], [26.07, 31.53, "M004"]];
 // Its sound (owner, 2026-10-19: "where was the howl?"): when the tale has been named, the creature howls once from
 // its cave, far off on the mountain (sounds.py, maeng-base), and the howl fades as the film goes on. Heard only:
 // nothing of the scene is drawn for it (feelings.py --film lays the calls of a scene's life into the film's sound).
 var S01_LIFE = [
   {name: "the creature's howl, far off", kind: "flock", z: "sky", course: [[0, -999, -999], [0.1, -999, -999]],
-   calls: [[24.5, "maeng-base", 0.87]]}
+   calls: [[30.77, "maeng-base", 0.87]]}
 ];
 
 // The titles over the opening, in the fog (owner, 2026-10-19: text over the first seconds, "the story name and
@@ -67,8 +67,8 @@ function s01Title(t) {                              // the series, then the tale
 // t: the scene's second (seen from 24.5 s to 28.5 s); drawn at MAENG_CAVE, under the scene's camera. Gives back
 // nothing: it draws with pen. e.g. s01Eyes(t);
 function s01Eyes(t) {                               // five green eyes in the cave's dark: they open, blink once, close
-  var open = between(t, 24.5, 25.3) * (1 - between(t, 27.6, 28.5));
-  if (open <= 0 || (t > 26.3 && t < 26.5)) { return; }
+  var open = between(t, 30.77, 31.57) * (1 - between(t, 33.87, 34.77));
+  if (open <= 0 || (t > 32.57 && t < 32.77)) { return; }
   var at = [MAENG_CAVE[0] + 2, MAENG_CAVE[1] - 27], star = [[0, -11], [-12, -4], [12, -4], [-7, 4], [7, 4]];
   star.forEach(function (one) {
     pen.fillStyle = "rgba(170, 255, 110, " + (0.25 * open).toFixed(3) + ")";
@@ -107,7 +107,7 @@ function s01Crowns(list, dawn) {
 function sceneDoi(t) {
   var mountain = maengMountain(), light = between(t, 0, S01_LONG);
   var day = 0.6 * light * light * (3 - 2 * light), dawn = MAENG_DAWN[1] * (1 - day);   // the sun coming up behind the mountain
-  var u = Math.pow(between(t, 14, 28), 1.6), push = 1 + 0.42 * u;   // the slow push in, the cave coming to the middle
+  var u = Math.pow(between(t, 15.15, 34.27), 1.6), push = 1 + 0.42 * u;   // the slow push in, the cave coming to the middle
   pen.save();
   pen.translate(WIDE / 2, 540);
   pen.scale(push, push);
@@ -135,7 +135,7 @@ function sceneDoi(t) {
   s01Eyes(t);
   s01Crowns(S01_BEFORE, dawn);
   mistDrift(pen, t, {left: 0, right: WIDE, top: 880, bottom: 1000, count: 4, wide: 640, drift: 7, seed: 4, alpha: 0.65});
-  var lifts = between(t, 1, 12);                    // the fog the film opens in: it sinks and thins, and the mountain comes out
+  var lifts = between(t, 1, 13.15);                    // the fog the film opens in: it sinks and thins, and the mountain comes out
   if (lifts < 1) {
     var veil = pen.createLinearGradient(0, 0, 0, 1080), thick = 0.82 * (1 - between(t, 1, 9));   // a veil over all of it, thinning
     veil.addColorStop(0, "rgba(214, 206, 226, " + (thick * 0.7).toFixed(3) + ")");

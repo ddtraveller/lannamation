@@ -7,8 +7,8 @@ var S14_LONG = 16;
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the crickets of the yard at dusk.
 var S14_SOUND = {calls: [[0, "crickets", 0.3, 16]]};
-var S14_LINES = [[2.0, 7.86, "M078"], [8.06, 11.78, "M079"]];
-var S14_SPEAKS = [[2.0, 7.46], [8.06, 11.38]];          // she says them herself: her mouth moves through them
+var S14_LINES = [[2.0, 8.04, "M078"], [8.24, 11.94, "M079"]];
+var S14_SPEAKS = [[2.0, 7.64], [8.24, 11.54]];          // she says them herself: her mouth moves through them
 var S14_WAI = [7.9, 8.4, 12.3, 12.8];                // the hands come up, are joined (a wai, and a small bow), part, are down
 var S14_LIFE = [
   {name: "flock at dusk", kind: "flock", z: "sky", course: [[0.5, -150, 230], [13.0, 2150, 180]]}

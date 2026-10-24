@@ -2,20 +2,20 @@
 // Older now, he leads the headman's buffalo out to the meadow on a rope; while it grazes he gathers the fallen
 // wood under the great tree and binds it; and he carries the bundle home on his shoulder, tired, and he does
 // not complain.
-var S03_LONG = 35;
+var S03_LONG = 36.48;   // 35 until 2026-10-24: 1.48 s inserted for the narrator's own reading (scene_retime.py)
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the cicadas of the meadow by day, and the buffalo's call as he leads it out.
-var S03_SOUND = {calls: [[0, "cicadas", 0.55, 35], [4, "buffalo", 0.45]]};
-var S03_LINES = [[1.5, 5.22, "M012"], [5.6, 11.2, "M013"], [25.5, 29.5, "M014"]];
+var S03_SOUND = {calls: [[0, "cicadas", 0.55, 36.48], [4, "buffalo", 0.45]]};
+var S03_LINES = [[1.5, 6.88, "M012"], [7.08, 13.5, "M013"], [26.98, 32.68, "M014"]];
 var S03_STAND = 760, S03_GROUND = 968;              // where the buffalo stops to graze, and the ground the two walk on
 var S03_PILE = MAENG_TREE[0] - 90;                  // where the fallen wood lies
-var S03_LIFT = [22.3, 22.9, 24.0];                  // he bends to the bound bundle, lifts it to his shoulder, and sets off home
+var S03_LIFT = [23.78, 24.38, 25.48];                  // he bends to the bound bundle, lifts it to his shoulder, and sets off home
 // Its life: a red-billed blue magpie perched on the great tree's left limb, flicking its long tail; as he sets off
 // home with the wood it flies off over the meadow. A flock goes over, high, while he leads the buffalo out.
 var S03_LIFE = [
   {name: "blue magpie", kind: "magpie", z: "set", look: {size: 0.8},     // on the tree, then over the meadow: of the set
-   course: [[0, 1520, 588], [26.0, 1520, 588], [33.0, -220, 260]]},
-  {name: "flock", kind: "flock", z: "sky", course: [[3.0, 2150, 230], [14.0, -150, 170]]}
+   course: [[0, 1520, 588], [27.48, 1520, 588], [34.48, -220, 260]]},
+  {name: "flock", kind: "flock", z: "sky", course: [[3.0, 2150, 230], [15.48, -150, 170]]}
 ];
 
 // Gives back an x in pixels of the sheet (left of the picture), from the kit's GAITS.buffalo and BEAT.
@@ -102,7 +102,7 @@ function sceneWork(t) {
   cumulus(pen, t + 40, MAENG_CLOUDS.day);
   pen.drawImage(maengYard().back, 0, 0);
   var ox = s03Ox(t), lad = maengPerson("boy", MAENG_LAD, {id: "lad"}), go;
-  var gathered = between(t, 16, 21.5);              // how much of the wood he has picked up
+  var gathered = between(t, 17.48, 22.98);              // how much of the wood he has picked up
   var sprites = [{name: "meadow", kind: "meadow", z: "set", y: 0, draw: function () { pen.drawImage(maengMeadow().front, 0, 0); }}]
     .concat(lifeSprites(t, S03_LIFE));
   if (t < ox.arrives + 1) {                         // leading the buffalo: ahead of it at its pace, the rope in his back hand
@@ -116,24 +116,24 @@ function sceneWork(t) {
       buffalo(ox.x, S03_GROUND - 6, Object.assign({}, ox.look, {graze: s03Graze(t, ox)}));
     }}
   ]);
-  if (t < 24) {                                     // to the tree, and down to gather the wood
+  if (t < 25.48) {                                     // to the tree, and down to gather the wood
     go = stroll(t, S03_STAND + 380, S03_PILE - 50, ox.arrives + 1.2, lad);
     lad = go.look;
     // Stooping to the wood, a hand to the ground, from 16 s; up again before he bends to the bundle (S03_LIFT). Each
     // eased over half a second (poseSteps; it once came in one frame, a pop: checks/pop_check.py).
-    Object.assign(lad, poseSteps(t, [[0, {}], [16, {sit: 1, bend: 0.9, reachA: [go.x + 40, S03_GROUND - 10], feel: "concerned"}], [21.7, {}]], 0.5));
+    Object.assign(lad, poseSteps(t, [[0, {}], [17.48, {sit: 1, bend: 0.9, reachA: [go.x + 40, S03_GROUND - 10], feel: "concerned"}], [23.18, {}]], 0.5));
     if (t >= S03_LIFT[0]) {                         // the lift: down to the bound bundle, and up with it to his shoulder
       sprites.push(s03Lift(t, go));
     } else {
       sprites.push({name: "wood", kind: "firewood", x: S03_PILE, y: S03_GROUND - 4, draw: function () {
-        firewood(pen, S03_PILE, S03_GROUND - 4, 0.55, {loose: t < 22, count: 2 + Math.round(5 * gathered)});
+        firewood(pen, S03_PILE, S03_GROUND - 4, 0.55, {loose: t < 23.48, count: 2 + Math.round(5 * gathered)});
       }});
     }
     drawByZ(sprites.concat(t >= S03_LIFT[0] ? [] : [
       {name: "lad", kind: "person", x: go.x, y: S03_GROUND, draw: function () { person(go.x, S03_GROUND, lad); }}
     ]));
   } else {                                          // home with the bundle on his shoulder
-    go = stroll(t, S03_PILE - 50, -260, 24, lad);
+    go = stroll(t, S03_PILE - 50, -260, 25.48, lad);
     // The bundle lies on his far shoulder, behind his head, its ends out before and behind him; his near hand is
     // up at its front end. Measured first, drawn before him, with him.
     var face = go.look.face, shoulder = maengMeasure(go.x, S03_GROUND, go.look).shoulderB;

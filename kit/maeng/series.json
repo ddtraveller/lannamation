@@ -1,140 +1,140 @@
 {
- "_": "The complete Lanna Tales film of the creature with four ears and five eyes, as rendered and published: the hero film (sash.html, its picture held SLOW times longer for the narrator, its words at these seconds: render.py --set SLOW, LENGTH, WORDS), the studio card (sls_intro.html), then the tale (maeng/film.html), joined by chain.py. Each part starts where the one before ends.",
+ "_": "The complete Lanna Tales film of the creature with four ears and five eyes, as rendered and published: the hero film (sash_maeng.html, this film's own copy of the hero since 2026-10-24, so sash.html is free for the next tale; its picture held SLOW times longer for the narrator, its words at these seconds: render.py --set SLOW, LENGTH, WORDS), the studio card (sls_intro.html), then the tale (maeng/film.html), joined by chain.py. Each part starts where the one before ends.",
  "video": "https://krueng.ai/video/lanna_tales_maeng.mp4",
  "parts": [
   {
    "name": "hero",
-   "page": "sash.html",
-   "seconds": 94.3,
+   "page": "sash_maeng.html",
+   "seconds": 122.5,
    "set": {
     "SLOW": 1.15,
-    "LENGTH": 94.3
+    "LENGTH": 122.475
    },
    "words": [
     [
      4.14,
-     7.98,
-     "แต่ปางก่อน ชีวิตเดินไปจ๊า จ๊า เน้อ",
-     "แต่ปางก่อน ชีวิตเดินไปจ๊าๆ เน้อ",
+     10.29,
+     "สมัยตะก่อน ชีวิตเตวไปอย่างจ๊า จ๊า",
+     "สมัยตะก่อน ชีวิตเตวไปอย่างจ๊าๆ",
      "In ancient times, things moved more slowly."
     ],
     [
-     8.58,
-     12.54,
-     "แม่หญิงพาดผ้าสะพาย ฮ้องว่าสไบเจ้า",
-     "แม่หญิงพาดผ้าสะพาย ฮ้องว่าสไบเจ้า",
+     10.49,
+     16.49,
+     "แม่หญิงป๊าดผ้าสะปาย ฮ้องว่าสไบเจ้า",
+     "แม่หญิงป๊าดผ้าสะปาย ฮ้องว่าสไบเจ้า",
      "Women wore a long sash called a sabai."
     ],
     [
-     13.12,
-     18.48,
-     "ลายตี้ทอไว้ตี้ผืนผ้า มีความหมายกั๊บชีวิตคนเมืองเน้อเจ้า",
-     "ลายตี้ทอไว้ตี้ผืนผ้า มีความหมายกั๊บชีวิตคนเมืองเน้อเจ้า",
+     16.69,
+     24.26,
+     "ลายตี้ทอไว้ตี้ผืนผ้า มีความหมายกับชีวิตคนเมืองเน้อเจ้า",
+     "ลายตี้ทอไว้ตี้ผืนผ้า มีความหมายกับชีวิตคนเมืองเน้อเจ้า",
      "The patterns and symbols woven into it were meaningful to the daily life of the people."
     ],
     [
-     19.08,
-     22.56,
-     "พญามังรายตั้งล้านนาแปลงเชียงใหม่",
-     "พญามังรายตั้งล้านนาแปลงเชียงใหม่",
+     24.46,
+     30.31,
+     "พญามังรายตั้งล้านนาแป๋งเมืองเจียงใหม่",
+     "พญามังรายตั้งล้านนาแป๋งเมืองเจียงใหม่",
      "King Mangrai founded Lanna and built Chiang Mai."
     ],
     [
-     26.45,
-     33.51,
+     31.83,
+     41.08,
      "ชีวิตตี้เฮือนเฮาอยู่เงียบ เงียบ จ๊า จ๊า แต่คนเฮือนเฮาใจ๋ดี นับถือกั๋นเน้อเจ้า",
      "ชีวิตตี้เฮือนเฮาอยู่เงียบๆ จ๊าๆ แต่คนเฮือนเฮาใจ๋ดี นับถือกั๋นเน้อเจ้า",
      "Village life was quiet and slow but people treated each other with kindness and respect."
     ],
     [
-     34.11,
-     36.09,
-     "หันตุงสูงข้างเฮือนบะลูก",
-     "หันตุงสูงข้างเฮือนบะลูก",
-     "See the tung banner by the house?"
+     41.28,
+     45.22,
+     "หันตุงสูงข้างเฮือนฮั้นก่อลูก",
+     "หันตุงสูงข้างเฮือนฮั้นก่อลูก",
+     "Do you see the tall tung banner over there by the house, child?"
     ],
     [
-     36.69,
-     40.29,
+     45.42,
+     50.97,
      "ตุงแขวนไว้ตี้งานปอยละก่อวันศีลเจ้า",
      "ตุงแขวนไว้ตี้งานปอยละก่อวันศีลเจ้า",
      "Tungs are hung for temple and festival days."
     ],
     [
-     40.49,
-     42.87,
-     "คนเฮาอยู่กั๊บธรรมชาติ",
-     "คนเฮาอยู่กั๊บธรรมชาติ",
+     51.17,
+     55.37,
+     "คนเฮาอยู่กับธรรมชาติ",
+     "คนเฮาอยู่กับธรรมชาติ",
      "People were more in harmony with nature."
     ],
     [
-     43.07,
-     48.15,
-     "มีต้นกว๋าว จ้าง ดอกบัว ละก่อของดีนักขนาดเน้อเจ้า",
-     "มีต้นกว๋าว จ้าง ดอกบัว ละก่อของดีนักขนาดเน้อเจ้า",
+     55.57,
+     62.9,
+     "มีต้นกว๋าว จ๊าง ดอกบัว ละก่อของดีนักขนาดเน้อเจ้า",
+     "มีต้นกว๋าว จ๊าง ดอกบัว ละก่อของดีนักขนาดเน้อเจ้า",
      "They had flame-of-the-forest trees, elephants, lotus flowers and many special things."
     ],
     [
-     48.75,
-     51.75,
-     "ช้าก่อน ตัวหลงนี้มาจากเมืองจีนนา",
-     "ช้าก่อน ตัวหลงนี้มาจากเมืองจีนนา",
-     "Wait! This dragon came from China."
+     63.1,
+     68.3,
+     "ผ่อฮั้นก่อน ตัวหลงนี้มาจากเมืองจีนนา",
+     "ผ่อฮั้นก่อน ตัวหลงนี้มาจากเมืองจีนนา",
+     "Look over there! This dragon came from China."
     ],
     [
-     52.35,
-     56.03,
-     "ตัวหลงเมืองจีนมักถือแก้ว บะใช่ธง",
-     "ตัวหลงเมืองจีนมักถือแก้ว บะใช่ธง",
-     "Chinese dragons usually hold a pearl, not a flag!"
+     68.5,
+     74.05,
+     "ตัวหลงเมืองจีนนี้มักจะก๋ำแก้ว บะใจ้ธง",
+     "ตัวหลงเมืองจีนนี้มักจะก๋ำแก้ว บะใจ้ธง",
+     "This Chinese dragon usually holds a pearl, not a flag!"
     ],
     [
-     56.63,
-     59.93,
-     "พู้นแน่ะ หมู่จ้างเดินหลังต้นกล้วย",
-     "พู้นแน่ะ หมู่จ้างเดินหลังต้นกล้วย",
-     "Do you see the elephants walking behind the banana trees over there?"
+     74.25,
+     79.8,
+     "ตางปู๊น หมู่จ๊างเตวตางหลังเก๊ากล้วย",
+     "ตางปู๊น หมู่จ๊างเตวตางหลังเก๊ากล้วย",
+     "Over there, the elephants are walking behind the banana trees."
     ],
     [
-     60.53,
-     63.01,
-     "ฝนซาแล้วเหนือทุ่งนาเน้อ",
-     "ฝนซาแล้วเหนือทุ่งนาเน้อ",
-     "The rain is stopping over the rice fields."
+     80.0,
+     84.4,
+     "ฝนเอื้อนแล้วตี้เหนือก๋างโต้งเน้อ",
+     "ฝนเอื้อนแล้วตี้เหนือก๋างโต้งเน้อ",
+     "The rain has eased over the middle of the rice fields."
     ],
     [
-     63.61,
-     68.57,
-     "แม่หญิงควงจ้องสลัดหยาดฝน เหมือนจ้องตี้บ่อสร้างเน้อเจ้า",
-     "แม่หญิงควงจ้องสลัดหยาดฝน เหมือนจ้องตี้บ่อสร้างเน้อเจ้า",
+     84.6,
+     91.77,
+     "แม่หญิงหมุนจ้องสลัดหยัดน้ำฝน เหมือนจ้องตี้บ่อสร้างเน้อเจ้า",
+     "แม่หญิงหมุนจ้องสลัดหยัดน้ำฝน เหมือนจ้องตี้บ่อสร้างเน้อเจ้า",
      "The women spin their umbrellas to shake off the rain, like those of Bo Sang."
     ],
     [
-     69.17,
-     72.43,
-     "ล้านนา หมายถึง นาเป็นล้านทุ่ง",
-     "ล้านนา หมายถึง นาเป็นล้านทุ่ง",
+     91.97,
+     96.37,
+     "ล้านนา หมายถึง นาเป๋นล้านทุ่ง",
+     "ล้านนา หมายถึง นาเป๋นล้านทุ่ง",
      "Lanna means a million rice fields."
     ],
     [
-     73.03,
-     76.65,
-     "ละอ่อนจูงควายลากเกวียนไม้เจ้า",
-     "ละอ่อนจูงควายลากเกวียนไม้เจ้า",
+     96.57,
+     101.58,
+     "ละอ่อนจู๋งควายลากเกวี๋ยนไม้เจ้า",
+     "ละอ่อนจู๋งควายลากเกวี๋ยนไม้เจ้า",
      "That boy is leading a water buffalo pulling a traditional wooden cart called a kwian."
     ],
     [
-     80.96,
-     85.84,
-     "หันโคมสามอย่าง ช่างดนตรี กั๊บช่างฟ้อนก่อเจ้า",
-     "หันโคมสามอย่าง ช่างดนตรี กั๊บช่างฟ้อนก่อเจ้า",
+     104.5,
+     110.07,
+     "หันโกมสามอย่าง ช่างดนตรี กับช่างฟ้อนก่อเจ้า",
+     "หันโกมสามอย่าง ช่างดนตรี กับช่างฟ้อนก่อเจ้า",
      "Do you see the three different kinds of lanterns and the musicians and the dancers?"
     ],
     [
-     86.04,
-     92.68,
-     "แต่ปางก่อน งานปอยม่วนขนาด มีของดีตี้คนเฮาแปงเองเน้อเจ้า",
-     "แต่ปางก่อน งานปอยม่วนขนาด มีของดีตี้คนเฮาแปงเองเน้อเจ้า",
+     110.27,
+     119.12,
+     "สมัยก่อน งานปอยม่วนขนาด มีของดีตี้คนเฮาแป๋งกั๋นคนเดียวเน้อเจ้า",
+     "สมัยก่อน งานปอยม่วนขนาด มีของดีตี้คนเฮาแป๋งกั๋นคนเดียวเน้อเจ้า",
      "In ancient times the celebrations were quite lively and full of special things the people created themselves."
     ]
    ]
@@ -147,7 +147,7 @@
   {
    "name": "tale",
    "page": "maeng/film.html",
-   "seconds": 821.0
+   "seconds": 850.17
   }
  ]
 }

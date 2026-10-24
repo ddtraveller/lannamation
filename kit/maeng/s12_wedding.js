@@ -8,7 +8,7 @@ var S12_LONG = 35;
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the crickets of the wedding's dusk, low under the band; the cicadas by day.
 var S12_SOUND = {calls: [[0, "crickets", 0.22, 12.6], [12.6, "cicadas", 0.5, 22.4]]};
-var S12_LINES = [[1.5, 6.34, "M069"], [14.0, 20.78, "M070"], [20.98, 25.7, "M071"], [25.8, 33.0, "M072"]];
+var S12_LINES = [[1.5, 5.98, "M069"], [14.0, 19.38, "M070"], [20.98, 24.0, "M071"], [25.8, 31.58, "M072"]];
 var S12_SHOTS = [12.6, 25.0];                       // the wedding at dusk; the rice by day; the Righteous King
 // The poor who come to him: in the faded cloth of his own family, each with a bowl.
 var S12_POOR = [["fellow", MAENG_FATHER, -170], ["weaver", MAENG_MOTHER, -330], ["boy", MAENG_BOY, -470]];

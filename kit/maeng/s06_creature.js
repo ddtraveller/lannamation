@@ -1,15 +1,17 @@
-// s06_creature.js - scene 6 of the film of the creature with four ears and five eyes: the creature (60 s).
+// s06_creature.js - scene 6 of the film of the creature with four ears and five eyes: the creature (61.54 s; 60 s
+// until 2026-10-24, when the narrator's own words for M030 came in longer: 1.54 s inserted at 17.28 s, every moment
+// after it moved with it, film_relayout.py in the voice project).
 // Two days later, by day, close to the cave. Thukkhata climbs back up the path: the snare has sprung and holds
 // something by the foot, behind the bushes at the cave's mouth. It comes out into the light: short, fat, in
 // long dark fur like a bear; four ears; and its eyes open one after another, five. It is afraid, and so is he
 // for a moment; he wonders if it is his father, come back; he ties a vine round its neck, gently, and it
 // follows him home.
-var S06_LONG = 60;
+var S06_LONG = 61.54;
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the forest's cicadas by day at the cave.
-var S06_SOUND = {calls: [[0, "cicadas", 0.6, 60]]};
-var S06_LINES = [[1.5, 6.1, "M028"], [6.2, 8.5, "M029"], [10.5, 17.28, "M030"], [17.48, 19.54, "M031"], [19.74, 22.34, "M032"],
-                 [24.0, 28.6, "M033"], [32.0, 37.7, "M034"], [44.0, 48.1, "M035"]];
+var S06_SOUND = {calls: [[0, "cicadas", 0.6, 61.54]]};
+var S06_LINES = [[1.5, 5.46, "M028"], [6.2, 8.08, "M029"], [10.5, 18.82, "M030"], [19.02, 21.14, "M031"], [21.34, 23.8, "M032"],
+                 [25.54, 31.72, "M033"], [33.54, 39.68, "M034"], [45.54, 49.68, "M035"]];
 var S06_NEAR = 1.55;                                // the camera's nearness to the cave: the set is seen this much larger
 var S06_SPOT = [MAENG_SLOPE_CAVE[0] - 20, MAENG_SLOPE_CAVE[1] + 14];   // where the creature stands, at the cave's mouth
 var S06_SNARE = [MAENG_SLOPE_CAVE[0] - 60, MAENG_SLOPE_CAVE[1] + 8];
@@ -30,15 +32,15 @@ function s06Crowns(list, size, seed, shake) {        // the forest's own crowns 
 // father (M033) and ties the vine (M034), a green-tailed sunbird hovering at the ferns over the cave's mouth.
 var S06_LIFE = [
   {name: "sunbird", kind: "sunbird", z: "set", look: {size: 1.0},     // at the ferns of the slope: of the set
-   course: [[22.0, 1720, 300], [24.0, 1310, 470, "sip"], [29.0, 1310, 470], [31.5, 1680, 260]]},
+   course: [[23.54, 1720, 300], [25.54, 1310, 470, "sip"], [30.54, 1310, 470], [33.04, 1680, 260]]},
   // its roar as it tugs at the snare (sounds.py, maeng-angry)
   {name: "the creature's roar", kind: "flock", z: "sky", course: [[0, -999, -999], [0.1, -999, -999]],
    calls: [[5.3, "maeng-angry", 3.7]]}
 ];
 
 // Scene 6, the entry the film calls (SCENES): t, its own second, 0 to S06_LONG (60 s): he climbs to the snare, the
-// creature tugs (5.2 s to 9.5 s) and comes out (to 12.5 s), its eyes open from 19.5 s, he ties the vine at about 34 s,
-// and from 39.5 s it follows him down; out of black over 1.5 s, into it from 56 s. Gives back nothing: it draws the
+// creature tugs (5.2 s to 9.5 s) and comes out (to 12.5 s), its eyes open from 21.04 s, he ties the vine at about
+// 35.54 s, and from 41.04 s it follows him down; out of black over 1.5 s, into it from 57.54 s. Gives back nothing: it draws the
 // whole sheet with pen, under a camera S06_NEAR times near. From sets.js: maengSlope(), maengSky("day"),
 // MAENG_SLOPE_CAVE, maengTrail(), maengAt(), maengPerson() with MAENG_LAD. Its life is S06_LIFE; its words
 // S06_LINES (M028 to M035), written under it by the page.
@@ -63,47 +65,47 @@ function sceneCreature(t) {
   caveMouth(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f"});
   // The creature: hidden in the cave's dark at first (only its pull on the snare shows), then out into the
   // light; its four ears first, then its eyes opening one after another; afraid, then calm, then it follows.
-  var out = between(t, 9.5, 12.5), wake = t < 17.5 ? 0 : Math.min(5, (t - 19.5) / 0.45 + 1), leave = t > 37;
-  var feel = t < 22 ? "fear" : t < 30 ? "concerned" : "neutral";
+  var out = between(t, 9.5, 12.5), wake = t < 19.04 ? 0 : Math.min(5, (t - 21.04) / 0.45 + 1), leave = t > 38.54;
+  var feel = t < 23.54 ? "fear" : t < 31.54 ? "concerned" : "neutral";
   var where = [mix(S06_SPOT[0] + 40, S06_SPOT[0] - 40, out), S06_SPOT[1]], step;
   var lad = maengPerson("boy", MAENG_LAD, {id: "lad"}), x;
   if (leave) {                                      // following him down the path, on the vine, a short vine's length behind him
     // (owner, 2026-10-20: "The vine becomes very long. Have the boy stay closer to the monster as they walk away": the
     // two had walked off each at its own pace and the gap grew). Its steps are the ground it has covered, as amble's are.
-    var off = S06_SPOT[0] - 40, ahead = stroll(t, S06_SPOT[0] - 230, S06_SPOT[0] - 1300, 39.5, lad).x;
+    var off = S06_SPOT[0] - 40, ahead = stroll(t, S06_SPOT[0] - 230, S06_SPOT[0] - 1300, 41.04, lad).x;
     var gait = GAITS.maengSiHuHaTa, pace = gait[1] / 0.62 * gait[0] * 0.5;
-    var behind = Math.min(off, ahead + mix(190, S06_VINE, between(t, 39.5, 41.5)));
+    var behind = Math.min(off, ahead + mix(190, S06_VINE, between(t, 41.04, 43.04)));
     where = [behind, maengTrail(behind) + 8];
     step = off - behind > 0.5 ? (off - behind) / pace : undefined;
   }
   var beast, joints, crowns = S06_SPOT[1] + 1;      // the crowns before the cave: just in front of its mouth
   var sprites = lifeSprites(t, S06_LIFE).concat([
     {name: "creature", kind: "maengSiHuHaTa", x: where[0], y: where[1], draw: function () {
-      beast = maengSiHuHaTa(where[0], where[1], {size: 0.5, face: -1, feel: feel, wake: t < 17.5 ? 0 : wake,
+      beast = maengSiHuHaTa(where[0], where[1], {size: 0.5, face: -1, feel: feel, wake: t < 19.04 ? 0 : wake,
                                                  step: step !== undefined ? step : (t > 9.5 && t < 12.5 ? (t - 9.5) * 1.2 : undefined)});
-      snare(pen, S06_SNARE[0], S06_SNARE[1], 0.62, {sprung: 1, t: t, caught: t < 34 ? beast.shin : null});   // tight round its shin
+      snare(pen, S06_SNARE[0], S06_SNARE[1], 0.62, {sprung: 1, t: t, caught: t < 35.54 ? beast.shin : null});   // tight round its shin
     }},
     {name: "crowns before", kind: "trees", x: MAENG_SLOPE_CAVE[0], y: crowns, draw: function () {
       s06Crowns(S06_BEFORE, size * 1.6, 9, struggle * 3);
     }}
   ]);
   // Thukkhata: up the path into view, then still before it; he ties the vine, and leads it home.
-  if (t < 30) {
+  if (t < 31.54) {
     var come = stroll(t, S06_SPOT[0] - 700, S06_SPOT[0] - 230, 0.5, lad);
     x = come.x;
-    lad = Object.assign(come.look, {feel: t < 9.5 ? "concerned" : t < 22 ? "surprised" : "concerned", face: 1});
-  } else if (t < 39.5) {
+    lad = Object.assign(come.look, {feel: t < 9.5 ? "concerned" : t < 23.54 ? "surprised" : "concerned", face: 1});
+  } else if (t < 41.04) {
     x = S06_SPOT[0] - 230;
     lad = Object.assign(lad, {face: 1, feel: "happy",   // his hand out to tie the vine, and back, each eased (poseSteps; once in one frame, a pop)
-                              reachA: poseSteps(t, [[0, {}], [30, {reachA: [where[0] - 26, where[1] - 120]}], [37, {}]], 0.4).reachA});
+                              reachA: poseSteps(t, [[0, {}], [31.54, {reachA: [where[0] - 26, where[1] - 120]}], [38.54, {}]], 0.4).reachA});
   } else {
-    var home = stroll(t, S06_SPOT[0] - 230, S06_SPOT[0] - 1300, 39.5, lad);
+    var home = stroll(t, S06_SPOT[0] - 230, S06_SPOT[0] - 1300, 41.04, lad);
     x = home.x;
     lad = Object.assign(home.look, {feel: "happy"});
   }
   var feet = maengTrail(x) + 8;
   sprites.push({name: "lad", kind: "person", x: x, y: feet, draw: function () { joints = person(x, feet, lad); }});
-  if (t > 33.5) {                                   // the vine, from his hand to the creature's neck, sagging a little: a
+  if (t > 35.04) {                                   // the vine, from his hand to the creature's neck, sagging a little: a
     // real creeper with its leaves, its end round the neck (owner, 2026-10-23: "Change ... the vine to look more like
     // the snare rope and a real vine"; it was a green line)
     sprites.push({name: "vine", kind: "vine", y: Math.max(feet, where[1], crowns) + 0.01, draw: function () {
@@ -114,7 +116,7 @@ function sceneCreature(t) {
   drawByZ(sprites);
   pen.drawImage(slope.fore, 0, 0);
   pen.restore();
-  var dark = Math.max(1 - between(t, 0, 1.5), between(t, 56, 59.5));
+  var dark = Math.max(1 - between(t, 0, 1.5), between(t, 57.54, 61.04));
   if (dark > 0) {
     pen.fillStyle = "rgba(0, 0, 0, " + dark.toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);

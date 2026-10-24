@@ -3,13 +3,13 @@
 // against the bamboo wall with a cloth over his knees; Thukkhata sits by him, his legs folded to one side as
 // one sits before an elder. The father speaks his wish. The boy takes his hand. The lamp burns low and goes
 // out; nothing more is shown.
-var S04_LONG = 60;
+var S04_LONG = 62.39;   // 60 until 2026-10-24: 2.39 s inserted for the narrator's own reading (scene_retime.py)
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the crickets outside the hut, low; a squeak as each mouse comes in.
-var S04_SOUND = {calls: [[0, "crickets", 0.22, 60], [3.4, "mouse-squeak", 0.15], [20.4, "mouse-squeak", 0.13]]};
-var S04_LINES = [[1.5, 5.48, "M015"], [6.0, 8.6, "M016"], [10.0, 15.16, "M017"], [15.4, 20.1, "M018"], [20.4, 26.08, "M019"],
-                 [26.4, 30.5, "M020"], [31.0, 35.96, "M021"], [38.0, 41.66, "M022"], [44.0, 49.1, "M023"]];
-var S04_SPEAKS = [[10.0, 14.76], [15.4, 19.06], [20.4, 25.68], [26.4, 30.1], [31.0, 35.56]];   // the lines the father says himself:
+var S04_SOUND = {calls: [[0, "crickets", 0.22, 62.39], [3.4, "mouse-squeak", 0.15], [21.67, "mouse-squeak", 0.13]]};
+var S04_LINES = [[1.5, 5.99, "M015"], [6.19, 9.75, "M016"], [10.0, 15.78, "M017"], [15.98, 21.47, "M018"], [21.67, 27.54, "M019"],
+                 [27.74, 33.19, "M020"], [33.39, 38.79, "M021"], [40.39, 45.64, "M022"], [46.39, 51.39, "M023"]];
+var S04_SPEAKS = [[10.0, 15.38], [15.98, 21.07], [21.67, 27.14], [27.74, 32.79], [33.39, 38.39]];   // the lines the father says himself:
 // his mouth moves through them, a shape as mouthAt() gives one (the voice is the narrator's; the film's words are
 // timed to it later)
 var S04_LAMP = [930, 925];                          // the lamp on the floor between them
@@ -30,13 +30,13 @@ var S04_LIFE = [
   // "Walk on behind the post", when the blink check still saw it go at the doorway's edge).
   {name: "house mouse", kind: "mouse", look: {kind: "house", size: 0.8},
    course: [[2.5, 2010, 703, "hide"], [2.6, 2010, 703], [5.8, 1330, 705, "sniff"], [9.4, 1330, 705], [10.6, 1250, 707, "up"],
-            [14.6, 1250, 707], [17.2, 2010, 703, "hide"], [24.2, 2010, 703], [26.8, 1300, 705, "up"], [30.4, 1300, 705],
-            [33.0, 2010, 703, "hide"], [33.2, 2010, 703, "hide"]]},
+            [14.6, 1250, 707], [17.78, 2010, 703, "hide"], [25.47, 2010, 703], [28.07, 1300, 705, "up"], [31.67, 1300, 705],
+            [35.39, 2010, 703, "hide"], [35.59, 2010, 703, "hide"]]},
   // The field mouse: in along the floor from the far post during the wish (M019), it sniffs at the mat's edge,
   // then hurries back, and hides.
   {name: "field mouse", kind: "mouse", look: {kind: "field", size: 0.8},
-   course: [[19.5, 1780, 790, "hide"], [20.0, 1780, 790], [23.4, 1500, 822, "sniff"], [27.6, 1500, 822], [28.0, 1475, 828, "sniff"],
-            [29.6, 1475, 828], [30.6, 1790, 792, "hide"], [31.0, 1790, 792, "hide"]]},
+   course: [[20.08, 1780, 790, "hide"], [20.58, 1780, 790], [24.67, 1500, 822, "sniff"], [28.87, 1500, 822], [29.27, 1475, 828, "sniff"],
+            [30.87, 1475, 828], [31.87, 1790, 792, "hide"], [33.39, 1790, 792, "hide"]]},
   // The tokay: down the wall from the beam, to rest above the boy; in the quiet after "look after it" (M021 ends
   // 35.6, M022 begins 38.0) it calls once, to-kay; then it climbs back up as the lamp burns low, and stays there at
   // the top of the wall, under the beam. Its way keeps left of the doorway (x 1440 to 1650 from y 230), on the
@@ -46,10 +46,10 @@ var S04_LIFE = [
    // Back up, it turns wide: on down a little, round to the right and up on its own line, no corner sharper than
    // about 60 degrees, where it went straight back up the way it came and folded over itself (owner, 2026-10-21: "When
    // it walks up the wall it folds over itself"; the kit's gecko() also bends no more than GECKO_BEND a joint now).
-   course: [[0, 1400, 104], [9.0, 1380, 200], [13.0, 1350, 260], [21.0, 1290, 350], [24.0, 1250, 390, "rest"], [39.5, 1250, 390],
-            [40.6, 1222, 425], [41.6, 1225, 470], [42.5, 1262, 492], [43.3, 1305, 470], [44.3, 1330, 400], [45.6, 1328, 260],
-            [47.0, 1320, 112, "rest"], [60.0, 1320, 112]],
-   calls: [[36.0, "tokay", 0.5]]}
+   course: [[0, 1400, 104], [9.0, 1380, 200], [13.0, 1350, 260], [22.27, 1290, 350], [25.27, 1250, 390, "rest"], [41.89, 1250, 390],
+            [42.99, 1222, 425], [43.99, 1225, 470], [44.89, 1262, 492], [45.69, 1305, 470], [46.69, 1330, 400], [47.99, 1328, 260],
+            [49.39, 1320, 112, "rest"], [62.39, 1320, 112]],
+   calls: [[38.39, "tokay", 0.5]]}
 ];
 
 // Gives back a canvas, WIDE by 1080, painted on the first call and kept in S04_ROOM after.
@@ -169,19 +169,19 @@ function s04Blanket(x, y, size) {                   // a cloth of faded checks o
 // (900), the boy (905), the lamp on the floor between them (925).
 // e.g. sceneWish(25);
 function sceneWish(t) {
-  var flame = 1 - between(t, 46, 50.5);             // the lamp burns low, and goes out
+  var flame = 1 - between(t, 48.39, 52.89);             // the lamp burns low, and goes out
   pen.drawImage(s04Room(), 0, 0);
   var speaking = S04_SPEAKS.some(function (s) { return t >= s[0] && t < s[1]; });
-  var holding = t >= 37.5;                          // from the line "he held his father's hand"
+  var holding = t >= 39.89;                          // from the line "he held his father's hand"
   var meet = [960, 770];
   var father = maengPerson("fellow", MAENG_FATHER, {id: "father", floor: "cross", face: 1, feel: t < 9.5 ? "sleepy" : "concerned",
                                                     mouth: speaking ? {open: 0.06 + 0.26 * Math.abs(Math.sin(t * 8.5)), wide: 0.5, round: 0.15} : null,
                                                     at: [1150, 600], size: MAENG_FATHER.size * S04_NEAR});
-  var lad = maengPerson("boy", MAENG_LAD, {id: "lad", floor: "side", face: -1, feel: t > 33 ? "sad" : "concerned", at: [700, 560],
-                                           tears: between(t, 37.5, 38.5),   // he cries, as the words say he does (M022, 38.0) (owner: "Add some tears for when the boy cries")
+  var lad = maengPerson("boy", MAENG_LAD, {id: "lad", floor: "side", face: -1, feel: t > 35.39 ? "sad" : "concerned", at: [700, 560],
+                                           tears: between(t, 39.89, 40.89),   // he cries, as the words say he does (M022, 38.0) (owner: "Add some tears for when the boy cries")
                                            size: MAENG_LAD.size * S04_NEAR});
   if (holding) {                                    // the two hands come together over 0.6 s (a reach's third number: they once met in one frame, a pop)
-    father.reachA = lad.reachA = meet.concat(between(t, 37.5, 38.1));
+    father.reachA = lad.reachA = meet.concat(between(t, 39.89, 40.49));
   }
   drawByZ(lifeSprites(t, S04_LIFE).concat(MAENG_HUT_THINGS.map(function (one) {   // the hearth, cold at night, and the baskets
     return {name: one.name, kind: one.kind, x: one.x, y: one.base, draw: function () { dress(t, [one], "back"); }};
@@ -209,8 +209,8 @@ function sceneWish(t) {
     pen.fillStyle = warm;
     pen.fillRect(0, 0, WIDE, 1080);
   }
-  if (t > 55) {                                     // and the scene goes to black
-    pen.fillStyle = "rgba(0, 0, 0, " + between(t, 55, 59).toFixed(3) + ")";
+  if (t > 57.39) {                                     // and the scene goes to black
+    pen.fillStyle = "rgba(0, 0, 0, " + between(t, 57.39, 61.39).toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);
   }
 }
