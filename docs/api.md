@@ -7167,7 +7167,26 @@ colours (blend() reads deep). Returns nothing: it draws with pen.
 e.g. himmaFeather([0, 0], [-60, 10], 13, HIMMA.gold, HIMMA.goldLit);
 ```
 
-### `hongWing(up, rate, light, far)`
+### `himmaBarbs(root, tip, wide, deep, lit, t, air, seed)`
+
+```
+A feather as a bird grows it, the way weaving.js weaves a cloth thread by thread (owner, 2026-10-24: "Look at how you
+did the threads for the cloth then look at the hong bird and see if you can do the wing feathers in a similar way",
+then "Make them look more pristine and beautiful"): a shaft (rachis) from its root to its tip, bowed a little, and
+off it on both sides the barbs, each its own fine line, a little over a pixel apart, swept toward the tip and curving
+evenly as they go; the outer vane narrower than the inner, as a flight feather's is, both tapering to the tip. Under
+them the vane is laid in gold like leaf, so no sky shows through; each barb is a strand over it, as each thread of
+the cloth is, a darker edge and a lit crown, shaded from the root's deep to the tip's light (five shades, so a wing
+of thousands of barbs draws in a few strokes). A sheen lies along the inner vane and drifts slowly, so the feathers
+shimmer as the bird flies; one clean line of ink goes round the vane, and the shaft is gilt. The air moves the
+barbs' ends a little: a wave travels along the feather, a function of the second alone, as the cloth's wind is (a
+film is drawn a frame at a time in any order).
+root and tip: [x, y]; wide: the inner vane's widest, pixels; deep, lit: "#rrggbb"; t: the second; air: 0 still to 1
+(how hard the air works it); seed: a number, its own phase. Returns nothing: it draws with pen.
+e.g. himmaBarbs([0, 0], [-80, 12], 14, HIMMA.gold, HIMMA.goldLit, t, 0.6, 3);
+```
+
+### `hongWing(up, rate, light, far, t)`
 
 ```
 The hong's wing from its shoulder (0, 0), seen from the side as it beats: long primaries fanned from the wrist, the
@@ -7176,10 +7195,12 @@ down to 1 up) is where the stroke is, "rate" how fast it is rising (+) or fallin
 shoulder and is seen shorter as it comes toward us; the hand bends at the wrist and trails the stroke, higher than
 the arm on the way down and lower on the way up; the primaries spread on the downstroke and close on the upstroke;
 the secondaries always trail back (owner, 2026-10-21: "Make the golden bird's wing flap like a natural wing instead
-of rotating"). "far" darkens it.
-up: -1 to 1; rate: about -1 to 1; light: 0 to 1; far: true for the wing behind the body. It draws at pen's (0, 0).
+of rotating"). "far" darkens it. Its primaries and secondaries are barbed feathers (himmaBarbs), worked by the air
+in proportion to how fast the wing moves.
+up: -1 to 1; rate: about -1 to 1; light: 0 to 1; far: true for the wing behind the body; t: the second (the air in
+the feathers; left out, they are still). It draws at pen's (0, 0).
 Returns nothing: it draws with pen and leaves its place as it found it.
-e.g. hongWing(Math.sin(t), Math.cos(t), 0.6, false);
+e.g. hongWing(Math.sin(t), Math.cos(t), 0.6, false, t);
 ```
 
 ### `hongChain(rise, t)`
@@ -7207,7 +7228,9 @@ head, so the neck flexes with every beat.
 (x, y): pixels of the sheet; t: the second; look: its keys are HIMMA_KEYS above, the hong reading size (1, as the
 top of this file says), face (1 or -1), seed (0), light (0 to 1; 0.6), soar, beats ([second, how many], with soar;
 HONG_BEAT seconds each) and trail (a function of the second giving [x, y], the path the page moves it on; only its
-y is read, for the rise). Returns nothing: it draws with pen and leaves pen as it found it.
+y is read, for the rise) and level (true: the head and body held still and level, only the wings beating; owner,
+2026-10-24: "I don't want it to tilt to the side. Just the wings going up and down"). Returns nothing: it draws with
+pen and leaves pen as it found it.
 e.g. hongFlight(1660, 300, t, {size: 1.6, seed: 2.1, soar: true, beats: [3, 2]});
 ```
 

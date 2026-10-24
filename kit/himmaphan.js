@@ -27,7 +27,7 @@
 // The look keys thewada(), kinnari() and hongFlight() take, said above; any other is warned of once (checkNames) and
 // changes nothing. The three share the list, so a key one of them does not read (gift on the hong) is passed by quietly.
 var HIMMA_KEYS = {};
-["size", "face", "seed", "scarves", "gift", "light", "soar", "beats", "trail"].forEach(function (n) { HIMMA_KEYS[n] = true; });
+["size", "face", "seed", "scarves", "gift", "light", "soar", "beats", "trail", "level"].forEach(function (n) { HIMMA_KEYS[n] = true; });
 
 // The beings' colours, each "#rrggbb": gilded skin, gold, jewels, cloth, scarves, lotus, feathers. Every function here
 // reads them as it draws; a page may change one before it draws.
@@ -548,17 +548,108 @@ function himmaFeather(root, tip, wide, deep, lit) {
   pen.beginPath(); pen.moveTo(root[0], root[1]); pen.quadraticCurveTo(mx + nx * 0.15, my + ny * 0.15, tip[0], tip[1]); pen.stroke();
 }
 
+// A feather as a bird grows it, the way weaving.js weaves a cloth thread by thread (owner, 2026-10-24: "Look at how you
+// did the threads for the cloth then look at the hong bird and see if you can do the wing feathers in a similar way",
+// then "Make them look more pristine and beautiful"): a shaft (rachis) from its root to its tip, bowed a little, and
+// off it on both sides the barbs, each its own fine line, a little over a pixel apart, swept toward the tip and curving
+// evenly as they go; the outer vane narrower than the inner, as a flight feather's is, both tapering to the tip. Under
+// them the vane is laid in gold like leaf, so no sky shows through; each barb is a strand over it, as each thread of
+// the cloth is, a darker edge and a lit crown, shaded from the root's deep to the tip's light (five shades, so a wing
+// of thousands of barbs draws in a few strokes). A sheen lies along the inner vane and drifts slowly, so the feathers
+// shimmer as the bird flies; one clean line of ink goes round the vane, and the shaft is gilt. The air moves the
+// barbs' ends a little: a wave travels along the feather, a function of the second alone, as the cloth's wind is (a
+// film is drawn a frame at a time in any order).
+// root and tip: [x, y]; wide: the inner vane's widest, pixels; deep, lit: "#rrggbb"; t: the second; air: 0 still to 1
+// (how hard the air works it); seed: a number, its own phase. Returns nothing: it draws with pen.
+// e.g. himmaBarbs([0, 0], [-80, 12], 14, HIMMA.gold, HIMMA.goldLit, t, 0.6, 3);
+function himmaBarbs(root, tip, wide, deep, lit, t, air, seed) {
+  var dx = tip[0] - root[0], dy = tip[1] - root[1], len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len;
+  var cm = [(root[0] + tip[0]) / 2 + nx * wide * 0.15, (root[1] + tip[1]) / 2 + ny * wide * 0.15];   // the shaft's bow
+  var count = Math.max(8, Math.round(len / 1.1)), shades = [], edge = [[], []];
+  for (var b = 0; b < 5; b++) { shades.push(new Path2D()); }
+  for (var k = 1; k < count; k++) {
+    var s = k / count, q = 1 - s;
+    var px = q * q * root[0] + 2 * q * s * cm[0] + s * s * tip[0], py = q * q * root[1] + 2 * q * s * cm[1] + s * s * tip[1];
+    var tx = 2 * q * (cm[0] - root[0]) + 2 * s * (tip[0] - cm[0]), ty = 2 * q * (cm[1] - root[1]) + 2 * s * (tip[1] - cm[1]);
+    var tl = Math.hypot(tx, ty) || 1;
+    tx /= tl; ty /= tl;
+    var vane = Math.sin(Math.PI * Math.pow(s, 0.72));
+    for (var side = 0; side < 2; side++) {
+      var sign = side ? -1 : 1, L = wide * vane * (side ? 0.6 : 1.05);
+      var ox = -ty * sign + tx * 0.75, oy = tx * sign + ty * 0.75, ol = Math.hypot(ox, oy);
+      ox /= ol; oy /= ol;
+      var wave = (air || 0) * L * 0.1 * s * Math.sin(2 * Math.PI * s * 1.6 - (t || 0) * 5 + (seed || 0) + side * 1.1);
+      var ex = px + ox * L - ty * wave, ey = py + oy * L + tx * wave;
+      var mx = px + ox * L * 0.5 + tx * L * 0.14, my = py + oy * L * 0.5 + ty * L * 0.14;   // each barb curves toward the tip
+      var shade = Math.min(4, Math.floor((s * 0.62 + (side ? 0.04 : 0.2)) * 5));
+      shades[shade].moveTo(px, py);
+      shades[shade].quadraticCurveTo(mx, my, ex, ey);
+      edge[side].push([ex, ey]);
+    }
+  }
+  var vanePath = new Path2D();                                         // the vane's edge, one smooth line round it
+  function along(path, line) {
+    for (var n = 0; n < line.length - 1; n++) {
+      path.quadraticCurveTo(line[n][0], line[n][1], (line[n][0] + line[n + 1][0]) / 2, (line[n][1] + line[n + 1][1]) / 2);
+    }
+  }
+  vanePath.moveTo(root[0], root[1]);
+  along(vanePath, edge[0]);
+  vanePath.lineTo(tip[0], tip[1]);
+  along(vanePath, edge[1].slice().reverse());
+  vanePath.closePath();
+  var leaf = pen.createLinearGradient(root[0], root[1], tip[0], tip[1]);   // the gold under the barbs
+  leaf.addColorStop(0, deep);
+  leaf.addColorStop(1, blend(deep, lit, 0.85));
+  pen.fillStyle = leaf;
+  pen.fill(vanePath);
+  shades.forEach(function (path, n) {
+    var colour = blend(deep, lit, n / 4 * 0.9);
+    pen.lineWidth = 1.05;
+    pen.strokeStyle = blend(colour, HIMMA.goldLine, 0.12);          // the barb's edge
+    pen.stroke(path);
+    pen.lineWidth = 0.45;
+    pen.strokeStyle = blend(colour, HIMMA.goldLit, 0.55);           // and its lit crown
+    pen.stroke(path);
+  });
+  pen.save();                                                          // the sheen along the inner vane, drifting
+  pen.clip(vanePath);
+  var drift = 0.38 + 0.1 * Math.sin((t || 0) * 0.9 + (seed || 0));
+  var sheen = new Path2D();
+  sheen.moveTo(root[0] + nx * wide * drift * 0.5, root[1] + ny * wide * drift * 0.5);
+  sheen.quadraticCurveTo(cm[0] + nx * wide * drift, cm[1] + ny * wide * drift, tip[0], tip[1]);
+  pen.lineCap = "round";
+  pen.strokeStyle = "rgba(255, 248, 222, 0.22)";
+  pen.lineWidth = wide * 0.6;
+  pen.stroke(sheen);
+  pen.strokeStyle = "rgba(255, 252, 238, 0.32)";
+  pen.lineWidth = wide * 0.16;
+  pen.stroke(sheen);
+  pen.restore();
+  pen.strokeStyle = HIMMA.goldLine;                                    // one clean line of ink round the vane
+  pen.lineWidth = 0.9;
+  pen.stroke(vanePath);
+  pen.lineWidth = 1.1;                                                 // the shaft, gilt
+  pen.beginPath(); pen.moveTo(root[0], root[1]); pen.quadraticCurveTo(cm[0], cm[1], tip[0], tip[1]); pen.stroke();
+  pen.strokeStyle = blend(HIMMA.goldLit, "#fffaf0", 0.5);
+  pen.lineWidth = 0.55;
+  pen.stroke();
+}
+
 // The hong's wing from its shoulder (0, 0), seen from the side as it beats: long primaries fanned from the wrist, the
 // secondaries along the trailing edge, rows of scalloped coverts over the arm, gilt along the leading edge. "up" (-1
 // down to 1 up) is where the stroke is, "rate" how fast it is rising (+) or falling (-). The arm swings about the
 // shoulder and is seen shorter as it comes toward us; the hand bends at the wrist and trails the stroke, higher than
 // the arm on the way down and lower on the way up; the primaries spread on the downstroke and close on the upstroke;
 // the secondaries always trail back (owner, 2026-10-21: "Make the golden bird's wing flap like a natural wing instead
-// of rotating"). "far" darkens it.
-// up: -1 to 1; rate: about -1 to 1; light: 0 to 1; far: true for the wing behind the body. It draws at pen's (0, 0).
+// of rotating"). "far" darkens it. Its primaries and secondaries are barbed feathers (himmaBarbs), worked by the air
+// in proportion to how fast the wing moves.
+// up: -1 to 1; rate: about -1 to 1; light: 0 to 1; far: true for the wing behind the body; t: the second (the air in
+// the feathers; left out, they are still). It draws at pen's (0, 0).
 // Returns nothing: it draws with pen and leaves its place as it found it.
-// e.g. hongWing(Math.sin(t), Math.cos(t), 0.6, false);
-function hongWing(up, rate, light, far) {
+// e.g. hongWing(Math.sin(t), Math.cos(t), 0.6, false, t);
+function hongWing(up, rate, light, far, t) {
+  var air = t === undefined ? 0 : 0.35 + 0.65 * Math.min(1, Math.abs(rate));   // the air through the feathers
   var deep = far ? blend(HIMMA.gold, HIMMA.goldLine, 0.45) : blend(HIMMA.gold, HIMMA.goldLine, 0.2);
   var lit = far ? HIMMA.gold : blend(HIMMA.goldLit, "#fff6dc", 0.4 * light);
   var arm = 0.2 + 0.85 * up;                         // the arm's angle above level, -0.65 to 1.05
@@ -568,11 +659,11 @@ function hongWing(up, rate, light, far) {
   var wrist = [-28, -80 * Math.sin(arm)];
   for (var s = 6; s >= 0; s--) {                     // the secondaries, the inner first, trailing back from the arm
     var u = s / 6, root = [mix(-6, wrist[0] + 6, u), mix(-4, wrist[1] * 0.92, u)], len = 54 - 10 * u;
-    himmaFeather(root, [root[0] - len * 0.93, root[1] + len * 0.12 + 6], 13, deep, lit);
+    himmaBarbs(root, [root[0] - len * 0.93, root[1] + len * 0.12 + 6], 13, deep, lit, t, air * 0.7, s + (far ? 20 : 0));
   }
   for (var f = 5; f >= 0; f--) {                     // the primaries, fanned from the wrist, broad and overlapping
     var phi = 0.2 + f * spread, plen = 90 - f * 6, root = [wrist[0] * (1 + 0.06 * f) + f * 2, wrist[1] * (1 - 0.06 * f)];
-    himmaFeather(root, [root[0] - plen * (0.3 + 0.7 * Math.sin(phi)), root[1] - plen * Math.cos(phi) * Math.sin(hand)], 15, deep, lit);
+    himmaBarbs(root, [root[0] - plen * (0.3 + 0.7 * Math.sin(phi)), root[1] - plen * Math.cos(phi) * Math.sin(hand)], 15, deep, lit, t, air, 10 + f + (far ? 20 : 0));
   }
   var lead = [wrist[0] * 0.4 + 8, wrist[1] * 0.6 - 4];   // the leading edge's bow, forward of the line to the wrist
   pen.beginPath();                                   // the coverts over the arm
@@ -602,7 +693,8 @@ function hongWing(up, rate, light, far) {
   pen.restore();
 }
 
-var HONG_BEAT = 1.1;                                 // seconds of one of a soaring hong's few beats (look.beats)
+var HONG_BEAT = 1.35;                                // seconds of one of a soaring hong's few beats (look.beats; 1.1 until
+                                                     // 2026-10-24, owner: "Slow the wing beat down just a bit")
 // The hong's spine, from the head back to the root of its tail, as the bird is drawn flying level to the right: the
 // head, four joints down the neck's S, its root at the breast, the middle of the body, the root of the tail. The neck's
 // width at each of its joints (the head's end first).
@@ -655,16 +747,18 @@ function hongChain(rise, t) {
 // (x, y): pixels of the sheet; t: the second; look: its keys are HIMMA_KEYS above, the hong reading size (1, as the
 // top of this file says), face (1 or -1), seed (0), light (0 to 1; 0.6), soar, beats ([second, how many], with soar;
 // HONG_BEAT seconds each) and trail (a function of the second giving [x, y], the path the page moves it on; only its
-// y is read, for the rise). Returns nothing: it draws with pen and leaves pen as it found it.
+// y is read, for the rise) and level (true: the head and body held still and level, only the wings beating; owner,
+// 2026-10-24: "I don't want it to tilt to the side. Just the wings going up and down"). Returns nothing: it draws with
+// pen and leaves pen as it found it.
 // e.g. hongFlight(1660, 300, t, {size: 1.6, seed: 2.1, soar: true, beats: [3, 2]});
 function hongFlight(x, y, t, look) {
   look = look || {};
   checkNames("The hong's name", look, HIMMA_KEYS);
   var size = look.size || 1, seed = look.seed || 0, light = look.light === undefined ? 0.6 : look.light;
   function beating(t) {                              // [where the wings are, how fast they rise] at second t
-    var beat = Math.sin(t * 1.0 + seed);             // slow deep beats, now and then a glide (the wings held up)
+    var beat = Math.sin(t * 0.85 + seed);            // slow deep beats, now and then a glide (the wings held up)
     var glide = Math.max(0, Math.sin(t * 0.21 + seed * 1.7));
-    var rate = Math.cos(t * 1.0 + seed) * (1 - 0.8 * glide);   // rising (+) or falling (-)
+    var rate = Math.cos(t * 0.85 + seed) * (1 - 0.8 * glide);  // rising (+) or falling (-)
     beat = beat * (1 - 0.8 * glide) + 0.35 * glide;
     if (look.soar) {                                 // soaring (owner, 2026-10-21: "Have the golden bird just soar and
       beat = 0.6 + 0.04 * Math.sin(t * 0.5 + seed);  // glide without flapping"): the wings held out and up in a V,
@@ -681,7 +775,8 @@ function hongFlight(x, y, t, look) {
   var wings = beating(t), beat = wings[0], rate = wings[1];
   var trail = look.trail, now = trail ? trail(t)[1] : 0;
   function rise(s) {                                 // the head's height at second s, drawn pixels: its slow bob, and
-    return 6 * Math.sin(s * 0.45 + seed) + (trail ? (trail(s)[1] - now) * 0.6 / size : 0);   // the film's path, eased
+    if (look.level) { return 0; }                    // the film's path, eased (none for a level bird)
+    return 6 * Math.sin(s * 0.45 + seed) + (trail ? (trail(s)[1] - now) * 0.6 / size : 0);
   }
   var angles = hongChain(rise, t), spine = [[HONG_SPINE[0][0], HONG_SPINE[0][1] + rise(t)]];
   var lift = [0, 0.15, 0.35, 0.55, 0.75, 1, 1, 1];   // how much of the body's lift on the wings each joint takes
@@ -689,7 +784,9 @@ function hongFlight(x, y, t, look) {
     var dx = HONG_SPINE[j][0] - HONG_SPINE[j - 1][0], dy = HONG_SPINE[j][1] - HONG_SPINE[j - 1][1], a = angles[j];
     spine.push([spine[j - 1][0] + dx * Math.cos(a) - dy * Math.sin(a), spine[j - 1][1] + dx * Math.sin(a) + dy * Math.cos(a)]);
   }
-  spine = spine.map(function (q, k) { return [q[0], q[1] - 4 * beat * lift[k]]; });   // the body lifts as the wings come down
+  if (!look.level) {                                 // the body lifts as the wings come down
+    spine = spine.map(function (q, k) { return [q[0], q[1] - 4 * beat * lift[k]]; });
+  }
   function onJoint(k) {                              // draw from here in the drawing's own place, turned with joint k
     pen.translate(spine[k][0], spine[k][1]);
     pen.rotate(angles[k]);
@@ -700,7 +797,12 @@ function hongFlight(x, y, t, look) {
   pen.scale(size * (look.face || 1), size);
   pen.lineJoin = "round";
   pen.lineCap = "round";
-  pen.save(); onJoint(6); pen.translate(-2, -10); hongWing(beat * 0.9, rate * 0.9, light, true); pen.restore();   // the far wing
+  pen.save(); onJoint(6); pen.translate(-6, -14 + 30 * Math.max(0, -beat));   // the far wing: the near one as the other side
+  hongWing(beat, rate, light, true, t); pen.restore();   // of the body shows it from the side, the same stroke, a shade darker:
+  // a little behind and above the near one as they rise, and sinking behind the body as they come down, so the body hides
+  // it there (owner, 2026-10-24: "The wings should flap in unison", "The birds body should stay straight. The wings should
+  // go up and down", "The backside wing looks like it's falling to the near side of the bird rather than the far side";
+  // a far wing flipped to go down as the near one goes up made the bird look banked over)
   pen.save(); onJoint(7);                            // the tail, on the last joint: it comes round after the body
   for (var p = 4; p >= 0; p--) {                     // five plumes curling back and up like a flame (kranok)
     himmaPlume([-62, 6], 3.25 + p * 0.17, 82 - p * 7, 11, p % 2 ? HIMMA.gold : blend(HIMMA.goldLit, HIMMA.gold, 0.3),
@@ -757,7 +859,7 @@ function hongFlight(x, y, t, look) {
   pen.fillStyle = HIMMA.brow;
   pen.beginPath(); pen.arc(95.5, -58, 1.5, 0, Math.PI * 2); pen.fill();
   pen.restore();
-  pen.save(); onJoint(6); pen.translate(8, -8); hongWing(beat, rate, light, false); pen.restore();   // the near wing
+  pen.save(); onJoint(6); pen.translate(8, -8); hongWing(beat, rate, light, false, t); pen.restore();   // the near wing
   pen.restore();
 }
 
