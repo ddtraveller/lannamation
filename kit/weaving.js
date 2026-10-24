@@ -854,12 +854,12 @@ function namLaiWeft(i, j, colours, band) {
 // many threads each way), gap (pixels between threads), weft (a function (i, j) giving the weft's colour: by
 // default the flowing water), warp (the warp's colour), wind (0 still, 1 a good breeze)}. Hung at (x, y), the
 // middle of the pole. Gives back {w, h}, its size when still.
-// e.g. threadCloth(pen, 960, 120, t, {warps: 150, picks: 260, gap: 3.2, wind: 1})
+// e.g. threadCloth(pen, 960, 120, t, {warps: 150, picks: 240, gap: 4, wind: 1})
 function threadCloth(brush, x, y, t, look) {
   var o = look || {}, nw = o.warps || 150, np = o.picks || 260, gap = o.gap || 3.2, wind = o.wind === undefined ? 1 : o.wind;
   var colours = o.colours || [WEAVE_DYES.indigo, WEAVE_DYES.white, WEAVE_DYES.yellow, WEAVE_DYES.green, WEAVE_DYES.pink];
   var weft = o.weft || function (i, j) { return namLaiWeft(i, j, colours, 48); };
-  var warpColour = o.warp || "#d8ccb0", W = (nw - 1) * gap, H = (np - 1) * gap * 0.8, left = x - W / 2;
+  var warpColour = o.warp || "#d8ccb0", W = (nw - 1) * gap, H = (np - 1) * gap * 0.7, left = x - W / 2;
   var gust = wind * (0.65 + 0.35 * Math.sin(t * 0.7) * Math.sin(t * 0.23 + 1));
   function place(u, v) {                                                    // u across 0..1, v down 0..1: where it is, and its depth
     var free = Math.pow(v, 1.25);
@@ -894,24 +894,24 @@ function threadCloth(brush, x, y, t, look) {
     }
   }
   Object.keys(paths).forEach(function (c) {                              // each pick a round yarn: its edges a shade
-    brush.lineWidth = gap * 0.74;                                           // darker, its crown a shade lighter
+    brush.lineWidth = gap * 0.86;                                           // darker, its crown a shade lighter
     brush.strokeStyle = weaveShade(c, -0.22);
     brush.stroke(paths[c]);
-    brush.lineWidth = gap * 0.38;
+    brush.lineWidth = gap * 0.42;
     brush.strokeStyle = weaveShade(c, 0.1);
     brush.stroke(paths[c]);
   });
   brush.strokeStyle = warpColour;                                           // and the warp over the weft at every other crossing
-  brush.lineWidth = gap * 0.4;
+  brush.lineWidth = gap * 0.3;
   brush.beginPath();
   for (var j4 = 0; j4 < np - 1; j4++) {
     for (var i4 = (j4 % 2); i4 < nw; i4 += 2) {
       var a = P[j4][i4], b = P[j4 + 1][i4];
-      brush.moveTo(a[0] + (b[0] - a[0]) * 0.15, a[1] + (b[1] - a[1]) * 0.15);
-      brush.lineTo(a[0] + (b[0] - a[0]) * 0.55, a[1] + (b[1] - a[1]) * 0.55);
+      brush.moveTo(a[0] + (b[0] - a[0]) * 0.25, a[1] + (b[1] - a[1]) * 0.25);
+      brush.lineTo(a[0] + (b[0] - a[0]) * 0.5, a[1] + (b[1] - a[1]) * 0.5);
     }
   }
-  brush.globalAlpha = 0.5;
+  brush.globalAlpha = 0.38;
   brush.stroke();
   brush.globalAlpha = 1;
   var step = 2;                                                             // the light on each patch, by its slope
