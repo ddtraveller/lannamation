@@ -577,3 +577,38 @@ trough places and end pipe brown colored image on the pipe."
   across the fields. A second thing showed there, once the end was gone: the far part's first post, whose forked top
   poked out over the near part's gold at the turn; `look.joined` gives a trough that starts on another's end a first
   post with no fork, and `maengYardTrough()` sets it for the far part.
+
+## Lanna weaving: the patterns, the cloths and the looms (2026-10-24)
+
+The owner: "Start a notebooklm notebook on lanna and Northern Thai weaving", "Include as many pattern samples as you
+can into the kit", "Create some cloth samples for the kit and some sabai with the symbols you find. Try to make them
+look as authentic as possible", and "Try recreating a pattern for section of cloth where you recreate each thread as
+a line? Then model wind rippling through the cloth? Pick the flowing water pattern."
+
+All of it is `weaving.js`, shown on `weaving.html` in five parts of five seconds (the flowing water in the wind; the
+weavers; three sin and two sabai; every motif, named). It follows the NotebookLM notebook "Lanna and Northern Thai
+weaving: looms, spinning, cloth and the women who weave" (16 sources: the Silpakorn University thesis on the teen
+jok of Nan, the Mae Chaem study and the Nan teen jok paper in ThaiJO, SACIT's archive of Kru Pranom Tapang's cloth
+of Mueang Long, the Lanna Folklife Museum of Chiang Mai, the Department of Sericulture on khit, the Textile Atlas,
+Chiang Mai Citylife, Chang Puak, the Thai Enquirer, Tammachat, SEALG and four more ThaiJO papers).
+
+| What | How | From |
+|---|---|---|
+| The motifs | `LAI`: 57 grids of threads, each with its Thai name, its sound, what it is, its town and its source; `LAI_ORDER` shows them in turn. Each says `how` it was drawn: `chart` (a source's graph-paper chart, as the source's text describes it), `rule` (a source's rule of drafting it: the stepped diamond steps one across for each thread up), `shape` (drawn here from a source's words about its outline: the sources give Mae Chaem's, Mueang Long's and the khit motifs as names, meanings and silhouettes, not as charts) | the Nan thesis's 9 charted kinds and the 6 forms of sai yoi; Mae Chaem's 11 master motifs and 5 combined ones; Mueang Long's named motifs; Tai Lue nam lai; khit |
+| A pattern woven | `weaveGrid(brush, grid, x, y, cell, palette, look)`: each thread of the pattern a float over the ground, a cell wider than it is tall (a pick is thinner than a float is long), lit on top and shadowed under, a little uneven from float to float, as hand-picked jok is (seeded: the kit uses no unseeded random); `look.warp` stands the float up for mook, a warp float. `weaveGround()` is the plain weave under it | |
+| The colours | `WEAVE_DYES` and `WEAVE_PALETTES`: Mae Chaem black and red with jackfruit or turmeric yellow; Nan black or indigo with silver paper thread, gold and its yellow birds; Mueang Long indigo with jackfruit, stick lac and green; the Tai Lue's blocks; khit indigo on white | the notebook, town by town |
+| A swatch | `clothSample(brush, x, y, {motif, palette, cell, across, down})`: one motif repeated over a piece of its cloth, the warp's ends loose top and bottom | |
+| The hem | `teenJok(brush, x, y, w, {town})`: the parts in the order the Nan paper gives them: the yellow nail stripe (lep lueang), the upper rows, a thin band, the main row of lanterns (kom) and offering bowls (khan) by turns, a thin band, the lower row, the hanging tassels (sai yoi) or the ship's tail (hang sapao), the plain red foot (teen daeng). `TEEN_JOK_ROWS` holds Mae Chaem's, Nan's and Mueang Long's | jica 94252; Silpakorn thesis; SACIT |
+| A whole sin | `sinCloth(brush, x, y, {town, w})`: the waist of white cotton and red, the body in even stripes (sin ta) or, for Mueang Long, covered with pearl flowers of warp floats (mook), and the teen jok | the notebook |
+| A sabai | `sabaiCloth(brush, x, y, {palette, motifs, body, drop, w, t})`: a shoulder cloth hung over a bamboo pole in two layers, its ends woven with bands of khit, a fringe, swaying a little. Khit was woven on narrow reeds for shoulder sashes, indigo on white | Department of Sericulture |
+| Every thread a line, in the wind | `threadCloth(brush, x, y, t, {warps, picks, gap, weft, wind})`: the Tai Lue's flowing water (`namLaiWeft()`: colour blocks of the koh luang tapestry weave stepping 2, 3, 4 and 5 warps from one group of picks to the next, up and back down), every warp and every weft a line, the warp brought over the weft at every other crossing, each pick a round yarn (a darker edge, a lighter crown). The wind is travelling waves, sums of sines of where a thread is and of the second: still at the pole, more toward the hem, a gust that swells and dies, the cloth blown downwind and its hem swinging; each patch lit by its slope. Not a simulation that steps from frame to frame: a film may be drawn in any order (`seek_check.py`), so the cloth at a second is the same whatever came before | Nan thesis on nam lai |
+| The loom | `frameLoom(brush, x, base, size, t, {work})`: the frame loom (huk, ki) the sources describe, which stood under the house: she sits on its bench, her feet on the treadles (klong klaeng), the cloth rolled on the breast beam (mai ok ma) at her lap, the warp to the far beam, the heddles (khao) on their pulleys; in two seconds she throws the shuttle (krasuai), changes the shed and pulls the beater (fuem) home twice. `work: "jok"`: she leans in and picks the pattern with a porcupine quill, the beater left back. (The jok is woven face down, the right side under: the cloth on her loom shows its back, which the cartoon does not try to tell.) | the notebook, "the loom used in the north" |
+| Spinning | `spinningWheel(brush, x, base, size, t)`: the wheel (phian, la, nai): she sits beside it on the floor, her right hand on the rim turning it, her left drawing the carded cotton (hang fai) back from the iron spindle toward her, the thread twisting | the notebook, "spinning cotton" |
+
+What the sources do not give, and so the kit does not have: a backstrap loom among the northern Tai (the sources
+name the Karen as weavers but describe no backstrap loom); charts for Mae Chaem, Mueang Long and the khit motifs
+(their grids are drawn from the words, `how: "shape"`, and a weaver of Mae Chaem would put them right); the shapes
+of Bo Suak's 18 named motifs (cotton flower, pikul, paired roosters, golden turtle, dog's paw and the rest: named and
+explained, not drawn, so not in `LAI`); the inventories of Lampang, Lamphun and Uttaradit. The weaver's clothes are
+the kit's `weaver` (an indigo blouse, a striped sin): for work at the loom the sources give a plain striped sin (sin
+ta), a breast cloth or the snug suea pat, the hair in a high bun.

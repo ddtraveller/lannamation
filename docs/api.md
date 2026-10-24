@@ -5446,6 +5446,206 @@ pen.restore() undoes it.
 e.g. pen.save(); sabaiCamera(t, where, CLOTH, 6, 20); /* draw the scene */ pen.restore();
 ```
 
+## weaving.js
+
+Weaving of the north for the Lanna cartoon kit: the patterns of Lanna and northern Thai cloth, drawn thread by thread, the cloths made of them, and the women who weave and spin. Load this file after oldcartoon.js.  Everything here follows the NotebookLM notebook "Lanna and Northern Thai weaving: looms, spinning, cloth and the women who weave" (2026-10-24, 16 sources): above all the Silpakorn University thesis on the teen jok of Nan (การจัดการความรู้ผ้าตีนจกเมืองน่าน, with its graph-paper charts), the study of Mae Chaem teen jok in ThaiJO (larts-journal 247740: the 11 master motifs), the Nan teen jok paper in ThaiJO (jica 94252: the parts of the hem), SACIT's archive of Kru Pranom Tapang's Khan Dok cloth of Mueang Long, the Lanna Folklife Museum of Chiang Mai (pa sin tin jok kham), the Department of Sericulture's page on khit, and the Textile Atlas on Tai Yuan teen jok. docs/kit/things.md, "Lanna weaving: the patterns, the cloths and the looms", says which grid follows a chart and which was drawn from a source's description of its shape.  The pieces: LAI             the motifs, each a grid of threads with its Thai name, meaning, town and source weaveGrid       one motif as woven clo
+
+### `laiMirror(half)`
+
+```
+Each row's left half (its middle column last) made whole by its mirror (a figure the sources call symmetric).
+e.g. laiMirror(["..1", ".11", "111"]) is ["..1..", ".111.", "11111"]
+```
+
+### `laiFlipDown(top)`
+
+```
+The top half (its middle row last) made whole by its mirror below.
+e.g. laiFlipDown([".1.", "111"]) is [".1.", "111", ".1."]
+```
+
+### `laiPair(figure, centre)`
+
+```
+A figure facing right, a centre between, and the figure again facing left: a pair, as birds face their tree.
+e.g. laiPair(LAI.nok.grid, ["1", "1"]) (the two grids as tall as each other)
+```
+
+### `laiRepeat(grid, count, gap)`
+
+```
+A grid side by side with itself, count times (a running band).
+```
+
+### `laiStamp(grid, small, row, col)`
+
+```
+A small grid set into a larger one (its threads over the larger one's), its top-left at (row, col).
+```
+
+### `laiBlank(rows, cols)`
+
+```
+A blank grid of a size.
+```
+
+### `laiFrom(rows, cols, rule)`
+
+```
+A grid from a rule: rule(row, col) gives "." or a thread.
+```
+
+### `laiDiamond(r, kind, thread)`
+
+```
+The stepped diamond (lai nuay, the unit or seed of Nan): one step across for each thread up, round a middle.
+kind: "solid", "hollow", "nested" (a diamond in a diamond), "cross" (a Greek cross inside), "dots" (four dots).
+e.g. laiDiamond(4, "nested")
+```
+
+### `laiKap(w, kind)`
+
+```
+The stepped triangle (lai kap, the sheath of a bract), point up, w wide (odd). kind: "solid", "outline", "nested".
+```
+
+### `weaveHash(a, b, c)`
+
+```
+---------- drawing the weave ----------
+A number in [0, 1) from integers, the same every time (the kit may not use Math.random unseeded).
+```
+
+### `weaveShade(hex, amount)`
+
+```
+A colour made lighter (amount > 0) or darker (< 0), as an rgb() string.
+```
+
+### `weaveGround(brush, x, y, w, h, colour, cell, seed)`
+
+```
+The plain weave of the ground over a box: the ground colour, its weft picks as fine lines a shade apart, the warp
+faintly across them. cell: the width of a pattern float, so the ground's threads are to its scale.
+e.g. weaveGround(pen, 0, 0, 300, 120, WEAVE_DYES.black, 8, 1)
+```
+
+### `weaveGrid(brush, grid, x, y, cell, palette, look)`
+
+```
+One grid as woven cloth, its top-left at (x, y): each thread of the pattern a float over the ground, a little
+raised (lit above, shadowed below), not quite the same length or shade as its neighbour, as hand-picked jok is.
+cell: a float's width (its height is 0.62 of it: a pick is thinner than a float is long). palette: {ground,
+threads}; ground false to weave on what is there already. A warp float (look.warp) stands up instead.
+Gives back {w, h}, the size it took.
+e.g. weaveGrid(pen, LAI.nokKhu.grid, 40, 60, 10, WEAVE_PALETTES.maechaem)
+```
+
+### `weaveKept(key, w, h, paint)`
+
+(no comment)
+
+### `weaveAcross(grid, cols, gap)`
+
+```
+The width in cells of a band of one grid repeated across cols, and the grid itself so repeated, centred.
+```
+
+### `clothSample(brush, x, y, look)`
+
+```
+---------- the cloths ----------
+A swatch of one motif, repeated over a piece of its cloth, the warp's ends loose at its top and bottom.
+look: {motif (a key of LAI), palette (a key of WEAVE_PALETTES, or one of its own), cell, across, down (how many
+repeats), seed}. Set at (x, y), its top-left. Gives back {w, h}.
+e.g. clothSample(pen, 100, 100, {motif: "nokKhu", palette: "maechaem", cell: 9, across: 3, down: 2})
+```
+
+### `teenJok(brush, x, y, w, look)`
+
+```
+The decorated hem of a sin (teen jok), across width w, set at (x, y), its top-left: each row of TEEN_JOK_ROWS of
+its town woven across. look: {town: "maechaem", "nan" or "long", palette, cell, seed}. Gives back {w, h}.
+e.g. teenJok(pen, 60, 400, 900, {town: "maechaem", cell: 7})
+```
+
+### `sinCloth(brush, x, y, look)`
+
+```
+A whole sin, a tube skirt laid flat: its waist (hua sin, white and a band of red), its body (tua sin) in even
+stripes (sin ta) or covered with pearl flowers (mook, Mueang Long's), and the teen jok sewn on below.
+look: {town, w (its width), body ("stripes" or "mook"), cell}. Set at (x, y), its top-left. Gives back {w, h}.
+e.g. sinCloth(pen, 100, 80, {town: "maechaem", w: 420})
+```
+
+### `sabaiCloth(brush, x, y, look)`
+
+```
+A sabai, a shoulder cloth, hung over a bamboo pole: it falls in two layers, the near one longer, each end woven
+with bands of khit and finished with a fringe; it sways a little in the air (t). look: {palette ("khit" for
+indigo on white, or a town's), w (its width), drop (the near layer's length), motifs (the khit bands, keys of
+LAI), body (its plain colour), t}. Standing on the pole at (x, y), the middle of the pole.
+e.g. sabaiCloth(pen, 400, 120, {palette: "khit", motifs: ["kho", "chang"], t: t})
+```
+
+### `namLaiWeft(i, j, colours, band)`
+
+```
+---------- a cloth thread by thread, in the wind ----------
+The colour of the weft at warp i of pick j in the Tai Lue's flowing water (lai nam lai), woven by koh luang, the
+interlocking tapestry weave: each colour a block that steps across 2, 3, 4, then 5 warps from one group of picks
+to the next (the Nan thesis), up and then back, so the blocks rise and fall in stepped waves; a few plain picks
+of red between two bands. colours: the blocks' colours in turn; band: how many picks to a band of water.
+e.g. namLaiWeft(40, 12, [WEAVE_DYES.indigo, WEAVE_DYES.white, WEAVE_DYES.yellow, WEAVE_DYES.green], 48)
+```
+
+### `threadCloth(brush, x, y, t, look)`
+
+```
+A length of cloth hung from a pole, every warp and every weft drawn as a line, the weft going over and under the
+warp as plain weave does, and the wind going through it. The wind is travelling waves, each a sum of sines of
+where a thread is on the cloth and of the second t (the same picture for the same second, whatever came before:
+the kit's films are drawn a frame at a time in any order): nothing moves at the pole, more toward the hem; a gust
+swells and dies; the hem swings. Each patch of cloth is lit by how it faces the light. look: {warps, picks (how
+many threads each way), gap (pixels between threads), weft (a function (i, j) giving the weft's colour: by
+default the flowing water), warp (the warp's colour), wind (0 still, 1 a good breeze)}. Hung at (x, y), the
+middle of the pole. Gives back {w, h}, its size when still.
+e.g. threadCloth(pen, 960, 120, t, {warps: 150, picks: 260, gap: 3.2, wind: 1})
+```
+
+### `weaveBeam(brush, x1, y1, x2, y2, w, colour)`
+
+(no comment)
+
+### `weavePerson(brush, x, y, look)`
+
+```
+The weaver herself, drawn on the brush (person() draws on the kit's pen).
+```
+
+### `frameLoom(brush, x, base, size, t, look)`
+
+```
+A woman weaving at the frame loom (huk, ki) under the house, facing right: she sits on the loom's bench, her feet
+on the treadles (klong klaeng), the cloth she has woven rolled on the breast beam (mai ok ma) at her lap, the warp
+running back to the far beam, the heddles (khao) hung from the top beam on their pulleys. In a second (t) she
+throws the shuttle (krasuai) through, steps to change the shed, and pulls the beater (fuem) home twice. look:
+{work: "jok" to pick a jok pattern by hand with a porcupine quill instead, leaning in, the beater left back;
+weaver: a look for person(); cloth: a town of TEEN_JOK_ROWS for the roll}. Standing on (x, base); size 1 is the
+kit's own scale.
+e.g. frameLoom(pen, 600, 900, 1, t)
+```
+
+### `spinningWheel(brush, x, base, size, t, look)`
+
+```
+A woman spinning cotton at the wheel (phian, la, nai), as the sources tell it: she sits on the floor beside it,
+her right hand turns the big wheel by its rim, and her left hand draws the roll of carded cotton (hang fai) back
+from the tip of the iron spindle (lek nai) toward her body, the thread twisting as it comes; then she lets it wind
+on. Facing right, her right hand the near one. Standing on (x, base); size 1 the kit's own scale; t the second.
+e.g. spinningWheel(pen, 400, 900, 1, t)
+```
+
 ## decorate.js
 
 decorate.js - the life of a scene: animals and birds on courses, for films made with oldcartoon.js. Load it after the kit and after the files of the animals a scene uses (beasts.js, northbirds.js, ...):  <script src="oldcartoon.js"></script> <script src="decorate.js"></script>  A scene that is built is decorated in passes (docs/kit/places.md, "Decorating a scene"): its place (flora and mist, painted on its sheets or drawn live), its things (what a home or a hall of that place has: dress(), at the end of this file), its life (what lives there, at that hour, each on a course: decorate()), and a check of it (checks/ghost.py plots every course; checks/seek_check.py; kit_check.py).  A course is a row of stops, [[second, x, y, what], ...]: where the animal is at each second, and what it does there ("sniff", "up", "rest", "peck", "hide", or nothing). From the first stop's second to the last stop's it is drawn; between two stops it goes from one to the other at an even pace, facing the way it goes, its feet or wings going as far as it goes; at a stop whose "what" is "hide" it is not drawn until the next stop (gone into a hole, into the thatch, behind the trees). Every frame is worked out f
