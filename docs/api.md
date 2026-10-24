@@ -5610,7 +5610,7 @@ swells and dies; the hem swings. Each patch of cloth is lit by how it faces the 
 many threads each way), gap (pixels between threads), weft (a function (i, j) giving the weft's colour: by
 default the flowing water), warp (the warp's colour), wind (0 still, 1 a good breeze)}. Hung at (x, y), the
 middle of the pole. Gives back {w, h}, its size when still.
-e.g. threadCloth(pen, 960, 120, t, {warps: 150, picks: 260, gap: 3.2, wind: 1})
+e.g. threadCloth(pen, 960, 120, t, {warps: 150, picks: 240, gap: 4, wind: 1})
 ```
 
 ### `weaveBeam(brush, x1, y1, x2, y2, w, colour)`
