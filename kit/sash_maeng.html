@@ -580,7 +580,7 @@ function chase(t) {                      // how far past its steady trot the dog
   return (225 / 195) * (s < 0.5 ? 0.5 * (u * u * u - u * u * u * u / 2) : 0.25 + (s - 0.5));   // the speed eases up over half a second
 }
 
-function sceneLane(t) {                 // 26.67-42.59 (22-35 until 2026-10-24: 2.92 s more after the greeting, for the narrator's own pace): the lane: a man and a child come one way, a woman the other
+function sceneLane(t) {                 // 26.67-44.41 (22-35 until 2026-10-24: 4.74 s more after the greeting, for the narrator's own pace): the lane: a man and a child come one way, a woman the other
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t + 22);
   pen.drawImage(VILLAGE.back, 0, 0);
   hillMist(t + 22);
@@ -799,7 +799,7 @@ function pondReeds(x, base, size, t, part) {
   pen.restore();
 }
 
-function scenePond(t) {                 // 42.59-69.94 (35-53 until 2026-10-24; 3 s longer since 2026-10-21, the elephants pointed out; 9.35 s more for the narrator's own pace): the pond: lotus, fish, a maiden at the bank who wais; a Chinese dragon flies by with a flag; elephants far off
+function scenePond(t) {                 // 42.59-69.94 on its own clock, shown 44.41-69.48 (35-53 until 2026-10-24; 3 s longer since 2026-10-21, the elephants pointed out; 9.35 s more for the narrator's own pace): the pond: lotus, fish, a maiden at the bank who wais; a Chinese dragon flies by with a flag; elephants far off
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t + POND_AT);
   pen.drawImage(POND.back, 0, 0);
   pondElephants(t);                       // on the middle range's ridge, and the mist may lie over them
@@ -1292,7 +1292,13 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
   drawByZ(sprites);
 }
 
-var SCENES = [[0, 26.67, sceneCloth], [26.67, 42.59, sceneLane], [42.59, 69.94, scenePond], [69.94, 93.47, scenePaddy], [93.47, DURATION, sceneDance]];
+// Each cut in a pause of the narrator's (2026-10-24, kit_check: three of her lines ran on through a cut). The lane
+// stays through her line on the tungs, to 44.41, and the pond comes in 1.82 s into its own clock, so every moment
+// in it keeps its second; the paddy comes in 0.46 s sooner and holds its first picture under the fade from black;
+// the dance comes in 4 s sooner (eight beats, so its hops keep the beat) and dances on its own clock.
+function scenePondLate(t) { scenePond(t + 1.82); }
+function scenePaddyHeld(t) { scenePaddy(Math.max(0, t - 0.46)); }
+var SCENES = [[0, 26.67, sceneCloth], [26.67, 44.41, sceneLane], [44.41, 69.48, scenePondLate], [69.48, 89.47, scenePaddyHeld], [89.47, DURATION, sceneDance]];
 
 // The words, in one list (owner, 2026-10-16: the song gave way to the story of
 // Lanna told in Kam Mueang, "like it was for little kids", about what is on
@@ -1342,7 +1348,7 @@ var CUES = WORDS.map(function (w) { return [w[0] / BEAT, w[2], w[3], w[4], w[1]]
 
 function draw(t) {
   var at = t / SLOW;                      // the film's own second (SLOW, above); the words are on t
-  STYLE.hop = at >= 93.47;                   // only the dance hops on the beat
+  STYLE.hop = at >= 89.47;                   // only the dance hops on the beat
   film(at, SCENES);
   WORDS.forEach(function (w) { if (t >= w[0] && t < w[1]) { subtitle(w[3], w[4]); } });
 }
