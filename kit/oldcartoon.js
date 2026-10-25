@@ -4491,10 +4491,10 @@ var LOOK_KEYS = {};
 //                   over the palm and under the fingers, the blade a little forward of square to the
 //                   forearm (DAP_TILT): upright when the forearm is about level, falling back as the arm
 //                   is raised (owner, 2026-10-25);
-//                   look.dap its size, 0.55 unless told, in the figure's own units;
 //                   "spear": a soldier's spear stood on the ground, a shaft of bamboo up
 //                   through the near fist to well above the head, an iron blade, and a
 //                   tassel of the head-cloth's colour under it (the soldiers of Chang Ngu)
+//   dap             the size of the sword held with holding "dap": 0.55 unless told, in the figure's own units
 //   parasol         a paper parasol in the near hand, its rings of pattern seen as bands from
 //                   the side: true (upright, open), a kind ("lai", "yantra", "buddha": see PARASOL),
 //                   a colour for its paper, or parasolAt()'s {tilt, spin, open, kind, colour}:
