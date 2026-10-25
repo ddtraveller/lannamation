@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>forestanimals - four animals of the north's forests</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script src="highlands.js"></script>
+<script src="beasts.js"></script>
+<script src="northbirds.js"></script>
+<script src="lannabirds.js"></script>
+<script src="forestanimals.js"></script>
+<script>
+// The "forestanimals" sheet: what forestanimals.js draws. From 0 s, each animal large on paper with its Thai name,
+// going through what it does: the slow loris creeps along a branch, turns its eyes to us, sleeps curled, its eyes
+// shining; another hangs under the branch; the gibbon sits, sings, walks the branch upright, and a dark one swings
+// arm over arm; the goral stands alert, grazes, looks back, walks, and leaps; the giant catfish glides. From 12 s,
+// dawn on a limestone cliff of the north: gorals on its ledges, one springing from ledge to ledge, gibbons singing
+// and swinging in the trees above the mist. From 20 s, night on the Mekong: a loris on a branch over the water, its
+// eyes catching the moonlight, and under the surface the lord's fish gliding in the dark water.
+var DURATION = 28;
+
+var BEAT = 0.5;
+
+function caption(text, x, y, thai, small, light) {
+  pen.fillStyle = light ? "#e8dcc0" : "#5a4630";
+  pen.textAlign = "center";
+  pen.font = thai ? "bold 26px 'Leelawadee UI', Tahoma, sans-serif" : (small ? "italic 17px" : "20px") + " Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function named(thai, english, call, x, y) {
+  caption(thai, x, y, true);
+  caption(english, x, y + 26);
+  caption(call, x, y + 50, false, true);
+}
+
+function ease(s) { s = clamp(s); return s * s * (3 - 2 * s); }
+
+var GROWING = ["creep", "swing", "step", "size", "face", "seed", "span"];
+
+// From a list of [from, to, name, look], the one at t, its amounts eased in and out. Returns {look, name}.
+function moves(t, list) {
+  for (var n = 0; n < list.length; n++) {
+    var m = list[n];
+    if (t >= m[0] && t < m[1]) {
+      var amount = ease((t - m[0]) / 0.35) * (1 - ease((t - m[1] + 0.35) / 0.35)), look = {};
+      for (var key in m[3]) { look[key] = typeof m[3][key] === "number" && GROWING.indexOf(key) < 0 ? m[3][key] * amount : m[3][key]; }
+      return {look: look, name: m[2]};
+    }
+  }
+  return {look: {}, name: ""};
+}
+
+function withLook(look, more) { return Object.assign({}, look, more); }
+
+function bough(x0, y0, x1, y1, thick, colour) {    // a branch for an animal to sit on
+  pen.lineCap = "round";
+  pen.strokeStyle = "#2a1e14";
+  pen.lineWidth = thick + 4;
+  pen.beginPath();
+  pen.moveTo(x0, y0);
+  pen.quadraticCurveTo((x0 + x1) / 2, (y0 + y1) / 2 + 6, x1, y1);
+  pen.stroke();
+  pen.strokeStyle = colour || "#7a5a3a";
+  pen.lineWidth = thick;
+  pen.stroke();
+}
+
+// ---------- 0 to 12 s: on paper ----------
+
+function sheetNames(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  bough(40, 250, 900, 250, 14);
+  var lo = moves(t, [[0, 4, "creep", {creep: t * 0.35}], [4, 6.5, "look", {look: 1}], [6.5, 9, "curl", {curl: 1}], [9, 12, "shine", {shine: 1, look: 1}]]);
+  slowLoris(260, 243, t, withLook(lo.look, {size: 2.4}));
+  slowLoris(640, 257, t, {size: 2, hang: true, look: 0.7, seed: 2});
+  named("ลิงลม", "Bengal slow loris", "slowLoris(x, y, t, {" + lo.name + "})", 300, 400);
+  caption("{hang: true}", 640, 400, false, true);
+  bough(1000, 250, 1880, 250, 12);
+  var gi = moves(t, [[0, 3, "", {}], [3, 6, "sing", {sing: 1}], [6, 12, "step", {step: (t - 6) * 1.1}]]);
+  var gx = gi.look.step !== undefined ? 1120 + (t - 6) * 40 : 1120;
+  gibbon(gx, 244, t, withLook(gi.look, {size: 1.6}));
+  gibbon(1460, 250, t, {size: 1.6, dark: true, swing: (t % 6) * 0.55, span: 110});
+  named("ชะนี", "white-handed gibbon, buff and dark", "gibbon(x, y, t, {" + (gi.name || "") + "}) {swing}", 1440, 470);
+  var go = moves(t, [[0, 2.5, "alert", {alert: 1}], [2.5, 5, "graze", {graze: 1}], [5, 7, "turn", {turn: -1}], [7, 9.5, "step", {step: t * 1.2}], [9.5, 12, "", {}]]);
+  pen.fillStyle = "#c8b898";                         // two ledges of rock for the leap
+  pen.fillRect(80, 760, 360, 18);
+  pen.fillRect(560, 700, 300, 18);
+  goral(260, 760, t, withLook(go.look, {size: 1.5}));
+  var lp = clamp((t % 4 - 1) / 1.2);
+  goral(mix(470, 690, lp) , mix(760, 700, lp) - Math.sin(lp * Math.PI) * 120, t, {size: 1.2, leap: lp > 0 && lp < 1 ? lp : 0});
+  named("กวางผา", "goral", "goral(x, y, t, {" + (go.name || "") + "}) {leap}", 480, 830);
+  var g = pen.createLinearGradient(0, 560, 0, 1000);
+  g.addColorStop(0, "#9ab8b8");
+  g.addColorStop(1, "#3e5e68");
+  pen.fillStyle = g;
+  pen.fillRect(1000, 560, 880, 400);
+  giantCatfish(1460 + 30 * Math.sin(t * 0.4), 760, t, {size: 1.6});
+  caption("ปลาบึก", 1440, 1000, true);
+  caption("Mekong giant catfish  giantCatfish(x, y, t, {mouth, light})", 1440, 1030, false, true);
+}
+
+// ---------- 12 to 20 s: dawn on the cliff ----------
+
+var CLIFF = null;
+function cliffSet() {
+  var sheet = document.createElement("canvas");
+  sheet.width = WIDE;
+  sheet.height = 1080;
+  var b = sheet.getContext("2d");
+  var sky = b.createLinearGradient(0, 0, 0, 800);
+  sky.addColorStop(0, "#f4b880");
+  sky.addColorStop(0.5, "#f8dcb0");
+  sky.addColorStop(1, "#e8e0cc");
+  b.fillStyle = sky;
+  b.fillRect(0, 0, WIDE, 1080);
+  b.fillStyle = "#b8a8a0";                           // the far ridge
+  b.beginPath(); b.moveTo(0, 700);
+  for (var x = 0; x <= WIDE; x += 20) { b.lineTo(x, 640 - 160 * Math.exp(-Math.pow((x - 1500) / 360, 2)) - 20 * Math.sin(x / 70)); }
+  b.lineTo(WIDE, 1080); b.lineTo(0, 1080); b.fill();
+  var rock = b.createLinearGradient(1100, 0, 1920, 0);   // the limestone cliff: pale, streaked, in ledges
+  rock.addColorStop(0, "#d8ccb8"); rock.addColorStop(1, "#a89884");
+  b.fillStyle = rock; b.strokeStyle = "#5a4e40"; b.lineWidth = 2.5;
+  b.beginPath(); b.moveTo(1080, 1080); b.lineTo(1140, 820); b.lineTo(1260, 800); b.lineTo(1300, 600); b.lineTo(1460, 580); b.lineTo(1500, 380); b.lineTo(1700, 340); b.lineTo(1760, 160); b.lineTo(1920, 120); b.lineTo(1920, 1080); b.closePath();
+  b.fill(); b.stroke();
+  b.strokeStyle = "rgba(90, 78, 64, 0.35)"; b.lineWidth = 2;
+  for (var k = 0; k < 24; k++) { var sx = 1200 + (k * 71) % 700, sy = 200 + (k * 137) % 800; b.beginPath(); b.moveTo(sx, sy); b.lineTo(sx + 6, sy + 60 + (k % 3) * 20); b.stroke(); }
+  [[1260, 800, 120], [1460, 580, 130], [1700, 340, 120]].forEach(function (l) {   // the grass on the ledges
+    b.fillStyle = "#8a9a5a";
+    b.fillRect(l[0] - l[2], l[1] - 4, l[2], 8);
+  });
+  for (var n = 0; n < 6; n++) { tallTree(b, 120 + n * 160, 1080, 1.6 + (n % 3) * 0.3, "#4a6a3a", n + 3); }
+  return sheet;
+}
+
+function sheetCliff(t) {
+  var u = t - 12;
+  if (!CLIFF) { CLIFF = cliffSet(); }
+  pen.drawImage(CLIFF, 0, 0);
+  goral(1200, 800, t, {graze: 1, size: 0.6});
+  goral(1640, 340, t, {alert: 1, size: 0.6, face: -1, turn: u > 4 ? -1 : 0});
+  var lp = clamp((u - 2) / 1.1);                     // one springs up from the lower ledge to the next
+  if (lp <= 0) { goral(1380, 800, t, {size: 0.6, alert: 0.6}); }
+  else if (lp < 1) { goral(mix(1380, 1420, lp), mix(800, 580, lp) - Math.sin(lp * Math.PI) * 60, t, {size: 0.6, leap: lp}); }
+  else { goral(1420, 580, t, {size: 0.6, step: u > 4 && u < 6 ? (u - 4) * 1.4 : undefined}); }
+  bough(80, 300, 980, 330, 9, "#5a4430");
+  gibbon(300, 300, t, {sing: u > 1 ? 1 : 0, size: 0.8});
+  gibbon(140, 330, t, {swing: u * 0.7, span: 100, size: 0.8, dark: true, seed: 1});
+  mistBand(pen, 700, 780, 1500, t, {});
+  caption("dawn on a limestone cliff: gorals, and gibbons singing", 960, 1050, false, true);
+}
+
+// ---------- 20 to 28 s: night on the Mekong ----------
+
+function sheetRiver(t) {
+  var u = t - 20;
+  var sky = pen.createLinearGradient(0, 0, 0, 440);
+  sky.addColorStop(0, "#0a1028");
+  sky.addColorStop(1, "#2a3458");
+  pen.fillStyle = sky;
+  pen.fillRect(0, 0, WIDE, 440);
+  pen.fillStyle = "#141c2a";                         // the far bank
+  pen.beginPath(); pen.moveTo(0, 440);
+  for (var x = 0; x <= WIDE; x += 20) { pen.lineTo(x, 400 - 30 * Math.sin(x / 200) - 14 * Math.sin(x / 60)); }
+  pen.lineTo(WIDE, 440); pen.fill();
+  var deep = pen.createLinearGradient(0, 440, 0, 1080);   // under the surface, the dark river
+  deep.addColorStop(0, "#2e5a66");
+  deep.addColorStop(1, "#08161c");
+  pen.fillStyle = deep;
+  pen.fillRect(0, 440, WIDE, 640);
+  for (var k = 0; k < 6; k++) {                      // the moon's light coming down through the water
+    var bx = 1300 + k * 70 + 30 * Math.sin(u * 0.4 + k);
+    var shaft = pen.createLinearGradient(0, 440, 0, 1000);
+    shaft.addColorStop(0, "rgba(200, 230, 240, 0.12)");
+    shaft.addColorStop(1, "rgba(200, 230, 240, 0)");
+    pen.fillStyle = shaft;
+    pen.beginPath(); pen.moveTo(bx, 440); pen.lineTo(bx + 30, 440); pen.lineTo(bx - 120, 1000); pen.lineTo(bx - 200, 1000); pen.fill();
+  }
+  pen.strokeStyle = "rgba(240, 236, 210, 0.7)";      // the surface
+  pen.lineWidth = 2;
+  pen.beginPath(); for (var s = 0; s <= WIDE; s += 10) { var sy = 440 + 3 * Math.sin(s / 40 + u * 2); if (s) { pen.lineTo(s, sy); } else { pen.moveTo(s, sy); } } pen.stroke();
+  giantCatfish(mix(2100, -300, u / 8), 760 + 20 * Math.sin(u * 0.5), t, {face: -1, size: 0.9, light: 0.35});
+  bough(-20, 250, 700, 300, 12, "#3a2a1e");
+  var lor = slowLoris(360, 268, t, {creep: u * 0.3, look: u > 4 ? 1 : 0, size: 1.4});
+  pen.save();                                        // the night over all of it: moonlit blue above, deep teal under the water
+  pen.globalCompositeOperation = "multiply";
+  pen.fillStyle = "#7484b4";
+  pen.fillRect(0, 0, WIDE, 442);
+  pen.fillStyle = "#4e6a78";
+  pen.fillRect(0, 442, WIDE, 640);
+  pen.restore();
+  pen.fillStyle = "#f4ecd0";                         // the moon
+  pen.beginPath(); pen.arc(1560, 120, 46, 0, 7); pen.fill();
+  var glow = pen.createRadialGradient(1560, 120, 40, 1560, 120, 160);
+  glow.addColorStop(0, "rgba(244, 236, 208, 0.35)"); glow.addColorStop(1, "rgba(244, 236, 208, 0)");
+  pen.fillStyle = glow; pen.fillRect(1400, 0, 320, 300);
+  [-1, 1].forEach(function (side) {                  // its eyes catch the moonlight: the shine, over the night
+    var turn = u > 4 ? Math.min(1, (u - 4) / 0.35) : 0, ex = lor.eyes[0] + side * mix(3, 7.5, turn) * 1.4, ey = lor.eyes[1];
+    if (side < 0 && turn < 0.35) { return; }
+    var shine = pen.createRadialGradient(ex, ey, 0, ex, ey, 16);
+    shine.addColorStop(0, "rgba(255, 210, 120, 0.95)"); shine.addColorStop(0.35, "rgba(255, 150, 40, 0.55)"); shine.addColorStop(1, "rgba(255, 140, 40, 0)");
+    pen.fillStyle = shine; pen.fillRect(ex - 16, ey - 16, 32, 32);
+  });
+  caption("night on the Mekong: a loris over the water, and the lord's fish below", 960, 1056, false, true, true);
+}
+
+function sheet(t) {
+  if (t < 12) { sheetNames(t); } else if (t < 20) { sheetCliff(t); } else { sheetRiver(t); }
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

@@ -34,6 +34,9 @@ import time
 # alone and close, with nothing behind it, as the rooster's crow that was picked did.
 ALONE = (" Only this one animal, close to the microphone; absolutely no other birds, no insects, no wind, no water, "
          "no ambience and no echo: a completely silent background.")
+# for wings, which must not bring a bird's voice with them
+WINGS_ALONE = (" Absolutely no birdsong, no chirping, no calls, no insects, no wind, no ambience and no echo: a "
+               "completely silent background.")
 SOUNDS = {
     "peafowl": ("A green peafowl calls from the forest edge at dawn: a loud, deep, trumpeting two-note call, ki-wao, "
                 "ki-wao, repeated three times, recorded close, silent background, no other birds.", 5,
@@ -62,6 +65,22 @@ SOUNDS = {
     "avadavat": ("A tiny red avadavat finch gives high, thin, sweet whistles, teei teei, and a soft twittering song." + ALONE, 4,
                  "the red avadavat's whistles (Amandava amandava)"),
     "cat": ("A village cat meows twice, a clear, plaintive meow, meeow." + ALONE, 3, "a cat's meow"),
+    # the new creatures of 2026-10-25 (lannabirds.js, taleanimals.js): a dove's wings, which no free recording has,
+    # and beside the free recordings of four more, whose clean stretches were short, faint or had other birds over them
+    # (a first sentence for the wings, "A dove bursts up from the ground ...", came out with birds chirping in every take)
+    "dove-wings": ("The sound of a pigeon's wings only, and no voice: a sudden loud clatter of wings clapping together "
+                   "as it takes off, then fast flapping that fades as it flies away." + WINGS_ALONE, 3,
+                   "the spotted dove's wing claps as it takes off (Spilopelia chinensis)"),
+    "dove": ("A spotted dove coos from a tree: a soft, mellow, rhythmic cooing, kroo-kroo-krooo, the last note the "
+             "longest, said twice." + ALONE, 5, "the spotted dove's cooing (Spilopelia chinensis)"),
+    "kingfisher-wt": ("A white-throated kingfisher gives its loud, laughing, whinnying rattle from a perch, a shrill, "
+                      "falling kililililili." + ALONE, 4, "the white-throated kingfisher's laughing rattle (Halcyon smyrnensis)"),
+    "kingfisher": ("A small common kingfisher flies past low, giving its shrill, high, piercing whistle, tsee, "
+                   "tsee-tsee." + ALONE, 3, "the common kingfisher's high whistle (Alcedo atthis)"),
+    "parakeet": ("A red-breasted parakeet gives loud, harsh, nasal screeches, kaink, kaink, from a treetop." + ALONE, 4,
+                 "the red-breasted parakeet's screech (Psittacula alexandri)"),
+    "toad": ("An Asian common toad calls at night: a long, rattling, purring trill, krrrrrrr, then again after a "
+             "pause." + ALONE, 5, "the Asian common toad's trill (Duttaphrynus melanostictus)"),
 }
 # The small changes a sound's takes are made from: the sentence as written, then with each of these after it. A take is
 # NAME_k.wav, k from 1, the k-th of these.
@@ -69,9 +88,13 @@ TAKES = ["", " A clean, isolated sound effect.", " Natural, as recorded in the w
          " A field recording made very close, with a quiet background."]
 # The takes the owner picked (2026-10-23), kept in sounds/ as FLAC: the sound's name, then its take's number.
 KEPT = {"peafowl": [1], "sunbird": [1], "plover": [1, 3], "chick": [1], "egret": [1], "barnowl": [2], "pratincole": [5],
-        "lapwing": [1], "avadavat": [1], "cat": [1], "tiger": [3]}
+        "lapwing": [1], "avadavat": [1], "cat": [1], "tiger": [3],
+        "dove-wings": [4], "dove": [2], "kingfisher-wt": [4], "kingfisher": [5], "parakeet": [3], "toad": [3]}
 # Tried and not kept (the owner heard them, 2026-10-23): bats, Mrs Hume's pheasant (other birds behind every take),
 # the great hornbill, the spot-billed duck and a pig; their sentences are gone from SOUNDS.
+# And of 2026-10-25 (the owner heard them beside free recordings): a rhinoceros beetle's squeak and its flight, a
+# goral's alarm (no free recording of one exists; the kit has none), the rice-field frog, the barking deer and the
+# gibbon (free recordings were picked for those three); their sentences are gone from SOUNDS.
 
 
 def main():

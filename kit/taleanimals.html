@@ -1,0 +1,206 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>taleanimals - five animals of Lanna's tales</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script src="highlands.js"></script>
+<script src="beasts.js"></script>
+<script src="northbirds.js"></script>
+<script src="lannabirds.js"></script>
+<script src="taleanimals.js"></script>
+<script>
+// The "taleanimals" sheet: what taleanimals.js draws. From 0 s, each animal large on paper with its Thai name,
+// going through what it does, the name of each move written under it: the toad breathes, calls with its throat
+// swelling, catches a fly, hops; the rice-field frog calls and swims; the rhinoceros beetles, the champion with his
+// red thread, a smaller male, the hornless female, one walking and one flying, and two fighting on the log for the
+// female in its middle; the golden turtle walks, draws in its head, swims and lifts its nose to breathe, a plain one
+// beside it; the white barking deer, alert, barking, stamping, butting, grazing, walking, her fawn, a red buck
+// running; the white mouse and her four young running into their hole. From 12 s, the second and third of the
+// signs of Chiang Mai: under a fig at the foot of the mountain, a white barking deer and her fawn stand against the
+// dogs, stamp and bark, and the dogs run; the white mouse leads her four young into the earth under the fig's root;
+// a toad calls at the pond's edge; the golden turtle swims in the pond.
+var DURATION = 24;
+
+var BEAT = 0.5;
+
+function caption(text, x, y, thai, small) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = thai ? "bold 26px 'Leelawadee UI', Tahoma, sans-serif" : (small ? "italic 17px" : "20px") + " Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function named(thai, english, call, x, y) {
+  caption(thai, x, y, true);
+  caption(english, x, y + 26);
+  caption(call, x, y + 50, false, true);
+}
+
+function ease(s) { s = clamp(s); return s * s * (3 - 2 * s); }
+
+var GROWING = ["step", "hop", "along", "size", "face", "seed", "into"];   // names whose number is not an amount to ease
+
+// From a list of [from, to, name, look], the one at t, its amounts eased in and out. Returns {look, name}.
+function moves(t, list) {
+  for (var n = 0; n < list.length; n++) {
+    var m = list[n];
+    if (t >= m[0] && t < m[1]) {
+      var amount = ease((t - m[0]) / 0.35) * (1 - ease((t - m[1] + 0.35) / 0.35)), look = {};
+      for (var key in m[3]) { look[key] = typeof m[3][key] === "number" && GROWING.indexOf(key) < 0 ? m[3][key] * amount : m[3][key]; }
+      return {look: look, name: m[2]};
+    }
+  }
+  return {look: {}, name: ""};
+}
+
+function withLook(look, more) { return Object.assign({}, look, more); }
+
+function water(x, y, w, h) {                       // a strip of water for the swimmers, its surface a line of light
+  var g = pen.createLinearGradient(0, y, 0, y + h);
+  g.addColorStop(0, "rgba(120, 170, 170, 0.55)");
+  g.addColorStop(1, "rgba(60, 110, 120, 0.75)");
+  pen.fillStyle = g;
+  pen.fillRect(x, y, w, h);
+  pen.strokeStyle = "rgba(255, 255, 240, 0.8)";
+  pen.lineWidth = 2;
+  pen.beginPath(); pen.moveTo(x, y); pen.lineTo(x + w, y); pen.stroke();
+}
+
+// ---------- 0 to 12 s: on paper ----------
+
+function sheetNames(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.fillStyle = "#e2d4b4";
+  pen.fillRect(0, 302, WIDE, 3);
+  pen.fillRect(0, 702, WIDE, 3);
+  var td = moves(t % 8, [[0, 2, "", {}], [2, 4.5, "call", {call: 1}], [4.5, 5.6, "tongue", {tongue: clamp((t % 8 - 4.6) / 0.8)}], [5.6, 8, "hop", {hop: (t % 8 - 5.6) * 0.9}]]);
+  var hx = td.look.hop !== undefined ? 150 + Math.floor(td.look.hop) * 60 + (td.look.hop % 1) * 60 : 150;
+  toad(hx, 300, t, withLook(td.look, {size: 6}));
+  named("คันคาก", "Asian common toad", "toad(x, y, t, {" + td.name + "})", 250, 350);
+  toad(520, 300, t, {size: 5, kind: "frog", call: lbPulse(t, 3, 1.4, 0)});
+  water(620, 230, 300, 70);
+  toad(770, 236, t, {size: 4.6, kind: "frog", swim: true});
+  named("กบนา", "rice-field frog", "{kind: \"frog\", call} {swim: true}", 660, 350);
+  rhinoBeetle(1020, 296, t, {size: 8, thread: true, lift: lbPulse(t, 3, 1.2, 0)});
+  rhinoBeetle(1290, 296, t, {size: 8, kind: "small", step: t * 2.2, face: -1});
+  rhinoBeetle(1470, 296, t, {size: 8, kind: "female"});
+  rhinoBeetle(1560, 150, t, {size: 8, fly: true});
+  named("กว่าง", "rhinoceros beetles: the champion, a smaller male, the female", "rhinoBeetle(x, y, t, {kind, lift, step, fly, thread})", 1270, 350);
+  kwangFight(1740, 266, t, {size: 2.3});
+  caption("kwangFight()", 1740, 350, false, true);
+
+  var tu = moves(t % 9, [[0, 3, "step", {step: t * 0.5}], [3, 4.5, "head", {head: 0}], [4.5, 9, "", {}]]);
+  goldTurtle(220, 690, t, withLook(tu.look, {size: 3, head: tu.look.head === undefined ? 1 : 1 - (1 - tu.look.head)}));
+  goldTurtle(520, 690, t, {size: 2.4, gold: 0, step: t * 0.4, face: -1});
+  water(640, 560, 340, 140);
+  goldTurtle(800, 600, t, {size: 2.6, swim: true, breathe: lbPulse(t, 5, 2, 0)});
+  named("เต่าอองคำ", "the golden turtle, and a plain one", "goldTurtle(x, y, t, {gold, step, head, swim, breathe})", 520, 750);
+  var de = moves(t % 12, [[0, 2.5, "alert", {alert: 1}], [2.5, 4.5, "bark", {bark: 1, alert: 0.6}], [4.5, 6, "stamp", {stamp: 1, alert: 0.5}],
+                          [6, 7.5, "butt", {butt: 1}], [7.5, 9.5, "graze", {graze: 1}], [9.5, 12, "step", {step: t * 1.2}]]);
+  barkingDeer(1150, 690, t, withLook(de.look, {white: true, size: 1.9}));
+  barkingDeer(1420, 690, t, {white: true, fawn: true, size: 1.9, graze: lbPulse(t, 4, 2.4, 1)});
+  barkingDeer(1720, 690, t, {buck: true, size: 1.6, step: t * 1.6, run: true});
+  named("ฟานเผือก", "the white barking deer, her fawn; a red buck running", "barkingDeer(x, y, t, {" + (de.name || "") + "})", 1420, 750);
+  var run = (t % 6) / 6;
+  pen.fillStyle = "#e2d4b4";
+  pen.fillRect(0, 1002, WIDE, 3);
+  whiteMice(mix(360, 1300, run), 1000, t, {size: 1.6, along: run * 22, into: 1240});
+  named("หนูเผือก", "the white mouse and her four young", "whiteMice(x, y, t, {along, into})", 760, 900);
+}
+
+// ---------- 12 to 24 s: the signs of Chiang Mai ----------
+
+var SIGN = null;
+function signSet() {                                // the set, painted once: Doi Suthep behind, the plain, the fig, a pond
+  var sheet = document.createElement("canvas");
+  sheet.width = WIDE;
+  sheet.height = 1080;
+  var b = sheet.getContext("2d");
+  var sky = b.createLinearGradient(0, 0, 0, 640);
+  sky.addColorStop(0, "#a8c8dc");
+  sky.addColorStop(1, "#eef0dc");
+  b.fillStyle = sky;
+  b.fillRect(0, 0, WIDE, 1080);
+  b.fillStyle = "#7f9a86";                          // the mountain, high in the west
+  b.beginPath(); b.moveTo(0, 620);
+  for (var x = 0; x <= WIDE; x += 20) { b.lineTo(x, 620 - 380 * Math.exp(-Math.pow((x - 420) / 520, 2)) - 30 * Math.sin(x / 90)); }
+  b.lineTo(WIDE, 1080); b.lineTo(0, 1080); b.fill();
+  forestSlope(b, function (x) { return 640 - 330 * Math.exp(-Math.pow((x - 420) / 520, 2)) - 26 * Math.sin(x / 90); }, 0, WIDE, 760, {far: 0.7, small: 4, large: 7, seed: 21, haze: "#b8ccc8"});
+  b.fillStyle = "#a6b070";
+  b.fillRect(0, 760, WIDE, 320);
+  b.fillStyle = "#6e8a4e";
+  for (var k = 0; k < 160; k++) { var gx = (k * 97) % WIDE, gy = 770 + (k * 53) % 300; b.fillRect(gx, gy, 2, -6 - (k % 4) * 2); }
+  var bark = b.createLinearGradient(1540, 0, 1700, 0);   // the fig, its pale trunk and spreading roots
+  bark.addColorStop(0, "#8a8474"); bark.addColorStop(0.5, "#bcb6a6"); bark.addColorStop(1, "#7a7464");
+  b.fillStyle = bark; b.strokeStyle = "#4a4436"; b.lineWidth = 2.5;
+  b.beginPath(); b.moveTo(1500, 880); b.quadraticCurveTo(1580, 840, 1590, 640); b.quadraticCurveTo(1594, 480, 1570, 380);
+  b.lineTo(1660, 380); b.quadraticCurveTo(1640, 520, 1660, 680); b.quadraticCurveTo(1680, 840, 1780, 880); b.closePath(); b.fill(); b.stroke();
+  [[1500, 300, 140, 2], [1640, 240, 170, 3], [1800, 300, 140, 4], [1440, 420, 110, 5], [1860, 440, 100, 6]].forEach(function (c) { crown(b, c[0], c[1], c[2], "#4f7a3a", c[3]); });
+  return sheet;
+}
+
+function dogAt(x, y, t, fleeing) {                  // a dog of the hunt: coming on to the right, or fleeing to the left, afraid
+  pen.save();
+  if (fleeing) { pen.translate(x, 0); pen.scale(-1, 1); pen.translate(-x, 0); }
+  dog(x, y, t, {feel: fleeing ? "fear" : "angry"});
+  pen.restore();
+}
+
+function sheetSign(t) {
+  var u = t - 12;
+  if (!SIGN) { SIGN = signSet(); }
+  pen.drawImage(SIGN, 0, 0);
+  pond(pen, 60, 930, 520, 130, {t: t});
+  goldTurtle(260 + 40 * Math.sin(u * 0.3), 1000, t, {swim: true, breathe: lbPulse(u, 6, 2, 1), size: 1.4});
+  toad(560, 960, t, {size: 1.6, call: u > 1 ? 1 : 0});
+  var turn = 6.5, come = ease(u / 3), flee = ease((u - turn) / 4);
+  for (var k = 0; k < 4; k++) {                      // the dogs: they come on, are stopped, and run
+    var dx = u < turn ? mix(-200 - k * 120, 500 - k * 80, come) : mix(500 - k * 80, -300 - k * 140, flee), dy = 830 + (k % 2) * 40;
+    dogAt(dx, dy, t + k * 0.13, u >= turn);
+  }
+  var stand = u > 3 && u < 9;
+  barkingDeer(740, 860, t, {white: true, size: 1.8, alert: u > 2 ? 1 : 0, bark: stand && u < 5 ? 1 : 0, stamp: u > 4.5 && u < 6.5 ? 1 : 0,
+                            butt: u > 5.5 && u < 7 ? 1 : 0, face: -1, graze: u > 11 ? 1 : 0});
+  barkingDeer(860, 874, t, {white: true, fawn: true, size: 1.8, alert: u > 2 ? 1 : 0, face: -1, seed: 1});
+  caption("ฟานเผือกสองตัวแม่ลูก รบหมา หมาทั้งหลายพ่ายหนี", 760, 560, true);
+  var go = clamp((u - 3) / 6);
+  whiteMice(mix(1060, 1640, go), 900, t, {along: go * 26, into: 1630, size: 1.2});
+  caption("หนูเผือกกับบริวาร ๔ ตัว", 1400, 990, true);
+  caption("the signs of Chiang Mai: the white barking deer drive off the dogs; the white mouse and her young", 960, 1056, false, true);
+}
+
+function sheet(t) {
+  if (t < 12) { sheetNames(t); } else { sheetSign(t); }
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

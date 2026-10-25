@@ -356,6 +356,57 @@ FETCHED.update({
                     "from": 'Mysid, "Grasshoppers"; public domain (Wikimedia Commons: File:Grasshoppers.ogg)',
                     "what": "grasshoppers stridulating in the grass by day (8 s)"},
 })
+# The twelve animals of Lanna's tales, rites and forests (lannabirds.js, taleanimals.js, forestanimals.js; owner,
+# 2026-10-25: "Don't forget to look for sounds for the creatures that it makes sense for. Generate if you can't find
+# clean quality sounds"). Of 115 free recordings (iNaturalist and Wikimedia Commons, CC0 and CC BY only: the owner kept
+# share-alike out), each heard by AST two seconds at a time and cut where it hears only the animal, beside takes made
+# by MOSS-SoundEffect on the Spark (moss_sounds.py), the owner picked these. A dove's wings had no free recording; the
+# goral, the slow loris and the rhinoceros beetle have no sound (none was found clean, and no made take sounded right).
+MOSS_FROM_25 = "made by MOSS-SoundEffect v2.0 (OpenMOSS-Team, Apache-2.0) for the kit, 2026-10-25 (moss_sounds.py)"
+FETCHED.update({
+    "crow": {"url": INAT + "858895.wav", "cut": [21.55, 27.0],
+             "from": "Sam Hambly, large-billed crow, Bangkok, Thailand; CC BY 4.0 (iNaturalist observation 193695337)",
+             "what": "the large-billed crow's harsh caws, kaa kaa, for the white crow and the black (5 s)"},
+    "dove": {"url": INAT + "861548.wav", "cut": [1.0, 3.0],
+             "from": "Sam Hambly, spotted dove, Bang Sue, Bangkok, Thailand; CC BY 4.0 (iNaturalist observation 194270206)",
+             "what": "the spotted dove's soft coo, recorded (2 s)"},
+    "dove-alt": {"file": "sounds/dove-alt.flac", "cut": None, "from": MOSS_FROM_25,
+                 "what": "the spotted dove's cooing, kroo-kroo-krooo, said twice (5 s)"},
+    "dove-wings": {"file": "sounds/dove-wings.flac", "cut": None, "from": MOSS_FROM_25,
+                   "what": "a dove's wings clapping as it takes off, then flapping away (3 s): no free recording of it"},
+    "kingfisher": {"url": INAT + "1437660.wav", "cut": [4.0, 10.0],
+                   "from": "Wich'yanan (Jay) Limparungpatthanakij, white-throated kingfisher, Samet, Buriram, Thailand; "
+                           "CC BY 4.0 (iNaturalist observation 278101138)",
+                   "what": "the white-throated kingfisher's loud laughing rattle, recorded (6 s)"},
+    "kingfisher-alt": {"file": "sounds/kingfisher-alt.flac", "cut": None, "from": MOSS_FROM_25,
+                       "what": "the white-throated kingfisher's falling rattle, kililililili (4 s)"},
+    "kingfisher-common": {"url": COMMONS + "1/1a/Ijsvogel_in_Nieuwegein_-_SoundCloud_-_luc_de_bruijn.ogg", "cut": [116.0, 118.0],
+                          "from": 'luc de bruijn, "IJsvogel in Nieuwegein", common kingfisher, Park Oudegein, Nieuwegein, '
+                                  "the Netherlands; CC BY 3.0 (Wikimedia Commons)",
+                          "what": "the common kingfisher's high whistle, recorded (2 s)"},
+    "kingfisher-common-alt": {"file": "sounds/kingfisher-common-alt.flac", "cut": None, "from": MOSS_FROM_25,
+                              "what": "the common kingfisher's shrill whistle as it flies past, tsee, tsee-tsee (3 s)"},
+    "parakeet": {"url": INAT + "845548.wav", "cut": [22.0, 24.0],
+                 "from": "Sam Hambly, red-breasted parakeet, Thailand; CC BY 4.0 (iNaturalist observation 190984478)",
+                 "what": "the red-breasted parakeet's screech, recorded (2 s)"},
+    "parakeet-alt": {"file": "sounds/parakeet-alt.flac", "cut": None, "from": MOSS_FROM_25,
+                     "what": "the red-breasted parakeet's loud nasal screeches, kaink, kaink (4 s)"},
+    "toad": {"url": INAT + "1084492.wav", "cut": [2.0, 8.0],
+             "from": "Sam Hambly, Asian common toad, Nakhon Ratchasima, Thailand; CC BY 4.0 (iNaturalist observation 221466417)",
+             "what": "the Asian common toad's trill at night, recorded (6 s)"},
+    "toad-alt": {"file": "sounds/toad-alt.flac", "cut": None, "from": MOSS_FROM_25,
+                 "what": "the Asian common toad's long purring trill, twice (5 s)"},
+    "ricefrog": {"url": INAT + "1373181.m4a", "cut": [5.0, 11.0],
+                 "from": "古國順, Chinese edible frog (Hoplobatrachus chinensis, the rice-field frog's kin), Dounan, Yunlin, "
+                         "Taiwan; CC BY 4.0 (iNaturalist observation 270181401)",
+                 "what": "the rice-field frog's croaks (6 s): no free recording from Thailand, and a bird under this one"},
+    "barking-deer": {"url": INAT + "2100588.m4a", "cut": [13.0, 16.0],
+                     "from": "Charles Joynson, Reeves's muntjac, Chelmsford, England; CC0 (iNaturalist observation 387559875)",
+                     "what": "a barking deer's sharp bark (3 s); the one Thai recording was too faint"},
+    "gibbon": {"url": INAT + "2094941.wav", "cut": [5.5, 11.5],
+               "from": "Thomas Gyselinck, white-handed gibbon, Thailand; CC BY 4.0 (iNaturalist observation 386482709)",
+               "what": "the white-handed gibbon's great call climbing to its climax, 600 Hz to 1.8 kHz (6 s)"},
+})
 
 
 def fetch(name, out):

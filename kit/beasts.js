@@ -2307,8 +2307,12 @@ function horse(x, y, look) {
 //   "field"  the fawn-coloured paddy mouse (Mus cervicolor) that comes in from the rice fields: sandy brown above
 //            with a darker line down its back, a white belly sharply set off, smaller ears, a larger eye, and a
 //            tail dark above and pale below
+//   "white"  the white mouse (หนูเผือก) of Chiang Mai's founding: the chronicle tells of a white mouse and four
+//            of her young come out where Mangrai built the city (ชัยมงคล 7 ประการ, the third sign). White all over,
+//            the ears, the nose, the feet and the tail pink, and the eye red, as an albino's (taleanimals.js leads
+//            her young after her: whiteMice())
 // mouse(x, y, look) stands one on (x, y), facing right unless look.face is -1. look:
-//   kind     "house" or "field"
+//   kind     "house", "field" or "white"
 //   size     1 is about 60 long from nose to rump (the tail as long again), a mouse beside the kit's people
 //   step     a number that grows while it runs, as a beast's does (one whole stride for every 1); without it
 //            it stands
@@ -2319,7 +2323,9 @@ function horse(x, y, look) {
 var MICE = {house: {fur: "#8c8892", belly: "#bdb6bc", ear: 8.5, inner: "#e8a8b0", eye: 2.3, tail: "#c9a6a6", tailTop: "#c9a6a6",
                     stripe: null, long: 1.05},
             field: {fur: "#b08a5a", belly: "#f1e9da", ear: 6, inner: "#d89a8a", eye: 2.8, tail: "#efe4d2", tailTop: "#6a4a2e",
-                    stripe: "#7a5a36", long: 1.2}};
+                    stripe: "#7a5a36", long: 1.2},
+            white: {fur: "#f6f2ee", belly: "#fffdfa", ear: 8.5, inner: "#f0a8b4", eye: 2.3, tail: "#ecbcc0", tailTop: "#ecbcc0",
+                    stripe: null, long: 1.05, iris: "#c0283a"}};
 
 // mouse(x, y, look): one of the two mice above, standing or running on (x, y).
 //   x, y   the ground under it, in pixels of the sheet
@@ -2440,7 +2446,7 @@ function mouse(x, y, look) {
   pen.fillStyle = tone(kind.inner);
   pen.fill();
   pen.restore();
-  oval(8, -3, kind.eye, kind.eye * 1.05, "#141014");  // the eye: a bead, with a light
+  oval(8, -3, kind.eye, kind.eye * 1.05, kind.iris || "#141014");   // the eye: a bead, with a light (the white mouse's red)
   oval(8.8, -3.8, kind.eye * 0.35, kind.eye * 0.35, "#ffffff");
   oval(21, 1, 2, 1.8, tone("#e08a96"));             // the nose
   pen.strokeStyle = "rgba(40, 30, 30, 0.55)";       // the whiskers, twitching

@@ -235,6 +235,40 @@ python sounds.py egret cat ...         # the sounds, into out/sounds/
 python moss_sounds.py --list           # the made ones' sentences (the GPU container is in its docstring)
 ```
 
+## The twelve new animals heard (2026-10-25)
+
+The owner, while the twelve animals of `lannabirds.js`, `taleanimals.js` and `forestanimals.js` were being drawn:
+"Don't forget to look for sounds for the creatures that it makes sense for. Generate if you can't find clean quality
+sounds." The same way as before: 115 free recordings (iNaturalist and Wikimedia Commons, CC0 and CC BY), each heard by
+AST in two-second windows a second apart and cut to its best 2 to 6 s; then each cut heard by AST again at its own
+level, which mattered, since a faint recording brought up to full loudness brings its noise up with it and was heard
+as a vehicle; six cuts were dropped for that. Beside them, five MOSS takes of each sound that had no clean recording,
+the three AST heard cleanest on the listening page. The owner kept share-alike recordings out (Commons has cleaner
+gibbon, barking deer and kingfisher calls under CC BY-SA) and picked by ear. A recording is fetched and cut by
+`sounds.py` (each cut checked against the stretch the owner heard: their loudness over time agrees, 0.94 to 0.998);
+a made take is kept in `sounds/` as FLAC, with the 0.3 s fade it was heard with.
+
+| Sound | What | From |
+|---|---|---|
+| `crow` | the large-billed crow's caws (5.5 s) | fetched: Sam Hambly, Bangkok, CC BY |
+| `dove`, `dove-alt` | the spotted dove's coo, recorded (2 s) and made (5 s) | fetched: Sam Hambly, Bangkok, CC BY; made |
+| `dove-wings` | a dove's wings clapping as it takes off (3 s) | made: no free recording |
+| `kingfisher`, `kingfisher-alt` | the white-throated kingfisher's laughing rattle, recorded (6 s) and made (4 s) | fetched: Wich'yanan Limparungpatthanakij, Buriram, CC BY; made |
+| `kingfisher-common`, `kingfisher-common-alt` | the common kingfisher's high whistle, recorded (2 s) and made (3 s) | fetched: luc de bruijn, Nieuwegein, CC BY 3.0 (Commons); made |
+| `parakeet`, `parakeet-alt` | the red-breasted parakeet's screech, recorded (2 s) and made (4 s) | fetched: Sam Hambly, Thailand, CC BY; made |
+| `toad`, `toad-alt` | the Asian common toad's trill, recorded (6 s) and made (5 s) | fetched: Sam Hambly, Nakhon Ratchasima, CC BY; made |
+| `ricefrog` | the rice-field frog's croaks (6 s), a bird under them | fetched: 古國順, Taiwan (Hoplobatrachus chinensis), CC BY |
+| `barking-deer` | a barking deer's bark (3 s) | fetched: Charles Joynson, England (Reeves's muntjac), CC0 |
+| `gibbon` | the white-handed gibbon's great call, climbing to its climax (6 s) | fetched: Thomas Gyselinck, Thailand, CC BY |
+
+No sound, by ear or for want of one: the goral (no free recording of a goral exists; the one filed under it is a
+serow's, with rain over it; the made alarms were heard as birds), the slow loris (it is all but silent), the rhinoceros
+beetle (one faint hiss from India; the made squeaks were heard as birds, the made flights had voices in them) and the
+blossom-headed parakeet (none found). MOSS made no frog of the rice-field frog from either of two sentences, nor a
+gibbon or a barking deer that sounded like one; their sentences are gone from `moss_sounds.py`, whose `KEPT` names the
+take of each kept one (the listening page numbered the three it showed 1 to 3, not by their takes). xeno-canto was not
+searched: its API now asks for a key.
+
 ## Music that follows the story's feelings (2026-10-19)
 
 The owner: "Plot each scene musically against the emotion of each sentence and make sure the music always

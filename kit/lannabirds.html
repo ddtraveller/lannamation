@@ -1,0 +1,231 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>lannabirds - four birds Lanna tells of</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script src="highlands.js"></script>
+<script src="northbirds.js"></script>
+<script src="lannabirds.js"></script>
+<script>
+// The "lannabirds" sheet: what lannabirds.js draws. From 0 s, each bird large on paper with its Thai name, going
+// through what it does, the name of each move written under it as it is done: the white crow walks, caws, pecks,
+// hops and shines as the mother come down from heaven, a black crow beside her, and she broods on her nest of five
+// eggs; the spotted dove walks nodding, pecks, bows and coos, puffs up; the white-throated kingfisher bobs, watches
+// the water, calls, beats a fish, hovers; the common kingfisher; the red-breasted parakeet climbs, eats a fig from
+// its foot, preens, calls, shakes; the blossom-headed hen. Then the fliers: the crow beating and gliding, the dove
+// clapping and gliding, the kingfisher flying and diving, the parakeet. From 12 s, all of them at their own sizes
+// by a pond under a fig tree at evening: the white crow on her nest in the fig, parakeets in its branches, doves on
+// the bank, a kingfisher on a stake that hovers, dives and comes back with a fish to beat on its perch.
+var DURATION = 22;
+
+var BEAT = 0.5;
+
+function caption(text, x, y, thai, small) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = thai ? "bold 26px 'Leelawadee UI', Tahoma, sans-serif" : (small ? "italic 17px" : "20px") + " Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function named(thai, english, call, x, y) {
+  caption(thai, x, y, true);
+  caption(english, x, y + 26);
+  caption(call, x, y + 50, false, true);
+}
+
+function ease(s) { s = clamp(s); return s * s * (3 - 2 * s); }
+
+var GROWING = ["step", "hop", "climb", "size", "face", "seed"];   // names whose number is not an amount to ease
+
+// From a list of [from, to, name, look] (seconds, the move's name, its look), the one at t: its amounts eased in
+// and out over its first and last 0.35 s. Returns {look, name}.
+function moves(t, list) {
+  for (var n = 0; n < list.length; n++) {
+    var m = list[n];
+    if (t >= m[0] && t < m[1]) {
+      var amount = ease((t - m[0]) / 0.35) * (1 - ease((t - m[1] + 0.35) / 0.35)), look = {};
+      for (var key in m[3]) { look[key] = typeof m[3][key] === "number" && GROWING.indexOf(key) < 0 ? m[3][key] * amount : m[3][key]; }
+      return {look: look, name: m[2]};
+    }
+  }
+  return {look: {}, name: ""};
+}
+
+function withLook(look, more) { return Object.assign({}, look, more); }
+
+function bough(x0, y0, x1, y1, thick) {            // a branch for a bird to sit on
+  pen.lineCap = "round";
+  pen.strokeStyle = "#3a2a1a";
+  pen.lineWidth = thick + 4;
+  pen.beginPath();
+  pen.moveTo(x0, y0);
+  pen.quadraticCurveTo((x0 + x1) / 2, (y0 + y1) / 2 + 8, x1, y1);
+  pen.stroke();
+  pen.strokeStyle = "#7a5a3a";
+  pen.lineWidth = thick;
+  pen.stroke();
+}
+
+// ---------- 0 to 12 s: on paper ----------
+
+function sheetNames(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  if (t < 7) {                                      // the crows and the dove, each going through its moves
+    pen.fillStyle = "#e2d4b4";
+    pen.fillRect(0, 432, 940, 3);
+    var crow = moves(t, [[0, 1.6, "step", {step: t * 1.8}], [1.6, 3, "caw", {caw: 1}], [3, 4, "peck", {peck: 1}], [4, 5, "hop", {hop: t * 2}],
+                         [5, 7, "glow", {glow: 1, caw: 0.4}]]);
+    whiteCrow(240, 430, t, withLook(crow.look, {size: 2.4}));
+    whiteCrow(560, 430, t, {size: 2.4, colour: "black", turn: Math.sin(t * 0.9), caw: lbPulse(t, 3.3, 0.9, 1.2)});
+    named("กาเผือก", "the white crow, and a black one", "whiteCrow(x, y, t, {" + crow.name + "})", 400, 480);
+    var dove = moves(t, [[0, 1.8, "step", {step: t * 2.4}], [1.8, 2.8, "peck", {peck: 1}], [2.8, 5.4, "coo", {coo: 1}], [5.4, 7, "fluff", {fluff: 1}]]);
+    spottedDove(820, 430, t, withLook(dove.look, {size: 2.6, face: -1}));
+    named("นกเขาใหญ่", "spotted dove", "spottedDove(x, y, t, {" + dove.name + "})", 800, 520);
+    crowNest(200, 760, t, {size: 1.5, eggs: 5, wind: t > 4 ? 0.4 : 0});
+    named("รังกาเผือก", "her nest of five eggs in a fig's fork", "crowNest(x, y, t, {eggs: 5, wind})", 470, 720);
+    whiteCrow(740, 840, t, {size: 1.9, brood: 1, seed: 2});
+    crowNest(740, 858, t, {size: 1.25, eggs: 5, tree: false});
+    caption("brood: 1", 740, 960, false, true);
+  } else {                                          // the fliers
+    var fx = mix(120, 760, (t - 7) / 5);
+    whiteCrow(fx, 250, t, {size: 2.2, fly: true, glide: t > 9.5 ? 1 : 0});
+    named("กาเผือก", "flying, then gliding", "{fly: true, glide}", 470, 400);
+    spottedDove(fx + 60, 660, t, {size: 2.8, fly: true, clap: t < 9 ? 1 : 0, glide: t > 9.5 ? 1 : 0});
+    named("นกเขาใหญ่", "a clap of the wings, then the glide", "{fly: true, clap, glide}", 470, 800);
+  }
+  bough(1000, 330, 1900, 318, 10);                  // the kingfishers' and the parakeets' perch
+  var kf = moves(t, [[0, 2, "bob", {}], [2, 4, "watch", {watch: 1}], [4, 6, "call", {call: 1}], [6, 9, "fish, beat", {fish: true, beat: 1}], [9, 12, "hover", {hover: true}]]);
+  if (kf.look.hover) {
+    kingfisher(1160, 220 + 4 * Math.sin(t * 3), t, {size: 3, hover: true});
+  } else {
+    kingfisher(1160, 326, t, withLook(kf.look, {size: 3}));
+  }
+  named("นกกระเต็นอกขาว", "white-throated kingfisher", "kingfisher(x, y, t, {" + kf.name + "})", 1180, 380);
+  kingfisher(1430, 324, t, {size: 4.4, kind: "common", watch: lbPulse(t, 4, 2, 0)});
+  caption("kind: \"common\"", 1430, 380, false, true);
+  var pk = moves(t, [[0, 2.5, "climb", {climb: t * 1.4}], [2.5, 5, "eat", {eat: 1}], [5, 7, "preen", {preen: 1}], [7, 9, "call", {call: 1}], [9, 10.5, "shake", {shake: 1}], [10.5, 12, "", {}]]);
+  parakeet(1640, 322, t, withLook(pk.look, {size: 2.3}));
+  parakeet(1820, 320, t, {size: 2.3, kind: "blossom", hen: true, face: -1, seed: 3});
+  named("นกแขกเต้า", "red-breasted parakeet", "parakeet(x, y, t, {" + pk.name + "})", 1640, 470);
+  caption("kind: \"blossom\", hen: true", 1800, 560, false, true);
+  var dive = clamp((t - 6) / 3);
+  kingfisher(1180 + dive * 160, 700 + dive * 200, t, {size: 3, fly: t < 6, dive: t < 6 ? 0 : dive});
+  named("", "the kingfisher flies, then dives", "{fly: true} {dive}", 1240, 1000);
+  parakeet(mix(1500, 1880, (t % 6) / 6), 760, t, {size: 2.3, fly: true});
+  caption("{fly: true}", 1700, 820, false, true);
+}
+
+// ---------- 12 to 22 s: at their own sizes, by a pond under a fig ----------
+
+var POND = null;
+function pondSet() {                                // the set, painted once: the evening sky, far hills, the bank, the fig's trunk and crown
+  var sheet = document.createElement("canvas");
+  sheet.width = WIDE;
+  sheet.height = 1080;
+  var b = sheet.getContext("2d");
+  var sky = b.createLinearGradient(0, 0, 0, 700);
+  sky.addColorStop(0, "#f2c58a");
+  sky.addColorStop(0.55, "#f6dcb0");
+  sky.addColorStop(1, "#eae6c8");
+  b.fillStyle = sky;
+  b.fillRect(0, 0, WIDE, 1080);
+  b.fillStyle = "#b9b6a0";
+  b.beginPath(); b.moveTo(0, 640);
+  for (var x = 0; x <= WIDE; x += 20) { b.lineTo(x, 600 - 60 * Math.sin(x / 300 + 1) - 30 * Math.sin(x / 120)); }
+  b.lineTo(WIDE, 1080); b.lineTo(0, 1080); b.fill();
+  b.fillStyle = "#93a46a";
+  b.fillRect(0, 700, WIDE, 380);
+  var bark = b.createLinearGradient(260, 0, 420, 0);   // the fig: a pale grey trunk, smooth, its roots spreading at its foot
+  bark.addColorStop(0, "#8a8474");
+  bark.addColorStop(0.5, "#b8b2a2");
+  bark.addColorStop(1, "#7a7464");
+  b.fillStyle = bark;
+  b.strokeStyle = "#4a4436";
+  b.lineWidth = 2.5;
+  b.beginPath();
+  b.moveTo(250, 760); b.quadraticCurveTo(300, 720, 310, 560); b.quadraticCurveTo(312, 420, 290, 330);
+  b.lineTo(380, 330); b.quadraticCurveTo(360, 450, 380, 600); b.quadraticCurveTo(400, 720, 470, 760); b.closePath();
+  b.fill(); b.stroke();
+  [[330, 360, 120, 180, 26], [340, 350, 560, 240, 22], [350, 400, 640, 380, 18], [320, 380, 150, 330, 16]].forEach(function (br) {
+    b.lineCap = "round";
+    b.strokeStyle = "#4a4436"; b.lineWidth = br[4] + 4;
+    b.beginPath(); b.moveTo(br[0], br[1]); b.quadraticCurveTo((br[0] + br[2]) / 2, br[1] - 60, br[2], br[3]); b.stroke();
+    b.strokeStyle = "#a8a292"; b.lineWidth = br[4];
+    b.stroke();
+  });
+  [[150, 130, 110, 3], [330, 90, 140, 4], [530, 120, 110, 5], [690, 220, 80, 8]].forEach(function (c) {
+    crown(b, c[0], c[1], c[2], "#4f7a3a", c[3]);
+  });
+  [[318, 520], [300, 600], [352, 470], [470, 300], [200, 250], [560, 260], [338, 640]].forEach(function (f, n) {   // the figs, in clusters on the trunk and the branches, as the cluster fig (มะเดื่อ) bears them
+    for (var k = 0; k < 6; k++) {
+      var fx = f[0] + ((k * 7 + n * 3) % 13) - 6, fy = f[1] + ((k * 5 + n) % 11) - 5, r = 5 + (k % 3);
+      b.fillStyle = ["#d8783a", "#c84a3a", "#e89a4a", "#a83a32"][(k + n) % 4];
+      b.strokeStyle = "#5a2a1a";
+      b.lineWidth = 1.2;
+      b.beginPath(); b.ellipse(fx, fy, r, r * 1.1, 0, 0, 7); b.fill(); b.stroke();
+      b.fillStyle = "rgba(255, 240, 210, 0.55)";
+      b.beginPath(); b.ellipse(fx - r * 0.35, fy - r * 0.4, r * 0.3, r * 0.2, 0, 0, 7); b.fill();
+    }
+  });
+  return sheet;
+}
+
+function sheetPond(t) {
+  var u = t - 12;
+  if (!POND) { POND = pondSet(); }
+  pen.drawImage(POND, 0, 0);
+  pond(pen, 760, 790, 1100, 240, {t: t, rings: u > 4.8 ? [[1240, 880, 12 + 4.8]] : null});
+  crowNest(560, 236, t, {size: 0.85, eggs: 5, tree: false, wind: 0.15});
+  whiteCrow(560, 244, t, {brood: 1, caw: lbPulse(u, 6, 0.8, 3)});
+  bough(420, 180, 700, 196, 6);
+  parakeet(470, 182, t, {eat: 1, seed: 1});
+  parakeet(650, 192, t, {kind: "blossom", call: lbPulse(u, 3.5, 1, 0), face: -1, seed: 2});
+  if (u < 3) { parakeet(mix(-60, 300, ease(u / 3)), mix(60, 330, ease(u / 3)), t, {fly: true}); }
+  else { parakeet(300, 330, t, {climb: u * 1.2, seed: 4}); }
+  spottedDove(mix(820, 700, ease((u - 0.5) / 4)), 760, t, {step: u < 4.5 ? u * 2.4 : undefined, peck: u > 5 ? lbPulse(u, 2, 0.6, 0) : 0, face: -1});
+  spottedDove(900, 770, t, {coo: u > 2 && u < 7 ? 1 : 0, seed: 5});
+  nbLimb([[1500, 930], [1504, 716]], 7, "#6a4a2e");   // the stake the kingfisher sits on, standing in the pond
+  var leave = 2.8, down = 4.3, back = 7.5;
+  if (u < leave) { kingfisher(1504, 718, t, {watch: 1}); }
+  else if (u < down) { var h = ease((u - leave) / 0.6); kingfisher(mix(1504, 1240, h), mix(700, 600, h), t, h < 1 ? {fly: true} : {hover: true}); }
+  else if (u < down + 0.5) { var d = (u - down) / 0.5; kingfisher(1240, mix(600, 890, d * d), t, {dive: 1}); }
+  else if (u < back) { var r = ease((u - down - 0.7) / 2.3); if (u > down + 0.7) { kingfisher(mix(1240, 1504, r), mix(870, 700, r) - 40 * Math.sin(r * Math.PI), t, {fly: true, fish: true}); } }
+  else { kingfisher(1504, 718, t, {fish: true, beat: u < back + 2 ? 1 : 0}); }
+  caption("by a pond under a fig, at their own sizes", 960, 1050, false, true);
+}
+
+function sheet(t) {
+  if (t < 12) { sheetNames(t); } else { sheetPond(t); }
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>
