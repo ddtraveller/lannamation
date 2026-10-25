@@ -2132,7 +2132,9 @@ function linKham(brush, ground, built, look) {
 // manner. Each a painter on a brush, standing on (x, base), with a size and a look.tint as the hut's.
 //   huad(brush, x, base, size, t, look)   the sticky-rice steamer: a cone of woven bamboo set in the mouth of a
 //                                          round clay pot on three hearth stones, a cloth over its top, and with
-//                                          look.fire (0 to 1) a fire under the pot and steam (t) going up
+//                                          look.fire (0 to 1) a fire under the pot and steam (t) going up;
+//                                          look.steamer false: the pot alone, cooking, its steam from its mouth (a
+//                                          stew, or the white eel shared out in the tale of Wiang Nong Lom)
 //   kongKhao(brush, x, base, size, look)  the kong khao, the lidded basket that keeps the steamed rice: a round
 //                                          body of fine woven bamboo on a squared foot, a domed lid, a cord to
 //                                          carry it by
@@ -2174,9 +2176,10 @@ function thingWeave(brush, left, top, wide, high, colour, step) {   // a plain w
 
 // huad(brush, x, base, size, t, look) draws the sticky-rice steamer on its pot and stones (see the list
 // above), about 90 wide and 146 tall at size 1. brush: a canvas 2D context; x, base: pixels of the
-// sheet; size: needed; t: seconds; look: optional, fire (0 to 1, 0), tint. Returns nothing: it draws
-// with brush, and leaves brush as it found it.
-// e.g. huad(pen, 640, 940, 1, t, {fire: 1});
+// sheet; size: needed; t: seconds; look: optional, fire (0 to 1, 0), steamer (false: the pot alone, 66 tall,
+// steaming at its mouth; owner's pick of the cooking pots, 2026-10-25, the realistic one for the tales), tint.
+// Returns nothing: it draws with brush, and leaves brush as it found it.
+// e.g. huad(pen, 640, 940, 1, t, {fire: 1}); huad(pen, 900, 940, 1.6, t, {fire: 1, steamer: false});
 function huad(brush, x, base, size, t, look) {
   look = look || {};
   var tone = thingTone(look), fire = clamp(look.fire || 0), n;
@@ -2209,22 +2212,25 @@ function huad(brush, x, base, size, t, look) {
   brush.beginPath();
   brush.ellipse(0, -66, 26, 6, 0, 0, 7);
   thingFill(brush, tone("#6a3622"));
-  brush.save();                                     // the huad: a cone of woven bamboo, its point down in the pot's mouth
-  brush.beginPath();
-  brush.moveTo(-8, -64);
-  brush.lineTo(-38, -128);
-  brush.quadraticCurveTo(0, -136, 38, -128);
-  brush.lineTo(8, -64);
-  brush.closePath();
-  thingFill(brush, tone("#d2b06e"));
-  brush.clip();
-  thingWeave(brush, -40, -136, 80, 74, tone("rgba(120, 88, 40, 0.55)"), 7);
-  brush.restore();
-  brush.beginPath();                                // the cloth over its top
-  brush.moveTo(-38, -128);
-  brush.quadraticCurveTo(0, -146, 38, -128);
-  brush.quadraticCurveTo(0, -132, -38, -128);
-  thingFill(brush, tone("#e8e0cc"), 1.4);
+  var steamer = look.steamer !== false, top = steamer ? -140 : -70;   // the steam rises from the cloth, or from the pot's mouth
+  if (steamer) {
+    brush.save();                                     // the huad: a cone of woven bamboo, its point down in the pot's mouth
+    brush.beginPath();
+    brush.moveTo(-8, -64);
+    brush.lineTo(-38, -128);
+    brush.quadraticCurveTo(0, -136, 38, -128);
+    brush.lineTo(8, -64);
+    brush.closePath();
+    thingFill(brush, tone("#d2b06e"));
+    brush.clip();
+    thingWeave(brush, -40, -136, 80, 74, tone("rgba(120, 88, 40, 0.55)"), 7);
+    brush.restore();
+    brush.beginPath();                                // the cloth over its top
+    brush.moveTo(-38, -128);
+    brush.quadraticCurveTo(0, -146, 38, -128);
+    brush.quadraticCurveTo(0, -132, -38, -128);
+    thingFill(brush, tone("#e8e0cc"), 1.4);
+  }
   if (fire > 0.01) {                                // steam rising from it, curling as it goes
     for (n = 0; n < 3; n++) {
       var u = ((t * 0.5 + n / 3) % 1), sx = -16 + n * 16 + 8 * Math.sin(t * 2 + n * 2);
@@ -2232,8 +2238,8 @@ function huad(brush, x, base, size, t, look) {
       brush.lineWidth = 5;
       brush.lineCap = "round";
       brush.beginPath();
-      brush.moveTo(sx, -140 - u * 40);
-      brush.quadraticCurveTo(sx + 10, -150 - u * 60, sx, -160 - u * 80);
+      brush.moveTo(sx, top - u * 40);
+      brush.quadraticCurveTo(sx + 10, top - 10 - u * 60, sx, top - 20 - u * 80);
       brush.stroke();
     }
   }

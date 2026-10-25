@@ -3666,6 +3666,20 @@ function bangles(angle, count) {
 // The cast: the people a film can take as they are, or alter. cast("lady",
 // {late: 0.5}) is the lady with one thing changed. A film adds its own with
 // CAST.monk = {...} before its scenes run.
+// The Lua (Lawa, ลัวะ), the first people of Lanna, as they dress today (nothing older is recorded: the chronicles and
+// the travellers say nothing of their clothes): Creative Knowledge CMU (ลัวะ), the Cultural Map of Thailand (ผ้าทอลัวะ,
+// TC-50270-00003), Chutimun Sasong's 2021 study of the Lawa of Mae Hong Son, and the Indigenous Media Ecology project
+// (การแต่งกายของชุมชนชาติพันธุ์ลัวะ). A woman's skirt is black and short, to the knee, woven on a backstrap loom, with
+// bands of red and pink and of blue tie-dye with white, the foot a broad red band; a girl wears a white blouse trimmed
+// with coloured thread, a married woman a black one over it; many strands of red, orange and yellow beads and silver,
+// tassels of wool from the ears to the shoulders, wraps on the arms (ปอเต๊ะ) and the shins (ปอซวง); her hair parted and
+// in a low bun. A man wears a white shirt, long-sleeved and open at the front, white trousers, and for an occasion a
+// red or pink head-cloth (owner, 2026-10-25: "Build it, add details"). The kit draws the beads, the wool tassels and
+// the shin wraps (person()'s beads, earrings, wraps); the arm wraps and the porcupine-quill pin in the bun not yet.
+var LUA_SIN = [[0.18, "#c8385a", 3], [0.28, "#2a4a8a", 4, "diamonds"], [0.36, "#e8e4dc", 1.2], [0.46, "#d86a8a", 3],
+               [0.56, "#2a4a8a", 4, "diamonds"], [0.64, "#e8e4dc", 1.2], [0.86, "#c8385a", 9]];
+var LUA_BEADS = ["#c8282a", "#e8742a", "#e8b828", "#d8dbe0", "#c8282a", "#e8742a"];   // red, orange, yellow glass, and silver
+
 var CAST = {
   lady: {skirt: true, bun: true, dance: true, shirt: "#f2ead8", legs: "#b2455a", size: 1.3,
          flower: "#f28fa8", garland: true, pins: true},
@@ -3707,6 +3721,12 @@ var CAST = {
           legs: "#3d4f78", size: 1.3, skin: "#f1d2b4", smile: 0.6, eyes: 1.04, lips: 0.95},
   // a Lanna monk's robe is dyed with jackfruit heartwood, an ochre-brown, not Bangkok's orange (it was "#e07a1f" until 2026-10-13)
   monk: {shirt: "#b8732a", legs: "#9a5e20", size: 1.3, sarong: "#b8732a", shaved: true, plain: true, smile: 1, skin: "#e8c09a"},
+  // the Lua (Lawa) as they dress (LUA_SIN above): a girl, a married woman, a man
+  luagirl: {lady: true, bun: "low", shirt: "#f6f1e6", sarong: ["#1e1a20", LUA_SIN], patoi: true, bangles: 4, sabai: false, plain: true,
+            beads: LUA_BEADS, earrings: "#e8742a", wraps: "#1e1a20", size: 1.25, smile: 0.6, skin: "#d9a878"},
+  luawife: {lady: true, bun: "low", shirt: "#1e1a22", sarong: ["#1e1a20", LUA_SIN], patoi: true, bangles: 5, sabai: false, plain: true,
+            beads: LUA_BEADS.concat(["#d8dbe0", "#c8282a"]), earrings: "#c8282a", wraps: "#1e1a20", size: 1.25, smile: 0.5, age: 0.15, skin: "#d9a878"},
+  luaman: {lady: false, shirt: "#f4efe4", legs: "#f0ebe0", turban: "#d8507a", plain: true, size: 1.3, smile: 0.5, skin: "#d9a878"},
   // a girl of the village paintings: a white blouse, a shoulder cloth, an indigo sin with a red foot
   maiden: {bun: true, dance: true, shirt: "#f4efe2", sin: 0, sabai: ["#8fc0cf", "#2f4a7a"], size: 1.3, earplug: "#d9b24a",
            flower: "#fff6ea", collar: ["#2f4a7a", "#e0b23a"], bangles: 4, skin: "#f3d2b0", smile: 1, eyes: 1.08},
@@ -4358,11 +4378,11 @@ var SPEAR_LONG = 560;                            // a spear's length, from the g
 var HIDEABLE = {hair: true};                       // the parts a look may hide (look.hidden)
 var LOOK_KEYS = {};
 
-["age", "anger", "at", "bangles", "bare", "beard", "bend", "blink", "body", "build", "bun", "buttons", "cap", "coat", "collar", "dance", "dap", "drum", "earplug", "eyes", "face",
+["age", "anger", "at", "bangles", "bare", "beads", "beard", "bend", "blink", "body", "build", "bun", "buttons", "cap", "coat", "collar", "dance", "dap", "drum", "earplug", "earrings", "eyes", "face",
  "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
  "handB", "hat", "head", "hidden", "holding", "id", "late", "laugh", "lady", "legs", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "reachA", "reachB",
  "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt", "sleepy",
- "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tears", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wonder", "worn", "worry", "wrap", "wristA", "wristB"
+ "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tears", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wonder", "worn", "worry", "wrap", "wraps", "wristA", "wristB"
 ].forEach(function (name) { LOOK_KEYS[name] = true; });
 
 // One villager, standing on (x, y). Everything about them is in "look".
@@ -4396,6 +4416,13 @@ var LOOK_KEYS = {};
 //                   she moves), a malai rat klao (jasmine bound round the knot, a tassel of it
 //                   swinging below), and a spray of dok ueang phueng, the golden orchid, that
 //                   hangs from the knot's side and nods after the head
+//   beads           a list of colours: strands of round beads hung from the neck, one a colour, in place of a
+//                   lady's gold necklace ("#d8dbe0" a strand of silver beads): the many strands a Lua (Lawa) woman
+//                   wears, red, orange, yellow and silver (Creative Knowledge CMU, ลัวะ; Sasong 2021, Mae Hong Son)
+//   earrings        a colour: tassels of wool from the ears to the shoulders in place of a lady's gold drop, as Lua
+//                   women wear them ("ตุ้มหูไหมพรมยาวถึงไหล่", Creative Knowledge CMU)
+//   wraps           a colour: cloth wound round each shin from below the knee to the ankle, a Lua woman's leg
+//                   wraps (ปอซวง, posuang), with the turns of the cloth across it
 //   earplug         a colour: a lan hu, the rolled palm-leaf or gold ear plug of old Lanna, in
 //                   the lobe of each ear in place of a lady's earring (gold "#d9b24a"; a leaf
 //                   "#b8a060"); worn by the women and the men of the murals
@@ -4996,6 +5023,18 @@ function personLegs(fig) {
     ankles[leg] = [ankleX - hipX, ankleY - hipY + 14];            // and the ankle
     if (look.tattoo && bareLeg) {                   // the tattoo of a man of the north, from the waist to the knee (Hallett 1890:
       tattoo(hipX + side * hipHalf, hipY + side * hipHalf * (hipTip + rock * 1.4), legDrawn[2], legDrawn[3]);   // "tattooed from the waist downwards")
+    }
+    if (look.wraps && bareLeg) {                    // a Lua woman's leg wraps: cloth wound round the shin, below the knee to the ankle
+      var wa = [mix(legDrawn[2], ankleX, 0.22), mix(legDrawn[3], ankleY, 0.22)], wb = [mix(legDrawn[2], ankleX, 0.92), mix(legDrawn[3], ankleY, 0.92)];
+      hose(wa[0], wa[1], wb[0], wb[1], 0, 9, look.wraps);
+      pen.strokeStyle = blend(look.wraps, "#1a1414", 0.4);
+      pen.lineWidth = 1.2;
+      pen.beginPath();
+      for (var turn = 1; turn < 6; turn++) {         // the turns of the cloth, slanting across the shin
+        var tu = turn / 6, tx = mix(wa[0], wb[0], tu), ty = mix(wa[1], wb[1], tu);
+        pen.moveTo(tx - 8, ty + 3); pen.lineTo(tx + 8, ty - 3);
+      }
+      pen.stroke();
     }
     if (look.shoes) { shoe(footX - 6, footY + 8, raised, slight); }
     else { foot(footX - 6, footY + 8, raised, slight); }
@@ -5774,7 +5813,24 @@ pen.fillStyle = "rgba(150, 70, 60, 0.3)";         // in the shadow of the chin
 pen.beginPath();
 pen.ellipse(2 + neckX, -152 - 11 * long, 12 - 1.5 * long, 9, 0, 0, 7);
 pen.fill();
-if (lady) {                                   // a necklace, and a pendant
+if (look.beads && look.beads.length) {          // strands of beads, each a colour, the longer ones lower on the chest
+  look.beads.forEach(function (colour, k) {
+    var r = 13 + k * 5.5, count = 9 + k * 2;
+    pen.strokeStyle = "rgba(60, 40, 30, 0.4)";    // the strand's cord
+    pen.lineWidth = 1;
+    pen.beginPath();
+    pen.arc(neckX, -140, r, 0.2, Math.PI - 0.2);
+    pen.stroke();
+    for (var b = 0; b < count; b++) {               // each bead filled, a hairline rim and a glint, no heavy line (it would hide the colour)
+      var at = 0.2 + (b + 0.5) * (Math.PI - 0.4) / count, bx = neckX + Math.cos(at) * r, by = -140 + Math.sin(at) * r;
+      pen.beginPath(); pen.arc(bx, by, 2.5, 0, 7);
+      pen.fillStyle = colour; pen.fill();
+      pen.strokeStyle = blend(colour, "#1a1010", 0.5); pen.lineWidth = 0.6; pen.stroke();
+      pen.beginPath(); pen.arc(bx - 0.8, by - 0.8, 0.8, 0, 7);
+      pen.fillStyle = "rgba(255, 255, 255, 0.75)"; pen.fill();
+    }
+  });
+} else if (lady) {                                   // a necklace, and a pendant
   pen.strokeStyle = "#e0b23a";
   pen.lineWidth = 3;
   pen.beginPath();
@@ -6362,6 +6418,20 @@ function headEarring(h) {
   var who = h.who, earX = h.earX, late = h.late, downX = h.downX, downY = h.downY, hung = h.hung;
   var lagE = follow(who + "/ear", earX, -272, 200, 8, 10);
   var swingE = 2 * Math.sin(late) + lagE[0] * downY - lagE[1] * downX, sinkE = (lagE[0] * downX + lagE[1] * downY) * 0.3;
+  if (h.look.earrings) {                          // a Lua woman's tassel of wool, from the ear to the shoulder
+    var cord = hung(earX, -272, swingE, 22 + sinkE), tuft = hung(earX, -272, swingE * 1.3, 50 + sinkE);
+    pen.lineCap = "round";                          // the wool drawn as threads, no heavy line round it (it would hide the colour)
+    pen.strokeStyle = h.look.earrings;
+    pen.lineWidth = 1.4;
+    pen.beginPath(); pen.moveTo(earX, -272); pen.lineTo(cord[0], cord[1]); pen.stroke();
+    pen.lineWidth = 1.8;
+    pen.beginPath();
+    for (var w = -3; w <= 3; w++) { pen.moveTo(cord[0], cord[1]); pen.quadraticCurveTo(cord[0] + w * 1.2, (cord[1] + tuft[1]) / 2, tuft[0] + w * 2, tuft[1] + Math.abs(w) * 0.8); }
+    pen.stroke();
+    pen.beginPath(); pen.arc(cord[0], cord[1], 2.6, 0, 7);   // the knot the wool hangs from
+    pen.fillStyle = blend(h.look.earrings, "#2a1a1a", 0.25); pen.fill();
+    return;
+  }
   var dropE = hung(earX, -272, swingE, 15 + sinkE), beadE = hung(earX, -272, swingE, 18 + sinkE);
   hose(earX, -272, dropE[0], dropE[1], 0, 2, "#f4c542");
   oval(beadE[0], beadE[1], 4, 5, "#f4c542");

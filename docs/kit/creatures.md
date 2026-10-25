@@ -685,3 +685,21 @@ that dips and lifts and faces the way it goes. `BUTTERFLY_KEYS`: size, turn, res
 `butterflies.html` is the sheet: the four large, flying and resting, with their names; then at their own sizes
 over the flowers of flora.js. Drawn from what each is; no picture was copied. Not done: seen from above only (no
 side view with the wings closed), and no caterpillar.
+## The animals of Mangrai's tale, and the white eel of Wiang Nong Lom (2026-10-25)
+
+For the next tales (`kit/next_tales.md`): `mangrai.js`, a module of its own (load it after `beasts.js`, whose
+`beastLegs()` the deer and the ox walk on), and the white eel in `chiangsaen.js`. Each was drawn as candidates from
+photographs and picked by the owner; each painter's comment says what it is drawn from. Sheets: `mangrai.html`,
+`nonglom.html`.
+
+| Painter | What it is |
+|---|---|
+| `sambar(x, y, t, look)` | The sambar deer (กวางป่า): a deep barrel on long legs, a maned neck, a long head, big round ears. `white: true` is the white sambar of the first of Chiang Mai's seven signs (กวางเผือก, the mother and her young, `calf: true`), drawn by the white elephant's seven marks (the Wild Elephant Act of 2464): white hair, pale hooves, a pale eye, pink "new clay pot" skin at the muzzle, the ears and round the eyes, as the white cattle of Lamphun are told. Otherwise a wild brown one. `step`, `graze` |
+| `hillMyna(x, y, t, look)` | The hill myna (นกขุนทอง), the bird the chronicle names, "นกขุนทอง คือนกเอี้ยง": glossy black with a purple and green sheen, yellow wattles, an orange bill, a white wing patch. `step` (it hops), `flap` |
+| `banteng(x, y, t, look)` | The red ox (วัวแดง) of Nong Wua Daeng: chestnut, white stockings and rump, no hump. The chronicle's โคแดง does not say which cattle; วัวแดง is the banteng's Thai name |
+| `bambooRat(x, y, t, look)` | The hoary bamboo rat (ตุ่น) of Ban Tun: stout, grey-brown frosted, orange teeth. `dig` |
+| `whiteEel(x, y, t, look)` | The white eel (ปลาไหลเผือก): an eel, not a snake, a fin along its back, a blunt head, a small eye; its body the river snake's band (load `naga.js` first). Swimming at the water line, or `caught: true`, lying on the bank |
+
+Phra Ruang's three shapes are plain animals, as the chronicle tells them (no crown: the owner asked for what is
+most historically accurate). The white barking deer and the white mice of the second and third signs are
+`taleanimals.js`'s `barkingDeer` (`white: true`) and `whiteMice`.

@@ -15,10 +15,11 @@
 //   spotbill(brush, x, y, size, look)                the Indian spot-billed duck, swimming
 //   forge, dap, fireGun, elephantHook, carryPole, goldPan, salung, goldPot, hangingCradle, almsBowl, risingWall,
 //   statuePool: the tale's things, each below.
+//   whiteEel(x, y, t, look)                          the white eel of Wiang Nong Lom, swimming or caught (needs naga.js)
 
 var CHIANGSAEN_KIT = ["cityWall", "karstHill", "sandbar", "khraiNam", "riverReeds", "pratincole", "riverLapwing",
                       "ringedPlover", "redAvadavat", "spotbill", "forge", "dap", "fireGun", "elephantHook", "carryPole",
-                      "goldPan", "salung", "goldPot", "hangingCradle", "almsBowl", "risingWall", "statuePool"];
+                      "goldPan", "salung", "goldPot", "hangingCradle", "almsBowl", "risingWall", "statuePool", "whiteEel"];
 
 // A vertical gradient over a rectangle, top colour to bottom colour, filled with brush.
 // e.g. csBand(pen, 0, 700, WIDE, 200, "#a8906a", "#7e6546");
@@ -622,4 +623,154 @@ function statuePool(brush, x, y, size, t) {
     brush.beginPath(); brush.moveTo(jx, y - 6 * s); brush.quadraticCurveTo(jx + 10 * s, y - 6 * s - jh, jx + 24 * s, y - 10 * s); brush.stroke();
   }
   brush.fillStyle = "#e6dfcf"; brush.fillRect(x - 70 * s, y - 60 * s, 140 * s, 54 * s);
+}
+
+// ---------- the white eel of Wiang Nong Lom ----------
+// The giant white eel (ปลาไหลเผือก) of the tale of Wiang Nong Lom: the people of Yonok catch it in the river, "seven
+// fathoms long", and share its meat in every house but a widow's; that night the city sinks into the lake (the
+// Singhanawat chronicle; the Lanna Folktales telling). Drawn from photographs of eels (the swamp eel and the long-finned
+// river eels of the north), white for the tale: the owner's pick of three, 2026-10-25 ("I like the C image"). An eel,
+// not a snake: a fin along its back from a third of the way back round the tail's end, finely rayed; a blunt rounded
+// head, the lower jaw a little longer, a wide mouth back under a small eye, the gill slit and a round fin behind it;
+// no scales, a sheen along its back. Its body is the river snake's band (naga.js riverSnakeStrip), so the sheet that
+// draws it loads naga.js first.
+//   whiteEel(x, y, t, look)   look.caught: true, it lies on the bank (y the ground), its tail still moving a little;
+//                             otherwise it swims at the surface (y the water line), low humps running back along it
+//                             (only what is above the water line shows). look.size: 1 is 1400 long swimming, 1000
+//                             lying, about 88 thick; look.face: 1 its head to the right, -1 to the left.
+// Returns its head, [x, y], a point of the sheet. It draws with pen.
+// e.g. whiteEel(1100, 960, t, {caught: true, size: 0.55});
+var WHITE_EEL = {body: "#f3ebe6", belly: "#fde9ec", fin: "#f6d9dc", sheen: true, blot: null};
+
+// The eel's middle, swimming at the surface: low humps that run back along it (an eel waves its whole length).
+// x, water: the head's x and the water line; s the size (1 is 1400 long, 70 thick); face; phase. 81 [x, y], head first.
+function whiteEelSpine(x, water, s, face, phase) {
+  var points = [];
+  for (var n = 0; n <= 80; n++) {
+    var u = n / 80, back = u * 1400 * s;
+    var rise = -30 * s * Math.sin(u * 14 - phase) * (0.5 + 0.5 * u) + 10 * s;
+    var head = Math.pow(Math.max(0, 1 - u * 9), 1.5);
+    points.push([x - face * back, water + rise * (1 - head) - 56 * s * head]);
+  }
+  return points;
+}
+// Lying on the bank: a slow S along the ground at y, a little lift and fall where it still moves.
+function whiteEelLying(x, y, s, face, t) {
+  var points = [];
+  for (var n = 0; n <= 80; n++) {
+    var u = n / 80;
+    points.push([x - face * u * 1000 * s, y - 26 * s + 50 * s * Math.sin(u * 5.2 + 0.4) - 4 * s * Math.sin(t * 2 + u * 6) * u]);
+  }
+  return points;
+}
+
+// The fin along the back, from a third of the way back to the tail, where it goes round the tail's end: a frill
+// with fine rays, the eel's colour paler, outlined.
+function whiteEelFin(spine, wide, s) {
+  var last = spine.length - 1, outer = [], inner = [], n;
+  for (n = Math.round(last * 0.3); n <= last; n++) {
+    var a = spine[Math.max(0, n - 1)], b = spine[Math.min(last, n + 1)], far = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    var nx = (b[1] - a[1]) / far, ny = -(b[0] - a[0]) / far;    // the side of the back (up, when it swims right)
+    if (ny > 0) { nx = -nx; ny = -ny; }
+    var u = n / last, w = wide(u), rise = s * (10 + 16 * Math.sin(Math.min(1, (u - 0.3) / 0.6) * Math.PI * 0.5));
+    inner.push([spine[n][0] + nx * w * 0.8, spine[n][1] + ny * w * 0.8]);
+    outer.push([spine[n][0] + nx * (w + rise), spine[n][1] + ny * (w + rise)]);
+  }
+  pen.beginPath();
+  inner.forEach(function (p, k) { if (k) { pen.lineTo(p[0], p[1]); } else { pen.moveTo(p[0], p[1]); } });
+  for (n = outer.length - 1; n >= 0; n--) { pen.lineTo(outer[n][0], outer[n][1]); }
+  pen.closePath();
+  pen.fillStyle = WHITE_EEL.fin;
+  pen.fill();
+  pen.strokeStyle = "rgba(170, 120, 126, 0.55)";    // its rays
+  pen.lineWidth = 1;
+  pen.beginPath();
+  for (n = 0; n < outer.length; n += 2) { pen.moveTo(inner[n][0], inner[n][1]); pen.lineTo(outer[n][0], outer[n][1]); }
+  pen.stroke();
+  pen.beginPath();
+  outer.forEach(function (p, k) { if (k) { pen.lineTo(p[0], p[1]); } else { pen.moveTo(p[0], p[1]); } });
+  pen.strokeStyle = inkFor(WHITE_EEL.body);
+  pen.lineWidth = 1.8;
+  pen.stroke();
+}
+
+// An eel's head: blunt and rounded, the lower jaw a little longer, a wide mouth line back past the eye, a small
+// eye high and forward, the gill slit, and the round fin behind it. (hx, hy) its middle; angle the way it faces.
+function whiteEelHead(hx, hy, s, face, angle) {
+  pen.save();
+  pen.translate(hx, hy);
+  pen.rotate(angle);
+  pen.scale(s * face, s);
+  pen.beginPath();                                  // the pectoral fin, behind the head
+  pen.moveTo(-34, 14);
+  pen.quadraticCurveTo(-30, 44, -12, 40);
+  pen.quadraticCurveTo(-14, 22, -22, 12);
+  pen.closePath();
+  shape(WHITE_EEL.fin);
+  pen.beginPath();                                  // the head grows out of the body: filled to well behind it, lined
+  pen.moveTo(-60, -34);                             // only round its front
+  pen.bezierCurveTo(-10, -44, 50, -40, 70, -14);
+  pen.bezierCurveTo(84, 4, 78, 28, 58, 32);
+  pen.bezierCurveTo(20, 40, -20, 40, -60, 34);
+  pen.closePath();
+  pen.fillStyle = WHITE_EEL.body;
+  pen.fill();
+  pen.strokeStyle = inkFor(WHITE_EEL.body);
+  pen.lineWidth = 2.2;
+  pen.beginPath();
+  pen.moveTo(-40, -38);
+  pen.bezierCurveTo(-10, -44, 50, -40, 70, -14);
+  pen.bezierCurveTo(84, 4, 78, 28, 58, 32);
+  pen.bezierCurveTo(20, 40, -10, 40, -40, 37);
+  pen.stroke();
+  pen.lineWidth = 2;
+  pen.beginPath();                                  // the mouth, wide, back under the eye
+  pen.moveTo(72, 6);
+  pen.quadraticCurveTo(46, 12, 22, 6);
+  pen.stroke();
+  pen.beginPath();                                  // the gill slit
+  pen.moveTo(-26, -4); pen.quadraticCurveTo(-32, 8, -28, 20);
+  pen.stroke();
+  oval(36, -12, 5.5, 5, "#fff6ea");                 // a small eye, and the nostril's little tube
+  oval(37.5, -12, 3, 3.4, "#2a1a1e");
+  oval(66, -12, 2.4, 2, inkFor(WHITE_EEL.body));
+  pen.restore();
+}
+
+// The eel swimming at the surface: its fin, its band, rings where it goes in and out, its head. Returns its head.
+function whiteEelSwim(x, water, s, face, t) {
+  var spine = whiteEelSpine(x, water, s, face, t * 2.2), wide = function (u) { return s * mix(44, 7, Math.pow(u, 1.3)); };
+  pen.save();
+  pen.beginPath(); pen.rect(-1e4, -1e4, 2e4, water + 4 + 1e4); pen.clip();
+  whiteEelFin(spine, wide, s);
+  riverSnakeStrip(spine, wide, WHITE_EEL);
+  pen.restore();
+  pen.strokeStyle = "rgba(255, 252, 238, 0.75)";
+  pen.lineWidth = 2.2;
+  for (var n = 5; n < spine.length - 1; n++) {
+    if ((spine[n][1] - water) * (spine[n + 1][1] - water) <= 0) {
+      pen.beginPath(); pen.ellipse(spine[n][0], water + 2, 34 * s, 7 * s, 0, 0, 7); pen.stroke();
+    }
+  }
+  var a = Math.atan2(spine[2][1] - spine[0][1], (spine[0][0] - spine[2][0]) * face) * face;
+  whiteEelHead(spine[0][0] + face * 22 * s, spine[0][1], 1.15 * s, face, -a * 0.5);
+  return spine[0];
+}
+// The eel caught, lying on the bank.
+function whiteEelCaught(x, y, s, face, t) {
+  var spine = whiteEelLying(x, y, s, face, t), wide = function (u) { return s * mix(44, 7, Math.pow(u, 1.3)); };
+  whiteEelFin(spine, wide, s);
+  riverSnakeStrip(spine, wide, WHITE_EEL);
+  var a = Math.atan2(spine[2][1] - spine[0][1], (spine[0][0] - spine[2][0]) * face);
+  whiteEelHead(spine[0][0] + face * 22 * s, spine[0][1], 1.15 * s, face, -a * face);
+}
+
+var WHITE_EEL_KEYS = {caught: true, size: true, face: true};
+
+function whiteEel(x, y, t, look) {
+  look = look || {};
+  checkNames("The white eel's name", look, WHITE_EEL_KEYS);
+  var s = look.size || 1, face = look.face || 1;
+  if (look.caught) { whiteEelCaught(x, y, s, face, t); return [x, y - 26 * s]; }
+  return whiteEelSwim(x, y, s, face, t);
 }

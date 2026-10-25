@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>flood - water rising over a village in the rain</title>
+<style>
+  html, body { margin: 0; background: #111; color: #eee; font: 16px Georgia, serif; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+  .bar { height: 56px; display: flex; gap: 22px; align-items: center; padding: 0 18px; background: #1d1a16; }
+  input[type=range] { width: 360px; }
+</style>
+</head>
+<body>
+<div class="bar" style="display:none">
+  <label>mild <input type="range" id="heavy" min="0" max="100" value="50"> monsoon</label>
+  <span id="heavyval">0.50</span>
+  <label><input type="checkbox" id="night"> night</label>
+  <label><input type="checkbox" id="bolts" checked> lightning</label>
+  <label>wind <input type="range" id="wind" min="-100" max="100" value="25"></label>
+</div>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920, pixels: 1, hop: false, film: 0, light: [-0.6, 0.5]};</script>
+<script src="oldcartoon.js"></script>
+<script src="backdrops.js"></script>
+<script src="rain.js"></script>
+<script src="storm.js"></script>
+<script src="pieces.js"></script>
+<script src="flood.js"></script>
+<script>
+// The "flood" sheet: flood.js over the kit's village: the water rising from the ground to the houses' floors in
+// eleven seconds, still and brown, things afloat, the village upside down in it; rain.js's rain ringing on it.
+var DURATION = 14;
+var BEAT = 0.5;
+var HEAVY = window.HEAVY !== undefined ? window.HEAVY : 0.5, NIGHT = !!window.NIGHT, BOLTS = window.BOLTS !== undefined ? window.BOLTS : true, WIND = 0.25;
+var STRIKES = stormStrikes({from: 0, to: 60, every: 15, top: 330, ground: 700, horizon: 620, seed: 3});
+var SKY = document.createElement("canvas"); SKY.width = 1920; SKY.height = 1080;
+function stormScene(t, x0, wide, heavy, night, bolts, wind) {
+  pen.drawImage(backdrop("village"), 0, 0);
+  var strikes = bolts ? STRIKES : [], lit = stormFlash(t, strikes), dim = mix(1, 0.6, heavy * 0.6);
+  pen.save(); pen.globalCompositeOperation = "multiply";   // the storm's light on the land: dimmer as it pours, night indigo
+  var day = [205 * dim, 215 * dim, 200 * dim], dark = [mix(56, 150, lit), mix(58, 140, lit), mix(104, 200, lit)];
+  pen.fillStyle = "rgb(" + [0, 1, 2].map(function (k) { return Math.round(night ? dark[k] : mix(day[k], 255, lit * 0.3)); }).join(", ") + ")";
+  pen.fillRect(x0, 0, wide, 1080);
+  pen.restore();
+  var s = SKY.getContext("2d");                     // the sky, fading out toward the far land so the hills show through
+  s.clearRect(0, 0, 1920, 1080);
+  stormSky(s, t, {night: night ? 1 : 0, dark: 0.3 + 0.7 * heavy, base: 400, horizon: 620, x: x0, wide: wide});
+  s.save(); s.globalCompositeOperation = "destination-out";
+  var f = s.createLinearGradient(0, 460, 0, 620); f.addColorStop(0, "rgba(0, 0, 0, 0)"); f.addColorStop(1, "rgba(0, 0, 0, 1)");
+  s.fillStyle = f; s.fillRect(x0, 460, wide, 170); s.restore();
+  pen.drawImage(SKY, 0, 0);
+  strikes.forEach(function (k) { if (k.x >= x0 - 100 && k.x <= x0 + wide + 100) { lightning(pen, t, k); } });
+  if (night) { stormLight(pen, lit * 0.6, x0, wide); } else { stormLight(pen, lit * 0.25, x0, wide); }
+  var level = flood(pen, t, {from: 1000, to: 760, rise: [1, 12], x: x0, wide: wide, floating: true});
+  rain(pen, t, {x: x0, wide: wide, heavy: heavy, cloud: 400, far: 640, ground: level, wind: wind, water: [[x0, level + 4, wide, 1080 - level]], seed: 5});
+}
+function sheet(t) { stormScene(t, 0, 1920, 0.6, false, false, 0.25); }
+function draw(t) {
+  settled(t, function (at) { clock = at; sheet(at); });
+  screen.fillStyle = "#111"; screen.fillRect(0, 0, 1920, 1080); screen.drawImage(FILM, 0, 0, 1920, 1080);
+}
+var rendering = false;
+function play(now) { if (!rendering) { draw((now / 1000) % DURATION); } requestAnimationFrame(play); }
+requestAnimationFrame(play);
+function read() {
+  HEAVY = document.getElementById("heavy").value / 100; NIGHT = document.getElementById("night").checked;
+  BOLTS = document.getElementById("bolts").checked; WIND = document.getElementById("wind").value / 100;
+  document.getElementById("heavyval").textContent = HEAVY.toFixed(2) + (HEAVY < 0.25 ? " (a shower)" : HEAVY < 0.6 ? " (steady rain)" : HEAVY < 0.85 ? " (a downpour)" : " (the monsoon)");
+}
+["heavy", "night", "bolts", "wind"].forEach(function (id) { document.getElementById(id).addEventListener("input", read); });
+if (window.HEAVY === undefined) { read(); }
+</script>
+</body>
+</html>

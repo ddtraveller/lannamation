@@ -3621,7 +3621,9 @@ book of Thai basketry, Tai Yuan house studies; 2026-10-19): what a Tai Yuan home
 manner. Each a painter on a brush, standing on (x, base), with a size and a look.tint as the hut's.
   huad(brush, x, base, size, t, look)   the sticky-rice steamer: a cone of woven bamboo set in the mouth of a
                                          round clay pot on three hearth stones, a cloth over its top, and with
-                                         look.fire (0 to 1) a fire under the pot and steam (t) going up
+                                         look.fire (0 to 1) a fire under the pot and steam (t) going up;
+                                         look.steamer false: the pot alone, cooking, its steam from its mouth (a
+                                         stew, or the white eel shared out in the tale of Wiang Nong Lom)
   kongKhao(brush, x, base, size, look)  the kong khao, the lidded basket that keeps the steamed rice: a round
                                          body of fine woven bamboo on a squared foot, a domed lid, a cord to
                                          carry it by
@@ -3660,9 +3662,10 @@ a plain weave of strips, clipped by the caller
 ```
 huad(brush, x, base, size, t, look) draws the sticky-rice steamer on its pot and stones (see the list
 above), about 90 wide and 146 tall at size 1. brush: a canvas 2D context; x, base: pixels of the
-sheet; size: needed; t: seconds; look: optional, fire (0 to 1, 0), tint. Returns nothing: it draws
-with brush, and leaves brush as it found it.
-e.g. huad(pen, 640, 940, 1, t, {fire: 1});
+sheet; size: needed; t: seconds; look: optional, fire (0 to 1, 0), steamer (false: the pot alone, 66 tall,
+steaming at its mouth; owner's pick of the cooking pots, 2026-10-25, the realistic one for the tales), tint.
+Returns nothing: it draws with brush, and leaves brush as it found it.
+e.g. huad(pen, 640, 940, 1, t, {fire: 1}); huad(pen, 900, 940, 1.6, t, {fire: 1, steamer: false});
 ```
 
 ### `kongKhao(brush, x, base, size, look)`
@@ -5612,6 +5615,178 @@ cumulus(brush, t, look) draws one frame of drifting cumulus clouds over the whol
 Returns nothing: it draws with brush. It leaves brush.globalAlpha at 1, whatever it was before,
 and uses CUMULUS_SHEET as scratch (left clear).
 e.g. cumulus(pen, t, CLOUD_LOOKS.dusk);
+```
+
+## rain.js
+
+rain.js - rain, for the Lanna cartoon kit, from a light shower to the monsoon. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="rain.js"></script>  and call rain(brush, t, look) over a scene, after its sky, hills and ground and before (or after) its people, or the parts on their own, far to near: rainVeil() for the haze over the far land, rainShafts() for the rain falling far off, rainSheets() for the sheets the wind drives across the land between, rainStreaks() for the rain close by, rainSplashes() for the drops on puddles and water and the spray off the ground. One number, look.heavy, runs every part from a light shower (0) to the monsoon (1); rainAt(heavy) says what each part does at it. Everything is worked out from the second alone, as the kit's water is: no frame depends on the one before.  Modelled on photographs of rain in the north (owner, 2026-10-25: "model them rather then guess ... beautiful, realistic and true to the location"; "Just rain alone is probably worth it's own .js"; and, of the first model, "The rain looks good but mild. Think about distance and the way sheets of rain look coming down. Add a slider from mild to monsoon rain"). What 
+
+### `rainAt(heavy)`
+
+```
+rainAt(heavy): what each part of the rain does at a heaviness from 0 (a shower) to 1 (the monsoon). The numbers
+a scene may read too (to dim its own far pieces, or lean its trees). Draws nothing.
+  veil     how much the far land is washed out (0 to 1); mist: how much the middle distance is
+  shafts   how many far shafts, and how wide and strong (spread, strength)
+  sheets   how many sheets cross the land between, and how thick (sheetStrength), and how fast they go (pace)
+  drops    how many near streaks, their length and their strength
+  lean     how much further the wind leans the rain
+e.g. rainAt(0.8).drops
+```
+
+### `rainRGB(hex)`
+
+```
+The "r, g, b" of a "#rrggbb", for a colour laid on at an alpha of its own.
+```
+
+### `rainLook(look)`
+
+```
+The look's numbers, with what is left out filled in. Draws nothing.
+```
+
+### `rainVeil(brush, look)`
+
+```
+rainVeil(brush, look): rule 2, the haze rain lays over the land behind it: from the cloud down to the far land,
+most at the horizon; in a heavy rain a second haze over the middle distance down to the ground. look as rain's.
+Returns nothing: it draws with brush.
+e.g. rainVeil(pen, {cloud: 240, far: 640, heavy: 0.7});
+```
+
+### `rainShafts(brush, t, look)`
+
+```
+rainShafts(brush, t, look): rule 1, the far shafts. Each is a curtain from the cloud to the far land, built of many
+thin strokes, densest in its middle and fading at its edges, at its top and at its foot; it leans with the wind
+and drifts with it, and its strength breathes slowly. Heavier rain gives more and wider shafts, until they merge.
+Returns nothing: it draws with brush.
+e.g. rainShafts(pen, t, {cloud: 240, far: 640, heavy: 0.7});
+```
+
+### `rainSheets(brush, t, look)`
+
+(no comment)
+
+### `rainStreaks(brush, t, look)`
+
+```
+rainStreaks(brush, t, look): rule 4, the rain close by: three depths of fine streaks, far ones short, faint and
+slow, near ones long and quick, slanting with the wind, laid on as light so they show against what is dark; a gust
+passing thickens them and thins them again. Returns nothing: it draws with brush.
+e.g. rainStreaks(pen, t, {heavy: 0.8, wind: 0.3, ground: 900});
+```
+
+### `rainSplashes(brush, t, look)`
+
+```
+rainSplashes(brush, t, look): rule 5, drops meeting water and the ground. On each box of look.water rings widen
+and fade, each in a third of a second, the nearer (lower) ones larger; along look.ground a fine spray (owner,
+2026-10-25: no mist of spray, it read as spotlights on the ground). Returns nothing: it draws with brush.
+e.g. rainSplashes(pen, t, {water: [[300, 860, 600, 120]], ground: 900, heavy: 0.8});
+```
+
+### `rain(brush, t, look)`
+
+```
+rain(brush, t, look): all of it at once, far to near: the veil, the shafts, the sheets, the near streaks and the
+splashes. look: RAIN_KEYS above; it may be left out ({} is a steady rain over the whole sheet). Returns nothing.
+e.g. rain(pen, t, {heavy: 0.8, cloud: 230, far: 640, ground: 920, water: [[0, 900, WIDE, 180]]});
+```
+
+## storm.js
+
+storm.js - a storm's sky and its lightning, for the Lanna cartoon kit. Load it after the kit (and rain.js, if it rains):  <script src="oldcartoon.js"></script> <script src="storm.js"></script>  and call stormSky(brush, t, look) for the sky, lightning(brush, t, look) for the strikes, and stormFlash(t, look) for how bright the land is lit at second t (to light a scene's own pieces). Everything is worked out from the second alone; a strike is told by the second it falls ("at"), so the film says when the sky breaks.  Modelled on photographs (owner, 2026-10-25: "Find some shots of real lightning in Northern Thailand and model them rather then guess at what it looks like ... beautiful, realistic and true to the location"). No photograph of lightning in the north is on Wikimedia Commons; the strikes are read from Bangkok's (the same storms of the same monsoon: Marco Nürnberger, "Bangkok Lightning", CC BY 2.0; Nik Cyclist, "Bangkok at night with lightning", CC BY 2.0; Daniel Julie, "Thailand Bangkok under the monsoon Storm", CC BY 2.0), the sky from the north's (JohnoPolo, "Mountain Rain Squall", Chiang Rai, CC BY-SA 3.0; Photo Dharma, "Ubosot with Storm Looming", Wat Sri Suphan, Chiang Ma
+
+### `stormSky(brush, t, look)`
+
+```
+stormSky(brush, t, look): rule 1. The sky from the top of the sheet to the far land: the cloud in drifting rolls,
+darkest above; under its underside the band of light; by night indigo. Returns nothing: it draws with brush.
+e.g. stormSky(pen, t, {night: 0, base: 380, horizon: 640});
+```
+
+### `lightningChannel(seed, x, top, to, bottom, width)`
+
+```
+The channel of a strike: a list of [x, y, w] (w its width there), from (x, top) down in small jags of any angle,
+wandering, to (to, bottom) or ending in the air; and its branches, each a list of the same, thinner. All from the
+seed, so the same strike is the same channel on every frame. Draws nothing.
+```
+
+### `lightningGlow(t, at, seed)`
+
+```
+How bright a strike is at second t: rule 3, three or four strokes down the channel, each sharp and gone. 0 before
+"at" and after about half a second. Returns {main, branch}: the channel's brightness and the branches'.
+```
+
+### `lightningStroke(brush, points, bright, far)`
+
+(no comment)
+
+### `lightning(brush, t, look)`
+
+```
+lightning(brush, t, look): rules 2 and 3, one strike: drawn only while it flickers (from look.at for about half a
+second), as light (screen) over whatever is under it. Returns its brightness now, 0 to 1 (stormFlash() adds them up).
+e.g. lightning(pen, t, {at: 3.2, x: 700, to: 760, top: 360, ground: 720, seed: 4});
+```
+
+### `stormFlash(t, strikes)`
+
+```
+stormFlash(t, strikes): how brightly the land is lit at second t by the strikes listed (each a look lightning()
+takes), 0 to 1: rule 3, for lighting the scene's own pieces lilac for the moment. Draws nothing.
+e.g. var lit = stormFlash(t, STRIKES);
+```
+
+### `stormLight(brush, lit, x, wide)`
+
+```
+stormLight(brush, lit, x, wide): the land lit lilac by a flash: a wash of light over the part of the sheet, as
+strong as lit (stormFlash()'s number). Returns nothing: it draws with brush.
+e.g. stormLight(pen, stormFlash(t, STRIKES));
+```
+
+### `stormStrikes(look)`
+
+```
+stormStrikes(look): a storm's strikes, spread over its seconds at a natural pace (owner, 2026-10-25: "The lightning
+occurs too often"): one about every look.every seconds (15 unless told), the gaps uneven, now and then a second
+strike close after the first; each at a place of its own between look.x0 and look.x1, near or far. Gives back a
+list of looks for lightning() (at, x, to, top, ground, far, seed), in the order they fall. Draws nothing.
+  from, to     the storm's first and last second (0 and 60 unless told)
+  every        the seconds between strikes, on average (15)
+  x0, x1       where along the sheet they fall (0 and WIDE)
+  top, ground  as lightning() takes them, for a near strike; a far one keeps to the horizon (horizon, 620 unless told)
+  farOnly      true: only far strikes, along the horizon (a storm passing at a distance)
+  seed         a number, so two storms are not alike
+e.g. var STRIKES = stormStrikes({from: 0, to: 40, every: 12, top: 330, ground: 700});
+```
+
+## flood.js
+
+flood.js - water rising over a town, for the Lanna cartoon kit: the floods that drove Mangrai out of Wiang Kum Kam, and Yonok going under the water of Wiang Nong Lom. Load it after oldcartoon.js and pieces.js (what floats is pieces.js's krabung()):  <script src="oldcartoon.js"></script> <script src="pieces.js"></script> <script src="flood.js"></script>  and call flood(brush, t, look) after the scene's land (it lays what stands above the water into the water, upside down) and before (or after) its people. Everything is worked out from the second alone. The owner's pick, 2026-10-25, of three waters: "Try a combination of B and C where the water isn't quite so busy": B's flat still water, brown with the silt, the sky's pale light along its far edge and a few long ripple lines; with C's zones (the thangka's water, as bdWater draws it), only a few wavy pale lines, far apart and faint. Flood water is still where it stands among houses, so nothing in it is busy; what moves is the ripples, what floats, and the rain's rings on it (rain.js rainSplashes, given the water's box).
+
+### `flood(brush, t, look)`
+
+```
+flood(brush, t, look): the water over the part of the sheet below look.level.
+  level       y of the water's surface (a number; or rising: give from, to and the seconds rise [start, end])
+  x, wide     the part of the sheet (0 and WIDE unless told)
+  colour      the water, "#rrggbb" (a silty brown unless told)
+  floating    true: a basket, a coop and a log afloat, drifting
+  reflect     0 to 1: how strongly what stands above the water shows in it, upside down and broken by the ripples
+              (0.25 unless told; drawn from what brush already holds, so draw the flood after the scene's land)
+Returns the level now (y), so a scene can sink its own pieces. Draws with brush.
+```
+
+### `floodFloaters(brush, x0, wide, level, t)`
+
+```
+What floats: a basket, a chicken coop and a log, small, bobbing and drifting slowly.
 ```
 
 ## band.js
@@ -8064,6 +8239,56 @@ Returns {mouth: [x, y]}, its mouth on the sheet. It draws with pen (nbBegin() an
 e.g. giantCatfish(900, 700, clock, {size: 0.6});
 ```
 
+## mangrai.js
+
+mangrai.js - the animals of the tale of Phaya Mangrai, for the Lanna cartoon kit: the white sambar of the first of Chiang Mai's seven signs, and the three shapes Phra Ruang took as he fled Phaya Ngam Mueang (the Ngoen Yang chronicle, ประชุมพงศาวดาร ภาคที่ ๖๑): a hill myna, a red ox and a bamboo rat. Load it after oldcartoon.js and beasts.js (the sambar and the ox walk on beastLegs()):  <script src="oldcartoon.js"></script> <script src="beasts.js"></script> <script src="mangrai.js"></script>  and call each from a scene: (x, y) is the ground under it, t the second, look what it does; a name it does not know is warned of. Each was drawn as candidates from photographs and picked by the owner, 2026-10-25 (the sambar and the shapes: "Whatever is most historically accurate", "Research what is most historically accurate"). The white barking deer of the second sign and the white mice of the third are taleanimals.js's.  sambar(x, y, t, look)       the sambar deer (กวางป่า): white (look.white, the sign's กวางเผือก) or wild brown; a hind or a calf; standing, walking, grazing hillMyna(x, y, t, look)     the hill myna (นกขุนทอง), the chronicle's นกเอี้ยง: hopping, or its wings opening banteng(x,
+
+### `mgSmooth(points)`
+
+```
+A smooth closed shape through points (mid-point quadratics), ready to fill and stroke. Draws nothing yet.
+e.g. mgSmooth([[0, 0], [20, -10], [30, 10]]);
+```
+
+### `mgPaint(fill, ink, width)`
+
+```
+Fills the shape just made and lines it: fill a colour or a gradient, ink the line's colour, width its width
+(the kit's LINE unless told). e.g. mgPaint("#f6efe2", "#8a7458");
+```
+
+### `sambar(x, y, t, look)`
+
+```
+sambar(x, y, t, look): its feet on (x, y). look: white (true: the white sambar of the sign), calf (true: a young
+one, smaller, longer-legged for its size), size (1: a hind, about 235 at the shoulder), face, step (grows while it
+walks), graze (0 to 1), seed. Returns {nose, seat}: points of the sheet. It draws with pen.
+e.g. sambar(600, GROUND, t, {white: true, step: t * 0.8}); sambar(760, GROUND, t, {white: true, calf: true});
+```
+
+### `hillMyna(x, y, t, look)`
+
+```
+hillMyna(x, y, t, look): its feet on (x, y). look: size (1: about 50 tall), face, step (grows while it hops), flap
+(0 to 1: its wings opening). Returns nothing: it draws with pen.
+e.g. hillMyna(500, 820, t, {size: 1.2, step: t});
+```
+
+### `banteng(x, y, t, look)`
+
+```
+banteng(x, y, t, look): its feet on (x, y). look: size (1: about 300 at the shoulder), face, step. Returns nothing.
+e.g. banteng(900, GROUND, t, {size: 0.6, step: t * 0.7});
+```
+
+### `bambooRat(x, y, t, look)`
+
+```
+bambooRat(x, y, t, look): its feet on (x, y). look: size (1: about 40 long), face, dig (0 to 1: its head down and
+its fore feet scrabbling, earth flying). Returns nothing: it draws with pen.
+e.g. bambooRat(700, GROUND, t, {size: 2, dig: 1});
+```
+
 ## butterflies.js
 
 butterflies.js - four butterflies of the north, for films made with oldcartoon.js. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="butterflies.js"></script>  and call butterfly(kind, x, y, t, look) from a scene: (x, y) is the middle of its body, seen from above, its head toward "turn" (0 is up). Flying, its wings beat; resting on a flower (look.rest), they open and close slowly. The kinds are the keys of BUTTERFLIES: the golden birdwing (Troides aeacus) of Doi Suthep's forests, black forewings and gold hindwings, the largest of them and protected in Thailand; the leopard lacewing (Cethosia cyane), orange and black with a white band, common in Chiang Mai's gardens; the common bluebottle (Graphium sarpedon), black with a band of see-through blue-green, quick over the flowers; and the common grass yellow (Eurema hecabe), small and bright, everywhere in the grass. Drawn from what each is, in flat colour inside a fine dark line.  butterflyDrift(t, x, y, look) gives where a butterfly is at second t as it wanders: a course that dips and lifts with its wingbeats and turns as it goes.  var b = butterflyDrift(clock, 300, 500, {vx: 60, seed: 2}); butterfly("lacewing
@@ -8976,6 +9201,49 @@ a fountain, lit 18:00 to 21:00), its jets playing with t; the plinth in its midd
 where the statue stands. Its middle at (x, y); size 1 is 520 across. The owner's pick, 2026-10-23.
 e.g. statuePool(pen, 960, 900, 1, t); changNgu(960, 840, {size: 0.4});
 ```
+
+### `whiteEelSpine(x, water, s, face, phase)`
+
+```
+The eel's middle, swimming at the surface: low humps that run back along it (an eel waves its whole length).
+x, water: the head's x and the water line; s the size (1 is 1400 long, 70 thick); face; phase. 81 [x, y], head first.
+```
+
+### `whiteEelLying(x, y, s, face, t)`
+
+```
+Lying on the bank: a slow S along the ground at y, a little lift and fall where it still moves.
+```
+
+### `whiteEelFin(spine, wide, s)`
+
+```
+The fin along the back, from a third of the way back to the tail, where it goes round the tail's end: a frill
+with fine rays, the eel's colour paler, outlined.
+```
+
+### `whiteEelHead(hx, hy, s, face, angle)`
+
+```
+An eel's head: blunt and rounded, the lower jaw a little longer, a wide mouth line back past the eye, a small
+eye high and forward, the gill slit, and the round fin behind it. (hx, hy) its middle; angle the way it faces.
+```
+
+### `whiteEelSwim(x, water, s, face, t)`
+
+```
+The eel swimming at the surface: its fin, its band, rings where it goes in and out, its head. Returns its head.
+```
+
+### `whiteEelCaught(x, y, s, face, t)`
+
+```
+The eel caught, lying on the bank.
+```
+
+### `whiteEel(x, y, t, look)`
+
+(no comment)
 
 ## credits.js
 

@@ -735,3 +735,22 @@ with a person on it, as it was asked to.
 - **Not done.** The cast still wears the kit's own faces: nobody is given the Thai face or the fat body until the
   owner picks. Clothes are still drawn by the person (`sin`, `skirt`, `sabai`, `bare`): swapping them is the
   next step, then the cast as compositions of face, hair, body and clothes.
+
+## The dress of the Lua (Lawa), and three things to wear (2026-10-25)
+
+`cast("luagirl")`, `cast("luawife")`, `cast("luaman")`: the Lua as they dress today, the only dress recorded (the
+chronicles and the travellers say nothing of it), from Creative Knowledge CMU (ลัวะ), the Cultural Map of Thailand
+(ผ้าทอลัวะ), Chutimun Sasong's 2021 study of the Lawa of Mae Hong Son and the Indigenous Media Ecology project. A
+woman: the black skirt to the knee with bands of red, pink and blue tie-dye (`LUA_SIN`, worn as a hitched `sarong`),
+a girl's white blouse or a married woman's black one, the low bun. A man: white shirt and trousers, a pink head-cloth.
+`plain: true` keeps off the kit's checked waist cloth, which nobody in the sources wears. Sheet: `lua.html`.
+
+Three new keys of `person()` carry what the Lua wear, and anyone else may:
+
+| Key | What it draws |
+|---|---|
+| `beads` | a list of colours: strands of beads hung from the neck, one a colour, the longer lower, in place of a lady's gold necklace (`LUA_BEADS`: red, orange, yellow glass and silver). Each bead is filled with only a hairline rim, so its colour shows |
+| `earrings` | a colour: a tassel of wool from each ear to the shoulder, swinging with the head, in place of the gold drop |
+| `wraps` | a colour: cloth wound round each shin from below the knee to the ankle (ปอซวง), the turns of the cloth across it |
+
+Not drawn yet: the arm wraps (ปอเต๊ะ) and the porcupine-quill pin in the bun.

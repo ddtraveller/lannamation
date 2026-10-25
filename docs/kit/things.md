@@ -677,3 +677,11 @@ of Bo Suak's 18 named motifs (cotton flower, pikul, paired roosters, golden turt
 explained, not drawn, so not in `LAI`); the inventories of Lampang, Lamphun and Uttaradit. The weaver's clothes are
 the kit's `weaver` (an indigo blouse, a striped sin): for work at the loom the sources give a plain striped sin (sin
 ta), a breast cloth or the snug suea pat, the hair in a high bun.
+
+## The cooking pot (2026-10-25)
+
+The kit's sticky-rice steamer `huad()` already stands on a round clay pot over three hearth stones. With
+`look.steamer: false` it is the pot alone, cooking over the fire, its steam from its mouth: the owner's pick of three
+cooking pots for the tales ("whatever you think is the most fun and realistic"; a clay stove and a pot on a tripod
+were the other two, the stove a later thing and the tripod not the north's). Size it up for a feast: in the tale of
+the white eel the meat is shared to every house. Sheet: `nonglom.html`.

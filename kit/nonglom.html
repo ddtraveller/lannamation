@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>nonglom - the white eel of Wiang Nong Lom, and the pot</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script src="backdrops.js"></script>
+<script src="pieces.js"></script>
+<script src="naga.js"></script>
+<script src="chiangsaen.js"></script>
+<script>
+// The "nonglom" sheet: the things of the tale of the white eel (chiangsaen.js whiteEel, pieces.js huad). On the river:
+// the white eel swimming at the surface; on the bank, the eel caught, and the clay pot on its three hearth stones over
+// a fire, the steamer left off (look.steamer false), cooking.
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#3a2c1c";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  pen.drawImage(backdrop("river"), 0, 0);
+  whiteEel(1500, 800, t, {size: 0.8});
+  csBand(pen, 0, 880, WIDE, 200, "#c9b48a", "#a8916a");
+  whiteEel(760, 980, t, {caught: true, size: 0.55});
+  huad(pen, 1380, 990, 1.7, t, {fire: 1, steamer: false});
+  pen.fillStyle = "rgba(246, 237, 212, 0.9)";
+  pen.fillRect(0, 1030, WIDE, 50);
+  caption("the white eel (ปลาไหลเผือก) swimming, and caught on the bank   ·   the clay pot on its hearth stones, cooking", WIDE / 2, 1062);
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0, 1920, 1080);
+}
+
+var rendering = false;
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

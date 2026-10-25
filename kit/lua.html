@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>lua - the dress of the Lua (Lawa)</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920, hop: false};</script>
+<script src="oldcartoon.js"></script>
+<script src="backdrops.js"></script>
+<script>
+// The "lua" sheet: the cast's Lua (Lawa) looks (CAST luagirl, luawife, luaman; LUA_SIN): a girl in the white blouse,
+// a married woman in the black one, both with the banded black skirt to the knee, the strands of beads, the wool
+// tassels and the shin wraps (person()'s beads, earrings, wraps); a man in white with a pink head-cloth.
+var DURATION = 6;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#3a2c1c";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  pen.drawImage(backdrop("paddy"), 0, 0);
+  person(560, 960, cast("luagirl", {id: "luagirl", face: 1, at: [960, 700]}));
+  person(960, 960, cast("luawife", {id: "luawife", face: 1, at: [1360, 700]}));
+  person(1360, 960, cast("luaman", {id: "luaman", face: -1, at: [960, 700]}));
+  pen.fillStyle = "rgba(246, 237, 212, 0.9)";
+  pen.fillRect(0, 1030, WIDE, 50);
+  caption("the Lua (ลัวะ): a girl, a married woman, a man   ·   cast(\"luagirl\"), cast(\"luawife\"), cast(\"luaman\")", WIDE / 2, 1062);
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0, 1920, 1080);
+}
+
+var rendering = false;
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>mangrai - the white sambar, and Phra Ruang's three shapes</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script src="backdrops.js"></script>
+<script src="beasts.js"></script>
+<script src="mangrai.js"></script>
+<script>
+// The "mangrai" sheet: mangrai.js. On the valley: the white sambar and her young, as the first of Chiang Mai's seven
+// signs (the mother walking, the calf grazing behind her), and a wild brown sambar further off; along the front, Phra
+// Ruang's three shapes from the Ngoen Yang chronicle: the hill myna hopping, then its wings opening, the banteng (the
+// red ox) walking, and the bamboo rat digging.
+var DURATION = 8;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#3a2c1c";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  pen.drawImage(backdrop("valley"), 0, 0);
+  sambar(1500, 760, t, {size: 0.5, step: t * 0.5, face: -1, seed: 4});
+  sambar(300, 860, t, {white: true, calf: true, graze: 0.5 + 0.5 * Math.sin(t * 0.7), seed: 2});
+  sambar(560, 880, t, {white: true, step: t * 0.6});
+  hillMyna(860, 960, t, {size: 1.6, step: t});
+  hillMyna(1000, 960, t, {size: 1.6, flap: 0.5 + 0.5 * Math.sin(t * 5), face: -1});
+  banteng(1320, 980, t, {size: 0.5, step: t * 0.7, face: -1});
+  bambooRat(1720, 990, t, {size: 1.8, dig: t % 4 < 2 ? 1 : 0});
+  pen.fillStyle = "rgba(246, 237, 212, 0.9)";
+  pen.fillRect(0, 1030, WIDE, 50);
+  caption("the white sambar and her young (กวางเผือก, the first sign)   ·   a wild sambar   ·   Phra Ruang's shapes: the hill myna, the red ox, the bamboo rat", WIDE / 2, 1062);
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0, 1920, 1080);
+}
+
+var rendering = false;
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+requestAnimationFrame(play);
+</script>
+</body>
+</html>
