@@ -5,17 +5,16 @@
 // the path and hammer, and the golden trough grows from his hut out along the path toward the city. Dawn, at the
 // palace: the trough has come all the way across the courtyard to the palace's stair; the last piece is beaten
 // in, and it is done.
-var S10_LONG = 60;
+var S10_LONG = 66.31;
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the cicadas by day; the flock going home and a pack horse at dusk; the crickets and the frogs
 // of the night; the rooster at dawn.
-var S10_SOUND = {calls: [[0, "cicadas", 0.5, 15], [15.5, "flock", 0.3], [19, "horse", 0.35], [29, "crickets", 0.35, 21], [29, "frogs", 0.45, 21], [51, "rooster-crow", 0.28]]};
-var S10_LINES = [[1.5, 3.87, "M057"], [6.0, 9.46, "M058"], [16.2, 22.98, "M059"], [24.4, 28.86, "M060"], [31.0, 36.98, "M061"],
-                 [38.0, 41.84, "M062"], [53.5, 57.76, "M063"]];
-var S10_SHOTS = [15, 29, 50];                       // day by the pen; dusk on the path; night; dawn at the palace
+var S10_SOUND = {calls: [[0, "cicadas", 0.5, 17.26], [17.76, "flock", 0.3], [21.21, "horse", 0.35], [31.95, "crickets", 0.35, 24.12], [31.95, "frogs", 0.45, 24.12], [57.07, "rooster-crow", 0.28]]};
+var S10_LINES = [[1.5, 5.33, "M057"], [7.52, 11.7, "M058"], [18.46, 25.11, "M059"], [26.66, 31.8, "M060"], [33.95, 39.83, "M061"], [40.95, 47.84, "M062"], [59.57, 64.06, "M063"]];
+var S10_SHOTS = [17.26, 31.95, 56.07];                       // day by the pen; dusk on the path; night; dawn at the palace
 var S10_CAMERA = [1234, 690, 1.4];                  // the first shot, close on the pen and the garden, as scene 8's
 var S10_HEAP = [1330, 962];                         // where he heaps the gold he digs up
-var S10_DIG = [6.5, 13.5];                          // the digging: every mound opened again
+var S10_DIG = [8.14, 15.76];                          // the digging: every mound opened again
 var S10_CREW = [[950, 0], [1560, 1], [1830, 2]];    // the traders sitting by the trough at night, each by a lantern
 var S10_HORSES = [[1440, "#8a5a3a"], [1700, "#5a4a3a"]];   // unloaded, resting in the field behind the trough
 var S10_NIGHT = [820, 1320, 742, 1.6];             // the night shot's camera: close, panning along the path as the trough grows (x from, to; y; zoom)
@@ -23,9 +22,9 @@ var S10_NIGHT = [820, 1320, 742, 1.6];             // the night shot's camera: c
 // Its life: hens in the garden by day; a flock flying home to roost as the caravan comes at dusk; and at dawn, at
 // the palace, mist low over the courtyard and a flock over.
 var S10_LIFE = [
-  {name: "hen", kind: "hen", course: [[0, 700, 966, "peck"], [6.0, 700, 966], [8.0, 790, 968, "peck"], [15.0, 790, 968]]},
-  {name: "flock to roost", kind: "flock", z: "sky", course: [[16.5, -150, 240], [27.0, 2150, 190]]},
-  {name: "flock at dawn", kind: "flock", z: "sky", course: [[51.0, 2150, 180], [60.0, -150, 140]]}
+  {name: "hen", kind: "hen", course: [[0, 700, 966, "peck"], [7.52, 700, 966], [10.01, 790, 968, "peck"], [17.26, 790, 968]]},
+  {name: "flock to roost", kind: "flock", z: "sky", course: [[18.75, -150, 240], [29.7, 2150, 190]]},
+  {name: "flock at dawn", kind: "flock", z: "sky", course: [[57.07, 2150, 180], [66.31, -150, 140]]}
 ];
 
 // x, y: the middle of its foot, in pixels of the sheet; count: how many nuggets; t: seconds (they glint by it). Gives
@@ -115,7 +114,7 @@ function s10Garden(t) {                             // the crier goes by calling
   var sprites = lifeSprites(t, S10_LIFE).concat([
     {name: "pen", kind: "kok", x: k[0], y: k[1], draw: function () {
       kok(pen, k[0], k[1], k[2], 1, {part: "back"});
-      maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: t > 6 ? "happy" : "neutral"});
+      maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: t > 7.52 ? "happy" : "neutral"});
       kok(pen, k[0], k[1], k[2], 1, {part: "front"});
     }},
     {name: "heap", kind: "gold", x: S10_HEAP[0], y: S10_HEAP[1], draw: function () { s10Heap(S10_HEAP[0], S10_HEAP[1], Math.floor(dug * 1.2), t); }}
@@ -133,7 +132,7 @@ function s10Garden(t) {                             // the crier goes by calling
   }
   sprites.push({name: "lad", kind: "person", x: lx, y: ly, draw: function () { person(lx, ly, lad); }});
   var crier = stroll(t, 2150, 380, -4, maengPerson("fellow", MAENG_HERALD, {id: "herald"}));   // the king's man crying the news, along the path
-  var calling = t > 1.5 && t < 3.47, walks = maengWay(crier.x) + 12;
+  var calling = t > 1.5 && t < 4.99, walks = maengWay(crier.x) + 12;
   if (calling) { crier.look.mouth = {open: 0.1 + 0.3 * Math.abs(Math.sin(t * 7)), wide: 0.5, round: 0.2}; }
   sprites.push({name: "herald", kind: "person", x: crier.x, y: walks, draw: function () { person(crier.x, walks, crier.look); }});
   drawByZ(sprites);
@@ -161,17 +160,17 @@ function s10Caravan(t) {                            // dusk: the Haw caravan com
   maengGarden(t, MAENG_MOUNDS.length, MAENG_MOUNDS.length, tint);
   // asks: his hand out to the heap, to the cut (29.3 s); speaks: his mouth, to the end of the narrator's voice (2026-10-24:
   // the hand once went back with the voice, at 28.46 s, in view: the pop check)
-  var asks = t > 24.4 && t < 29.28, speaks = t > 24.4 && t < 28.46, start = 15.6, file = maengWay(1360) + 12;   // the caravan's one depth
+  var asks = t > 26.66 && t < 32.23, speaks = t > 26.66 && t < 31.41, start = 15.6, file = maengWay(1360) + 12;   // the caravan's one depth
   var sprites = lifeSprites(t, S10_LIFE).concat([
     {name: "pen", kind: "kok", x: k[0], y: k[1], draw: function () {
       kok(pen, k[0], k[1], k[2], 1, {part: "back", tint: tint});
-      maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: t > 18 ? "surprised" : "happy"});
+      maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: t > 20.23 ? "surprised" : "happy"});
       kok(pen, k[0], k[1], k[2], 1, {part: "front", tint: tint});
     }},
     {name: "heap", kind: "gold", x: 820, y: 966, draw: function () { s10Heap(820, 966, 22, t); }},
     {name: "lad", kind: "person", x: 700, y: 962, draw: function () {
       person(700, 962, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: asks ? "concerned" : "happy",
-                                                       reachA: asks ? [820, 780, between(t, 24.4, 24.8)] : undefined,   // out to the heap, eased (once in one frame, a pop)
+                                                       reachA: asks ? [820, 780, between(t, 26.66, 27.13)] : undefined,   // out to the heap, eased (once in one frame, a pop)
                                                        mouth: speaks ? {open: 0.08 + 0.26 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined}));
     }}
   ]);
@@ -184,7 +183,7 @@ function s10Caravan(t) {                            // dusk: the Haw caravan com
       sprites.push({name: "horse" + n, kind: "horse", x: walk.x, y: file, draw: function () { horse(walk.x, hoof, walk.look); }});
       return;
     }
-    var feel = t > 26.5 ? "happy" : t > 23.5 ? "concerned" : undefined, feet = maengWay(walk.x) + 12;
+    var feel = t > 29.12 ? "happy" : t > 25.7 ? "concerned" : undefined, feet = maengWay(walk.x) + 12;
     sprites.push({name: "horse" + n, kind: "person", x: walk.x, y: file, draw: function () {
       maengLead(walk, h[0] + 640, feet, maengTrader(h[1], {feel: feel}), 0.6, "horse");
     }});
@@ -291,14 +290,14 @@ function s10Dawn(t) {                               // dawn at the palace: the t
   pen.drawImage(city.backDawn, 0, 0);
   pen.drawImage(city.frontDawn, 0, 0);
   mistDrift(pen, t, {left: 0, right: WIDE, top: 760, bottom: 900, count: 5, wide: 560, drift: 6, seed: 41, glow: "#f6c9a0",
-                     alpha: 0.5 * (1 - between(t, 53, 59))});   // the dawn's mist, low over the courtyard, going as the sun comes
-  var done = t > 53.2, strike = s10Strike(t, 0), x = MAENG_STAIR - 120;
+                     alpha: 0.5 * (1 - between(t, 59.07, 65.31))});   // the dawn's mist, low over the courtyard, going as the sun comes
+  var done = t > 59.27, strike = s10Strike(t, 0), x = MAENG_STAIR - 120;
   drawByZ(lifeSprites(t, S10_LIFE).concat([
     {name: "palace, back", kind: "palace", z: "set", draw: function () { maengPalace(t, "back", MAENG_DAWN); }},
     {name: "palace, front", kind: "palace", z: "set", draw: function () { maengPalace(t, "front", MAENG_DAWN); }},
     {name: "trader1", kind: "person", x: x, y: row - 8, draw: function () {
       // Done, he gets up over 0.6 s, the hammer still in his hand (he once stood up in one frame, a pop)
-      var rise = between(t, 53.2, 53.8);
+      var rise = between(t, 59.27, 59.89);
       var joints = person(x, row - 8, maengTrader(1, {face: 1, sit: 1 - rise, bend: 0.5 * (1 - rise), feel: done ? "happy" : "concerned",
                                                       reachA: rise < 1 ? [x + 40, mix(row - 46, row - 150, strike.high), 1 - rise] : undefined}));
       s10Hammer(joints, MAENG_TRADERS[1].size);

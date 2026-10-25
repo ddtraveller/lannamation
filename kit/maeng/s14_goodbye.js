@@ -3,15 +3,15 @@
 // and says what the tale teaches, be good, work hard and be honest, like Thukkhata; then she says goodbye to the
 // children with a wai, as the lanna_cartoon page's own goodbye does (owner, 2026-10-21: "go to the very end scene
 // of the video and change the woman's movement from a wave to a wai"; it was a wave).
-var S14_LONG = 16;
+var S14_LONG = 19.97;
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the crickets of the yard at dusk.
-var S14_SOUND = {calls: [[0, "crickets", 0.3, 16]]};
-var S14_LINES = [[2.0, 8.04, "M078"], [8.24, 11.94, "M079"]];
-var S14_SPEAKS = [[2.0, 7.64], [8.24, 11.54]];          // she says them herself: her mouth moves through them
-var S14_WAI = [7.9, 8.4, 12.3, 12.8];                // the hands come up, are joined (a wai, and a small bow), part, are down
+var S14_SOUND = {calls: [[0, "crickets", 0.3, 19.97]]};
+var S14_LINES = [[2.0, 9.75, "M078"], [9.96, 15.9, "M079"]];
+var S14_SPEAKS = [[2.0, 9.36], [9.96, 15.51]];          // she says them herself: her mouth moves through them
+var S14_WAI = [9.62, 10.23, 16.27, 16.77];                // the hands come up, are joined (a wai, and a small bow), part, are down
 var S14_LIFE = [
-  {name: "flock at dusk", kind: "flock", z: "sky", course: [[0.5, -150, 230], [13.0, 2150, 180]]}
+  {name: "flock at dusk", kind: "flock", z: "sky", course: [[0.5, -150, 230], [16.97, 2150, 180]]}
 ];
 
 // u: 0 to 1 (held there outside it); gives back 0 to 1, eased in and out. e.g. var up = s14Ease((t - 7.9) / 0.5);

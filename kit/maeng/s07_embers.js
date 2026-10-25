@@ -6,16 +6,15 @@
 // creature turns away from each, and sleeps all day. A cold night: he lights a fire to keep warm; pop, an ember
 // jumps out of it, and the creature catches it, crunches it, and its five eyes light up. He laughs. From then on
 // he feeds it embers every day.
-var S07_LONG = 57.52;
+var S07_LONG = 69.74;
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the cicadas by day at the pen; the crickets of the cold night.
-var S07_SOUND = {calls: [[0, "cicadas", 0.5, 18.5], [18.5, "crickets", 0.35, 39.02]]};
-var S07_LINES = [[2.0, 6.84, "M036"], [8.4, 11.62, "M037"], [12.8, 16.08, "M038"], [16.28, 18.46, "M039"], [19.6, 24.62, "M040"],
-                 [26.3, 31.48, "M041"], [31.68, 37.02, "M042"], [37.22, 41.1, "M043"], [41.3, 46.0, "M044"]];
+var S07_SOUND = {calls: [[0, "cicadas", 0.5, 24.06], [24.06, "crickets", 0.35, 45.68]]};
+var S07_LINES = [[2.0, 7.24, "M036"], [8.86, 12.5, "M037"], [13.74, 18.23, "M038"], [18.44, 23.95, "M039"], [25.16, 32.15, "M040"], [33.9, 39.83, "M041"], [40.06, 46.89, "M042"], [47.1, 51.75, "M043"], [51.97, 58.14, "M044"]];
 var S07_FIRE = [1430, 952];
 var S07_CAMERA = [1220, 740, 1.6];                  // the camera close on the pen and the fire: its middle and its nearness (no lower than 1080 - 540 / 1.6, or the sheet's foot shows)
-var S07_NIGHT = 18.5;                               // the cut to night
-var S07_FEEDS = [30.72, 46.62, 49.62, 52.62];           // the seconds an ember leaves the fire for its mouth: the first on "Pop!", caught as the next line begins
+var S07_NIGHT = 24.06;                               // the cut to night
+var S07_FEEDS = [39.05, 58.84, 61.84, 64.84];           // the seconds an ember leaves the fire for its mouth: the first on "Pop!", caught as the next line begins
 
 // Its life: by day two hens left of the pen, and a grasshopper (owner, 2026-10-22: "The grasshopper should be farther
 // away and the hen should see it then stalk it and then it should jump away to get eaten by the second hen"): the hen
@@ -25,18 +24,18 @@ var S07_FEEDS = [30.72, 46.62, 49.62, 52.62];           // the seconds an ember 
 // to her pecking. At night the house mouse creeps out from under the hut toward the fire's warmth, sits up to watch
 // it, and bolts back at "crunch, crunch!" (M042).
 var S07_LIFE = [
-  {name: "hen", kind: "hen", course: [[0, 715, 968, "peck"], [2.4, 715, 968, "look"], [3.6, 715, 968, "stalk"], [4.2, 715, 968, "stalk"],
-                                      [8.6, 790, 968, "stalk"], [9.0, 790, 968, "missed"], [11.5, 790, 968, "peck"], [18.4, 790, 968]]},
+  {name: "hen", kind: "hen", course: [[0, 715, 968, "peck"], [2.44, 715, 968, "look"], [3.77, 715, 968, "stalk"], [4.43, 715, 968, "stalk"],
+                                      [9.09, 790, 968, "stalk"], [9.56, 790, 968, "missed"], [12.44, 790, 968, "peck"], [23.96, 790, 968]]},
   {name: "brown hen", kind: "hen", look: {feel: "satiated"},
-   course: [[0, 675, 960, "peck"], [9.9, 675, 960, "pounce"], [10.25, 675, 960, "caught"], [12.0, 675, 960, "peck"], [18.4, 675, 960]]},
+   course: [[0, 675, 960, "peck"], [10.62, 675, 960, "pounce"], [11.03, 675, 960, "caught"], [12.94, 675, 960, "peck"], [23.96, 675, 960]]},
   {name: "grasshopper", kind: "grasshopper",
-   course: [[0, 850, 976], [9.0, 850, 976], [9.6, 720, 966], [10.1, 720, 966, "caught"], [10.25, 720, 966, "hide"], [18.4, 720, 966, "hide"]]},
+   course: [[0, 850, 976], [9.56, 850, 976], [10.27, 720, 966], [10.86, 720, 966, "caught"], [11.03, 720, 966, "hide"], [23.96, 720, 966, "hide"]]},
   {name: "house mouse", kind: "mouse", look: {kind: "house", size: 0.55},
-   course: [[20.5, 600, 978, "hide"], [21.0, 600, 978], [23.6, 860, 982, "sniff"], [25.2, 860, 982, "up"], [31.92, 860, 982],
-            [32.92, 560, 978, "hide"], [33.12, 560, 978, "hide"]]},
+   course: [[26.46, 600, 978, "hide"], [27.19, 600, 978], [30.95, 860, 982, "sniff"], [32.8, 860, 982, "up"], [40.37, 860, 982],
+            [41.68, 560, 978, "hide"], [41.94, 560, 978, "hide"]]},
   // its happy howls once the first ember is eaten and its eyes light (sounds.py, maeng-happy)
   {name: "the creature's joy", kind: "flock", z: "sky", course: [[0, -999, -999], [0.1, -999, -999]],
-   calls: [[33.22, "maeng-happy", 2.8]]}
+   calls: [[42.07, "maeng-happy", 2.8]]}
 ];
 
 // point: [x, y] in the film's own pixels; gives back [x, y] under pen's camera now (as maengAt() does).
@@ -70,9 +69,9 @@ function sceneEmbers(t) {
   var feed = null, since = 99;
   S07_FEEDS.forEach(function (s) { if (t >= s && t - s < since) { since = t - s; feed = s; } });
   var flying = since < 1.0, chew = since >= 1.0 && since < 2.4, glow = feed === null ? 0 : clamp(1 - (since - 1.2) / 3.5) * (since > 1.0 ? 1 : 0);
-  var away = (t > 9.4 && t < 11.8) || (t > 13.6 && t < 15.4);
+  var away = (t > 10.03 && t < 12.74) || (t > 14.88 && t < 17.45);
   var beastLook = {size: 0.45, face: away ? -1 : 1, mouth: flying ? 0.85 * between(since, 0.2, 0.8) : chew ? 0.2 + 0.2 * Math.abs(Math.sin(since * 11)) : 0,
-                   glow: glow, feel: t < 16.1 ? (away ? "concerned" : "neutral") : t < S07_NIGHT ? "sleepy" : feed !== null && since < 6 ? "happy" : "neutral"};
+                   glow: glow, feel: t < 18.26 ? (away ? "concerned" : "neutral") : t < S07_NIGHT ? "sleepy" : feed !== null && since < 6 ? "happy" : "neutral"};
   if (feed === null) { delete beastLook.glow; }
   var beast;
   var sprites = lifeSprites(t, S07_LIFE).concat([
@@ -83,14 +82,14 @@ function sceneEmbers(t) {
     }}
   ]);
   if (night) {                                      // the fire, and Thukkhata by it
-    var laughs = t > 37.22 && t < 40.52;
+    var laughs = t > 47.1 && t < 51.15;
     // From the second ember on he feeds it himself: a fire stick in the coals, and on each feed a flick that throws
     // the ember up from the stick's end (owner, 2026-10-20: "have the boy flip them up with a stick"). The first,
     // on "Pop!", jumps out of the fire by itself, as the words say.
-    var stickFrom = t > 41.12, flick = feed !== null && feed > 30 && since < 0.35 ? Math.sin(since / 0.35 * Math.PI) : 0;
+    var stickFrom = t > 51.79, flick = feed !== null && feed > 30 && since < 0.35 ? Math.sin(since / 0.35 * Math.PI) : 0;
     var tip = [S07_FIRE[0] + 12 + 14 * flick, S07_FIRE[1] - 12 - 70 * flick];
-    var lad = maengPerson("boy", MAENG_LAD, {id: "lad", floor: "cross", face: -1, feel: laughs ? "laughing" : t > 26.3 && t < 31.72 ? "surprised" : "happy",
-                                             reachA: stickFrom ? [S07_FIRE[0] + 96, S07_FIRE[1] - 44 - 16 * flick, between(t, 41.12, 41.52)] : undefined, grip: stickFrom});   // to the stick, eased
+    var lad = maengPerson("boy", MAENG_LAD, {id: "lad", floor: "cross", face: -1, feel: laughs ? "laughing" : t > 33.9 && t < 40.11 ? "surprised" : "happy",
+                                             reachA: stickFrom ? [S07_FIRE[0] + 96, S07_FIRE[1] - 44 - 16 * flick, between(t, 51.79, 52.27)] : undefined, grip: stickFrom});   // to the stick, eased
     sprites.push({name: "fire and lad", kind: "person", x: S07_FIRE[0] + 170, y: S07_FIRE[1] - 6, draw: function () {
       campfire(pen, S07_FIRE[0], S07_FIRE[1], 0.8, t, {light: 1});
       var ladAt = person(S07_FIRE[0] + 170, S07_FIRE[1] - 6, lad);
@@ -101,11 +100,11 @@ function sceneEmbers(t) {
       sprites.push({name: "ember", kind: "ember", z: "front", draw: function () { emberFlight(pen, from, beast.mouth, since / 1.0, 1.2, 150, t); }});
     }
   } else {                                          // by day: Thukkhata at the pen, holding out grass, then a banana
-    var holding = t > 8.4 && t < 11.8 ? "grass" : t > 12.8 && t < 15.4 ? "banana" : null;
+    var holding = t > 8.86 && t < 12.74 ? "grass" : t > 13.74 && t < 17.45 ? "banana" : null;
     // His hand goes out with each and back, eased (a reach's third number: it once went in one frame, a pop)
-    var out = between(t, 8.4, 8.8) * (1 - between(t, 11.4, 11.8)) + between(t, 12.8, 13.2) * (1 - between(t, 15.0, 15.4));
+    var out = between(t, 8.86, 9.33) * (1 - between(t, 12.34, 12.74)) + between(t, 13.74, 14.31) * (1 - between(t, 16.88, 17.45));
     var hand = [MAENG_PEN[0] + 160, MAENG_PEN[1] - 120, out];
-    var boy = maengPerson("boy", MAENG_LAD, {id: "lad", face: -1, feel: holding && away ? "concerned" : t > 16.1 ? "sad" : "neutral",
+    var boy = maengPerson("boy", MAENG_LAD, {id: "lad", face: -1, feel: holding && away ? "concerned" : t > 18.26 ? "sad" : "neutral",
                                              reachA: holding ? hand : undefined});
     sprites.push({name: "lad", kind: "person", x: MAENG_PEN[0] + 270, y: MAENG_PEN[1] + 4, draw: function () {
       var boyAt = person(MAENG_PEN[0] + 270, MAENG_PEN[1] + 4, boy);
@@ -122,8 +121,8 @@ function sceneEmbers(t) {
     pen.fillStyle = "rgba(0, 0, 0, " + dark.toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);
   }
-  if (t < 1.5 || t > 55.52) {
-    pen.fillStyle = "rgba(0, 0, 0, " + Math.max(1 - t / 1.5, between(t, 55.52, 57.52)).toFixed(3) + ")";
+  if (t < 1.5 || t > 67.74) {
+    pen.fillStyle = "rgba(0, 0, 0, " + Math.max(1 - t / 1.5, between(t, 67.74, 69.74)).toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);
   }
 }

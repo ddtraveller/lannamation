@@ -4,17 +4,17 @@
 // Then by day: he is rich now and has stayed as he was, and at the palace's stair he fills the bowls of the poor
 // from a rice basket, as his mother once carried a bowl to the city. Last: later he is king, on the dais, and the
 // people sit before him with their hands raised in a wai: the Righteous King, Phaya Thammikarat.
-var S12_LONG = 35;
+var S12_LONG = 45.46;
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the crickets of the wedding's dusk, low under the band; the cicadas by day.
-var S12_SOUND = {calls: [[0, "crickets", 0.22, 12.6], [12.6, "cicadas", 0.5, 22.4]]};
-var S12_LINES = [[1.5, 5.98, "M069"], [14.0, 19.38, "M070"], [20.98, 24.0, "M071"], [25.8, 31.58, "M072"]];
-var S12_SHOTS = [12.6, 25.0];                       // the wedding at dusk; the rice by day; the Righteous King
+var S12_SOUND = {calls: [[0, "crickets", 0.22, 14.26], [14.26, "cicadas", 0.5, 31.2]]};
+var S12_LINES = [[1.5, 7.63, "M069"], [15.66, 23.71, "M070"], [25.32, 30.87, "M071"], [32.69, 41.96, "M072"]];
+var S12_SHOTS = [14.26, 31.89];                       // the wedding at dusk; the rice by day; the Righteous King
 // The poor who come to him: in the faded cloth of his own family, each with a bowl.
 var S12_POOR = [["fellow", MAENG_FATHER, -170], ["weaver", MAENG_MOTHER, -330], ["boy", MAENG_BOY, -470]];
 var S12_PEOPLE = [[420, 940, "inta"], [560, 960, "buakham"], [700, 940, "khammun"], [830, 965, "sinuan"], [960, 945, "bunma"]];
 var S12_LIFE = [
-  {name: "flock at dusk", kind: "flock", z: "sky", course: [[0.5, 2150, 200], [12.0, -150, 150]]},
+  {name: "flock at dusk", kind: "flock", z: "sky", course: [[0.5, 2150, 200], [13.66, -150, 150]]},
   {name: "blue magpie", kind: "magpie", z: "set", look: {size: 0.6},     // on the palace's finial: of the set
    course: [[S12_SHOTS[0], MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [S12_LONG, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4]]}
 ];

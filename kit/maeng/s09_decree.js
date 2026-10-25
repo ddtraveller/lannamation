@@ -6,13 +6,12 @@
 // own house to my daughter's palace shall marry the princess. One after another the princes' troughs come in from
 // their houses (off to the left) toward the palace: one runs out halfway, one sags to the ground, one humps up;
 // not one of them can do it. She laughs at each. They go.
-var S09_LONG = 55.54;
+var S09_LONG = 68.8;
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the cicadas in the palace's trees, low.
-var S09_SOUND = {calls: [[0, "cicadas", 0.35, 55.54]]};
-var S09_LINES = [[1.5, 3.88, "M050"], [5.6, 13.08, "M051"], [13.28, 16.54, "M052"], [16.74, 18.76, "M053"], [18.96, 25.98, "M054"],
-                 [26.18, 28.48, "M055"], [32.54, 38.66, "M056"]];
-var S09_KING = [[18.96, 25.58], [26.18, 28.08]];        // what the king says himself: his mouth moves
+var S09_SOUND = {calls: [[0, "cicadas", 0.35, 68.8]]};
+var S09_LINES = [[1.5, 5.99, "M050"], [7.78, 17.35, "M051"], [17.56, 23.57, "M052"], [23.79, 27.36, "M053"], [27.63, 35.06, "M054"], [35.32, 40.05, "M055"], [44.12, 51.91, "M056"]];
+var S09_KING = [[27.63, 34.72], [35.32, 39.66]];        // what the king says himself: his mouth moves
 var S09_GONG = [1800, 900];
 // Where each prince stands, his row, how far his trough gets, and how it goes wrong; each trough is laid from 27.54 s,
 // one 3 s after another, for 3.5 s.
@@ -33,8 +32,8 @@ function s09TroughLine(n, x) {
 // herald strikes the gong; a flock over as the princes come.
 var S09_LIFE = [
   {name: "blue magpie", kind: "magpie", z: "set", look: {size: 0.6},     // on the palace's finial: of the set
-   course: [[0, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [15.0, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [20.04, 2160, 110]]},
-  {name: "flock", kind: "flock", z: "sky", course: [[9.0, -150, 230], [19.54, 2150, 170]]}
+   course: [[0, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [20.96, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [28.79, 2160, 110]]},
+  {name: "flock", kind: "flock", z: "sky", course: [[12.19, -150, 230], [28.25, 2150, 170]]}
 ];
 
 // Scene 9, the entry the film calls (SCENES): t, its own second, 0 to S09_LONG (55.54 s): the princes come in from
@@ -87,17 +86,17 @@ function sceneDecree(t) {
         linKham(pen, [[-40, build.row], [MAENG_STAIR, build.row - 4]], lay, Object.assign({size: 1.2}, build.look));
       }});
     }
-    if (t < 40.54) {
-      walk = stroll(t, -200 - n * 60, build.at, 10.4 + n * 0.6, look);
+    if (t < 53.8) {
+      walk = stroll(t, -200 - n * 60, build.at, 14.01 + n * 0.6, look);
       walk.look.face = 1;
     } else {
-      walk = stroll(t, build.at, -300, 40.54 + n * 0.4, look);
+      walk = stroll(t, build.at, -300, 53.8 + n * 0.4, look);
     }
     sprites.push({name: "prince" + n, kind: "person", x: walk.x, y: build.row, draw: function () { person(walk.x, build.row, walk.look); }});
   });
   drawByZ(sprites);
-  if (t < 1.5 || t > 53.54) {
-    pen.fillStyle = "rgba(0, 0, 0, " + Math.max(1 - t / 1.5, between(t, 53.54, 55.54)).toFixed(3) + ")";
+  if (t < 1.5 || t > 66.8) {
+    pen.fillStyle = "rgba(0, 0, 0, " + Math.max(1 - t / 1.5, between(t, 66.8, 68.8)).toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);
   }
 }

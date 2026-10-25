@@ -4,26 +4,26 @@
 // Morning at the palace: the king comes out of his hall, rubbing his eyes, and sees the golden trough that has come
 // right up to his stair. "Whose is this? Follow it!" His man follows it out across the city and the fields, along
 // the path, to a little hut, and to Thukkhata, who says he built it, and there is more gold in his garden.
-var S11_LONG = 40.78;
+var S11_LONG = 44.28;
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the rooster of the king's morning, and the cicadas.
-var S11_SOUND = {calls: [[0, "cicadas", 0.5, 40.78], [0.8, "rooster-crow", 0.28]]};
-var S11_LINES = [[1.5, 5.78, "M064"], [5.98, 8.38, "M065"], [9.98, 14.26, "M066"], [15.78, 21.46, "M067"], [28.78, 37.02, "M068"]];
-var S11_SHOTS = [14.28, 27.28];                       // the palace; the yard, the king's man following the trough; at the garden
-var S11_KING = [9.98, 13.86];                         // when the king speaks
-var S11_LAD = [28.78, 36.62];                         // when Thukkhata speaks
+var S11_SOUND = {calls: [[0, "cicadas", 0.5, 44.28], [0.8, "rooster-crow", 0.28]]};
+var S11_LINES = [[1.5, 7.51, "M064"], [7.71, 12.24, "M065"], [13.86, 19.01, "M066"], [20.54, 26.98, "M067"], [34.31, 40.5, "M068"]];
+var S11_SHOTS = [19.04, 32.81];                       // the palace; the yard, the king's man following the trough; at the garden
+var S11_KING = [13.86, 18.62];                         // when the king speaks
+var S11_LAD = [34.31, 40.12];                         // when Thukkhata speaks
 var S11_CAMERA = [1234, 690, 1.4];                  // the last shot, close on the pen and the garden, as scene 8's
 
 // Its life: the blue magpie back on the palace roof's finial as the king wakes; by the hut the rooster crowing, it
 // is morning, as the king's man follows the trough there; hens in the garden.
 var S11_LIFE = [
   {name: "blue magpie", kind: "magpie", z: "set", look: {size: 0.6},     // perched on the palace: of the set
-   course: [[0, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [14.28, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4]]},
-  {name: "rooster", kind: "rooster", look: {feel: "happy"}, course: [[14.28, 250, 958], [27.28, 250, 958]]},
+   course: [[0, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [19.04, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4]]},
+  {name: "rooster", kind: "rooster", look: {feel: "happy"}, course: [[19.04, 250, 958], [32.81, 250, 958]]},
   // The hen pecks in front of the trough (nearer than it): her feet are lower than its nearest point, so drawByZ draws
   // her after it (owner, 2026-10-20: "fix the chickens in the story re their z layer"; she was once drawn between the
   // trough's far and near sides, under it).
-  {name: "hen", kind: "hen", course: [[27.28, 700, 966, "peck"], [32.78, 700, 966], [34.78, 780, 968, "peck"], [40.78, 780, 968]]}
+  {name: "hen", kind: "hen", course: [[32.81, 700, 966, "peck"], [37.27, 700, 966], [38.75, 780, 968, "peck"], [44.28, 780, 968]]}
 ];
 
 // Scene 11, the entry the film calls (SCENES): t, its own second, 0 to S11_LONG (40.78 s), in three shots cut through
@@ -66,22 +66,22 @@ function s11Palace(t) {                             // the king wakes, and the t
   pen.drawImage(city.back, 0, 0);
   pen.drawImage(city.front, 0, 0);
   maengPalace(t, "back");
-  var waking = t < 5.78, sees = t >= 5.78;
-  var king = maengPerson("noble", MAENG_KING, {id: "king", face: -1, feel: waking ? "sleepy" : t < 9.98 ? "surprised" : "concerned",
+  var waking = t < 7.51, sees = t >= 7.51;
+  var king = maengPerson("noble", MAENG_KING, {id: "king", face: -1, feel: waking ? "sleepy" : t < 13.86 ? "surprised" : "concerned",
                                                at: sees ? [MAENG_STAIR - 300, row - 30] : undefined, mouth: s11Speaking(t, S11_KING)});
   // Rubbing his eyes, a fist at each; then a hand up in wonder; then pointing along the trough: follow it! Each
   // change eased (poseSteps; they once came in one frame, a pop: checks/pop_check.py).
   var rub = 4 * Math.sin(t * 9);
   Object.assign(king, poseSteps(t, [
     [0, {reachA: [x - 8 + rub, floor - 196], reachB: [x + 14 - rub, floor - 196], fingersA: [0.8, 0.85, 0.9, 0.9, 0.6], fingersB: [0.8, 0.85, 0.9, 0.9, 0.6]}],
-    [5.78, {reachB: [x + 40, floor - 210]}],
+    [7.51, {reachB: [x + 40, floor - 210]}],
     [S11_KING[0], {reachA: [x - 130, floor - 150]}]
   ], 0.35));
   person(x, floor, king);
   maengPalace(t, "front");
-  var man = maengPerson("fellow", MAENG_HERALD, {id: "herald", face: 1, feel: t > 6.38 ? "surprised" : "neutral", at: [x, floor - 180]});
+  var man = maengPerson("fellow", MAENG_HERALD, {id: "herald", face: 1, feel: t > 8.54 ? "surprised" : "neutral", at: [x, floor - 180]});
   var walks = {x: 920, look: man};
-  if (t > 11.98) { walks = stroll(t, 920, -200, 11.98, man); }   // off he goes, along the trough
+  if (t > 16.31) { walks = stroll(t, 920, -200, 16.31, man); }   // off he goes, along the trough
   drawByZ(lifeSprites(t, S11_LIFE).concat([
     {name: "trough", kind: "trough", line: s11PalaceLine, draw: function () { linKham(pen, [[-40, row], [MAENG_STAIR, row - 4]], 1, {size: 1.2}); }},
     {name: "herald", kind: "person", x: walks.x, y: row + 40, draw: function () { person(walks.x, row + 40, walks.look); }}
@@ -115,7 +115,7 @@ function s11Follow(t) {                             // the yard by day: the king
   maengYardAt(t, 0, 0);
   maengYardTrough(1, "far");
   maengGarden(t, 6, 0, null);
-  var lad = maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: t > 21.78 ? "surprised" : "happy"});
+  var lad = maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: t > 27.31 ? "surprised" : "happy"});
   var man = stroll(t, 2050, 820, S11_SHOTS[0] + 0.3, maengPerson("fellow", MAENG_HERALD, {id: "herald", feel: "concerned",
                                                                                            at: [600, 900]}));
   if (t > man.arrives) { man.look.feel = "surprised"; }
@@ -145,10 +145,10 @@ function s11Garden(t) {                             // "I built it, and there is
     {name: "trough", kind: "trough", line: s11TroughLine, draw: function () { maengYardTrough(1, "near"); }},
     {name: "lad", kind: "person", x: MAENG_GARDEN[0] + 60, y: 948, draw: function () {
       person(MAENG_GARDEN[0] + 60, 948, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: "happy", mouth: s11Speaking(t, S11_LAD),
-                                                                        reachA: poseSteps(t, [[0, {}], [31.28, {reachA: [MAENG_GARDEN[0] + 200, 860]}], [34.78, {}]], 0.35).reachA}));
+                                                                        reachA: poseSteps(t, [[0, {}], [36.16, {reachA: [MAENG_GARDEN[0] + 200, 860]}], [38.75, {}]], 0.35).reachA}));
     }},
     {name: "herald", kind: "person", x: 1820, y: 958, draw: function () {
-      person(1820, 958, maengPerson("fellow", MAENG_HERALD, {id: "herald", face: -1, feel: t > 31.78 ? "surprised" : "happy"}));
+      person(1820, 958, maengPerson("fellow", MAENG_HERALD, {id: "herald", face: -1, feel: t > 36.53 ? "surprised" : "happy"}));
     }}
   ]));
   pen.restore();

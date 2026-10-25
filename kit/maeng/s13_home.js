@@ -4,24 +4,24 @@
 // and is gone. On the mountain's slope it runs up the trail to its cave and in, and from inside comes its long howl
 // of home. Last, Doi Khao Khwai in the morning, wide: a small temple stands on its shoulder today, where the tale is
 // still told.
-var S13_LONG = 40;
+var S13_LONG = 46.82;
 // Its sounds (sounds.py, mixed in by feelings.py as a life's calls are: [second, sound, loudness], and a bed's
 // seconds after them): the cicadas by day at the pen.
-var S13_SOUND = {calls: [[0, "cicadas", 0.5, 22]]};
-var S13_LINES = [[1.5, 4.48, "M073"], [5.6, 10.5, "M074"], [16.6, 20.2, "M075"], [24.2, 27.3, "M076"], [31.0, 38.07, "M077"]];
-var S13_SHOTS = [15.5, 30.0];                       // the crowd at the pen; the run home; the mountain today
+var S13_SOUND = {calls: [[0, "cicadas", 0.5, 25.75]]};
+var S13_LINES = [[1.5, 5.47, "M073"], [6.61, 12.46, "M074"], [18.62, 23.89, "M075"], [27.95, 33.13, "M076"], [36.83, 44.83, "M077"]];
+var S13_SHOTS = [17.52, 35.83];                       // the crowd at the pen; the run home; the mountain today
 var S13_CAMERA = [1234, 690, 1.4];                  // close on the pen, as scene 8's
-var S13_BOLT = 12.4;                                // when it leaps the fence
+var S13_BOLT = 14.42;                                // when it leaps the fence
 var S13_FLEE = 1.1;                                 // and then the seconds it takes to run out of the picture
 // The crowd: who comes, from which side, where each stops, and when it sets off.
-var S13_CROWD = [["inta", 2.0, 2100, 1560, 948], ["sinuan", 2.6, 2150, 1690, 965], ["khammun", 3.6, -200, 760, 950],
-                 ["buakham", 4.2, -260, 880, 968], ["bunma", 5.0, 2120, 1460, 975], ["dokkham", 5.6, -300, 980, 980],
-                 ["farmer", 6.4, 2200, 1800, 955], ["villager", 7.0, -320, 660, 962]];
+var S13_CROWD = [["inta", 2.2, 2100, 1560, 948], ["sinuan", 3.03, 2150, 1690, 965], ["khammun", 4.43, -200, 760, 950],
+                 ["buakham", 5.21, -260, 880, 968], ["bunma", 6.01, 2120, 1460, 975], ["dokkham", 6.61, -300, 980, 980],
+                 ["farmer", 7.59, 2200, 1800, 955], ["villager", 8.33, -320, 660, 962]];
 var S13_LIFE = [
   // its cries: afraid in the crowd, and its howl of home from inside the cave (the kit's sounds, sounds.py)
   {name: "the creature's cries", kind: "flock", z: "sky", course: [[0, -999, -999], [0.1, -999, -999]],
-   calls: [[11.2, "maeng-afraid", 0.97], [22.4, "maeng-home", 2.95]]},
-  {name: "flock over the mountain", kind: "flock", z: "sky", course: [[30.5, 2150, 260], [40.0, -150, 200]]}
+   calls: [[13.22, "maeng-afraid", 0.97], [26.15, "maeng-home", 2.95]]},
+  {name: "flock over the mountain", kind: "flock", z: "sky", course: [[36.33, 2150, 260], [46.82, -150, 200]]}
 ];
 
 // t: the scene's second: each of S13_CROWD walks in from its side at its second, turns to the pen, points (every
@@ -82,9 +82,9 @@ function sceneHome(t) {
       {name: "pen", kind: "kok", x: k[0], y: k[1], draw: function () {
         kok(pen, k[0], k[1], k[2], 1, {part: "back"});
         if (fled < 1) {
-          maengSiHuHaTa(at[0], at[1], {size: 0.45, face: 1, feel: t < 5.6 ? "concerned" : "fear",
+          maengSiHuHaTa(at[0], at[1], {size: 0.45, face: 1, feel: t < 6.61 ? "concerned" : "fear",
                                        step: leap > 0 ? leap * 6 + Math.max(0, t - S13_BOLT - 1.6) * 14 : undefined,
-                                       mouth: t > 11.0 && t < 12.2 ? 0.7 : 0});
+                                       mouth: t > 13.02 && t < 14.22 ? 0.7 : 0});
         }
         kok(pen, k[0], k[1], k[2], 1, {part: "front"});
       }},
