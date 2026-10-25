@@ -1,8 +1,8 @@
 {
- "_": "The complete Lanna Tales film of Chang Ngu, the snake-elephant, as rendered and published on 2026-10-23 (v1): the hero film (the render of sash.html in the series' voice that Maeng's film then opened with, 97.75 s), the studio card (sls_intro.html), then the tale (changngu/film.html, its 26 scenes, credits last), joined by chain.py with --fade 1,0.75. Each part starts where the one before ends. The tale's lines are its scene files' C01_LINES to C26_LINES and words.js, at these seconds while the scenes are the ones rendered: a new render of the tale writes its parts here again.",
+ "_": "The complete Lanna Tales film of Chang Ngu, the snake-elephant, as rendered and published on 2026-10-25 (v2, over v1 of 2026-10-23 at the same address): the hero film (sash_maeng.html, the very render Maeng's film opens with, 122.5 s: its SLOW, LENGTH and words are in maeng/series.json), the studio card (sls_intro.html), then the tale (changngu/film.html, its 26 scenes, credits last), joined by chain.py with --fade 1,0.75. Each part starts where the one before ends. The tale's lines are its scene files' C01_LINES to C26_LINES and words.js, at these seconds while the scenes are the ones rendered: a new render of the tale writes its parts here again.",
  "video": "https://krueng.ai/video/lanna_tales_changngu.mp4",
  "parts": [
-  {"name": "hero", "page": "sash.html", "seconds": 97.75},
+  {"name": "hero", "page": "sash_maeng.html", "seconds": 122.5},
   {"name": "card", "page": "sls_intro.html", "seconds": 12.0},
   {"name": "tale", "page": "changngu/film.html", "seconds": 1161.5}
  ]

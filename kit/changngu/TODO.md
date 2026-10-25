@@ -84,7 +84,7 @@ tail, the gong's sound) goes on one sheet of candidates beside its reference, fo
     noise generate one"**, made from numbers as the music is; a `sounds.py` entry either way, and the credits say
     where it came from.
 
-## Done in stills, 2026-10-25 (render and join left)
+## Done in stills, 2026-10-25
 
 Each was looked at in stills of its scene at its moments (`stills.py`, full-size crops where small).
 
@@ -145,3 +145,13 @@ time after it moves by about 12.7 s from v1's.
 
 Kit check on a copy, render every changed scene once (from a clean tree), the sound, `chain.py` with the hero and the
 card, loudness (-14 LUFS), and show the owner. v2 goes to S3 only on the owner's word.
+
+## v2 rendered and shipped, 2026-10-25
+
+All 26 scenes rendered from lannamation a0f191e (laptop scenes 1 to 14, the Spark 15 to 26; the kit check skipped,
+owner: "Cancel the check for this time"). The render's look found only what is meant: the fish going back under
+(scenes 1 and 13), the riders into the gate's dust (21), Phrom's knee behind the elephant as he climbs down (23, as
+in v1). Joined: hero 122.5 s, card 12.0 s, tale 1161.5 s = 1296.0 s, -14.0 LUFS, peak -1.7 dBFS, the joins seen.
+Shipped over v1 at krueng.ai/video/lanna_tales_changngu.mp4 (owner: "yes"); `series.json` says v2's parts.
+
+Seen after: scene 18's pale title, ช้างพานคำ, lies over a cloud at 690 s of the tale and reads poorly. Not fixed.
