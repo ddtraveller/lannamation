@@ -6,6 +6,11 @@
     python checks/kit_check.py model.html --quick --settle 30     # "same" as it would be with a pre-roll of 30 frames
     python checks/kit_check.py --changed       # only the pages that something they load has changed since they passed
 
+It says how it is getting on as it goes, a line at each stage, at once even when its output goes to a file (owner,
+2026-10-25: "make it so it outputs something after each major stage"): how many pages it will check; for each page
+the stages that take time (loaded and drew, the stills compared, the arms) with their seconds; then the page's line,
+how many pages are done, the time so far and about how long is left.
+
 Every item it checks is written down, PASS or FAIL with what was found, in out/checks/kit_check.txt (and .json),
 and the run's summary is added to out/checks/history.log (report.py). With --changed, a page is checked only when
 the page, a script it loads, or this check's own code has changed since the page last passed (out/checks/
@@ -45,6 +50,7 @@ import hashlib
 import os
 import re
 import sys
+import time
 from pathlib import Path
 
 from playwright.sync_api import Error, sync_playwright
@@ -245,6 +251,12 @@ def missing_of(page_file):
     return [name for name in asked if not (page_file.parent / name).exists()]
 
 
+def say(text):
+    """Prints a line of how the check is getting on, at once (a file it is written to gets it now, not at the end).
+    text: the line. Gives back nothing. e.g. say("    loaded and drew in 3.1 s")"""
+    print(text, flush=True)
+
+
 def check(browser, page_file, quick, settle=None):
     """One page: what was found, and a list of what failed.
 
@@ -252,6 +264,7 @@ def check(browser, page_file, quick, settle=None):
     quick: True to leave out the arms. settle: frames painted before a jump (sets the page's SETTLE), or None
     for the kit's own. Gives back (found, failed): found has long, draws, warnings, differ, past, ms, cues and
     arms as each was measured, or "skipped" for a page that needs a file not here; failed is a list of lines.
+    It says each stage that takes time as it ends (say()), with its seconds.
     e.g. found, failed = check(browser, HERE / "lanna.html", True)"""
     missing = missing_of(page_file)
     if missing:
@@ -259,6 +272,7 @@ def check(browser, page_file, quick, settle=None):
     page = browser.new_page(viewport={"width": 1920, "height": 1080})
     own, found, failed = [], {}, []
     page.on("pageerror", lambda error: own.append(str(error)))
+    began = time.time()
     try:
         page.goto(page_file.as_uri(), timeout=LOAD_SECONDS * 1000)
         page.evaluate("rendering = true")
@@ -267,11 +281,14 @@ def check(browser, page_file, quick, settle=None):
         found["long"] = long = page.evaluate("DURATION")
         page.evaluate(DRAWS, [long])
         found["draws"] = True
+        say("    %s: loaded and drew 24 frames in %.1f s" % (page_file.name, time.time() - began))
+        began = time.time()
         found["warnings"] = page.evaluate("typeof WARNINGS === 'undefined' ? [] : WARNINGS.slice()")
         for warning in found["warnings"]:
             failed.append("the kit warns: %s" % warning)
         counts = [page.evaluate(SAME, [round(long * part * 30), RUN, long]) for part in PLACES]
         found["differ"], found["past"] = max(c[0] for c in counts), max(c[1] for c in counts)
+        say("    %s: a still against the film, at %d places, in %.1f s" % (page_file.name, len(PLACES), time.time() - began))
         if found["past"] >= SAME_LIMIT:
             failed.append("a still does not show what the film shows: between a jump and a run %d pixels differ, "
                           "%d of them by more than a pixel's shift" % (found["differ"], found["past"]))
@@ -279,7 +296,9 @@ def check(browser, page_file, quick, settle=None):
         found["cues"] = cues = page.evaluate(CUES)
         failed.extend(cues["bad"] if cues else [])
         if not quick:
+            began = time.time()
             found["arms"] = arms = arms_check.measure(page)
+            say("    %s: the arms over the whole page in %.1f s" % (page_file.name, time.time() - began))
             allowed = KNOWN.get(page_file.name, {})
             for kind in ("flips", "inward", "folded"):
                 if len(arms[kind]) > allowed.get(kind, 0):
@@ -316,7 +335,11 @@ def main():
     parser.add_argument("--settle", type=int, help="measure with this many frames painted before a jump, not the kit's SETTLE")
     parser.add_argument("--changed", action="store_true", help="only what something it loads has changed since it last passed")
     args = parser.parse_args()
+    sys.stdout.reconfigure(line_buffering=True)     # each line goes out as it is printed, to a file as to a screen
     files = pages_of(args.pages)
+    start = time.time()
+    say("kit_check: %d pages%s%s, from %s" % (len(files), " (--quick: no arms)" if args.quick else "",
+                                                " (--changed)" if args.changed else "", time.strftime("%H:%M")))
     report = Report("kit_check")
     # what each page passed with last: the report's own (out/checks/kit_check_passed.json), which report.finish()
     # writes. A copy of its own written here first was then written over with the marks read at the start, and
@@ -353,7 +376,7 @@ def main():
         # that files may read files; nothing else about the drawing changes
         browser = playwright.chromium.launch(channel="chrome", args=["--allow-file-access-from-files"])
         print("%-16s %6s  %-7s %14s %9s  %s" % ("page", "length", "draws", "same (px)", "ms/frame", "arms: flips, inward, folded"))
-        for page_file in files:
+        for done, page_file in enumerate(files):
             name = page_file.relative_to(HERE).as_posix() if HERE in page_file.parents else page_file.name
             mark = fingerprint(page_file, args.quick)
             full = fingerprint(page_file, False)
@@ -369,6 +392,9 @@ def main():
             for line in failed:
                 print("    FAILED: %s" % line)
             bad += len(failed)
+            spent = time.time() - start
+            say("    [%d/%d pages, %d failures so far, %d:%02d gone, about %d min left]"
+                % (done + 1, len(files), bad, spent // 60, spent % 60, round(spent / (done + 1) * (len(files) - done - 1) / 60)))
             if "skipped" in found:
                 report.skip(name, found["skipped"])
                 continue
@@ -391,7 +417,8 @@ def main():
             if not failed:
                 passed[name] = mark
         browser.close()
-    print("%d pages, %d failures" % (len(files), bad))
+    spent = time.time() - start
+    print("%d pages, %d failures, in %d:%02d" % (len(files), bad, spent // 60, spent % 60))
     report.finish()
     sys.exit(1 if bad else 0)
 
