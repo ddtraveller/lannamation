@@ -7,12 +7,16 @@
 var C07_LONG = 46.4;
 var C07_SOUND = {calls: []};
 var C07_LINES = [[1.6, 7.9, "C027"], [8.4, 10.58, "C028"], [15.6, 22.8, "C029"], [23.0, 28.94, "C030"], [30.0, 34.44, "C031"], [37.0, 44.94, "C032"]];
+// Its life (decorate.js; owner, 2026-10-25): only a flock going home over the hill at dusk, in the quiet after his
+// first words; nothing moves after, through his wish and his passing (the kit's rule: nothing moves through a death).
+var C07_LIFE = [{name: "flock home at dusk", kind: "flock", layer: "back", course: [[10.8, -320, 260], [14.4, 2150, 200]]}];
 var C07_CUTS = [14.6, 29.4];
 
 // The climb, wide: the novice small on the path, up to the chedi; there he lifts his bowl above his head.
 function c07Climb(t) {
   pen.drawImage(cngSky("dusk"), 0, 0);
   cumulus(pen, t + 20, CNG_CLOUDS.dusk);
+  decorate(t, C07_LIFE, "back");
   pen.drawImage(cngKuKaeo(), 0, 0);
   var u = between(t, 0.5, 8), size = mix(0.42, 0.3, u);
   var x = mix(760, CNG_CHEDI[0] - 110, u), y = mix(800, CNG_CHEDI[1] + 8, Math.pow(u, 0.8));

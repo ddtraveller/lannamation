@@ -188,65 +188,143 @@ function riverReeds(brush, x, base, wide, size, t, seed) {
   }
 }
 
-// One small bird of the sandbar, the shared shape: an oval body, a round head, a short tail, on two thin legs, or in
-// flight with its wings up or down. c holds its colours and parts; look: face (1 right, -1 left), peck (0 to 1: its
+// One small bird of the sandbar, the shared shape (owner, 2026-10-25: "Upgrade the quality of the birds ... Add detail
+// and make sure the birds have eyes"; the pick of three, C): a teardrop body tilted with the peck, pale below, a neck
+// into a round head, a folded wing with pale feather edges and its dark primaries past the tail, a tail, two legs bent
+// back at the ankle with three toes each, a shadow on the sand; in flight long pointed wings bent at the wrist, dark at
+// the tips, a wader's legs trailing. The eye is drawn last, over any cap or mask, with a ring and a light, so it always
+// shows. c holds its colours and parts: legs (how long), back, belly, head, bill, wing, tip (the primaries), leg,
+// tail (how long), billLong, ring (the eye's ring, pale unless told), tailBand (a dark end to the tail), breast(b) and
+// mark(b, legs, hx, hy) (its markings, on the body and on the head). look: face (1 right, -1 left), peck (0 to 1: its
 // head down to the sand), fly (true: in the air, wings beating with t), t.
 function csBird(brush, x, y, size, look, c) {
   look = look || {};
-  var face = look.face || 1, peck = look.peck || 0, t = look.t || 0, legs = look.fly ? 0 : c.legs;
+  var face = look.face || 1, peck = look.peck || 0, t = look.t || 0, fly = !!look.fly;
+  var legs = fly ? 0 : c.legs, ink = "rgba(38, 28, 20, 0.8)", by = -legs - 10;
+  var wing = c.wing || c.back, tip = c.tip || "#2a221c";
   brush.save(); brush.translate(x, y); brush.scale(face * size, size);
-  if (!look.fly) {
-    brush.strokeStyle = c.leg; brush.lineWidth = 1.6;
-    brush.beginPath(); brush.moveTo(-2, -legs); brush.lineTo(-4, 0); brush.moveTo(3, -legs); brush.lineTo(4, 0); brush.stroke();
+  brush.lineCap = "round"; brush.lineJoin = "round";
+  if (!fly) {                                                            // its shadow on the sand
+    brush.fillStyle = "rgba(60, 44, 24, 0.18)"; brush.beginPath(); brush.ellipse(0, 1, 15, 2.6, 0, 0, 7); brush.fill();
   }
-  brush.fillStyle = c.back;
-  brush.beginPath(); brush.ellipse(0, -legs - 9, 16, 9, -0.15 + 0.3 * peck, 0, 7); brush.fill();
-  brush.fillStyle = c.belly;
-  brush.beginPath(); brush.ellipse(2, -legs - 5, 12, 5, -0.1, 0, Math.PI); brush.fill();
-  brush.fillStyle = c.back;
-  brush.beginPath(); brush.moveTo(-14, -legs - 11); brush.lineTo(-26 - c.tail, -legs - 8 - 6 * peck); brush.lineTo(-14, -legs - 6); brush.fill();
-  if (look.fly) {                                                           // the wings, beating
-    var beat = Math.sin(t * 18) * 0.9;
-    brush.fillStyle = c.wing || c.back;
-    [1, -1].forEach(function (side) {
-      brush.beginPath(); brush.moveTo(-4, -legs - 12); brush.lineTo(-18, -legs - 12 - side * 26 * beat); brush.lineTo(8, -legs - 12); brush.fill();
+  var beat = Math.sin(t * 16);
+  var flyWing = function (far) {                                         // a long pointed wing, bent at the wrist
+    var amp = far ? 0.75 : 1, wy = by - 4, wx = 1;
+    var wrist = [wx - 6, wy - 16 * beat * amp], end = [wx - 22, wy - (30 * beat + 4) * amp];
+    var outline = function () {
+      brush.beginPath(); brush.moveTo(wx + 5, wy);
+      brush.quadraticCurveTo(wrist[0] + 6, wrist[1] - 2 * Math.sign(beat || 1), wrist[0], wrist[1]);
+      brush.lineTo(end[0], end[1]);
+      brush.quadraticCurveTo(wrist[0] - 6, (wrist[1] + wy) / 2 + 3, wx - 10, wy + 1);
+      brush.closePath();
+    };
+    outline(); brush.fillStyle = wing; brush.fill();
+    if (far) { brush.fillStyle = "rgba(0, 0, 0, 0.22)"; brush.fill(); }  // the far wing, in the body's shade
+    brush.fillStyle = tip;                                               // the dark primaries at the tip
+    brush.beginPath(); brush.moveTo(wrist[0], wrist[1]); brush.lineTo(end[0], end[1]);
+    brush.lineTo(wrist[0] * 0.45 + end[0] * 0.55 + 3, wrist[1] * 0.45 + end[1] * 0.55 + 4); brush.closePath(); brush.fill();
+    outline(); brush.strokeStyle = ink; brush.lineWidth = 0.8; brush.stroke();
+  };
+  if (fly) { flyWing(true); }
+  if (!fly) {                                                            // the legs, bent back at the ankle, three toes
+    brush.strokeStyle = c.leg; brush.lineWidth = 1.5;
+    [-2, 3].forEach(function (lx) {
+      var ankle = [lx - 2.5, by + 5 + (legs + 5) * 0.5], foot = [lx + 1, 0];
+      brush.beginPath(); brush.moveTo(lx, by + 5); brush.lineTo(ankle[0], ankle[1]); brush.lineTo(foot[0], foot[1]);
+      brush.moveTo(foot[0], foot[1]); brush.lineTo(foot[0] + 5, foot[1] + 0.3);
+      brush.moveTo(foot[0], foot[1]); brush.lineTo(foot[0] + 3, foot[1] + 1.4);
+      brush.moveTo(foot[0], foot[1]); brush.lineTo(foot[0] - 3, foot[1] + 0.3); brush.stroke();
     });
+  } else if (c.legs > 15) {                                              // a wader's legs trail behind in flight
+    brush.strokeStyle = c.leg; brush.lineWidth = 1.4;
+    brush.beginPath(); brush.moveTo(-8, by + 3); brush.lineTo(-30 - c.tail, by + 5); brush.moveTo(-8, by + 4); brush.lineTo(-29 - c.tail, by + 7); brush.stroke();
   }
-  var hx = 14 - 4 * peck, hy = -legs - 18 + 14 * peck;
-  brush.fillStyle = c.head;
-  brush.beginPath(); brush.arc(hx, hy, 7, 0, 7); brush.fill();
-  brush.fillStyle = c.bill;
-  brush.beginPath(); brush.moveTo(hx + 6, hy - 1); brush.lineTo(hx + 6 + c.billLong, hy + 0.5 + 3 * peck); brush.lineTo(hx + 6, hy + 2); brush.fill();
-  brush.fillStyle = "#1a1612"; brush.beginPath(); brush.arc(hx + 2, hy - 1, 1.6, 0, 7); brush.fill();
+  brush.save(); brush.translate(0, by); brush.rotate(-0.08 + 0.38 * peck);
+  var tail = function () {
+    brush.beginPath(); brush.moveTo(-12, -4); brush.lineTo(-24 - c.tail, -2.5); brush.lineTo(-24 - c.tail, 1.5); brush.lineTo(-12, 3); brush.closePath();
+  };
+  tail(); brush.fillStyle = c.back; brush.fill();                        // the tail
+  if (c.tailBand) { brush.fillStyle = c.tailBand; brush.fillRect(-24 - c.tail, -2.5, 3.5, 4); }
+  tail(); brush.strokeStyle = ink; brush.lineWidth = 0.8; brush.stroke();
+  var body = function () {
+    brush.beginPath(); brush.moveTo(16, -3);
+    brush.bezierCurveTo(15, -11, 3, -12, -7, -8.5);
+    brush.bezierCurveTo(-13, -6, -17, -2, -18, 0);
+    brush.bezierCurveTo(-12, 5, -2, 9.5, 6, 8.5);
+    brush.bezierCurveTo(13, 7.5, 16.5, 3, 16, -3); brush.closePath();
+  };
+  body(); brush.fillStyle = c.back; brush.fill();
+  brush.save(); body(); brush.clip();
+  brush.fillStyle = c.belly; brush.beginPath(); brush.ellipse(5, 7.5, 15, 7.5, -0.12, 0, 7); brush.fill();
+  if (c.breast) { c.breast(brush); }
+  brush.fillStyle = "rgba(255, 255, 255, 0.22)"; brush.beginPath(); brush.ellipse(4, -7, 9, 2.5, -0.1, 0, 7); brush.fill();   // light on the back
+  brush.restore();
+  body(); brush.strokeStyle = ink; brush.lineWidth = 0.9; brush.stroke();
+  if (!fly) {                                                            // the folded wing, its primaries past the tail
+    var folded = function () {
+      brush.beginPath(); brush.moveTo(10, -6);
+      brush.bezierCurveTo(4, -10, -8, -9, -14, -4);
+      brush.lineTo(-25 - c.tail * 0.6, -1.5);
+      brush.bezierCurveTo(-14, 1.5, -2, 2, 10, -6); brush.closePath();
+    };
+    folded(); brush.fillStyle = wing; brush.fill();
+    brush.fillStyle = tip; brush.beginPath(); brush.moveTo(-14, -4); brush.lineTo(-25 - c.tail * 0.6, -1.5); brush.lineTo(-13, 0.5); brush.closePath(); brush.fill();
+    brush.strokeStyle = "rgba(255, 250, 235, 0.55)"; brush.lineWidth = 0.6;   // the coverts' pale edges
+    [[6, -6], [1, -6.5], [-4, -6]].forEach(function (p) { brush.beginPath(); brush.arc(p[0], p[1] + 2.5, 2.4, 0.2, Math.PI - 0.2); brush.stroke(); });
+    folded(); brush.strokeStyle = ink; brush.lineWidth = 0.8; brush.stroke();
+  }
+  brush.restore();
+  var hx = 14 - 4 * peck, hy = -legs - 19 + 14 * peck;
+  brush.fillStyle = c.head;                                              // the neck into the head
+  brush.beginPath(); brush.moveTo(7, by - 7); brush.quadraticCurveTo(hx - 4, hy + 2, hx - 5, hy + 1); brush.lineTo(hx + 3, hy + 5); brush.quadraticCurveTo(14, by - 1, 14, by + 1); brush.closePath(); brush.fill();
+  brush.beginPath(); brush.arc(hx, hy, 6.6, 0, 7); brush.fill();
+  brush.strokeStyle = ink; brush.lineWidth = 0.9; brush.beginPath(); brush.arc(hx, hy, 6.6, -2.4, 0.7); brush.stroke();
   if (c.mark) { c.mark(brush, legs, hx, hy); }
+  brush.fillStyle = c.bill;                                              // the bill, a little curved, tapering
+  brush.beginPath(); brush.moveTo(hx + 5.5, hy - 1.8);
+  brush.quadraticCurveTo(hx + 6 + c.billLong * 0.6, hy - 1.5 + 2 * peck, hx + 6.5 + c.billLong, hy + 0.8 + 3 * peck);
+  brush.quadraticCurveTo(hx + 6 + c.billLong * 0.5, hy + 1.5 + 2 * peck, hx + 5.5, hy + 1.8); brush.closePath(); brush.fill();
+  brush.fillStyle = c.ring || "#fbf8ef"; brush.beginPath(); brush.arc(hx + 2, hy - 1, 2.85, 0, 7); brush.fill();   // the eye, last
+  brush.fillStyle = "#14100c"; brush.beginPath(); brush.arc(hx + 2.3, hy - 1, 1.75, 0, 7); brush.fill();
+  brush.fillStyle = "#ffffff"; brush.beginPath(); brush.arc(hx + 2.8, hy - 1.6, 0.67, 0, 7); brush.fill();
+  if (fly) { flyWing(false); }
   brush.restore();
 }
 
-// The small pratincole: sandy grey, a black line from the bill through the eye, a short black bill, short legs; it sits
-// close on the sand and flies like a swallow. At (x, y), its feet. e.g. pratincole(pen, 700, 770, 1, {face: -1, t: t});
+// The small pratincole: sandy grey, a buff breast, a black line from the bill through the eye, a short black bill,
+// short legs, dark wingtips and a dark end to the tail; it sits close on the sand and flies like a swallow. At (x, y),
+// its feet. e.g. pratincole(pen, 700, 770, 1, {face: -1, t: t});
 function pratincole(brush, x, y, size, look) {
   csBird(brush, x, y, size, look, {legs: 6, back: "#b8ab94", belly: "#efe7d6", head: "#b8ab94", bill: "#2a2420", wing: "#8a7e6a",
-    leg: "#3a3430", tail: 4, billLong: 5, mark: function (b, legs, hx, hy) {
-      b.strokeStyle = "#1a1612"; b.lineWidth = 1.6; b.beginPath(); b.moveTo(hx + 6, hy); b.lineTo(hx - 5, hy + 2); b.stroke();
-      b.fillStyle = "#2a2420"; b.fillRect(-24, -legs - 10, 8, 3); }});
+    tip: "#2e2a26", leg: "#3a3430", tail: 4, billLong: 5, tailBand: "#2a2420",
+    breast: function (b) { b.fillStyle = "#d8c8a8"; b.beginPath(); b.ellipse(12, 1, 6, 5, 0, 0, 7); b.fill(); },
+    mark: function (b, legs, hx, hy) {
+      b.strokeStyle = "#1a1612"; b.lineWidth = 1.2; b.beginPath(); b.moveTo(hx + 6, hy - 0.5); b.lineTo(hx - 5, hy + 1.5); b.stroke(); }});
 }
 
-// The river lapwing: a black cap and throat, grey-brown back, white belly with a black patch, long black legs.
-// e.g. riverLapwing(pen, 900, 770, 1, {face: 1});
+// The river lapwing: a black cap and throat, a white cheek, a grey breast, a grey-brown back, a white belly with a
+// black patch, black wingtips and tail end, long black legs. e.g. riverLapwing(pen, 900, 770, 1, {face: 1});
 function riverLapwing(brush, x, y, size, look) {
-  csBird(brush, x, y, size, look, {legs: 22, back: "#9a8a70", belly: "#f4f2ea", head: "#f0ece2", bill: "#1a1612", wing: "#3a3430",
-    leg: "#1a1612", tail: 0, billLong: 7, mark: function (b, legs, hx, hy) {
-      b.fillStyle = "#1a1612"; b.beginPath(); b.arc(hx, hy - 3, 6, Math.PI, 0); b.fill();
-      b.fillRect(hx - 2, hy + 3, 5, 7); b.beginPath(); b.arc(6, -legs - 4, 3.5, 0, 7); b.fill(); }});
+  csBird(brush, x, y, size, look, {legs: 22, back: "#9a8a70", belly: "#f4f2ea", head: "#f0ece2", bill: "#1a1612", wing: "#8a7a62",
+    tip: "#1a1612", leg: "#1a1612", tail: 0, billLong: 7, tailBand: "#1a1612",
+    breast: function (b) {
+      b.fillStyle = "#8e8a80"; b.beginPath(); b.ellipse(12, 0, 5, 6, 0, 0, 7); b.fill();
+      b.fillStyle = "#1a1612"; b.beginPath(); b.ellipse(3, 4, 3.4, 2.6, 0, 0, 7); b.fill(); },
+    mark: function (b, legs, hx, hy) {
+      b.fillStyle = "#1a1612"; b.beginPath(); b.arc(hx, hy - 1.5, 6.7, Math.PI * 0.95, Math.PI * 2.05); b.closePath(); b.fill();   // the cap
+      b.beginPath(); b.moveTo(hx + 1, hy + 3); b.lineTo(hx + 4, hy + 3.5); b.lineTo(hx + 1, hy + 11); b.lineTo(hx - 2, hy + 10); b.closePath(); b.fill(); }});   // the throat
 }
 
-// The little ringed plover: brown back, a white collar and a black band across the breast, a yellow ring round the eye.
-// e.g. ringedPlover(pen, 640, 775, 1, {peck: 0.6});
+// The little ringed plover: a brown back, a white collar and a black band across the breast, a black mask under a
+// white brow, a yellow ring round the eye, yellow legs. e.g. ringedPlover(pen, 640, 775, 1, {peck: 0.6});
 function ringedPlover(brush, x, y, size, look) {
-  csBird(brush, x, y, size, look, {legs: 10, back: "#a08868", belly: "#f6f2e8", head: "#a08868", bill: "#1a1612",
-    leg: "#c9a84a", tail: 2, billLong: 4, mark: function (b, legs, hx, hy) {
-      b.fillStyle = "#1a1612"; b.fillRect(hx - 6, hy + 5, 6, 4);
-      b.strokeStyle = "#e8c83a"; b.lineWidth = 1; b.beginPath(); b.arc(hx + 2, hy - 1, 2.6, 0, 7); b.stroke(); }});
+  csBird(brush, x, y, size, look, {legs: 10, back: "#a08868", belly: "#f6f2e8", head: "#a08868", bill: "#1a1612", wing: "#957c5e",
+    tip: "#3a2e24", leg: "#c9a84a", tail: 2, billLong: 4, ring: "#f2d23a",
+    breast: function (b) { b.fillStyle = "#1a1612"; b.beginPath(); b.ellipse(12, 0, 4, 7, 0.2, 0, 7); b.fill(); },
+    mark: function (b, legs, hx, hy) {
+      b.fillStyle = "#f6f2e8"; b.beginPath(); b.ellipse(hx + 1, hy + 4.5, 6, 2.2, 0, 0, 7); b.fill();   // the white collar
+      b.fillStyle = "#1a1612"; b.beginPath(); b.moveTo(hx + 6, hy - 3); b.lineTo(hx - 2, hy - 2.5); b.lineTo(hx - 3, hy + 1); b.lineTo(hx + 5, hy + 0.5); b.closePath(); b.fill();   // the mask
+      b.fillStyle = "#f6f2e8"; b.fillRect(hx + 1, hy - 6, 4.5, 2.4); }});   // the white brow
 }
 
 // The red avadavat: a tiny finch, the male crimson with white spots and a red bill; drinking at the margin.
@@ -483,6 +561,10 @@ function swaddledBaby(brush, x, y, size) {
   brush.strokeStyle = "#5a3a2a"; brush.lineWidth = 2 * s;
   brush.beginPath(); brush.arc(x - 38 * s, y - 4 * s, 4 * s, 0.2, Math.PI - 0.2); brush.stroke();
   brush.beginPath(); brush.arc(x - 28 * s, y - 4 * s, 4 * s, 0.2, Math.PI - 0.2); brush.stroke();
+  brush.fillStyle = "rgba(232, 120, 110, 0.35)";       // pink cheeks, and a small smile (owner, 2026-10-25)
+  brush.beginPath(); brush.arc(x - 44 * s, y + 3 * s, 3.6 * s, 0, 7); brush.arc(x - 22 * s, y + 3 * s, 3.6 * s, 0, 7); brush.fill();
+  brush.lineWidth = 1.8 * s;
+  brush.beginPath(); brush.arc(x - 33 * s, y + 1.5 * s, 4.5 * s, 0.45, Math.PI - 0.45); brush.stroke();
   brush.fillStyle = "#2a2220";
   brush.beginPath(); brush.arc(x - 36 * s, y - 21 * s, 5 * s, 0, 7); brush.fill();
 }

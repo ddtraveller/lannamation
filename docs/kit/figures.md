@@ -568,6 +568,13 @@ ancestors.
   fist to `SPEAR_LONG` (560) above the ground, an iron blade like a leaf at the top and under it a tassel of the
   head-cloth's colour, swinging a little (red for the Tai, black for the Khom). It is drawn behind the fingers, as the
   walking stick is.
+- `holding: "dap"` (2026-10-25, for the boys' sword practice in Chang Ngu): a Lanna sword (chiangsaen.js `dap()`)
+  in the near fist. The owner: "The swords should be in front of the hands and behind the fingers": `hand()` takes a
+  `pose.held` painter and paints it after the palm and before the fingers and thumb, so they close over the hilt. The
+  blade is square to the forearm, `DAP_TILT` (0.3 rad) forward of it: upright at a guard with the forearm level,
+  falling back as the arm is raised ("the angle of the sword should naturally fall back"). `look.dap`, its size in the
+  figure's units, 0.55 unless told. A child's arm is short beside its head: raise it up and forward, not straight up,
+  or the falling blade crosses the face (s11's `c11Stroke()`).
 - `stroll()` leans the walker into the walk as they set off and back as they stop (`STROLL_LEAN`, 0.07 of `bend`
   at the most, rising and falling over the first and the last stride), from the kit's research into 2D animation:
   a body leans into its acceleration. Measured on `walk.html`: the crown goes about 0.11 of a torso ahead of the hip as

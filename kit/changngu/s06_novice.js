@@ -26,6 +26,7 @@ function c06Lane(t) {
   var walk = between(t, 0.5, 8), x = mix(200, 900, walk), step = walk > 0 && walk < 1 ? (t - 0.5) / BEAT / 2 : 0;
   var giving = between(t, 9.5, 11) * (1 - between(t, 12.5, 13.5));   // her hand to his bowl and back
   var leaves = between(t, 14, 16), xn = x + 500 * leaves;
+  decorate(t, cngYard(1650, 905, 8), "back");                 // the yard's fowl (owner, 2026-10-25)
   drawByZ([
     {name: "novice", kind: "person", x: xn, y: CNG_LANE_Y, draw: function () {
       c06Novice(xn, CNG_LANE_Y, {face: 1, step: leaves > 0 ? (t - 14) / BEAT / 2 : step});

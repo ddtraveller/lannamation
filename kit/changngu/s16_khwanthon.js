@@ -7,6 +7,13 @@
 var C16_LONG = 35;
 var C16_SOUND = {calls: []};
 var C16_LINES = [[1.4, 6.14, "C074"], [7.0, 9.38, "C075"], [12.5, 15.5, "C076"], [18.5, 22.58, "C077"], [25.0, 29.56, "C078"]];
+// Its life (decorate.js; owner, 2026-10-25): a flock over the river in the quiet after "C075", a barb that leaps by
+// the sandbar, twice.
+var C16_LIFE = [
+  {name: "flock over the river", kind: "flock", layer: "back", course: [[9.4, 2150, 240], [12.4, -320, 190]]},
+  {name: "barb", kind: "fish", layer: "back", look: {size: 1.1}, course: [[2.0, 1420, 712, "hide"], [4.0, 1420, 712], [4.8, 1540, 712, "hide"], [99, 1540, 712, "hide"]]},
+  {name: "barb again", kind: "fish", layer: "back", look: {size: 1}, course: [[14.0, 1500, 712, "hide"], [16.0, 1500, 712], [16.8, 1620, 712, "hide"], [99, 1620, 712, "hide"]]}
+];
 var C16_SWIM = CNG_BANK - 54;
 
 // The name of the place in gold over the river, as the voice says it. e.g. c16Name(20);
@@ -38,6 +45,7 @@ function cngSceneKhwanthon(t) {
   cumulus(pen, t + 80, CNG_CLOUDS.day);
   pen.drawImage(river.back, 0, 0);
   cngRiverLife(t, {flushed: 1 - between(t, 0, 20)});
+  decorate(t, C16_LIFE, "back");
   var upstream = between(t, 11, 30), shake = t > 7 && t < 11 ? Math.sin((t - 7) * 9) * 0.5 : 0;
   var ex = mix(1000, 1500, upstream), bob = 6 * Math.sin(t * 1.4);
   var e = elephant(ex, C16_SWIM + 210 + bob, {size: 0.62, face: shake > 0 ? 1 : -1, colour: "#f1ddd3", cloth: "#c9962a",
@@ -56,9 +64,9 @@ function cngSceneKhwanthon(t) {
   var hand = cngLocal(j.wristA);
   elephantHook(pen, hand[0], hand[1] + 30 * size, size * 0.9, {angle: -0.9 - 0.4 * reach});
   var kids = [];
-  for (var k = 0; k < 12; k++) {
+  for (var k = 0; k < CNG_KIDS; k++) {                     // all of them, three deep, as they huddled (sets.js cngHuddle)
     (function (k) {
-      var x = 160 + (k % 6) * 110 + Math.floor(k / 6) * 50, y = CNG_BANK + 50 + Math.floor(k / 6) * 44, c = CNG_CHILDREN[k % CNG_CHILDREN.length];
+      var x = cngHuddle(k)[0], y = cngHuddle(k)[1], c = CNG_CHILDREN[k % CNG_CHILDREN.length];
       var runs = k === 3 ? between(t, 25.4, 33) : 0, rx = mix(x, -260, runs);
       kids.push({name: "child " + k, kind: "person", x: rx, y: y, draw: function () {
         person(rx, y, cngPerson(c.kind, c.look, {id: "child" + k, size: cngAgeSize(9 + (k % 4)), face: runs > 0 ? -1 : 1,

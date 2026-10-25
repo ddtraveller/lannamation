@@ -124,7 +124,7 @@ var Z_KINDS = {
   dragon: "*", naga: "*", luang: "*", lantern: "*",
   birds: null, flock: null, magpie: null, hornbill: null, sunbird: null, egret: null, owl: null, bats: null, moth: null,
   fireflies: null, khom: null, khomphat: null, khomdao: null, khombua: null,
-  gourami: null, barb: null, flyingbarb: null, snakehead: null, tokay: null, gecko: null
+  gourami: null, barb: null, flyingbarb: null, snakehead: null, tokay: null, gecko: null, fish: null
 };
 
 // zOf(kind, z, depth): the band, a number, one of that kind is drawn in.
@@ -199,7 +199,7 @@ var STYLE = {
   sun: "flames",                        // a disc ringed with flame scrolls; "face" for the 1930s sun
   lens: "blur(0.5px) saturate(0.93) sepia(0.14) contrast(1.04)",  // the old print
   wide: 1440,                           // the sheet's width: 1440 with black bars, 1920 to fill the screen (read before this sheet: see WIDE)
-  film: 1,                              // how much of the old print shows: grain, flicker, dust, scratches, dark corners, the shake in the gate; 0 is a clean picture
+  film: 1,                              // how much of the old print shows: grain, flicker, dust, dark corners, the shake in the gate; 0 is a clean picture
   pixels: 1,                            // device pixels per film pixel: 2 draws everything at twice the size and lets the browser smooth it down (read before this sheet: see PIX)
   light: null,                          // where the light comes from, [across, down]: [-0.6, 0.5] throws a shadow to the right; null for the soft pool alone
   letters: null                         // the fonts of the film's words, {thai, latin}; null for the kit's own (read before this sheet: see LETTERS)
@@ -929,6 +929,7 @@ var FEELINGS = {
   laughing: {laugh: 1, smile: 1, bend: -0.04, tilt: -0.08},
   sad: {sad: 1, bend: 0.05, tilt: 0.12},
   concerned: {worry: 1, bend: 0.03, tilt: 0.06},
+  thinking: {worry: 0.6, anger: 0.35, sad: 0.4, bend: 0.03, tilt: 0.2},   // thinking hard: the owner's pick C, 2026-10-25
   angry: {anger: 1, bend: 0.1, tilt: 0.03},
   sleepy: {sleepy: 1, bend: 0.04, tilt: 0.08},
   satiated: {full: 1, smile: 0.8, bend: -0.07, tilt: -0.06},
@@ -2744,8 +2745,10 @@ function pinchThumb(t0, t1, t2, tip, amount) {
 }
 
 // A bare hand drawn in the round. x, y, angle and pose are listed at the top of this section (pixels and radians,
-// as glove() takes them). Reads clock (a little life in the fingers, unless pose.still). Returns nothing: it draws
-// with pen.
+// as glove() takes them); pose.held, a function (x, y, ax, ay), draws a thing held in the fist after the palm and
+// before the fingers and the thumb, so they close over it: (x, y) the grip's middle and (ax, ay) the way across the
+// palm toward the thumb, in the hand's own frame (pen is in it while it draws). Reads clock (a little life in the
+// fingers, unless pose.still). Returns nothing: it draws with pen.
 // e.g. hand(40, -60, 1.2, {curls: REST, thumb: 1, palm: 0.2});
 function hand(x, y, angle, pose) {
   var curls = pose.curls || REST, spread = pose.spread === undefined ? 0.15 : pose.spread;
@@ -2850,12 +2853,23 @@ function hand(x, y, angle, pose) {
   pen.save();
   pen.translate(x, y);
   pen.rotate(angle);
-  heavy(ink);                                       // 1. the whole hand in ink: its outline
-  for (n = 0; n < parts.length; n++) { fill(parts[n], line, ink); }
-  light();
-  for (n = 0; n < units.length; n++) {              // 2. each unit, the furthest first: a thin line of ink round it, then its colour
-    for (k = 0; k < units[n].parts.length; k++) { fill(units[n].parts[k], line * 0.55, ink); }
-    for (k = 0; k < units[n].parts.length; k++) { fill(units[n].parts[k], 0, colour); }
+  var paint = function (some) {                     // 1. the hand in ink: its outline; 2. each unit, the furthest first: a thin line of ink round it, then its colour
+    heavy(ink);
+    some.forEach(function (one) { one.parts.forEach(function (q) { fill(q, line, ink); }); });
+    light();
+    some.forEach(function (one) {
+      for (k = 0; k < one.parts.length; k++) { fill(one.parts[k], line * 0.55, ink); }
+      for (k = 0; k < one.parts.length; k++) { fill(one.parts[k], 0, colour); }
+    });
+  };
+  if (pose.held) {                                  // a thing held in the fist: over the palm, under the fingers and the thumb
+    var flat = function (one) { return one.parts[0][9] === "palm" || one.parts[0][9] === "heel"; };
+    paint(units.filter(flat));
+    var grip = see(HAND.knuckle * 0.55, 0, -3), across = see(0, 1, 0), acrossLong = Math.hypot(across[0], across[1]) || 1;
+    pose.held(grip[0], grip[1], across[0] / acrossLong, across[1] / acrossLong);
+    paint(units.filter(function (one) { return !flat(one); }));
+  } else {
+    paint(units);
   }
   // 3. what is drawn on the skin: the knuckles and the nails on the back of
   // the hand, the creases on the palm, each as far as that side faces us
@@ -4338,12 +4352,13 @@ var COMBED = {
          [2, -318, -14, -358, -34, -364]]
 };
 
+var DAP_TILT = 0.3;                                // a held dap's blade leans this far forward of square to the forearm (radians): upright at a forearm a little raised
 var SPEAR_LONG = 560;                            // a spear's length, from the ground: well above a grown man's head
 
 var HIDEABLE = {hair: true};                       // the parts a look may hide (look.hidden)
 var LOOK_KEYS = {};
 
-["age", "anger", "at", "bangles", "bare", "beard", "bend", "blink", "body", "build", "bun", "buttons", "cap", "coat", "collar", "dance", "drum", "earplug", "eyes", "face",
+["age", "anger", "at", "bangles", "bare", "beard", "bend", "blink", "body", "build", "bun", "buttons", "cap", "coat", "collar", "dance", "dap", "drum", "earplug", "eyes", "face",
  "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
  "handB", "hat", "head", "hidden", "holding", "id", "late", "laugh", "lady", "legs", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "reachA", "reachB",
  "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt", "sleepy",
@@ -4457,8 +4472,8 @@ var LOOK_KEYS = {};
 //                   0 to 1 each: what the face feels (see FEELINGS); sleepy also nods and
 //                   yawns, full shuts its eyes now and then, and laugh laughs, each at the
 //                   person's own time
-//   feel            a feeling by name: "neutral", "happy", "laughing", "sad", "concerned", "angry",
-//                   "sleepy", "satiated", "surprised", or "fear" ("calm", "joy", "surprise"
+//   feel            a feeling by name: "neutral", "happy", "laughing", "sad", "concerned", "thinking",
+//                   "angry", "sleepy", "satiated", "surprised", or "fear" ("calm", "joy", "surprise"
 //                   and "anger" still work); it also leans the body and tilts the head,
 //                   unless bend or tilt is given
 //   dance           true: a lifted hand takes the pose of Thai dance
@@ -4472,6 +4487,11 @@ var LOOK_KEYS = {};
 //   shaved, plain   no hair; no waist cloth, collar or pocket (a monk's robe)
 //   holding         "lotus": a lotus in the near hand; "stick": a walking stick, from the
 //                   near hand to the ground (the hand goes to it unless handA is given);
+//                   "dap": a Lanna sword (chiangsaen.js dap()) in the near fist, its hilt across the palm,
+//                   over the palm and under the fingers, the blade a little forward of square to the
+//                   forearm (DAP_TILT): upright when the forearm is about level, falling back as the arm
+//                   is raised (owner, 2026-10-25);
+//                   look.dap its size, 0.55 unless told, in the figure's own units;
 //                   "spear": a soldier's spear stood on the ground, a shaft of bamboo up
 //                   through the near fist to well above the head, an iron blade, and a
 //                   tassel of the head-cloth's colour under it (the soldiers of Chang Ngu)
@@ -5308,9 +5328,10 @@ function personReach(fig) {
     var angle = Math.atan2(wrist[1] - wrist[3], wrist[0] - wrist[2]) + (near ? 1 : -1) * beat
               + (bend !== undefined ? bend : near && look.holding === "stick" ? 0.9 : 0);   // a hand on a stick lies over its top
     var lifted = look.dance ? 1.6 : 0.7 + 0.3 * up;
-    var open = look.grip || (near && (look.holding === "stick" || look.holding === "spear")) ? 0.12 : given[1] < 0 ? lifted : rest ? 0.1 : 0.35;   // a grip is a fist round a thing
+    var open = look.grip || (near && (look.holding === "stick" || look.holding === "spear" || look.holding === "dap")) ? 0.12 : given[1] < 0 ? lifted : rest ? 0.1 : 0.35;   // a grip is a fist round a thing
     var curls = fingers || (rest ? (STYLE.hands === "flat" ? (near ? REST_A : REST_B) : REST) : undefined);
     if (near && (look.holding === "stick" || look.holding === "spear")) { curls = undefined; }
+    if (near && look.holding === "dap" && !fingers) { curls = [0.92, 0.95, 0.97, 0.98, 0.7]; }   // a fist round the hilt
     var thumb = near ? -1 : given[1] < 0 ? 1 : -1;  // a lifted hand turns its thumb to the head; a hanging hand turns its thumb forward
     var palm = rest ? 0.15 : given[1] < 0 ? (look.dance ? 0.15 : 0.85) : 0.3;   // the back of a hanging hand; the palm of a lifted one; the dance hand's back, its long nails seen whole
     var nails = look.nails === "long" ? "long" : look.nails && given[1] < 0;   // long nails are worn all the time; tips show on a lifted hand
@@ -5382,7 +5403,19 @@ function personReach(fig) {
     pen.scale(handSize, handSize);
     if (near && look.parasol) { gripHand(0, 0, pose.angle); }   // a hand closed round the parasol's handle, from the photograph
     else if (look.gloves || STYLE.hands === "flat") { glove(0, 0, pose.angle, pose.thumb, !look.gloves, pose.open, pose.nails, pose.curls); }
-    else { hand(0, 0, pose.angle, roundPose(pose)); }
+    else {
+      var round = roundPose(pose);
+      if (near && look.holding === "dap") {         // a Lanna sword in the fist: its hilt across the palm, the blade out the thumb's side
+        round.held = function (gx, gy) {             // the blade square to the forearm, up from it, leaning DAP_TILT forward
+          if (typeof dap !== "function") { warn("holding \"dap\" needs chiangsaen.js"); return; }
+          var forearm = Math.atan2(wrist[1] - wrist[3], wrist[0] - wrist[2]);   // the figure's own frame: forward is +x
+          var way = forearm - Math.PI / 2 + DAP_TILT - pose.angle, bx = Math.cos(way), by = Math.sin(way);   // into the hand's frame
+          var size = (look.dap || 0.55) / handSize, top = [gx + bx * 35 * size, gy + by * 35 * size];   // the hilt's middle in the fist
+          dap(pen, top[0], top[1], size, {angle: Math.atan2(bx, -by)});
+        };
+      }
+      hand(0, 0, pose.angle, round);
+    }
     pen.restore();
   }
   // The far arm (A, on the side the figure faces, the far shoulder of a
@@ -11390,7 +11423,8 @@ function film(t, scenes) {
   screen.filter = "none";
   screen.translate(SIDE, 0);
   if (wear > 0) {
-  // grain, a flicker, specks of dust, now and then a scratch, and dark corners
+  // grain, a flicker, specks of dust and dark corners (no scratches since 2026-10-25, owner: "remove the vertical yellow
+  // lines that pop up to make it look like an old film from the framework")
   screen.globalAlpha = wear;
   screen.drawImage(GRAIN[frame % 3], 0, 0, WIDE, 1080);
   screen.globalAlpha = 1;
@@ -11400,10 +11434,6 @@ function film(t, scenes) {
   for (var speck = 0; speck < 4 * wear; speck++) {
     screen.fillRect(dice(frame * 7 + speck) * WIDE, dice(frame * 11 + speck) * 1080,
                     2 + dice(frame + speck) * 3, 2 + dice(frame * 3 + speck) * 3);
-  }
-  if (dice(frame * 0.37) < 0.06 * wear) {
-    screen.fillStyle = "rgba(255, 250, 235, 0.35)";
-    screen.fillRect(dice(frame * 1.7) * WIDE, 0, 2, 1080);
   }
   var corners = screen.createRadialGradient(WIDE / 2, 540, 520, WIDE / 2, 540, 960);
   corners.addColorStop(0, "rgba(20, 10, 0, 0)");

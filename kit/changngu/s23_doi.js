@@ -16,6 +16,7 @@ function c23Home(t) {
   var village = cngVillage(), cam = WIDE * 0.66;
   pen.drawImage(cngSky("day"), 0, 0);
   pen.save(); pen.translate(-cam, 0); pen.drawImage(village.back, 0, 0); pen.restore();
+  decorate(t, cngYard(300, 884, 7), "back");                 // the yard's fowl (owner, 2026-10-25)
   csBand(pen, 0, 820, WIDE, 260, "#b9a070", "#9a8058");
   var kneel = between(t, 1, 3) * (1 - between(t, 8, 9.5)), off = t > 6.2, go = between(t, 9, 15.3);
   var ex = mix(980, WIDE + 400, go * go);

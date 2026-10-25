@@ -708,6 +708,11 @@ The rules the first round taught:
 - **What a scene's camera does not show is not decorated**: scene 7's close shot never shows the hut's wall,
   so its tokay was left out there.
 
+- **Two more kinds** (2026-10-25, for the river of Chang Ngu): `egret` (northbirds.js's cattle egret: walks, pecks
+  at a "peck" stop, flies with `look.fly`) and `fish` (a barb, or `look.kind` of `NATIVE_FISH`, that leaps from stop
+  to stop out of the water in an arc, a ring where it leaves and goes back in; give its stops "hide"). Both have no
+  z of their own: give one in a scene drawn by `drawByZ`.
+
 ## What is drawn over what: z (2026-10-21)
 
 The owner: "One thing that constantly bites the QA process is the Z layer for the creatures. Go through and set a

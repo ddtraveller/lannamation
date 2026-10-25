@@ -30,7 +30,7 @@ function c15Water(t) {
 // e.g. c15ChildAt(28.9, 0, 1080).leap   // 0.5, high over the water
 function c15ChildAt(t, k, neckX) {
   var from = 27 + 0.25 * k, run = between(t, from, from + 1.6), leap = between(t, from + 1.6, from + 2.2);
-  var bank = [120 + (k % 7) * 70, CNG_BANK + 90 + Math.floor(k / 7) * 34];
+  var bank = cngHuddle(k);
   var water = [neckX + 80 + (k % 5) * 70 - Math.floor(k / 5) * 40, C15_SWIM + 230 * cngAgeSize(9 + (k % 4))];
   var edge = [water[0] - 160, CNG_BANK + 30];
   if (leap <= 0) { return {x: mix(bank[0], edge[0], run), y: mix(bank[1], edge[1], run), run: run, leap: 0, swims: false}; }
@@ -54,7 +54,7 @@ function cngSceneThird(t) {
   pen.drawImage(cngSky("day"), 0, 0);
   cumulus(pen, t + 50, CNG_CLOUDS.day);
   pen.drawImage(river.back, 0, 0);
-  cngRiverLife(t, {flushed: between(t, 13, 15)});
+  cngRiverLife(t, {flushed: between(t, 13, 15), away: t - 15});   // and fly away again
   var hx = c15Head(t), neck = null, elephantAt = null;
   if (!changed && t > 12) {
     var snake = riverSnake(hx, C15_SWIM, {size: 0.85, face: -1, kind: "pearl"});
@@ -91,7 +91,7 @@ function cngSceneThird(t) {
     var px = mix(1260, land[0], leap), py = mix(CNG_BANK + 30, land[1], leap) - 110 * Math.sin(Math.PI * leap);
     leaper = {name: "phrom", kind: "person", x: px, y: py, draw: function () {
       var j = person(px, py, cngPerson("boy", CNG_PHROM, {id: "phrom", size: size, face: leap > 0 ? -1 : 1,
-                                                         feel: t < 13 ? "concerned" : "angry",
+                                                         feel: t < 13 ? "thinking" : "angry",   // thinking hard (owner, 2026-10-25)
                                                          reachA: t < 21 ? [px - 40, py - 380 * size, between(t, 14.2, 14.5) * (1 - between(t, 19.3, 19.6))]   // his arm up as he calls, eased
                                                                  : [(neck || [C15_HELD])[0], (neck || [0, C15_SWIM])[1] - 6, leap],   // then out for the neck as he leaps
                                                          reachB: [(neck || [C15_HELD])[0] - 20, (neck || [0, C15_SWIM])[1] + 6, leap],
@@ -109,9 +109,9 @@ function cngSceneThird(t) {
                                                                                 feel: "happy", handA: liftHand(0.6 + 0.3 * Math.sin(t * 2))}));
   }
   var onBank = [];                                         // the children still on the bank, and Phrom before he leaps
-  for (var c2 = 0; c2 < 14; c2++) {
+  for (var c2 = 0; c2 < CNG_KIDS; c2++) {
     (function (k) {
-      var at = k < 10 ? c15ChildAt(t, k, neck ? neck[0] : C15_HELD) : {x: 120 + (k % 7) * 70, y: CNG_BANK + 90 + Math.floor(k / 7) * 34, run: 0};
+      var at = k < 10 ? c15ChildAt(t, k, neck ? neck[0] : C15_HELD) : {x: cngHuddle(k)[0], y: cngHuddle(k)[1], run: 0};
       if (at.swims) { return; }
       var x = at.x, y = at.y, cc = CNG_CHILDREN[k % CNG_CHILDREN.length];
       onBank.push({name: "child" + k, kind: "person", x: x, y: y, draw: function () {

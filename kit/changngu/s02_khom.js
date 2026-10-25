@@ -43,19 +43,23 @@ function c02Gate(t) {
   pen.drawImage(cngFields(), 0, 0);
   cngGateWall(between(t, 12.5, 15.5));
   var sprites = [];
-  for (var n = 0; n < C02_COLUMN; n++) {
-    var u = between(t, 13.5 + n * 1.1, 21 + n * 1.1);     // each soldier from the near left, up the road to the bridge
-    if (u <= 0 || u >= 1) { continue; }
-    var x = mix(140, CNG_GATE[0] - 10, u), y = mix(1070, CNG_GATE[1] + 70, u), size = mix(0.7, 0.36, u);
-    (function (x, y, size, u, n, step) {
-      sprites.push({name: "khom " + n, kind: "person", x: x, y: y, draw: function () {
-        pen.save();
-        pen.globalAlpha = 1 - between(u, 0.86, 1);       // they pass in at the gate
-        person(x, y, cast("khomsoldier", {size: size, face: 1, step: step, id: "khom" + n}));
-        pen.restore();
-      }});
-    })(x, y, size, u, n, (t - 13.5 - n * 1.1) / BEAT / 2);
-  }
+  [1, -1].forEach(function (side) {                       // two columns, one from the near left and its mirror from the
+    var late = side > 0 ? 0 : 0.55, tag = side > 0 ? "" : "r";   // near right (owner, 2026-10-25), a half step behind
+    for (var n = 0; n < C02_COLUMN; n++) {
+      var u = between(t, 13.5 + late + n * 1.1, 21 + late + n * 1.1);   // each soldier up the road to the bridge
+      if (u <= 0 || u >= 1) { continue; }
+      var x = WIDE / 2 - side * mix(WIDE / 2 - 140, WIDE / 2 - CNG_GATE[0] + 10, u), y = mix(1070, CNG_GATE[1] + 70, u);
+      var size = mix(0.7, 0.36, u);
+      (function (x, y, size, u, n, step) {
+        sprites.push({name: "khom " + tag + n, kind: "person", x: x, y: y, draw: function () {
+          pen.save();
+          pen.globalAlpha = 1 - between(u, 0.86, 1);     // they pass in at the gate
+          person(x, y, cast("khomsoldier", {size: size, face: side, step: step, id: "khom" + tag + n}));
+          pen.restore();
+        }});
+      })(x, y, size, u, n, (t - 13.5 - late - n * 1.1) / BEAT / 2);
+    }
+  });
   drawByZ(sprites);
 }
 

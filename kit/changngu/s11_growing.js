@@ -22,6 +22,17 @@ function c11Season(t) {
   if (t > 15.4 && t < 27) { pen.fillStyle = colour; pen.fillRect(0, 0, WIDE, 1080); }
 }
 
+// The sword practice (owner, 2026-10-25: "The biceps should be angled down with the forearm at a flatter angle and the
+// sword pointing almost straight up. Then the arm should extend up and the angle of the sword should naturally fall
+// back"): the near wrist goes between the guard, level before the chest, the upper arm down and the forearm level,
+// and the stroke, up over the head; the kit's holding "dap" keeps the blade square to the hand, so it stands upright
+// at the guard and falls back as the arm goes up. x, feet: where he stands; size; face; u: 0 at the guard, 1 at the
+// top of the stroke. Gives back the wrist's point, for reachA. e.g. c11Stroke(700, 860, 0.55, 1, 0.5)
+function c11Stroke(x, feet, size, face, u) {
+  var guard = [x + face * 95 * size, feet - 205 * size], top = [x + face * 125 * size, feet - 320 * size];   // the top: up and forward, as high as his arm reaches, the blade back over his head
+  return [mix(guard[0], top[0], u), mix(guard[1], top[1], u)];
+}
+
 // Scene 11, the entry the film calls (SCENES): t, its own second, 0 to C11_LONG (40 s). Gives back nothing: it draws the
 // whole sheet with pen. From sets.js: cngVillage(), cngPerson() with CNG_PHROM, CNG_HEADMAN, CNG_SMITH and CNG_THUKKHITA,
 // cngAgeSize(); from chiangsaen.js forge(), dap(). Its words are C11_LINES (C046 to C049). Its z plan: the village's back
@@ -51,20 +62,16 @@ function cngSceneGrowing(t) {
     var year = C11_YEARS.filter(function (y) { return t >= y[0]; }).length - 1, gift = between(t, C11_YEARS[Math.max(0, year)][0], C11_YEARS[Math.max(0, year)][0] + 1.5);
     var practice = t >= 27, bx = practice ? 700 : f[0] - 280;
     sprites.push({name: "phrom", kind: "person", x: bx, y: 860, draw: function () {
-      var swing = practice ? Math.sin(t * 3.2) : 0;
-      var j = person(bx, 860, cngPerson("boy", CNG_PHROM, {id: "phrom", size: size, face: 1, feel: "happy",
-                                                           reachA: practice ? [bx + 60 * size + 40 * swing, 860 - 300 * size - 40 * swing] : [mix(bx + 40, f[0] - 150, gift), 860 - 220 * size],
-                                                           at: practice ? [bx + 300, 700] : [f[0] - 150, 700]}));
-      var w = cngLocal(j.wristA);
-      dap(pen, w[0], w[1], size * 0.55, {angle: practice ? 0.5 + 0.6 * swing : 0.3});
+      var stroke = 0.5 - 0.5 * Math.cos(t * 3.2);          // the guard and the stroke, in turn
+      person(bx, 860, cngPerson("boy", CNG_PHROM, {id: "phrom", size: size, face: 1, feel: "happy", holding: "dap",
+                                                   reachA: practice ? c11Stroke(bx, 860, size, 1, stroke) : [mix(bx + 40, f[0] - 150, gift), 860 - 220 * size],
+                                                   at: practice ? [bx + 300, 700] : [f[0] - 150, 700]}));
     }});
     if (practice) {
       sprites.push({name: "thukkhita", kind: "person", x: 1010, y: 870, draw: function () {
-        var swing = Math.sin(t * 3.2 + 1.2);
-        var j = person(1010, 870, cngPerson("boy", CNG_THUKKHITA, {id: "thukkhita", size: cngAgeSize(16), face: -1, feel: "happy",
-                                                                   reachA: [1010 - 70 - 40 * swing, 870 - 330 * 0.7 - 40 * swing], at: [bx, 700]}));
-        var w = cngLocal(j.wristA);
-        dap(pen, w[0], w[1], 0.38, {angle: -0.5 - 0.6 * swing});
+        var stroke = 0.5 - 0.5 * Math.cos(t * 3.2 + Math.PI);   // his stroke as Phrom comes to his guard
+        person(1010, 870, cngPerson("boy", CNG_THUKKHITA, {id: "thukkhita", size: cngAgeSize(16), face: -1, feel: "happy", holding: "dap",
+                                                           reachA: c11Stroke(1010, 870, cngAgeSize(16), -1, stroke), at: [bx, 700]}));
       }});
     } else {
       sprites.push({name: "smith", kind: "person", x: f[0] - 140, y: 870, draw: function () {
@@ -73,6 +80,7 @@ function cngSceneGrowing(t) {
       }});
     }
   }
+  decorate(t, cngYard(220, 878, 3), "back");                 // the yard's fowl (owner, 2026-10-25)
   drawByZ(sprites);
   c11Season(t);
   cngCutsOver(t, [15.4, 27]);

@@ -7,6 +7,9 @@
 var C13_LONG = 35;
 var C13_SOUND = {calls: []};
 var C13_LINES = [[1.4, 6.28, "C057"], [10.6, 13.31, "C058"], [20.6, 23.9, "C059"], [25.0, 32.12, "C060"]];
+// Its life (decorate.js; owner, 2026-10-25): on the bank, a barb that leaps by the sandbar while they wait.
+var C13_LIFE = [{name: "barb", kind: "fish", layer: "back", look: {size: 1.1},
+                 course: [[27.0, 1450, 712, "hide"], [29.0, 1450, 712], [29.8, 1570, 712, "hide"], [99, 1570, 712, "hide"]]}];
 var C13_CUTS = [10.0, 20.0];
 
 // Phrom at 13 with his hook in his near hand, held up (the hook's foot at his hand). look: the scene's keys.
@@ -54,11 +57,11 @@ function c13Children(t) {
     c13Phrom(px, CNG_GROUND, {face: 1, feel: "happy", mouth: calls ? {open: 0.3, wide: 0.6, round: 0.3} : undefined,
                               reachB: [px + 80, CNG_GROUND - 360, between(t, 10.4, 10.7) * (1 - between(t, 12.3, 12.6))]});   // his arm up as he calls, eased
   }}];
-  for (var k = 0; k < 12; k++) {
+  for (var k = 0; k < CNG_KIDS; k++) {                     // three deep beside him, the rows running on past the frame
     (function (k) {
-      var start = 11 + k * 0.4, run = between(t, start, start + 3.5);
-      var fromX = WIDE + 700 + (k % 6) * 160, fromY = CNG_GROUND - 40 + (k % 3) * 30;
-      var x = mix(fromX, px + 150 + (k % 4) * 70, run), y = mix(fromY, CNG_GROUND + 20 + Math.floor(k / 4) * 22, run);
+      var col = Math.floor(k / 3), row = k % 3, start = 11 + k * 0.22, run = between(t, start, start + 3.5);
+      var fromX = WIDE + 1500 + col * 80, fromY = CNG_GROUND - 40 + row * 30;
+      var x = mix(fromX, px + 130 + col * 82 + row * 28, run), y = mix(fromY, CNG_GROUND + 20 + row * 24, run);
       sprites.push({name: "child " + k, kind: "person", x: x, y: y, draw: function () {
         c13Child(k, x, y, {face: run < 1 ? -1 : -1, step: run > 0 && run < 1 ? t / BEAT * 1.4 + k : 0, feel: "happy"});
       }});
@@ -76,6 +79,7 @@ function c13Bank(t) {
   cumulus(pen, t + 10, CNG_CLOUDS.day);
   pen.drawImage(river.back, 0, 0);
   cngRiverLife(t, {});
+  decorate(t, C13_LIFE, "back");
   pen.drawImage(river.near, 0, 0);
   var run = between(t, 20, 25), px = mix(-100, 1260, run), washing = t > 25 && t < 31;
   var sprites = [{name: "phrom", kind: "person", x: px, y: CNG_BANK + 30, draw: function () {
@@ -87,9 +91,9 @@ function c13Bank(t) {
                                                           reachB: [px + 80, CNG_BANK - 30 - 130 * (1 - dip), down]}));
     elephantHook(pen, px - 60, CNG_BANK + 40, cngAgeSize(13) * 0.9, {angle: -1.3});   // laid down on the sand beside him
   }}];
-  for (var k = 0; k < 14; k++) {
+  for (var k = 0; k < CNG_KIDS; k++) {
     (function (k) {
-      var r = between(t, 20.4 + k * 0.25, 26 + k * 0.25), x = mix(-160 - k * 40, 200 + (k % 7) * 140 + Math.floor(k / 7) * 60, r), y = CNG_BANK + 40 + Math.floor(k / 7) * 46;
+      var wait = cngWaiting(k), r = between(t, 20.4 + k * 0.2, 26 + k * 0.2), x = mix(-160 - k * 40, wait[0], r), y = wait[1];
       sprites.push({name: "child " + k, kind: "person", x: x, y: y, draw: function () {
         c13Child(k, x, y, {face: 1, step: r > 0 && r < 1 ? t / BEAT * 1.4 + k : 0, feel: t > 28 ? "surprised" : "happy", at: [1200, CNG_WATER + 80]});
       }});

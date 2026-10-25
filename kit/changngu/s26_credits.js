@@ -63,6 +63,7 @@ var C26_ROWS = [
   ["gap"],
   ["head", "ดนตรี", "Music"],
   ["line", "music made from numbers by the kit"],
+  ["small", "and the golden plate's ring, made from numbers too: no free recording of a kangsadan rang true"],
   ["gap"],
   ["head", "สมุดค้นคว้า", "The research notebook, open to read (Google asks for a sign-in)"],
   ["small", "Lanna fairy tales and myths · notebooklm.google.com/notebook/fd7ed330-3806-456e-b9be-5ef912977abe"],
@@ -104,7 +105,7 @@ var C26_FIGURES = {
     return [dx, c26Who(CNG_CHILDREN[n].kind, CNG_CHILDREN[n].look, cngAgeSize(13))];
   })),
   "Chang Phan Kham": function (b, u) { elephant(0, 0, {size: 0.35, step: u, colour: "#f1ddd3", cloth: "#c9962a"}); },
-  "Chang Ngu": function () { changNgu(0, -40, {size: 0.3}); },
+  "Chang Ngu": function () { changNgu(0, -20, {size: 0.15}); },   // small enough that its trunks stay on sabaiTile's scratch sheet (they were cut)
   "Nang Kaeo Supha": c26Who("lady", CNG_KAEO_SUPHA, 0.78),
   "The deva": function (b, u) { thewada(0, -160, u * 2, {size: 0.6, face: 1}); },
   "Bua-kham": function () { person(0, 0, cast("buakham", {wai: true, feel: "happy", face: 1, id: "bow-buakham"})); },
@@ -129,6 +130,24 @@ var C26_FIGURES = {
   "The statue": function (b, u) { statuePool(b, 0, 0, 0.5, u * 2); changNgu(0, -30, {size: 0.2}); }
 };
 
+// The far hills, the river and the near bank by night: the river panel's two layers darkened where they are painted
+// and nowhere else, so the sky above the hills stays the night sky the moon is in (owner, 2026-10-25: a band was
+// darkened from above the hills down, its top edge a line across the sky). Made once. e.g. pen.drawImage(c26Land(cngRiver()), 0, 0);
+var C26_LAND = null;
+function c26Land(river) {
+  if (C26_LAND) { return C26_LAND; }
+  C26_LAND = document.createElement("canvas");
+  C26_LAND.width = WIDE;
+  C26_LAND.height = 1080;
+  var b = C26_LAND.getContext("2d");
+  b.drawImage(river.back, 0, 0);
+  b.drawImage(river.near, 0, 0);
+  b.globalCompositeOperation = "source-atop";           // the river by night, only over the land and the water
+  b.fillStyle = "rgba(10, 14, 40, 0.62)";
+  b.fillRect(0, 0, WIDE, 1080);
+  return C26_LAND;
+}
+
 // The night over the river while the credits roll: the sky, the moon and its clouds, the owl across them, the far
 // hills and the water, the bats going down behind the hills, the near bank and its fireflies; all of it under a
 // veil, so the words read. t: seconds. Gives back nothing: it draws with pen.
@@ -145,10 +164,7 @@ function c26Night(t) {
   C26_BATS.forEach(function (one) {
     batStream(t, {start: one[0], from: one[1], to: one[2], count: 40, every: 0.15, long: 8, size: 2.2, far: 0.5, spread: 50, colour: "#5c536c"});
   });
-  pen.drawImage(river.back, 0, 0);
-  pen.drawImage(river.near, 0, 0);
-  pen.fillStyle = "rgba(10, 14, 40, 0.62)";            // the river by night
-  pen.fillRect(0, CNG_WATER - 220, WIDE, 1300 - CNG_WATER);
+  pen.drawImage(c26Land(river), 0, 0);
   pen.fillStyle = "rgba(220, 226, 250, 0.10)";         // the moon's road across the water
   for (var k = 0; k < 14; k++) {
     var wy = CNG_WATER + 14 + k * 17, ww = 30 + 14 * k + 10 * Math.sin(t * 1.3 + k);

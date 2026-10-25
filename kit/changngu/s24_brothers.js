@@ -9,6 +9,11 @@
 var C24_LONG = 40;
 var C24_SOUND = {calls: []};
 var C24_LINES = [[1.4, 5.76, "C115"], [6.0, 10.44, "C116"], [10.64, 15.48, "C117"], [16.8, 20.78, "C118"], [25.0, 33.04, "C119"]];
+// Its life (decorate.js; owner, 2026-10-25): two egrets over the fields of the new city once the words are done.
+var C24_LIFE = [
+  {name: "egret", kind: "egret", layer: "back", look: {fly: true, size: 0.8, seed: 1}, course: [[33.4, -150, 380], [40.5, 2100, 330]]},
+  {name: "egret, behind", kind: "egret", layer: "back", look: {fly: true, size: 0.7, seed: 3}, course: [[34.0, -260, 430], [41.0, 2000, 360]]}
+];
 var C24_CUTS = [15.8, 24.2];
 var C24_PHANG = Object.assign({}, CNG_KING, {age: 0.45});              // Phang, the boys' father, older now
 var C24_GROOM = Object.assign({}, CNG_PHROM, {sarong: ["#5a3f32", BROCADE], smile: 0.8});
@@ -113,6 +118,7 @@ function c24Town(t) {
   sprites.push({name: "kaeo supha", kind: "person", x: 1530, y: bank + 2, draw: function () {
     person(1530, bank + 2, cngPerson("lady", CNG_KAEO_SUPHA, {id: "kaeotown", size: 0.44, face: -1, feel: "happy", at: [960, 520]}));
   }});
+  decorate(t, C24_LIFE, "back");
   drawByZ(sprites);
   var a = between(t, 33.2, 34.2) * (1 - between(t, 38.6, 39.6));      // the town's name
   cngGoldName("เวียงไชยปราการ", "Wiang Chai Prakan, on the Kok", 960, 220, a);

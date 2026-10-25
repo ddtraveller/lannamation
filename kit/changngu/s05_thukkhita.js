@@ -5,6 +5,12 @@
 var C05_LONG = 25;
 var C05_SOUND = {calls: []};
 var C05_LINES = [[1.6, 7.22, "C018"], [7.42, 14.62, "C019"], [14.82, 20.34, "C020"]];
+// Its life (decorate.js; owner, 2026-10-25: "decorate it with ... animals"): a tokay on the teak wall above the
+// headman, crawling down a little and resting, as tokays do in a house by day; of the set (z), behind the people.
+var C05_LIFE = [
+  {name: "tokay", kind: "gecko", z: "set", look: {size: 0.55},
+   course: [[0, 1210, 450], [5, 1180, 500], [9, 1150, 540, "rest"], [18, 1150, 540], [22, 1080, 580, "rest"], [40, 1080, 580]]}
+];
 var C05_CRADLE = [860, 820];                           // the cradle's lowest point, low over the floor by the queen
 
 // Scene 5, the entry the film calls (SCENES): t, its own second, 0 to C05_LONG (25 s). Gives back nothing: it draws the
@@ -19,7 +25,7 @@ function cngSceneThukkhita(t) {
   pen.translate(-C05_CRADLE[0], -C05_CRADLE[1]);
   pen.drawImage(cngRoom("day"), 0, 0);
   var swing = Math.sin(t * 1.6) * 10 * 0.9;              // as hangingCradle swings it
-  drawByZ([
+  drawByZ(lifeSprites(t, C05_LIFE).concat([
     {name: "queen", kind: "person", x: C05_CRADLE[0] - 200, y: CNG_FLOOR + 40, draw: function () {
       person(C05_CRADLE[0] - 200, CNG_FLOOR + 40, cngPerson("maiden", CNG_QUEEN, {id: "thewi", floor: "side", face: 1, feel: "happy",
                                                                                   reachA: [C05_CRADLE[0] - 64 + swing, C05_CRADLE[1] - 18],
@@ -32,7 +38,7 @@ function cngSceneThukkhita(t) {
       person(C05_CRADLE[0] + 260, CNG_FLOOR + 60, cngPerson("noble", Object.assign({}, CNG_HEADMAN, {sarong: CNG_KING.sarong}),
                                                            {id: "phang", face: -1, feel: "happy", smile: 0.4, at: [C05_CRADLE[0], C05_CRADLE[1] - 30]}));
     }}
-  ]);
+  ]));
   pen.restore();
   cngFadeIn(t, 1);
 }

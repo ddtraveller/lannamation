@@ -4,8 +4,14 @@
 // and comes in and walks up out of the water onto the sand (the chronicle: "ออกจากน้ำแม่ของด้วยสวัสดี"); its name,
 // Chang Phan Kham, the elephant of the golden plate, comes up in gold; the two brothers laugh together.
 var C18_LONG = 35;
-var C18_SOUND = {calls: []};
+var C18_SOUND = {calls: [[2.0, "plate-ting", 0.5], [3.0, "plate-ting", 0.5], [4.4, "plate-ting", 0.5], [5.4, "plate-ting", 0.5]]};   // each stroke rings (owner, 2026-10-25)
 var C18_LINES = [[1.6, 6.54, "C084"], [7.0, 12.52, "C085"], [14.0, 18.42, "C086"]];
+// Its life (decorate.js; owner, 2026-10-25): once the words are done and the brothers laugh, a flock goes over the
+// river and a barb leaps by the sandbar.
+var C18_LIFE = [
+  {name: "flock over the river", kind: "flock", layer: "back", course: [[20.0, -320, 220], [27.0, 2150, 260]]},
+  {name: "barb", kind: "fish", layer: "back", look: {size: 1.1}, course: [[23.0, 1350, 712, "hide"], [25.0, 1350, 712], [25.8, 1470, 712, "hide"], [99, 1470, 712, "hide"]]}
+];
 var C18_STRIKES = [2.0, 3.0, 4.4, 5.4];                // when the plate is struck ("ting ting", twice and twice)
 var C18_SWIM = CNG_BANK - 54;
 
@@ -55,10 +61,14 @@ function cngSceneTing(t) {
   cumulus(pen, t + 90, CNG_CLOUDS.day);
   pen.drawImage(river.back, 0, 0);
   cngRiverLife(t, {});
+  decorate(t, C18_LIFE, "back");
   var ex = mix(1400, 1050, comes), ey = mix(C18_SWIM + 210, CNG_BANK + 60, out) + (out < 1 ? 6 * Math.sin(t * 1.4) : 0);
   var face = t < 6.6 ? 1 : -1, walking = comes > 0 && comes < 1;
-  var e = elephant(ex, ey, {size: 0.62, face: face, colour: "#f1ddd3", cloth: "#c9962a", step: walking ? t / BEAT / 3 : 0,
-                            trunk: t > 6 && t < 9 ? 0.8 : 0.3, mouth: t > 15 ? 0.3 : 0.1});
+  var e = null;
+  if (out < 1) {                                           // in the river; on the sand it is drawn once, over the bank, below
+    e = elephant(ex, ey, {size: 0.62, face: face, colour: "#f1ddd3", cloth: "#c9962a", step: walking ? t / BEAT / 3 : 0,
+                          trunk: t > 6 && t < 9 ? 0.8 : 0.3, mouth: t > 15 ? 0.3 : 0.1});   // (both at once: two trunks)
+  }
   if (out < 1) {                                           // the water over its legs while it is still in the river
     pen.save();
     pen.globalAlpha = 1 - out;

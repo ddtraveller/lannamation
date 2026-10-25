@@ -852,8 +852,10 @@ e.g. var thumb = pinchThumb([-4, 5.7, -1], [3, 15, -3], [5, 23, -6],
 
 ```
 A bare hand drawn in the round. x, y, angle and pose are listed at the top of this section (pixels and radians,
-as glove() takes them). Reads clock (a little life in the fingers, unless pose.still). Returns nothing: it draws
-with pen.
+as glove() takes them); pose.held, a function (x, y, ax, ay), draws a thing held in the fist after the palm and
+before the fingers and the thumb, so they close over it: (x, y) the grip's middle and (ax, ay) the way across the
+palm toward the thumb, in the hand's own frame (pen is in it while it draws). Reads clock (a little life in the
+fingers, unless pose.still). Returns nothing: it draws with pen.
 e.g. hand(40, -60, 1.2, {curls: REST, thumb: 1, palm: 0.2});
 ```
 
@@ -5876,12 +5878,7 @@ e.g. naga(640, 560, {size: 0.6, face: -1, heads: 5, late: 0.2, feel: "happy"})
 
 ### `riverSnakeSpine(x, water, s, face, phase)`
 
-```
-The middle of a swimming snake, from its head back along the water: it rises and dips across the water line,
-the head held up out of it. x, water: the head's x and the water line, pixels of the sheet; s: the size;
-face: 1 or -1; phase: where the wave is (radians). Returns a list of 61 [x, y], head first. Draws nothing.
-e.g. riverSnakeSpine(900, 780, 0.8, 1, clock * 1.6)
-```
+(no comment)
 
 ### `riverSnakeStrip(line, wide, c)`
 
@@ -7717,30 +7714,37 @@ e.g. riverReeds(pen, 0, 900, 600, 1, t, 2);
 ### `csBird(brush, x, y, size, look, c)`
 
 ```
-One small bird of the sandbar, the shared shape: an oval body, a round head, a short tail, on two thin legs, or in
-flight with its wings up or down. c holds its colours and parts; look: face (1 right, -1 left), peck (0 to 1: its
+One small bird of the sandbar, the shared shape (owner, 2026-10-25: "Upgrade the quality of the birds ... Add detail
+and make sure the birds have eyes"; the pick of three, C): a teardrop body tilted with the peck, pale below, a neck
+into a round head, a folded wing with pale feather edges and its dark primaries past the tail, a tail, two legs bent
+back at the ankle with three toes each, a shadow on the sand; in flight long pointed wings bent at the wrist, dark at
+the tips, a wader's legs trailing. The eye is drawn last, over any cap or mask, with a ring and a light, so it always
+shows. c holds its colours and parts: legs (how long), back, belly, head, bill, wing, tip (the primaries), leg,
+tail (how long), billLong, ring (the eye's ring, pale unless told), tailBand (a dark end to the tail), breast(b) and
+mark(b, legs, hx, hy) (its markings, on the body and on the head). look: face (1 right, -1 left), peck (0 to 1: its
 head down to the sand), fly (true: in the air, wings beating with t), t.
 ```
 
 ### `pratincole(brush, x, y, size, look)`
 
 ```
-The small pratincole: sandy grey, a black line from the bill through the eye, a short black bill, short legs; it sits
-close on the sand and flies like a swallow. At (x, y), its feet. e.g. pratincole(pen, 700, 770, 1, {face: -1, t: t});
+The small pratincole: sandy grey, a buff breast, a black line from the bill through the eye, a short black bill,
+short legs, dark wingtips and a dark end to the tail; it sits close on the sand and flies like a swallow. At (x, y),
+its feet. e.g. pratincole(pen, 700, 770, 1, {face: -1, t: t});
 ```
 
 ### `riverLapwing(brush, x, y, size, look)`
 
 ```
-The river lapwing: a black cap and throat, grey-brown back, white belly with a black patch, long black legs.
-e.g. riverLapwing(pen, 900, 770, 1, {face: 1});
+The river lapwing: a black cap and throat, a white cheek, a grey breast, a grey-brown back, a white belly with a
+black patch, black wingtips and tail end, long black legs. e.g. riverLapwing(pen, 900, 770, 1, {face: 1});
 ```
 
 ### `ringedPlover(brush, x, y, size, look)`
 
 ```
-The little ringed plover: brown back, a white collar and a black band across the breast, a yellow ring round the eye.
-e.g. ringedPlover(pen, 640, 775, 1, {peck: 0.6});
+The little ringed plover: a brown back, a white collar and a black band across the breast, a black mask under a
+white brow, a yellow ring round the eye, yellow legs. e.g. ringedPlover(pen, 640, 775, 1, {peck: 0.6});
 ```
 
 ### `redAvadavat(brush, x, y, size, look)`
@@ -8680,6 +8684,7 @@ or 1 with a message for a name it does not know; a download or ffmpeg that fails
 - `crickets()`: Field crickets in the grass at night, a chorus of seven: each sings chirps of three or four pulses (a pulse
 - `wind()`: Wind high on a mountain at dawn: noise made soft and low (through low-passes at 350 Hz and 1100 Hz, mixed
 - `mouse_squeak()`: A mouse's squeaks: three short whistles, each rising then falling between 3.5 and 6.5 kHz, 50 to 80 ms.
+- `plate_ting()`: The golden plate struck, once: a kangsadan, a thin round plate of bronze hung by a cord and struck ("ting
 - `fetch(name, out)`: A fetched sound: the recording downloaded once (kept in out/sounds/ under its own name), cut, as a WAV.
 - `make(name, out)`: Make one sound by its name and write it into out: its samples, a numpy array at RATE.
 - `main()`: The command line: sounds.py [NAME...] | --list. Makes the sounds named (every one when none is), writes

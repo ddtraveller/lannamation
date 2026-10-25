@@ -186,6 +186,15 @@ along the film (`HEARD_NEAR`), crows for itself; one off the film is not heard.
   Kept as `kit/sounds/rooster-crow.flac` (sounds.py: a "file" in place of a "url"): the model is too large to run
   again for each copy of the kit.
 
+## The golden plate struck (2026-10-25)
+
+The owner, for Chang Ngu's scene 18: "add a gong sound when the gong is struck", and if a found one is noisy, "generate
+one". The two free recordings on Wikimedia Commons were deep gongs near 190 Hz, one cut off while it still rang, the
+other with a room and several strokes in it; Thukkhita's plate is a kangsadan, a thin bronze plate that goes "ting".
+So `sounds.py` makes `plate-ting` from numbers: the stroke's click, then six partials of a thin plate, not in tune with
+one another (1, 1.72, 2.31, 2.95, 3.93 and 5.1 times 1180 Hz), each a pair 1.8 Hz apart so it shimmers, the higher
+dying sooner, faded over its last 0.4 s; 3 s. A scene calls it at each stroke (`C18_SOUND`).
+
 ## The birds and animals heard (2026-10-23)
 
 The owner: "Work on sounds for the kit next. Start with the birds and animals and see if you can find sounds for

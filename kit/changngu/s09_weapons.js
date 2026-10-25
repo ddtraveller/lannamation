@@ -36,6 +36,7 @@ function cngSceneWeapons(t) {
   var phase = (t % C09_STRIKE) / C09_STRIKE, up = phase < 0.6 ? phase / 0.6 : 1 - (phase - 0.6) / 0.4;   // up slowly, down fast
   var anvil = [f[0] + 126 * s, f[1] - 62 * s];
   var smith = anvil[0] + 130, bellows = [f[0] - 110 * s, f[1] - 150 * s + 20 * s * Math.sin(t * 4)];
+  decorate(t, cngYard(1500, 872, 2), "back");                 // the yard's fowl (owner, 2026-10-25)
   drawByZ([
     {name: "smith", kind: "person", x: smith, y: f[1] + 10, draw: function () {
       var j = person(smith, f[1] + 10, cngPerson("villager", CNG_SMITH, {id: "smith", face: -1, feel: "happy",

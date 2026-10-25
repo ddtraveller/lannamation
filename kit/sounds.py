@@ -203,6 +203,30 @@ def mouse_squeak():
     return 0.89 * out / np.abs(out).max()
 
 
+def plate_ting():
+    """The golden plate struck, once: a kangsadan, a thin round plate of bronze hung by a cord and struck ("ting
+    ting"). No free recording rang true (2026-10-25, for Chang Ngu: the gongs on Wikimedia Commons were big and deep,
+    near 190 Hz, one cut off while it still rang, the other with a room behind it and several strokes), so it is made
+    from numbers: the click of the stroke, then a thin plate's ring, its partials not in tune with one another (at
+    1, 1.72, 2.31, 2.95, 3.93 and 5.1 times 1180 Hz), each a pair a little apart, so it shimmers, the higher ones
+    dying sooner; 3 s.
+
+    Gives back the samples (a numpy array at RATE), peaking at 0.8; the same every time.
+    e.g. plate_ting()"""
+    from scipy.signal import butter, sosfilt
+    seconds, rng, low = 3.0, np.random.default_rng(31), 1180.0
+    t = np.arange(int(seconds * RATE)) / RATE
+    out = np.zeros(len(t))
+    for ratio, gain, dies in [(1.0, 1.0, 1.4), (1.72, 0.55, 0.9), (2.31, 0.45, 0.7), (2.95, 0.3, 0.5),
+                              (3.93, 0.22, 0.35), (5.1, 0.12, 0.22)]:
+        for apart in (-0.9, 0.9):                     # the pair a little apart: the shimmer
+            out += gain * np.exp(-t / dies) * np.sin(2 * np.pi * (low * ratio + apart * ratio) * t + rng.uniform(0, 6.3))
+    click = sosfilt(butter(2, 3000, "high", fs=RATE, output="sos"), rng.standard_normal(len(t))) * np.exp(-t / 0.004)
+    out = out * (1 - np.exp(-t / 0.0015)) + 0.6 * click   # the ring starts at once, the stroke on top
+    out *= np.clip((seconds - t) / 0.4, 0, 1)            # and what still rings fades out over the last 0.4 s
+    return 0.8 * out / np.abs(out).max()
+
+
 # Every sound: its name, what makes its outline, and what it is for.
 SOUNDS = {
     "maeng-base": (maeng_base, "the creature's howl, the night on the mountain: rises, holds high, falls away into the cave"),
@@ -214,8 +238,9 @@ SOUNDS = {
     "crickets": (crickets, "field crickets in the grass at night, seven of them chirping, 20 s to lay end to end"),
     "mouse-squeak": (mouse_squeak, "a mouse's three high squeaks, for the mice along a wall"),
     "wind": (wind, "wind high on a mountain at dawn, soft and low, in slow gusts, 20 s to lay end to end"),
+    "plate-ting": (plate_ting, "the golden plate (kangsadan) struck once: a bright ring that shimmers and dies, 3 s"),
 }
-MADE = ("crickets", "mouse-squeak", "wind")     # the ones made from numbers, not by howl.py
+MADE = ("crickets", "mouse-squeak", "wind", "plate-ting")     # the ones made from numbers, not by howl.py
 
 # Sounds the kit does not make but fetches: recordings whose makers gave them to everyone (public domain, or a
 # licence that lets the kit use them, named here with them), each from where it lives, cut if a part is wanted.

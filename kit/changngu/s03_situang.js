@@ -30,6 +30,7 @@ function cngSceneSituang(t) {
   pen.save();
   pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
+  decorate(t, cngYard(CNG_HOUSE[0] + 300, CNG_GROUND - 24, 1), "back");                 // the yard's fowl (owner, 2026-10-25)
   var ground = CNG_GROUND;
   drawByZ([
     {name: "king", kind: "person", x: w.x, y: ground, draw: function () {

@@ -17,6 +17,7 @@ function c19Yard(t) {
   csBand(pen, 0, 820, WIDE, 260, "#b9a070", "#9a8058");
   var speaks = t > 6.2 && t < 14.2;
   elephant(1420, 830, {size: 0.5, face: -1, colour: "#f1ddd3", cloth: "#c9962a", trunk: 0.2 + 0.2 * Math.sin(t)});
+  decorate(t, cngYard(1780, 880, 6), "back");                 // the yard's fowl (owner, 2026-10-25)
   drawByZ([
     {name: "phrom", kind: "person", x: 980, y: 870, draw: function () {
       person(980, 870, poseEased(t, function (s) {           // his hand out while he speaks, eased in and out (poseEased)

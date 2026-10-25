@@ -37,17 +37,17 @@ function cngSceneSnakes(t) {
   pen.drawImage(cngSky("day"), 0, 0);
   cumulus(pen, t + 20, CNG_CLOUDS.day);
   pen.drawImage(river.back, 0, 0);
-  cngRiverLife(t, {flushed: first * (1 - between(t, 44, 50))});
+  cngRiverLife(t, {flushed: first, away: t - 7});       // the birds rise and fly away (owner, 2026-10-25)
   C14_SNAKES.forEach(function (s) {
     var x = c14Head(s, t);
     if (x !== null) { riverSnake(x, C14_SWIM, Object.assign({size: s[2], face: -1}, s[3])); }
   });
   pen.drawImage(river.near, 0, 0);
   var sprites = [], back = between(t, 6, 9) * (1 - between(t, 44, 52));   // they scramble back from the water and huddle
-  for (var k = 0; k < 14; k++) {
+  for (var k = 0; k < CNG_KIDS; k++) {
     (function (k) {
-      var x0 = 200 + (k % 7) * 140 + Math.floor(k / 7) * 60, y0 = CNG_BANK + 40 + Math.floor(k / 7) * 46;
-      var x = mix(x0, 120 + (k % 7) * 70, back), y = mix(y0, CNG_BANK + 90 + Math.floor(k / 7) * 34, back);
+      var wait = cngWaiting(k), huddle = cngHuddle(k);
+      var x = mix(wait[0], huddle[0], back), y = mix(wait[1], huddle[1], back);
       var shake = fear > 0.2 ? 4 * fear * Math.sin(t * 40 + k) : 0;
       sprites.push({name: "child " + k, kind: "person", x: x + shake, y: y, draw: function () {
         var c = CNG_CHILDREN[k % CNG_CHILDREN.length];

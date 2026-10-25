@@ -119,6 +119,33 @@ var LIFE_KINDS = {
     if (size < 0.02) { return [at.x, at.y - 2, at.x + 1, at.y]; }
     grasshopper(at.x, at.y - arc, t, Object.assign({}, look, {face: at.face, size: size, leap: clamp(Math.sin(Math.PI * at.part) * 3)}));
     return [at.x - 40 * size, at.y - arc - 45 * size, at.x + 30 * size, at.y - arc + 4];
+  },
+  // the cattle egret (northbirds.js egret()): it walks between stops, pecks at a "peck" stop, and flies when look.fly
+  // is true (it flies from stop to stop then, its feet at the course's point taken as the middle of its body)
+  egret: function (at, look, t) {
+    var size = look.size || 1;
+    egret(at.x, at.y, t, Object.assign({}, look, {face: at.face, fly: !!look.fly, peck: lifePeck(at, t)}));
+    return look.fly ? [at.x - 90 * size, at.y - 50 * size, at.x + 90 * size, at.y + 50 * size]
+                    : [at.x - 50 * size, at.y - 110 * size, at.x + 50 * size, at.y];
+  },
+  // a fish of the river (oldcartoon.js nativeFish(), look.kind, "barb" unless told) that leaps: from one stop to the
+  // next it jumps out of the water in an arc, higher the further it goes, nose up then down, a ring on the water where
+  // it leaves and where it goes back in; give its stops "hide" so that it is unseen in the water between leaps
+  fish: function (at, look, t) {
+    var size = look.size || 1, rise = Math.sin(Math.PI * at.part) * (0.45 * at.leg + 30 * size);
+    var tilt = -Math.cos(Math.PI * at.part) * 0.9 * at.face;
+    if (at.part < 0.15 || at.part > 0.85) {                // the ring where it leaves the water or goes back in
+      var near = at.part < 0.5 ? at.part / 0.15 : (1 - at.part) / 0.15, rx = at.part < 0.5 ? at.x - at.face * 0 : at.x;
+      pen.strokeStyle = "rgba(255, 252, 238, " + (0.7 * (1 - near * 0.5)).toFixed(3) + ")";
+      pen.lineWidth = 2;
+      pen.beginPath(); pen.ellipse(rx, at.y + 4, 30 * size * (1.2 - near * 0.4), 6 * size, 0, 0, 7); pen.stroke();
+    }
+    pen.save();
+    pen.translate(at.x, at.y - rise);
+    pen.rotate(tilt);
+    nativeFish(pen, 0, 0, size, at.face, look.kind || "barb", t);
+    pen.restore();
+    return [at.x - 40 * size, at.y - rise - 20 * size, at.x + 40 * size, at.y + 6];
   }
 };
 

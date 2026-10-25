@@ -541,6 +541,10 @@ comment names its source.
   sandbanks), `riverReeds`, and the birds recorded on the Chiang Saen stretch (thaibirding.com; BirdLife's factsheet
   for the Mekong channel near Pakchom): `pratincole` (sits close on the sand; `fly: true` beats its wings),
   `riverLapwing`, `ringedPlover` (`peck` 0 to 1), `redAvadavat` (drinks at the margin), `spotbill` (swims and bobs).
+  Their shared shape, `csBird()`, was drawn again on 2026-10-25 (owner: "Upgrade the quality of the birds ... make
+  sure the birds have eyes"; the pick C of three): a teardrop body, a folded wing with pale feather edges and dark
+  primaries past the tail, legs bent back at the ankle with three toes, a shadow on the sand, long pointed wings in
+  flight; the eye ringed and drawn last, so no cap or mask covers it (the lapwing's cap had covered its eye).
 - **Doi Chang Ngu** (`karstHill`): a tower of grey limestone out of the paddies with a cave at its foot, as the karst
   of Doi Chiang Dao; the elephant goes into it as a snake.
 - **The tale's things**: `forge` (the upright bamboo piston bellows of mainland Southeast Asia), `dap`, `fireGun`

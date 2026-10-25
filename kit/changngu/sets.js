@@ -73,6 +73,20 @@ var CNG_CHILDREN = [
   {kind: "boy", look: {turban: "#2a6a5a", sarong: "#3a3a5a"}}, {kind: "girl", look: {shirt: "#e9c45c"}},
   {kind: "boy", look: {turban: "#c9962a", sarong: "#6a2a2a"}}, {kind: "boy", look: {turban: "#6a4aa0", sarong: "#2a4a3a"}}
 ];
+// The fifty children on the bank (owner, 2026-10-25: "3 deep and go off the screen so it seems like there may really be
+// 50"): thirty drawn, in three rows of ten, the far end of each row past the frame's left edge. cngWaiting(k): where
+// child k waits along the bank, looking at the river (scenes 13, 14); cngHuddle(k): where it huddles back from the
+// water (scenes 14, 15). Each gives back [x, y], its feet. e.g. var at = cngHuddle(12);
+var CNG_KIDS = 30;
+function cngWaiting(k) {
+  var col = k % 10, row = Math.floor(k / 10);
+  return [1060 - col * 125 - row * 45, CNG_BANK + 40 + row * 40];
+}
+function cngHuddle(k) {
+  var col = k % 10, row = Math.floor(k / 10);
+  return [620 - col * 78 + row * 30, CNG_BANK + 90 + row * 30];
+}
+
 // Phrom's and Thukkhita's size at an age in years (a child of 7 is 0.4 of the kit's man, 13 is 0.55, 16 is 0.66).
 // e.g. var size = cngAgeSize(13);
 function cngAgeSize(years) { return years <= 7 ? 0.3 + years * 0.014 : Math.min(0.78, 0.4 + (years - 7) * 0.026); }
@@ -176,8 +190,9 @@ function cngRiver() {
 }
 
 // The river's life at second t, drawn with pen: the water's sparkle, the khrai nam on the bar, the birds on it (they
-// rise and fly when look.flushed is 0 to 1: the snakes' coming), the ducks. look: birds (true), flushed (0).
-// e.g. cngRiverLife(t, {flushed: between(t, 10, 12)});
+// rise and fly when look.flushed is 0 to 1: the snakes' coming), the ducks. look: birds (true), flushed (0), away (0:
+// the seconds since they rose, as they fly on and out of the sheet, each its own way; owner, 2026-10-25: "the birds
+// should just fly away", not hang in the sky). e.g. cngRiverLife(t, {flushed: between(t, 10, 12), away: t - 12});
 function cngRiverLife(t, look) {
   look = look || {};
   waves(pen, 0, CNG_WATER + 6, WIDE, CNG_BANK - CNG_WATER, "rgba(250, 238, 210, 0.22)", t);
@@ -185,22 +200,26 @@ function cngRiverLife(t, look) {
   khraiNam(pen, CNG_BAR[0] + CNG_BAR[2] * 0.84, CNG_BAR[1] + 34, 0.6, t, 4);
   khraiNam(pen, CNG_BAR[0] + CNG_BAR[2] * 0.12, CNG_BAR[1] + 36, 0.5, t, 7);
   if (look.birds === false) { return; }
-  var up = look.flushed || 0;
+  var up = look.flushed || 0, away = Math.max(0, look.away || 0);
+  var on = function (dir, speed) { return [dir * speed * away, -(70 + 25 * speed / 200) * away]; };   // flown on, and up
   [[0.3, 1], [0.36, -1], [0.42, 1], [0.48, 1], [0.55, -1]].forEach(function (b, i) {
-    var x = CNG_BAR[0] + CNG_BAR[2] * b[0] + 160 * up * (i - 2), y = CNG_BAR[1] + 26 - 260 * up - 20 * Math.sin(t * 3 + i) * up;
-    pratincole(pen, x, y, 1.3, {face: up > 0 ? 1 : b[1], fly: up > 0.05, t: t + i, peck: up > 0 ? 0 : Math.max(0, Math.sin(t * 1.3 + i * 2)) * 0.6});
+    var dir = i < 2 ? -1 : 1, go = on(dir, 150 + 40 * i);
+    var x = CNG_BAR[0] + CNG_BAR[2] * b[0] + 160 * up * (i - 2) + go[0], y = CNG_BAR[1] + 26 - 260 * up - 20 * Math.sin(t * 3 + i) * up + go[1];
+    pratincole(pen, x, y, 1.3, {face: away > 0 ? dir : up > 0 ? 1 : b[1], fly: up > 0.05, t: t + i, peck: up > 0 ? 0 : Math.max(0, Math.sin(t * 1.3 + i * 2)) * 0.6});
   });
-  riverLapwing(pen, CNG_BAR[0] + CNG_BAR[2] * 0.62 + 300 * up, CNG_BAR[1] + 28 - 200 * up, 1.4, {face: -1, fly: up > 0.05, t: t});
-  ringedPlover(pen, CNG_BAR[0] + CNG_BAR[2] * 0.2, CNG_BAR[1] + 32 - 220 * up, 1.3, {face: 1, fly: up > 0.05, t: t, peck: up > 0 ? 0 : Math.max(0, Math.sin(t * 2))});
+  var lap = on(1, 260), plo = on(-1, 220);
+  riverLapwing(pen, CNG_BAR[0] + CNG_BAR[2] * 0.62 + 300 * up + lap[0], CNG_BAR[1] + 28 - 200 * up + lap[1], 1.4, {face: away > 0 ? 1 : -1, fly: up > 0.05, t: t});
+  ringedPlover(pen, CNG_BAR[0] + CNG_BAR[2] * 0.2 + plo[0], CNG_BAR[1] + 32 - 220 * up + plo[1], 1.3, {face: away > 0 ? -1 : 1, fly: up > 0.05, t: t, peck: up > 0 ? 0 : Math.max(0, Math.sin(t * 2))});
   spotbill(pen, 300 - 30 * t * up, CNG_WATER + 150, 1.3, {face: 1, t: t});
   spotbill(pen, 380 - 30 * t * up, CNG_WATER + 168, 1.2, {face: 1, t: t + 1});
 }
 
 // ---------- Yonok on its bank ----------
 // The city beside the river, on the west bank (the river to the right of it): its roofs among palms and great trees
-// on the higher ground, a gilded chedi among them, and at the far left the north rampart (cityWall, its gate out of
-// sight) running down to the water. No wall along the river: Chiang Saen had none there, the Mae Khong was its east
-// moat (Penth 1975). Painted once, WIDE by 1080, clear where it shows the river panel's sky; a scene draws it to the
+// on the higher ground, a gilded chedi among them, and behind them the north rampart (cityWall, its gate out of sight)
+// running to the water, turned there and run down the bank to the sheet's foot (cngBankWall). Chiang Saen had no wall
+// along the river, the Mae Khong was its east moat (Penth 1975): the bank's wall is the owner's choice for the film
+// (2026-10-25). Painted once, WIDE by 1080, clear where it shows the river panel's sky; a scene draws it to the
 // left of cngRiver()'s panel and pans between them. e.g. pen.drawImage(cngTown(), -WIDE, 0);
 var CNG_TOWN = null;
 var CNG_TOWN_EDGE = 0.66;                              // where the town's bank meets the river, a share of the panel
@@ -223,7 +242,7 @@ function cngTown() {
   b.fillStyle = "#b8a070";                               // the bank's earth face at the water
   b.beginPath(); b.moveTo(edge - 120, CNG_WATER - 10); b.quadraticCurveTo(edge, CNG_WATER + 40, edge + 60, 1080);
   b.lineTo(edge + 100, 1080); b.quadraticCurveTo(edge + 30, CNG_WATER + 60, edge - 100, CNG_WATER - 6); b.closePath(); b.fill();
-  cityWall(b, 20, CNG_WATER - 10, 640, 0.5, {gate: false, outer: false});   // the north rampart, far, toward the river
+  cityWall(b, -40, CNG_WATER + 30, edge - 40, 0.8, {gate: false, outer: false});   // the north rampart, to the river (owner's pick A)
   var keep = pen;
   pen = b;
   for (n = 0; n < 5; n++) { tree(b, 100 + n * 240 + 40 * dice(n), CNG_WATER + 70 + 20 * dice(n + 3), 0.5 + 0.15 * dice(n + 5)); }
@@ -231,8 +250,71 @@ function cngTown() {
   [[150, 900, 0.62], [430, 940, 0.68], [700, 990, 0.6], [980, 920, 0.64]].forEach(function (h) { house(b, h[0], h[1], h[2]); });
   for (n = 0; n < 3; n++) { palm(b, 300 + n * 330 + 30 * dice(n + 11), CNG_WATER + 160, 300 + 60 * dice(n + 2)); }
   pen = keep;
+  cngBankWall(b, edge);                                  // and down the bank, nearer than the town
   CNG_TOWN = paper;
   return paper;
+}
+
+// The town's wall along its bank (owner, 2026-10-25, of the pick A: "extend the wall down to the bottom of the
+// screen", along the river bank): the north rampart's outer face as cityWall() draws it, turned at the corner and run
+// down the bank's curve to the foot of the sheet, nearer and so larger as it comes, the earth face, the teak palisade
+// and the crenellated brick parapet. Chiang Saen had no wall on the river (Penth 1975): this is the owner's choice for
+// the film, not the sources'. b: the brush; edge: where the bank meets the river (as cngTown()'s). Draws with b.
+// e.g. cngBankWall(b, WIDE * CNG_TOWN_EDGE);
+function cngBankWall(b, edge) {
+  var bank = function (u) {                              // the bank's curve, as cngTown() draws it, a little inland
+    var p0 = [edge - 120, CNG_WATER - 10], p1 = [edge, CNG_WATER + 40], p2 = [edge + 60, 1080], v = 1 - u;
+    return [v * v * p0[0] + 2 * v * u * p1[0] + u * u * p2[0] - 50 - 70 * u, v * v * p0[1] + 2 * v * u * p1[1] + u * u * p2[1] + 40];
+  };
+  var n, steps = 80, top = [], foot = [], size = [];
+  for (n = 0; n <= steps; n++) {                         // the rampart's top inland, its outer foot toward the water
+    var u = n / steps, p = bank(u), q = bank(Math.min(1, u + 0.01)), r = bank(Math.max(0, u - 0.01)), s = mix(0.8, 1.9, u);
+    var along = Math.hypot(q[0] - r[0], q[1] - r[1]) || 1, out = [(q[1] - r[1]) / along, -(q[0] - r[0]) / along];   // toward the river
+    if (out[0] < 0) { out = [-out[0], -out[1]]; }
+    size.push(s);
+    top.push([p[0], p[1] - 110 * s]);
+    foot.push([p[0] + out[0] * 110 * s, p[1] + out[1] * 110 * s + 10 * s]);
+  }
+  var strip = function (a, c) {                          // a band between two lines along the wall, filled
+    b.beginPath();
+    a.forEach(function (q, k) { b[k ? "lineTo" : "moveTo"](q[0], q[1]); });
+    for (var k = c.length - 1; k >= 0; k--) { b.lineTo(c[k][0], c[k][1]); }
+    b.closePath();
+  };
+  b.fillStyle = "#8a8f52";                               // the outer earth face, sloping down to the water
+  strip(top, foot); b.fill();
+  b.fillStyle = "rgba(60, 50, 20, 0.18)";                // its lower half in shade
+  strip(top.map(function (q, k) { return [mix(q[0], foot[k][0], 0.55), mix(q[1], foot[k][1], 0.55)]; }), foot); b.fill();
+  b.fillStyle = "#7a5432";                               // the teak palisade, halfway down the slope
+  for (n = 0; n <= steps; n += 4) {
+    var m = [mix(top[n][0], foot[n][0], 0.62), mix(top[n][1], foot[n][1], 0.62)], sp = size[n];
+    b.fillRect(m[0], m[1] - 40 * sp, 5 * sp, 40 * sp);
+    b.beginPath(); b.moveTo(m[0], m[1] - 40 * sp); b.lineTo(m[0] + 2.5 * sp, m[1] - 46 * sp); b.lineTo(m[0] + 5 * sp, m[1] - 40 * sp); b.fill();
+  }
+  var under = top.map(function (q, k) { return [mix(q[0], foot[k][0], 0.28), mix(q[1], foot[k][1], 0.28) + 6 * size[k]]; });
+  b.fillStyle = "#b5664a";                               // the brick parapet along the top, its courses, its crenels
+  strip(top, under); b.fill();
+  b.strokeStyle = "rgba(70, 30, 20, 0.35)";
+  b.lineWidth = 1;
+  [0.25, 0.5, 0.75].forEach(function (f) {
+    b.beginPath();
+    top.forEach(function (q, k) { b[k ? "lineTo" : "moveTo"](mix(q[0], under[k][0], f), mix(q[1], under[k][1], f)); });
+    b.stroke();
+  });
+  b.fillStyle = "#b5664a";
+  for (n = 0; n < steps; n += 3) {                       // the crenels, standing up off the parapet's inner edge
+    var d = [foot[n][0] - top[n][0], foot[n][1] - top[n][1]], dl = Math.hypot(d[0], d[1]) || 1, h = 18 * size[n] / dl;
+    b.beginPath(); b.moveTo(top[n][0], top[n][1]); b.lineTo(top[n + 1][0], top[n + 1][1]);
+    b.lineTo(top[n + 1][0] - d[0] * h, top[n + 1][1] - d[1] * h - 6 * size[n]); b.lineTo(top[n][0] - d[0] * h, top[n][1] - d[1] * h - 6 * size[n]);
+    b.closePath(); b.fill();
+  }
+  b.strokeStyle = "rgba(50, 30, 20, 0.5)";               // the line of the parapet's top and of the outer foot
+  b.lineWidth = 1.5;
+  [top, foot].forEach(function (line) {
+    b.beginPath();
+    line.forEach(function (q, k) { b[k ? "lineTo" : "moveTo"](q[0], q[1]); });
+    b.stroke();
+  });
 }
 
 // A far line of hills across one panel of the sheet, drawn from where that panel lies in the world (worldX: -WIDE for
@@ -376,6 +458,12 @@ function cngVillage() {
   longKhao(b, WIDE + 420, 900, 0.55, true);              // a granary
   house(b, CNG_HOUSE[0], CNG_HOUSE[1], CNG_HOUSE[2]);    // the headman's house
   for (n = 0; n < 5; n++) { banana(b, WIDE + 100 + n * 360, 905 + 10 * dice(n + 40)); }
+  floraTree(b, WIDE + 980, 880, 0.5, "papaya", 1);       // what grows by the houses (owner, 2026-10-25: "plants,
+  floraTree(b, CNG_HOUSE[0] + 260, 880, 0.55, "frangipani", 4);   // flowers"): a papaya, a frangipani, marigolds
+  pen = b;                                               // along the headman's house, a hibiscus by the granary
+  for (n = 0; n < 6; n++) { flora("marigold", CNG_HOUSE[0] - 130 + n * 48, 906 + 4 * dice(n + 50), {size: 0.55, ground: false}); }
+  flora("hibiscus", WIDE + 330, 902, {size: 0.7, ground: false});
+  flora("hibiscus", WIDE + 1720, 896, {size: 0.65, ground: false});
   pen = keep;
   f.strokeStyle = "#8a6a44";                              // the village's bamboo fences along the near ground
   f.lineWidth = 3;
@@ -386,6 +474,28 @@ function cngVillage() {
   }
   CNG_VILLAGE = {back: back, front: front};
   return CNG_VILLAGE;
+}
+
+// The life of a village yard by day (owner, 2026-10-25: "decorate it with birds, animals ... as appropriate"; decorate.js):
+// a rooster and two hens about (x, y), their feet there, each pecking where it stands, then a few steps and pecking
+// again, all through a scene of up to 60 s; seed turns where each goes, so two scenes' yards are not alike. Drawn
+// behind the people (decorate(t, yard, "back") before the scene's drawByZ): they are further off, and smaller.
+// Gives back a life list for decorate(). e.g. decorate(t, cngYard(1450, 870, 3), "back");
+function cngYard(x, y, seed) {
+  var bird = function (k, kind, look) {
+    var stops = [], at = 0, px = x + (k - 1) * 110 + 30 * dice(seed * 7 + k), py = y + 8 * (k % 2);
+    for (var n = 0; at < 60; n++) {
+      stops.push([at, px, py, "peck"]);
+      at += 2.5 + 3 * dice(seed * 13 + k * 5 + n);
+      stops.push([at, px, py]);
+      px += (dice(seed * 17 + k * 3 + n) - 0.5) * 140;
+      px = Math.max(x - 220, Math.min(x + 220, px));
+      at += 1.2 + dice(seed * 19 + k + n);
+    }
+    stops.push([at, px, py]);
+    return {name: kind + " of the yard " + k, kind: kind, layer: "back", look: look, course: stops};
+  };
+  return [bird(0, "rooster", {}), bird(1, "hen", {}), bird(2, "hen", {})];
 }
 
 // ---------- a person measured, and a person carrying ----------
@@ -459,6 +569,12 @@ function cngRoom(kind) {
   cngSkyline(b, 0, w[1] + w[3] - 40, 120, night ? "#2a3550" : "#7aa070", 7);
   b.fillStyle = night ? "#1e2a3a" : "#9cbf6e";
   b.fillRect(w[0], w[1] + w[3] - 40, w[2], 40);
+  // The yard through the window (owner, 2026-10-25: "outside the house add natural items as decorations"): a
+  // frangipani in flower, the ta laew on its post that keeps the house, a bougainvillea at the sill. The walls go over
+  // them, so only what is in the window shows.
+  floraTree(b, w[0] + 90, w[1] + w[3] - 10, 0.55, "frangipani", 2);
+  taLaew(b, w[0] + 260, w[1] + w[3] - 18, 0.6, {points: 8});
+  floraTree(b, w[0] + w[2] - 50, w[1] + w[3] + 10, 0.45, "bougainvillea", 3);
   b.save();                                              // the walls round the window: boards of teak
   b.beginPath(); b.rect(0, 0, WIDE, CNG_FLOOR); b.rect(w[0] + w[2], w[1], -w[2], w[3]); b.clip("evenodd");
   csBand(b, 0, 0, WIDE, CNG_FLOOR, night ? "#4a3222" : "#a8784a", night ? "#3a2618" : "#8a5c36");
@@ -480,6 +596,23 @@ function cngRoom(kind) {
   for (n = 0; n < 8; n++) { var fy = CNG_FLOOR + 8 + n * n * 3 + n * 6; b.beginPath(); b.moveTo(0, fy); b.lineTo(WIDE, fy); b.stroke(); }
   b.fillStyle = night ? "#6a5a3a" : "#c9b07a";            // a mat of woven reed on the floor
   b.beginPath(); b.ellipse(760, CNG_FLOOR + 70, 420, 54, 0, 0, 7); b.fill();
+  // The house's own things (owner, 2026-10-25: "Add some decorations to the house"): a woven sin hung over a bamboo
+  // rail on the far wall, the rice basket and a basket on the floor under the window, bananas hung from the beam.
+  b.strokeStyle = night ? "#3a2a14" : "#c9a45a"; b.lineWidth = 8;
+  b.beginPath(); b.moveTo(70, 440); b.lineTo(420, 440); b.stroke();   // the rail
+  var stripes = night ? ["#5a2a2a", "#2a2a4a", "#4a3a2a"] : ["#b8294a", "#2a4a7a", "#e0b23a", "#5a2a5a"];
+  for (n = 0; n < 16; n++) {                             // a sin, a tube skirt, hung to air: stripes, then its hem of jok
+    b.fillStyle = stripes[n % stripes.length];
+    b.fillRect(120, 446 + n * 14, 250, 14);
+  }
+  b.fillStyle = night ? "#3a2a1a" : "#2a1a14"; b.fillRect(120, 670, 250, 34);
+  b.fillStyle = night ? "#6a5a30" : "#e0b23a";
+  for (n = 0; n < 12; n++) { b.beginPath(); b.moveTo(126 + n * 20, 687); b.lineTo(136 + n * 20, 677); b.lineTo(146 + n * 20, 687); b.lineTo(136 + n * 20, 697); b.closePath(); b.fill(); }
+  kongKhao(b, 1490, CNG_FLOOR + 14, 0.9);                 // under the window, where the camera sees them
+  krabung(b, 1585, CNG_FLOOR + 18, 0.9);
+  b.strokeStyle = night ? "#2a1a10" : "#5a3a1e"; b.lineWidth = 3;
+  b.beginPath(); b.moveTo(1120, CNG_BEAM + 8); b.lineTo(1120, CNG_BEAM + 70); b.stroke();
+  bananas(b, 1120, CNG_BEAM + 70, 1.0, {count: 4, ripe: 0.9});
   if (night) {                                            // the dark of the room's corners
     var dark = b.createRadialGradient(760, CNG_FLOOR, 200, 760, CNG_FLOOR, 1200);
     dark.addColorStop(0, "rgba(0, 0, 0, 0)"); dark.addColorStop(1, "rgba(0, 0, 10, 0.6)");
@@ -530,9 +663,12 @@ var CNG_KUKAEO = null;
 var CNG_CHEDI = [1060, 470, 0.95];
 var CNG_KUKAEO_TREE = [420, 960];
 
-// The hill's top edge at x: gives back y. e.g. var y = cngKuKaeoRidge(1060);
+// The hill's top edge at x: gives back y. Its crown is broad and flat for 220 either side of the chedi, so the whole of
+// the clearing round it sits on the hill (owner, 2026-10-25: "make the mountain bigger so the circle the temple sits
+// on is on the hill"; it ran past the hill's sides). e.g. var y = cngKuKaeoRidge(1060);
 function cngKuKaeoRidge(x) {
-  return 490 + 0.0009 * Math.pow(x - 1060, 2) - 12 * Math.sin(x * 0.015);
+  var off = Math.max(0, Math.abs(x - 1060) - 220);
+  return 448 + 0.00062 * off * off - 6 * Math.sin(x * 0.015);
 }
 function cngKuKaeo() {
   if (CNG_KUKAEO) { return CNG_KUKAEO; }
@@ -550,7 +686,7 @@ function cngKuKaeo() {
   b.beginPath(); b.moveTo(200, 1080); b.quadraticCurveTo(700, 820, 820, 680); b.quadraticCurveTo(940, 560, CNG_CHEDI[0] - 30, CNG_CHEDI[1] + 10); b.stroke();
   b.lineCap = "butt";
   b.fillStyle = "#c9b285";                               // the clearing round the chedi
-  b.beginPath(); b.ellipse(CNG_CHEDI[0], CNG_CHEDI[1] + 6, 170, 26, 0, 0, 7); b.fill();
+  b.beginPath(); b.ellipse(CNG_CHEDI[0], CNG_CHEDI[1] + 12, 170, 22, 0, 0, 7); b.fill();
   bdChedi(b, CNG_CHEDI[0], CNG_CHEDI[1], CNG_CHEDI[2]);
   csBand(b, 0, 960, WIDE, 120, "#93ab5e", "#6f8c44");    // the ground at the hill's foot
   pen = b;

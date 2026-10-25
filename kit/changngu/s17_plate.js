@@ -17,6 +17,7 @@ function c17Yard(t) {
   pen.save(); pen.translate(-cam, 0); pen.drawImage(village.back, 0, 0); pen.restore();
   csBand(pen, 0, 820, WIDE, 260, "#b9a070", "#9a8058");
   var speaks = (t > 5.2 && t < 10.75) || (t > 11.35 && t < 16.71);
+  decorate(t, cngYard(1360, 884, 4), "back");                 // the yard's fowl (owner, 2026-10-25)
   drawByZ([
     {name: "headman", kind: "person", x: 820, y: 860, draw: function () {
       person(820, 860, cngPerson("noble", Object.assign({}, CNG_HEADMAN, {sarong: CNG_KING.sarong, age: 0.45}),

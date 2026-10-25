@@ -573,7 +573,7 @@ var RIVER_SNAKES = {
 };
 
 // The names a river snake's look may have (riverSnake() warns about any other):
-//   size    how large it is drawn: 1 is as thick as a palm trunk beside the cast (about 80 thick, 760 long);
+//   size    how large it is drawn: 1 is as thick as a palm trunk beside the cast (about 80 thick, 860 long);
 //           the granary-sized first one is about 1.6
 //   face    1 swims to the right, -1 to the left
 //   kind    "plain" (unless told) or "pearl", as RIVER_SNAKES above
@@ -586,13 +586,16 @@ var RIVER_SNAKE_KEYS = {};
 // The middle of a swimming snake, from its head back along the water: it rises and dips across the water line,
 // the head held up out of it. x, water: the head's x and the water line, pixels of the sheet; s: the size;
 // face: 1 or -1; phase: where the wave is (radians). Returns a list of 61 [x, y], head first. Draws nothing.
+// RIVER_SNAKE_LONG is its length at size 1 (owner, 2026-10-25: "a bit longer", 860, was 760); the wave and the neck
+// keep the lengths they had at 760.
 // e.g. riverSnakeSpine(900, 780, 0.8, 1, clock * 1.6)
+var RIVER_SNAKE_LONG = 860;
 function riverSnakeSpine(x, water, s, face, phase) {
-  var points = [];
+  var points = [], more = RIVER_SNAKE_LONG / 760;
   for (var n = 0; n <= 60; n++) {
-    var u = n / 60, back = u * 760 * s;
-    var rise = -62 * s * Math.sin(u * 11 - phase) * (0.7 + 0.3 * u) + 12 * s;
-    var head = Math.pow(Math.max(0, 1 - u * 6), 1.6);        // the neck rises out of the water to the head
+    var u = n / 60, back = u * RIVER_SNAKE_LONG * s;
+    var rise = -62 * s * Math.sin(u * 11 * more - phase) * (0.7 + 0.3 * u) + 12 * s;
+    var head = Math.pow(Math.max(0, 1 - u * 6 * more), 1.6);   // the neck rises out of the water to the head
     points.push([x - face * back, water + rise * (1 - head) - 96 * s * head]);
   }
   return points;
@@ -700,12 +703,24 @@ function riverSnake(x, water, look) {
   FINE = Math.min(1, Math.pow(s, -0.7));
   LINE = STYLE.line * FINE;
   var spine = riverSnakeSpine(x, water, s, face, (clock + (look.late || 0)) * 1.6);
-  var wide = function (u) { return s * mix(40, 14, Math.pow(u, 0.9)); };
+  var wide = function (u) { return s * mix(40, 10, Math.pow(u, 0.85)); };   // tapering to the tail
   pen.save();                                       // only what is above the water shows
   pen.beginPath();
   pen.rect(-1e4, -1e4, 2e4, water + 4 + 1e4);
   pen.clip();
   riverSnakeStrip(spine, wide, c);
+  var end = spine[spine.length - 1], before = spine[spine.length - 2], r = wide(1);   // the tail ends round (owner,
+  var way = Math.atan2(end[1] - before[1], end[0] - before[0]);                      // 2026-10-25: "rounded ends")
+  pen.beginPath();
+  pen.arc(end[0], end[1], r, way - Math.PI / 2, way + Math.PI / 2);
+  pen.closePath();
+  pen.fillStyle = c.body;
+  pen.fill();
+  pen.beginPath();
+  pen.arc(end[0], end[1], r, way - Math.PI / 2, way + Math.PI / 2);
+  pen.strokeStyle = inkFor(c.body);
+  pen.lineWidth = 2.4 * FINE;
+  pen.stroke();
   pen.restore();
   pen.strokeStyle = "rgba(255, 252, 238, 0.75)";      // rings where it goes in and out of the water
   pen.lineWidth = 2.5;

@@ -6,6 +6,8 @@
 var C25_LONG = 30;
 var C25_SOUND = {calls: []};
 var C25_LINES = [[1.4, 6.62, "C120"], [6.82, 10.26, "C121"], [13.0, 18.65, "C122"]];
+// Its life (decorate.js; owner, 2026-10-25): a flock going home over the fields at dusk, after the words.
+var C25_LIFE = [{name: "flock home at dusk", kind: "flock", layer: "back", course: [[19.0, 2150, 300], [27.0, -320, 240]]}];
 var C25_SPEAKS = [[13.0, 18.25]];                      // Bua-kham says the moral herself: her mouth moves through it
 var C25_WAI = [18.8, 19.3, 23.2, 23.7];                // the hands come up, are joined, part, are down
 var C25_POOL = [880, 800, 0.9];                        // the pool: its middle's x and y, its size
@@ -22,6 +24,7 @@ function cngSceneToday(t) {
   var pool = C25_POOL;
   pen.drawImage(cngSky("dusk"), 0, 0);
   cumulus(pen, t + 140, CNG_CLOUDS.dusk);
+  decorate(t, C25_LIFE, "back");                      // on the frame, under the camera's close
   var out = c25Ease((t - C25_CLOSE[1]) / (C25_CLOSE[2] - C25_CLOSE[1])), zoom = mix(C25_CLOSE[0], 1, out);
   pen.save();                                                          // the camera: close on the statue, then the wide
   pen.translate(WIDE / 2, 700); pen.scale(zoom, zoom); pen.translate(-mix(pool[0], WIDE / 2, out), -700);

@@ -7,6 +7,17 @@ var C01_LONG = 33.3;
 // Its sounds (sounds.py, laid in by the film's music as a life's calls are): the river's birds at dawn.
 var C01_SOUND = {calls: [[0, "crickets", 0.25, 8]]};
 var C01_LINES = [[9.0, 13.92, "C001"], [14.12, 20.82, "C002"], [21.02, 26.28, "C003"], [26.48, 31.81, "C004"]];
+// Its life (decorate.js; owner, 2026-10-25: "decorate it with birds, animals, fish ..."), before the voice begins at
+// 9 s: a flock high across the dawn from the right, an egret low over the water from the left, a barb that leaps by
+// the sandbar. The sky's are on the frame (C01_SKY_LIFE, drawn with the clouds), the river's on the pan (C01_LIFE).
+var C01_SKY_LIFE = [
+  {name: "flock at dawn", kind: "flock", layer: "back", course: [[1.5, 2150, 230], [8.8, -320, 170]]}
+];
+var C01_LIFE = [                                         // over the water, so drawn after the river (the pan is still at 0)
+  {name: "egret over the river", kind: "egret", layer: "back", look: {fly: true, size: 0.8, seed: 2}, course: [[1.0, -120, 700], [8.6, 2100, 670]]},
+  {name: "barb", kind: "fish", layer: "back", look: {size: 1.1},
+   course: [[3.0, 640, 712, "hide"], [5.0, 640, 712], [5.8, 760, 712, "hide"], [6.6, 760, 712], [7.3, 680, 712, "hide"], [40, 680, 712, "hide"]]}
+];
 
 // The titles over the river (as maeng/s01_doi.js's): the series, Lanna Tales (นิทานล้านนา), in the Lanna script, gold;
 // then the tale's name, ตำนานช้างงู, in the Lanna script, with its English small beneath. Both written by the Kam
@@ -67,10 +78,15 @@ function cngSceneMekong(t) {
   pen.drawImage(cngSky("day"), -WIDE, 0);
   pen.drawImage(cngSky("day"), 0, 0);
   pen.globalAlpha = 1;
-  cumulus(pen, t + 20, CNG_CLOUDS.dawn);
+  pen.restore();                                         // the clouds on the frame, not on the pan: far off, they hardly
+  cumulus(pen, t + 20, CNG_CLOUDS.dawn);                 // move as the land goes by, and none is cut where the two panels
+  decorate(t, C01_SKY_LIFE, "back");
+  pen.save();                                            // meet (cumulus draws on one sheet's width; found 2026-10-25)
+  pen.translate(WIDE * ease, 0);
   var river = cngRiver();
   pen.drawImage(river.back, 0, 0);
   cngRiverLife(t, {});
+  decorate(t, C01_LIFE, "back");
   pen.drawImage(river.near, 0, 0);
   pen.drawImage(cngTown(), -WIDE, 0);
   var bank = -WIDE + WIDE * CNG_TOWN_EDGE + 80;          // the water off the town's bank moves as the river's does
