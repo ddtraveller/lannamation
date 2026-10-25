@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>thicket 4 - the clearing</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="style.js"></script>
+<script>var BEAT = 0.5;</script>
+<script src="../oldcartoon.js"></script>
+<script src="../flora.js"></script>
+<script src="../butterflies.js"></script>
+<script src="../northbirds.js"></script>
+<script src="thicket.js"></script>
+<script src="s04_clearing.js"></script>
+<script>
+// Scene 4 of "Through the flowers" on its own, to look at and render while it is made.
+var DURATION = CLEARING_LONG;
+var SCENES = [[0, CLEARING_LONG, s04Clearing]];
+function draw(t) { film(t, SCENES); }
+var rendering = false;
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

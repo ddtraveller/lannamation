@@ -7635,6 +7635,94 @@ left out. Returns nothing: it draws with pen; pen is restored (it does not use n
 e.g. egret(1100, GROUND - 10, clock, {peck: 0.5 + 0.5 * Math.sin(clock * 3)})
 ```
 
+## butterflies.js
+
+butterflies.js - four butterflies of the north, for films made with oldcartoon.js. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="butterflies.js"></script>  and call butterfly(kind, x, y, t, look) from a scene: (x, y) is the middle of its body, seen from above, its head toward "turn" (0 is up). Flying, its wings beat; resting on a flower (look.rest), they open and close slowly. The kinds are the keys of BUTTERFLIES: the golden birdwing (Troides aeacus) of Doi Suthep's forests, black forewings and gold hindwings, the largest of them and protected in Thailand; the leopard lacewing (Cethosia cyane), orange and black with a white band, common in Chiang Mai's gardens; the common bluebottle (Graphium sarpedon), black with a band of see-through blue-green, quick over the flowers; and the common grass yellow (Eurema hecabe), small and bright, everywhere in the grass. Drawn from what each is, in flat colour inside a fine dark line.  butterflyDrift(t, x, y, look) gives where a butterfly is at second t as it wanders: a course that dips and lifts with its wingbeats and turns as it goes.  var b = butterflyDrift(clock, 300, 500, {vx: 60, seed: 2}); butterfly("lacewing
+
+### `butterflyForePath(span, pointed)`
+
+```
+The outline of one forewing, on the right side of the body, its root at (0, 0) and its tip up and out.
+span: the half-span it reaches; pointed: 0 (round, the grass yellow) to 1 (the bluebottle's long point).
+Returns nothing: it begins a new path on pen and closes it, unfilled.
+e.g. butterflyForePath(35, 0.4); pen.fill();
+```
+
+### `butterflyHindPath(span, tail, scallop)`
+
+```
+The outline of one hindwing, on the right side, its root at (0, 0), rounded and hanging below the forewing;
+"tail" gives it a swallowtail's point (none of the four has one), "scallop" waves its edge (the lacewing's).
+span: as butterflyForePath(); tail, scallop: 0 to 1. Returns nothing: it begins a path on pen and closes it.
+e.g. butterflyHindPath(35, 0, 0.6); pen.fill();
+```
+
+### `butterflyFill(paint, line)`
+
+```
+Fills and inks the path pen holds: "paint" (a colour or a gradient), its line "line" at the kit's LINE.
+Returns nothing. e.g. butterflyFill("#f2c21e", "#120e0a");
+```
+
+### `butterflyBirdwingMarks(span, kind)`
+
+```
+The golden birdwing's markings on one side (span its half-span): pale streaks between the forewing's black
+veins; on the gold hindwing, black veins, a black border and a row of black spots inside it.
+Returns nothing: it draws with pen, inside the wing shapes already painted.
+e.g. butterflyBirdwingMarks(35, kind);
+```
+
+### `butterflyLacewingMarks(span, kind)`
+
+```
+The leopard lacewing's markings on one side: the forewing's outer half black with a white band across it, the
+hindwing's scalloped border black with white points, and black spots on the orange.
+Returns nothing: it draws with pen. e.g. butterflyLacewingMarks(23, kind);
+```
+
+### `butterflyBluebottleMarks(span, kind)`
+
+```
+The common bluebottle's markings on one side: a band of pale blue-green across both wings from the forewing's
+tip to the hindwing's edge, and a red spot by the hindwing's border. Returns nothing: it draws with pen.
+e.g. butterflyBluebottleMarks(20, kind);
+```
+
+### `butterflyGrassYellowMarks(span, kind)`
+
+```
+The grass yellow's markings on one side: the forewing's outer edge bordered black. Returns nothing.
+e.g. butterflyGrassYellowMarks(13, kind);
+```
+
+### `butterflyWings(kind, span)`
+
+```
+One side's two wings, at root (0, 0) on the body's right, painted and marked. kind: an entry of BUTTERFLIES.
+span: the half-span. Returns nothing: it draws with pen.
+e.g. butterflyWings(BUTTERFLIES.lacewing, 23);
+```
+
+### `butterfly(kind, x, y, t, look)`
+
+```
+A butterfly of "kind" (a key of BUTTERFLIES), seen from above, (x, y) the middle of its body, at second t.
+  look   BUTTERFLY_KEYS (at the top of this file); it may be left out
+Returns nothing: it draws with pen, and leaves pen, LINE and FINE as they were.
+e.g. butterfly("birdwing", 700, 400, clock, {turn: 0.4, size: 1.2})
+```
+
+### `butterflyDrift(t, x, y, look)`
+
+```
+Where a wandering butterfly is at second t: it drifts from (x, y) at (vx, vy) pixels a second, dipping and
+lifting with its wingbeats and weaving to each side; it faces the way it goes.
+  look   {vx, vy (pixels a second, 0 when left out), weave (pixels, 40), seed}
+Returns {x, y, turn}: pixels of the sheet, and radians from up. Changes nothing.
+e.g. var b = butterflyDrift(clock, 300, 500, {vx: 60, seed: 2});
+```
+
 ## himmaphan.js
 
 himmaphan.js - beings of the Himmaphan, the mythic forest above the world in Thai art, flying, for the Lanna cartoon kit: the thewada (an angel), the kinnari (half woman, half bird) and the hong (the golden swan) on the wing. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="himmaphan.js"></script>  thewada(x, y, t, look)     an angel flying as the murals paint them: one knee forward, the other leg swept up behind, the sole to the sky; a lotus held up, the other hand before the chest kinnari(x, y, t, look)     a kinnari in flight: a woman crowned to the waist, a bird below, her wings spread hongFlight(x, y, t, look)  the hong on the wing, its neck long, its tail a flame of plumes  (x, y) is the middle of the figure; each flies to the right (look.face -1 to the left); t is the second; look.size, 1 being about 220 from crown to the lowest point; look.seed sets each one's own time, so a flight of them do not move as one; look.scarves (the thewada's and the kinnari's): two long scarves streaming behind; look.gift: what the thewada holds up, "lotus" (the default) or "garland"; look.light (0 to 1, 0.6 unless told): the low sun on them, gilding their edges; look.s

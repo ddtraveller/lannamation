@@ -321,3 +321,46 @@ for each film).
   Thai and Gelasio (made to Georgia's measure), web fonts every page of the film loads, so the laptop and the
   Spark letter it alike (owner: "Same open fonts"). Left out, the kit's own: Maeng's stills before and after,
   the same.
+
+## Through the flowers: a walk through the kit's flora, with no one in it (2026-10-25)
+
+The owner (2026-10-25), giving a clip of Spirited Away (the flowering shrubs and the green hedge) as the
+reference: "Make a video like this without a person in it of moving through dense vegetation with flowers. Use
+this as a reference video to showcase the flora of the kit. Add fauna as appropriate." `thicket/` is that film,
+48 s, written by hand as a page of the kit (the JSON of film.py has no camera that moves through layers): four
+scenes, each its own file and page as the tales' are (`s01.html` to `s04.html`, `s01_pink.js` ...), joined in
+`thicket/film.html`. Render: `python render.py thicket/film.html out/thicket.mp4`.
+
+| Scene | What the camera does | What is in it |
+|---|---|---|
+| 1, the pink thicket (0-12 s) | pushes slowly forward; the near bushes part to each side | bougainvillea, hibiscus and the wild cherry in bushes of pink, an opening of light, a tall soft wall of leaves behind; a leopard lacewing resting on a bush, a golden birdwing crossing; petals falling; a shama sings |
+| 2, the green hedge (12-24 s) | slides along a hedge that fills the frame | the hedge dotted with jasmine, dok kaew, sarapee, a purple orchid and the wild cherry; hibiscus, orchids, ket tha wa, marigold, ta hern and jasmine on their stems before it; a green-tailed sunbird hovering to sip at a hibiscus (its call); grass yellows; tall grass passing near, soft |
+| 3, under the trees (24-36 s) | slides on and rises a little | trunks with golden orchids (ueang), a tokay crawling up one, an atlas moth resting on another; saban nga hanging from above; ta hern, hom, betel on its stake, miang, som poi, ket tha wa on the floor among bushes in flower; teak leaves near; a blue magpie flying through (its call), a bluebottle; shafts of light |
+| 4, the clearing (36-48 s) | draws back and rises | a slope of bua tong in leafy mounds and on stems, marigold, thong kwao, frangipani, ratchaphruek; the wild cherry bare and in blossom beside a sarapee in flower; hills; a great hornbill crossing the sky; a birdwing and grass yellows; petals falling; it fades out |
+
+**How it is drawn.** `thicket/thicket.js` is what the scenes share. Every bush, plant and tree is painted once,
+the first time its scene is drawn, into a picture of its own (`thkSprite()`, at 1.6 times the sheet's pixels so a
+near layer pushed in stays sharp), and each frame places those pictures (`thkPlace()`): this is what lets a scene
+hold hundreds of thousands of leaves. A scene is layers far to near (`thkLayers(t, layers, cam)`): each has a
+depth (how fast it passes as the camera moves, and how much it grows as it pushes in), a blur (the far ones, and
+the nearest that the eye does not hold), a haze of the air's colour, its items swaying in the air (`thkSway()`,
+each at its own phase) and its animals (`live`). `thkBush()` paints a bush as the Ghibli painters do: a lumpy
+mound of clumps, hundreds of small leaves each lit by its clump's upper left as well as the bush's, a fringe of
+leaves standing out from the edge, and flowers of flora.js (`THK_BLOOMS`, their own bloom painters) in clusters on
+the sunny faces. `thkGrass()`, `thkTrunk()`, `thkPetals()`, `thkLight()` (shafts and pollen) and `thkVignette()`
+make the rest. `thkOnce()` builds a scene's layers once. The style (`thicket/style.js`): 1920 wide at two pixels,
+the old print at three tenths. Sounds by `hear()`: the cicadas of Chom Thong under all of it (sounds.py, CC BY 4.0),
+the shama, the sunbird and the magpie where they are.
+
+Looked at as stills large, round by round, each scene on its own (owner, 2026-10-25: "a few iterations making them
+as beautiful as possible"): the bushes were boxes cut off by their pictures' edges (the clumps now keep inside), one
+flat texture (now each clump lit), the flowers scattered (now in clusters); the hedge's flowers were hidden by grass
+(the grass now at the left, as the reference has it); the forest was too open (two layers of understory); the
+clearing was flatter than the rest (now meadow mounds and a sarapee painted as the bushes are). Rendered
+(2026-10-25): 1440 frames in 2428 s on the laptop (the looking over: 481 s, 0 blinked out, 0 popped); the sound
+-26.7 LUFS, peak -11.9 dBFS. kit_check: film.html draws, same 0 / 0, 348 ms a frame (the bushes' pictures are
+placed, not drawn again; the cost is their size and blur).
+
+**Not done:** the camera's moves are simple (a push, a slide, a rise): no turn, no going round a bush. Leaves and
+flowers sway with their picture, a bush as one; no single leaf moves. The animals are the kit's as they are (the
+magpie and the hornbill fly side-on). No music, only the birds and cicadas. Not uploaded anywhere.

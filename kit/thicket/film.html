@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Through the flowers - a walk through the flora of the Lanna kit</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="style.js"></script>
+<script>var BEAT = 0.5;</script>
+<script src="../oldcartoon.js"></script>
+<script src="../flora.js"></script>
+<script src="../butterflies.js"></script>
+<script src="../northbirds.js"></script>
+<script src="../beasts.js"></script>
+<script src="../night.js"></script>
+<script src="thicket.js"></script>
+<script src="s01_pink.js"></script>
+<script src="s02_hedge.js"></script>
+<script src="s03_trees.js"></script>
+<script src="s04_clearing.js"></script>
+<script>
+// "Through the flowers": no one in it, the camera moving through dense flowering plants as the owner's reference
+// (Spirited Away's flowering shrubs and green hedge, 2026-10-25) does, to show the flowers and plants of flora.js
+// and the animals of the kit among them. Four scenes, each its own file and page (s01.html to s04.html): the pink
+// thicket, the green hedge, under the trees, the clearing. Cicadas sing under all of it; it fades out at the end.
+// Render: python render.py thicket/film.html out/thicket.mp4
+var DURATION = PINK_LONG + HEDGE_LONG + TREES_LONG + CLEARING_LONG;
+var END_FADE = 1.6;
+
+// The last scene, fading to black over its last END_FADE seconds. t: its own seconds. Returns nothing.
+// e.g. lastScene(11);
+function lastScene(t) {
+  s04Clearing(t);
+  cutFade(between(t, CLEARING_LONG - END_FADE, CLEARING_LONG));
+}
+
+var SCENES = [[0, PINK_LONG, s01Pink],
+              [PINK_LONG, PINK_LONG + HEDGE_LONG, s02Hedge],
+              [PINK_LONG + HEDGE_LONG, PINK_LONG + HEDGE_LONG + TREES_LONG, s03Trees],
+              [PINK_LONG + HEDGE_LONG + TREES_LONG, DURATION, lastScene]];
+
+function draw(t) {
+  film(t, SCENES);
+  if (t % 23 < 0.1) { hear("cicadas", Math.floor(t / 23) * 23, WIDE / 2, 540); }   // the bed of cicadas, 23 s a take
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

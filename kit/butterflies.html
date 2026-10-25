@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>butterflies - four butterflies of the north</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="flora.js"></script>
+<script src="butterflies.js"></script>
+<script>
+// The "butterflies" sheet, in two parts of six seconds. First the four, large, wings beating, each with its
+// Thai name, how that is said, and the name butterfly() takes; under each, the same one resting, its wings
+// opening and closing. Then at their own sizes in a garden: they wander over the flowers (butterflyDrift())
+// and one sits on a hibiscus.
+var DURATION = 12;
+
+var BEAT = 0.5;
+
+function caption(text, x, y, thai) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = thai ? "bold 22px 'Leelawadee UI', Tahoma, sans-serif" : "16px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheetNames(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  Object.keys(BUTTERFLIES).forEach(function (kind, n) {
+    var x = 180 + n * 360, big = 70 / BUTTERFLIES[kind].span * 2.6;
+    butterfly(kind, x, 300, t, {size: big, seed: n});
+    butterfly(kind, x, 700, t, {size: big, rest: true, seed: n});
+    caption(BUTTERFLIES[kind].thai, x, 900, true);
+    caption(BUTTERFLIES[kind].say + " · " + kind, x, 926);
+  });
+  caption("flying (above) and resting (below)", 720, 1040);
+}
+
+function sheetGarden(t) {
+  var sky = pen.createLinearGradient(0, 0, 0, 900);
+  sky.addColorStop(0, "#a6d4c8");
+  sky.addColorStop(1, "#f4ecd2");
+  pen.fillStyle = sky;
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.fillStyle = "#8fc47a";
+  pen.fillRect(0, 880, WIDE, 200);
+  ["hibiscus", "marigold", "jasmine", "orchid", "bougainvillea", "buatong", "hibiscus", "frangipani"].forEach(function (name, n) {
+    flora(name, 120 + n * 170, 960 + (n % 2) * 30, {size: 1.6});
+  });
+  butterfly("lacewing", 136, 760, t, {rest: true, turn: -0.4});
+  var kinds = ["birdwing", "bluebottle", "grassyellow", "grassyellow", "lacewing"];
+  kinds.forEach(function (kind, n) {
+    var b = butterflyDrift(t, 200 + n * 260, 400 + (n % 2) * 220, {vx: (n % 2 ? -1 : 1) * 30, seed: n * 1.7});
+    butterfly(kind, b.x, b.y, t, {turn: b.turn, seed: n});
+  });
+  caption("at their own sizes, over the flowers of flora.js", 720, 1070);
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    if (at < 6) { sheetNames(at); } else { sheetGarden(at); }
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

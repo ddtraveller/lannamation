@@ -617,3 +617,22 @@ the far side".
 `himmaphan.html` and `sls_intro.html`: kit_check passes; on a quiet laptop a frame of the card takes 35.0 ms and of
 `himmaphan.html` 30.7 ms (the leaf feathers were not timed; the 60 to 160 ms seen while trying this were the laptop
 busy with renders at the same time).
+
+## Four butterflies of the north (2026-10-25)
+
+For the film "Through the flowers" (films.md), whose thicket wanted butterflies and the kit had none.
+`butterflies.js`: `butterfly(kind, x, y, t, look)`, seen from above, (x, y) the middle of its body, its head
+toward `turn`; flying, its wings beat (each kind at its own pace); with `rest`, it sits and opens and closes them
+slowly, a faint shadow under it. `butterflyDrift(t, x, y, {vx, vy, weave, seed})` gives a wandering course
+that dips and lifts and faces the way it goes. `BUTTERFLY_KEYS`: size, turn, rest, flap, seed.
+
+| `kind` | Thai, and how it is said | What is drawn |
+|---|---|---|
+| `birdwing` | ผีเสื้อถุงทองป่าสูง, phi suea thung thong pa sung | the golden birdwing (Troides aeacus) of Doi Suthep's forests, protected: black forewings with pale streaks between the veins, gold hindwings with a black border and a row of black spots, the largest (70 across at size 1) |
+| `lacewing` | ผีเสื้อหนอนใบกระทกรก, phi suea non bai krathok rok | the leopard lacewing (Cethosia cyane) of Chiang Mai's gardens: orange, the forewing's outer half black with a white band, the hindwing's scalloped edge black with white points |
+| `bluebottle` | ผีเสื้อสะพายฟ้า, phi suea saphai fa | the common bluebottle (Graphium sarpedon): black, a band of see-through blue-green from the forewing's tip across the hindwing (ONEP, the Thai name), no tail |
+| `grassyellow` | ผีเสื้อเหลืองหนามธรรมดา, phi suea lueang nam thammada | the common grass yellow (Eurema hecabe): small and bright yellow, the forewing's edge black |
+
+`butterflies.html` is the sheet: the four large, flying and resting, with their names; then at their own sizes
+over the flowers of flora.js. Drawn from what each is; no picture was copied. Not done: seen from above only (no
+side view with the wings closed), and no caterpillar.
