@@ -18,7 +18,7 @@ KIT = ROOT / "kit"
 OUT = ROOT / "docs" / "api.md"
 ORDER = ["oldcartoon.js", "motion.js", "backdrops.js", "pieces.js", "flora.js", "food.js", "khom.js", "highlands.js",
          "cumulus.js", "band.js", "sabai.js", "weaving.js", "decorate.js", "naga.js", "dragon.js", "beasts.js", "myth.js", "night.js",
-         "northbirds.js", "butterflies.js", "himmaphan.js", "paperdoll.js", "puman.js", "fonlep.js", "apsara.js", "finger_dance.js",
+         "northbirds.js", "lannabirds.js", "taleanimals.js", "forestanimals.js", "butterflies.js", "himmaphan.js", "paperdoll.js", "puman.js", "fonlep.js", "apsara.js", "finger_dance.js",
          "dance_track.js"]
 
 

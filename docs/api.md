@@ -7635,6 +7635,435 @@ left out. Returns nothing: it draws with pen; pen is restored (it does not use n
 e.g. egret(1100, GROUND - 10, clock, {peck: 0.5 + 0.5 * Math.sin(clock * 3)})
 ```
 
+## lannabirds.js
+
+lannabirds.js - four birds of the north that Lanna tells of, for the Lanna cartoon kit. Load it after the kit and northbirds.js (it draws with that file's helpers):  <script src="oldcartoon.js"></script> <script src="northbirds.js"></script> <script src="lannabirds.js"></script>  and call each from a scene as the kit's rooster() is called: (x, y) is where its feet are, or, for one in flight, the middle of its body; t is the second; look holds what it does, and a name the bird does not know is warned of.  whiteCrow(x, y, t, look)    the white crow, แม่กาเผือก: walks, hops, pecks, caws, broods, flies; or a black crow crowNest(x, y, t, look)     her nest of sticks in a fig tree's fork, with up to five eggs, rocking in the wind spottedDove(x, y, t, look)  the spotted dove, นกเขาใหญ่: walks nodding, pecks, bows and coos, flies, claps and glides kingfisher(x, y, t, look)   the white-throated kingfisher, นกกระเต็นอกขาว: bobs, calls, hovers, dives, beats a fish; or the small common kingfisher, นกกระเต็นน้อยธรรมดา (kind: "common") parakeet(x, y, t, look)     the red-breasted parakeet, นกแขกเต้า: perches, climbs by its bill, eats from its foot, preens, calls, flies; or the blossom-headed par
+
+### `lbBegin(x, y, look, unit, fine)`
+
+```
+Begins drawing a bird designed "unit" times its size: nbBegin(), then the pen scaled by unit so that the bird can
+be drawn in round numbers, and LINE kept fine. Returns what nbBegin() returns: hand it to nbEnd().
+e.g. var keep = lbBegin(x, y, look, 0.5, 0.8);   /* drawn 200 long, 100 on the sheet */   nbEnd(keep);
+```
+
+### `lbEase(s)`
+
+```
+A smooth step from 0 to 1 as s goes from 0 to 1 (clamped). Returns a number.
+e.g. lbEase(0.5)   // 0.5
+```
+
+### `lbPulse(t, every, long, seed)`
+
+```
+A pulse that rises and falls once every "every" seconds, lasting "long" of them, from "at" seconds into its
+round; seed shifts it. Returns 0 to 1 (a smooth hump), 0 between pulses.
+e.g. lbPulse(clock, 3, 0.6, 0)   // a hump of 0.6 s every 3 s
+```
+
+### `lbFeather(root, tip, wide, how)`
+
+```
+One feather: from root [x, y] to tip [x, y], "wide" across at its widest, bowed by "bow" (a fraction of its length,
+to the left of the way it points), its tip "round" (0 pointed, 1 round). It is filled from "colour" at the root
+to "tipColour" (colour when left out), inked round, a shaft down it in "shaft" (none when false), and a sheen
+along its outer vane ("sheen" 0 to 1). "band" ([from, to, colour]): a band across it, from and to of the way out.
+Returns nothing: it draws with pen.
+e.g. lbFeather([0, 0], [-60, -20], 9, {colour: "#3a8ac8", tipColour: "#1a3a6a", sheen: 0.5});
+```
+
+### `lbTail(root, angle, n, long, outer, wide, spread, how, wave)`
+
+```
+A tail of n feathers from "root" [x, y], pointing "angle" (radians), the middle one "long" and the outer ones
+"outer" times as long (graduated below 1), each "wide", fanned "spread" radians from side to side. The far half
+is drawn first and darker, so that a tail fanned shows its feathers one over the next. "how" is lbFeather()'s
+(colour, tipColour, band, sheen), and "edges" ([colour, from]) colours the outer pair's tips (a dove's white).
+Returns nothing: it draws with pen.
+e.g. lbTail([-40, -30], Math.PI * 0.9, 7, 70, 0.7, 12, 0.3, {colour: "#8a7a6a"});
+```
+
+### `lbRow(a, b, c, count, long, wide, angle, how)`
+
+```
+A row of small feathers laid like tiles along a curve from "a" by "b" to "c" ([x, y] each), "count" of them, each
+"long" and "wide", pointing "angle" (radians; the way the row's feathers lie, back over the ones behind).
+Returns nothing: it draws with pen.
+e.g. lbRow([20, -60], [0, -64], [-30, -52], 7, 16, 9, Math.PI * 0.85, {colour: "#6a5a4a", tipColour: "#c8a878"});
+```
+
+### `lbFolded(s, tip, deep, c, lift)`
+
+```
+A wing folded against the side, from the shoulder "s" to the tip "tip" ([x, y] each), "deep" from its top line to
+its lower edge at the wrist: the primaries laid one over the next toward the tip, the secondaries and tertials
+over them, then the greater coverts in a row and the small coverts over the shoulder. "c" names the colours:
+primary, primaryTip, secondary, secondaryTip, covert, covertTip, small (and band, a band across the coverts'
+tips, as a crow's has none and a kingfisher's black). "lift" (0 to 1) raises the wing a little off the body
+(a caw, a shake). Returns nothing: it draws with pen.
+e.g. lbFolded([30, -86], [-72, -40], 34, {primary: "#202024", secondary: "#2a2a30", covert: "#303038", small: "#34343c"});
+```
+
+### `lbWingOpen(w, spread)`
+
+```
+A wing spread in flight, drawn pointing up from the shoulder (0, 0) and squeezed by lift (nbLift) as a side
+view sees it beat: the secondaries along the arm's trailing edge, the primaries fanned from the wrist (spread 0
+to 1: closed on the upstroke, parted on the downstroke), the coverts over their roots in two rows, and the
+leading edge. "w": span, chord (the arm's depth), n (primaries), fingers (0 to 1: a crow's or an eagle's
+separated tips; 0 a pointed wing), and colours as lbFolded's, with patch [from, to, colour] (a white or
+a pale patch across the primaries' bases, the kingfisher's) and lining (the colour under the coverts).
+Returns nothing: it draws with pen.
+e.g. pen.save(); nbLift(0.8); lbWingOpen({span: 120, chord: 46, n: 9, fingers: 0.6, primary: "#222"}, 0.5); pen.restore();
+```
+
+### `lbBeat(w, beat, at, tone, far)`
+
+```
+A wing seen beating: lbWingOpen() on its side, squeezed by lift, the far one darker and a little behind; the
+primaries parted as it comes down (rate below 0) and closed as it goes up. "beat" is the wing's phase in turns;
+gives back the lift (1 up to -1 down), for the body to rise and fall against it. Returns a number.
+e.g. var lift = lbBeat(w, clock * 3, [4, -8], darker);
+```
+
+### `lbSmooth(pts)`
+
+```
+Begins a new path on pen: a smooth closed curve through every point of "pts" ([[x, y], ...], three or more), as
+a Catmull-Rom spline does it, so an outline read off a photograph point by point is drawn without corners. It
+neither fills nor strokes. Returns nothing.
+e.g. lbSmooth([[0, -20], [20, 0], [0, 20], [-20, 0]]); nbPaint("#c8a8a8");
+```
+
+### `lbSmoothLine(pts)`
+
+```
+The same curve, open: through the points from the first to the last, for a line along an edge (a neck's back,
+a collar). Begins a new path; neither strokes nor fills. Returns nothing.
+e.g. lbSmoothLine([[0, 0], [10, -6], [20, -4]]); pen.stroke();
+```
+
+### `lbFoot(hx, hy, fx, fy, thick, toe, colour, lifted, zygo)`
+
+```
+A bird's short leg and foot standing on the ground at (fx, fy), from the hip (hx, hy): the shin "thick", the
+toes "toe" long, three forward and one back (zygodactyl: two forward, two back, as a parrot's), in "colour".
+lifted (0 to 1) folds the toes as the foot leaves the ground. Returns nothing: it draws with pen.
+e.g. lbFoot(0, -14, 3, 0, 4, 9, "#d0505a", 0, false);
+```
+
+### `crowHead(base, head, aim, c, open, puff, e)`
+
+```
+The crow's head and neck, from the neck's root "base" to the middle of the head "head" ([x, y] each), the bill
+pointing "aim" radians (0 right), opened "open" (0 to 1), the throat's feathers standing out "puff" (0 to 1).
+c a CROW palette; e a feeling or null. The head is drawn first and the neck over its back, so the two are one
+line; only the neck's back is inked, and where it meets the body nothing is. Returns [x, y], the bill's tip on
+the sheet.
+e.g. crowHead([30, -96], [50, -128], 0, CROW.white, 0.4, 0.6, null)
+```
+
+### `crowWing(c, dark)`
+
+```
+The crow's wing, for lbFolded() and lbWingOpen(), from a CROW palette c, "dark" (0 to 1) toward its shade for
+the far wing. Returns an object.
+e.g. lbFolded(s, tip, 34, crowWing(CROW.white, 0));
+```
+
+### `whiteCrow(x, y, t, look)`
+
+```
+The white crow (rules above), its feet on (x, y), or flying with (x, y) the middle of its body; at second t.
+  look   CROW_KEYS: size, face, colour, step, hop, peck, caw, turn, brood, fly, glide, glow, seed, feel
+Returns {bill: [x, y]}, the tip of its bill on the sheet. It draws with pen (nbBegin() and nbEnd(): pen and LINE
+as they were).
+e.g. whiteCrow(700, GROUND, clock, {step: clock * 2, caw: lbPulse(clock, 2.5, 0.5, 0)})
+```
+
+### `crowNest(x, y, t, look)`
+
+```
+The crow's nest in the fork of a fig tree (ต้นมะเดื่อ): a cup of sticks crossing every way, lined with fibre, and
+in it up to five eggs, pale blue-green speckled brown (a crow's; gold: true, golden, as a tale may want them).
+(x, y) is the middle of the nest's rim. look: size (1 about 70 across, a crow's), eggs (0 to 5, how many lie in
+it), wind (0 to 1: the branch and the nest rocking, as in the storm that blew it down), gold, tree (false: no fork
+of the tree under it). Returns {eggs: [[x, y], ...]}, where each egg lies on the sheet.
+e.g. crowNest(900, 400, clock, {eggs: 5, wind: 0.2});
+```
+
+### `doveWing(dark)`
+
+```
+The dove's wing, for lbFolded() and lbWingOpen(); dark (0 to 1) toward its shade, for the far wing. Returns an object.
+e.g. lbFolded([22, -52], [-56, -34], 24, doveWing(0));
+```
+
+### `doveHead(base, head, aim, swell, e)`
+
+```
+The dove's head about (hx, hy), the bill pointing "aim" (radians), the neck from "base"; swell (0 to 1) the
+throat puffed to coo; e a feeling or null. Returns nothing: it draws with pen.
+e.g. doveHead([24, -50], [40, -68], 0, 0, null)
+```
+
+### `spottedDove(x, y, t, look)`
+
+```
+The spotted dove (rules above), its feet on (x, y), or flying with (x, y) the middle of its body; at second t.
+  look   DOVE_KEYS: size, face, step, peck, coo, fluff, fly, glide, clap, seed, feel
+Returns nothing: it draws with pen (nbBegin() and nbEnd(): pen and LINE as they were).
+e.g. spottedDove(700, GROUND, clock, {step: clock * 3});
+```
+
+### `kfWing(k, dark)`
+
+```
+The kingfisher's wing, for lbFolded() and lbWingOpen(), from a KINGFISHER palette k; dark (0 to 1) for the far
+wing. Returns an object.
+e.g. lbFolded([8, -74], [-20, -30], 20, kfWing(KINGFISHER.whitethroat, 0));
+```
+
+### `kfFish(x, y, long, t)`
+
+```
+A small fish crosswise in a bill, its middle at (x, y), "long" from head to tail, its tail flapping on t.
+Returns nothing: it draws with pen.
+e.g. kfFish(56, 2, 26, clock);
+```
+
+### `kfHead(hx, hy, aim, k, open, fish, t, e)`
+
+```
+The kingfisher's head about (hx, hy), the bill pointing "aim" (radians), opened "open" (0 to 1); k a palette;
+fish, true for a fish held crosswise; e a feeling or null. Returns nothing: it draws with pen.
+e.g. kfHead(14, -92, 0.15, KINGFISHER.whitethroat, 0, false, clock, null);
+```
+
+### `kingfisher(x, y, t, look)`
+
+```
+The kingfisher (rules above), its feet on (x, y) on a perch, or in the air with (x, y) the middle of its body;
+at second t.
+  look   KINGFISHER_KEYS: size, face, kind, bob, call, watch, hover, dive, fly, fish, beat, seed, feel
+Returns nothing: it draws with pen (nbBegin() and nbEnd(): pen and LINE as they were).
+e.g. kingfisher(900, 420, clock, {watch: 1});
+```
+
+### `parakeetPalette(look)`
+
+```
+The parakeet's palette for its kind and sex. Returns an object.
+e.g. var p = parakeetPalette({kind: "blossom", hen: true});
+```
+
+### `parakeetWing(p, dark)`
+
+```
+The parakeet's wing, for lbFolded() and lbWingOpen(); dark (0 to 1) for the far wing. Returns an object.
+e.g. lbFolded([12, -86], [-12, -30], 22, parakeetWing(p, 0));
+```
+
+### `parakeetHead(hx, hy, aim, p, open, e)`
+
+```
+The parakeet's head about (hx, hy), the bill pointing "aim" (radians), opened "open"; p a palette; e a feeling
+or null. Returns [x, y], the tip of the bill on the sheet.
+e.g. parakeetHead(14, -104, 0, p, 0, null);
+```
+
+### `parakeetFig(x, y, r)`
+
+```
+A small red fig (มะเดื่อ), held: about (x, y), r across. Returns nothing: it draws with pen.
+e.g. parakeetFig(30, -80, 6);
+```
+
+### `parakeet(x, y, t, look)`
+
+```
+The parakeet (rules above), its feet on (x, y) gripping a branch, or flying with (x, y) the middle of its body;
+at second t.
+  look   PARAKEET_KEYS: size, face, kind, hen, climb, eat, preen, call, shake, fly, seed, feel
+Returns {bill: [x, y]}, the tip of its bill on the sheet. It draws with pen (nbBegin() and nbEnd(): pen and LINE
+as they were).
+e.g. parakeet(900, 420, clock, {eat: 1});
+```
+
+## taleanimals.js
+
+taleanimals.js - five animals of the tales and the rites of Lanna, for the Lanna cartoon kit. Load it after the kit, beasts.js, northbirds.js and lannabirds.js (it draws with their helpers):  <script src="oldcartoon.js"></script> <script src="beasts.js"></script> <script src="northbirds.js"></script> <script src="lannabirds.js"></script> <script src="taleanimals.js"></script>  and call each from a scene as the kit's rooster() is called: (x, y) is where its feet are; t is the second; look holds what it does, and a name it does not know is warned of.  toad(x, y, t, look)           the Asian common toad, คันคาก, or the rice-field frog, กบนา (kind: "frog"): sits breathing, blinks, calls with its throat swelling, hops, catches a fly with its tongue; the frog swims rhinoBeetle(x, y, t, look)    the rhinoceros beetle, กว่าง: walks, raises its horns, flies; the horned male (กว่าง โซ้ง), a smaller male (กว่างแซม) or the hornless female (แม่อี่หลุ้ม) kwangFight(x, y, t, look)     two males fighting on the log for the female in its middle, as the north plays ชนกว่าง goldTurtle(x, y, t, look)     the golden turtle, เต่าอองคำ: walks, swims, draws in its head, surfaces to breathe, shines; or a p
+
+### `toad(x, y, t, look)`
+
+```
+The toad (rules above), its feet on (x, y), or swimming at (x, y); at second t.
+  look   TOAD_KEYS: size, face, kind, call, hop, tongue, swim, seed, feel
+Returns {mouth: [x, y]}, the tip of its snout on the sheet. It draws with pen (nbBegin() and nbEnd()).
+e.g. toad(700, GROUND, clock, {call: 1});
+```
+
+### `beetleLeg(hx, hy, fx, fy, far)`
+
+```
+/ One leg of the beetle from the hip (hx, hy) to its foot at (fx, fy): a thick thigh, the knee bent up and out, the
+shin spined along its outer edge, and the long foot of five joints ending in two hooks; far legs darker.
+Returns nothing: it draws with pen.
+e.g. beetleLeg(10, -24, 40, 0, false);
+```
+
+### `rhinoBeetle(x, y, t, look)`
+
+```
+The rhinoceros beetle (rules above), its feet on (x, y), or flying with (x, y) the middle of its body; at t.
+  look   BEETLE_KEYS: size, face, kind, step, lift, fly, thread, seed
+Returns {horn: [x, y]}, the tip of its head horn on the sheet (its head, a female's). It draws with pen.
+e.g. rhinoBeetle(700, GROUND, clock, {step: clock * 3});
+```
+
+### `beetleWing(side, beat)`
+
+```
+One of the beetle's flying wings, unfolded from under the lifted wing case: brown, thin, veined, seen beating
+(beat 0 to 1 a stroke); side 1 the near one, -1 the far. Returns nothing: it draws with pen.
+e.g. beetleWing(1, (clock * 22) % 1);
+```
+
+### `kwangFight(x, y, t, look)`
+
+```
+Two male beetles fighting on the log (ชนกว่าง), the log's middle at (x, y): the log of soft wood lying level, a
+hole cut in its middle with the female in it, her back showing; the two males come at each other from the ends,
+lock horns, shove, and the stronger lifts the other until it lets go and falls back; then again. The champion
+(the left one) wears a red thread on his horn. look: size (1 as large as they are, a log about 130 long: give 6
+or so to see them), seed (where in its round it is), log (false: no log, the two alone), female (false: none in
+the log). Returns nothing: it draws with pen.
+e.g. kwangFight(960, 700, clock, {size: 6});
+```
+
+### `turtleShell(g, shine)`
+
+```
+The turtle's shell, a dome over (0, 0), its scutes drawn one by one: "g" gold (0 to 1), "shine" the sheen's place
+(0 to 1, moving with time). Returns nothing: it draws with pen.
+e.g. turtleShell(1, 0.4);
+```
+
+### `goldTurtle(x, y, t, look)`
+
+```
+The golden turtle (rules above), its feet on (x, y), or swimming with (x, y) the middle of its shell; at t.
+  look   TURTLE_KEYS: size, face, gold, step, swim, head, breathe, seed, feel
+Returns {head: [x, y]}, the tip of its nose on the sheet. It draws with pen (nbBegin() and nbEnd()).
+e.g. goldTurtle(700, GROUND, clock, {step: clock});
+```
+
+### `barkingDeer(x, y, t, look)`
+
+```
+The barking deer (rules above), its feet on (x, y); at second t.
+  look   DEER_KEYS: size, face, white, buck, fawn, step, run, graze, alert, bark, stamp, butt, slope, seed, feel
+Returns {nose: [x, y], seat: [x, y]}: its muzzle and its back on the sheet. It draws with pen.
+e.g. barkingDeer(700, GROUND, clock, {white: true, alert: 1});
+```
+
+### `whiteMice(x, y, t, look)`
+
+```
+---------- the white mice ----------
+The white mouse and her four young (หนูเผือกกับบริวาร 4 ตัว), the third of the seven signs of Chiang Mai: they
+came out of the place where Mangrai built the city (ตำนานพื้นเมืองเชียงใหม่; the plaque at the Three Kings
+Monument tells it as a mother leading her young into a burrow). The mother is the kit's mouse() of kind "white"
+(beasts.js); her young are half her size and run after her in a line, each in its own step, stopping when she
+stops and sitting up to sniff. A burrow's mouth, a dark hole in the earth under a root, is at "into" (an x): as
+each comes to it, it goes in and is gone.
+whiteMice(x, y, t, look): the mother's feet at (x, y), the young behind her. look: size, face, along (a number
+that grows as they run: how far they have gone, in strides; without it they stand), into (the burrow's x: drawn,
+and they disappear into it), young (how many, 4 the default), seed. Returns nothing: it draws with pen.
+e.g. whiteMice(mix(400, 900, s), GROUND, clock, {along: s * 12, into: 920});
+```
+
+## forestanimals.js
+
+forestanimals.js - four animals of the forests, the cliffs and the river of the north, for the Lanna cartoon kit. Load it after the kit, beasts.js, northbirds.js and lannabirds.js (it draws with their helpers):  <script src="oldcartoon.js"></script> <script src="beasts.js"></script> <script src="northbirds.js"></script> <script src="lannabirds.js"></script> <script src="forestanimals.js"></script>  and call each from a scene as the kit's rooster() is called; t is the second; look holds what it does, and a name it does not know is warned of.  slowLoris(x, y, t, look)       the Bengal slow loris, ลิงลม: creeps hand over hand along a branch, turns its great eyes to us, hangs under the branch, sleeps curled; its eyes shine at night gibbon(x, y, t, look)          the white-handed gibbon, ชะนี: sits, swings arm over arm along a branch, walks upright along it, sings with its head thrown back; buff or dark goral(x, y, t, look)           the goral, กวางผา: stands on a ledge, walks, leaps from ledge to ledge, grazes, looks about giantCatfish(x, y, t, look)    the Mekong giant catfish, ปลาบึก: glides in deep water, its body waving, its mouth working  Why these (each said again above its anima
+
+### `forestFur(pts, colour, paint, hair)`
+
+```
+A shape of fur: the path already begun on pen filled with "colour" (or "paint") and inked in a fine broken line,
+short strokes of hair laid along its edge pointing "out" of it. Returns nothing: it draws with pen.
+e.g. lbSmooth(pts); forestFur(pts, "#b8a088", grad, 1.6);
+```
+
+### `lorisHead(hx, hy, turn, e, shine)`
+
+```
+The loris's head, round, about (hx, hy), turned "turn" (0 side on, 1 to us); e a feeling; shine its eyes'
+shine. Returns nothing: it draws with pen.
+e.g. lorisHead(30, -40, 0.8, null, 0);
+```
+
+### `lorisGrip(gx, gy, colour)`
+
+```
+A loris's hand or foot gripping round a branch at (gx, gy): fingers over the top, the thumb under.
+Returns nothing: it draws with pen.
+e.g. lorisGrip(10, 0, LORIS.fur);
+```
+
+### `slowLoris(x, y, t, look)`
+
+```
+The slow loris (rules above), on a branch whose top is at (x, y); at second t.
+  look   LORIS_KEYS: size, face, creep, look, hang, curl, shine, seed, feel
+Returns {eyes: [x, y]}: between its eyes, on the sheet. It draws with pen (nbBegin() and nbEnd()).
+e.g. slowLoris(800, 420, clock, {creep: clock * 0.3, shine: 1});
+```
+
+### `gibbonHead(hx, hy, c, back, sing, e)`
+
+```
+The gibbon's head about (hx, hy), its face toward +x, tipped back "back" (0 to 1, to sing); c its colours; e a
+feeling; sing (0 to 1) the round mouth. Returns nothing: it draws with pen.
+e.g. gibbonHead(0, -80, GIBBON.buff, 0, 0, null);
+```
+
+### `gibbonLimb(a, b, h, wide, colour, hook)`
+
+```
+An arm or a leg of the gibbon from "a" by the elbow "b" to the hand "h" ([x, y] each), "wide" thick, the hand
+white and hooked "hook" (0 open, 1 curled round a branch). Returns nothing: it draws with pen.
+e.g. gibbonLimb([0, -60], [20, -90], [30, -120], 6, GIBBON.buff.fur, 1);
+```
+
+### `gibbon(x, y, t, look)`
+
+```
+The gibbon (rules above), on or under a branch whose top is at (x, y); at second t.
+  look   GIBBON_KEYS: size, face, dark, swing, span, step, sing, seed, feel
+Returns {at: [x, y]}, the middle of its body on the sheet (for a camera to follow a swinging one).
+e.g. gibbon(300, 260, clock, {swing: clock * 0.8});
+```
+
+### `goral(x, y, t, look)`
+
+```
+The goral (rules above), its feet on (x, y); at second t.
+  look   GORAL_KEYS: size, face, step, leap, graze, alert, turn, slope, seed, feel
+Returns {nose: [x, y]}: its muzzle on the sheet. It draws with pen.
+e.g. goral(700, 400, clock, {alert: 1});
+```
+
+### `giantCatfish(x, y, t, look)`
+
+```
+The giant catfish (rules above), the middle of its body at (x, y); at second t.
+  look   CATFISH_KEYS: size, face, mouth, light, seed
+Returns {mouth: [x, y]}, its mouth on the sheet. It draws with pen (nbBegin() and nbEnd()).
+e.g. giantCatfish(900, 700, clock, {size: 0.6});
+```
+
 ## butterflies.js
 
 butterflies.js - four butterflies of the north, for films made with oldcartoon.js. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="butterflies.js"></script>  and call butterfly(kind, x, y, t, look) from a scene: (x, y) is the middle of its body, seen from above, its head toward "turn" (0 is up). Flying, its wings beat; resting on a flower (look.rest), they open and close slowly. The kinds are the keys of BUTTERFLIES: the golden birdwing (Troides aeacus) of Doi Suthep's forests, black forewings and gold hindwings, the largest of them and protected in Thailand; the leopard lacewing (Cethosia cyane), orange and black with a white band, common in Chiang Mai's gardens; the common bluebottle (Graphium sarpedon), black with a band of see-through blue-green, quick over the flowers; and the common grass yellow (Eurema hecabe), small and bright, everywhere in the grass. Drawn from what each is, in flat colour inside a fine dark line.  butterflyDrift(t, x, y, look) gives where a butterfly is at second t as it wanders: a course that dips and lifts with its wingbeats and turns as it goes.  var b = butterflyDrift(clock, 300, 500, {vx: 60, seed: 2}); butterfly("lacewing
