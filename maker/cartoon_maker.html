@@ -477,7 +477,7 @@ var PIECES = [["house", "🏠 บ้าน"], ["tree", "🌳 ต้นไม้"
 // The novice's alms bowl of chiangsaen.js is kit only, never offered here (the respect rule, as the monk).
 // The flowers and fruits of flora.js, with the kit's own Thai names: each stands on the
 // ground as a thing; the ones a tree can bear are also a tree in flower or fruit, a set piece.
-var FLORAS = Object.keys(window.FLORA || {}).map(function (n) { return [n, (FLORA[n].kind === "flower" ? "🌸 " : "🍈 ") + FLORA[n].thai]; });
+var FLORAS = Object.keys(window.FLORA || {}).map(function (n) { return [n, ({flower: "🌸 ", plant: "🌿 "}[FLORA[n].kind] || "🍈 ") + FLORA[n].thai]; });
 var TREES = Object.keys(window.FLORA_TREES || {}).map(function (n) { return [n + "Tree", "🌳 ต้น" + FLORA[n].thai]; });
 // The dishes of food.js, with the kit's own Thai names: each a thing that stands where it is put, steaming.
 var FOODS_OFFERED = Object.keys(window.FOODS || {}).map(function (n) { return [n, "🍲 " + FOODS[n].thai]; });

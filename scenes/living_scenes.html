@@ -416,7 +416,13 @@ function foodSize(name) { var f = FOOD_SIZES[name]; return f ? 2.2 * f[0] * PX_P
 // pair of orchid flowers, one hibiscus, a cluster of bougainvillea's bracts, of jasmine, and two marigold heads. At
 // 1.2 they were about three times too big (a hibiscus 42 cm across).
 var FLOWER_SIZES = {ratchaphruek: [25, 112, 216], thongkwao: [8, 60, 196], frangipani: [18, 156, 198], orchid: [10, 60, 196],
-                    hibiscus: [12, 89, 194], bougainvillea: [6, 43, 176], jasmine: [5, 36, 136], marigold: [16, 109, 186]};
+                    hibiscus: [12, 89, 194], bougainvillea: [6, 43, 176], jasmine: [5, 36, 136], marigold: [16, 109, 186],
+                    // the flowers of Lanna (2026-10-25; the pixels across from each painter's numbers, the heights measured):
+                    // the golden orchid's spray, a cluster of sarapee, one saban nga, ta hern's head of three, one ket tha
+                    // wa, a head of dok kaew, one wild cherry flower, one bua tong, and teak's spray
+                    ueang: [15, 150, 166], sarapee: [5, 54, 226], sabannga: [7, 72, 241], tahern: [12, 110, 320],
+                    kettawa: [8, 65, 195], dokkaew: [6, 60, 181], phayasuea: [3, 34, 208], buatong: [10, 67, 235],
+                    teak: [40, 120, 303]};
 function flowerSize(name) { var f = FLOWER_SIZES[name]; return f ? 1.2 * f[0] * PX_PER_CM / f[1] : 1.2; }
 // how high its bloom is above its foot, where a sunbird sips: near the top of the sprig
 function bloomHigh(name) { var f = FLOWER_SIZES[name]; return f ? 0.85 * f[2] * flowerSize(name) / 1.2 : 70; }

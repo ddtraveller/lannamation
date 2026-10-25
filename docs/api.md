@@ -4316,6 +4316,593 @@ Returns nothing: it draws with pen at (0, 0). Call flora() instead.
 e.g. flora("pomelo", 700, 900, {size: 1.5});
 ```
 
+### `floraBladePath(long, wide, at, sharp, teeth, bow)`
+
+```
+A leaf's outline from its foot at (0, 0) to its tip "long" above: "wide" is its half-width where it is widest,
+at "at" (a share of long); "sharp" over 1 draws the tip out long and thin, under 1 rounds it; "teeth" (pixels)
+saws its edge; "bow" bends its tip aside, as a share of long.
+long, wide, teeth: pixels; at: 0..1; sharp: about 0.5..2; bow: a share of long, 0 when left out.
+Returns nothing: it begins a new path on pen and closes it, unfilled.
+e.g. floraBladePath(62, 20, 0.45, 0.9, 1.6, 0.1); pen.fill();
+```
+
+### `floraBlade(x, y, long, wide, turn, deep, pale, shape)`
+
+```
+A leaf drawn on floraBladePath(): deep at its foot and lighter toward the tip, a rib up its middle and "veins"
+pairs of side veins curving toward the tip, a fine dark line round it.
+x, y: its foot, pixels of the pen's frame; long, wide: pixels; turn: radians, 0 straight up; deep, pale: "#rrggbb";
+shape: {at, sharp, teeth, bow, veins, rib} (at 0.45, sharp 1, teeth 0, bow 0, veins 5, rib a pale gold), or nothing.
+Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraBlade(0, -40, 62, 20, -1.1, "#22553a", "#4f9a56", {teeth: 1.6, veins: 7});
+```
+
+### `floraHeartPath(long, wide, drip)`
+
+```
+A heart-shaped leaf from its foot at (0, 0) to its tip "long" above: two round lobes at the foot and a tip drawn
+out to a point; "drip" is how much of its length the narrow tip is (the bodhi's long drip tip is 0.3).
+long, wide: pixels; drip: 0..0.4. Returns nothing: it begins a new path on pen and closes it, unfilled.
+e.g. floraHeartPath(58, 30, 0.3); pen.fill();
+```
+
+### `floraHeart(x, y, long, wide, turn, deep, pale, drip, pinnate, vein)`
+
+```
+A heart-shaped leaf on floraHeartPath(), deep at its foot and lighter toward its tip, with a fine dark line; its
+veins either run out from the rib to the edge ("pinnate", the bodhi's) or curve up from the foot to the tip
+(the betel's).
+x, y: its foot; long, wide: pixels; turn: radians, 0 straight up; deep, pale: "#rrggbb"; drip: as
+floraHeartPath(); pinnate: true for veins from the rib; vein: a CSS colour, a pale gold when left out.
+Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraHeart(0, -60, 58, 30, 2.6, "#2f6a3a", "#78b45a", 0.3, true);
+```
+
+### `floraRoundPetalPath(long, wide, notch)`
+
+```
+A rounded petal from its foot at (0, 0) to its tip "long" above, "wide" its half-width; "notch" dents its tip.
+long, wide, notch: pixels (notch 0 when left out). Returns nothing: it begins a new path on pen and closes it, unfilled.
+e.g. floraRoundPetalPath(14, 7, 1.5); pen.fill();
+```
+
+### `floraSoft(colour, paint)`
+
+```
+The kit's shape() for a petal, with a lighter line: the ink of "colour" taken part of the way back toward the
+colour, and thinner, so that a small pale flower is not more line than petal.
+colour: "#rrggbb" (the ink is made from it); paint: a gradient or colour to fill with (colour when left out).
+Returns nothing: it fills and inks the path pen holds.
+e.g. floraRoundPetalPath(14, 7, 0); floraSoft("#fffdf4");
+```
+
+### `floraPetalRing(x, y, count, long, wide, turn, base, tip, notch)`
+
+```
+"count" rounded petals round (x, y), each "long" from the heart and "wide" across its half, coloured from
+"base" at the heart to "tip" at its end, with floraSoft()'s light line.
+x, y, long, wide, notch: pixels of the pen's frame; count: how many; turn: radians; base, tip: "#rrggbb".
+Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraPetalRing(0, -90, 5, 14, 7, 0.3, "#e0508a", "#f9c2d6", 1.5);
+```
+
+### `floraCurve(x1, y1, cx, cy, x2, y2, width, colour)`
+
+```
+A curved twig or stalk through (x1, y1), (cx, cy), (x2, y2): the kit's hose, bent through a point.
+all: pixels of the pen's frame; width: pixels; colour: "#rrggbb". Returns nothing: it draws with pen.
+e.g. floraCurve(0, 0, 20, -60, 4, -110, 4, FLORA_TWIG);
+```
+
+### `floraOnCurve(x1, y1, cx, cy, x2, y2, u)`
+
+```
+The point a share u of the way along the curve through (x1, y1), (cx, cy), (x2, y2), as floraCurve() draws it.
+Returns [x, y]. e.g. floraOnCurve(0, 0, 20, -60, 4, -110, 0.5)
+```
+
+### `floraUeangBloom(x, y, r, turn)`
+
+```
+Dok ueang phueng (ดอกเอื้องผึ้ง; Dendrobium lindleyi), the golden orchid of the northern forests that a Lanna
+woman tucks into her hair knot, and a spirit medium into her headdress: one flower is three narrow sepals and two
+broad petals of gold, and in front of them a round lip of deeper gold, downy, with an orange heart.
+x, y, r: pixels of the pen's frame; turn: radians. Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraUeangBloom(40, -100, 11, 0.2);
+```
+
+### `floraUeangBulb(x, y, tall, lean)`
+
+```
+One pseudobulb of the golden orchid at its foot (x, y): a short spindle, ribbed, yellow-green, with one stiff
+leaf on top. x, y, tall: pixels; lean: radians. Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraUeangBulb(-10, 0, 40, -0.2);
+```
+
+### `floraUeangSpray(x1, y1, cx, cy, x2, y2, count, r, seed)`
+
+```
+A spray of the golden orchid's flowers along the curve from (x1, y1) through (cx, cy) to (x2, y2): the flowers
+smaller toward its end, and two buds there. Drawn from its end back, so the big flowers lie in front.
+all: pixels of the pen's frame; count: how many flowers; r: the first flower's radius; seed: a number.
+Returns nothing: it draws with pen.
+e.g. floraUeangSpray(4, -40, 40, -130, 96, -60, 11, 11, 1);
+```
+
+### `floraUeang(look, seed)`
+
+```
+FLORA.ueang.draw: flora() calls it with the pen moved to the foot and scaled by look.size: a clump of four
+pseudobulbs with their silver roots, and an arching spray of eleven flowers. As it grows on a tree's trunk, give
+it ground: false there.
+look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("ueang", 700, 900, {size: 1.5});
+```
+
+### `floraUeangHang(seed)`
+
+```
+FLORA.ueang.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0):
+the orchid on its bough, its spray hanging. seed: a number. Returns nothing: it draws with pen.
+e.g. floraTree(pen, 240, 900, 1.0, "ueang", 1);
+```
+
+### `floraSarapeeBloom(x, y, r, turn)`
+
+```
+Sarapee (ดอกสารภี; Mammea siamensis), whose scented blossom comes in the cool season and is worn in a woman's
+coiled hair: four cupped white petals round a ball of gold stamens.
+x, y, r: pixels of the pen's frame; turn: radians. Returns nothing: it draws with pen.
+e.g. floraSarapeeBloom(0, -60, 12, 0.3);
+```
+
+### `floraSarapeeCluster(x, y, seed, count)`
+
+```
+A cluster of sarapee on the bare wood at (x, y): flowers and round buds on short stalks.
+x, y: pixels of the pen's frame; seed: a number; count: how many (3 or 4 when left out).
+Returns nothing: it draws with pen.
+e.g. floraSarapeeCluster(2, -46, 1);
+```
+
+### `floraSarapee(look, seed)`
+
+```
+FLORA.sarapee.draw: flora() calls it with the pen moved to the foot and scaled by look.size: a twig, its long
+thick leaves crowded at the tips, and the flowers in clusters on the bare wood below them.
+look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("sarapee", 700, 900, {size: 1.5});
+```
+
+### `floraSarapeeHang(seed)`
+
+```
+FLORA.sarapee.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+seed: a number. Returns nothing: it draws with pen.
+e.g. floraTree(pen, 240, 900, 1.0, "sarapee", 1);
+```
+
+### `floraSabanngaPetal(long, wide, wave, colour)`
+
+```
+One long petal of saban nga, hanging from its foot at (0, 0) down to its tip "long" below, waving as it goes,
+yellow-green at the foot going to gold, with the maroon spot of a ripe flower inside its foot.
+long, wide: pixels; wave: pixels, the sign picks the side; colour: "#rrggbb", the gold at its tip.
+Returns nothing: it draws with pen.
+e.g. floraSabanngaPetal(44, 4, 3, "#e8cc3a");
+```
+
+### `floraSabanngaBloom(x, y, long, turn, colour, seed)`
+
+```
+One flower of saban nga (ดอกสะบันงา, ylang-ylang; Cananga odorata), which a Lanna woman offers at the temple and
+wears in her hair, and whose shape, a cup with long narrow petals hanging, the khom lanterns copy: six petals,
+twisted and waving, from a little green cup that hangs at (x, y).
+x, y: pixels of the pen's frame; long: the petals' length; turn: radians, 0 hanging straight down; colour:
+"#rrggbb", the gold of the petals' tips; seed: a number. Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraSabanngaBloom(20, -110, 44, 0.1, "#e8cc3a", 1);
+```
+
+### `floraSabannga(look, seed)`
+
+```
+FLORA.sabannga.draw: flora() calls it with the pen moved to the foot and scaled by look.size: a branch that
+arches over, its leaves hanging, and three flowers hanging under it on their stalks.
+look: flora()'s look (look.colour is the gold of the petals); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("sabannga", 700, 900, {size: 1.5});
+```
+
+### `floraSabanngaHang(seed, colour)`
+
+```
+FLORA.sabannga.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+seed: a number; colour: "#rrggbb" or nothing. Returns nothing: it draws with pen.
+e.g. floraTree(pen, 240, 900, 1.0, "sabannga", 1);
+```
+
+### `floraTahernBloom(x, y, r, turn)`
+
+```
+One flower of ta hern (ดอกต๋าเหิน, the white ginger lily, maha hong; Hedychium coronarium), a scented hair flower of
+the north: like a white moth: two wings above, a broad lip cleft in two below, three thin petals hanging behind,
+and a long stamen standing from its heart. x, y, r: pixels of the pen's frame; turn: radians.
+Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraTahernBloom(-20, -204, 20, -0.2);
+```
+
+### `floraTahern(look, seed)`
+
+```
+FLORA.tahern.draw: flora() calls it with the pen moved to the foot and scaled by look.size: a reed of a stem,
+long leaves turning out from it to each side in turn, and at its top a cone of green bracts with three flowers
+standing out of it on their tubes.
+look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("tahern", 700, 900, {size: 1.5});
+```
+
+### `floraKettawaBloom(x, y, r, turn)`
+
+```
+One double flower of ket tha wa (ดอกเก็ดถะหวา, the double gardenia, phut son), a white hair flower of the north:
+rings of round cream-white petals, each ring smaller and turned from the one under it, round a curled heart.
+x, y, r: pixels of the pen's frame; turn: radians. Returns nothing: it draws with pen.
+e.g. floraKettawaBloom(-18, -112, 26, 0.3);
+```
+
+### `floraKettawa(look, seed)`
+
+```
+FLORA.kettawa.draw: flora() calls it with the pen moved to the foot and scaled by look.size: a woody stem, glossy
+leaves in threes, two flowers and a bud, twisted shut in its green cup.
+look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("kettawa", 700, 900, {size: 1.5});
+```
+
+### `floraDokkaewBloom(x, y, r, turn)`
+
+```
+One flower of dok kaew (ดอกแก้ว, the orange jessamine; Murraya paniculata): five narrow white petals bent back,
+round a little green heart. x, y, r: pixels of the pen's frame; turn: radians. Returns nothing: it draws with pen.
+e.g. floraDokkaewBloom(-6, -114, 9, 0.2);
+```
+
+### `floraPinnate(x, y, long, turn, pairs, leaf, wide, deep, pale, stalk)`
+
+```
+A leaf of leaflets: a stalk "long" from (x, y), turned by "turn", with leaflets in turn on its two sides and one
+at its tip. x, y, long, leaf, wide: pixels (leaf and wide are a leaflet's); turn: radians; pairs: how many on each
+side; deep, pale: "#rrggbb"; stalk: "#rrggbb", or the leaflets' deep colour. Returns nothing: it draws with pen.
+e.g. floraPinnate(-2, -40, 44, -1.1, 3, 18, 8, "#245c36", "#4e9a4c");
+```
+
+### `floraDokkaewHead(x, y, seed)`
+
+```
+A head of dok kaew at (x, y): flowers on fine stalks fanning out, and buds among them.
+x, y: pixels of the pen's frame; seed: a number. Returns nothing: it draws with pen.
+e.g. floraDokkaewHead(-6, -114, 1);
+```
+
+### `floraDokkaew(look, seed)`
+
+```
+FLORA.dokkaew.draw: flora() calls it with the pen moved to the foot and scaled by look.size: a woody stem, leaves
+of small glossy leaflets, two heads of flowers and two red berries.
+look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("dokkaew", 700, 900, {size: 1.5});
+```
+
+### `floraDokkaewHang(seed)`
+
+```
+FLORA.dokkaew.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+seed: a number. Returns nothing: it draws with pen.
+e.g. floraTree(pen, 240, 900, 1.0, "dokkaew", 1);
+```
+
+### `floraSueaBloom(x, y, r, turn, colour)`
+
+```
+One open flower of nang phaya suea khrong (นางพญาเสือโคร่ง; Prunus cerasoides), the wild cherry of the high north
+that is pink on bare branches in the cold month: five round petals, deep at the heart and pale at their rims, a
+crimson eye and a ring of fine stamens. x, y, r: pixels of the pen's frame; turn: radians; colour: "#rrggbb".
+Returns nothing: it draws with pen.
+e.g. floraSueaBloom(-6, -62, 13, 0.4, "#ec6c9c");
+```
+
+### `floraSueaNod(x, y, r, turn, colour)`
+
+```
+One flower of it seen from the side, nodding on its red stalk from (x, y): a cup of petals in its crimson calyx.
+x, y: where its stalk leaves the twig, pixels of the pen's frame; r: its size; turn: radians, 0 hanging straight
+down; colour: "#rrggbb". Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraSueaNod(10, -108, 12, 0.3, "#ec6c9c");
+```
+
+### `floraPhayasuea(look, seed)`
+
+```
+FLORA.phayasuea.draw: flora() calls it with the pen moved to the foot and scaled by look.size: a bare twig, dark
+red-brown with the pale marks of its bark, and its pink flowers at the joints, open, nodding and in bud.
+look: flora()'s look (look.colour is the flowers' pink); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("phayasuea", 700, 900, {size: 1.5});
+```
+
+### `floraPhayasueaHang(seed, colour)`
+
+```
+FLORA.phayasuea.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+seed: a number; colour: "#rrggbb" or nothing. Returns nothing: it draws with pen.
+e.g. floraTree(pen, 240, 900, 1.0, "phayasuea", 1);
+```
+
+### `floraBuatongHead(x, y, r, squash, turn)`
+
+```
+One head of bua tong (บัวตอง, the wild sunflower; Tithonia diversifolia), gold over the hills of Mae Hong Son from
+November to January: a ring of broad gold rays with notched tips round a domed orange-brown heart.
+x, y, r: pixels of the pen's frame; squash: 1 seen from the front, less as it turns away; turn: radians.
+Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraBuatongHead(-10, -160, 28, 1, 0);
+```
+
+### `floraLobedLeaf(x, y, long, turn)`
+
+```
+A lobed leaf from (x, y): a long middle lobe and a shorter one to each side, as bua tong's are.
+x, y, long: pixels of the pen's frame; turn: radians. Returns nothing: it draws with pen.
+e.g. floraLobedLeaf(0, -30, 44, -1.2);
+```
+
+### `floraBuatong(look, seed)`
+
+```
+FLORA.buatong.draw: flora() calls it with the pen moved to the foot and scaled by look.size: three stems, a head
+facing out, one turned aside and a bud, over lobed leaves; each stem swells under its head.
+look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("buatong", 700, 900, {size: 1.5});
+```
+
+### `floraTeakSpray(x, y, tall, seed)`
+
+```
+A spray of teak's flowers, standing up from (x, y): a stalk that branches and branches again, a crowd of tiny
+white flowers and green buds at its ends. x, y, tall: pixels of the pen's frame; seed: a number.
+Returns nothing: it draws with pen.
+e.g. floraTeakSpray(0, -128, 100, 1);
+```
+
+### `floraTeak(look, seed)`
+
+```
+FLORA.teak.draw: flora() calls it with the pen moved to the foot and scaled by look.size: a young stem of teak
+(สัก, sak; Tectona grandis), the timber of the Lanna house, the sueng and the forests of Lampang and Phrae: its huge
+rough leaves in pairs, and the spray of tiny white flowers it holds above them in the rains.
+look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("teak", 700, 900, {size: 1.5});
+```
+
+### `floraTeakHang(seed)`
+
+```
+FLORA.teak.hang: floraTree() calls it with the pen moved to a point of the tree: a spray of flowers standing up
+from a pair of leaves. seed: a number. Returns nothing: it draws with pen.
+e.g. floraTree(pen, 240, 900, 1.0, "teak", 1);
+```
+
+### `floraFeatherLeaf(x, y, long, turn, pairs)`
+
+```
+A leaf of som poi: a stalk "long" from (x, y), turned by "turn", with "pairs" pairs of feathers, each a fine comb
+of tiny leaflets. x, y, long: pixels of the pen's frame; turn: radians; pairs: a whole number.
+Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraFeatherLeaf(8, -60, 70, 1.1, 5);
+```
+
+### `floraSompoiPod(x, y, long, wide, turn, seeds)`
+
+```
+A pod of som poi hanging from (x, y): flat, brown, wrinkled, pinched between its seeds, with a beak at its end.
+x, y, long, wide: pixels of the pen's frame; turn: radians, 0 hanging straight down; seeds: how many.
+Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraSompoiPod(-4, -118, 70, 7, 0.2, 7);
+```
+
+### `floraSompoi(look, seed)`
+
+```
+FLORA.sompoi.draw: flora() calls it with the pen moved to the foot and scaled by look.size: a sprig of som poi
+(ส้มป่อย; Acacia concinna), the plant that washes ill luck away in Lanna: the water its pods are steeped in, nam som
+poi, is sprinkled at blessings and rites of passage, and washes the hair. A thorny zigzag stem, feathery leaves,
+three dry pods hanging and two pale flower balls.
+look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("sompoi", 700, 900, {size: 1.5});
+```
+
+### `floraRibbon(x, y, long, wide, turn, droop, deep, pale)`
+
+```
+A long ribbon of a leaf, from its foot at (x, y), rising at "turn" and drooping as it goes: narrow at its foot,
+widest a third of the way along, to a point; a pale rib down its middle.
+x, y, long, wide: pixels of the pen's frame; turn: radians, 0 straight up; droop: a share of long the tip falls;
+deep, pale: "#rrggbb". Returns nothing: it draws with pen.
+e.g. floraRibbon(0, -300, 150, 7, -0.6, 0.7, "#4f8a3a", "#a8cc6a");
+```
+
+### `floraCaneStalk(x, tall, lean, colour, seed)`
+
+```
+One stalk of sugarcane standing from (x, 0): joint above joint, shorter toward the top, each a little barrel
+that leans a touch from the one below, in its colour with a blush of red and the waxy white ring under its node, a
+bud at alternate nodes and the dots of the root band at the low ones; a fountain of long leaves from its top
+joints, and dry leaves hanging from the lower ones.
+x: pixels of the pen's frame; tall: pixels; lean: how far its top is to the side, as a share of tall; colour:
+"#rrggbb"; seed: a number. Returns nothing: it draws with pen.
+e.g. floraCaneStalk(-18, 400, -0.04, "#b8b04c", 1);
+```
+
+### `floraSugarcane(look, seed)`
+
+```
+FLORA.sugarcane.draw: flora() calls it with the pen moved to the foot and scaled by look.size: three stalks of
+sugarcane (อ้อย, oi), which Lanna ties up beside banana trunks to make the forest gate (sum pratu pa) of Yi Peng
+and the great sermon, and lashes round a ceremony's ground.
+look: flora()'s look (look.colour is the stalks' colour, yellow-green unless told: "#7a3048" is red cane);
+seed: a number (flora() passes x * 0.013). Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("sugarcane", 700, 900, {size: 1.5});
+```
+
+### `floraPho(look, seed)`
+
+```
+FLORA.pho.draw: flora() calls it with the pen moved to the foot and scaled by look.size: a twig of pho (โพธิ์, the
+bodhi tree; Ficus religiosa), its heart-shaped leaves with their long drip tips on long stalks, so that they
+tremble, one young leaf still bronze. Gold leaves (colour "#e3b341") are the golden bodhi of the tale of Tao Noi
+Ong Kham, which grew from the buried bones of the mother turtle at the city's gate.
+look: flora()'s look (look.colour is the leaves'); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("pho", 700, 900, {size: 1.5, colour: "#e3b341"});
+```
+
+### `floraPhoColours(colour)`
+
+```
+The colours of a bodhi leaf: green, or of the colour told (gold for the golden bodhi).
+colour: "#rrggbb" or nothing. Returns {deep, pale, shade, vein, stalk}. e.g. floraPhoColours("#e3b341")
+```
+
+### `floraPhoHang(seed, colour)`
+
+```
+FLORA.pho.hang: three bodhi leaves hanging on their stalks from (0, 0). seed: a number; colour: "#rrggbb" or
+nothing. Returns nothing: it draws with pen.
+e.g. floraPhoHang(1, "#e3b341");
+```
+
+### `floraPhoTree(x, base, size, seed, colour)`
+
+```
+A bodhi tree: a fluted grey trunk on spreading roots, boughs that reach out wide, and a broad dome of heart-shaped
+leaves on their trembling stalks, the edge leaves hanging. Gold ("#e3b341") is the golden bodhi of the tale of
+Tao Noi Ong Kham, trunk and all. Drawn with the pen at (x, base), scaled by size.
+x, base: its foot, pixels of the pen's frame; size: 1 is about 470 tall and 520 across; seed: a number; colour:
+"#rrggbb" or nothing. Returns nothing: it draws with pen, and leaves pen as it found it. floraTree(brush, ...,
+"pho") calls it with pen pointed at the brush.
+e.g. floraTree(pen, 300, 900, 1, "pho", 2, "#e3b341");
+```
+
+### `floraMiangBloom(x, y, r, turn)`
+
+```
+One flower of miang: six round white petals, cupped and nodding, round a boss of gold stamens.
+x, y, r: pixels of the pen's frame; turn: radians. Returns nothing: it draws with pen.
+e.g. floraMiangBloom(-26, -60, 13, 0.4);
+```
+
+### `floraMiang(look, seed)`
+
+```
+FLORA.miang.draw: flora() calls it with the pen moved to the foot and scaled by look.size: a twig of miang (เมี่ยง,
+the tea of the hills; Camellia sinensis var. assamica), whose leaves the north steams, ferments and chews, and
+offers to a guest: big glossy leaves with sawn edges, two pale young leaves and a bud at its tip, two flowers in
+the leaves' armpits and a bud. look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("miang", 700, 900, {size: 1.5});
+```
+
+### `floraMakhwaenCluster(x, y, up, seed)`
+
+```
+A cluster of makhwaen's fruit at (x, y): a branching stalk, and on it a crowd of small round fruits, red going to
+brown, some split to show the shiny black seed. x, y: pixels of the pen's frame; up: 1 standing, -1 hanging;
+seed: a number. Returns nothing: it draws with pen.
+e.g. floraMakhwaenCluster(2, -104, 1, 1);
+```
+
+### `floraMakhwaen(look, seed)`
+
+```
+FLORA.makhwaen.draw: flora() calls it with the pen moved to the foot and scaled by look.size: a twig of makhwaen
+(มะแขว่น; Zanthoxylum), the pepper of the north, whose numbing seeds go into larb and nam phrik: a prickly grey
+twig, leaves of narrow leaflets on red stalks, and two standing clusters of its fruit.
+look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("makhwaen", 700, 900, {size: 1.5});
+```
+
+### `floraMakhwaenHang(seed)`
+
+```
+FLORA.makhwaen.hang: floraTree() calls it with the pen moved to a point of the tree, hanging down from (0, 0).
+seed: a number. Returns nothing: it draws with pen.
+e.g. floraTree(pen, 240, 900, 1.0, "makhwaen", 1);
+```
+
+### `floraHomBloom(x, y, long, turn)`
+
+```
+One flower of hom: a curved tube, pale lilac, widening to a mouth of five round lobes.
+x, y: its foot, pixels of the pen's frame; long: pixels; turn: radians, 0 straight up.
+Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraHomBloom(0, -150, 30, -0.6);
+```
+
+### `floraHom(look, seed)`
+
+```
+FLORA.hom.draw: flora() calls it with the pen moved to the foot and scaled by look.size: hom (ห้อม; Strobilanthes
+cusia), the indigo that dyes the dark blue mo hom shirts of Phrae: a jointed stem, dark blue-green leaves with sawn
+edges in pairs, and at its top a spike of curved lilac flowers among green bracts.
+look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("hom", 700, 900, {size: 1.5});
+```
+
+### `floraArecaNut(x, y, size, turn, cut)`
+
+```
+One areca nut lying at (x, y): an egg, orange going to gold, fibrous, with the little star of its cap; or cut in
+half, the marbled brown and cream of its kernel showing in its husk.
+x, y, size: pixels of the pen's frame (size 1 is 20 tall); turn: radians; cut: true for the half.
+Returns nothing: it draws with pen, and leaves pen as it found it.
+e.g. floraArecaNut(40, -14, 1, 0.3, false);
+```
+
+### `floraPhlu(look, seed)`
+
+```
+FLORA.phlu.draw: flora() calls it with the pen moved to the foot and scaled by look.size: phlu (พลู, the betel
+vine) climbing a bamboo stake, its glossy heart-shaped leaves with veins that curve from the foot to the tip, and
+beside it mak (หมาก, the areca nut), two whole and one cut: the two are chewed together in the north, offered to
+a guest and in the cones of flowers given at the temple.
+look: flora()'s look (not read); seed: a number (flora() passes x * 0.013).
+Returns nothing: it draws with pen at (0, 0). Call flora() instead.
+e.g. flora("phlu", 700, 900, {size: 1.5});
+```
+
+### `floraSueaTree(x, base, size, seed, colour)`
+
+```
+The wild cherry in flower, as it stands on the hills in the cold month: no leaves, a dark red-brown trunk that
+forks and forks again into fine twigs, and on every twig a cloud of pink blossom, open, nodding and in bud.
+Drawn with the pen at (x, base), scaled by size.
+x, base: its foot, pixels of the pen's frame; size: 1 is about 450 tall and 420 across; seed: a number; colour:
+the flowers' "#rrggbb", or nothing. Returns nothing: it draws with pen, and leaves pen as it found it.
+floraTree(brush, ..., "phayasuea") calls it with pen pointed at the brush.
+e.g. floraTree(pen, 300, 900, 1, "phayasuea", 2);
+```
+
 ### `flora(name, x, y, look)`
 
 ```
@@ -4323,7 +4910,9 @@ One flower or fruit at (x, y). "name" is a key of FLORA.
 flora(name, x, y, look) draws one flower or fruit, with a soft shadow under it unless look.ground is false.
   name   a key of FLORA: ratchaphruek, thongkwao, frangipani, orchid, hibiscus, bougainvillea, jasmine,
          marigold, mango, durian, mangosteen, rambutan, longan, lychee, papaya, coconut, pineapple,
-         jackfruit, dragonfruit, pomelo, bael; another is reported by checkName() and nothing is drawn
+         jackfruit, dragonfruit, pomelo, bael; the flowers and plants of Lanna: ueang, sarapee, sabannga,
+         tahern, kettawa, dokkaew, phayasuea, buatong, teak, sompoi, sugarcane, pho, miang, makhwaen, hom,
+         phlu; another is reported by checkName() and nothing is drawn
   x, y   the foot of the stem, or the ground the fruit lies on, pixels of the sheet
   look   optional; its keys: FLORA_KEYS, at the top of this file (size 1, colour, ground)
 Returns nothing: it draws with pen, and leaves pen as it found it. It sets the kit's LINE and FINE
@@ -4348,14 +4937,17 @@ e.g. floraTree(pen, 300, 900, 1, "papaya", 2);
 ```
 The kit's tree with the named flower or fruit in its boughs, painted on a
 set's sheet ("brush") as tree() is. Eight hang in the canopy, a jackfruit
-on the trunk; a papaya has a tree of its own; a coconut is on the kit's
-palm already, and a pineapple grows on the ground.
+on the trunk; a papaya, a bodhi (pho) and the wild cherry (phayasuea, bare
+and in blossom) have trees of their own; a coconut is on the kit's palm
+already, and a pineapple grows on the ground.
   brush    a canvas 2D context: a set's sheet, painted once
   x, base  its foot, pixels of the sheet; size: as the kit's tree() takes it
   name     a key of FLORA that has a hang (FLORA_TREES): ratchaphruek, thongkwao, frangipani,
-           bougainvillea, mango, durian, mangosteen, rambutan, longan, lychee, papaya, jackfruit;
-           another is reported by checkName() and nothing is drawn
-  seed     a number, 0 when left out; colour: the flower's "#rrggbb", for the ones that take one
+           bougainvillea, mango, durian, mangosteen, rambutan, longan, lychee, papaya, jackfruit, bael,
+           ueang, sarapee, sabannga, dokkaew, phayasuea, teak, pho, makhwaen; another is reported by
+           checkName() and nothing is drawn
+  seed     a number, 0 when left out; colour: the flower's "#rrggbb", for the ones that take one (a
+           pho's is its leaves': "#e3b341" is the golden bodhi)
 Returns nothing: it draws with brush. It points pen at brush while it draws and puts pen and LINE
 back after; FINE is left at 1.
 e.g. floraTree(pen, 240, 900, 1.0, "mango", 1);

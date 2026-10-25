@@ -250,6 +250,67 @@ garland (the kit's `garland` is a dress piece), no offering tray, no lotus here 
 papaya and the pomelo. The flowers and fruits are not in the cartoon maker's palette. Judged from
 stills only.
 
+## The flowers and plants of Lanna (2026-10-25)
+
+The owner (2026-10-25): "See if you can add some more plants, herbs and flowers unique to Northern
+Thailand to the kit. Especially if they have significance in Lanna culture", and then "Spend a few
+iterations making them as beautiful as possible." The kit's NotebookLM notebooks on Lanna women's hair,
+material culture, household things, village farming, myths and history were asked what plants they
+name and what each is for; the owner picked these sixteen from that list. They are in `flora.js`
+with the rest, called the same way (`flora(name, x, y, look)`), and have a third kind beside flower
+and fruit: `plant`, for the herbs and the useful plants (the cartoon maker marks them 🌿).
+
+| `name` | Thai, and how it is said | What it is in Lanna, and what is drawn | Ink at size 1 |
+|---|---|---|---|
+| `ueang` | เอื้องผึ้ง, ueang phueng | the golden orchid (Dendrobium lindleyi) of the forests, which a woman tucks into her hair knot and a spirit medium into her headdress: four ribbed pseudobulbs with silver roots, a stiff leaf on each, and an arching spray of nine gold flowers (three narrow sepals, two broad petals, a round downy lip with an orange heart). It grows on trees: `ground: false` on a trunk | 165 by 139 |
+| `sarapee` | สารภี, sarapee | (Mammea siamensis) worn in coiled hair as a scented devotional flower: a twig with long thick leaves crowded at its tips, and clusters of four-petalled white flowers with a ball of gold stamens on the bare wood below them | 162 by 189 |
+| `sabannga` | สะบันงา, saban nga | ylang-ylang (Cananga odorata), offered at the temple and worn in the hair; the material-culture notebook says the hanging khom copies its shape: a branch arching over, its leaves hanging, three flowers of six long waving petals, yellow-green to gold with a maroon spot at the foot, from a green cup. `colour` (the gold) | 182 by 201 |
+| `tahern` | ต๋าเหิน, ta hern | the white ginger lily (Hedychium coronarium, maha hong), a scented hair flower: a reed of a stem with long leaves to each side in turn, a cone of green bracts, and three flowers like white moths (two wings, a cleft lip, thin petals behind, a long stamen) | 136 by 267 |
+| `kettawa` | เก็ดถะหวา, ket tha wa | the double gardenia (phut son), a white hair flower: a woody stem, glossy leaves in threes, two flowers of three rings of round cream petals, and a bud twisted shut | 115 by 163 |
+| `dokkaew` | ดอกแก้ว, dok kaew | orange jessamine (Murraya paniculata): its leaves go under the posts of a new house, and its flower is a motif of the kong khao basket. Leaves of small glossy leaflets, two heads of five-petalled white stars, two red berries | 136 by 152 |
+| `phayasuea` | นางพญาเสือโคร่ง, nang phaya suea khrong | the wild Himalayan cherry (Prunus cerasoides), pink on bare branches on Doi Ang Khang and Doi Inthanon in the cold month: a dark red-brown twig with pale marks across its bark, five-petalled pink flowers with a crimson eye, open, nodding and in bud. `colour` | 121 by 174 |
+| `buatong` | บัวตอง, bua tong | the wild sunflower (Tithonia diversifolia) that covers the hills of Mae Hong Son from November to January (it came from Mexico): three stems, a head of notched gold rays round a domed orange heart, one turned aside, a bud in green bracts, lobed leaves | 119 by 196 |
+| `teak` | สัก, sak | teak (Tectona grandis), the timber of the Lanna house and the sueng, the forests of Lampang and Phrae: a young stem, two pairs of huge leaves, and the spray of tiny cream flowers it holds above them in the rains | 182 by 253 |
+| `sompoi` | ส้มป่อย, som poi | (Acacia concinna) the plant that drives ill luck away: its water, nam som poi, is sprinkled at blessings and rites of passage, and washes the hair. A thorny zigzag stem, feathery leaves, three dry brown pods, wrinkled and pinched between their seeds, and two pale balls of flower | 152 by 230 |
+| `sugarcane` | อ้อย, oi | tied up beside banana trunks for the forest gate (sum pratu pa) of Yi Peng and the great sermon, and lashed round a ceremony's ground: three stalks, joint above joint with the waxy ring under each node, buds, a fountain of leaves at the top and dry leaves hanging low. `colour` for the stalks (`"#7a3048"` is red cane); it is as tall as it is, about 500, so draw it at 0.6 to stand among the others | 367 by 498 |
+| `pho` | โพธิ์, pho | the bodhi (Ficus religiosa): a twig of heart-shaped leaves with long drip tips on long stalks, one young leaf bronze-pink. `colour` for the leaves: gold (`"#e3b341"`) is the golden bodhi of the tale of Tao Noi Ong Kham, which grew from the buried bones of the mother turtle at the city's gate | 206 by 203 |
+| `miang` | เมี่ยง, miang | the tea of the hills (Camellia sinensis var. assamica), whose leaves the north steams, ferments and chews, and offers a guest: big glossy leaves with sawn edges, two pale young leaves and a silver bud at the tip, two white flowers with a boss of gold stamens | 123 by 176 |
+| `makhwaen` | มะแขว่น, makhwaen | the pepper of the north (Zanthoxylum), whose seeds go into larb and nam phrik: a prickly grey twig, leaves of narrow leaflets on red stalks, and two clusters of small red fruits, some split to show the black seed | 168 by 148 |
+| `hom` | ห้อม, hom | the indigo (Strobilanthes cusia) that dyes the mo hom shirts of Phrae: a jointed stem, dark blue-green leaves with sawn edges in pairs, a spike of curved lilac flowers | 119 by 206 |
+| `phlu` | พลู หมาก, phlu, mak | the betel vine on a bamboo stake, its glossy heart-shaped leaves veined from the foot, and the areca nut beside it, two whole and one cut: chewed together, offered to a guest and put in the cones of flowers given at the temple | 149 by 188 |
+
+**How they are drawn.** In the kit's manner, flat colour and gradients inside a line, with shared
+pieces of their own: `floraBlade` (a leaf on a shaped outline: where it is widest, how sharp its tip,
+sawn teeth, a bow, side veins and a gloss), `floraHeart` (a heart-shaped leaf with a drip tip, veins from
+the rib or from the foot), `floraRoundPetalPath` and `floraPetalRing` (round petals, notched if told),
+`floraCurve`, `floraPinnate` (a leaf of leaflets), `floraRibbon` (a long blade that droops) and
+`floraSoft`. **`floraSoft` is the one rule that differs:** a small pale petal is inked with a lighter,
+thinner line (the colour's ink taken part of the way back to the colour, at 0.6 of LINE, no heavy side),
+because with the kit's full line a jasmine-sized white flower is more line than petal, and on a tree, at
+0.75, it turned brown. Leaves, twigs and fruit keep the kit's line. They were drawn in scratch over the
+unchanged kit and looked at large, four rounds, before they came into `flora.js`.
+
+**Trees.** `floraTree()` hangs `ueang`, `sarapee`, `sabannga`, `dokkaew`, `teak` and `makhwaen` in the
+kit's tree as it does the others. Two have trees of their own, as the papaya has: `pho` is
+`floraPhoTree` (a fluted grey trunk on spreading roots, boughs reaching out wide, and a dome of 720
+heart-shaped leaves lit from the upper left, the edge ones hanging; with `"#e3b341"` it is the golden
+bodhi, trunk and all, and it glitters), about 470 tall and 520 across at size 1; `phayasuea` is
+`floraSueaTree` (no leaves: a dark trunk that forks five times into fine twigs, a haze of pink and on
+every twig a cloud of blossom, open, nodding and in bud), about 450 tall.
+
+`flora.html` has two parts more, so four of six seconds: the sixteen large with their names, and a
+northern garden at their own sizes (the golden bodhi with the orchid on its trunk, a forest gate of
+banana trunks with green and red sugarcane, a sarapee and the wild cherry in flower, a lady on a mat
+with betel and areca and som poi, the girl among bua tong, ta hern and hom). `living_scenes.html` has
+the nine flowers' real sizes in `FLOWER_SIZES`. Measured (2026-10-25): all sixteen take 4.6 ms to draw
+at size 1.
+
+**Not done:** the five flowers worn in the hair are not on the kit's hair (`headKnotFlowers` has the
+ueang spray of its own; sarapee, saban nga, ta hern and ket tha wa are not there). The healing herbs the
+farming notebook names (ya nuat maeo, khilek, phaya rai bai, sap suea, makrut) are not drawn; nor is
+the bodhi's props (mai kham), which a Lanna temple's bodhi stands on at Songkran. A thong kwao tree is
+still the kit's green tree, not bare like the wild cherry's. Judged from stills only.
+
 ## Pieces of the north (2026-10-15)
 
 The owner asked for research on "new items specific to Lanna Thai to add to the kit as sprites",
