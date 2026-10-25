@@ -3,7 +3,8 @@
 Written 2026-10-22 from the research for the tales: seventeen Lanna folk tales and legends (the Lanna Folktales
 cartoons of the Thai Media Fund, and others), the Singhanawat chronicle (ตำนานสิงหนวติกุมาร) and the sources on
 Chang Ngu. Each piece goes through candidates when its tale comes: two or three drawn beside a reference, the owner
-picks, then the kit. A film's own list stays beside it (maeng/TODO.md).
+picks, then the kit. A film's own list stays beside it (maeng/TODO.md). The eight candidates for the next film,
+tale by tale, with what the kit has and lacks for each: `next_tales.md` (2026-10-25).
 
 "Kit only" marks what stays out of the children's cartoon maker: things of the monkhood, of relics and of funeral rites
 (the respect rule: a temple may stand in a film, but nobody plays at being a monk).
