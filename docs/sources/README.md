@@ -11,7 +11,7 @@ quotations and a link to the holder's copy, never its text.
 | File | Book | Pages | Used for |
 |---|---|---|---|
 | `singhanawat_2516.md` | ตำนานสิงหนวติกุมาร ฉบับสอบค้น, ed. Manit Vallibhotama (Office of the Prime Minister, 1973) | 116 | Chang Ngu (`kit/changngu/`): Phrom's part, PDF pages ~79-100 |
-| `phuenmueang_cm_2514.md` | ตำนานพื้นเมืองเชียงใหม่ (Office of the Prime Minister, 1971) | 163 | the next tale, Phaya Mangrai founds Chiang Mai (`kit/next_tales.md`); being read, 2026-10-25 |
+| `phuenmueang_cm_2514.md` | ตำนานพื้นเมืองเชียงใหม่ (Office of the Prime Minister, 1971) | 163 | the next tale, Phaya Mangrai founds Chiang Mai (`kit/next_tales.md`): Mangrai's part PDF pages ~8-55, the founding and the seven signs 32-36 |
 
 Both are public domain in Thailand as marked on Wikimedia Commons (PD-Thailand); each file's head links to the
 scan and says why.
@@ -31,4 +31,5 @@ the scan is welcome: say which page and what the scan shows.
    prompt and settings: one page, one Markdown file, `ocr/pNNN.md`.
 3. `book.json` written by hand from the book itself (title, publisher, source, licence, the offset from PDF page to
    printed page where it was read off the scans).
-4. `python book_text.py <book folder> <out.md>` joins the pages into one file, the book's details at its head.
+4. `python book_text.py <book folder> <out.md>` joins the pages into one file, the book's details at its head; a
+   link the OCR wrote to a picture it did not keep becomes "(a picture on the page: ...)".

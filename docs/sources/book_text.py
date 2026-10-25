@@ -30,6 +30,7 @@ def main():
         n = int(re.sub(r"\D", "", page.stem))
         printed = f" (book page {n - offset})" if offset is not None and n > offset else ""
         text = re.sub(r"^#+", lambda m: "##" + m.group(0), page.read_text(encoding="utf-8").strip(), flags=re.M)   # its headings under the page's
+        text = re.sub(r"!\[([^\]]*)\]\([^)]*\)", lambda m: "*(a picture on the page: %s)*" % m.group(1), text)   # the OCR's link to a picture it did not keep
         lines += [f"## PDF page {n}{printed}", "", text, ""]
     out.write_text("\n".join(lines), encoding="utf-8", newline="\n")
     print(out, len(pages), "pages", out.stat().st_size, "bytes")
