@@ -1,4 +1,6 @@
-// thicket.js - what the scenes of "Through the flowers" share: a camera that moves through layers of plants, each
+// thicket.js - plants painted as a painter of Ghibli's backgrounds paints them, in layers a camera moves through; made
+// for "Through the flowers" (thicket/) and used by the hero film too (sash_maeng.html). What its scenes share: a
+// camera that moves through layers of plants, each
 // layer as far as its depth says (parallax), pushed in, swaying in the air and soft when it is far or very near;
 // pictures painted once (sprites) of the bushes, flowers and grass the layers hold; the falling petals, the shafts of
 // light and the pollen in them. Load it after the kit, flora.js, butterflies.js and northbirds.js.
@@ -123,7 +125,11 @@ var THK_BLOOMS = {
   ueang: function (x, y, r, turn) { floraUeangBloom(x, y, r, turn); },
   buatong: function (x, y, r, turn) { floraBuatongHead(x, y, r, 1, turn); },
   tahern: function (x, y, r, turn) { floraTahernBloom(x, y, r, turn); },
-  hom: function (x, y, r, turn) { floraHomBloom(x, y, r * 2, turn); }
+  hom: function (x, y, r, turn) { floraHomBloom(x, y, r * 2, turn); },
+  // a tree's flowers and fruit that hang: the golden shower's racemes, a bunch of longan, a mango on its stalk
+  ratchaphruek: function (x, y, r, turn, colour, seed) { thkScaled(x, y, r / 30, function () { floraRaceme(0, 0, 80, seed); }); },
+  longan: function (x, y, r, turn, colour, seed) { thkScaled(x, y, r / 40, function () { FLORA.longan.hang(seed); }); },
+  mango: function (x, y, r, turn, colour, seed) { thkScaled(x, y, r / 40, function () { FLORA.mango.hang(seed); }); }
 };
 
 // Draws paint() with the pen moved to (x, y) and scaled by "size". Returns nothing.
@@ -260,6 +266,34 @@ function thkTrunk(high, wide, seed) {
     pen.fill();
   }
   pen.restore();
+}
+
+// A tree painted as the bushes are, its foot at (0, 0): a trunk "high" tall and "wide" across, and on it a crown, a
+// bush "crown" across and "deep" high whose middle stands at the trunk's top, with "blooms" in it (as thkBush()
+// takes them: flowers, or the racemes and fruit that hang). seed: a number; greens: as thkBush() takes them.
+// Returns nothing: it draws with pen. e.g. thkTree(420, 50, 640, 380, 3, THK_GREENS, [["longan", 30, 14]]);
+function thkTree(high, wide, crown, deep, seed, greens, blooms) {
+  thkTrunk(high, wide, seed);
+  pen.save();
+  pen.translate(0, -high + deep * 0.55);
+  thkBush(crown, deep, seed + 1, greens, blooms);
+  pen.restore();
+}
+
+// A painted tree on a set's sheet ("brush"), as the kit's tree() and floraTree() are painted: its foot at (x, base),
+// "size" its scale (1 is a trunk 420 tall and a crown 640 across). Returns nothing: it points pen at the brush while
+// it paints and puts pen back. e.g. thkTreeOn(brush, 200, 900, 1, 7, [["longan", 30, 14]]);
+function thkTreeOn(brush, x, base, size, seed, blooms, greens) {
+  var keep = pen, keepLine = LINE;
+  pen = brush;
+  pen.save();
+  pen.translate(x, base);
+  pen.scale(size, size);
+  thkTree(420, 54, 640, 380, seed, greens || THK_GREENS, blooms);
+  pen.restore();
+  pen = keep;
+  LINE = keepLine;
+  FINE = 1;
 }
 
 // A clump of tall grass, its foot at (0, 0): "count" long blades rising and bending over, "high" tall, in the

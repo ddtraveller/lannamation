@@ -9372,6 +9372,136 @@ go (over 0.8 s), for the thanks; figures: the film's bowing figures for its "pai
 Gives back nothing: it writes with pen. e.g. creditRoll(t, rows, [3, 174], 177.5, figures);
 ```
 
+## thicket.js
+
+thicket.js - plants painted as a painter of Ghibli's backgrounds paints them, in layers a camera moves through; made for "Through the flowers" (thicket/) and used by the hero film too (sash_maeng.html). What its scenes share: a camera that moves through layers of plants, each layer as far as its depth says (parallax), pushed in, swaying in the air and soft when it is far or very near; pictures painted once (sprites) of the bushes, flowers and grass the layers hold; the falling petals, the shafts of light and the pollen in them. Load it after the kit, flora.js, butterflies.js and northbirds.js.  A scene builds its layers once, the first time it is drawn (thkOnce()), and then draws them with thkLayers(t, layers, cam) and its animals between them.
+
+### `thkSprite(wide, high, ox, oy, paint, sharp)`
+
+```
+A picture painted once: a canvas "wide" by "high" film pixels, (ox, oy) of it the point it is placed by (the foot
+of a plant, the middle of a bush's base). paint() draws with pen at film pixels, (0, 0) at that point.
+wide, high, ox, oy: film pixels; paint: a function; sharp: device pixels to a film pixel (PIX * THK_SHARP).
+Returns {canvas, wide, high, ox, oy}. It points pen at the canvas while it paints and puts pen, LINE and FINE back.
+e.g. var bush = thkSprite(400, 260, 200, 250, function () { thkBush(400, 240, 3, THK_GREENS, []); });
+```
+
+### `thkPlace(sprite, x, y, size, sway)`
+
+```
+Places a sprite: its point at (x, y), scaled by "size", turned by "sway" radians about that point.
+sprite: thkSprite()'s; x, y: pixels of the layer; size: a number; sway: radians. Returns nothing: it draws with pen.
+e.g. thkPlace(bush, 600, 900, 1.2, 0.01);
+```
+
+### `thkSway(t, phase, reach)`
+
+```
+The air that sways a plant at second t: a slow swell and a quicker flutter, each plant at its own phase, the
+taller it is (reach, 0 to 1) the further. Returns radians. e.g. thkSway(clock, 3.1, 0.8)
+```
+
+### `thkLayers(t, layers, cam, air)`
+
+```
+Draws the layers of a scene at second t, far to near. Each layer: {depth, blur, haze, items, live}:
+  depth  how fast it passes as the camera moves (0 the sky, 1 the plane the camera looks at, more is nearer)
+  blur   pixels of softness (a far layer, or a near one the eye does not hold), 0 when left out
+  haze   0 to 1, how much of the air's colour lies over it (far layers fade into the light)
+  items  [{sprite, x, y, size, phase, reach}], placed by thkPlace(), swaying by thkSway() (reach 0 holds still)
+  live   a function (t) drawn after the items in the layer's own frame: an animal, a flower that moves
+cam: {x, z, y}: how far the camera has gone along (pixels at depth 1), pushed in (0 none, 0.5 halfway to the
+plane at depth 2) and risen (pixels at depth 1). air: the haze's colour. Returns nothing: it draws with pen.
+e.g. thkLayers(t, LAYERS, {x: 40 * t, z: 0.03 * t, y: 0}, "#e8f0d0");
+```
+
+### `thkLeaf(x, y, long, turn, colour)`
+
+```
+One small leaf of a bush, its foot at (x, y), "long" long, turned "turn" from up, filled with "colour", a fine
+darker line round it. Returns nothing: it draws with pen.
+e.g. thkLeaf(10, -40, 16, 0.4, "#5a9a48");
+```
+
+### `thkScaled(x, y, size, paint)`
+
+```
+Draws paint() with the pen moved to (x, y) and scaled by "size". Returns nothing.
+e.g. thkScaled(10, 20, 0.5, function () { floraBractCluster(0, 0, "#d8338a", 1); });
+```
+
+### `thkBush(wide, high, seed, greens, blooms)`
+
+```
+A bush, its base's middle at (0, 0): a lumpy mound "wide" across and "high", made of clumps (rounds of shade) and,
+over them, hundreds of small leaves, each clump lit on its upper left and dark below as the whole bush is, with a
+fringe of leaves standing out from its edge; and in it "blooms": [[name, count, r, colour], ...], flowers of
+THK_BLOOMS in clusters over its sunny face. It stays inside wide by high (paint it in a sprite with room round it).
+wide, high: film pixels; seed: a number; greens: seven colours, deep to light (THK_GREENS); blooms: as said.
+Returns nothing: it draws with pen. Paint it into a sprite (thkSprite()) once.
+e.g. thkBush(400, 240, 3, THK_GREENS, [["jasmine", 30, 6], ["hibiscus", 4, 16]]);
+```
+
+### `thkTrunk(high, wide, seed)`
+
+```
+A tree's trunk, its foot at (0, 0) and "high" tall, "wide" across: bark lit on its left and dark on its right,
+furrowed, mossy, its roots flaring at the foot. seed: a number. Returns nothing: it draws with pen.
+e.g. thkTrunk(1200, 120, 3);
+```
+
+### `thkTree(high, wide, crown, deep, seed, greens, blooms)`
+
+```
+A tree painted as the bushes are, its foot at (0, 0): a trunk "high" tall and "wide" across, and on it a crown, a
+bush "crown" across and "deep" high whose middle stands at the trunk's top, with "blooms" in it (as thkBush()
+takes them: flowers, or the racemes and fruit that hang). seed: a number; greens: as thkBush() takes them.
+Returns nothing: it draws with pen. e.g. thkTree(420, 50, 640, 380, 3, THK_GREENS, [["longan", 30, 14]]);
+```
+
+### `thkTreeOn(brush, x, base, size, seed, blooms, greens)`
+
+```
+A painted tree on a set's sheet ("brush"), as the kit's tree() and floraTree() are painted: its foot at (x, base),
+"size" its scale (1 is a trunk 420 tall and a crown 640 across). Returns nothing: it points pen at the brush while
+it paints and puts pen back. e.g. thkTreeOn(brush, 200, 900, 1, 7, [["longan", 30, 14]]);
+```
+
+### `thkGrass(high, count, seed, greens)`
+
+```
+A clump of tall grass, its foot at (0, 0): "count" long blades rising and bending over, "high" tall, in the
+greens, the outer ones leaning further. Returns nothing: it draws with pen.
+e.g. thkGrass(420, 14, 2, THK_GREENS);
+```
+
+### `thkLight(t, strength, seed)`
+
+```
+Shafts of sunlight slanting down from the upper left, faint and moving a little, and specks of pollen drifting in
+them. t: seconds; strength: 0 to 1; seed: a number. Returns nothing: it draws with pen over the whole sheet.
+e.g. thkLight(clock, 0.6, 2);
+```
+
+### `thkPetals(t, count, colour, seed, size)`
+
+```
+Petals falling, turning as they fall and drifting with the air: "count" of them in the colour, each coming round
+again from the top. t: seconds; count: a whole number; colour: "#rrggbb"; seed: a number; size: 1 about 12 long.
+Returns nothing: it draws with pen. e.g. thkPetals(clock, 40, "#f6b8cc", 3, 1);
+```
+
+### `thkVignette(strength)`
+
+```
+A soft darkening at the sheet's edges, warm, as an old lens and a painter both give a scene. Returns nothing.
+e.g. thkVignette(0.35);
+```
+
+### `thkOnce(key, build)`
+
+(no comment)
+
 # Tools (Python, from the command line)
 
 ## kit/api_index.py
@@ -10352,6 +10482,11 @@ kit_check.py [page.html ...] [--quick]  - one check of the kit: every page that 
     python checks/kit_check.py model.html --quick --settle 30     # "same" as it would be with a pre-roll of 30 frames
     python checks/kit_check.py --changed       # only the pages that something they load has changed since they passed
 
+It says how it is getting on as it goes, a line at each stage, at once even when its output goes to a file (owner,
+2026-10-25: "make it so it outputs something after each major stage"): how many pages it will check; for each page
+the stages that take time (loaded and drew, the stills compared, the arms) with their seconds; then the page's line,
+how many pages are done, the time so far and about how long is left.
+
 Every item it checks is written down, PASS or FAIL with what was found, in out/checks/kit_check.txt (and .json),
 and the run's summary is added to out/checks/history.log (report.py). With --changed, a page is checked only when
 the page, a script it loads, or this check's own code has changed since the page last passed (out/checks/
@@ -10394,6 +10529,7 @@ may take to load is KIT_CHECK_LOAD_SECONDS from the environment (180 unless set)
 - `maker_file()`: The cartoon maker: maker/ beside the kit in lannamation, the page beside the kit's folder on krueng.ai.
 - `shared_names()`: Top-level names that two script files beside the kit both define. The files share one page, so the one loaded
 - `missing_of(page_file)`: The script files a page asks for that are not on this computer.
+- `say(text)`: Prints a line of how the check is getting on, at once (a file it is written to gets it now, not at the end).
 - `check(browser, page_file, quick, settle)`: One page: what was found, and a list of what failed.
 - `line_of(name, found)`: What was found on one page, as one line of the table.
 - `main()`: The command line (see this file's docstring): check the look keys and the names, then each page; write

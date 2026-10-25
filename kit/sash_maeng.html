@@ -41,6 +41,9 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6,
 <script src="paperdoll.js"></script>
 <script src="apsara.js"></script>
 <script src="puman.js"></script>
+<script src="night.js"></script>
+<script src="butterflies.js"></script>
+<script src="thicket.js"></script>
 <script>
 // sash.html - a film of the kit. It opens on a cloth, close up: twelve rows
 // of the small things of Thai life, woven across it. Music begins, and the
@@ -243,17 +246,17 @@ function paintSet(kind) {
   var keep = pen;
   pen = brush;
   if (kind === "village" || kind === "day") {
-    floraTree(brush, 200 + SIDE, 900, 1.1, "longan", 7);   // a longan in fruit, the fruit of Lamphun and Chiang Mai, where a plain tree stood
+    thkTreeOn(brush, 200 + SIDE, 905, 0.85, 7, [["longan", 26, 16]]);   // a longan in fruit, the fruit of Lamphun and Chiang Mai, where a plain tree stood
     house(brush, 1180 + SIDE, 905, 1);
     banana(brush, 1000 + SIDE, 915);
     namton(brush, 1425 + SIDE, 912, 1.1);          // the water jar at the gate, beside the house's ladder (pieces.js)
     flora("marigold", 1080 + SIDE, 922, {size: 0.9});   // marigolds for the offerings at the house's foot, jasmine for the garlands by the jar
     flora("marigold", 1128 + SIDE, 928, {size: 0.75});
     flora("jasmine", 1490 + SIDE, 924, {size: 0.9});
-    floraTree(brush, 1830 + SIDE, 905, 0.75, "bougainvillea", 8);   // and a bougainvillea at the edge of the yard
+    thkTreeOn(brush, 1830 + SIDE, 908, 0.6, 8, [["bougainvillea", 70, 22, "#d8338a"]]);   // and a bougainvillea at the edge of the yard
   }
   if (kind === "night") {                          // a frangipani, the temple's tree, its white flowers pale in the lantern light
-    floraTree(brush, 1790 + SIDE, 885, 0.95, "frangipani", 9);
+    thkTreeOn(brush, 1790 + SIDE, 888, 0.75, 9, [["frangipani", 34, 16]], THK_SHADE);
   }
   pen = keep;
   if (kind === "pond") {                            // the water, the lotus and the fish are drawn live, in scenePond
@@ -262,8 +265,8 @@ function paintSet(kind) {
     // left bank, where a plain tree stood, a ratchaphruek in flower, the golden shower, the national tree;
     // on the right bank a thong kwao, the flame of the forest, Chiang Mai's own tree, which the voice
     // names (flora.js); wild orchids on both trunks (scenePond).
-    floraTree(brush, 160 + SIDE, 880, 1.0, "ratchaphruek", 3);
-    floraTree(brush, 1540 + SIDE, 884, 0.95, "thongkwao", 5);
+    thkTreeOn(brush, 160 + SIDE, 884, 0.8, 3, [["ratchaphruek", 26, 30]]);
+    thkTreeOn(brush, 1540 + SIDE, 888, 0.75, 5, [["thongkwao", 44, 16]]);
   }
   return {back: back, front: front};
 }
@@ -580,6 +583,134 @@ function chase(t) {                      // how far past its steady trot the dog
   return (225 / 195) * (s < 0.5 ? 0.5 * (u * u * u - u * u * u * u / 2) : 0.25 + (s - 0.5));   // the speed eases up over half a second
 }
 
+// The garden of the hero film, painted as "Through the flowers" is (thicket.js; owner, 2026-10-25, of the stills of
+// candidates A and B: "Go C all the way and redo the pond scene so it seems like the viewer is coming through a
+// beautiful garden into the pond area"). The sets' trees are painted trees (thkTreeOn(), in paintSet() and
+// paddySet()); each scene of the village has beds of flowering bushes behind its people (gardenBack()), and in front
+// of everything soft blossom and grass at the frame's edges, the light, petals, butterflies, or at night fireflies
+// (gardenFront()). The pond is come to through the garden: for its first seconds the camera pushes through near
+// layers of flowering bushes that part onto it (GARDEN_IN), while the voice says the people lived in harmony with nature.
+var GARDEN_IN = 4.2;                               // seconds of the pond's coming through the garden, from its cut
+
+// The garden's pictures, painted once (thkOnce()). Returns {back: {lane, pond, paddy, dance}, front: {...}, enter}:
+// lists of items as thkLayers() and thkPlace() take them, film pixels.
+// e.g. var garden = gardenBuild();
+function gardenBuild() {
+  function bush(wide, high, seed, greens, blooms, sharp) {
+    return thkSprite(wide + 80, high + 60, wide / 2 + 40, high + 20, function () { thkBush(wide, high, seed, greens, blooms); }, sharp || PIX);
+  }
+  function hangDown(wide, high, seed, greens, blooms) {   // a bush upside down: blossom hanging into the frame from above
+    return thkSprite(wide + 80, high + 60, wide / 2 + 40, 40, function () { pen.scale(1, -1); thkBush(wide, high, seed, greens, blooms); }, PIX);
+  }
+  function plant(name, size, look) {
+    return thkSprite(300 * size, 320 * size, 150 * size, 300 * size, function () {
+      flora(name, 0, 0, Object.assign({size: size, ground: false}, look || {}));
+    }, PIX);
+  }
+  function grass(high, count, seed) {
+    return thkSprite(high * 1.6, high + 40, high * 0.8, high + 10, function () { thkGrass(high, count, seed, THK_GREENS); }, PIX);
+  }
+  var pink = [["bougainvillea", 50, 16, "#d8338a"], ["hibiscus", 8, 14, "#e65a7a"], ["phayasuea", 30, 8, "#ec6c9c"]];
+  var white = [["jasmine", 40, 7], ["dokkaew", 30, 8], ["sarapee", 16, 9]];
+  var night = [["jasmine", 40, 7], ["frangipani", 8, 12]];
+  var pinkNear = [["bougainvillea", 40, 18, "#d8338a"], ["phayasuea", 30, 10, "#f3a6c0"]];
+  return {
+    back: {
+      lane: [{sprite: bush(520, 280, 401, THK_GREENS, pink), x: 40, y: 925}, {sprite: bush(320, 160, 405, THK_GREENS, white), x: 1560, y: 910},
+             {sprite: bush(360, 190, 402, THK_GREENS, white), x: 640, y: 905}, {sprite: bush(300, 170, 403, THK_GREENS, [["marigold", 12, 10], ["jasmine", 20, 7]]), x: 930, y: 912},
+             {sprite: bush(460, 240, 404, THK_GREENS, pink), x: 1900, y: 915}],
+      pond: [{sprite: bush(380, 110, 414, THK_SUN, [["jasmine", 16, 6], ["phayasuea", 14, 6, "#ec6c9c"]]), x: 640, y: 712},   // a hedge in flower on the far bank
+             {sprite: bush(420, 120, 415, THK_SUN, [["dokkaew", 18, 7], ["orchid", 10, 7, "#b25cc0"]]), x: 1000, y: 708},
+             {sprite: bush(380, 110, 416, THK_SUN, [["sarapee", 14, 7], ["jasmine", 14, 6]]), x: 1340, y: 712},
+             {sprite: bush(460, 260, 411, THK_GREENS, white), x: 80, y: 905}, {sprite: bush(360, 180, 413, THK_GREENS, [["phayasuea", 24, 8, "#ec6c9c"], ["jasmine", 20, 7]]), x: 1200, y: 870},
+             {sprite: bush(380, 200, 412, THK_GREENS, [["hibiscus", 10, 14, "#e65a7a"], ["orchid", 12, 9, "#b25cc0"]]), x: 1860, y: 900},
+             {sprite: plant("tahern", 1.5), x: 1720, y: 1000}],
+      paddy: [{sprite: bush(520, 260, 421, THK_GREENS, [["buatong", 30, 13]]), x: 80, y: 900},
+              {sprite: bush(340, 170, 423, THK_GREENS, [["phayasuea", 24, 8, "#ec6c9c"]]), x: 980, y: 870},
+              {sprite: bush(480, 240, 422, THK_GREENS, [["marigold", 14, 11], ["dokkaew", 26, 8]]), x: 1860, y: 900}],
+      dance: [{sprite: bush(460, 280, 431, THK_SHADE, night), x: 1880, y: 930}, {sprite: bush(380, 220, 432, THK_SHADE, night), x: 1560, y: 900}]
+    },
+    front: {
+      lane: [{sprite: hangDown(560, 260, 481, THK_SHADE, pinkNear), x: 1800, y: -40}, {sprite: bush(520, 300, 441, THK_SHADE, pinkNear), x: -60, y: 1180},
+             {sprite: bush(480, 260, 442, THK_SHADE, pinkNear), x: 1990, y: 1170}],
+      pond: [{sprite: hangDown(520, 240, 482, THK_SHADE, [["phayasuea", 40, 10, "#f3a6c0"]]), x: 120, y: -40},
+             {sprite: grass(420, 14, 451), x: -20, y: 1120}, {sprite: grass(380, 12, 452), x: 1950, y: 1120}],
+      paddy: [{sprite: hangDown(500, 220, 483, THK_SHADE, [["frangipani", 10, 14]]), x: 1820, y: -40},
+              {sprite: grass(460, 16, 461), x: 20, y: 1130}, {sprite: grass(420, 14, 462), x: 1900, y: 1130}],
+      dance: [{sprite: hangDown(520, 240, 484, THK_SHADE, [["frangipani", 10, 14], ["jasmine", 20, 8]]), x: 1840, y: -40},
+              {sprite: bush(500, 260, 471, THK_SHADE, [["jasmine", 30, 8], ["frangipani", 6, 14]]), x: -40, y: 1190}]
+    },
+    enter: [                                        // the garden the pond is come to through, near to far as thkLayers() draws them
+      {depth: 1.25, blur: 1.5, items: [
+        {sprite: bush(760, 520, 491, THK_GREENS, [["hibiscus", 22, 18, "#e65a7a"], ["bougainvillea", 60, 20, "#d8338a"]]), x: 360, y: 1140},
+        {sprite: bush(760, 520, 492, THK_GREENS, [["phayasuea", 70, 11, "#ec6c9c"], ["jasmine", 40, 8]]), x: 1580, y: 1140},
+        {sprite: plant("tahern", 2.4), x: 120, y: 1120}, {sprite: plant("orchid", 2.2, {colour: "#b25cc0"}), x: 1820, y: 1120}]},
+      {depth: 1.8, blur: 5, items: [
+        {sprite: bush(980, 760, 493, THK_SHADE, [["bougainvillea", 90, 22, "#d8338a"], ["phayasuea", 60, 12, "#f3a6c0"]]), x: 420, y: 1320},
+        {sprite: bush(980, 760, 494, THK_SHADE, [["hibiscus", 30, 20, "#e65a7a"], ["bougainvillea", 70, 22, "#d8338a"]]), x: 1500, y: 1320},
+        {sprite: bush(900, 420, 495, THK_SHADE, [["phayasuea", 50, 12, "#f3a6c0"]]), x: 960, y: 1360},
+        {sprite: hangDown(900, 360, 496, THK_SHADE, [["phayasuea", 60, 12, "#f3a6c0"]]), x: 960, y: -60}]}
+    ]
+  };
+}
+
+// What stands behind a scene's people: its beds of flowering bushes. kind: "lane", "pond", "paddy" or "dance"; t: the
+// scene's seconds. Returns nothing: it draws with pen, before the scene's drawByZ().
+// e.g. gardenBack("lane", t);
+function gardenBack(kind, t) {
+  var garden = thkOnce("sash-garden", gardenBuild);
+  garden.back[kind].forEach(function (it) { thkPlace(it.sprite, it.x, it.y, 1, thkSway(t, it.x * 0.01, 0.35)); });
+}
+
+// What comes in front of everything in a scene: the pond's garden as it is come through (its first GARDEN_IN
+// seconds, "enter" the seconds since its cut), soft blossom and grass at the frame's edges, the light, petals and
+// butterflies by day, fireflies at night. kind: as gardenBack(); t: the scene's seconds; enter: seconds since the
+// scene's cut, for the pond. Returns nothing: it draws with pen, after the scene's drawByZ().
+// e.g. gardenFront("pond", t, t - 1.82);
+function gardenFront(kind, t, enter) {
+  var garden = thkOnce("sash-garden", gardenBuild);
+  if (kind === "pond" && enter < GARDEN_IN + 0.3) {
+    var go = between(enter, 0, GARDEN_IN);
+    pen.save();
+    pen.globalAlpha = 1 - between(enter, GARDEN_IN - 0.6, GARDEN_IN + 0.3);   // the last of it fades, so nothing jumps out of sight
+    thkLayers(t, garden.enter, {x: 0, z: 0.55 * go, y: -30 * go}, "#f6f2d6");
+    pen.restore();
+  }
+  pen.save();
+  pen.filter = "blur(5px)";
+  garden.front[kind].forEach(function (it) { thkPlace(it.sprite, it.x, it.y, 1, thkSway(t, it.x * 0.01, 0.4)); });
+  pen.filter = "none";
+  pen.restore();
+  if (kind === "dance") {
+    farFireflies(t, {box: [0, 420, WIDE, 1000], count: 160});
+    farFireflies(t * 1.1, {box: [0, 560, WIDE, 1060], count: 60, seed: 3});
+    for (var f = 0; f < 70; f++) {                // and near ones, in the air over the dancing and round the bushes: larger, each glowing and fading on its own
+      var side = f % 3 === 0 ? 120 + 1680 * dice(f + 3) : f % 3 === 1 ? WIDE - 420 * dice(f + 3) : 420 * dice(f + 3), fy = (f % 3 === 0 ? 260 : 520) + 480 * dice(f + 7);
+      var fx = side + 40 * Math.sin(t * 0.4 + f), gy = fy + 25 * Math.sin(t * 0.6 + f * 2), glow = Math.pow(0.5 + 0.5 * Math.sin(t * (1.3 + dice(f)) + f * 2.1), 3);
+      if (glow < 0.04) { continue; }
+      var halo = pen.createRadialGradient(fx, gy, 0, fx, gy, 30);
+      halo.addColorStop(0, "rgba(246, 255, 190, " + (0.95 * glow).toFixed(3) + ")");
+      halo.addColorStop(0.18, "rgba(220, 255, 140, " + (0.6 * glow).toFixed(3) + ")");
+      halo.addColorStop(1, "rgba(214, 255, 130, 0)");
+      pen.fillStyle = halo;
+      pen.beginPath();
+      pen.arc(fx, gy, 30, 0, 7);
+      pen.fill();
+      pen.fillStyle = "rgba(255, 255, 220, " + glow.toFixed(3) + ")";
+      pen.beginPath();
+      pen.arc(fx, gy, 2.6, 0, 7);
+      pen.fill();
+    }
+    return;
+  }
+  var b = butterflyDrift(t, 300, 520, {vx: 60, weave: 60, seed: 3});
+  butterfly(kind === "paddy" ? "grassyellow" : "lacewing", b.x, b.y, t, {turn: b.turn + 1.2, size: 1.4, seed: 2});
+  var c = butterflyDrift(t, 1500, 420, {vx: -40, weave: 70, seed: 8});
+  butterfly(kind === "pond" ? "bluebottle" : "birdwing", c.x, c.y, t, {turn: c.turn - 1.2, size: 1.3, seed: 5});
+  thkPetals(t, kind === "paddy" ? 12 : 26, "#f6b8cc", 3, 1.1);
+  thkLight(t, 0.7, 2);
+}
+
 function sceneLane(t) {                 // 26.67-44.41 (22-35 until 2026-10-24: 4.74 s more after the greeting, for the narrator's own pace): the lane: a man and a child come one way, a woman the other
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t + 22);
   pen.drawImage(VILLAGE.back, 0, 0);
@@ -603,6 +734,7 @@ function sceneLane(t) {                 // 26.67-44.41 (22-35 until 2026-10-24: 
   var woman = stroll(t, 1500, 820, 0.5, cast("weaver", Object.assign({id: "n1", stride: 0.9, late: 0.3, spring: 0.4, at: [420, 700], wai: between(t, 6.3, 6.7)}, HAIR_OF.weaver, FACE(1))));
   var kid = stroll(t, -200, 300, 1, cast("child", Object.assign({id: "n2", stride: 0.9, late: 0.5, spring: 0.7, smile: 1, at: [820, 700], wai: between(t, 7.2, 7.6),
                                                    wonder: tween(t, [[6, 0.3], [6.5, 1], [7.4, 1], [8, 0.4]], "smooth")}, FACE(2))));   // her wai takes him
+  gardenBack("lane", t);
   drawByZ([
     {name: "tung", kind: "tung", y: 905, draw: function () { villageTung(t + 22); }},
     {name: "sunbird", kind: "sunbird", z: "set", y: 700, draw: function () { sunbirdVisit(t, SUNBIRD_LANE); }},   // at the bougainvillea
@@ -615,6 +747,7 @@ function sceneLane(t) {                 // 26.67-44.41 (22-35 until 2026-10-24: 
     {name: "feather", kind: "feather", y: COOP[0].y + 6, draw: onOldSheet(function () { looseFeather(t); })},
     {name: "flock", kind: "birds", z: "sky", y: 220, draw: onOldSheet(function () { birds(t, 300 + t * 40, 220); })}
   ]);
+  gardenFront("lane", t, t);
 }
 
 // The dragon's course through the pond scene (35 to 50), in the film's time:
@@ -876,8 +1009,10 @@ function scenePond(t) {                 // 42.59-69.94 on its own clock, shown 4
                }},
                {name: "fellow", kind: "person", y: 990, draw: function () { person(fellow.x, 990, fellow.look); }},
                {name: "blossom", kind: "blossom", z: "front", y: 700 + t * 20, draw: function () { blossom(pen, 1300 + Math.sin(t) * 10, 700 + t * 20, 10, "#ee7f9c"); }});
+  gardenBack("pond", t);
   drawByZ(sprites);
   pen.restore();
+  gardenFront("pond", t, t - 1.82);                // shown from 1.82 s of its own clock (scenePondLate)
 }
 
 // 50-70: the rice fields in a rain storm that clears. Three women walk in
@@ -1010,7 +1145,7 @@ function paddySet() {
   [[250, 748, 0.5, 380], [330, 716, 0.34, 360], [1330, 800, 0.8, 400]].forEach(function (p) {   // the backdrop's palms, in front again
     bdSized(b, p[0], p[1], p[2], function () { palm(b, 0, 0, p[3]); });
   });
-  floraTree(b, 1650, 832, 0.6, "mango", 10);       // a mango on a bund, as one stands at the edge of the fields (owner: "plants and flowers that are special to the different scenes")
+  thkTreeOn(b, 1650, 834, 0.5, 10, [["mango", 16, 14]]);       // a mango on a bund, as one stands at the edge of the fields (owner: "plants and flowers that are special to the different scenes")
   return sheet;
 }
 
@@ -1085,8 +1220,10 @@ function scenePaddy(t) {                // 50-70: the rice fields: a storm that 
   PADDY_WOMEN.forEach(function (w) {
     sprites.push({name: w.name, kind: "person", y: 1000, draw: function () { paddyWoman(t, w); }});
   });
+  gardenBack("paddy", t);
   drawByZ(sprites);
   rain(pen, t, wet, 1);
+  gardenFront("paddy", t, t);
 }
 
 // One of the women of the rice fields (PADDY_WOMEN) at second t of the scene, under her parasol, and the drops it
@@ -1289,7 +1426,9 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
     var player = cast(b[1], Object.assign({size: 1.0, face: -1, smile: 1, id: "band-" + b[0]}, FACE(k ? 8 + k : 17)));
     sprites.push({name: player.id, kind: "person", x: b[2], y: 1005, draw: onOldSheet(function () { musician(b[2], 1005, b[0], player, b[3]); })});
   });
+  gardenBack("dance", t);
   drawByZ(sprites);
+  gardenFront("dance", t, t);
 }
 
 // Each cut in a pause of the narrator's (2026-10-24, kit_check: three of her lines ran on through a cut). The lane

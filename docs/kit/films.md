@@ -338,7 +338,7 @@ scenes, each its own file and page as the tales' are (`s01.html` to `s04.html`, 
 | 3, under the trees (24-36 s) | slides on and rises a little | trunks with golden orchids (ueang), a tokay crawling up one, an atlas moth resting on another; saban nga hanging from above; ta hern, hom, betel on its stake, miang, som poi, ket tha wa on the floor among bushes in flower; teak leaves near; a blue magpie flying through (its call), a bluebottle; shafts of light |
 | 4, the clearing (36-48 s) | draws back and rises | a slope of bua tong in leafy mounds and on stems, marigold, thong kwao, frangipani, ratchaphruek; the wild cherry bare and in blossom beside a sarapee in flower; hills; a great hornbill crossing the sky; a birdwing and grass yellows; petals falling; it fades out |
 
-**How it is drawn.** `thicket/thicket.js` is what the scenes share. Every bush, plant and tree is painted once,
+**How it is drawn.** `thicket.js` (beside the kit since the hero film uses it too) is what the scenes share. Every bush, plant and tree is painted once,
 the first time its scene is drawn, into a picture of its own (`thkSprite()`, at 1.6 times the sheet's pixels so a
 near layer pushed in stays sharp), and each frame places those pictures (`thkPlace()`): this is what lets a scene
 hold hundreds of thousands of leaves. A scene is layers far to near (`thkLayers(t, layers, cam)`): each has a
@@ -364,3 +364,31 @@ placed, not drawn again; the cost is their size and blur).
 **Not done:** the camera's moves are simple (a push, a slide, a rise): no turn, no going round a bush. Leaves and
 flowers sway with their picture, a bush as one; no single leaf moves. The animals are the kit's as they are (the
 magpie and the hornbill fly side-on). No music, only the birds and cicadas. Not uploaded anywhere.
+
+## The hero film's garden: the Spirited Away look in the opening film (2026-10-25)
+
+The owner, shown stills of the hero film (sash_maeng.html) as it was beside two candidates (A: the air of "Through
+the flowers" only; B: that, and painted flowering bushes behind the people and soft blossom at the edges), chose
+neither: "Go C all the way and redo the pond scene so it seems like the viewer is coming through a beautiful garden
+into the pond area." So, with `thicket.js` (moved beside the kit from `thicket/`, as both films use it):
+
+- **The sets' trees are painted trees** (`thkTreeOn()`: a trunk of `thkTrunk()` and a crown of `thkBush()` with
+  flowers or fruit, `THK_BLOOMS`, which now has the golden shower's racemes, longan and mango): the lane's longan
+  in fruit and bougainvillea, the pond's golden shower and flame of the forest (the sunbird still sips at its
+  flowers, the orchids still grow on the trunks), the paddy's mango and the night's frangipani, where floraTree()
+  stood.
+- **Beds of flowering bushes behind each scene's people** (`gardenBack()`, before its drawByZ()): pink
+  bougainvillea, hibiscus and wild cherry, white jasmine, dok kaew and sarapee, marigolds by the house; at the pond a
+  hedge in flower along the far bank and ta hern by the water; bua tong and marigold at the paddy's edges; jasmine and
+  frangipani by night.
+- **In front of everything** (`gardenFront()`, after it): blossom hanging in from a top corner and soft bushes or
+  grass at the foot, out of focus; shafts of light, pollen, falling petals and butterflies (butterflies.js) by day;
+  at the dance fireflies, far ones and near ones that glow over the dancers.
+- **The pond is come to through the garden:** for its first GARDEN_IN (4.2) seconds, under the narrator's
+  "People were more in harmony with nature", the camera pushes through two near layers of flowering bushes and
+  plants (`thkLayers()`), which part to each side onto the pond; the last of them fades, and the pond is open by
+  her next line (the flame-of-the-forest trees, elephants and lotus). The plants near the middle went to the sides,
+  where the push carries them out: one left in the middle stood in front of the maiden.
+
+The woven cloth (the first scene) is as it was. sash.html, the hero film before it was the Maeng film's opening, is
+as it was. Not re-rendered: lanna_tales_maeng.mp4 on the site still has the hero film as it was.
