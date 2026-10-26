@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>cascade - a tiered cascade in the forest</title>
+<style>html, body { margin: 0; background: #111; } canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920, pixels: 2, film: 0.3, light: [-0.6, 0.5]};</script>
+<script>var BEAT = 0.5;</script>
+<script src="oldcartoon.js"></script>
+<script src="flora.js"></script>
+<script src="butterflies.js"></script>
+<script src="northbirds.js"></script>
+<script src="thicket.js"></script>
+<script src="pinewoods.js"></script>
+<script src="wildplaces.js"></script>
+<script>
+// The "cascade" sheet: wildplaces.js. A tiered cascade in the forest, as the north's limestone falls are (Huai Mae
+// Khamin, Bua Tong's sticky falls): lips of travertine stepping down toward us, the water pouring over each in streams
+// into a turquoise pool (cascadeSteps(), cascadeRock(), cascadeWater()), the last into the pool at its foot
+// (cascadeFoot()); the forest close round it, every tree's foot in the undergrowth (owner: "be careful the base of
+// trees stand on solid ground").
+var DURATION = 10;
+var TOP = 300, DROP = 120, STEPS = cascadeSteps(5, 360, DROP, 55, 7);
+function build() {
+  var n, back = [], sides = [], near = [];
+  var hill = forestHill({seed: 71, tall: 420, deep: 260, gap: 40, greens: THK_SHADE, sizes: ["medium", "large"], pines: 0});
+  for (n = 0; n < 6; n++) {                         // the trees close round the falls, tall on each side
+    var left = n < 3;
+    sides.push({sprite: broadleafSprite(760 + 220 * dice(n * 3), 301 + n * 7, n % 2 ? THK_GREENS : THK_SUN), x: left ? 120 + n * 170 : 1300 + (n - 3) * 200, y: 880 + 60 * dice(n), size: 1, reach: 0.04});
+  }
+  var feet = [], footBush = [natBush(330, 180, 331, THK_GREENS, []), natBush(500, 260, 333, THK_SUN, []), natBush(330, 180, 337, THK_SHADE, [])];
+  sides.forEach(function (tr, k) {                  // every tree's foot hidden in bushes, so it stands in the undergrowth, not on air
+    feet.push({sprite: footBush[k % 3], x: tr.x - 60, y: tr.y + 40, size: 0.9 + 0.3 * dice(k * 3), reach: 0.05});
+    feet.push({sprite: footBush[(k + 1) % 3], x: tr.x + 70, y: tr.y + 55, size: 0.8 + 0.3 * dice(k * 5), reach: 0.05});
+  });
+  feet.sort(function (p, q) { return p.y - q.y; });
+  var rock = thkSprite(1800, 1000, 900, 200, function () { cascadeRock(STEPS, DROP, 7); cascadeFoot(STEPS, DROP, 7); });
+  var floor = forestHill({seed: 83, tall: 60, deep: 700, gap: 46, greens: THK_GREENS, sizes: ["small", "medium", "large"], pines: 0}).sprite;   // the forest's undergrowth all down the slope
+  var flank = [natBush(200, 110, 321, THK_GREENS, []), natBush(330, 180, 323, THK_SUN, []), natBush(200, 110, 327, THK_SHADE, []), natBush(330, 180, 329, THK_GREENS, [])];
+  var edges = [];
+  STEPS.forEach(function (st, k) {                  // bushes along both sides of every step, hiding where the rock ends
+    [-1, 1].forEach(function (side) {
+      for (var m = 0; m < 1; m++) {
+        var ex = 960 + (side < 0 ? st.left : st.right) + side * (40 + 70 * m + 30 * dice(k * 7 + m + side));
+        edges.push({sprite: flank[(k + m + (side > 0 ? 2 : 0)) % 4], x: ex + side * 30, y: TOP + st.y + 50, size: 0.55 + 0.12 * k, reach: 0.05});
+      }
+    });
+  });
+  edges.sort(function (p, q) { return p.y - q.y; });
+  var stones = [];
+  for (n = 0; n < 4; n++) { stones.push(rockSprite(160 + 120 * dice(n), 100 + 60 * dice(n * 3), 401 + n, {stone: "#7a7064", moss: 0.9, wet: 0.5})); }
+  var bushes = [natBush(330, 180, 311, THK_GREENS, []), natBush(500, 260, 313, THK_SUN, []), natBush(330, 180, 317, THK_SHADE, [])];
+  [[260, 900, 0], [1650, 880, 1], [120, 1050, 1], [1840, 1040, 0], [520, 1120, 2], [1450, 1110, 2]].forEach(function (q) { near.push({sprite: bushes[q[2]], x: q[0], y: q[1], size: 1, reach: 0.06}); });
+  [[600, 1020, 0], [1380, 1000, 1], [340, 1080, 2], [1560, 1090, 3]].forEach(function (q) { near.push({sprite: stones[q[2]], x: q[0], y: q[1], size: 1, reach: 0}); });
+  near.sort(function (p, q) { return p.y - q.y; });
+  return [
+    {depth: 0.15, blur: 0.8, haze: 0.18, items: [{sprite: hill.sprite, x: -300, y: 520, reach: 0}]},
+    {depth: 0.5, blur: 0, items: [{sprite: floor, x: -300, y: 520, reach: 0}, {sprite: rock, x: 960, y: TOP, reach: 0}], live: function (t) {
+      pen.save();
+      pen.translate(960, TOP);
+      cascadeWater(t, STEPS, DROP, 7);
+      pen.restore();
+      natSteam(t, 700, 1300, TOP + 680, {count: 14, rise: 110, wide: 110, life: 4, lean: 30, alpha: 0.3, flat: 0.5, seed: 3});   // spray rising off the foot
+    }},
+    {depth: 0.5, blur: 0, items: edges},
+    {depth: 0.55, blur: 0, items: sides},
+    {depth: 0.56, blur: 0, items: feet},
+    {depth: 0.9, blur: 0.5, items: near}
+  ];
+}
+function scene(at) {
+  var layers = thkOnce("cascade", build);
+  var sky = pen.createLinearGradient(0, 0, 0, 700);
+  sky.addColorStop(0, "#a8c8a8");
+  sky.addColorStop(1, "#e8eccc");
+  pen.fillStyle = sky;
+  pen.fillRect(0, 0, WIDE, 1080);
+  thkLayers(at, layers, {x: 6 * at, z: 0, y: 0}, "#e4ecd4");
+  thkLight(at, 0.75, 11);
+  thkVignette(0.35);
+}
+var SCENES = [[0, DURATION, scene]];
+function draw(t) { film(t, SCENES); }
+var rendering = false;
+function play(now) { if (!rendering) { draw((now / 1000) % DURATION); } requestAnimationFrame(play); }
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

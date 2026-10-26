@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>stream - a forest stream among boulders</title>
+<style>html, body { margin: 0; background: #111; } canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920, pixels: 2, film: 0.3, light: [-0.6, 0.5]};</script>
+<script>var BEAT = 0.5;</script>
+<script src="oldcartoon.js"></script>
+<script src="flora.js"></script>
+<script src="butterflies.js"></script>
+<script src="northbirds.js"></script>
+<script src="thicket.js"></script>
+<script src="pinewoods.js"></script>
+<script src="wildplaces.js"></script>
+<script>
+// The "stream" sheet: wildplaces.js. A forest stream among boulders, as Mae Sa (แม่สา) is below Doi Suthep: the
+// water coming toward us out of the forest (streamBed()), mossy stones in it with foam heaped behind them and trailing
+// below (streamFlow(), natRock()), its banks in grass and bushes, the trees standing in the undergrowth.
+var DURATION = 10;
+var BED = streamBed({top: 560, far: 90, near: 1500, seed: 3});
+var IN_WATER = [[0.18, -0.3, 40], [0.32, 0.25, 60], [0.5, -0.15, 90], [0.66, 0.35, 120], [0.8, -0.4, 150], [0.9, 0.1, 190]].map(function (q) {
+  var y = BED.top + q[0] * (1080 - BED.top);
+  return [BED.mid(y) + q[1] * 2 * BED.half(y), y, q[2]];
+});
+function build() {
+  var n, far = [], banks = [], wet = [], trees = [], near = [];
+  var hill = forestHill({seed: 91, tall: 420, deep: 300, gap: 34, greens: THK_SHADE, sizes: ["small", "medium"], pines: 4, pineHigh: 260});
+  var bankBush = [natBush(200, 110, 341, THK_GREENS, []), natBush(330, 180, 343, THK_SUN, []), natBush(500, 260, 347, THK_SHADE, []), natBush(330, 180, 349, THK_GREENS, [])];
+  var bankStone = [], wetStone = [];
+  for (n = 0; n < 6; n++) { bankStone.push(rockSprite(140 + 160 * dice(n * 3), 90 + 90 * dice(n * 5), 501 + n, {stone: "#8a7c68", moss: 0.6})); }
+  for (n = 0; n < 6; n++) { wetStone.push(rockSprite(100 + 80 * dice(n * 7), 60 + 50 * dice(n * 9), 521 + n, {stone: "#7a6c5a", wet: 0.7, moss: 0.3})); }
+  for (var y = BED.top + 20; y < 1100; y += 28 + 0.12 * (y - BED.top)) {   // both banks: stones at the water's edge, bushes behind, bigger as they come near
+    var q = (y - BED.top) / (1080 - BED.top), size = 0.22 + 0.9 * q;
+    [-1, 1].forEach(function (side) {
+      var edge = BED.mid(y) + side * BED.half(y);
+      banks.push({sprite: bankStone[Math.floor(dice(y + side) * 6)], x: edge + side * 10 * size, y: y + 15 * size, size: size * 0.8, reach: 0});
+      banks.push({sprite: bankBush[Math.floor(dice(y * 3 + side) * 4)], x: edge + side * (230 + 120 * dice(y)) * size, y: y + 10 * size, size: size, reach: 0.05});
+    });
+  }
+  var tuft = [0, 1, 2].map(function (k) { return thkSprite(300, 240, 150, 225, function () { thkGrass(120 + 40 * dice(k), 14 + k * 3, 151 + k, THK_SUN); }); });
+  for (y = BED.top + 10; y < 1100; y += 14 + 0.05 * (y - BED.top)) {   // grass and ferns all over the banks
+    q = (y - BED.top) / (1080 - BED.top);
+    for (var g = 0; g < 4; g++) {
+      var gx = dice(y * 1.3 + g) * WIDE, dist = Math.abs(gx - BED.mid(y)) - BED.half(y);
+      if (dist < 30) { continue; }
+      banks.push({sprite: tuft[g % 3], x: gx, y: y, size: 0.2 + 0.8 * q, reach: 0.3});
+    }
+  }
+  banks.sort(function (p, q2) { return p.y - q2.y; });
+  var ground = natGround(3400, 560, {seed: 95, soil: ["#5e6a34", "#3a4220"], litter: ["#6a7a34", "#7a6a3a", "#5a6a2a", "#8a6a34"], many: 2, pebbles: 30});
+  banks.sort(function (p, q) { return p.y - q.y; });
+  IN_WATER.forEach(function (st, k) { wet.push({sprite: wetStone[k % 6], x: st[0], y: st[1] + st[2] * 0.3, size: st[2] / 130, reach: 0}); });
+  for (n = 0; n < 6; n++) {                         // trees leaning over the stream, their feet in the undergrowth
+    var left = n % 2 === 0, ty = 700 + 40 * n;
+    var tx = BED.mid(ty) + (left ? -1 : 1) * (BED.half(ty) + 300 + 80 * dice(n));
+    trees.push({sprite: broadleafSprite(700 + 200 * dice(n * 3), 601 + n * 5, n % 3 ? THK_GREENS : THK_SUN), x: tx, y: ty, size: 0.6 + 0.12 * n, reach: 0.04});
+    trees.push({sprite: bankBush[n % 4], x: tx - 70, y: ty + 30, size: 0.9 + 0.12 * n, reach: 0.05});   // its foot in the undergrowth
+    trees.push({sprite: bankBush[(n + 1) % 4], x: tx + 80, y: ty + 45, size: 0.8 + 0.12 * n, reach: 0.05});
+    trees.push({sprite: bankBush[(n + 2) % 4], x: tx, y: ty + 60, size: 0.7 + 0.1 * n, reach: 0.05});
+  }
+  trees.sort(function (p, q) { return p.y - q.y; });
+  [[120, 1150, 2], [1800, 1140, 1], [420, 1180, 0]].forEach(function (q2) { near.push({sprite: bankBush[q2[2]], x: q2[0], y: q2[1], size: 1.6, reach: 0.06}); });
+  return [
+    {depth: 0.1, blur: 0.8, haze: 0.2, items: [{sprite: hill.sprite, x: -300, y: 620, reach: 0}]},
+    {depth: 0.4, blur: 0, items: [{sprite: ground, x: -300, y: 545, reach: 0}, {sprite: BED.sprite, x: 0, y: 0, reach: 0}], live: function (t) { streamFlow(t, BED, IN_WATER, 5, "back"); }},
+    {depth: 0.4, blur: 0, items: wet, live: function (t) { streamFlow(t, BED, IN_WATER, 6, "front"); }},
+    {depth: 0.4, blur: 0, items: trees},
+    {depth: 0.4, blur: 0, items: banks},
+    {depth: 1.2, blur: 4, items: near}
+  ];
+}
+function scene(at) {
+  var layers = thkOnce("stream", build);
+  var sky = pen.createLinearGradient(0, 0, 0, 700);
+  sky.addColorStop(0, "#b0c8a8");
+  sky.addColorStop(1, "#e8ecd0");
+  pen.fillStyle = sky;
+  pen.fillRect(0, 0, WIDE, 1080);
+  thkLayers(at, layers, {x: 0, z: 0, y: 0}, "#e4ecd4");
+  thkLight(at, 0.8, 13);
+  thkVignette(0.35);
+}
+var SCENES = [[0, DURATION, scene]];
+function draw(t) { film(t, SCENES); }
+var rendering = false;
+function play(now) { if (!rendering) { draw((now / 1000) % DURATION); } requestAnimationFrame(play); }
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

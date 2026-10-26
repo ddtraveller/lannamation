@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 KIT = ROOT / "kit"
 OUT = ROOT / "docs" / "api.md"
-ORDER = ["oldcartoon.js", "motion.js", "backdrops.js", "pieces.js", "offerings.js", "tools.js", "flora.js", "food.js", "khom.js", "highlands.js", "pinewoods.js",
+ORDER = ["oldcartoon.js", "motion.js", "backdrops.js", "pieces.js", "offerings.js", "tools.js", "flora.js", "food.js", "khom.js", "highlands.js", "pinewoods.js", "wildplaces.js",
          "cumulus.js", "rain.js", "storm.js", "flood.js", "band.js", "sabai.js", "weaving.js", "decorate.js", "naga.js", "dragon.js", "beasts.js", "myth.js", "ogre.js", "night.js",
          "northbirds.js", "lannabirds.js", "taleanimals.js", "forestanimals.js", "mangrai.js", "butterflies.js", "himmaphan.js", "paperdoll.js", "puman.js", "fonlep.js", "apsara.js", "finger_dance.js",
          "dance_track.js"]

@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>summit - from the summit of Doi Luang Chiang Dao, in the morning</title>
+<style>html, body { margin: 0; background: #111; } canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920, pixels: 2, film: 0.3, light: [-0.6, 0.5]};</script>
+<script>var BEAT = 0.5;</script>
+<script src="oldcartoon.js"></script>
+<script src="flora.js"></script>
+<script src="butterflies.js"></script>
+<script src="northbirds.js"></script>
+<script src="thicket.js"></script>
+<script src="pinewoods.js"></script>
+<script src="wildplaces.js"></script>
+<script>
+// The "summit" sheet: wildplaces.js. From the summit, as Doi Luang Chiang Dao (ดอยหลวงเชียงดาว) is on a morning of
+// the cool season: ridge on ridge going pale toward the sun (ridgeLayer(), forestHill()), mist lying in the valleys
+// between (softMist()), the limestone peak backlit with the sun's rays fanning out from behind it (limestonePeak(),
+// natRays()), and where we stand, crags (natRock() with jag) and an old pine in the dry grass. The morning light, the
+// owner's pick of three, 2026-10-26.
+var DURATION = 12;
+var L = {sky: ["#5a8ac8", "#a8c8e4", "#e4ecf0"], sun: [1300, 200, "255, 250, 236"], far: ["#c4d0dc", "#94a8c0", "#b4c2d0"], ridgeNear: "#2a3e44", mist: "250, 252, 255", rim: "255, 250, 236",
+              sea: {lit: "#ffffff", body: "#eef0f2", shade: "#b4bccc"}, peak: {lit: "#d8d4c8", shade: "#5a6a82"}, air: "#e8eef2"};
+function build() {
+  var n, sunSide = L.sun[0] > 960 ? 1 : -1, layers = [];
+  var depths = [0.015, 0.025, 0.035, 0.05, 0.07, 0.1];
+  for (n = 0; n < 6; n++) {                         // ridge on ridge, paler and bluer toward the sun, the near ones in forest
+    var u = n / 5, colour = blend(L.far[0], L.ridgeNear, Math.pow(u, 1.3)), base = [520, 565, 615, 685, 765, 855][n];
+    var item;
+    if (n < 2) {
+      item = ridgeLayer(colour, {tall: [120, 110][n], seed: 3 + n * 5, jag: 0.35, rim: L.rim, deep: 110, foot: L.air});
+    } else {
+      item = forestHill({seed: 30 + n * 7, tall: [110, 100, 90, 80][n - 2], deep: 110, gap: [18, 22, 27, 32][n - 2],
+                         greens: THK_SHADE.map(function (g) { return blend(g, colour, [0.8, 0.6, 0.38, 0.18][n - 2]); }),
+                         sizes: ["small"], pines: 24, pineHigh: [35, 50, 70, 95][n - 2]});
+    }
+    (function (k, bottom) {
+      layers.push({depth: depths[k], blur: [1.4, 1.1, 0.8, 0.6, 0.4, 0.3][k], haze: [0.16, 0.1, 0.07, 0.04, 0.02, 0][k],
+                   items: [{sprite: item.sprite, x: -300, y: bottom, reach: 0}],
+                   live: function (t) { softMist(t, bottom + 6, 60 + 10 * k, 0.75 - 0.06 * k, 5 + k * 3, L.mist); }});
+    })(n, base);
+    if (n === 1) {                                  // the limestone peak stands out of the far ridges, soft in the air
+      layers.push({depth: 0.03, blur: 0.7, haze: 0.08, items: [{sprite: peakSprite(1150, 520, {seed: 7, sun: -sunSide, lit: L.peak.lit, shade: L.peak.shade, forest: 0.22, rim: L.rim}), x: L.sun[0] + sunSide * 120, y: 650, reach: 0}],
+                   live: function (t) { softMist(t, 550, 120, 1, 23, L.mist); softMist(t * 1.3, 575, 90, 0.9, 29, L.mist); }});
+    }
+  }
+  var grass = [];
+  for (n = 0; n < 5; n++) { (function (k) { grass.push(thkSprite(700, 320, 350, 290, function () { grassBank(620, 160 + 40 * dice(k), 91 + k, GRASS_DRY, 6); })); })(n); }
+  var crag = [];
+  for (n = 0; n < 5; n++) { crag.push(rockSprite(240 + 160 * dice(n * 3), 150 + 110 * dice(n * 5), 61 + n, {stone: "#5a5650", jag: 0.6})); }
+  function slopeAt(x) { return 840 + 120 - 160 * Math.max(0, 1 - (x + 150) / 1500) + 10 * Math.sin((x + 150) * 0.01); }
+  var slope = thkSprite(2600, 720, 0, 220, function () {   // the summit's slope, rising to the left, where we stand
+    var g = pen.createLinearGradient(0, -100, 0, 500);
+    g.addColorStop(0, "#9a8448");
+    g.addColorStop(1, "#6a5632");
+    pen.fillStyle = g;
+    pen.beginPath();
+    pen.moveTo(0, 500);
+    for (var x = 0; x <= 2600; x += 20) { pen.lineTo(x, slopeAt(x - 150) - 840 + 30); }
+    pen.lineTo(2600, 500);
+    pen.fill();
+  });
+  var front = [{sprite: slope, x: -150, y: 840, reach: 0}], near = [];
+  [[120, 0], [420, 1], [760, 3], [1640, 2], [1880, 4]].forEach(function (q) { front.push({sprite: crag[q[1]], x: q[0], y: slopeAt(q[0]) + 30, size: 1, reach: 0}); });
+  for (n = 0; n < 14; n++) { var gx = -250 + n * 190 + 60 * dice(n); front.push({sprite: grass[n % 5], x: gx, y: slopeAt(gx) + 40 + 50 * dice(n + 1), size: 0.85 + 0.35 * dice(n + 2), reach: 0.25});
+    front.push({sprite: grass[(n + 2) % 5], x: gx + 95, y: slopeAt(gx + 95) + 110 + 40 * dice(n + 5), size: 0.95 + 0.3 * dice(n + 4), reach: 0.25});
+    front.push({sprite: grass[(n + 4) % 5], x: gx + 40, y: slopeAt(gx + 40) + 200 + 30 * dice(n + 7), size: 1.05 + 0.3 * dice(n + 6), reach: 0.25}); }
+  var pineX = sunSide > 0 ? 300 : 1550; front.push({sprite: pineSprite(620, "old", 71), x: pineX, y: slopeAt(pineX) + 40, size: 1, reach: 0.05});   // an old pine on the summit, against the light
+  front.sort(function (p, q) { return p.y - q.y; });
+  for (n = 0; n < 3; n++) { near.push({sprite: grass[n % 5], x: [-80, 900, 1900][n], y: 1250, size: 1.5, reach: 0.3}); }
+  layers.push({depth: 1, blur: 0, items: front});
+  layers.push({depth: 1.4, blur: 4, items: near});
+  return layers;
+}
+function scene(at) {
+  var layers = thkOnce("summit", build);
+  var sky = pen.createLinearGradient(0, 0, 0, 620);
+  sky.addColorStop(0, L.sky[0]);
+  sky.addColorStop(0.65, L.sky[1]);
+  sky.addColorStop(1, L.sky[2]);
+  pen.fillStyle = sky;
+  pen.fillRect(0, 0, WIDE, 1080);
+  var sun = pen.createRadialGradient(L.sun[0], L.sun[1], 10, L.sun[0], L.sun[1], 900);
+  sun.addColorStop(0, "rgba(" + L.sun[2] + ", 0.95)");
+  sun.addColorStop(0.08, "rgba(" + L.sun[2] + ", 0.6)");
+  sun.addColorStop(1, "rgba(" + L.sun[2] + ", 0)");
+  pen.fillStyle = sun;
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.fillStyle = "rgba(255, 252, 240, 0.95)";      // the sun's disc
+  pen.beginPath();
+  pen.arc(L.sun[0], L.sun[1], 26, 0, 7);
+  pen.fill();
+  thkLayers(at, layers.slice(0, 2), {x: 8 * at, z: 0, y: 0}, L.air);
+  natRays(at, L.sun[0], L.sun[1], 0.7, L.sun[2], 4);   // the rays fan out from behind the peak, which hides them where it stands
+  thkLayers(at, layers.slice(2), {x: 8 * at, z: 0, y: 0}, L.air);
+  thkLight(at, 0.22, 9);
+  thkVignette(0.3);
+}
+var SCENES = [[0, DURATION, scene]];
+function draw(t) { film(t, SCENES); }
+var rendering = false;
+function play(now) { if (!rendering) { draw((now / 1000) % DURATION); } requestAnimationFrame(play); }
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

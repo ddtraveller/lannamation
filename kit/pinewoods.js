@@ -370,14 +370,15 @@ function grassBank(wide, high, seed, greens, plumes) {
   pen.fillStyle = greens[1];                        // the shade at the grass's foot
   pen.beginPath();
   pen.moveTo(-wide / 2, 0);
-  for (n = 0; n <= 40; n++) { pen.lineTo(-wide / 2 + wide * n / 40, -high * (0.35 + 0.2 * dice(seed + n))); }
+  for (n = 0; n <= 40; n++) { pen.lineTo(-wide / 2 + wide * n / 40, -high * (0.35 + 0.2 * dice(seed + n)) * Math.sin(Math.PI * n / 40)); }   // tapering at the ends
   pen.lineTo(wide / 2, 0);
   pen.fill();
   for (r = 0; r < rows; r++) {
     var count = Math.round(wide / 3.2), front = r / (rows - 1);
     for (n = 0; n < count; n++) {
       var k = seed * 17 + r * 1000 + n, x = -wide / 2 + wide * dice(k), y = front * high * 0.12;
-      var tall = high * (0.45 + 0.55 * dice(k + 1)) * (0.8 + 0.2 * (1 - front)), lean = (dice(k + 2) - 0.5) * 0.7 + 0.15;
+      var end = Math.min(1, Math.sin(Math.PI * (x + wide / 2) / wide) * 2.2);   // shorter toward the bank's ends, so banks overlap with no seam
+      var tall = high * (0.45 + 0.55 * dice(k + 1)) * (0.8 + 0.2 * (1 - front)) * (0.35 + 0.65 * end), lean = (dice(k + 2) - 0.5) * 0.7 + 0.15;
       var tipx = x + Math.sin(lean) * tall, tipy = y - Math.cos(lean) * tall;
       var g = pen.createLinearGradient(x, y, tipx, tipy);
       g.addColorStop(0, greens[Math.min(6, 1 + r)]);

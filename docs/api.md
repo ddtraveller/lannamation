@@ -5827,6 +5827,177 @@ there is always mist; where the low sun is behind them (look.sun, its x) they gl
 t: seconds. Returns nothing: it draws with pen.
 ```
 
+## wildplaces.js
+
+wildplaces.js - the wild places of the north for the Lanna cartoon kit, painted as thicket.js and pinewoods.js paint (sprites painted once, in layers a camera moves through, haze in the far ones), read from photographs on Wikimedia Commons: the view from the summit of Doi Luang Chiang Dao in the morning, the tiered limestone falls (Huai Mae Khamin, Bua Tong's sticky falls), the stream of Mae Sa among its boulders, Boon Ko Ku So's bamboo walkway over the paddies at Mae Hong Son and the bamboo rafts of the Pai. Load it after oldcartoon.js, thicket.js and pinewoods.js:  <script src="oldcartoon.js"></script> <script src="thicket.js"></script> <script src="pinewoods.js"></script> <script src="wildplaces.js"></script>  natRock(wide, high, seed, look)         a boulder in planes of light: worn round, or a crag (jag), mossy, wet, stained natGround(wide, high, look)             ground for a layer: soil, fallen leaves, pebbles; a band or a ragged patch natCloud(t, x, y, wide, seed, alpha)    a soft painted cloud of a fine day ridgeLayer(colour, look)                a far ridge against the light, its crest rimmed by the sun limestonePeak(wide, high, look)         a limestone mountain as Doi L
+
+### `natRockOutline(wide, high, seed, jag)`
+
+```
+A stone's outline: a lumpy round, wide by high, its foot's middle at (0, 0) and its foot sunk a little below 0 (the
+ground covers it). Returns the points.
+```
+
+### `natPathOf(pts)`
+
+(no comment)
+
+### `natRock(wide, high, seed, look)`
+
+```
+A stone, its foot's middle at (0, 0), "wide" across and "high" tall, painted in planes as a background painter
+paints one: a lit top plane facing the sun (upper left), the face in middle tone, the side away from the sun and
+the underside in shade, the edges between them soft; specks of grain, lichen on its top, cracks with a lit lip, a
+shadow where it meets the ground and the ground's grit round its foot. look:
+  stone   its colour (a grey granite when left out)
+  moss    0 to 1, how much moss on its top (a forest stream's stones)
+  stain   a mineral crust where hot water has run over it, "r, g, b" (the rust of Pong Dueat: "186, 94, 42"; the
+          white of a sinter: "232, 226, 208"), running down it in streaks from stainUp (0 to 1) of its height
+  wet     0 to 1, the dark of a stone the water runs over, from its foot up, and its shine
+  jag     0 to 1, a crag's top broken into points (the limestone of the summits) instead of a worn round
+seed: a number. Returns nothing: it draws with pen (into a sprite, once).
+```
+
+### `rockSprite(wide, high, seed, look, sharp)`
+
+```
+A stone as a sprite for thicket.js's layers, its point at its foot's middle.
+```
+
+### `natGround(wide, high, look)`
+
+```
+Ground for a layer, as a sprite: "wide" across and "high" deep from a wavy top edge at 0, painted with soil, the
+litter lying on it and small stones, darker toward the foot. look: soil (two colours, top and foot), litter
+(colours of the fallen leaves), many (how many times the usual litter: a dry forest's floor), leafSize (their size,
+1 the usual), pebbles (how many), patch (true: a ragged round patch of it, not a band), seed.
+Returns thkSprite()'s, its point at the top's left end.
+```
+
+### `natCloud(t, x, y, wide, seed, alpha)`
+
+```
+A soft cloud of the dry season's sky, painted, its foot's middle at (x, y), "wide" across: lobes piled higher in
+the middle, the shade of each laid first and its lit top over it a little up and to the sun's side, all of it
+softened as a brush leaves a cloud's edge, its foot flat and greyer. t: seconds (it drifts and breathes); seed: a
+number; alpha: 0 to 1. Returns nothing: it draws with pen.
+```
+
+### `hexRgb(c)`
+
+```
+"#rrggbb" as "r, g, b".
+```
+
+### `ridgeLayer(colour, look)`
+
+```
+A ridge far off, seen against a low sun, as a sprite for a layer: a silhouette "wide" across along its crest
+ridge(x) (pixels above y = 0), filled with "colour" and paler toward its foot where the air lies thick, its crest
+lit by a thin rim where the sun is behind it. look: tall, seed, jag (0 smooth to 1 sharp: limestone), rim ("r, g,
+b"), deep (pixels below 0 it runs on). Returns {sprite, ridge}, the sprite to place at x = -300, y = the base line.
+```
+
+### `limestonePeak(wide, high, look)`
+
+```
+A limestone mountain as Doi Luang Chiang Dao stands, its foot's middle at (0, 0), "wide" across and "high" tall:
+two or three sharp peaks, sheer grey cliffs streaked down by the rain, the faces toward the sun (look.sun: 1 the sun
+to the right, -1 to the left) lit warm and the faces away from it blue in shade, forest clothing its lower shoulders
+(bushes in rows, as forestHill's) up to "forest" of its height. look: seed, sun, lit ("#rrggbb"), shade, greens,
+forest (0 to 1). Returns nothing: it draws with pen (into a sprite, once; see peakSprite).
+```
+
+### `peakSprite(wide, high, look, sharp)`
+
+```
+A limestone mountain as a sprite for a layer, its point at its foot's middle.
+```
+
+### `natRays(t, x, y, strength, colour, seed)`
+
+```
+Rays of a low sun fanning out from behind something (a peak, a ridge) at (x, y): long faint wedges of light,
+turning very slowly, brightest near the sun. t: seconds; strength: 0 to 1; colour "r, g, b"; seed: a number.
+Returns nothing: it draws with pen, in screen light, over what is there.
+```
+
+### `cascadeSteps(count, wide, drop, deep, seed)`
+
+```
+The ledges of a tiered cascade, as the north's limestone falls are (Bua Tong's sticky falls, Mae Kampong): "count"
+steps going down toward us, each a lip of travertine the water pours over, built up by the lime into rounded dams,
+so the lip bulges and dips; each lower one a little wider, the whole wandering left and right. Seen from in front
+and a little above. The top step's lip near (0, 0); "wide" the top's width, "drop" how far one step falls, "deep" how
+deep each pool lies behind its lip. Each step has the streams the water pours in: [[from, to], ...] across it, the
+rest wet rock with only a trickle. Returns [{y, left, right, lip(x), pool, streams}, ...], top first.
+```
+
+### `cascadeRock(steps, drop, seed)`
+
+```
+The rock of a tiered cascade, painted once: under each lip a face of cream and ochre travertine, rounded in bulges
+as the lime builds it, dark and wet where the water runs; its ends buried in moss and ferns; behind each lip its
+pool, turquoise, the bank's light on it. steps: cascadeSteps()'s. Returns nothing: it draws with pen.
+```
+
+### `cascadeFoot(steps, drop, seed)`
+
+```
+The pool at a tiered cascade's foot, its back edge at y (where the lowest fall lands), from left to right: deep
+turquoise, the sky's light on it, its near shore of wet stones. Painted once, after cascadeRock(). Returns nothing.
+```
+
+### `cascadeWater(t, steps, drop, seed)`
+
+```
+The water of a tiered cascade, drawn every frame over its rock: over each stream of each lip a curtain of white
+water, following the lip's bulges, its streaks running down and catching the light; a trickle down the dry rock
+between; a boil of foam at each curtain's foot; ripples going across each pool. t: seconds; steps:
+cascadeSteps()'s; drop: as given to it; seed: a number. Returns nothing: it draws with pen.
+```
+
+### `streamBed(look)`
+
+```
+A stream's bed, coming toward us out of the forest as Mae Sa's does: its middle wanders from side to side, it
+widens as it comes near (from "far" pixels wide at y = top to "near" at the foot of the sheet), its water brown-green
+and clear at the edges, darker in its runs, the far reaches paler in the air. look: top, far, near, seed, water
+(three colours: deep, middle, shallow edge). Returns {sprite, mid(y), half(y), top}: the sprite to place at (0, 0) of
+the layer, the stream's middle and half its width at a height.
+```
+
+### `streamFlow(t, bed, stones, seed, part)`
+
+```
+The stream's water moving, drawn every frame over its bed: ripples of light drifting toward us down the runs, wider
+as they come near; at each stone in the water (stones: [[x, y, wide], ...]) a white pillow of water heaped against
+its upstream side (part "back", drawn before the stones, which hide its foot) and a tail of white water and bubbles
+below it (part "front", drawn after them). t: seconds; bed: streamBed()'s. Returns nothing: it draws with pen.
+```
+
+### `bambooWalk(points, look)`
+
+```
+A walkway of bamboo as the north builds them over paddies and rivers (Boon Ko Ku So at Mae Hong Son, the Pai's
+bridges): a deck of split bamboo woven into mats, laid on cross poles, on posts of whole bamboo driven into the
+mud, a pole along each edge and a thin rail on the posts, the whole sagging a little between posts and going off
+along "points" ([[x, y, wide], ...], far to near: the deck's middle and its width there). look:
+  post   how far the posts go down below the deck, at a width of 100 (they are cut by what is drawn after)
+  rail   true for the rails on the posts
+  old    0 to 1, how grey and broken the mats are
+Returns nothing: it draws with pen.
+```
+
+### `bambooRaft(x, y, size, t, facing)`
+
+```
+A raft of bamboo as the north poles them on its lakes and rivers: a dozen whole bamboos lashed side by side with
+cross poles and rattan, its bow raised a little, seen from the side and a little above, its middle at (x, y) on the
+water, "size" 1 about 360 long; it rocks and rides the ripples, and the water laps along it. facing: 1 the bow to
+the right. t: seconds. Returns the raft's deck at its middle, [x, y], for a person to stand on. It draws with pen.
+```
+
 ## cumulus.js
 
 Cumulus for the Lanna cartoon kit: puffy clouds that drift, with depth, drawn as the old cartoons drew them: flat colour in three tones inside a line round the outside of each cloud, and a few lines inside it where one puff rounds over another. (The kit's own clouds() paints the flat scroll clouds of the murals; this is the other kind.)  Each cloud is a pile of discs on a flat base, taller in the middle. Each puff is one of three flat tones by how high it sits, lit on top and in shade below (at dusk the light comes from below), and a little lighter toward the sun's side. The line round the outside is drawn as the kit draws a hose: every disc first in ink and a little larger, then every disc in its tone, so only the outer edge of the pile keeps its ink. The inner lines are the lower arcs of every third puff, stroked in ink and kept inside the pile. A cloud is drawn whole and opaque on a sheet of its own and then laid on the sky at one transparency, so its puffs do not show through each other. Each cloud sits at a depth, 1 near to 0.3 far, that sets its size, how fast it crosses the sky, how low it hangs toward the horizon, how much it fades into the distance, and how fine its line i

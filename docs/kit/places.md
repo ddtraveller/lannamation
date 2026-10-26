@@ -893,3 +893,28 @@ them, and "more variety to the way the trees look".
 
 Sheets: `pinewoods.html`, `pinelake.html` (the gold light, the owner's pick). A frame of the lake takes a few seconds
 to render (the mirror and the mist are drawn every frame).
+
+## The wild places: the summit, a cascade, a stream, bamboo over the paddies and the river (2026-10-26)
+
+`wildplaces.js`, beside the kit, after `thicket.js` and `pinewoods.js`: more of the north's wild places, painted the same
+way, from photographs on Wikimedia Commons of Doi Luang Chiang Dao, Huai Mae Khamin and Bua Tong's falls, Mae Sa, Boon
+Ko Ku So and the Pai. The owner's picks: the summit in the morning light; the cascade ("be careful the base of trees
+stand on solid ground. Probably better to add bushes in front of them"), the stream, the walkway and the raft.
+
+| Painter | What it is |
+|---|---|
+| `natRock(wide, high, seed, look)`, `rockSprite(...)` | a boulder in planes of light (a lit top, a face, a shaded side), its grain, cracks and lichen; `jag` for a crag, `moss`, `wet`, `stain` (a mineral crust) |
+| `natGround(wide, high, look)` | ground for a layer: soil, fallen leaves lying flat, pebbles; `patch` for a ragged round |
+| `natCloud(t, x, y, wide, seed, alpha)` | a soft painted cloud, lit on top |
+| `ridgeLayer(colour, look)` | a far ridge against the light, its crest rimmed by the sun; gives back `{sprite, ridge}` |
+| `limestonePeak(wide, high, look)`, `peakSprite(...)` | a limestone mountain, its faces lit as they turn to the sun, or backlit with a rim (`look.rim`), forest on its shoulders |
+| `natRays(t, x, y, strength, colour, seed)` | the rays of a low sun fanning out from behind a peak |
+| `cascadeSteps(...)`, `cascadeRock(...)`, `cascadeFoot(...)`, `cascadeWater(t, ...)` | a tiered cascade: travertine lips that bulge and tilt, the water in streams over each into a turquoise pool, the last into the pool at its foot |
+| `streamBed(look)`, `streamFlow(t, bed, stones, seed, part)` | a stream coming toward us; foam heaped behind each stone (`part` `"back"`, before the stones) and trailing below it (`"front"`, after) |
+| `bambooWalk(points, look)` | a woven bamboo walkway on posts along a line of `[x, y, wide]` points, with rails |
+| `bambooRaft(x, y, size, t, facing)` | a raft of lashed bamboo rocking on the water; gives back its deck's middle for a person to stand on |
+
+Sheets: `summit.html`, `cascade.html`, `stream.html`, `bamboowalk.html`, `bambooraft.html`. A thing held in two hands
+(the raft's pole) is drawn through the joints `person()` gives back, and those come back in device pixels: on a sheet
+at `pixels: 2` divide them by `PIX`. `grassBank()` (pinewoods.js) now tapers at its ends, so banks laid side by side
+show no seam.
