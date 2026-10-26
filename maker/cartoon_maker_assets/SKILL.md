@@ -185,6 +185,34 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   dress), `apsara` (the celestial dancer of the Central Thai stage, not Lanna)
   and `puman` (the whisperer of the Wat Phumin mural). They walk, pose and
   feel as the others do.
+- Three more people: `luagirl`, `luawife` and `luaman`, the Lua (Lawa) of the
+  hills in their own dress.
+- More birds and animals (2026-10-26). A bird flies while its course is up off
+  the ground (above y 860) and walks or perches on it: `crow`, `whitecrow` (the
+  white crow of the Lanna tale, shining), `dove` (it nods as it walks and coos
+  when it stops), `kingfisher` and `commonkf` (perched they watch the water),
+  `parakeet` and `blossomparakeet` (perched they eat a fig), `myna`; `crownest`
+  (five eggs, high in a tree). On the ground: `toad` and `ricefrog` (they hop and
+  call), `beetle` and `femalebeetle`, `kwangfight` (two beetles on the fighting
+  log, one key), `goldturtle` and `turtle`, `barkingdeer`, `whitedeer` and
+  `whitefawn`, `whitemice` (a white mouse and four young behind her), `sambar`,
+  `whitesambar`, `banteng`, `goral`, `bamboorat`. `loris` creeps along a branch;
+  `gibbon` and `darkgibbon` hang from their key (a branch), swing arm over arm
+  while the course moves and sit and sing when it stops. In water: `catfish`
+  and `whiteeel` (its key its head on the surface). Butterflies: `birdwing`,
+  `lacewing`, `bluebottle`, `grassyellow` (they sit, wings opening, when the
+  course stops). `ridinghorse`, `lannahorse` and `royalhorse` are horses dressed
+  to be ridden.
+- The ogres of the tales walk as people do, giants: `ogremural` (the temple
+  gate's guardian alive), `ogreforest`, `ogreking`. The set piece `yakleft` is
+  the gate's guardian statue facing the other way, for a pair at a gate.
+- Weather: `rain` over the whole picture (its key's y the cloud's underside, its
+  size how hard: 2 is the monsoon), `lightning` (a stroke down from its point
+  every five seconds), `flood` (water over all below its key's y). `loom` and
+  `wheel` are a woman weaving and a woman spinning. Lanna's rites: `malai` (a
+  jasmine garland hanging from its key), `saisin` (the white thread, strung 600
+  wide from its key), `swaidok` (a flower cone, its key its point), `khandok`
+  (a footed bowl of flowers).
 - The flowers and fruits of Thailand (the vocabulary lists them: mango,
   durian, longan, orchid, marigold ...) are things that stand on the ground;
   a name ending in `Tree` (`longanTree`, `ratchaphruekTree` ...) is that tree

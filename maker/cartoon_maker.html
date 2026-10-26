@@ -383,6 +383,17 @@
 <script src="../kit/apsara.js"></script>
 <script src="../kit/puman.js"></script>
 <script src="../kit/finger_dance.js"></script>
+<script src="../kit/lannabirds.js"></script>
+<script src="../kit/taleanimals.js"></script>
+<script src="../kit/forestanimals.js"></script>
+<script src="../kit/butterflies.js"></script>
+<script src="../kit/mangrai.js"></script>
+<script src="../kit/rain.js"></script>
+<script src="../kit/storm.js"></script>
+<script src="../kit/flood.js"></script>
+<script src="../kit/ogre.js"></script>
+<script src="../kit/weaving.js"></script>
+<script src="../kit/offerings.js"></script>
 <script>
 // ---------- what the palette offers ----------
 // Each entry: the kit's name, and what a child sees. The kit draws every one of
@@ -399,7 +410,10 @@ var CASTS = [["boy", "👦 เด็กชาย"], ["girl", "👧 เด็ก�
              // Siamese stage (Central Thai, not Lanna), and the pu man, the whisperer of the Wat Phumin mural
              ["fonlep", "💅 ช่างฟ้อนเล็บ"], ["apsara", "✨ นางอัปสร"], ["puman", "🗣️ ปู่ม่าน"],
              // six people with faces of the north (the kit's look.north, drawn from a photograph of about 1909), named as the north names people
-             ["inta", "👨 อินตา"], ["khammun", "👨 คำมูล"], ["buakham", "👩 บัวคำ"], ["sinuan", "👩 ศรีนวล"], ["bunma", "👦 บุญมา"], ["dokkham", "👧 ดอกคำ"]];
+             ["inta", "👨 อินตา"], ["khammun", "👨 คำมูล"], ["buakham", "👩 บัวคำ"], ["sinuan", "👩 ศรีนวล"], ["bunma", "👦 บุญมา"], ["dokkham", "👧 ดอกคำ"],
+             // the Lua (Lawa) of the hills, in their own dress (oldcartoon.js, 2026-10-25): a girl and a woman in the black
+             // sin with its woven bands and their beads, and a man in white with a pink head-cloth
+             ["luagirl", "👧 สาวลัวะ"], ["luawife", "👩 แม่ลัวะ"], ["luaman", "👨 พ่อลัวะ"]];
 // The old of the cast. Four are the kit's own old people, who have white or grey hair, the lines of age and a stoop
 // as the kit draws them: an elder with a beard and a stick, a small bent grandmother, an old farmer under his hat,
 // and an old woman in white for the temple. The fifth is the kit's weaver, a grown woman with black hair: here she is
@@ -451,8 +465,40 @@ var THINGS = [["dog", "🐕 หมา"], ["rooster", "🐓 ไก่"], ["naga",
               ["forge", "⚒️ เตาตีเหล็ก"], ["firegun", "🧨 ปืนไฟ"], ["goldpan", "🥘 ถาดร่อนคำ"], ["cradle", "🛏️ อู่"],
               ["risingwall", "🧱 กำแพงพระอินทร์"], ["statuepool", "⛲ น้ำพุช้างงู"],
               // pieces.js: a nugget of gold that twinkles; highlands.js: a band of mist
-              ["nugget", "🪙 ก้อนคำ"], ["mist", "🌫️ หมอก"]];
+              ["nugget", "🪙 ก้อนคำ"], ["mist", "🌫️ หมอก"],
+              // lannabirds.js: the crow, and the white crow, the mother of the five Buddhas, shining (owner, 2026-10-26: "With
+              // her halo"); her nest of five eggs in a fig's fork; the spotted dove; the white-throated and the common
+              // kingfisher; the red-breasted and the blossom-headed parakeet
+              ["crow", "🐦‍⬛ กา"], ["whitecrow", "🕊️ กาเผือก"], ["crownest", "🪺 รังกา"], ["dove", "🕊️ นกเขาใหญ่"],
+              ["kingfisher", "🐦 นกกระเต็นอกขาว"], ["commonkf", "🐦 นกกระเต็นน้อย"], ["parakeet", "🦜 นกแขกเต้า"], ["blossomparakeet", "🦜 นกแก้วหัวแพร"],
+              // taleanimals.js: the toad and the rice-field frog, the rhinoceros beetle (the champion, the hornless female) and
+              // two fighting on the log, the golden turtle and a plain one, the barking deer and the white ones of Chiang
+              // Mai's signs (a doe, a fawn), the white mouse and her four young
+              ["toad", "🐸 คันคาก"], ["ricefrog", "🐸 กบนา"], ["beetle", "🪲 กว่าง"], ["femalebeetle", "🪲 แม่อี่หลุ้ม"], ["kwangfight", "🪲 ชนกว่าง"],
+              ["goldturtle", "🐢 เต่าอองคำ"], ["turtle", "🐢 เต่า"], ["barkingdeer", "🦌 ฟาน"], ["whitedeer", "🦌 ฟานเผือก"],
+              ["whitefawn", "🦌 ลูกฟานเผือก"], ["whitemice", "🐁 หนูเผือกแม่ลูก"],
+              // forestanimals.js: the slow loris, the gibbon (buff, and dark), the goral of the cliffs, the giant catfish
+              ["loris", "🐒 ลิงลม"], ["gibbon", "🐒 ชะนี"], ["darkgibbon", "🐒 ชะนีดำ"], ["goral", "🐐 กวางผา"], ["catfish", "🐟 ปลาบึก"],
+              // butterflies.js: four butterflies of the north
+              ["birdwing", "🦋 ผีเสื้อถุงทอง"], ["lacewing", "🦋 ผีเสื้อลายเสือ"], ["bluebottle", "🦋 ผีเสื้อหางติ่ง"], ["grassyellow", "🦋 ผีเสื้อเหลือง"],
+              // mangrai.js: the sambar and the white sambar of Chiang Mai's first sign, the hill myna, the banteng, the bamboo rat
+              ["sambar", "🦌 กวางป่า"], ["whitesambar", "🦌 กวางเผือก"], ["myna", "🐦‍⬛ นกขุนทอง"], ["banteng", "🐂 วัวแดง"], ["bamboorat", "🐀 ตุ่น"],
+              // chiangsaen.js: the giant white eel of Wiang Nong Lom, swimming at the surface
+              ["whiteeel", "🐍 ปลาไหลเผือก"],
+              // beasts.js: a horse dressed to be ridden: a village horse, a Lanna horse, a royal horse
+              ["ridinghorse", "🐎 ม้าขี่"], ["lannahorse", "🐎 ม้าล้านนา"], ["royalhorse", "🐎 ม้าทรง"],
+              // ogre.js: the ogres of the tales, alive (owner, 2026-10-26: "You can add the ogres and temple guardians too"):
+              // the temple gate's guardian of the murals, a forest ogre, an ogre king
+              ["ogremural", "👹 ยักษ์ทวารบาล"], ["ogreforest", "👹 ยักษ์ป่า"], ["ogreking", "👹 พญายักษ์"],
+              // rain.js, storm.js, flood.js: rain (its size, how hard), a stroke of lightning every five seconds, a flood's water
+              ["rain", "🌧️ ฝนตก"], ["lightning", "⚡ ฟ้าผ่า"], ["flood", "🌊 น้ำท่วม"],
+              // weaving.js: a woman weaving at the frame loom, a woman spinning at the wheel
+              ["loom", "🧵 ทอผ้า"], ["wheel", "🧶 ปั่นฝ้าย"],
+              // offerings.js: the things of Lanna's rites (owner, 2026-10-26: all four): the jasmine garland, the white thread
+              // strung on its course's line, the flower cone and the footed bowl of flowers
+              ["malai", "💮 พวงมาลัย"], ["saisin", "🧵 สายสิญจน์"], ["swaidok", "💐 สวยดอก"], ["khandok", "🏵️ ขันดอก"]];
 var PIECES = [["house", "🏠 บ้าน"], ["tree", "🌳 ต้นไม้"], ["palm", "🌴 มะพร้าว"], ["banana", "🍌 กล้วย"], ["temple", "🛕 วัด"], ["yak", "👹 ยักษ์"],
+              ["yakleft", "👹 ยักษ์ (หันซ้าย)"],   // the temple gate's other guardian, facing the first (oldcartoon.js yak(), facing -1)
               ["namton", "🏺 น้ำต้น"], ["tung", "🎏 ตุง"], ["drumcart", "🥁 กลองหลวง"],   // pieces.js: the water jar at the gate, a tung with a hong on its pole, the great drum on its cart
               ["longkhao", "🛖 หลองข้าว"], ["sawian", "🧺 เสวียน"],                        // pieces.js: the rice granary on its posts, with its baskets, and a basket alone
               // pieces.js: the small hut of a poor family; a pen of bamboo; a hall of a Lanna palace (ho kham), a peacock
@@ -532,7 +578,12 @@ var FEELING_THINGS = {dog: true, rooster: true, naga: true, dragon: true, mom: t
                       peafowl: true, pheasant: true, sunbird: true, magpie: true, hornbill: true,
                       hen: true, blackrooster: true, blackhen: true,   // the rooster's feelings, the hens' too
                       whiteelephant: true,                             // the white elephant is the kit's elephant
-                      buffalo: true};
+                      buffalo: true,
+                      // the animals of 2026-10-26 whose drawing takes a feeling (creatureFeel()), the riding horses, the ogres
+                      crow: true, whitecrow: true, dove: true, kingfisher: true, commonkf: true, parakeet: true, blossomparakeet: true,
+                      toad: true, ricefrog: true, goldturtle: true, turtle: true, barkingdeer: true, whitedeer: true, whitefawn: true,
+                      loris: true, gibbon: true, darkgibbon: true, goral: true, ridinghorse: true, lannahorse: true, royalhorse: true,
+                      ogremural: true, ogreforest: true, ogreking: true};
 // Whether an item has feelings: a person, or a thing named in FEELING_THINGS. Returns true or false.
 // e.g. feels({kind: "thing", name: "dog"}) is true
 function feels(item) { return item.kind === "person" || (item.kind === "thing" && !!FEELING_THINGS[item.name]); }
@@ -851,7 +902,7 @@ function num(v) { return String(Math.round(v * 100) / 100); }
 function pieceCode(item) {
   var x = Math.round(item.keys[0][1]), base = Math.round(item.keys[0][2]), s = scaleOf(item);
   var calls = {house: "house(brush, X, Y, 1)", tree: "tree(brush, X, Y, 1.1)", palm: "palm(brush, X, Y, 400)",
-               banana: "banana(brush, X, Y)", temple: "temple(brush, X, Y)", yak: "yak(brush, X, Y, 1)",
+               banana: "banana(brush, X, Y)", temple: "temple(brush, X, Y)", yak: "yak(brush, X, Y, 1)", yakleft: "yak(brush, X, Y, -1)",
                namton: "namton(brush, X, Y, 1)", drumcart: "drumCart(brush, X, Y, 0.7, 1)",
                longkhao: "longKhao(brush, X, Y, 1)", sawian: "sawian(brush, X, Y, 1.2)",
                tub: "tub(brush, X, Y, 2.2)", gong: "gong(brush, X, Y, 1.1)",
@@ -1085,7 +1136,62 @@ function thingCode(item, n, sc) {
                statuepool: "statuePool(pen, P[0], P[1], " + num(1.0 * s) + ", t)",
                // pieces.js: the nugget twinkles; highlands.js: the mist swells as it goes
                nugget: "goldNugget(pen, P[0], P[1], " + num(2.5 * s) + ", t, {seed: " + item.id + "})",
-               mist: "mistBand(pen, P[0], P[1], " + Math.round(600 * s) + ", t, {seed: " + item.id + "})"};
+               mist: "mistBand(pen, P[0], P[1], " + Math.round(600 * s) + ", t, {seed: " + item.id + "})",
+               // lannabirds.js: each at its own size beside the people at size 1. The crows walk while their course moves on
+               // the ground and fly when it goes up off it (a key above y 860); they peck when they stop. The white crow shines.
+               crow: crowCode("black", s, item, felt), whitecrow: crowCode("white", s, item, felt),
+               crownest: "crowNest(P[0], P[1], t, {size: " + num(1.5 * s) + ", eggs: 5, wind: 0.2, tree: false})",   // set in a tree piece; the fig's fork of the kit's own drawing left off
+               dove: "spottedDove(P[0], P[1], t, {size: " + num(s) + ", face: P[3], seed: " + item.id + ", fly: P[2] && P[1] < 860 || undefined, step: P[2] && P[1] >= 860 ? P[6] / " + num(22 * s) + " : undefined, peck: P[2] ? 0 : Math.max(0, Math.sin(t * 2.1)), coo: P[2] ? 0 : Math.max(0, Math.sin(t * 0.7 + 1))" + felt + "})",
+               // the kingfishers fly while their course moves and, perched, watch the water and call now and then
+               kingfisher: kfCode("whitethroat", s, item, felt), commonkf: kfCode("common", s, item, felt),
+               parakeet: parakeetCode("redbreast", s, item, felt), blossomparakeet: parakeetCode("blossom", s, item, felt),
+               // taleanimals.js: the toad hops along its course and calls while it sits; the beetle walks; two fight on the log
+               toad: "toad(P[0], P[1], t, {size: " + num(s) + ", face: P[3], seed: " + item.id + ", hop: P[2] ? P[6] / " + num(30 * s) + " : undefined, call: P[2] ? 0 : Math.max(0, Math.sin(t * 0.8))" + felt + "})",
+               ricefrog: "toad(P[0], P[1], t, {size: " + num(s) + ", face: P[3], seed: " + item.id + ", kind: \"frog\", hop: P[2] ? P[6] / " + num(30 * s) + " : undefined, call: P[2] ? 0 : Math.max(0, Math.sin(t * 0.8))" + felt + "})",
+               beetle: "rhinoBeetle(P[0], P[1], t, {size: " + num(s) + ", face: P[3], seed: " + item.id + ", thread: true, step: P[2] ? P[6] / " + num(10 * s) + " : undefined, lift: P[2] ? 0 : Math.max(0, Math.sin(t * 1.3))})",
+               femalebeetle: "rhinoBeetle(P[0], P[1], t, {size: " + num(s) + ", face: P[3], kind: \"female\", step: P[2] ? P[6] / " + num(10 * s) + " : undefined})",
+               kwangfight: "kwangFight(P[0], P[1], t, {size: " + num(s) + ", seed: " + item.id + "})",
+               goldturtle: "goldTurtle(P[0], P[1], t, {size: " + num(s) + ", face: P[3], seed: " + item.id + ", step: P[2] ? P[6] / " + num(40 * s) + " : undefined" + felt + "})",
+               turtle: "goldTurtle(P[0], P[1], t, {size: " + num(s) + ", face: P[3], seed: " + item.id + ", gold: 0, step: P[2] ? P[6] / " + num(40 * s) + " : undefined" + felt + "})",
+               barkingdeer: "barkingDeer(P[0], P[1], t, {size: " + num(s) + ", face: P[3], seed: " + item.id + ", buck: true, step: " + stepCode("deer", s) + ", graze: P[2] ? 0 : Math.max(0, Math.sin(t * 0.4))" + felt + "})",
+               whitedeer: "barkingDeer(P[0], P[1], t, {size: " + num(s) + ", face: P[3], seed: " + item.id + ", white: true, step: " + stepCode("deer", s) + ", alert: P[2] ? 0 : Math.max(0, Math.sin(t * 0.5))" + felt + "})",
+               whitefawn: "barkingDeer(P[0], P[1], t, {size: " + num(s) + ", face: P[3], seed: " + item.id + ", white: true, fawn: true, step: " + stepCode("deer", 0.55 * s) + felt + "})",
+               whitemice: "whiteMice(P[0], P[1], t, {size: " + num(1.1 * s) + ", face: P[3], seed: " + item.id + ", along: P[2] ? P[6] / " + num(24 * 1.1 * s) + " : undefined})",
+               // forestanimals.js: the loris creeps along its course; the gibbon swings arm over arm while its course moves
+               // (its key is the branch it hangs from) and sits when it stops; the goral walks; the catfish swims
+               loris: "slowLoris(P[0], P[1], t, {size: " + num(s) + ", face: P[3], seed: " + item.id + ", creep: P[2] ? P[6] / " + num(40 * s) + " : undefined, look: P[2] ? 0 : 1" + felt + "})",
+               gibbon: gibbonCode(false, s, item, felt), darkgibbon: gibbonCode(true, s, item, felt),
+               goral: "goral(P[0], P[1], t, {size: " + num(s) + ", face: P[3], seed: " + item.id + ", step: " + stepCode("goral", 1.15 * s) + ", graze: P[2] ? 0 : Math.max(0, Math.sin(t * 0.4))" + felt + "})",
+               catfish: "giantCatfish(P[0], P[1], t, {size: " + num(0.6 * s) + ", face: P[3], seed: " + item.id + "})",
+               // butterflies.js: each flies its course, its head turned the way it goes, and sits with its wings opening
+               // and closing when the course stops
+               birdwing: butterflyCode("birdwing", s, item), lacewing: butterflyCode("lacewing", s, item),
+               bluebottle: butterflyCode("bluebottle", s, item), grassyellow: butterflyCode("grassyellow", s, item),
+               // mangrai.js
+               sambar: "sambar(P[0], P[1], t, {size: " + num(s) + ", face: P[3], seed: " + item.id + ", step: P[2] ? P[6] / " + num(160 * s) + " : undefined, graze: P[2] ? 0 : Math.max(0, Math.sin(t * 0.4))})",
+               whitesambar: "sambar(P[0], P[1], t, {size: " + num(s) + ", face: P[3], seed: " + item.id + ", white: true, step: P[2] ? P[6] / " + num(160 * s) + " : undefined})",
+               myna: "hillMyna(P[0], P[1], t, {size: " + num(s) + ", face: P[3], step: P[2] && P[1] >= 860 ? P[6] / " + num(18 * s) + " : undefined, flap: P[2] && P[1] < 860 ? 1 : 0})",
+               banteng: "banteng(P[0], P[1], t, {size: " + num(s) + ", face: P[3], step: P[2] ? P[6] / " + num(150 * s) + " : undefined})",
+               bamboorat: "bambooRat(P[0], P[1], t, {size: " + num(s) + ", face: P[3], dig: P[2] ? 0 : Math.max(0, Math.sin(t * 1.1))})",
+               // chiangsaen.js: the eel's key is its head and its y the water's surface, as the river snakes'
+               whiteeel: "whiteEel(P[0], P[1], t, {size: " + num(0.5 * s) + ", face: P[3]})",
+               // beasts.js: the riding horse walks as the pack horse does, dressed in its tack
+               ridinghorse: horseCode("village", s, felt, tints), lannahorse: horseCode("lanna", s, felt, tints), royalhorse: horseCode("royal", s, felt, tints),
+               // ogre.js: an ogre walks as a person does, a giant's size
+               ogremural: ogreCode("mural", s, item, felt), ogreforest: ogreCode("forest", s, item, felt), ogreking: ogreCode("king", s, item, felt),
+               // rain.js: over the whole picture; its key's y is the cloud's underside, its size how hard it rains (1.2 a
+               // steady rain, 2 the monsoon). storm.js: a stroke every five seconds from its first key, down from its point
+               rain: "rain(pen, t, {heavy: " + num(Math.max(0, Math.min(1, (s * 1.2 - 0.5) / 1.5))) + ", cloud: P[1], seed: " + item.id + "})",
+               lightning: "lightning(pen, t, {at: " + item.keys[0][0] + " + Math.floor((t - " + item.keys[0][0] + ") / 5) * 5, x: P[0], top: P[1], ground: 960, seed: " + item.id + " + Math.floor(t / 5)})",
+               // flood.js: the water over everything below its key's y, what stands above it mirrored in it
+               flood: "flood(pen, t, {level: P[1], floating: true})",
+               // weaving.js: each sits at her work where she is put
+               loom: "frameLoom(pen, P[0], P[1], " + num(s) + ", t)", wheel: "spinningWheel(pen, P[0], P[1], " + num(s) + ", t)",
+               // offerings.js: the garland hangs from its key; the thread runs from its key 600 pixels across, sagging; the
+               // cone's key is its point; the bowl stands on its key
+               malai: "malai(pen, P[0], P[1], " + num(1.4 * s) + ", t)",
+               saisin: "saiSinLine(pen, [[P[0] - " + Math.round(300 * s) + ", P[1]], [P[0], P[1] + " + Math.round(40 * s) + "], [P[0] + " + Math.round(300 * s) + ", P[1]]], t)",
+               swaidok: "swaiDok(pen, P[0], P[1], " + num(1.4 * s) + ", t)", khandok: "khanDok(pen, P[0], P[1], " + num(1.2 * s) + ", t)"};
   // food.js: a dish, steaming, on where it is put
   if (window.FOODS && FOODS[item.name]) { calls[item.name] = "food(" + js(item.name) + ", P[0], P[1], {size: " + num(2.2 * s) + ", steam: true})"; }
   // "P[" is this item's place: p0[, p1[ ... (only "P[": names such as khomPhat keep their capital P)
@@ -1223,7 +1329,7 @@ function filmCode() {
         lines.push("  var p" + n + " = where(" + keysCode(item) + ", t);");
         var call = item.kind === "person" ? personCode(item, n) : thingCode(item, n, sc), p = "p" + n;
         // its kind's band (the kit's Z_KINDS); one that can be anywhere, given no z, among the people by its height
-        var kind = item.kind === "person" ? "person" : item.name, z = item.z !== undefined ? item.z : Z_KINDS[kind] === null ? "people" : undefined;
+        var kind = item.kind === "person" ? "person" : item.name, z = item.z !== undefined ? item.z : MAKER_Z[kind] || (Z_KINDS[kind] === null ? "people" : undefined);
         lines.push("  who.push({kind: " + js(kind) + (z !== undefined ? ", z: " + js(z) : "") + ", y: " + p + "[1]" + (item.name === "dragon" ? ", depth: " + p + "[4]" : "") +
                    ", draw: function () { " + (talking ? "heads[" + n + "] = " : "") + call + "; }});");
       });
@@ -1500,14 +1606,66 @@ function reach(item) {                  // how far from its foot point a click s
         : item.name === "whiteelephant" ? {up: 340, side: 220} : {up: 120, side: 120});
   return {up: r.up * s, side: r.side * s, down: r.down ? r.down * s : undefined};
 }
+// The code of the new animals' longer calls (2026-10-26), each for thingCode: s the item's scale, felt its feeling's
+// code (", feel: ..." or ""). A crow ("black" or "white"): it walks its course on the ground and flies when its course
+// is up off the ground (a point above y 860); standing it pecks and now and then caws; the white crow shines.
+// e.g. crowCode("white", 1, item, "")
+function crowCode(colour, s, item, felt) {
+  return "whiteCrow(P[0], P[1], t, {colour: " + js(colour) + ", size: " + num(s) + ", face: P[3], seed: " + item.id +
+         ", fly: P[2] && P[1] < 860 || undefined, step: P[2] && P[1] >= 860 ? P[6] / " + num(30 * s) + " : undefined" +
+         ", peck: P[2] ? 0 : Math.max(0, Math.sin(t * 1.4)), caw: P[2] ? 0 : Math.max(0, Math.sin(t * 0.6 + 2))" +
+         (colour === "white" ? ", glow: 0.6" : "") + felt + "})";
+}
+// A kingfisher ("whitethroat" or "common"): it flies while its course moves; perched it watches and calls.
+function kfCode(kind, s, item, felt) {
+  return "kingfisher(P[0], P[1], t, {kind: " + js(kind) + ", size: " + num(s) + ", face: P[3], seed: " + item.id +
+         ", fly: !!P[2] || undefined, watch: P[2] ? 0 : 0.5 + 0.5 * Math.sin(t * 0.5), call: P[2] ? 0 : Math.max(0, Math.sin(t * 0.9 + 1)) * 0.8" + felt + "})";
+}
+// A parakeet ("redbreast" or "blossom"): it flies while its course moves; perched it eats a fig from its foot.
+function parakeetCode(kind, s, item, felt) {
+  return "parakeet(P[0], P[1], t, {kind: " + js(kind) + ", hen: " + (item.id % 2 === 0) + ", size: " + num(s) + ", face: P[3], seed: " + item.id +
+         ", fly: !!P[2] || undefined, eat: P[2] ? 0 : 1" + felt + "})";
+}
+// A gibbon (dark: the dark one): while its course moves it swings arm over arm from its key, the branch it hangs
+// from (gibbon() travels by its own swings, so it is given where it set off); stopped, it sits and sings.
+function gibbonCode(dark, s, item, felt) {
+  var span = Math.round(120 * s);
+  return "(P[2] ? gibbon(P[0] - P[3] * P[6], P[1], t, {size: " + num(s) + ", face: P[3], dark: " + dark + ", swing: P[6] / " + span + felt + "})" +
+         " : gibbon(P[0], P[1], t, {size: " + num(s) + ", face: P[3], dark: " + dark + ", sing: Math.max(0, Math.sin(t * 0.5))" + felt + "}))";
+}
+// A butterfly of butterflies.js: flying its course, its head the way it goes; at rest where the course stops.
+function butterflyCode(kind, s, item) {
+  return "butterfly(" + js(kind) + ", P[0], P[1], t, {size: " + num(s) + ", seed: " + item.id + ", rest: !P[2] || undefined, turn: P[3] * Math.PI / 2 + 0.25 * Math.sin(t * 2.6)})";
+}
+// A horse dressed to be ridden (tack "village", "lanna" or "royal"), walking as the pack horse does.
+function horseCode(tack, s, felt, tints) {
+  return "horse(P[0], P[1], {size: " + num(0.75 * s) + ", face: P[3], tack: " + js(tack) + ", step: P[2] ? P[6] / " + Math.round(GAITS.horse[1] / 0.62 * GAITS.horse[0] * 0.75 * s) + " : undefined" + felt + tints + "})";
+}
+// An ogre of ogre.js ("mural", "forest", "king"): a person's body at a giant's size, walking as a person does.
+function ogreCode(kind, s, item, felt) {
+  var size = 1.75 * s;
+  return "ogre(P[0], P[1], t, {kind: " + js(kind) + ", size: " + num(size) + ", face: P[3], late: " + (item.id % 5 * 0.2).toFixed(1) +
+         ", step: P[2] ? P[6] / " + num(112 * size) + " : 0, id: " + js("o" + item.id) + felt + "})";
+}
+
 // The reach of the wide set pieces and of what is drawn about its middle, not standing on its point
+// The things this page draws in a band of their own unless told: the rain and the lightning over everything, the
+// flood's water in front of the people (who stand in it up to its key's y)
+var MAKER_Z = {rain: "near", lightning: "near", flood: "front"};
 var REACHES = {citywall: {up: 260, side: 600}, terraces: {up: 380, side: 550}, forest: {up: 320, side: 600}, linkham: {up: 80, side: 300},
                sandbar: {up: 60, side: 350}, reeds: {up: 220, side: 300}, karst: {up: 440, side: 300}, risingwall: {up: 360, side: 350},
                statuepool: {up: 260, side: 260, down: 60}, moon: {up: 80, side: 80, down: 80}, bats: {up: 80, side: 120, down: 80},
                fireflies: {up: 120, side: 450, down: 120}, mist: {up: 60, side: 300, down: 60}, owl: {up: 100, side: 100, down: 60},
                moth: {up: 80, side: 90, down: 80}, thewada: {up: 130, side: 130, down: 130}, kinnari: {up: 130, side: 150, down: 130},
                hong: {up: 120, side: 160, down: 120}, fingerdancer: {up: 440, side: 90}, buffalo: {up: 260, side: 200},
-               talltree: {up: 590, side: 200}, bamboo: {up: 460, side: 140}, areca: {up: 500, side: 120}, fieldhut: {up: 380, side: 230}};
+               talltree: {up: 590, side: 200}, bamboo: {up: 460, side: 140}, areca: {up: 500, side: 120}, fieldhut: {up: 380, side: 230},
+               // the new things that are wide or drawn far from their point (2026-10-26)
+               kwangfight: {up: 60, side: 90}, catfish: {up: 80, side: 160, down: 60}, whiteeel: {up: 60, side: 380, down: 20},
+               rain: {up: 120, side: 900, down: 700}, lightning: {up: 40, side: 120, down: 600}, flood: {up: 20, side: 900, down: 200},
+               saisin: {up: 20, side: 300, down: 50}, sambar: {up: 370, side: 280}, banteng: {up: 300, side: 290},
+               gibbon: {up: 120, side: 60, down: 160}, darkgibbon: {up: 120, side: 60, down: 160}, loom: {up: 300, side: 200},
+               ogremural: {up: 620, side: 160}, ogreforest: {up: 620, side: 160}, ogreking: {up: 620, side: 160},
+               ridinghorse: {up: 300, side: 230}, lannahorse: {up: 300, side: 230}, royalhorse: {up: 300, side: 230}};
 
 // ---------- the size handle ----------
 // The selected sprite shows a handle at its top-right corner: dragged, it
@@ -3030,7 +3188,7 @@ function filmPrompt() {
     " \"camera\": [ [second, x, y, zoom], ... ] (optional: what the viewer sees at that second: the centre of the view on the stage and how close, zoom 1 = the whole stage, 2 = twice as close, up to 3; the camera glides between points; leave it out for the whole stage),",
     " \"marks\": {name: second, ...} (optional) }",
     "A second may be a word: \"+2\" is 2 seconds after the previous (a text's from: after the previous text ends; its to: after its own from; a key: after the item's key before), \"<\" is with the previous text's start and \"<+1\" a second after it, and a mark's name, \"dance\" or \"dance+2\", is that mark's second.",
-    "Rules: keys are the points of a course: the first is where and when the item appears, the next ones are where it is by later seconds, and the seconds must strictly increase. A course is one smooth curve through its points, passed without stopping; to make an item wait, repeat the same x, y at a later second. A person's key may carry a pose as a fourth entry, [second, x, y, \"wave\"]: the person holds that pose from that key on (she waves when she reaches the tree); without one the pose before carries on. The poses are walk, wave, wai, sit, sing, and the parasol poses: parasol (she holds a paper parasol up, open), furled (up, closed), carry (closed, carried at her side, tip to the ground: how she walks with a closed one), twirl (from that key she tips the parasol down toward the viewer, spins it three times, and lifts it again: six seconds), spin (the same, but her other hand comes to it before it turns and it stays down after), fold (after spin: down there she closes it, snaps it open as if shaking the rain off, closes it again, and swings it closed down to her side: 5.6 seconds, then carry), open (upright, it opens over 1.4 seconds), close (upright, it furls), and bloom (from that key, furled, she tips it down, opens it, spins it, furls it and lifts it: nine seconds). Give her next key after the show. A parasol is for the women: girl, lady, maiden, weaver, grandmother, devotee, dancer, celestial. Her parasol is lai (Thai border patterns, red on cream), yantra (the eight-direction yantra, ivory on black) or buddha (a Lanna cloth of elephants round a seated Buddha, who stays still while the rest spins). A fifth entry is a size, 0.5..2, reached by that key, growing along the way (bigger as she comes nearer); write null for the pose to keep it: [second, x, y, null, 1.5]. A sixth entry is a feeling from that key on (a person's, or the dog's, rooster's, naga's, dragon's, mom's, luang's, the oxcart's buffalo's, or the elephant's, tiger's, cat's, pig's, horse's, maeng's or a northern bird's), one of the feelings: [second, x, y, null, null, \"surprised\"] (she is surprised when the dragon comes); write null for the pose and the size to keep them. People and pieces keep y between 880 and 1040. The sun and the birds fly at y 100..400. A flower or fruit (" + FLORAS.map(function (f) { return f[0]; }).join(", ") + ") is a thing that stands on the ground; a name ending in Tree is that tree in flower or fruit, a piece. The naga's point is its chest and the dragon's its head; both may fly. Three things are of the festivals of the north and stand on the ground: chedisai, a Songkran sand pagoda with little flags; pratheep, a row of the clay lamps of Yi Peng, for a night; krathong, a krathong afloat, for a river or a pond at night. oxcart is a water buffalo pulling the wooden cart of the north: its point is under the buffalo, the cart follows behind it, it walks along its course on the ground (y 880..1040) and the wheels turn; it is about 580 pixels long, so give its course room. Two things are creatures of the myths of Lanna: mom, a scaly guardian of temple stairs, walks on the ground; luang, the dragon of the north, flies, and its point is its head. A dragon's key takes a fourth number, its depth: 0 far from the screen (small, faint, behind everyone) to 1 near (big, in front); change it along the course to make it fly toward or away from the viewer. khom is the hanging paper lantern of Lanna: its point is where its string is tied (y 60..500 to hang it high), it swings in the breeze, its candle is off by day and on at dusk and night (or say \"candle\": \"on\" or \"off\"), and carried along a course it leans; lantern is the flying khom loi, which rises only if its course goes up. Three more lanterns hang from their point like khom, with the same candle: khomphat, a spinning lantern whose paper-cut figures' shadows go round it while its candle burns; khomdao, a star lantern; khombua, a lotus lantern. khomthue is a girl carrying a lantern up on its handle: she walks her course on the ground (y 880..1040). Four things are the band of the north, each a player sitting cross-legged on the ground (y 880..1040) and playing on the beat: salo (a bowed fiddle with a coconut body), sueng (a plucked lute), pichum (a bamboo pipe), phinphia (a coconut pressed to a bare chest); a player does not walk, so give it one key (or the same x, y again later); put two to four together for a band. tungsaimu is a Songkran stick of little flags in seven tiers and tungyai a web of thread hung from a tall pole; both stand on the ground and flutter. rotdaeng is Chiang Mai's red truck with three riders: it drives along its course on the ground (y 880..1040) and its wheels turn; it is about 700 pixels long, so give its course room. Animals that walk on the ground (y 880..1040) along their course and stand when it stops: elephant (big: about 340 pixels high), tiger, cat, pig, horse (a pack horse of the Haw caravans with its load), housemouse and fieldmouse (two small mice that scurry; give them a short quick course, and a key repeated to make them stop and sniff). tokay is a gecko that crawls along its course: put its course on a wall, a tree trunk or the ground; its body follows the course's points. Five birds of the north: peafowl and pheasant walk on the ground; sunbird hovers while its course moves and perches when it stops; magpie (the red-billed blue magpie, with its long tail) and hornbill (the great hornbill) fly while their course moves and perch when it stops (y 100..700 to fly, or on a tree or a roof). maeng is the creature with four ears and five eyes of the Lanna tale, bear-like, black, gentle: it walks on the ground. Four are of the tale of Chang Ngu: riversnake, a giant river snake swimming, and pearlsnake, the pearl-white one that becomes the white elephant (a snake's point is its head and its y is the water's surface: only what is above the water shows, so give it the river backdrop, y about 700..850, and keep its course level); changngu, Chang Ngu itself, a snake's body with three elephant heads, all one colour, its point its chest, on the ground (y 880..1040); whiteelephant, the white elephant with a gold cloth, which walks on the ground as the elephant does. hen, blackrooster and blackhen are the yard's chickens: a hen, and the black chickens of the north (black from comb to feet, a green sheen), on the ground. egret is the cattle egret of the rice fields: it pecks on the ground while it stands and flies while its course moves. gourami, barb, flyingbarb and snakehead are the native fish of a Lanna pond: they swim along their course, so put them in water (a pond or a river in the picture). campfire is a fire in a ring of stones on the ground, its light strong at night; huad is the sticky-rice steamer on its pot over the hearth, steaming: both stand on the ground and do not walk. A piece (house, tree, palm, banana, temple, yak, tub: the small hut of a poor family, of woven bamboo with a grass roof, kok: an empty pen of bamboo for an animal, hokham: a hall of a Lanna palace, red and gold, with a peacock carved in its gable (about 560 pixels high; set it to the back), gong: a gong on its stand, kongkhao: the lidded basket that keeps steamed rice, krabung: an open woven basket, mortar: a wooden mortar with its pestle, talaew: the woven bamboo star on a post that guards a yard, firewood: sticks of firewood on the ground, cave: the mouth of a cave in rock, namton: the water jar at a gate, tung: a banner on a pole with a hong bird on top, drumcart: a temple's great drum on its wheeled cart, longkhao: a rice granary of timber on posts, with its big baskets, sawian: one big rice basket, ruenphuk: the bamboo house of a poor family of the north, on posts, with a veranda and a ladder (about 290 wide), grass: a tied bundle of cut grass, bananas: a hand of bananas, firestick: a split-bamboo stick for the fire, lying on the ground, kangsadan: the golden kangsadan of the tale of Chang Ngu, a round flat gong of gold on its frame) has exactly one key; its second says which scene it stands in (0 for the first scene, a cut's second for the scene that cut begins). A person or thing is drawn in the scenes its course overlaps or begins in: give it a key in each scene it belongs to, and none in a scene it is away from. A card covers the whole screen while it shows, so put it at the start or the end. Five of the people are old, with white or grey hair: weaver (a grandmother), grandmother (small and bent), elder (an old man with a white beard and a stick), oldfarmer (an old farmer under his hat) and devotee (an old woman in white, holding a lotus). Two are soldiers of the tale of Chang Ngu, each standing with a spear: soldier (a Tai soldier, bare, a red head-cloth) and khomsoldier (a soldier of the Khom Dam, the tale's enemy, in black cloth and a pointed cap); they differ only by their dress. The backdrops day, dusk and night are green hills at that hour, under clouds that drift. Every other backdrop is one painted picture with its own sky, and people stand on its ground at y 880 to 1040 as on the hills: " + PICTURES.map(function (p) { return p[0] + " (" + p[2] + ")"; }).join("; ") + ". What is nearer covers what is further: people and things on the ground are drawn by their feet, the lower in front. A person or thing may carry z, the band it is drawn in: sky (behind everything), far, back, people, front, near (in front of everything); give it to a bird, a hanging lantern or a fish, which can be anywhere (without one it goes among the people by its height). Use 3 to 8 items. Thai is welcome in the texts. Colours are optional. No comments, no markdown, JSON only.",
+    "Rules: keys are the points of a course: the first is where and when the item appears, the next ones are where it is by later seconds, and the seconds must strictly increase. A course is one smooth curve through its points, passed without stopping; to make an item wait, repeat the same x, y at a later second. A person's key may carry a pose as a fourth entry, [second, x, y, \"wave\"]: the person holds that pose from that key on (she waves when she reaches the tree); without one the pose before carries on. The poses are walk, wave, wai, sit, sing, and the parasol poses: parasol (she holds a paper parasol up, open), furled (up, closed), carry (closed, carried at her side, tip to the ground: how she walks with a closed one), twirl (from that key she tips the parasol down toward the viewer, spins it three times, and lifts it again: six seconds), spin (the same, but her other hand comes to it before it turns and it stays down after), fold (after spin: down there she closes it, snaps it open as if shaking the rain off, closes it again, and swings it closed down to her side: 5.6 seconds, then carry), open (upright, it opens over 1.4 seconds), close (upright, it furls), and bloom (from that key, furled, she tips it down, opens it, spins it, furls it and lifts it: nine seconds). Give her next key after the show. A parasol is for the women: girl, lady, maiden, weaver, grandmother, devotee, dancer, celestial. Her parasol is lai (Thai border patterns, red on cream), yantra (the eight-direction yantra, ivory on black) or buddha (a Lanna cloth of elephants round a seated Buddha, who stays still while the rest spins). A fifth entry is a size, 0.5..2, reached by that key, growing along the way (bigger as she comes nearer); write null for the pose to keep it: [second, x, y, null, 1.5]. A sixth entry is a feeling from that key on (a person's, or the dog's, rooster's, naga's, dragon's, mom's, luang's, the oxcart's buffalo's, or the elephant's, tiger's, cat's, pig's, horse's, maeng's or a northern bird's), one of the feelings: [second, x, y, null, null, \"surprised\"] (she is surprised when the dragon comes); write null for the pose and the size to keep them. People and pieces keep y between 880 and 1040. The sun and the birds fly at y 100..400. A flower or fruit (" + FLORAS.map(function (f) { return f[0]; }).join(", ") + ") is a thing that stands on the ground; a name ending in Tree is that tree in flower or fruit, a piece. The naga's point is its chest and the dragon's its head; both may fly. Three things are of the festivals of the north and stand on the ground: chedisai, a Songkran sand pagoda with little flags; pratheep, a row of the clay lamps of Yi Peng, for a night; krathong, a krathong afloat, for a river or a pond at night. oxcart is a water buffalo pulling the wooden cart of the north: its point is under the buffalo, the cart follows behind it, it walks along its course on the ground (y 880..1040) and the wheels turn; it is about 580 pixels long, so give its course room. Two things are creatures of the myths of Lanna: mom, a scaly guardian of temple stairs, walks on the ground; luang, the dragon of the north, flies, and its point is its head. A dragon's key takes a fourth number, its depth: 0 far from the screen (small, faint, behind everyone) to 1 near (big, in front); change it along the course to make it fly toward or away from the viewer. khom is the hanging paper lantern of Lanna: its point is where its string is tied (y 60..500 to hang it high), it swings in the breeze, its candle is off by day and on at dusk and night (or say \"candle\": \"on\" or \"off\"), and carried along a course it leans; lantern is the flying khom loi, which rises only if its course goes up. Three more lanterns hang from their point like khom, with the same candle: khomphat, a spinning lantern whose paper-cut figures' shadows go round it while its candle burns; khomdao, a star lantern; khombua, a lotus lantern. khomthue is a girl carrying a lantern up on its handle: she walks her course on the ground (y 880..1040). Four things are the band of the north, each a player sitting cross-legged on the ground (y 880..1040) and playing on the beat: salo (a bowed fiddle with a coconut body), sueng (a plucked lute), pichum (a bamboo pipe), phinphia (a coconut pressed to a bare chest); a player does not walk, so give it one key (or the same x, y again later); put two to four together for a band. tungsaimu is a Songkran stick of little flags in seven tiers and tungyai a web of thread hung from a tall pole; both stand on the ground and flutter. rotdaeng is Chiang Mai's red truck with three riders: it drives along its course on the ground (y 880..1040) and its wheels turn; it is about 700 pixels long, so give its course room. Animals that walk on the ground (y 880..1040) along their course and stand when it stops: elephant (big: about 340 pixels high), tiger, cat, pig, horse (a pack horse of the Haw caravans with its load), housemouse and fieldmouse (two small mice that scurry; give them a short quick course, and a key repeated to make them stop and sniff). tokay is a gecko that crawls along its course: put its course on a wall, a tree trunk or the ground; its body follows the course's points. Five birds of the north: peafowl and pheasant walk on the ground; sunbird hovers while its course moves and perches when it stops; magpie (the red-billed blue magpie, with its long tail) and hornbill (the great hornbill) fly while their course moves and perch when it stops (y 100..700 to fly, or on a tree or a roof). maeng is the creature with four ears and five eyes of the Lanna tale, bear-like, black, gentle: it walks on the ground. Four are of the tale of Chang Ngu: riversnake, a giant river snake swimming, and pearlsnake, the pearl-white one that becomes the white elephant (a snake's point is its head and its y is the water's surface: only what is above the water shows, so give it the river backdrop, y about 700..850, and keep its course level); changngu, Chang Ngu itself, a snake's body with three elephant heads, all one colour, its point its chest, on the ground (y 880..1040); whiteelephant, the white elephant with a gold cloth, which walks on the ground as the elephant does. hen, blackrooster and blackhen are the yard's chickens: a hen, and the black chickens of the north (black from comb to feet, a green sheen), on the ground. egret is the cattle egret of the rice fields: it pecks on the ground while it stands and flies while its course moves. gourami, barb, flyingbarb and snakehead are the native fish of a Lanna pond: they swim along their course, so put them in water (a pond or a river in the picture). campfire is a fire in a ring of stones on the ground, its light strong at night; huad is the sticky-rice steamer on its pot over the hearth, steaming: both stand on the ground and do not walk. More birds and animals of the north (each walks or flies its course; a bird flies when its course is up off the ground, above y 860, and walks or perches when it is on it): crow, whitecrow (the white crow of the Lanna tale, shining), crownest (her nest of five eggs, high in a tree), dove (the spotted dove: it nods as it walks and coos when it stops), kingfisher and commonkf (perched they watch the water; give them water nearby), parakeet and blossomparakeet (perched they eat a fig), myna; toad and ricefrog (they hop and call), beetle and femalebeetle (the rhinoceros beetle), kwangfight (two beetles fighting on a log, one key), goldturtle and turtle; barkingdeer, whitedeer and whitefawn (the white barking deer of Chiang Mai's founding), whitemice (a white mouse and her four young running behind her), sambar, whitesambar, banteng, goral (on rocks), bamboorat; loris (it creeps along a branch: put its course on one), gibbon and darkgibbon (their key is the branch they hang from: they swing arm over arm while the course moves, and sit and sing when it stops), catfish (the Mekong giant catfish: give it water), whiteeel (the giant white eel, its key its head on the water's surface, as a river snake's); birdwing, lacewing, bluebottle and grassyellow (butterflies: they fly their course and sit with their wings opening when it stops); ridinghorse, lannahorse and royalhorse (a horse dressed to be ridden). ogremural (the temple gate's guardian come alive), ogreforest and ogreking are ogres of the tales, giants who walk as people do. rain falls over the whole picture (its key's y is the cloud's underside; size 2 is the monsoon), lightning strikes down from its point every five seconds, and flood is water over everything below its key's y. loom (a woman weaving at the frame loom) and wheel (a woman spinning cotton) sit where they are put. Four are of Lanna's rites: malai (a jasmine garland, hanging from its key), saisin (the white thread, strung 600 pixels across from its key), swaidok (a flower cone, its key its point) and khandok (a footed bowl of flowers, on the ground). A piece (house, tree, palm, banana, temple, yak, yakleft (the same guardian facing the other way, for the other side of a gate), tub: the small hut of a poor family, of woven bamboo with a grass roof, kok: an empty pen of bamboo for an animal, hokham: a hall of a Lanna palace, red and gold, with a peacock carved in its gable (about 560 pixels high; set it to the back), gong: a gong on its stand, kongkhao: the lidded basket that keeps steamed rice, krabung: an open woven basket, mortar: a wooden mortar with its pestle, talaew: the woven bamboo star on a post that guards a yard, firewood: sticks of firewood on the ground, cave: the mouth of a cave in rock, namton: the water jar at a gate, tung: a banner on a pole with a hong bird on top, drumcart: a temple's great drum on its wheeled cart, longkhao: a rice granary of timber on posts, with its big baskets, sawian: one big rice basket, ruenphuk: the bamboo house of a poor family of the north, on posts, with a veranda and a ladder (about 290 wide), grass: a tied bundle of cut grass, bananas: a hand of bananas, firestick: a split-bamboo stick for the fire, lying on the ground, kangsadan: the golden kangsadan of the tale of Chang Ngu, a round flat gong of gold on its frame) has exactly one key; its second says which scene it stands in (0 for the first scene, a cut's second for the scene that cut begins). A person or thing is drawn in the scenes its course overlaps or begins in: give it a key in each scene it belongs to, and none in a scene it is away from. A card covers the whole screen while it shows, so put it at the start or the end. Five of the people are old, with white or grey hair: weaver (a grandmother), grandmother (small and bent), elder (an old man with a white beard and a stick), oldfarmer (an old farmer under his hat) and devotee (an old woman in white, holding a lotus). Two are soldiers of the tale of Chang Ngu, each standing with a spear: soldier (a Tai soldier, bare, a red head-cloth) and khomsoldier (a soldier of the Khom Dam, the tale's enemy, in black cloth and a pointed cap); they differ only by their dress. The backdrops day, dusk and night are green hills at that hour, under clouds that drift. Every other backdrop is one painted picture with its own sky, and people stand on its ground at y 880 to 1040 as on the hills: " + PICTURES.map(function (p) { return p[0] + " (" + p[2] + ")"; }).join("; ") + ". What is nearer covers what is further: people and things on the ground are drawn by their feet, the lower in front. A person or thing may carry z, the band it is drawn in: sky (behind everything), far, back, people, front, near (in front of everything); give it to a bird, a hanging lantern or a fish, which can be anywhere (without one it goes among the people by its height). Use 3 to 8 items. Thai is welcome in the texts. Colours are optional. No comments, no markdown, JSON only.",
   ].join("\n");
 }
 
@@ -3332,8 +3490,9 @@ var GUIDE_PLAY = 6;                     // the step "skip all" goes to
 // Where "put it in for me" stands a new thing, when the child does not tap a place: along the ground,
 // left to right, no two in one place; up in the sky what is there (the sun, birds, a lantern rising),
 // high what hangs (the hanging lanterns), and in the air what flies (the dragon, the Luang).
-var GUIDE_SKY = {sun: true, birds: true, lantern: true, moon: true, bats: true}, GUIDE_HANGS = {khom: true, khomphat: true, khomdao: true, khombua: true},
-    GUIDE_FLIES = {dragon: true, luang: true, thewada: true, kinnari: true, hong: true, moth: true, mist: true};
+var GUIDE_SKY = {sun: true, birds: true, lantern: true, moon: true, bats: true, rain: true, lightning: true}, GUIDE_HANGS = {khom: true, khomphat: true, khomdao: true, khombua: true},
+    GUIDE_FLIES = {dragon: true, luang: true, thewada: true, kinnari: true, hong: true, moth: true, mist: true,
+                   birdwing: true, lacewing: true, bluebottle: true, grassyellow: true};
 //   kind  "person", "thing" or "piece"; name  its kit name. Returns [x, y], pixels of the sheet, from how many items
 //         the film has; changes nothing.
 function guideSpot(kind, name) {
