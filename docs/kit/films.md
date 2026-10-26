@@ -401,7 +401,14 @@ into the pond area." So, with `thicket.js` (moved beside the kit from `thicket/`
   bottom of the canvas and move the woman back a bit and give the sides of the pond a more natural shape", "Consider
   lowering the top edge"): its bank a smooth line through `POND_EDGE`, the sides wandering in and out, the far bank 40
   lower, the water running off the foot of the picture; no line round it (`natReflect()`'s new `line: 0`); low bushes
-  and grass along the far bank (`pondBank()`), mirrored in the water; the maiden and her cat 35 back from it.
+  and grass along the far bank (`pondBank()`), mirrored in the water; the maiden and her cat 35 back from it. Then
+  ("The sides look almost like straight lines. Add some smaller plants to hide the top line of the pond. Give the left
+  side an S shape. In the foreground add some more reeds or plants ... put the lotus into the water", "Mirror the
+  butterfly flying over the lake"): the left bank an S and the right in and out twice (`POND_TOP`, `POND_EDGE`); small
+  grass and short reeds along the water's top edge and reeds and grass over its sides (`pondFringe()`); each lotus
+  rooted 60 under the water (`pondLotus()`: the whole clump under the water's face, what stands above the water line
+  over it, pads on the water and a ring round the stems); the bluebottle flies low across the pond
+  (`pondButterfly()`) and the water mirrors it, upside down, twice its height below it (`pondButterflyMirror()`).
 
 The woven cloth (the first scene) is as it was. sash.html, the hero film before it was the Maeng film's opening, is
 as it was. Not re-rendered: lanna_tales_maeng.mp4 on the site still has the hero film as it was.

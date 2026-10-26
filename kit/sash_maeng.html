@@ -708,7 +708,7 @@ function gardenFront(kind, t, enter) {
     return;
   }
   // one butterfly to a scene, that drifts across and is gone (owner, 2026-10-26: "a bit too many butterflies")
-  var b = kind === "pond" ? butterflyDrift(t, 1500, 420, {vx: -90, weave: 70, seed: 8}) : butterflyDrift(t, 300, 520, {vx: 90, weave: 60, seed: 3});
+  var b = kind === "pond" ? pondButterfly(t) : butterflyDrift(t, 300, 520, {vx: 90, weave: 60, seed: 3});
   butterfly({lane: "lacewing", pond: "bluebottle", paddy: "grassyellow"}[kind], b.x, b.y, t,
             {turn: b.turn + (kind === "pond" ? -1.2 : 1.2), size: kind === "pond" ? 1.3 : 1.4, seed: kind === "pond" ? 5 : 2});
   thkPetals(t, kind === "paddy" ? 12 : 26, "#f6b8cc", 3, 1.1);
@@ -943,9 +943,11 @@ function pondReeds(x, base, size, t, part) {
 // more natural shape", and "Consider lowering the top edge of the pond": the far bank 40 lower than the kit's pond()
 // had it). POND_LINE: the far bank's line, that the mirror turns about. No line is drawn round it ("erase the hard
 // black line for its edge"): the water meets the grass, and plants grow along the far bank (pondBank()).
-var POND_EDGE = [[392, 1100], [388, 1045], [404, 990], [390, 935], [400, 880], [420, 832], [452, 795], [530, 775], [650, 765],
-                 [770, 760], [890, 761], [1010, 766], [1115, 776], [1200, 792], [1246, 826], [1262, 875], [1252, 925], [1274, 978],
-                 [1296, 1035], [1310, 1100]];
+// The left side an S (owner, 2026-10-26: "The sides look almost like straight lines ... Give the left side an S
+// shape"): out under the maiden's knees, in, and out again to the far bank; the right side in and out twice.
+var POND_TOP = [[452, 780], [530, 768], [650, 764], [770, 762], [890, 763], [1010, 767], [1115, 775], [1200, 790]];
+var POND_EDGE = [[350, 1100], [372, 1050], [430, 1005], [455, 960], [430, 915], [385, 875], [372, 835], [400, 800]].concat(POND_TOP,
+                 [[1255, 822], [1290, 870], [1268, 920], [1228, 965], [1236, 1010], [1290, 1050], [1330, 1100]]);
 var POND_LINE = 762, POND_LEFT = 380, POND_RIGHT = 1320, POND_FOOT = 1100;
 function pondShape() {                    // the pond's outline as a path, for its fill and as a clip: a smooth line through POND_EDGE
   var p = POND_EDGE, n = p.length;
@@ -960,7 +962,7 @@ function pondShape() {                    // the pond's outline as a path, for i
 // The far bank's height at x, read off POND_EDGE's points along the top (a little below them, as the smooth line runs
 // inside the points). Returns a y on the old sheet.
 function pondBankAt(x) {
-  var top = POND_EDGE.slice(6, 14);
+  var top = POND_TOP;
   for (var k = 1; k < top.length; k++) {
     if (x <= top[k][0]) { return mix(top[k - 1][1], top[k][1], clamp((x - top[k - 1][0]) / (top[k][0] - top[k - 1][0]))) + 3; }
   }
@@ -990,6 +992,88 @@ function pondBankBuild() {
 }
 function pondBank(t) {
   thkOnce("pond-bank", pondBankBuild).forEach(function (it) { thkPlace(it.sprite, it.x, it.y, it.size, thkSway(t, it.x * 0.01, 0.2)); });
+}
+// Small plants standing in the water's top edge, over the line where it meets the far bank (owner, 2026-10-26: "Add
+// some smaller plants to hide the top line of the pond"): tufts of grass and short reeds, close along it, drawn over
+// the water's face. And in the foreground, reeds and grass over the sides of the pond ("add some more reeds or plants
+// to hide a bit more of the water's edge"), drawn among the people by their feet. Returns {edge: [...], near: [...]},
+// each [kind ("grass" or "reeds"), x, y, size, seed].
+function pondFringeBuild() {
+  var edge = [], near = [];
+  for (var x = 440, n = 0; x < 1230; n++) {
+    var seed = 200 + n * 3;
+    edge.push([n % 3 === 2 ? "reeds" : "grass", x, pondBankAt(x) + 6 + 6 * dice(seed), n % 3 === 2 ? 0.28 + 0.1 * dice(seed + 1) : 0.1 + 0.05 * dice(seed + 2), seed]);
+    x += 28 + 26 * dice(seed + 3);
+  }
+  near.push(["reeds", 470, 1062, 1.0, 1], ["grass", 410, 1040, 0.34, 2], ["reeds", 420, 930, 0.6, 3], ["grass", 470, 975, 0.22, 4],
+            ["reeds", 1262, 950, 0.75, 5], ["grass", 1300, 1060, 0.38, 6], ["reeds", 1320, 1090, 1.05, 7], ["grass", 1268, 890, 0.2, 8]);
+  return {edge: edge, near: near};
+}
+var POND_GRASS = null;
+function pondFringe(t, list) {
+  POND_GRASS = POND_GRASS || [0, 1, 2].map(function (k) {
+    return thkSprite(700, 320, 350, 290, function () { grassBank(620, 110 + 40 * dice(k + 9), 41 + k * 5, GRASS_GREEN, 0); }, PIX);
+  });
+  list.forEach(function (one) {
+    if (one[0] === "reeds") { pondReeds(one[1], one[2], one[3], t + one[4], "back"); pondReeds(one[1], one[2], one[3], t + one[4], "front"); }
+    else { thkPlace(POND_GRASS[one[4] % 3], one[1], one[2], one[3], thkSway(t, one[1] * 0.01, 0.15)); }
+  });
+}
+// A clump of lotus rising out of the water (owner, 2026-10-26: "put the lotus into the water so the leaves and stem come
+// up out of the water"): its root deep, "deep" below the water line at "line", so the stems come up through the water.
+// part "under": the whole clump, drawn under the water's face, which lies over what is in the water; part "over": only
+// what stands above the water line, crisp, with pads lying on the water round where it comes up and a ring round each
+// stem. lotusClump()'s arguments otherwise. Returns nothing: it draws with pen.
+function pondLotus(part, x, line, deep, size, seed, colour, t) {
+  if (part === "under") { lotusClump(pen, x, line + deep, size, seed, colour, t); return; }
+  pen.save();                                       // the pads, flat on the water, each a round with a notch
+  for (var n = 0; n < 4; n++) {
+    var px = x + (n - 1.5) * 34 * size + 10 * Math.sin(seed + n * 2.3), py = line + (dice(seed * 3 + n) - 0.4) * 14 * size, r = (20 + 8 * dice(seed + n)) * size;
+    pen.save();
+    pen.translate(px, py);
+    pen.scale(1, 0.32);
+    pen.rotate(dice(seed * 7 + n) * 6.28 + 0.05 * Math.sin(t * 0.8 + n));
+    pen.beginPath();
+    pen.moveTo(0, 0);
+    pen.arc(0, 0, r, 0.25, 6.03);
+    pen.closePath();
+    pen.fillStyle = n % 2 ? "#5f8f4e" : "#4f7f44";
+    pen.fill();
+    pen.strokeStyle = "rgba(30, 60, 34, 0.7)";
+    pen.lineWidth = 1.4;
+    pen.stroke();
+    pen.restore();
+  }
+  pen.restore();
+  pen.save();
+  pen.beginPath();
+  pen.rect(x - 400, line - 600, 800, 600);           // above the water line only
+  pen.clip();
+  lotusClump(pen, x, line + deep, size, seed, colour, t);
+  pen.restore();
+  pen.save();                                       // a ring on the water where the stems come up
+  pen.strokeStyle = "rgba(235, 245, 235, 0.45)";
+  pen.lineWidth = 1.2;
+  pen.beginPath();
+  pen.ellipse(x, line + 2, (26 + 3 * Math.sin(t * 1.4 + seed)) * size, 5 * size, 0, 0, 7);
+  pen.stroke();
+  pen.restore();
+}
+// The pond's butterfly (a bluebottle), low over the water, drifting in from the right across the pond and away to the
+// left, and mirrored in it (owner, 2026-10-26: "Mirror the butterfly flying over the lake. Change its path so you can
+// see it over the lake"). t: the pond's own seconds. Returns butterflyDrift()'s {x, y, turn}, film pixels.
+var POND_FLIER_HIGH = 50;                // how high it flies over the water under it: its reflection is twice that below it
+function pondButterfly(t) { return butterflyDrift(t - 6, 1350 + SIDE, 830, {vx: -70, weave: 45, seed: 8}); }
+// Its reflection on the water: upside down, as far below the water under it as it is above it, laid under the water's
+// darkening and mist as what else the pond mirrors is. Drawn on the old sheet (shifted by SIDE), inside the pond.
+function pondButterflyMirror(t) {
+  var b = pondButterfly(t);
+  pen.save();
+  pen.globalAlpha = 0.55;
+  pen.translate(b.x - SIDE, b.y + 2 * POND_FLIER_HIGH);
+  pen.scale(1, -1);
+  butterfly("bluebottle", 0, 0, t, {turn: b.turn - 1.2, size: 1.3, seed: 5});   // the flip turns it as the water does
+  pen.restore();
 }
 // The deep of it, under the fish: still water, dark green going darker toward the near bank.
 function pondDepths() {
@@ -1023,6 +1107,7 @@ function pondSurface(t) {
     natReflect(t, POND_LINE, {left: x - 20, right: x + wide + 20, foot: POND_FOOT, ripple: 0.5, tint: "18, 52, 48", deep: 0.6, sheen: 36, line: 0});
     pen.restore();
   });
+  pondButterflyMirror(t);
   pen.fillStyle = "rgba(8, 20, 18, 0.18)";         // still water is darker than what it mirrors
   pen.fillRect(x - 20, POND_LINE - 40, wide + 40, POND_FOOT - POND_LINE + 40);
   ripples(pen, POND_RINGS, t);
@@ -1080,8 +1165,12 @@ function scenePond(t) {                 // 42.59-69.94 on its own clock, shown 4
   var watched = [700 + Math.sin(t * 0.6) * 60, 850 + 6 * Math.sin(t * 1.1)];   // the gourami she watches
   fish(watched[0], watched[1], 1.7, Math.cos(t * 0.6) > 0 ? 1 : -1, "gourami", t);
   fish(900 - Math.sin(t * 0.5) * 40, 868, 1.4, Math.cos(t * 0.5) > 0 ? -1 : 1, "gourami", t + 2);
-  sprites.push({name: "lotus", kind: "lotus", y: 1010, draw: function () { lotusClump(pen, 520, 1010, 0.9, 4, "#ee7f9c", t); }},   // it stirs in the breeze
-               {name: "lotus", kind: "lotus", y: 1030, draw: function () { lotusClump(pen, 1150, 1030, 1.2, 1, "#e9627f", t); }},
+  // the lotus rising out of the water: under the water's face (3.4) the whole of each clump, over it what stands above
+  // the water, by its foot as before; the small plants along the far edge over the water's face (3.6)
+  sprites.push({name: "lotus under the water", kind: "lotus", z: 3.4, y: 1010, draw: function () { pondLotus("under", 520, 1010, 60, 0.9, 4, "#ee7f9c", t); pondLotus("under", 1150, 1030, 60, 1.2, 1, "#e9627f", t); }},
+               {name: "the far edge's small plants", kind: "reeds", z: 3.6, y: POND_LINE, draw: function () { pondFringe(t, thkOnce("pond-fringe", pondFringeBuild).edge); }},
+               {name: "lotus", kind: "lotus", y: 1010, draw: function () { pondLotus("over", 520, 1010, 60, 0.9, 4, "#ee7f9c", t); }},   // it stirs in the breeze
+               {name: "lotus", kind: "lotus", y: 1030, draw: function () { pondLotus("over", 1150, 1030, 60, 1.2, 1, "#e9627f", t); }},
                {name: "flock", kind: "birds", z: "sky", y: 180, draw: function () { birds(t, 100 + t * 60, 180); }});
   var head = dragonFly(t + POND_AT);
   sprites.push({name: "dragon", kind: "dragon", depth: head[4], y: head[1], draw: function () {
@@ -1095,6 +1184,7 @@ function scenePond(t) {                 // 42.59-69.94 on its own clock, shown 4
   // reeds at the water's edge; her Siamese cat sits beside her again (owner, 2026-10-20: "move the cat to be back
   // beside the woman", after it had been put in the reeds)
   sprites.push({name: "reeds", kind: "reeds", y: 1010, draw: function () { pondReeds(445, 1010, 0.9, t, "back"); pondReeds(445, 1010, 0.9, t, "front"); }},
+               {name: "the near edge's reeds and grass", kind: "reeds", y: 1040, draw: function () { pondFringe(t, thkOnce("pond-fringe", pondFringeBuild).near); }},
                {name: "cat", kind: "cat", y: 977, draw: function () { siamese(130, 977, 0.9, t); }},   // with her, back from the water
                {name: "orchids", kind: "orchid", z: "set", y: 806, draw: function () {   // wild orchids (dok ueang), as they grow, on the trunks of the trees
                  flora("orchid", 172, 800, {size: 0.9, ground: false});

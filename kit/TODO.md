@@ -58,3 +58,10 @@ the soldiers and their spears (figures.md).
 - a hoe, chok (ปู่เจ้าลาวจก: the name Lao Chok)
 - the sound of the kangsadan, "ting ting", for the sound kit (sounds.py)
 - an alms bowl (kit only)
+
+## The hero film (sash_maeng.html)
+
+- the mountains behind the village, the pond and the fields painted anew with the kit's new painters, as the
+  garden and the pond were (owner, 2026-10-26: "upgrading the mountains in the background with the new kit"):
+  forestHill() and softMist() of pinewoods.js, ridgeLayer(), limestonePeak() and natRays() of wildplaces.js, in
+  place of the backdrop's flat hills and hillMist()
