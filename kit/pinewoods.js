@@ -442,6 +442,8 @@ function softMist(t, y, tall, alpha, seed, colour) {
 //   tint     the water's own colour, "r, g, b", and deep, how much of it lies over the mirror at the foot (0 to 1)
 //   sheen    how many lines of light lie on the ripples (60 when left out)
 //   left, right: the water's extent across (the whole sheet when left out)
+//   line     how dark the line is where the shore meets the water (0.35 when left out; 0 none, for water whose bank
+//            plants or grass cover its edge)
 // t: seconds. Returns nothing: it draws with pen, and leaves pen as it found it.
 function natReflect(t, y, look) {
   look = look || {};
@@ -464,7 +466,7 @@ function natReflect(t, y, look) {
   g.addColorStop(1, "rgba(" + tint + ", " + deep.toFixed(3) + ")");
   pen.fillStyle = g;
   pen.fillRect(left, y, right - left, foot - y);
-  pen.fillStyle = "rgba(10, 18, 16, 0.35)";         // the dark line where the shore meets the water
+  pen.fillStyle = "rgba(10, 18, 16, " + (look.line === undefined ? 0.35 : look.line) + ")";   // the dark line where the shore meets the water
   pen.fillRect(left, y, right - left, 2.5);
   var lines = look.sheen === undefined ? 60 : look.sheen;
   pen.lineCap = "round";

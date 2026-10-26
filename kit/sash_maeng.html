@@ -936,65 +936,101 @@ function pondReeds(x, base, size, t, part) {
   pen.restore();
 }
 
-// The pond's water, in its box on the old sheet (POND_BOX: x, y, wide, tall; its far bank curves across the top, as
-// the kit's pond() draws one), as the pine lake's water is drawn (pinewoods.js). POND_LINE: the line of the far bank
-// that the mirror turns about.
-var POND_BOX = [380, 700, 900, 340], POND_LINE = 724;
-function pondShape() {                    // the pond's outline as a path, for its fill and as a clip
-  var x = POND_BOX[0], y = POND_BOX[1], wide = POND_BOX[2], tall = POND_BOX[3];
+// The pond's water on the old sheet, as the pine lake's water is drawn (pinewoods.js). POND_EDGE: its bank, points
+// round it from the near left, below the foot of the picture (the water runs off the bottom of the frame), up the left
+// side, along the far bank and down the right; a smooth line through them, the sides wandering in and out as a real
+// pond's bank does (owner, 2026-10-26: "Extend the water to the bottom of the canvas ... give the sides of the pond a
+// more natural shape", and "Consider lowering the top edge of the pond": the far bank 40 lower than the kit's pond()
+// had it). POND_LINE: the far bank's line, that the mirror turns about. No line is drawn round it ("erase the hard
+// black line for its edge"): the water meets the grass, and plants grow along the far bank (pondBank()).
+var POND_EDGE = [[392, 1100], [388, 1045], [404, 990], [390, 935], [400, 880], [420, 832], [452, 795], [530, 775], [650, 765],
+                 [770, 760], [890, 761], [1010, 766], [1115, 776], [1200, 792], [1246, 826], [1262, 875], [1252, 925], [1274, 978],
+                 [1296, 1035], [1310, 1100]];
+var POND_LINE = 762, POND_LEFT = 380, POND_RIGHT = 1320, POND_FOOT = 1100;
+function pondShape() {                    // the pond's outline as a path, for its fill and as a clip: a smooth line through POND_EDGE
+  var p = POND_EDGE, n = p.length;
   pen.beginPath();
-  pen.moveTo(x, y + tall);
-  pen.bezierCurveTo(x - wide * 0.03, y + tall * 0.3, x + wide * 0.2, y, x + wide * 0.5, y + tall * 0.07);
-  pen.bezierCurveTo(x + wide * 0.8, y + tall * 0.14, x + wide * 1.03, y + tall * 0.3, x + wide, y + tall);
+  pen.moveTo((p[n - 1][0] + p[0][0]) / 2, (p[n - 1][1] + p[0][1]) / 2);
+  for (var k = 0; k < n; k++) {
+    var next = p[(k + 1) % n];
+    pen.quadraticCurveTo(p[k][0], p[k][1], (p[k][0] + next[0]) / 2, (p[k][1] + next[1]) / 2);
+  }
   pen.closePath();
+}
+// The far bank's height at x, read off POND_EDGE's points along the top (a little below them, as the smooth line runs
+// inside the points). Returns a y on the old sheet.
+function pondBankAt(x) {
+  var top = POND_EDGE.slice(6, 14);
+  for (var k = 1; k < top.length; k++) {
+    if (x <= top[k][0]) { return mix(top[k - 1][1], top[k][1], clamp((x - top[k - 1][0]) / (top[k][0] - top[k - 1][0]))) + 3; }
+  }
+  return top[top.length - 1][1] + 3;
+}
+// The plants along the far bank (owner, 2026-10-26: "Add some vegetation along the back side of the pond"): low bushes
+// (natBush()), green grass (grassBank()), now and then one in flower, painted once, standing on the bank's line; drawn
+// before the water's face, so the water mirrors them. Returns [{sprite, x, y, size}, ...].
+function pondBankBuild() {
+  var out = [], grass = [];
+  for (var g = 0; g < 3; g++) {
+    (function (k) { grass.push(thkSprite(700, 320, 350, 290, function () { grassBank(620, 120 + 40 * dice(k + 4), 31 + k * 5, GRASS_GREEN, 0); }, PIX)); })(g);
+  }
+  for (var x = 470, n = 0; x < 1200; n++) {
+    var seed = 70 + n * 7;
+    if (n % 3 === 1) {
+      out.push({sprite: grass[n % 3], x: x, y: pondBankAt(x) + 2, size: 0.22 + 0.06 * dice(seed)});
+      x += 70 + 30 * dice(seed + 1);
+    } else {
+      var wide = 110 + 70 * dice(seed), high = 50 + 30 * dice(seed + 2);
+      var blooms = n % 4 === 0 ? [["jasmine", 10, 5]] : n % 5 === 0 ? [["phayasuea", 8, 5, "#ec6c9c"]] : [];
+      out.push({sprite: natBush(wide, high, seed, n % 2 ? THK_GREENS : THK_SHADE, blooms, PIX), x: x, y: pondBankAt(x) + 6, size: 1});
+      x += wide * 0.7;
+    }
+  }
+  return out;
+}
+function pondBank(t) {
+  thkOnce("pond-bank", pondBankBuild).forEach(function (it) { thkPlace(it.sprite, it.x, it.y, it.size, thkSway(t, it.x * 0.01, 0.2)); });
 }
 // The deep of it, under the fish: still water, dark green going darker toward the near bank.
 function pondDepths() {
   pen.save();
   pondShape();
-  var g = pen.createLinearGradient(0, POND_BOX[1], 0, POND_BOX[1] + POND_BOX[3]);
-  g.addColorStop(0, "#3f6a5e");
-  g.addColorStop(1, "#173c38");
+  var g = pen.createLinearGradient(0, POND_LINE, 0, POND_FOOT);
+  g.addColorStop(0, "#46726a");
+  g.addColorStop(1, "#2c5852");
   pen.fillStyle = g;
   pen.fill();
   pen.restore();
 }
-// Its face, over the fish: the mirror (natReflect()), broken by a breath of wind, strong at the far bank and fading
-// toward the near one, as water mirrors most where one looks across it and lets one see down into it near at hand
-// (POND_MIRROR: [from y, how strong], in bands), so the fish show through it near the bank; darker than what it
-// mirrors, as the pine lake is; the drops' rings (POND_RINGS); the mist lying on the water (softMist()) and strands of
-// it rising (natSteam()), all inside the pond; then its bank's line, and a few wisps rising over the far bank.
-var POND_MIRROR = [[POND_LINE, 0.95], [790, 0.7], [850, 0.45], [920, 0.3]];
+// Its face, over the fish: the mirror (natReflect(), its shore line left out), broken by a breath of wind, strong at
+// the far bank and fading toward the near one, as water mirrors most where one looks across it and lets one see down
+// into it near at hand (POND_MIRROR: [from y, how strong], in bands), so the fish show through it near the bank;
+// darker than what it mirrors, as the pine lake is; the drops' rings (POND_RINGS); the mist lying on the water
+// (softMist()) and strands of it rising (natSteam()), all inside the pond; and a few wisps rising over the far bank.
+var POND_MIRROR = [[POND_LINE, 0.95], [820, 0.7], [880, 0.5], [950, 0.42]];
 function pondSurface(t) {
-  var x = POND_BOX[0], y = POND_BOX[1], wide = POND_BOX[2], tall = POND_BOX[3], mist = "246, 250, 246";
+  var x = POND_LEFT, wide = POND_RIGHT - POND_LEFT, mist = "246, 250, 246";
   pen.save();
   pondShape();
   pen.clip();
   POND_MIRROR.forEach(function (band, n) {
-    var to = n + 1 < POND_MIRROR.length ? POND_MIRROR[n + 1][0] : y + tall;
+    var to = n + 1 < POND_MIRROR.length ? POND_MIRROR[n + 1][0] : POND_FOOT;
     pen.save();
     pen.beginPath();
     pen.rect(x - 20, band[0], wide + 40, to - band[0]);
     pen.clip();
     pen.globalAlpha = band[1];
-    natReflect(t, POND_LINE, {left: x - 20, right: x + wide + 20, foot: y + tall, ripple: 0.5, tint: "18, 52, 48", deep: 0.6, sheen: 36});
+    natReflect(t, POND_LINE, {left: x - 20, right: x + wide + 20, foot: POND_FOOT, ripple: 0.5, tint: "18, 52, 48", deep: 0.6, sheen: 36, line: 0});
     pen.restore();
   });
   pen.fillStyle = "rgba(8, 20, 18, 0.18)";         // still water is darker than what it mirrors
-  pen.fillRect(x - 20, POND_LINE, wide + 40, y + tall - POND_LINE);
+  pen.fillRect(x - 20, POND_LINE - 40, wide + 40, POND_FOOT - POND_LINE + 40);
   ripples(pen, POND_RINGS, t);
   softMist(t, POND_LINE + 10, 30, 0.32, 9, mist);
   natSteam(t, x, x + wide, POND_LINE + 40, {count: 26, rise: 60, wide: 150, life: 9, lean: 90, alpha: 0.22, flat: 0.22, patch: 0.85, colour: mist, seed: 3});
   natSteam(t, x, x + wide, POND_LINE + 120, {count: 60, rise: 90, wide: 120, life: 8, lean: 120, alpha: 0.32, flat: 0.05, patch: 0.85, colour: mist, seed: 5});   // the strands
   pen.restore();
-  pen.save();
-  pondShape();
-  pen.strokeStyle = "rgba(40, 80, 70, 0.85)";      // the bank's line, as pond() has it
-  pen.lineWidth = 2.2;
-  pen.lineJoin = "round";
-  pen.stroke();
-  pen.restore();
-  natSteam(t, x + 120, x + wide - 120, POND_LINE + 4, {count: 14, rise: 70, wide: 120, life: 10, lean: 60, alpha: 0.16, flat: 0.3, patch: 0.7, colour: mist, seed: 11});
+  natSteam(t, x + 120, x + wide - 120, POND_LINE + 4, {count: 10, rise: 70, wide: 120, life: 10, lean: 60, alpha: 0.09, flat: 0.3, patch: 0.7, colour: mist, seed: 11});
 }
 
 function scenePond(t) {                 // 42.59-69.94 on its own clock, shown 44.41-69.48 (35-53 until 2026-10-24; 3 s longer since 2026-10-21, the elephants pointed out; 9.35 s more for the narrator's own pace): the pond: lotus, fish, a maiden at the bank who wais; a Chinese dragon flies by with a flag; elephants far off
@@ -1021,9 +1057,11 @@ function scenePond(t) {                 // 42.59-69.94 on its own clock, shown 4
   // blossom in "front".
   // The water as the pine lake's is (pinewoods.js; owner, 2026-10-26: "update the pond scene with the pine lake style of
   // water and mist with what is behind the water being reflected in it"): its depths in "set", under the fish; its
-  // surface at 3.5, over the fish and under what grows in the water: the far bank, the trees, the hills and the sky
-  // mirrored in it, the rings of the drops, and the mist lying on it and rising off it.
+  // surface at 3.5, over the fish and under what grows in the water: the far bank and its plants (in "set" after the
+  // depths, so the water mirrors them), the trees, the hills and the sky mirrored in it, the rings of the drops, and
+  // the mist lying on it and rising off it.
   var sprites = [{name: "water", kind: "pond", z: "set", y: 700, draw: function () { pondDepths(); }},
+                 {name: "the far bank's plants", kind: "bush", z: "set", y: POND_LINE, draw: function () { pondBank(t); }},
                  {name: "the water's face", kind: "pond", z: 3.5, y: 700, draw: function () { pondSurface(t); }}];
   // The fish of a Lanna pond (the kit's nativeFish(), side on and true to the species, from the "Lanna fish"
   // notebook): a snakehead lying deep, two mud barbs below, a school of flying barbs just under the surface, and two
@@ -1057,7 +1095,7 @@ function scenePond(t) {                 // 42.59-69.94 on its own clock, shown 4
   // reeds at the water's edge; her Siamese cat sits beside her again (owner, 2026-10-20: "move the cat to be back
   // beside the woman", after it had been put in the reeds)
   sprites.push({name: "reeds", kind: "reeds", y: 1010, draw: function () { pondReeds(445, 1010, 0.9, t, "back"); pondReeds(445, 1010, 0.9, t, "front"); }},
-               {name: "cat", kind: "cat", y: 1012, draw: function () { siamese(130, 1012, 0.9, t); }},
+               {name: "cat", kind: "cat", y: 977, draw: function () { siamese(130, 977, 0.9, t); }},   // with her, back from the water
                {name: "orchids", kind: "orchid", z: "set", y: 806, draw: function () {   // wild orchids (dok ueang), as they grow, on the trunks of the trees
                  flora("orchid", 172, 800, {size: 0.9, ground: false});
                  flora("orchid", 1552, 806, {size: 0.9, colour: "#f2f0f6", ground: false});
@@ -1074,8 +1112,8 @@ function scenePond(t) {                 // 42.59-69.94 on its own clock, shown 4
   var his = t < POND_SEEN || t >= POND_CALM ? "happy" : t < POND_FLAG ? "surprised" : "angry";
   var fellow = stroll(t, 1600, 1330, 0, cast("fellow", Object.assign({id: "n1", stride: 0.8, late: 0.25, spring: 0.4, feel: his,
                                                         at: t >= POND_SEEN && t < POND_CALM ? sky : [300, 800]}, FACE(16))));   // he stops short of the water's edge
-  sprites.push({name: "maiden", kind: "person", y: 1000, draw: function () {
-                 person(300, 1000, cast("maiden", Object.assign({id: "n0", floor: true, late: 0, spring: 0.4}, her, hands, HAIR_OF.maiden, FACE(3))));
+  sprites.push({name: "maiden", kind: "person", y: 965, draw: function () {   // back a little from the water, which runs to the foot of the picture (owner, 2026-10-26)
+                 person(300, 965, cast("maiden", Object.assign({id: "n0", floor: true, late: 0, spring: 0.4}, her, hands, HAIR_OF.maiden, FACE(3))));
                }},
                {name: "fellow", kind: "person", y: 990, draw: function () { person(fellow.x, 990, fellow.look); }},
                {name: "blossom", kind: "blossom", z: "front", y: 700 + t * 20, draw: function () { blossom(pen, 1300 + Math.sin(t) * 10, 700 + t * 20, 10, "#ee7f9c"); }});

@@ -396,7 +396,12 @@ into the pond area." So, with `thicket.js` (moved beside the kit from `thicket/`
   still water; `pondSurface()` over them, the far bank, the trees, the hills and the sky mirrored about the far bank's
   line (`natReflect()`), strong across the water and fading toward the near bank (`POND_MIRROR`), so the fish are seen
   down in it near at hand; the drops' rings; mist lying on the water and strands rising off it (`softMist()`,
-  `natSteam()`), and a few wisps over the far bank. The kit's `pond()` is no longer drawn here.
+  `natSteam()`), and a few wisps over the far bank. The kit's `pond()` is no longer drawn here. Then (owner: "Add some
+  vegetation along the back side of the pond and erase the hard black line for its edge. Extend the water to the
+  bottom of the canvas and move the woman back a bit and give the sides of the pond a more natural shape", "Consider
+  lowering the top edge"): its bank a smooth line through `POND_EDGE`, the sides wandering in and out, the far bank 40
+  lower, the water running off the foot of the picture; no line round it (`natReflect()`'s new `line: 0`); low bushes
+  and grass along the far bank (`pondBank()`), mirrored in the water; the maiden and her cat 35 back from it.
 
 The woven cloth (the first scene) is as it was. sash.html, the hero film before it was the Maeng film's opening, is
 as it was. Not re-rendered: lanna_tales_maeng.mp4 on the site still has the hero film as it was.
