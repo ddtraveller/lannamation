@@ -66,8 +66,9 @@ canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
 <div class="about" id="about"><div>
   <h2>ฉากมีชีวิต · Living Scenes · 生动的场景</h2>
   <p>A quiet picture of the north of Thailand that keeps changing: a forest, a village, a farm, a market, the world of the
-     old stories, the fish of a river pool, seen from under the water, or a slow walk through dense flowering plants with
-     no one on it. Every bird, animal, fish and insect in it decides for itself what to do next.
+     old stories, the fish of a river pool, seen from under the water, a slow walk through dense flowering plants with
+     no one on it, or the high country: a pine lake at dawn, the summit of Doi Luang Chiang Dao, a cascade in the
+     forest, a stream among boulders. Every bird, animal, fish and insect in it decides for itself what to do next.
      <small>ภาพชนบทล้านนาที่มีชีวิต สัตว์ทุกตัวตัดสินใจเองว่าจะทำอะไรต่อ · 北泰的画面在变化，每只动物自己决定下一步做什么。</small></p>
   <p>How they decide: each kind has its own ways, written from how the real animal behaves. A buffalo grazes most of
      the day and wallows at noon; an egret walks at its feet for the insects it stirs up; a hen scratches and pecks,
@@ -122,6 +123,8 @@ canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
 <script src="../kit/thicket/s02_hedge.js"></script>
 <script src="../kit/thicket/s03_trees.js"></script>
 <script src="../kit/thicket/s04_clearing.js"></script>
+<script src="../kit/pinewoods.js"></script>
+<script src="../kit/wildplaces.js"></script>
 <script>
 var BEAT = 0.5;                          // the kit reads this: how long one beat is
 STYLE.hop = false;                       // no 1930s bounce: people walk and stand still, as in the maker unless asked (owner, 2026-10-23)
@@ -263,6 +266,245 @@ function bubbleRise(x, y, t, seed) {
   }
 }
 
+// ---------- the high country, and the walkway over the paddies ----------
+// The north's wild places of pinewoods.js and wildplaces.js (owner, 2026-10-26: "See if you can update living_scenes
+// with some of the new upgrades"): the pine lake at dawn in gold light, the summit of Doi Luang Chiang Dao in the
+// morning, a tiered cascade in the forest, a stream among boulders, and Boon Ko Ku So's bamboo walkway over the paddies.
+// Each is painted once, as a backdrop of this page's own in the kit's table (its layers laid with the camera still),
+// leaving open ground in front where the page's creatures go about their day; what moves in it (the glitter on the
+// lake and its mist, the falling water, the stream's ripples) is drawn every frame by its place's live(), under the
+// clouds, the mist, the creatures and the rain. A still mirror: the lake's reflection is painted with the rest.
+// Paints a backdrop with the kit's painters, which draw with pen: pen is pointed at the backdrop's brush meanwhile.
+function paintWith(brush, paint) {
+  var keep = pen;
+  pen = brush;
+  pen.save();
+  paint();
+  pen.restore();
+  pen = keep;
+  LINE = STYLE.line;
+  FINE = 1;
+}
+function skyWash(top, foot, stops) {
+  var g = pen.createLinearGradient(0, top, 0, foot);
+  stops.forEach(function (s) { g.addColorStop(s[0], s[1]); });
+  pen.fillStyle = g;
+  pen.fillRect(0, 0, WIDE, 1080);
+}
+function sunGlow(x, y, colour, alpha, r) {
+  var g = pen.createRadialGradient(x, y, 10, x, y, r || 720);
+  g.addColorStop(0, "rgba(" + colour + ", " + alpha + ")");
+  g.addColorStop(1, "rgba(" + colour + ", 0)");
+  pen.fillStyle = g;
+  pen.fillRect(0, 0, WIDE, 1080);
+}
+// banks of grass in rows from y0 to y1 across the sheet, larger as they come near: the open ground in front
+function grassRows(y0, y1, greens, plumes, seed) {
+  var banks = [0, 1, 2].map(function (k) {
+    return thkSprite(700, 320, 350, 290, function () { grassBank(620, 120 + 40 * dice(seed + k), seed + k * 7, greens, plumes); });
+  });
+  for (var y = y0; y < y1; y += 26) {
+    var size = 0.4 + 0.7 * (y - y0) / (y1 - y0);
+    for (var x = -250 + 120 * dice(seed + y); x < WIDE + 250; x += 430 * size) {
+      thkPlace(banks[Math.floor(dice(seed + x * 0.1 + y) * 3)], x, y, size, 0);
+    }
+  }
+}
+var WILD = {};                                     // what each painted place keeps for its live()
+PLACES.pinelake = {ground: [975, 1050], water: [800, 940], sky: [80, 520],
+                   live: function (at) {
+                     natGlitter(at, 1300, 770, 960, 0.7, "255, 208, 140");
+                     softMist(at, 776, 22, 0.22, 9, "255, 226, 180");
+                     natSteam(at, -100, WIDE + 100, 810, {count: 30, rise: 80, wide: 200, life: 9, lean: 150, alpha: 0.26, flat: 0.22, patch: 0.9, colour: "255, 226, 180", sun: 1300, seed: 3});
+                     natSteam(at, -100, WIDE + 100, 870, {count: 60, rise: 150, wide: 150, life: 8, lean: 200, alpha: 0.4, flat: 0.05, patch: 0.85, colour: "255, 226, 180", sun: 1300, seed: 5});
+                   }};
+BACKDROP_PAINTERS.pinelake = function (brush) {
+  paintWith(brush, function () {
+    var WATER = 770, n;
+    skyWash(0, WATER, [[0, "#c8b89a"], [0.6, "#f0d8a8"], [1, "#ffd896"]]);
+    sunGlow(1300, 420, "255, 208, 140", 1);
+    var BLUE = THK_SHADE.map(function (g) { return blend(g, "#6a8a9a", 0.5); });
+    var hillFar = forestHill({seed: 4, tall: 300, deep: 80, gap: 28, greens: BLUE, sizes: ["small"], pines: 26, pineHigh: 180});
+    var hillMid = forestHill({seed: 8, tall: 210, deep: 90, gap: 34, greens: THK_SHADE.map(function (g) { return blend(g, "#4a6a6a", 0.2); }), sizes: ["small", "medium"], pines: 40, pineHigh: 240});
+    var shore = forestHill({seed: 12, tall: 90, deep: 30, gap: 30, greens: THK_SHADE, sizes: ["small", "medium"], pines: 30, pineHigh: 300});
+    var spit = [];
+    for (n = 0; n < 6; n++) { spit.push({sprite: pineSprite(560 + 200 * dice(n * 5.1), "forest", 61 + n * 3), x: -140 + n * 95, y: WATER + 22 - n * 3, size: 1 - n * 0.06, reach: 0}); }
+    spit.push({sprite: broadleafSprite(420, 71, THK_GREENS), x: 190, y: WATER + 20, size: 0.8, reach: 0});
+    spit.sort(function (p, q) { return p.y - q.y; });
+    thkLayers(0, [
+      {depth: 0, blur: 1.4, haze: 0.42, items: [{sprite: hillFar.sprite, x: -300, y: WATER - 110, reach: 0}]},
+      {depth: 0, blur: 0.9, haze: 0.22, items: [{sprite: hillMid.sprite, x: -300, y: WATER - 40, reach: 0}]},
+      {depth: 0, blur: 0.6, haze: 0.12, items: [{sprite: shore.sprite, x: -300, y: WATER, reach: 0}]},
+      {depth: 0, blur: 0.3, items: spit}
+    ], {x: 0, z: 0, y: 0}, "#f2e0be");
+    natReflect(0, WATER, {ripple: 0.8, tint: "120, 96, 60", deep: 0.35, foot: 960});
+    var shine = pen.createLinearGradient(0, WATER, 0, 960);   // the gold sky's light lying on the water, stronger near
+    shine.addColorStop(0, "rgba(255, 216, 150, 0.08)");
+    shine.addColorStop(1, "rgba(255, 216, 150, 0.4)");
+    pen.fillStyle = shine;
+    pen.fillRect(0, WATER + 3, WIDE, 957 - WATER);
+    var bank = natGround(3400, 170, {seed: 31, soil: ["#6a6a34", "#4a4a24"], litter: ["#7a6a34", "#8a7a3a", "#5a5a2a"]});
+    thkPlace(bank, -300, 955, 1, 0);                // the near shore, where the creatures walk
+    grassRows(965, 1100, GRASS_DRY, 4, 41);
+  });
+};
+PLACES.summit = {ground: [905, 1050], water: null, sky: [60, 450],
+                 live: function (at) { softMist(at, 600, 40, 0.25, 37, "250, 252, 255"); }};   // a wisp drifting over the valleys
+BACKDROP_PAINTERS.summit = function (brush) {
+  paintWith(brush, function () {
+    var n, sun = [1300, 200], far = "#c4d0dc", near = "#2a3e44", layers = [];
+    skyWash(0, 620, [[0, "#5a8ac8"], [0.65, "#a8c8e4"], [1, "#e4ecf0"]]);
+    sunGlow(sun[0], sun[1], "255, 250, 236", 0.95, 900);
+    var bases = [520, 565, 615, 685, 765, 855];
+    for (n = 0; n < 6; n++) {                       // ridge on ridge, paler toward the sun
+      var colour = blend(far, near, Math.pow(n / 5, 1.3)), item;
+      if (n < 2) { item = ridgeLayer(colour, {tall: [120, 110][n], seed: 3 + n * 5, jag: 0.35, rim: "255, 250, 236", deep: 110, foot: "#e8eef2"}); }
+      else {
+        item = forestHill({seed: 30 + n * 7, tall: [110, 100, 90, 80][n - 2], deep: 110, gap: [18, 22, 27, 32][n - 2],
+                           greens: THK_SHADE.map(function (g) { return blend(g, colour, [0.8, 0.6, 0.38, 0.18][n - 2]); }),
+                           sizes: ["small"], pines: 24, pineHigh: [35, 50, 70, 95][n - 2]});
+      }
+      (function (k, bottom) {                       // and mist lying in the valley below each, as on the kit's sheet
+        layers.push({depth: 0, blur: [1.4, 1.1, 0.8, 0.6, 0.4, 0.3][k], haze: [0.16, 0.1, 0.07, 0.04, 0.02, 0][k], items: [{sprite: item.sprite, x: -300, y: bottom, reach: 0}],
+                     live: function () { softMist(0, bottom + 6, 60 + 10 * k, 0.75 - 0.06 * k, 5 + k * 3, "250, 252, 255"); }});
+      })(n, bases[n]);
+      if (n === 1) {
+        layers.push({depth: 0, blur: 0.7, haze: 0.08, items: [{sprite: peakSprite(1150, 520, {seed: 7, sun: -1, lit: "#d8d4c8", shade: "#5a6a82", forest: 0.22, rim: "255, 250, 236"}), x: sun[0] + 120, y: 650, reach: 0}],
+                     live: function () { softMist(0, 610, 150, 1, 23, "250, 252, 255"); softMist(0, 640, 110, 0.9, 29, "250, 252, 255"); }});
+      }
+    }
+    thkLayers(0, layers.slice(0, 2), {x: 0, z: 0, y: 0}, "#e8eef2");
+    natRays(0, sun[0], sun[1], 0.7, "255, 250, 236", 4);
+    thkLayers(0, layers.slice(2), {x: 0, z: 0, y: 0}, "#e8eef2");
+    pen.fillStyle = "rgba(255, 252, 240, 0.95)";
+    pen.beginPath(); pen.arc(sun[0], sun[1], 26, 0, 7); pen.fill();
+    var ground = natGround(3400, 260, {seed: 21, soil: ["#9a8448", "#6a5632"], litter: ["#a08a52", "#b89a5a", "#7a6a3a"], pebbles: 30});
+    thkPlace(ground, -300, 880, 1, 0);              // the summit's top where we stand, open in the middle
+    grassRows(890, 1100, GRASS_DRY, 6, 51);
+    [[60, 0], [1860, 1]].forEach(function (q) {     // crags at its edges, and an old pine against the light
+      thkPlace(rockSprite(320, 220, 61 + q[1], {stone: "#5a5650", jag: 0.6}), q[0], 1000, 1, 0);
+    });
+    thkPlace(pineSprite(620, "old", 71), 160, 960, 1, 0);
+  });
+};
+var CASCADE = cascadeSteps(5, 300, 105, 50, 7), CASCADE_TOP = 230;
+PLACES.cascade = {ground: [955, 1050], water: null, sky: [40, 200],
+                  live: function (at) {
+                    pen.save();
+                    pen.translate(960, CASCADE_TOP);
+                    cascadeWater(at, CASCADE, 105, 7);
+                    pen.restore();
+                    natSteam(at, 760, 1160, CASCADE_TOP + 640, {count: 10, rise: 100, wide: 100, life: 4, lean: 30, alpha: 0.28, flat: 0.5, seed: 3});
+                  }};
+BACKDROP_PAINTERS.cascade = function (brush) {
+  paintWith(brush, function () {
+    var n;
+    skyWash(0, 700, [[0, "#a8c8a8"], [1, "#e8eccc"]]);
+    var hill = forestHill({seed: 71, tall: 420, deep: 260, gap: 40, greens: THK_SHADE, sizes: ["medium", "large"], pines: 0});
+    var floor = forestHill({seed: 83, tall: 60, deep: 700, gap: 46, greens: THK_GREENS, sizes: ["small", "medium", "large"], pines: 0}).sprite;
+    var rock = thkSprite(1800, 1000, 900, 200, function () { cascadeRock(CASCADE, 105, 7); cascadeFoot(CASCADE, 105, 7); });
+    var trees = [], feet = [], bush = [natBush(330, 180, 331, THK_GREENS, []), natBush(500, 260, 333, THK_SUN, []), natBush(330, 180, 337, THK_SHADE, [])];
+    [[110, 860], [330, 890], [520, 870], [1400, 870], [1600, 900], [1820, 860]].forEach(function (q, k) {
+      trees.push({sprite: broadleafSprite(760 + 220 * dice(k * 3), 301 + k * 7, k % 2 ? THK_GREENS : THK_SUN), x: q[0], y: q[1], size: 1, reach: 0});
+      feet.push({sprite: bush[k % 3], x: q[0] - 60, y: q[1] + 40, size: 1, reach: 0});
+      feet.push({sprite: bush[(k + 1) % 3], x: q[0] + 70, y: q[1] + 55, size: 0.9, reach: 0});
+    });
+    thkLayers(0, [
+      {depth: 0, blur: 0.8, haze: 0.18, items: [{sprite: hill.sprite, x: -300, y: 500, reach: 0}]},
+      {depth: 0, blur: 0, items: [{sprite: floor, x: -300, y: 500, reach: 0}, {sprite: rock, x: 960, y: CASCADE_TOP, reach: 0}]},
+      {depth: 0, blur: 0, items: trees},
+      {depth: 0, blur: 0, items: feet}
+    ], {x: 0, z: 0, y: 0}, "#e4ecd4");
+    var ground = natGround(3400, 200, {seed: 81, soil: ["#5a5a34", "#3a3420"], litter: ["#5a6a2a", "#7a6a34", "#4a5a24", "#8a5a2a"], many: 2, pebbles: 40});
+    thkPlace(ground, -300, 930, 1, 0);              // the forest floor in front of the pool, where the creatures walk
+    for (n = 0; n < 4; n++) { thkPlace(rockSprite(160 + 100 * dice(n), 100 + 50 * dice(n * 3), 401 + n, {stone: "#7a7064", moss: 0.9}), [80, 330, 1600, 1850][n], 1060, 1, 0); }
+    thkLight(0, 0.6, 11);
+  });
+};
+var STREAM = streamBed({top: 560, far: 70, near: 760, seed: 3}), STREAM_STONES = [];
+PLACES.stream = {ground: [850, 1050], water: null, sky: [60, 360],
+                 live: function (at) {
+                   streamFlow(at, STREAM, [], 5);
+                   streamFlow(at, STREAM, STREAM_STONES, 6, "front");
+                 }};
+BACKDROP_PAINTERS.stream = function (brush) {
+  paintWith(brush, function () {
+    var n, y, q;
+    skyWash(0, 700, [[0, "#b0c8a8"], [1, "#e8ecd0"]]);
+    var hill = forestHill({seed: 91, tall: 420, deep: 300, gap: 34, greens: THK_SHADE, sizes: ["small", "medium"], pines: 4, pineHigh: 260});
+    var bush = [natBush(200, 110, 341, THK_GREENS, []), natBush(330, 180, 343, THK_SUN, []), natBush(500, 260, 347, THK_SHADE, [])];
+    var stone = [0, 1, 2, 3].map(function (k) { return rockSprite(110 + 80 * dice(k * 7), 70 + 50 * dice(k * 9), 521 + k, {stone: "#7a6c5a", wet: 0.7, moss: 0.3}); });
+    var trees = [];
+    for (n = 0; n < 6; n++) {                       // trees on both banks, their feet in the undergrowth
+      var ty = 640 + 30 * n, tx = STREAM.mid(ty) + (n % 2 ? 1 : -1) * (STREAM.half(ty) + 340 + 90 * dice(n));
+      trees.push({sprite: broadleafSprite(700 + 200 * dice(n * 3), 601 + n * 5, n % 3 ? THK_GREENS : THK_SUN), x: tx, y: ty, size: 0.55 + 0.08 * n, reach: 0});
+      trees.push({sprite: bush[n % 3], x: tx - 60, y: ty + 30, size: 0.7 + 0.08 * n, reach: 0});
+      trees.push({sprite: bush[(n + 1) % 3], x: tx + 70, y: ty + 40, size: 0.6 + 0.08 * n, reach: 0});
+    }
+    trees.sort(function (p, q2) { return p.y - q2.y; });
+    var ground = natGround(3400, 560, {seed: 95, soil: ["#5e6a34", "#3a4220"], litter: ["#6a7a34", "#7a6a3a", "#5a6a2a", "#8a6a34"], many: 2, pebbles: 30});
+    thkLayers(0, [
+      {depth: 0, blur: 0.8, haze: 0.2, items: [{sprite: hill.sprite, x: -300, y: 620, reach: 0}]},
+      {depth: 0, blur: 0, items: [{sprite: ground, x: -300, y: 545, reach: 0}, {sprite: STREAM.sprite, x: 0, y: 0, reach: 0}]},
+      {depth: 0, blur: 0, items: trees}
+    ], {x: 0, z: 0, y: 0}, "#e4ecd4");
+    STREAM_STONES.length = 0;
+    [[0.2, -0.3, 40], [0.4, 0.25, 60], [0.6, -0.2, 80], [0.8, 0.3, 100]].forEach(function (s, k) {   // stones in the stream
+      y = STREAM.top + s[0] * (1080 - STREAM.top);
+      q = [STREAM.mid(y) + s[1] * 2 * STREAM.half(y), y, s[2]];
+      STREAM_STONES.push(q);
+      thkPlace(stone[k], q[0], q[1] + q[2] * 0.3, q[2] / 130, 0);
+    });
+    for (y = STREAM.top + 30; y < 1080; y += 40 + 0.1 * (y - STREAM.top)) {   // stones along both edges of the water
+      [-1, 1].forEach(function (side) {
+        var size = 0.25 + 0.8 * (y - STREAM.top) / (1080 - STREAM.top);
+        thkPlace(stone[Math.floor(dice(y + side) * 4)], STREAM.mid(y) + side * STREAM.half(y), y + 10 * size, size, 0);
+      });
+    }
+    thkLight(0, 0.6, 13);
+  });
+};
+PLACES.bamboowalk = {ground: [700, 1040], water: null, sky: [80, 450], bare: true};
+BACKDROP_PAINTERS.bamboowalk = function (brush) {
+  paintWith(brush, function () {
+    var n, path = [];
+    skyWash(0, 640, [[0, "#6aa0d0"], [0.7, "#c4dcea"], [1, "#eef2e4"]]);
+    var BLUE = THK_SHADE.map(function (g) { return blend(g, "#7a9aaa", 0.4); });
+    var hillFar = forestHill({seed: 111, tall: 300, deep: 80, gap: 30, greens: BLUE, sizes: ["small"], pines: 0});
+    var hillNear = forestHill({seed: 115, tall: 190, deep: 90, gap: 34, greens: THK_SHADE, sizes: ["small", "medium"], pines: 6, pineHigh: 160});
+    thkLayers(0, [
+      {depth: 0, blur: 1, haze: 0.3, items: [{sprite: hillFar.sprite, x: -300, y: 600, reach: 0}]},
+      {depth: 0, blur: 0.6, haze: 0.12, items: [{sprite: hillNear.sprite, x: -300, y: 650, reach: 0}]}
+    ], {x: 0, z: 0, y: 0}, "#eef2e4");
+    var g = pen.createLinearGradient(0, 640, 0, 1080);
+    g.addColorStop(0, "#9ab848");
+    g.addColorStop(1, "#4e7018");
+    pen.fillStyle = g;
+    pen.fillRect(0, 640, WIDE, 440);
+    for (n = 0; n <= 40; n++) {                     // the walkway's line: from a hut far off, winding toward us
+      var u = n / 40;
+      path.push([1180 - 520 * u + 160 * Math.sin(u * 4.2) * (1 - u * 0.6), 640 + 460 * u * u, 18 + 260 * u * u]);
+    }
+    var rice = [0, 1, 2, 3].map(function (k) {
+      return thkSprite(700, 320, 350, 290, function () { grassBank(620, 110 + 30 * dice(k), 171 + k, k % 2 ? ["#3a5a14", "#4e7018", "#66861e", "#80a024", "#9cb82e", "#b8cc44", "#d4dc6a"] : ["#40601a", "#56781e", "#6e9024", "#8aa82a", "#a6c034", "#c2d24a", "#dce272"], 0); });
+    });
+    for (var y = 650; y < 1180; y += 10 + 0.06 * (y - 650)) {   // the rice, row on row, the walkway's line left clear
+      var q = (y - 650) / 430, size = 0.12 + 0.9 * q * q, on = path.reduce(function (b, p) { return Math.abs(p[1] - y) < Math.abs(b[1] - y) ? p : b; });
+      for (var x = -300; x < WIDE + 300; x += 360 * size + 10) {
+        var rx = x + 60 * dice(y + x);
+        if (Math.abs(rx - on[0]) < on[2] * 0.5 + 280 * size) { continue; }
+        thkPlace(rice[Math.floor(dice(x * 0.1 + y) * 4)], rx, y, size, 0);
+      }
+    }
+    pen.save();
+    pen.translate(path[0][0] + 10, path[0][1] + 6);
+    pen.scale(0.28, 0.28);
+    fieldHut(pen, 0, 0, 1.3);
+    pen.restore();
+    bambooWalk(path, {post: 30, rail: true});
+  });
+};
+
 // ---------- the settings: what each kind of place has ----------
 // pieces: set pieces painted once, [name, how many]; things: what stands and stirs (flowers, tung, a fire), [name, how
 // many]; creatures: [kind, how many at most, how likely]; people: cast names. A setting picks from these at random.
@@ -294,7 +536,7 @@ var SETTINGS = {
           // the Lua (Lawa) of the hills too, in their own dress (2026-10-26)
           people: ["farmer", "villager", "oldfarmer", "boy", "girl", "grandmother", "inta", "buakham", "bunma", "dokkham",
                    "luagirl", "luawife", "luaman"]},
-  farm: {names: ["ไร่นา", "The farm", "农场"], places: ["paddy", "village", "meadow"],
+  farm: {names: ["ไร่นา", "The farm", "农场"], places: ["paddy", "village", "meadow", "bamboowalk"],
          pieces: [["kok", 1], ["longkhao", 1], ["sawian", 1], ["mortar", 1], ["krabung", 1], ["grass", 2], ["firewood", 1], ["fieldhut", 1],
                   ["banana", 1], ["tree", 1]],
          things: [["huad", 1], ["grasstuft", 4], ["flower", 2]],
@@ -324,7 +566,15 @@ var SETTINGS = {
   // flowers and thick vegetation"): thicket/'s four places of dense flowering plants, the camera going on through them
   // (THICKET); what lives in it needs no tree to perch on: butterflies, red avadavats in the low growth, a dove
   thicket: {names: ["ทางดอกไม้", "Through the flowers", "穿过花丛"], places: ["thicket"], pieces: [], things: [],
-            creatures: [["butterfly", 6, 1], ["avadavat", 2, 0.4], ["dove", 1, 0.3]], people: []}
+            creatures: [["butterfly", 6, 1], ["avadavat", 2, 0.4], ["dove", 1, 0.3]], people: []},
+  // the high country (above): the pine lake, the summit, the cascade, the stream; painted places of their own, so no
+  // set pieces or things of the flat pictures' kind; the birds and the beasts of the north's hills and forests
+  highland: {names: ["ป่าเขา", "The high country", "高山"], places: ["pinelake", "summit", "cascade", "stream"], pieces: [], things: [],
+             creatures: [["hornbill", 1, 0.5], ["magpie", 2, 0.6], ["sunbird", 2, 0.6], ["myna", 1, 0.4], ["dove", 2, 0.5],
+                         ["parakeet", 2, 0.4], ["gibbon", 2, 0.5], ["butterfly", 3, 0.7], ["pheasant", 2, 0.5], ["barkingdeer", 1, 0.6],
+                         ["sambar", 1, 0.4], ["goral", 2, 0.7], ["egret", 2, 0.5], ["spotbill", 2, 0.6], ["fish", 4, 1],
+                         ["kingfisher", 1, 0.6], ["commonkf", 1, 0.4], ["grasshopper", 2, 0.5], ["bamboorat", 1, 0.3]],
+             people: []}
 };
 // the night's own creatures, added on a night picture; the day's fliers that sleep are left out there
 var NIGHT_ADDS = [["owl", 1, 0.9], ["moth", 1, 0.6], ["fireflies", 1, 1], ["bats", 1, 0.6],
@@ -334,7 +584,7 @@ var DAY_ONLY = {sunbird: true, magpie: true, hornbill: true, egret: true, avadav
                 crow: true, dove: true, kingfisher: true, commonkf: true, parakeet: true, myna: true, gibbon: true, butterfly: true};
 // the kinds that live only where the place has what they need: water to fish in, cliffs to stand on
 var NEEDS = {kingfisher: function (P) { return !!P.water; }, commonkf: function (P) { return !!P.water; },
-             goral: function (P, place) { return place === "crags" || place === "doi" || place === "valley"; }};
+             goral: function (P, place) { return place === "crags" || place === "doi" || place === "valley" || place === "summit"; }};
 function fits(kind, P, place) { return !NEEDS[kind] || NEEDS[kind](P, place); }
 
 // ---------- the kinds of creature: their group, where they live, how they are drawn, their call ----------
@@ -874,7 +1124,7 @@ function compose(seed, settingName) {
         : Math.round(randomBetween(COUNTS[name][0], COUNTS[name][1]));
   // the set pieces, each painted once as a picture of its own (pieceSprite())
   var pieces = [];
-  if (P.ground) {
+  if (P.ground && !P.bare) {                     // (a place painted with its own things, as the walkway, has none)
     s.pieces.forEach(function (row) {
       for (var n = 0; n < row[1]; n++) { if (rng() < 0.75) { pieces.push([row[0], randomBetween(80, WIDE - 80), randomBetween(P.ground[0], P.ground[0] + 50)]); } }
     });
@@ -949,11 +1199,11 @@ function compose(seed, settingName) {
   sc.creatures.forEach(function (c) { var sort = amountOf(c.kind); if (sort) { sc.base[sort] = (sc.base[sort] || 0) + 1; } });
   // a shower now and then over the fields and the forest by day (rain.js; owner's films call it from a light shower to
   // the monsoon): one scene in seven, light; ?rain= 0 to 1 sets it (0: none)
-  var wet = /natural|rural|farm/.test(name) && !P.night && P.ground && P.sky && !P.thicket;
+  var wet = /natural|rural|farm|highland/.test(name) && !P.night && P.ground && P.sky && !P.thicket;
   sc.rain = ASK.get("rain") !== null ? Math.max(0, Math.min(1, Number(ASK.get("rain")) || 0)) : wet && rng() < 1 / 7 ? randomBetween(0.05, 0.35) : 0;
   // mist: on a morning over the forest and the fields, half the time, lying along the ground and drifting across the
   // hills; ?mist= 0 to 1 sets it
-  var misty = /natural|rural|farm/.test(name) && !P.night && sc.hour === 0 && P.ground && !P.thicket;
+  var misty = /natural|rural|farm|highland/.test(name) && !P.night && sc.hour === 0 && P.ground && !P.thicket;
   sc.mist = ASK.get("mist") !== null ? Math.max(0, Math.min(1, Number(ASK.get("mist")) || 0)) : misty && rng() < 0.5 ? randomBetween(0.3, 0.7) : 0;
   return sc;
 }
@@ -1442,7 +1692,7 @@ var SOUND = {on: false, ctx: null, buffers: {}, beds: [], lastCall: {}};
 var SOUND_BASES = [["audio/kit_sounds/", ".mp3"], ["../kit/out/sounds/", ".wav"]];
 var BEDS = {natural: {day: ["cicadas"], night: ["crickets", "frogs"]}, rural: {day: ["cicadas"], night: ["crickets", "frogs"]},
             farm: {day: ["cicadas"], night: ["crickets"]}, mythical: {day: ["wind"], night: ["wind"]}, town: {day: [], night: ["crickets"]},
-            underwater: {day: [], night: []}, thicket: {day: ["cicadas"], night: ["crickets"]}};   // the kit has no sound of water yet
+            underwater: {day: [], night: []}, thicket: {day: ["cicadas"], night: ["crickets"]}, highland: {day: ["cicadas"], night: ["crickets"]}};   // the kit has no sound of water yet
 function soundFile(name, done) {
   if (SOUND.buffers[name] !== undefined) { done(SOUND.buffers[name]); return; }
   var tries = SOUND_BASES.slice();
@@ -1485,7 +1735,7 @@ function startBeds() {
 // it loops, fades in, and crosses to the next setting's piece when the scene changes. The checkbox turns it on.
 var MUSIC = {on: false, playing: null, name: ""};
 var MUSIC_FOR = {natural: "scene_natural", rural: "scene_rural", farm: "scene_farm", town: "scene_town", mythical: "scene_mythical",
-                 underwater: "scene_natural", thicket: "scene_natural"};   // no piece of their own yet: the forest's
+                 underwater: "scene_natural", thicket: "scene_natural", highland: "scene_natural"};   // no piece of their own yet: the forest's
 function musicName() { return scene.night ? "scene_night" : MUSIC_FOR[scene.setting]; }
 function musicFade(node, to, seconds) {
   if (!node || !node.gain) { return; }
@@ -1538,7 +1788,8 @@ var SCENE_SECONDS = 240;
 // 16.7 ms): the animals drew in under 9 ms up to 32 of them, and the town's people and truck in 12.5 ms at 16 and 24
 // ms at 24; by eye, the village was lively at 16 and crowded at 24, the forest's small birds spread out up to 32,
 // and the market was full at about 10.
-var COUNTS = {natural: [10, 20], rural: [8, 14], farm: [8, 14], town: [6, 10], mythical: [5, 8], underwater: [8, 16], thicket: [6, 10]};
+var COUNTS = {natural: [10, 20], rural: [8, 14], farm: [8, 14], town: [6, 10], mythical: [5, 8], underwater: [8, 16], thicket: [6, 10],
+              highland: [8, 14]};
 var COUNT = 8;
 // How cloudy a scene is (owner, 2026-10-23: "Add a random level of clouds"): one level picked at random, or ?clouds=;
 // each the fewest and most clouds of it.
@@ -1643,6 +1894,7 @@ function frame(now) {
     if (!place.thicket) {
       pen.drawImage(backdrop(scene.place, !!hangs), 0, 0);
       if (hangs) { backdropSway(scene.place, at); }
+      if (place.live) { place.live(at); }           // what moves in a painted place: water, mist, light
     }
     // what is on the water is drawn first, so a house or a tree on the bank in front covers a duck, a fish or a
     // krathong on the water behind it (owner, 2026-10-23: "Check z order on swimming ducks. They are going in front
