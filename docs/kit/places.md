@@ -747,8 +747,8 @@ is painted once into a sprite and placed every frame, swaying, so a frame stays 
    on a range (an elephant on its ridge, terraces) keeps the range it stood on. Each film has its own mountains, not
    another's (owner: "Don't reuse the same background mountain as the hero video"): `{peak: false, ridges: 2,
    pines: 12, seed: 7}` is the Maeng film's. A mountain of the tale itself is clothed the same way, in rows of small
-   bushes along its own ridge, flowers and fruit near its foot (maeng/sets.js `maengForest()`); a cave in it is
-   `sceneryCave()`, a dark arch cut into mossy limestone.
+   bushes along its own ridge, flowers and fruit near its foot (`sceneryForest()`, the Maeng film's first; Chang Ngu's
+   Doi Nang Non too); a cave in it is `sceneryCave()`, a dark arch cut into mossy limestone.
 3. **Painted trees, flowers of the place.** Every plain tree a painted one (`thkTreeOn()`), in fruit or flower as the
    place has it (a longan in a yard, the golden shower and the flame of the forest by water, a frangipani at a temple
    at night), and the flowers of flora.js at a house's foot.

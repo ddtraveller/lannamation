@@ -9941,6 +9941,20 @@ e.g. back.drawImage(farRange("#a9cfc9", "226, 238, 240", 720), 0, 0);
      back.drawImage(farRange("#a9cfc9", "226, 238, 240", 720, {peak: false, ridges: 2, pines: 12, seed: 7}), 0, 0);
 ```
 
+### `sceneryForest(brush, ridge, look)`
+
+```
+A mountain of a tale clothed in forest, as the Maeng film's Doi Khao Khwai and its slopes are (moved here from
+maeng/sets.js maengForest(), 2026-10-26, for the Chang Ngu film's Doi Nang Non): the shade under the canopy, pines
+standing along the ridge, and row on row of small bushes down from it, each lower row nearer and larger, hazier toward
+the top. brush: a 2D context; ridge: a function of x giving the slope's top y; look: {blooms: three bands' mixes,
+near the top, the middle and the foot, each three mixes of THK_BLOOMS ([[[], [], []], ...]: none when left out),
+pines (how many: 34), top, foot (the y where the bushes are smallest and largest: 360 and 1080), seed, left, right
+(the extent across the sheet: 0 and WIDE), haze (the air's colour toward the top: "#a9cfc9")}. Gives back nothing: it
+paints on brush (pen points at it while it paints, and is put back).
+e.g. sceneryForest(b, ridge, {pines: 12, top: 220});   sceneryForest(b, ridge, {right: 2 * WIDE, haze: "#b6c6c2"});
+```
+
 ### `sceneryWaterShape(water)`
 
 ```

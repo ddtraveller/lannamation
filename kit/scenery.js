@@ -167,6 +167,53 @@ function farRange(colour, air, base, look) {
   });
 }
 
+// A mountain of a tale clothed in forest, as the Maeng film's Doi Khao Khwai and its slopes are (moved here from
+// maeng/sets.js maengForest(), 2026-10-26, for the Chang Ngu film's Doi Nang Non): the shade under the canopy, pines
+// standing along the ridge, and row on row of small bushes down from it, each lower row nearer and larger, hazier toward
+// the top. brush: a 2D context; ridge: a function of x giving the slope's top y; look: {blooms: three bands' mixes,
+// near the top, the middle and the foot, each three mixes of THK_BLOOMS ([[[], [], []], ...]: none when left out),
+// pines (how many: 34), top, foot (the y where the bushes are smallest and largest: 360 and 1080), seed, left, right
+// (the extent across the sheet: 0 and WIDE), haze (the air's colour toward the top: "#a9cfc9")}. Gives back nothing: it
+// paints on brush (pen points at it while it paints, and is put back).
+// e.g. sceneryForest(b, ridge, {pines: 12, top: 220});   sceneryForest(b, ridge, {right: 2 * WIDE, haze: "#b6c6c2"});
+function sceneryForest(brush, ridge, look) {
+  look = look || {};
+  var keep = pen, haze = look.haze || "#a9cfc9", x, r, n, top = look.top === undefined ? 360 : look.top, foot = look.foot || 1080, seed = look.seed || 0;
+  var left = look.left || 0, right = look.right === undefined ? WIDE : look.right;
+  var blooms = look.blooms || [[[], [], []], [[], [], []], [[], [], []]];
+  pen = brush;
+  brush.beginPath();                                 // the shade under the canopy
+  brush.moveTo(left, 1080);
+  for (x = left; x <= right; x += 8) { brush.lineTo(x, ridge(x) + 24); }
+  brush.lineTo(right, 1080);
+  brush.closePath();
+  brush.fillStyle = "#1e3a2c";
+  brush.fill();
+  var pools = [0, 1, 2].map(function (k) {           // three bands of bushes, hazy near the top to deep near the foot
+    var greens = THK_SHADE.map(function (g) { return blend(g, haze, [0.45, 0.22, 0.05][k]); });
+    return [0, 1, 2].map(function (m) {
+      var pal = m === 1 ? greens.map(function (g) { return blend(g, "#7a8a3a", 0.12); }) : m === 2 ? greens.map(function (g) { return blend(g, "#1e3c44", 0.1); }) : greens;
+      return natBush(200, 110, 300 + seed + k * 7 + m, pal, blooms[k][m], PIX);
+    });
+  });
+  var pines = [0, 1, 2].map(function (m) { return pineSprite(220, m === 1 ? "old" : "forest", 400 + m, PIX); });
+  for (n = 0; n < (look.pines === undefined ? 34 : look.pines); n++) {   // pines along the ridge, their feet in the canopy
+    var px = left + 120 + 1760 * ((right - left) / WIDE) * dice(n * 1.7 + 5 + seed), crest = ridge(px);
+    if (crest > 1000) { continue; }
+    thkPlace(pines[n % 3], px, crest + 34 + 20 * dice(n + 2), 0.45 + 0.35 * dice(n + 9), 0);
+  }
+  for (r = 0; r < 30; r++) {                         // row on row down from the ridge, each lower one nearer and larger
+    for (x = left - 60 - 120 * dice(r + 1); x < right + 120; ) {
+      var y = ridge(x) + 22 + r * 30 + (dice(x * 0.01 + r * 3.1) - 0.3) * 18;
+      if (y > 1120) { x += 120; continue; }
+      var near = clamp((y - top) / (foot - top)), size = 0.45 + 0.75 * near, band = near < 0.3 ? 0 : near < 0.6 ? 1 : 2;
+      thkPlace(pools[band][Math.floor(dice(x * 0.03 + r * 7) * 3)], x, y, size * (0.85 + 0.3 * dice(x * 0.02 + r)), 0);
+      x += 200 * size * (0.45 + 0.3 * dice(x * 0.011 + r));
+    }
+  }
+  pen = keep;
+}
+
 // --- still water ---
 // A pond or a pool is a "water": {edge: its bank, points round it, smoothed (from the near left, below the foot of the
 // picture, up the left side, along the far bank, down the right), top: the far bank's points (part of edge), line: the
