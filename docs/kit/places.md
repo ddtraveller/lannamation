@@ -870,3 +870,26 @@ slider from mild to monsoon, night, lightning and wind), `storm.html`, `flood.ht
 | `rain.js` | `rain(brush, t, look)`, far to near: the veil over the far land, the shafts hanging from the cloud, the sheets of rain a gust drives across the land (a snake's wave runs down each, its edges uneven, bright and dim waves snaking through it), the near streaks (the nearest out of focus, wide, faint and slower), the rings on water and the spray on the ground. One number, `look.heavy`, runs all of it from a shower (0) to the monsoon (1); `rainAt(heavy)` says what each part does at it. The owner's notes on the first model: "mild", "Think about distance and the way sheets of rain look coming down", "Add a slider from mild to monsoon rain", "Get rid of the spot light effect on the ground and make the upclose heavy rain a bit slower and more indistinct", "Imagine snake like waves traveling through that rain as it falls in uneven sheets" |
 | `storm.js` | `stormSky(brush, t, look)`: the storm's flat dark underside in rolls, a band of light under its edge, by night indigo (`night`), lighter for a shower (`dark`). `lightning(brush, t, look)`: a strike at second `at`, a thin white channel in a violet glow, jagged, branching, a crawler under the cloud, flickering three or four times in half a second and lighting the cloud from inside. `stormStrikes(look)` spreads a storm's strikes at a natural pace (one about every 15 seconds, uneven, now and then two together; owner: "The lightning occurs too often but looks good"). `stormFlash()` and `stormLight()` light the land for the moment |
 | `flood.js` | `flood(brush, t, look)`: still brown water risen to `level` (or rising, `from`, `to`, `rise`), paler at its far edge, a few faint wavy zone lines and long slow ripples (the owner's "combination of B and C where the water isn't quite so busy"), what stands above it upside down in it, broken by the ripples (`reflect`), and with `floating` a basket, a coop and a log afloat. It gives back the level, so a scene can sink its own pieces and ring the rain on it |
+
+## The pine woods and the pine lake (2026-10-26)
+
+`pinewoods.js`, beside the kit, after `thicket.js`: the high country of the north painted as the thicket's scenes are
+(sprites painted once, in layers a camera moves through, haze in the far ones), from photographs on Wikimedia Commons
+of Doi Pha Hom Pok's pines and of Pang Ung (ปางอุ๋ง) at dawn. The owner asked for it to be "as beautiful as the garden
+scenes"; on the hills: "make three different sizes [of bush] and paint the landscape with them", with no air beneath
+them, and "more variety to the way the trees look".
+
+| Painter | What it is |
+|---|---|
+| `pine(high, kind, seed)`, `pineSprite(high, kind, seed)` | the three-needled pine (*Pinus kesiya*, สนสามใบ): `"forest"` (a long bole, the crown in its top third), `"old"` (great limbs, an umbrella top), `"young"` (a bushy cone); its needles in clumps lit on top, its bark grey below and red above; each tree its own by its seed (where the crown starts, its limbs, its tint, now and then a fork) |
+| `broadleaf(high, seed, greens)`, `broadleafSprite(...)` | an oak or a chestnut of the pine woods: crooked limbs, a clump of fine leaves on each, sky between |
+| `natBush(wide, high, seed, greens, blooms)` | a bush as a sprite, painted at twice its size and drawn at half, so its leaves are finer |
+| `forestHill(look)` | a hill clothed in forest: rows of bushes in three sizes (`NAT_BUSH`) down from its ridge, each row covering the feet of the one above, shade under them, pines standing out of the canopy; gives back `{sprite, ridge}` |
+| `grassBank(wide, high, seed, greens, plumes)` | the dry grass of the hills in the cool season (cogon, หญ้าคา), its white plumes (`GRASS_DRY`, `GRASS_GREEN`) |
+| `softMist(t, y, tall, alpha, seed, colour)` | mist lying in a valley, soft, with no edge, drifting |
+| `natSteam(t, x0, x1, y, look)` | mist rising off water in wisps (or steam off anything hot): `patch` for patches with clear water between, `flat` for strands |
+| `natReflect(t, y, look)` | still water from the line y down: what the sheet holds above the line, mirrored, broken by ripples further out, darkened by the water |
+| `natGlitter(t, x, y, foot, strength, colour)` | a low sun's light glittering on still water |
+
+Sheets: `pinewoods.html`, `pinelake.html` (the gold light, the owner's pick). A frame of the lake takes a few seconds
+to render (the mirror and the mist are drawn every frame).

@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>pinelake - the pine lake at dawn, in gold light</title>
+<style>html, body { margin: 0; background: #111; } canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920, pixels: 2, film: 0.3, light: [-0.6, 0.5]};</script>
+<script>var BEAT = 0.5;</script>
+<script src="oldcartoon.js"></script>
+<script src="flora.js"></script>
+<script src="butterflies.js"></script>
+<script src="northbirds.js"></script>
+<script src="thicket.js"></script>
+<script src="pinewoods.js"></script>
+<script>
+// The "pinelake" sheet: pinewoods.js. The pine lake at dawn, as Pang Ung (ปางอุ๋ง) in Mae Hong Son is in the cool
+// season: the still reservoir, a spit of tall pines on the left going off into it, forested hills round it going blue
+// into the mist; the hills and the pines mirrored in the water (natReflect()), the low sun's light on it
+// (natGlitter()), the mist lying on the water and rising off it in patches and strands (natSteam()). The gold light,
+// the owner's pick of three, 2026-10-26.
+var DURATION = 12;
+var L = {sky: ["#c8b89a", "#f0d8a8", "#ffd896"], sun: [1300, 420, "255, 208, 140", 1], air: "#f2e0be", mist: "255, 226, 180", water: "46, 40, 26"};
+var WATER = 770;                                    // the line where the far shore meets the lake
+function build() {
+  var n, grasses = [];
+  for (n = 0; n < 4; n++) {
+    (function (k) {
+      grasses.push(thkSprite(700, 320, 350, 290, function () { grassBank(620, 140 + 50 * dice(k), 14 + k * 7, k % 2 ? GRASS_GREEN : GRASS_DRY, k % 2 ? 0 : 5); }));
+    })(n);
+  }
+  var BLUE = THK_SHADE.map(function (g) { return blend(g, "#6a8a9a", 0.5); });
+  var hillFar = forestHill({seed: 4, tall: 300, deep: 80, gap: 28, greens: BLUE, sizes: ["small"], pines: 26, pineHigh: 180});
+  var hillMid = forestHill({seed: 8, tall: 210, deep: 90, gap: 34, greens: THK_SHADE.map(function (g) { return blend(g, "#4a6a6a", 0.2); }), sizes: ["small", "medium"], pines: 40, pineHigh: 240});
+  var shore = forestHill({seed: 12, tall: 90, deep: 30, gap: 30, greens: THK_SHADE, sizes: ["small", "medium"], pines: 30, pineHigh: 300});
+  var spit = [], front = [], near = [];
+  var tall = [];
+  for (n = 0; n < 6; n++) { tall.push(pineSprite(620 + 220 * dice(n * 5.1), "forest", 61 + n * 3)); }
+  [[-160, 1], [-60, 1.15], [40, 0.9], [130, 1.05], [250, 0.95], [330, 0.85], [430, 0.75], [520, 0.7], [600, 0.6]].forEach(function (w, k) {
+    spit.push({sprite: tall[k % 6], x: w[0], y: WATER + 22 - k * 3, size: w[1], reach: 0.08});   // the spit of pines, going off into the lake
+  });
+  spit.push({sprite: broadleafSprite(420, 71, THK_GREENS), x: 210, y: WATER + 20, size: 0.8, reach: 0.05});
+  spit.sort(function (p, q) { return p.y - q.y; });
+  var bank = thkSprite(1300, 200, 0, 60, function () {   // the spit's bank, low, grassed, its edge in the water
+    pen.fillStyle = "#5a5a30";
+    pen.beginPath();
+    pen.moveTo(0, 0);
+    pen.quadraticCurveTo(500, -16, 900, 10);
+    pen.quadraticCurveTo(1000, 24, 700, 40);
+    pen.lineTo(0, 60);
+    pen.fill();
+  });
+  for (n = 0; n < 6; n++) { front.push({sprite: grasses[n % 4], x: -200 + n * 180, y: WATER + 40 + 6 * dice(n), size: 0.45, reach: 0.15}); }
+  front.unshift({sprite: bank, x: -200, y: WATER + 8, reach: 0});
+  near.push({sprite: grasses[0], x: 80, y: 1150, size: 1.5, reach: 0.25});
+  near.push({sprite: grasses[2], x: 1760, y: 1160, size: 1.4, reach: 0.25});
+  return {above: [
+    {depth: 0.04, blur: 1.4, haze: 0.42, items: [{sprite: hillFar.sprite, x: -300, y: WATER - 110, reach: 0}], live: function (t) { softMist(t, WATER - 100, 110, 0.55, 3, L.mist); }},
+    {depth: 0.08, blur: 0.9, haze: 0.22, items: [{sprite: hillMid.sprite, x: -300, y: WATER - 40, reach: 0}], live: function (t) { softMist(t, WATER - 30, 70, 0.5, 5, L.mist); }},
+    {depth: 0.14, blur: 0.6, haze: 0.12, items: [{sprite: shore.sprite, x: -300, y: WATER, reach: 0}]},
+    {depth: 0.35, blur: 0.3, items: spit.concat(front)}
+  ], front: [
+    {depth: 1.3, blur: 4, items: near}
+  ]};
+}
+function scene(at) {
+  var layers = thkOnce("pinelake", build), cam = {x: 14 * at, z: 0, y: 0};
+  var sky = pen.createLinearGradient(0, 0, 0, WATER);
+  sky.addColorStop(0, L.sky[0]);
+  sky.addColorStop(0.6, L.sky[1]);
+  sky.addColorStop(1, L.sky[2]);
+  pen.fillStyle = sky;
+  pen.fillRect(0, 0, WIDE, 1080);
+  var sun = pen.createRadialGradient(L.sun[0], L.sun[1], 10, L.sun[0], L.sun[1], 720);
+  sun.addColorStop(0, "rgba(" + L.sun[2] + ", " + L.sun[3] + ")");
+  sun.addColorStop(1, "rgba(" + L.sun[2] + ", 0)");
+  pen.fillStyle = sun;
+  pen.fillRect(0, 0, WIDE, 1080);
+  thkLayers(at, layers.above, cam, L.air);
+  natReflect(at, WATER, {ripple: 0.8, tint: L.water, deep: 0.78});
+  pen.fillStyle = "rgba(8, 14, 14, 0.22)";          // still water is darker than what it mirrors
+  pen.fillRect(0, WATER + 3, WIDE, 1080 - WATER);
+  natGlitter(at, L.sun[0] - 14 * at * 0.1, WATER, 1080, 0.5 * L.sun[3], L.sun[2]);
+  softMist(at, WATER + 4, 26, 0.45, 9, L.mist);     // the mist lying on the water, and wisps rising off it
+  natSteam(at, -100, WIDE + 100, WATER + 30, {count: 40, rise: 80, wide: 200, life: 9, lean: 150, alpha: 0.26, flat: 0.22, patch: 0.9, colour: L.mist, sun: L.sun[0], seed: 3});
+  natSteam(at, -100, WIDE + 100, WATER + 110, {count: 34, rise: 110, wide: 230, life: 11, lean: 180, alpha: 0.2, flat: 0.22, patch: 0.9, colour: L.mist, sun: L.sun[0], seed: 7});
+  natSteam(at, -100, WIDE + 100, WATER + 70, {count: 140, rise: 150, wide: 150, life: 8, lean: 200, alpha: 0.55, flat: 0.05, patch: 0.85, colour: L.mist, sun: L.sun[0], seed: 5});   // the strands
+  thkLayers(at, layers.front, cam, L.air);
+  thkLight(at, 0.35, 6);
+  thkVignette(0.25);
+}
+var SCENES = [[0, DURATION, scene]];
+function draw(t) { film(t, SCENES); }
+var rendering = false;
+function play(now) { if (!rendering) { draw((now / 1000) % DURATION); } requestAnimationFrame(play); }
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

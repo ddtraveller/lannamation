@@ -5703,6 +5703,130 @@ Returns nothing: it draws with brush, and leaves brush as it found it.
 e.g. caveMouth(pen, 1100, 640, 1.4, {t: t, tint: ["#3a4a7a", 0.3]});
 ```
 
+## pinewoods.js
+
+pinewoods.js - the pine woods of the north's high country and a lake among them, for the Lanna cartoon kit, painted as thicket.js paints its plants: each thing painted once into a sprite, the sprites in layers a camera moves through, the far layers in the air's haze. Read from photographs on Wikimedia Commons: the three-needled pine (Pinus kesiya, สนสามใบ) of Doi Pha Hom Pok, the pine woods and the reservoir of Pang Ung (ปางอุ๋ง, Mae Hong Son) at dawn, its mist, its mirror. Load it after oldcartoon.js and thicket.js:  <script src="oldcartoon.js"></script> <script src="thicket.js"></script> <script src="pinewoods.js"></script>  pine(high, kind, seed)                 a pine, "forest", "old" or "young", each its own by its seed (pineSprite) broadleaf(high, seed, greens)          an oak or a chestnut of the pine woods (broadleafSprite) natBush(wide, high, seed, greens, ...) a bush as fine as thkBush() paints one at twice its size forestHill(look)                       a hill clothed in bushes of three sizes along its contours, pines out of it grassBank(wide, high, seed, greens, n) the dry grass of the hills (cogon, หญ้าคา), its white plumes softMist(t, y, tall, alpha, seed, c)   mist l
+
+### `pinePad(x, y, wide, high, lit, greens, seed)`
+
+```
+One clump of needles (a pad), its middle at (x, y), "wide" across and "high" tall: Pinus kesiya holds its long
+needles in bunches at the ends of its twigs, and the bunches of one limb crowd into a clump, its top lit and its
+underside in shade, needles standing up out of its top and hanging from its underside. A lumpy cloud of three to
+five rounds, filled dark; over it the needles, short strokes rising out and away from its middle, lit by their
+height in the clump and by "lit" (0 to 1, the side of the tree the sun is on). Returns nothing: it draws with pen.
+```
+
+### `pineLimb(x, y, side, long, rise, wide, seed)`
+
+```
+A limb from (x, y) on the trunk out to "side" (1 right, -1 left), "long" long, rising at "rise" (radians above
+level), "wide" thick where it leaves the trunk: crooked, in three lengths each turned a little, thinning out.
+Gives back the points where its clumps of needles sit: [[x, y, size], ...]. Returns that list; it draws with pen.
+```
+
+### `pineTrunk(high, wide, lean, seed)`
+
+```
+The trunk: from its foot at (0, 0) to the top, "high" tall, "wide" at the foot, leaning by "lean" (pixels at the
+top), the bark grey and deeply furrowed below, reddish and flaking above, as Pinus kesiya's is. Returns the
+function giving the trunk's middle at a height up it (0 the foot, 1 the top).
+```
+
+### `pine(high, kind, seed)`
+
+(no comment)
+
+### `pineSprite(high, kind, seed, sharp)`
+
+```
+A pine as a sprite for thicket.js's layers: thkSprite() round pine(), its point at the foot.
+```
+
+### `broadleaf(high, seed, greens)`
+
+```
+broadleaf(high, seed, greens): an oak or a chestnut of the north's pine woods (they stand mixed with the pines),
+its foot at (0, 0), "high" tall: a short trunk forking into crooked limbs that reach up and out, and on each limb's
+end a clump of small leaves (thkBush()'s, painted at twice its size and drawn at half, so they are fine), the
+clumps at their own heights with sky between them, the crown wider than it is tall. Returns nothing: it draws
+with pen (into a sprite, once; see broadleafSprite).
+```
+
+### `broadleafSprite(high, seed, greens, sharp)`
+
+```
+A broadleaf tree as a sprite for thicket.js's layers, its point at the foot.
+```
+
+### `natBush(wide, high, seed, greens, blooms, sharp)`
+
+```
+A bush as a sprite, finer than thkBush() paints it at its size: painted at twice the size and drawn at half, so
+its leaves are half as big and four times as many. wide, high: film pixels; seed: a number; greens: seven
+colours; blooms: as thkBush() takes them; sharp: device pixels to a film pixel. Returns thkSprite()'s.
+```
+
+### `forestHill(look)`
+
+```
+A hill clothed in forest, as a sprite for a layer: its ridge the line ridge(x) (pixels above y = 0, the layer's
+base line, at x across the sprite from -300 to 3100), and down from the ridge row on row of bushes standing on the
+slope, each row a little lower and nearer than the last, so each covers the feet of the one above and no air shows
+under any: dark shade between them, as a forest has. look:
+  seed, greens (seven colours, deep to light), tall (the ridge's height), deep (how far the slope runs below 0),
+  sizes (which of NAT_BUSH, ridge to foot, e.g. ["small", "medium"]), gap (pixels from row to row),
+  pines (how many pines stand out of the canopy), pineHigh (their height), sharp (as thkSprite() takes it)
+Returns {sprite, ridge}: the sprite to place at x = -300, y = the base line, and the ridge's function.
+```
+
+### `grassBank(wide, high, seed, greens, plumes)`
+
+(no comment)
+
+### `softMist(t, y, tall, alpha, seed, colour)`
+
+```
+Mist lying over water or in a valley, soft, as the photographs show it (no edge to it): wide soft clouds along the
+line y, "tall" deep, drifting slowly to the right and swelling, in "colour" ("r, g, b"; white when left out).
+t: seconds; alpha: 0 to 1; seed: a number. Returns nothing: it draws with pen over what is there.
+```
+
+### `natReflect(t, y, look)`
+
+```
+Still water from the line y down to "foot" (1080 when left out): what the sheet already holds above the line,
+mirrored below it, as a lake at dawn mirrors its shore, in strips a film pixel or two deep, each pushed aside by
+the ripples (more of them further from the shore, so the near water breaks the mirror into streaks), darkened and
+tinted by the water, with fine lines of light on the ripples. Draw the sky, the far hills and the shore first, then
+this, then what stands in front of the water. look:
+  ripple   how much the water moves (1 a breath of wind, 0 glass)
+  tint     the water's own colour, "r, g, b", and deep, how much of it lies over the mirror at the foot (0 to 1)
+  sheen    how many lines of light lie on the ripples (60 when left out)
+  left, right: the water's extent across (the whole sheet when left out)
+t: seconds. Returns nothing: it draws with pen, and leaves pen as it found it.
+```
+
+### `natGlitter(t, x, y, foot, strength, colour)`
+
+```
+The light of a low sun laid on still water: a path of glittering bits under the sun at x, from the far shore at y
+to the foot, wider as it comes near, the bits winking. t: seconds; strength: 0 to 1; colour "r, g, b".
+Returns nothing: it draws with pen.
+```
+
+### `natSteam(t, x0, x1, y, look)`
+
+```
+Mist rising off water in the cold of the morning, or steam off a hot spring: wisps that leave the surface along the
+line y between x0 and x1, rise, swell, lean with the air and thin away, each its own while, one after another, so
+there is always mist; where the low sun is behind them (look.sun, its x) they glow. look:
+  count (wisps), rise (how high one goes, pixels), wide (a wisp's width when it leaves the water), life (seconds),
+  lean (pixels it drifts sideways as it rises; + to the right), alpha (0 to 1), colour ("r, g, b"), sun (x), glow
+  (how much brighter toward the sun), patch (0 to 1: how much it comes in patches), flat (a puff's height to its width: 0.55; mist on a lake lies flatter), seed
+t: seconds. Returns nothing: it draws with pen.
+```
+
 ## cumulus.js
 
 Cumulus for the Lanna cartoon kit: puffy clouds that drift, with depth, drawn as the old cartoons drew them: flat colour in three tones inside a line round the outside of each cloud, and a few lines inside it where one puff rounds over another. (The kit's own clouds() paints the flat scroll clouds of the murals; this is the other kind.)  Each cloud is a pile of discs on a flat base, taller in the middle. Each puff is one of three flat tones by how high it sits, lit on top and in shade below (at dusk the light comes from below), and a little lighter toward the sun's side. The line round the outside is drawn as the kit draws a hose: every disc first in ink and a little larger, then every disc in its tone, so only the outer edge of the pile keeps its ink. The inner lines are the lower arcs of every third puff, stroked in ink and kept inside the pile. A cloud is drawn whole and opaque on a sheet of its own and then laid on the sky at one transparency, so its puffs do not show through each other. Each cloud sits at a depth, 1 near to 0.3 far, that sets its size, how fast it crosses the sky, how low it hangs toward the horizon, how much it fades into the distance, and how fine its line i
