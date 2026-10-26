@@ -62,7 +62,7 @@ function cngSceneTing(t) {
   pen.drawImage(river.back, 0, 0);
   cngRiverLife(t, {});
   decorate(t, C18_LIFE, "back");
-  var ex = mix(1400, 1050, comes), ey = mix(C18_SWIM + 210, CNG_BANK + 60, out) + (out < 1 ? 6 * Math.sin(t * 1.4) : 0);
+  var ex = mix(1400, 1050, comes), ey = mix(C18_SWIM + 160, CNG_BANK + 60, out) + (out < 1 ? 6 * Math.sin(t * 1.4) : 0);
   var face = t < 6.6 ? 1 : -1, walking = comes > 0 && comes < 1;
   var e = null;
   if (out < 1) {                                           // in the river; on the sand it is drawn once, over the bank, below

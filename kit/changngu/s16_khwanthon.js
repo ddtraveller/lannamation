@@ -48,7 +48,7 @@ function cngSceneKhwanthon(t) {
   decorate(t, C16_LIFE, "back");
   var upstream = between(t, 11, 30), shake = t > 7 && t < 11 ? Math.sin((t - 7) * 9) * 0.5 : 0;
   var ex = mix(1000, 1500, upstream), bob = 6 * Math.sin(t * 1.4);
-  var e = elephant(ex, C16_SWIM + 210 + bob, {size: 0.62, face: shake > 0 ? 1 : -1, colour: "#f1ddd3", cloth: "#c9962a",
+  var e = elephant(ex, C16_SWIM + 160 + bob, {size: 0.62, face: shake > 0 ? 1 : -1, colour: "#f1ddd3", cloth: "#c9962a",
                                               trunk: 0.3 + 0.4 * Math.abs(Math.sin(t * 1.3)), mouth: shake ? 0.3 : 0.1});
   csBand(pen, 0, C16_SWIM - 8, WIDE, CNG_BANK - C16_SWIM + 30, "#a68e66", "#8a7250");   // the water over it, moving left
   waves(pen, 0, C16_SWIM - 6, WIDE, CNG_BANK - C16_SWIM + 20, "rgba(250, 238, 210, 0.3)", t * 2);

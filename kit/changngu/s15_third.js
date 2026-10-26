@@ -62,7 +62,7 @@ function cngSceneThird(t) {
   }
   if (changed) {                                           // the white elephant, swimming, Phrom on its neck
     var bob = 6 * Math.sin(t * 1.4), ex = C15_HELD + 120 - 60 * between(t, 34, 55);
-    elephantAt = elephant(ex, C15_SWIM + 210 + bob, {size: 0.62, face: -1, colour: "#f1ddd3", cloth: "#c9962a",
+    elephantAt = elephant(ex, C15_SWIM + 160 + bob, {size: 0.62, face: -1, colour: "#f1ddd3", cloth: "#c9962a",
                                                     trunk: 0.5 + 0.4 * Math.sin(t * 1.1), mouth: 0.2});
   }
   var leap = between(t, 22.4, 24.2);

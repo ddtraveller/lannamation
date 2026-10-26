@@ -56,7 +56,7 @@ function sheet(t) {
   caption("kangsadan: struck, it rings", 1310, 345);
   var walk = amble("buffalo", t, -150, 650, 0, {size: 0.5, cloth: "#8a2a3a"});   // the buffalo and its cart, across the middle row
   var face = walk.look.face, scale = 0.5 * GAITS.buffalo[0];                     // the buffalo's own scale, from its look
-  var yoke = [walk.x + 150 * scale * face, 660 - 310 * scale];                    // the withers, where the yoke sits
+  var yoke = [walk.x + 150 * scale * face, 660 - 243 * scale];                    // the withers, where the yoke sits
   oxcart(pen, walk.x - 460 * scale * face, 660, 1.3, (walk.x + 150) / (62 * 1.3), face, yoke);   // the axle behind the tail
   buffalo(walk.x, 660, walk.look);
   caption("amble(\"buffalo\") pulling oxcart(brush, x, base, size, turn, facing, yoke): the cart is drawn first", 400, 705);

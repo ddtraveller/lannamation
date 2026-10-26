@@ -40,7 +40,7 @@
 
 // The names a beast's look may have (both warn about any other):
 //   size       how large it is drawn (1 is as large as it is beside the cast at their own
-//              sizes: an elephant about 750 high, a buffalo about 400 at the back)
+//              sizes: an elephant about 670 high, a buffalo about 300 at the back)
 //   face       1 looks right, -1 looks left
 //   ground     false: no soft shadow on the ground (the elephant's), for a figure cut from
 //              paper, as on a khom phat (khom.js)
@@ -84,6 +84,14 @@
 var BEAST_KEYS = {};
 
 ["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground", "feel", "pack", "mane", "graze", "turn", "tack"].forEach(function (name) { BEAST_KEYS[name] = true; });
+
+// How much lower the body of the elephant and of the buffalo stands than it was first drawn, in pixels of
+// its own drawing: their legs are that much shorter (owner, 2026-10-26: "Compare them to real Northern Thai
+// images and make the legs shorter on both of them"). Beside photographs of working elephants at the Thai
+// Elephant Conservation Center, Lampang, and of swamp buffalo in Chiang Mai and Phayao (Commons), both stood
+// too high: an elephant's belly clears the ground by about two fifths of its height at the back, a buffalo's
+// by little more than a third. The side view and the front view both read it.
+var BEAST_LOWER = {elephant: 60, buffalo: 45};
 
 // Where a walking foot is in its stride: [how far forward of its joint, how
 // high off the ground]. "s" is how far through the stride it is; it is on
@@ -303,7 +311,7 @@ function elephantRings(bands) {
 //           cloth, howdah are read)
 //   colour  the hide
 // Returns a number: the head's height above the ground, in pixels of pen's
-// frame (about 606 standing). It draws with pen.
+// frame (about 546 standing). It draws with pen.
 // e.g. var tall = elephantFront({front: true, trunk: 0.5}, "#8e9098");
 function elephantFront(look, colour) {
   var ink = inkFor(colour), lying = !!look.sit, walk = look.step !== undefined && !lying, turn = (look.step || 0) * Math.PI * 2, n, side;
@@ -316,7 +324,7 @@ function elephantFront(look, colour) {
     if (look.trunk === undefined) { lift = clamp(0.7 * e.f.wonder + 0.4 * e.f.smile + 0.5 * e.f.laugh); }
     open = Math.max(e.jaw(clamp(look.mouth || 0)), 0.7 * lift);
   }
-  var down = lying ? 196 : 0, shut = Math.sin(clock * 0.7 + 2) > 0.985;
+  var low = BEAST_LOWER.elephant, down = lying ? 196 : low, shut = Math.sin(clock * 0.7 + 2) > 0.985;
   // A leg from the front: a column a little narrower above the foot, where it
   // spreads to a round pad with nails across it. One that is lifted is
   // shorter, and its foot is off the ground. "from" is the colour of the
@@ -372,8 +380,8 @@ function elephantFront(look, colour) {
     }
   }
   if (!lying) {
-    leg(-142, -260, liftR * 0.7, dark, 44, 4);      // the hind legs, further out and darker: each steps with the fore leg of the other side
-    leg(142, -260, liftL * 0.7, dark, 44, 4);
+    leg(-142, -260 + low, liftR * 0.7, dark, 44, 4);      // the hind legs, further out and darker: each steps with the fore leg of the other side
+    leg(142, -260 + low, liftL * 0.7, dark, 44, 4);
   }
   pen.save();
   pen.translate(0, down - bob);
@@ -433,8 +441,8 @@ function elephantFront(look, colour) {
     leg(-92, -128, 0, colour, 54, 5, chest);
     leg(92, -128, 0, colour, 54, 5, chest);
   } else {
-    leg(-92, -330, liftL, colour, 54, 5, chest);    // the fore legs
-    leg(92, -330, liftR, colour, 54, 5, chest);
+    leg(-92, -330 + low, liftL, colour, 54, 5, chest);    // the fore legs
+    leg(92, -330 + low, liftR, colour, 54, 5, chest);
   }
   pen.save();
   pen.translate(0, down - bob - 6 * beat);
@@ -566,12 +574,12 @@ function elephantFront(look, colour) {
 //   look    the buffalo's look (step, late, feel, rope are read)
 //   colour  the hide
 // Returns a number: the head's height above the ground, in pixels of pen's
-// frame (about 346). It draws with pen.
+// frame (about 278). It draws with pen.
 // e.g. var tall = buffaloFront({front: true, rope: true}, "#55565f");
 function buffaloFront(look, colour) {
   var ink = inkFor(colour), walk = look.step !== undefined, turn = (look.step || 0) * Math.PI * 2, n, side;
   var liftL = walk ? Math.max(0, Math.sin(turn)) : 0, liftR = walk ? Math.max(0, -Math.sin(turn)) : 0;
-  var bob = walk ? 4 * Math.abs(Math.cos(turn)) : 0, dark = blend(colour, "#1c1c22", 0.25);
+  var bob = walk ? 4 * Math.abs(Math.cos(turn)) : 0, dark = blend(colour, "#1c1c22", 0.25), low = BEAST_LOWER.buffalo;
   var beat = look.late !== undefined && STYLE.hop ? hop(clock, look.late) : 0;
   var e = look.feel !== undefined ? creatureFeel(look, clock) : null;   // a feeling: the eyes and the ears
   function leg(lx, top, lift, skin) {               // a leg from the front, and its cloven hoof
@@ -593,10 +601,12 @@ function buffaloFront(look, colour) {
       shape("#2a2a30");
     }
   }
-  leg(-100, -150, liftR * 0.7, dark);
-  leg(100, -150, liftL * 0.7, dark);
+  leg(-100, -150 + low, liftR * 0.7, dark);
+  leg(100, -150 + low, liftL * 0.7, dark);
+  pen.save();
+  pen.translate(0, low);                            // all above the legs stands "low" lower
   pen.beginPath();                                  // the barrel of the body, behind the head
-  pen.ellipse(0, -214 - bob, 142, 112, 0, 0, 7);
+  pen.ellipse(0, -208 - bob, 126, 100, 0, 0, 7);    // lean, as from the side
   shape(blend(colour, "#1c1c22", 0.1));
   pen.strokeStyle = blend(colour, "#e9e2d0", 0.7);  // the pale band across the chest
   pen.lineWidth = 9;
@@ -605,10 +615,14 @@ function buffaloFront(look, colour) {
   pen.moveTo(-44, -150 - bob);
   pen.quadraticCurveTo(0, -128 - bob, 44, -150 - bob);
   pen.stroke();
-  leg(-62, -170, liftL, colour);
-  leg(62, -170, liftR, colour);
+  pen.restore();
+  leg(-62, -170 + low, liftL, colour);
+  leg(62, -170 + low, liftR, colour);
   pen.save();
-  pen.translate(0, -bob + 5 * beat);
+  pen.translate(0, low - bob + 5 * beat);
+  pen.translate(0, -190);                           // the head and horns, smaller, about the muzzle, as from the side
+  pen.scale(0.85, 0.85);
+  pen.translate(0, 190);
   for (side = -1; side <= 1; side += 2) {           // the horns: a crescent to each side, sweeping out and up
     pen.beginPath();
     pen.moveTo(side * 40, -318);
@@ -670,7 +684,7 @@ function buffaloFront(look, colour) {
     pen.stroke();
   }
   pen.restore();
-  return 346 + bob;
+  return 323 - low + bob;
 }
 
 // An elephant, standing on (x, y). Everything about it is in "look" (see
@@ -709,7 +723,7 @@ function elephant(x, y, look) {
     open = Math.max(e.jaw(clamp(look.mouth || 0)), 0.7 * lift);
   }
   var fold = "rgba(50, 50, 60, 0.38)", pink = blend(colour, "#d99aa0", 0.6), wood = "#8a4a2a";
-  var rise = bob - (lying ? 196 : 0);               // how far all above the legs is lifted: a little in a walk, and a long way down for one that lies
+  var low = BEAST_LOWER.elephant, rise = bob - (lying ? 196 : low);   // how far all above the legs is lifted: a little in a walk, less its lowering, and a long way down for one that lies
   FINE = Math.min(1, Math.pow(size, -0.7));
   LINE = STYLE.line * FINE;
   if (look.ground !== false) {
@@ -728,7 +742,7 @@ function elephant(x, y, look) {
     LINE = STYLE.line;
     return {seat: [x, y - (tall + (look.howdah ? 8 : -26)) * size], head: [x, y - tall * size]};   // in a howdah, one sits behind the head and is seen over it
   }
-  var legs = [[-168, -300, 0, 1, false], [142, -300, 0.25, 1, false], [-138, -306, 0.5, 1, true], [172, -306, 0.75, 1, true]];
+  var legs = [[-168, -300 + low, 0, 1, false], [142, -300 + low, 0.25, 1, false], [-138, -306 + low, 0.5, 1, true], [172, -306 + low, 0.75, 1, true]];
   // On a slope the body pitches with the ground, about a point in its
   // middle, so its weight is over the feet and they stand on the ground
   // firmly; the legs hang from the pitched joints and reach the sloped
@@ -738,15 +752,16 @@ function elephant(x, y, look) {
   // feet floating on a fall).
   var pitch = lying ? 0 : (look.slope || 0), PIVOT = -400;
   var legsNow = legs.map(function (leg) {
-    var dx = leg[0], dy = leg[1] - PIVOT;
-    return [dx * Math.cos(pitch) - dy * Math.sin(pitch), PIVOT + dx * Math.sin(pitch) + dy * Math.cos(pitch)].concat(leg.slice(2));
+    var dx = leg[0], dy = leg[1] - PIVOT - low;     // the legs are drawn on the ground, where the body's pivot is "low" lower
+    return [dx * Math.cos(pitch) - dy * Math.sin(pitch), PIVOT + low + dx * Math.sin(pitch) + dy * Math.cos(pitch)].concat(leg.slice(2));
   });
   function pitched(on) {                            // turn the body's frame with the ground, or back
     pen.translate(0, PIVOT);
     pen.rotate(on ? pitch : -pitch);
     pen.translate(0, -PIVOT);
   }
-  var bones = [140, 124, 46], thick = [57, 48, 45];        // the ankle is as high as the leg's round end reaches, so that end stands on the ground
+  var bones = [110, 97, 46], thick = [57, 48, 45];         // the ankle is as high as the leg's round end reaches, so that end stands on the ground;
+                                                    // the two bones reach from the lowered hips with the slack a whole stride needs
   // A foot: the column of the leg spreads to a round pad. It is filled whole
   // and inked only round its sides and its sole, so no line parts it from
   // the leg. A fore foot shows four nails and a hind foot three. And the
@@ -955,10 +970,11 @@ function elephant(x, y, look) {
   // In a walk it swings. It does not go under the ground: what reaches the
   // ground lies along it, and its end lifts.
   var chain = [[136, 6]], angle = 1.12, count = 17, floor = 456 + rise - 22;
+  var link = 26 - 3.5 * (1 - lift);                // hanging, its end is clear of the ground, as before the legs were shortened (BEAST_LOWER)
   for (n = 1; n <= count; n++) {
     angle += 0.045 - lift * (n <= 5 ? 0.5 : 0.12) + (n > 12 ? 0.2 * (1 - lift) + 0.42 * lift : 0)
              + 0.004 * n * Math.sin(clock * 1.7 + n * 0.5 + seed) + (walk ? 0.012 * Math.sin(look.step * Math.PI * 4 - n * 0.35) : 0);
-    var cx = chain[n - 1][0] + Math.cos(angle) * 26, cy = chain[n - 1][1] + Math.sin(angle) * 26;
+    var cx = chain[n - 1][0] + Math.cos(angle) * link, cy = chain[n - 1][1] + Math.sin(angle) * link;
     if (cy > floor) { cy = floor; angle = n > 13 ? -0.3 * (n - 13) : 0.06; }
     chain.push([cx, cy]);
   }
@@ -1097,6 +1113,7 @@ function buffalo(x, y, look) {
   checkNames("The buffalo's name", look, BEAST_KEYS);
   var size = (look.size || 1) * GAITS.buffalo[0], face = look.face || 1, colour = look.colour || "#55565f", ink = inkFor(colour), n;
   var walk = look.step !== undefined, bob = walk ? 4 * Math.abs(Math.sin(look.step * Math.PI * 2)) : 0;
+  var low = BEAST_LOWER.buffalo, rise = bob - low;  // how far all above the legs is lifted: a little in a walk, less its lowering
   var beat = look.late !== undefined && STYLE.hop ? hop(clock, look.late) : 0;
   var e = look.feel !== undefined ? creatureFeel(look, clock + x * 0.01) : null;   // a feeling: the eye, the head, the ear, the tail
   var turn = clamp(look.turn || 0), turnHead = fowlEase(turn / 0.4), turnNeck = fowlEase((turn - 0.25) / 0.45), turnBody = fowlEase((turn - 0.45) / 0.55);
@@ -1123,7 +1140,8 @@ function buffalo(x, y, look) {
     LINE = STYLE.line;
     return {seat: [x, y - (high - 16) * size], head: [x, y - high * size]};
   }
-  var legs = [[-140, -186, 0, -1, false], [118, -186, 0.25, 1, false], [-116, -190, 0.5, -1, true], [142, -190, 0.75, 1, true]];
+  var legs = [[-140, -186 + low, 0, -1, false], [118, -186 + low, 0.25, 1, false], [-116, -190 + low, 0.5, -1, true], [142, -190 + low, 0.75, 1, true]];
+  var bones = [70, 65, 14], thick = [27, 18, 15];   // the two bones reach from the lowered hips with the slack a whole stride needs
   function foot(ax, ay, skin, lifted) {             // a cloven hoof: two dark toes
     pen.save();
     pen.translate(ax, ay);
@@ -1139,18 +1157,18 @@ function buffalo(x, y, look) {
     }
     pen.restore();
   }
-  beastLegs(legs, true, look, [92, 86, 14], [27, 18, 15], colour, GAITS.buffalo[1], 24, foot);
-  pen.translate(0, -bob);
+  beastLegs(legs, true, look, bones, thick, colour, GAITS.buffalo[1], 24, foot);
+  pen.translate(0, -rise);
   var swing = Math.sin(clock * 2.4 * (e ? 1 + e.wag : 1) + x * 0.01) * 14 * (e ? 1 + e.wag : 1) + 16 * beat;
-  hose(-204, -246, -232 + swing, -120, 0.1, 8, colour);       // the tail, and its tuft
+  hose(-204, -232, -232 + swing, -120, 0.1, 8, colour);       // the tail, and its tuft
   hose(-232 + swing, -120, -236 + swing * 1.3, -84, 0.05, 13, "#2a2a30");
-  pen.beginPath();                                  // the body: a barrel, the withers higher than the hips
-  pen.moveTo(-205, -230);
-  pen.bezierCurveTo(-215, -300, -150, -318, -60, -300);
-  pen.bezierCurveTo(20, -286, 80, -330, 150, -310);
-  pen.bezierCurveTo(205, -280, 215, -200, 170, -160);
-  pen.bezierCurveTo(90, -116, -90, -112, -160, -140);
-  pen.bezierCurveTo(-195, -160, -200, -200, -205, -230);
+  pen.beginPath();                                  // the body: a barrel, the withers higher than the hips; lean, as a swamp buffalo is
+  pen.moveTo(-205, -218);                           // (owner, 2026-10-26: "a little skinnier with a smaller head to fit the legs": 0.88 as deep, the belly where it was)
+  pen.bezierCurveTo(-215, -280, -150, -295, -60, -280);
+  pen.bezierCurveTo(20, -267, 80, -306, 150, -288);
+  pen.bezierCurveTo(205, -262, 215, -192, 170, -156);
+  pen.bezierCurveTo(90, -118, -90, -114, -160, -139);
+  pen.bezierCurveTo(-195, -156, -200, -192, -205, -218);
   pen.closePath();
   shape(colour);
   pen.save();
@@ -1161,18 +1179,19 @@ function buffalo(x, y, look) {
   pen.fillStyle = shade;
   pen.fillRect(-240, -340, 480, 240);
   pen.restore();
-  pen.translate(0, bob);
-  beastLegs(legs, false, look, [92, 86, 14], [27, 18, 15], colour, GAITS.buffalo[1], 24, foot);
-  pen.translate(0, -bob);
+  pen.translate(0, rise);
+  beastLegs(legs, false, look, bones, thick, colour, GAITS.buffalo[1], 24, foot);
+  pen.translate(0, -rise);
   var nod = 0.04 * Math.sin(clock * 1.5 + x * 0.01) + 0.06 * beat + (walk ? 0.03 * Math.sin(look.step * Math.PI * 4) : 0)
           + (e ? 0.5 * e.nod - 0.12 * e.raise + 0.04 * e.shake : 0);
   var graze = clamp(look.graze || 0), chew = graze > 0.6 ? Math.sin(clock * 7 + x * 0.01) : 0;   // the head down in the grass, chewing
   var bodyFrame = pen.getTransform();               // the body's frame, for the neck's shade when the head is down
   pen.save();                                       // the neck and the head, carried forward and low (or down to graze)
-  pen.translate(150 - 20 * graze, -262 + 70 * graze);
+  pen.translate(150 - 20 * graze, -247 + (86 - low) * graze);   // grazing, the head goes as far down as the body is above the grass
   pen.scale(neckWay, 1);                            // a turn: the neck comes round at the shoulder, lifting as it comes
   pen.rotate(-0.3 * Math.sin(Math.PI * turnNeck));
   pen.rotate(nod + 1.05 * graze + 0.03 * chew * graze);
+  pen.scale(0.85, 0.85);                            // the neck and the head, smaller, to fit the short legs
   function headRound() {                            // a turn: the head comes round first, where it meets the neck
     pen.translate(92, 0);
     pen.scale(headWay, 1);
@@ -1319,7 +1338,7 @@ function buffalo(x, y, look) {
   pen.restore();
   FINE = 1;
   LINE = STYLE.line;
-  return {seat: [x - 20 * size * face * bodyWay, y - (296 + bob) * size], head: [crown.x, crown.y]};
+  return {seat: [x - 20 * size * face * bodyWay, y - (279 + rise) * size], head: [crown.x, crown.y]};
 }
 
 // ---------- a cat and a tiger ----------
