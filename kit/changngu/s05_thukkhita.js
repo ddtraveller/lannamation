@@ -39,6 +39,7 @@ function cngSceneThukkhita(t) {
                                                            {id: "phang", face: -1, feel: "happy", smile: 0.4, at: [C05_CRADLE[0], C05_CRADLE[1] - 30]}));
     }}
   ]));
+  cngMotes(t);                                           // dust in the window's light (the air of a room by day)
   pen.restore();
   cngFadeIn(t, 1);
 }

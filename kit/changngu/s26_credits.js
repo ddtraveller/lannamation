@@ -153,9 +153,10 @@ function c26Land(river) {
 // veil, so the words read. t: seconds. Gives back nothing: it draws with pen.
 function c26Night(t) {
   var river = cngRiver();
-  pen.drawImage(cngSky("night"), 0, 0);
+  pen.drawImage(cngSky("clear"), 0, 0);                // fine stars, no Milky Way (the scenery pass, 2026-10-26)
+  sceneryStars(t, {band: null, horizon: CNG_WATER, count: 1600, bright: 24, glow: null});
   var moon = nightMoon(C26_MOON[0], C26_MOON[1], C26_MOON[2]);
-  cumulus(pen, t, CLOUD_LOOKS.night);
+  cngClouds(t, "night");                                // soft clouds in the moon's light
   if (t > C26_OWL[0] && t < C26_OWL[1]) {
     var u = (t - C26_OWL[0]) / (C26_OWL[1] - C26_OWL[0]), a = C26_OWL[2][0], b = C26_OWL[2][1];
     var ox = mix(a[0], b[0], u), oy = mix(a[1], b[1], u) - 60 * Math.sin(Math.PI * u);

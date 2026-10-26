@@ -17,14 +17,12 @@ var C09_STRIKE = 0.9;                                  // seconds between the ha
 function cngSceneWeapons(t) {
   var village = cngVillage(), cam = WIDE * 0.92, f = C09_FORGE, s = f[2];
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 40, CNG_CLOUDS.day);
+  cngClouds(t + 40, "day");
   pen.save();
   pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
   pen.restore();
-  csBand(pen, 0, 800, WIDE, 280, "#b9a070", "#9a8058");   // the beaten ground of the forge's yard
-  pen.fillStyle = "#c9b07a";                               // the mat with the finished weapons
-  pen.fillRect(140, 860, 420, 50);
+  pen.drawImage(cngForgeGround(C09_FORGE, true), 0, 0);   // the yard, and the mat with the finished weapons
   dap(pen, 180, 890, 0.42, {angle: Math.PI / 2});
   dap(pen, 180, 870, 0.42, {angle: Math.PI / 2 - 0.05});
   fireGun(pen, 300, 904, 0.7, {angle: -0.02, t: t});
@@ -33,6 +31,8 @@ function cngSceneWeapons(t) {
   pen.fillStyle = "#c9ccd2";
   [[560, 844], [570, 836]].forEach(function (p) { pen.beginPath(); pen.moveTo(p[0], p[1] - 6); pen.lineTo(p[0] + 30, p[1]); pen.lineTo(p[0], p[1] + 6); pen.fill(); });
   forge(pen, f[0], f[1], s, t);
+  natSteam(t, f[0] - 40 * s, f[0] + 40 * s, f[1] - 70 * s, {count: 10, rise: 260, wide: 70, life: 6, lean: 120, alpha: 0.22, flat: 0.8,
+                                                            patch: 0.6, colour: "190, 184, 176", seed: 9});   // its smoke, rising and leaning
   var phase = (t % C09_STRIKE) / C09_STRIKE, up = phase < 0.6 ? phase / 0.6 : 1 - (phase - 0.6) / 0.4;   // up slowly, down fast
   var anvil = [f[0] + 126 * s, f[1] - 62 * s];
   var smith = anvil[0] + 130, bellows = [f[0] - 110 * s, f[1] - 150 * s + 20 * s * Math.sin(t * 4)];

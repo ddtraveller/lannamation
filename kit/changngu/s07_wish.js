@@ -11,13 +11,16 @@ var C07_LINES = [[1.6, 7.9, "C027"], [8.4, 10.58, "C028"], [15.6, 22.8, "C029"],
 // first words; nothing moves after, through his wish and his passing (the kit's rule: nothing moves through a death).
 var C07_LIFE = [{name: "flock home at dusk", kind: "flock", layer: "back", course: [[10.8, -320, 260], [14.4, 2150, 200]]}];
 var C07_CUTS = [14.6, 29.4];
+var C07_SUN = [330, 330, 430];                         // the setting sun: its x, the y it is at, the y it goes down to
 
 // The climb, wide: the novice small on the path, up to the chedi; there he lifts his bowl above his head.
 function c07Climb(t) {
-  pen.drawImage(cngSky("dusk"), 0, 0);
-  cumulus(pen, t + 20, CNG_CLOUDS.dusk);
+  pen.drawImage(cngSky("sunset"), 0, 0);
+  cngClouds(t + 20, "dusk");
+  scenerySun(t, C07_SUN[0], mix(C07_SUN[1], C07_SUN[2], between(t, 0, C07_CUTS[0])), 32,   // going down behind the range
+             {glow: 10, colour: "255, 180, 100", disc: ["#fff2d0", "#ffcf80", "#ffaa5a"]});
   decorate(t, C07_LIFE, "back");
-  pen.drawImage(cngKuKaeo(), 0, 0);
+  pen.drawImage(cngKuKaeo("dusk"), 0, 0);
   var u = between(t, 0.5, 8), size = mix(0.42, 0.3, u);
   var x = mix(760, CNG_CHEDI[0] - 110, u), y = mix(800, CNG_CHEDI[1] + 8, Math.pow(u, 0.8));
   var lift = between(t, 8.6, 10.2), face = 1;
@@ -34,8 +37,8 @@ function c07Kneel(t) {
   pen.translate(WIDE / 2, 640);
   pen.scale(zoom, zoom);
   pen.translate(-CNG_CHEDI[0] + 60, -CNG_CHEDI[1] + 60);
-  pen.drawImage(cngSky("dusk"), 0, 0);
-  pen.drawImage(cngKuKaeo(), 0, 0);
+  pen.drawImage(cngSky("sunset"), 0, 0);
+  pen.drawImage(cngKuKaeo("dusk"), 0, 0);
   var speaking = t > 21.2 && t < 26.4;
   person(CNG_CHEDI[0] - 130, CNG_CHEDI[1] + 26, cngPerson("monk", CNG_NOVICE, {id: "novice2", size: 0.3, face: 1, floor: "side", wai: 1,
                                                                              mouth: speaking ? {open: 0.04 + 0.12 * Math.abs(Math.sin(t * 7)), wide: 0.4, round: 0.1} : undefined}));
@@ -56,6 +59,8 @@ function c07Days(t) {
   pen.globalAlpha = dark;
   pen.drawImage(cngSky("night"), 0, 0);
   pen.globalAlpha = 1;
+  sceneryStars(t, {band: null, horizon: 760, count: 1600, bright: 24, glow: null, alpha: dark});   // fine stars, the moon
+  sceneryMoon(t, 1380, 200, 34, {alpha: dark});
   pen.drawImage(cngKuKaeo(), 0, 0);
   pen.fillStyle = "rgba(10, 14, 40, " + (0.62 * dark).toFixed(3) + ")";
   pen.fillRect(0, 0, WIDE, 1080);

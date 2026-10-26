@@ -33,7 +33,7 @@ function c21War(t, x, y, size, face, walking) {
 // The march: the Tai cross the field from the left to the right behind the white elephant.
 function c21March(t) {
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 10, CNG_CLOUDS.day);
+  cngClouds(t + 10, "day");
   pen.drawImage(cngFields(), 0, -120);
   crowd(t, 820, t * 40, false);
   var go = t * 70, sprites = [];
@@ -47,13 +47,14 @@ function c21March(t) {
     })(k);
   }
   drawByZ(sprites);
+  cngBeds(t, "fields", "frame");
 }
 
 // Thung San Chai: the Khom ready on the right, their king on a grey elephant; the white elephant comes on from the left;
 // he shakes, turns his elephant and runs; his men scatter.
 function c21Field(t) {
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 50, CNG_CLOUDS.day);
+  cngClouds(t + 50, "day");
   pen.drawImage(cngFields(), 0, -120);
   var come = between(t, 14.0, 19.4), wx = mix(-300, 520, come);
   var shake = t > 19.4 && t < 25.6 ? 8 * Math.sin(t * 50) : 0, flee = between(t, 25.8, 34);
@@ -77,12 +78,13 @@ function c21Field(t) {
     })(k);
   }
   drawByZ(sprites);
+  cngBeds(t, "fields", "frame");
 }
 
 // Yonok's gate, shut; the white elephant comes up the road and breaks it open, the doors bursting, dust thrown up.
 function c21Gate(t) {
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 70, CNG_CLOUDS.day);
+  cngClouds(t + 70, "day");
   pen.drawImage(cngFields(), 0, 0);
   var up = between(t, 36.4, 42.6), hit = 42.6;
   cngGateWall(t < hit ? 0 : Math.min(1, (t - hit) * 4));
@@ -97,6 +99,7 @@ function c21Gate(t) {
     var x = mix(300, CNG_GATE[0] - 20, up), y = mix(1080, CNG_GATE[1] + 80, up), size = mix(0.6, 0.32, up);
     c21War(t, x, y, size, 1, up < 1);
   }
+  cngBeds(t, "fields", "frame");
 }
 
 // Scene 21, the entry the film calls (SCENES): t, its own second, 0 to C21_LONG (55 s). Gives back nothing: it draws the

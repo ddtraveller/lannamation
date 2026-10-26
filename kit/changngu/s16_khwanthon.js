@@ -22,13 +22,23 @@ function c16Name(t) {
   if (a <= 0) { return; }
   pen.save();
   pen.globalAlpha = a;
+  var halo = pen.createRadialGradient(520, 244, 20, 520, 244, 360);   // it reads over any sky, as scene 18's name does
+  halo.addColorStop(0, "rgba(40, 24, 10, 0.42)"); halo.addColorStop(1, "rgba(40, 24, 10, 0)");
+  pen.save(); pen.translate(520, 244); pen.scale(1, 0.3); pen.translate(-520, -244);
+  pen.fillStyle = halo; pen.fillRect(160, 244 - 360, 720, 720);
+  pen.restore();
   pen.textAlign = "center";
+  pen.lineJoin = "round";
+  pen.font = "700 76px 'Noto Serif Thai', 'Leelawadee UI', serif";
+  pen.strokeStyle = "rgba(70, 40, 12, 0.9)"; pen.lineWidth = 7;
+  pen.strokeText("ควานทน", 520, 230);
   pen.shadowColor = "rgba(255, 196, 90, 0.7)"; pen.shadowBlur = 16;
   pen.fillStyle = "#f2d27a";
-  pen.font = "700 76px 'Noto Serif Thai', 'Leelawadee UI', serif";
   pen.fillText("ควานทน", 520, 230);
   pen.shadowBlur = 0;
   pen.font = "italic 36px " + LETTERS_LATIN + ", serif";
+  pen.strokeStyle = "rgba(50, 30, 10, 0.8)"; pen.lineWidth = 4;
+  pen.strokeText("Khwan Thon", 520, 282);
   pen.fillStyle = "#fff6dc";
   pen.fillText("Khwan Thon", 520, 282);
   pen.restore();
@@ -42,7 +52,7 @@ function c16Name(t) {
 function cngSceneKhwanthon(t) {
   var river = cngRiver(), size = cngAgeSize(13);
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 80, CNG_CLOUDS.day);
+  cngClouds(t + 80, "day");
   pen.drawImage(river.back, 0, 0);
   cngRiverLife(t, {flushed: 1 - between(t, 0, 20)});
   decorate(t, C16_LIFE, "back");
@@ -50,13 +60,13 @@ function cngSceneKhwanthon(t) {
   var ex = mix(1000, 1500, upstream), bob = 6 * Math.sin(t * 1.4);
   var e = elephant(ex, C16_SWIM + 160 + bob, {size: 0.62, face: shake > 0 ? 1 : -1, colour: "#f1ddd3", cloth: "#c9962a",
                                               trunk: 0.3 + 0.4 * Math.abs(Math.sin(t * 1.3)), mouth: shake ? 0.3 : 0.1});
-  csBand(pen, 0, C16_SWIM - 8, WIDE, CNG_BANK - C16_SWIM + 30, "#a68e66", "#8a7250");   // the water over it, moving left
-  waves(pen, 0, C16_SWIM - 6, WIDE, CNG_BANK - C16_SWIM + 20, "rgba(250, 238, 210, 0.3)", t * 2);
+  cngRiverOver(t, C16_SWIM - 8);                         // the water over it
   for (var w = 0; w < 6; w++) {                             // its wake as it pushes against the current
     pen.strokeStyle = "rgba(250, 245, 230, " + (0.5 * upstream * (1 - upstream)).toFixed(3) + ")"; pen.lineWidth = 3;
     pen.beginPath(); pen.moveTo(ex - 200 - w * 50, C16_SWIM - 2 + w * 4); pen.lineTo(ex - 120 - w * 50, C16_SWIM + w * 4); pen.stroke();
   }
   pen.drawImage(river.near, 0, 0);
+  cngRiverBank(t, "edge");                               // reeds and grass along the water's edge
   var reach = t < 11 ? Math.max(0, Math.sin(t * 1.6)) : 0;  // he reaches forward with the hook, toward its head
   var j = person(e.seat[0], e.seat[1], cngPerson("boy", CNG_PHROM, {id: "phromrides", size: size, face: -1, floor: "astride",
                                                                    feel: t < 11 ? "concerned" : "surprised",
@@ -77,5 +87,7 @@ function cngSceneKhwanthon(t) {
   }
   drawByZ(kids);
   c16Name(t);
+  cngRiverBank(t, "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 16]});
   cngFadeIn(t, 1);
 }

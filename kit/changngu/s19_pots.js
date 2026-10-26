@@ -13,8 +13,9 @@ var C19_CUTS = [15.2, 29.4];
 function c19Yard(t) {
   var village = cngVillage(), cam = WIDE * 0.62;
   pen.drawImage(cngSky("day"), 0, 0);
+  cngClouds(t + 20, "day");
   pen.save(); pen.translate(-cam, 0); pen.drawImage(village.back, 0, 0); pen.restore();
-  csBand(pen, 0, 820, WIDE, 260, "#b9a070", "#9a8058");
+  pen.drawImage(cngForgeGround(null, false), 0, 0);       // the yard's beaten earth (sets.js)
   var speaks = t > 6.2 && t < 14.2;
   elephant(1420, 830, {size: 0.5, face: -1, colour: "#f1ddd3", cloth: "#c9962a", trunk: 0.2 + 0.2 * Math.sin(t)});
   decorate(t, cngYard(1780, 880, 6), "back");                 // the yard's fowl (owner, 2026-10-25)
@@ -33,14 +34,17 @@ function c19Yard(t) {
                                  {id: "phang", face: 1, feel: t > 8 ? "happy" : "surprised", at: [980, 620]}));
     }}
   ]);
+  cngBeds(t, "village", "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 27]});
 }
 
 // The stable: the elephant at its golden salung of grass; then the man with the golden pot behind it.
 function c19Stable(t) {
   var village = cngVillage(), cam = WIDE * 0.75, sx = 900, base = 880;
   pen.drawImage(cngSky("day"), 0, 0);
+  cngClouds(t + 20, "day");
   pen.save(); pen.translate(-cam, 0); pen.drawImage(village.back, 0, 0); pen.restore();
-  csBand(pen, 0, 820, WIDE, 260, "#b9a070", "#9a8058");
+  pen.drawImage(cngForgeGround(null, false), 0, 0);
   cngStable(pen, sx, base, 1, "back");
   var eats = t < 21 ? Math.max(0, Math.sin((t - 15) * 1.4)) : 0;
   salung(pen, sx - 300, base - 4, 0.9, {grass: true});
@@ -57,14 +61,17 @@ function c19Stable(t) {
     }
   }
   cngStable(pen, sx, base, 1, "front");
+  cngBeds(t, "village", "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 25]});
 }
 
 // Wiang Phan: men dig the moat; the bank of earth with its palisade and a timber gate, opening and shutting.
 function c19Moat(t) {
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 40, CNG_CLOUDS.day);
+  cngClouds(t + 40, "day");
   pen.drawImage(cngVillage().back, -WIDE * 0.5, 0);
-  cityWall(pen, -60, 760, WIDE + 120, 0.9, {plain: true, open: 0.5 + 0.5 * Math.sin((t - 29.4) * 0.8), outer: true});
+  cityWall(pen, -60, 760, WIDE + 120, 0.9, {plain: true, open: 0.5 + 0.5 * Math.sin((t - 29.4) * 0.8), outer: true, t: t});
+  pen.drawImage(cngFields(), 0, 830, WIDE, 250, 0, 830, WIDE, 250);   // outside it the fields and the road to its gate, not the village
   var sprites = [];
   [[300, 1], [520, -1], [1350, 1], [1600, -1]].forEach(function (d, k) {
     var dig = Math.max(0, Math.sin(t * 2.4 + k));
@@ -78,6 +85,8 @@ function c19Moat(t) {
     }});
   });
   drawByZ(sprites);
+  cngBeds(t, "village", "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 23]});
 }
 
 // Scene 19, the entry the film calls (SCENES): t, its own second, 0 to C19_LONG (40 s). Gives back nothing: it draws the

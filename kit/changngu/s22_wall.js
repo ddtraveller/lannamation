@@ -10,15 +10,38 @@ var C22_LINES = [[1.4, 6.09, "C105"], [10.8, 15.49, "C106"], [16.0, 22.38, "C107
 var C22_CUTS = [9.8, 23.0];
 var C22_ROAD = 900;
 
-// The road south through the forest: far ranges, a forested slope, the road across; tint: how far into the night.
+// The road south through the forest, painted once (the scenery pass, 2026-10-26): Chang Ngu's range, the slope
+// clothed in forest (scenery.js sceneryForest()), flowers near its foot, the road across with its ruts, grass along it.
+var C22_ROAD_SET = null;
+function c22RoadSet() {
+  if (C22_ROAD_SET) { return C22_ROAD_SET; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var b = paper.getContext("2d"), keep = pen, n;
+  cngFar(b, 0, 640);
+  sceneryForest(b, function (x) { return 700 - 60 * Math.sin(x * 0.004) - 30 * Math.sin(x * 0.011); },
+                {left: -50, right: WIDE + 50, blooms: CNG_FOREST_BLOOMS, pines: 16, top: 560, foot: 900, haze: "#b6c4c0", seed: 21});
+  csBand(b, 0, 840, WIDE, 240, "#c9b285", "#a8926a");
+  b.fillStyle = "rgba(140, 116, 70, 0.3)";               // its ruts
+  [880, 940].forEach(function (y) { b.fillRect(0, y, WIDE, 4); });
+  pen = b;                                               // grass along its edge
+  for (n = 0; n < 18; n++) { thkPlace(sceneryGrass(30 + 34 * dice(n), 8, 531 + n), 50 + n * 110 + 40 * dice(n + 3), 846, 1, 0); }
+  pen = keep;
+  C22_ROAD_SET = paper;
+  return paper;
+}
+
+// The road south through the forest; night: how far into the night (fine stars and the moon come out).
 function c22Road(t, night) {
   pen.drawImage(cngSky("day"), 0, 0);
-  if (night > 0) { pen.globalAlpha = night; pen.drawImage(cngSky("night"), 0, 0); pen.globalAlpha = 1; }
-  cngSkyline(pen, 0, 640, 200, "#9fb39e", 13);
-  var keep = 0;
-  void keep;
-  forestSlope(pen, function (x) { return 700 - 60 * Math.sin(x * 0.004) - 30 * Math.sin(x * 0.011); }, -50, WIDE + 50, 860, {});
-  csBand(pen, 0, 840, WIDE, 240, "#c9b285", "#a8926a");
+  if (night > 0) {
+    pen.globalAlpha = night; pen.drawImage(cngSky("night"), 0, 0); pen.globalAlpha = 1;
+    sceneryStars(t, {band: null, horizon: 700, count: 1600, bright: 24, glow: null, alpha: night});
+    sceneryMoon(t, 1500, 180, 34, {alpha: night});
+  }
+  cngClouds(t + 30, "day", 1 - night);
+  pen.drawImage(c22RoadSet(), 0, 0);
   if (night > 0) { pen.fillStyle = "rgba(10, 14, 40, " + (0.55 * night).toFixed(3) + ")"; pen.fillRect(0, 0, WIDE, 1080); }
 }
 
@@ -48,7 +71,9 @@ function c22Heaven(t) {
   var rays = pen.createRadialGradient(WIDE / 2, 300, 20, WIDE / 2, 300, 900);
   rays.addColorStop(0, "rgba(255, 246, 210, 0.95)"); rays.addColorStop(1, "rgba(255, 230, 170, 0)");
   pen.fillStyle = rays; pen.fillRect(0, 0, WIDE, 1080);
-  cumulus(pen, t * 3 + 10, {count: 7, lit: "#fff6e0", shade: "#d9c8e8", below: true});
+  var gold = ["#d9c8e8", "#f2dcc4", "#fff6e0"];             // soft clouds lit gold from within, above and below
+  sceneryClouds(t * 3 + 10, {colours: gold, count: 5, top: 60, bottom: 360, wide: [360, 620], seed: 22});
+  sceneryClouds(t * 3 + 40, {colours: gold, count: 6, top: 700, bottom: 1040, wide: [420, 720], seed: 23});
   var down = between(t, 16, 20.8);
   if (down > 0) {
     thewada(mix(WIDE / 2, WIDE / 2 + 200, down), mix(320, 1200, down * down), t, {size: 1.1, face: 1, scarves: true, light: 1});
@@ -56,8 +81,8 @@ function c22Heaven(t) {
 }
 
 // Scene 22, the entry the film calls (SCENES): t, its own second, 0 to C22_LONG (40 s). Gives back nothing: it draws the
-// whole sheet with pen. From sets.js: cngSkyline(), cngPerson() with CNG_PHROM, cngAgeSize(), cngCutsOver(); from
-// highlands.js forestSlope(); from himmaphan.js thewada(); from chiangsaen.js risingWall(); from beasts.js elephant().
+// whole sheet with pen. From sets.js: cngFar(), cngPerson() with CNG_PHROM, cngAgeSize(), cngCutsOver(); from
+// scenery.js sceneryForest(); from himmaphan.js thewada(); from chiangsaen.js risingWall(); from beasts.js elephant().
 // Its words are C22_LINES (C105 to C109). Its z plan: each shot's set, the wall, then by drawByZ the elephant and the
 // men by their feet, the deva and its light over all.
 function cngSceneWall(t) {

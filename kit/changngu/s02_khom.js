@@ -19,8 +19,9 @@ function c02Dark(t) {
 function c02Court(t, who, walkers) {
   var p = CNG_PALACE, dais = hoKhamDais(p[1], p[2]), floor = hoKhamFloor(p[1], p[2]);
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 50, CNG_CLOUDS.day);
+  cngClouds(t + 50, "day");
   pen.drawImage(cngCourt(), 0, 0);
+  cngBeds(t, "court", "back");
   drawByZ([
     {name: "hall, back", kind: "palace", z: "set", y: dais - 1, draw: function () { cngPalace("back"); }},
     {name: "on the dais", kind: "person", z: "set", x: p[0], y: dais, draw: function () { person(p[0], dais, who); }},
@@ -34,14 +35,16 @@ function c02Court(t, who, walkers) {
                                                           id: "courtier2", face: -1, at: [p[0], dais - 80]}));
     }}
   ].concat(walkers || []));
+  cngBeds(t, "court", "frame");
 }
 
 // The gate: the fields, the wall with its gate opening, the column of Khom marching up the road and in. t: seconds.
 function c02Gate(t) {
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 80, CNG_CLOUDS.day);
+  cngClouds(t + 80, "day");
   pen.drawImage(cngFields(), 0, 0);
-  cngGateWall(between(t, 12.5, 15.5));
+  cngGateWall(between(t, 12.5, 15.5), t);
+  cngBeds(t, "fields", "back");
   var sprites = [];
   [1, -1].forEach(function (side) {                       // two columns, one from the near left and its mirror from the
     var late = side > 0 ? 0 : 0.55, tag = side > 0 ? "" : "r";   // near right (owner, 2026-10-25), a half step behind
@@ -61,10 +64,11 @@ function c02Gate(t) {
     }
   });
   drawByZ(sprites);
+  cngBeds(t, "fields", "frame");
 }
 
 // Scene 2, the entry the film calls (SCENES): t, its own second, 0 to C02_LONG (40 s). Gives back nothing: it draws the
-// whole sheet with pen. From sets.js: cngSky("day"), CNG_CLOUDS.day, cngCourt(), cngPalace(), CNG_PALACE, cngFields(),
+// whole sheet with pen. From sets.js: cngSky("day"), cngClouds(), cngCourt(), cngPalace(), CNG_PALACE, cngFields(),
 // cngGateWall(), CNG_GATE, cngPerson() with CNG_KING, CNG_KHOM_KING. Its words are C02_LINES (C005 to C009).
 // Its z plan: in the courtyard, by drawByZ the hall's back, who sits on the dais and the hall's front in "set", and
 // in "people" by their feet the courtiers and those who walk; at the gate the set first, then the soldiers by their

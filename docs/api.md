@@ -9485,7 +9485,7 @@ Khong was the east moat). The owner's pick, 2026-10-23 (of three gates).
   x, base: the left end and the foot of the high rampart (the moat's edge); wide: pixels; size: 1 is a rampart 150
   pixels high; look: gate (true), open (0 shut to 1 open; 0), outer (true: the low outer rampart and the moat), plain
   (true: a village's defences, earth and timber only, no brick: the chronicle's Wiang Phan, a moat dug and filled
-  and "ประตูหับไข", gates that open and shut).
+  and "ประตูหับไข", gates that open and shut), t (seconds, the moat's ripples: 0).
 e.g. cityWall(pen, 200, 820, 1500, 1, {open: 0.8});
 ```
 
@@ -9569,8 +9569,13 @@ e.g. redAvadavat(pen, 500, 900, 1, {peck: 0.8});
 ### `spotbill(brush, x, y, size, look)`
 
 ```
-The Indian spot-billed duck, swimming: a brown scaled body, a pale face, a dark crown, a black bill tipped yellow;
-it bobs with t. At (x, y), the waterline. e.g. spotbill(pen, 300, 800, 1, {face: 1, t: t});
+The Indian spot-billed duck, swimming (owner, 2026-10-26: "The 2 birds in the water could use a lot more detail"; the
+pick B, drawn from photographs of the bird): a pale head and a long pale neck finely streaked, a dark crown and a
+dark stripe through the eye, the red spot at the base of the bill, the black bill tipped yellow; the flanks dark,
+each feather edged pale like scales, the breast paler and spotted; the folded wing dark, the white tertials a patch
+at the rear, the green speculum edged white, the tail black and cocked. Shaded from above, its reflection under it
+broken by the water, a small wake behind it; it bobs with t. At (x, y), the waterline; size 1 about 70 across.
+e.g. spotbill(pen, 300, 800, 1, {face: 1, t: t});
 ```
 
 ### `forge(brush, x, base, size, t)`
@@ -9668,7 +9673,9 @@ Kit only: never in the maker (the respect rule). size 1 is 60 across. e.g. almsB
 ```
 Indra's wall (the chronicle: a deva "เนรมิตกำแพงหินศิลา", raises a wall of stone before Phrom): cut stone rising out
 of the ground across x..x + wide, u 0 (none) to 1 (risen to tall pixels), a deva's light along its top as it rises,
-dust at its foot. The owner's pick, 2026-10-23. e.g. risingWall(pen, 600, 900, 700, 360, between(t, 2, 5));
+dust at its foot. The owner's pick, 2026-10-23. In depth since 2026-10-26 (the scenery pass): each stone lit along
+its top and left, shaded along its bottom and right, its face speckled, moss in a joint here and there; the wall's
+top lit and its near end in shade, so it has thickness. e.g. risingWall(pen, 600, 900, 700, 360, between(t, 2, 5));
 ```
 
 ### `statuePool(brush, x, y, size, t)`

@@ -19,8 +19,7 @@ function c15Head(t) {
 
 // The river drawn over whoever is in it, from the water line down to the bank, so only their heads and shoulders show.
 function c15Water(t) {
-  csBand(pen, 0, C15_SWIM - 8, WIDE, CNG_BANK - C15_SWIM + 30, "#a68e66", "#8a7250");
-  waves(pen, 0, C15_SWIM - 6, WIDE, CNG_BANK - C15_SWIM + 20, "rgba(250, 238, 210, 0.3)", t);
+  cngRiverOver(t, C15_SWIM - 8);
 }
 
 // Someone up to the chest in the river at x (the water line at C15_SWIM), drawn as a person standing lower.
@@ -52,7 +51,7 @@ function c15InWater(x, look, rise) {
 function cngSceneThird(t) {
   var river = cngRiver(), size = cngAgeSize(13), changed = t >= (C15_CHANGE[0] + C15_CHANGE[1]) / 2;
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 50, CNG_CLOUDS.day);
+  cngClouds(t + 50, "day");
   pen.drawImage(river.back, 0, 0);
   cngRiverLife(t, {flushed: between(t, 13, 15), away: t - 15});   // and fly away again
   var hx = c15Head(t), neck = null, elephantAt = null;
@@ -104,6 +103,7 @@ function cngSceneThird(t) {
   inRiver.forEach(function (f) { f(); });
   c15Water(t);
   pen.drawImage(river.near, 0, 0);
+  cngRiverBank(t, "edge");                               // reeds and grass along the water's edge
   if (changed && elephantAt) {                             // Phrom on its neck, over the water (the elephant swims in it)
     person(elephantAt.seat[0], elephantAt.seat[1], cngPerson("boy", CNG_PHROM, {id: "phromrides", size: size, face: -1, floor: "astride",
                                                                                 feel: "happy", handA: liftHand(0.6 + 0.3 * Math.sin(t * 2))}));
@@ -124,5 +124,6 @@ function cngSceneThird(t) {
   if (leaper && leap <= 0.6) { onBank.push(leaper); }
   drawByZ(onBank);
   cngBurst(t, C15_HELD + 60, C15_SWIM - 60, C15_CHANGE);
+  cngRiverBank(t, "frame");
   cngFadeIn(t, 1);
 }

@@ -40,13 +40,15 @@ function c11Stroke(x, feet, size, face, u) {
 function cngSceneGrowing(t) {
   var village = cngVillage(), cam = WIDE * 0.86, f = C11_FORGE, age = c11Age(t), size = cngAgeSize(age);
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 70, CNG_CLOUDS.day);
+  cngClouds(t + 70, "day");
   pen.save();
   pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
   pen.restore();
-  csBand(pen, 0, 800, WIDE, 280, "#b9a070", "#9a8058");
+  pen.drawImage(cngForgeGround(f, false), 0, 0);           // the yard (sets.js), as scene 9's
   forge(pen, f[0], f[1], f[2], t);
+  natSteam(t, f[0] - 40, f[0] + 40, f[1] - 70, {count: 10, rise: 240, wide: 60, life: 6, lean: 120, alpha: 0.2, flat: 0.8,
+                                                patch: 0.6, colour: "190, 184, 176", seed: 11});   // its smoke
   var sprites = [];
   if (t < 15.4) {                                          // seven: he runs to his father and points at the forge
     var run = between(t, 1, 5), px = mix(300, 760, run);
@@ -82,6 +84,10 @@ function cngSceneGrowing(t) {
   }
   decorate(t, cngYard(220, 878, 3), "back");                 // the yard's fowl (owner, 2026-10-25)
   drawByZ(sprites);
+  sceneryLampLight(t, f[0], f[1] - 64 * f[2], f[1] + 10, {reach: 300, strength: 0.6, colour: "255, 150, 70", seed: 7});   // the fire's light
   c11Season(t);
+  cngBeds(t, "village", "frame");
+  sceneryAir(t, {butterfly: {kind: "grassyellow", x: 200, y: 520, vx: 60, weave: 50, seed: 3, size: 1.1, turn: 1.2, wing: 2},
+                 petals: null, light: [0.5, 11]});        // a boy growing up: the day's light, one butterfly
   cngCutsOver(t, [15.4, 27]);
 }

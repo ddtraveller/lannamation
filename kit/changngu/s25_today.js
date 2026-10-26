@@ -13,27 +13,52 @@ var C25_WAI = [18.8, 19.3, 23.2, 23.7];                // the hands come up, are
 var C25_POOL = [880, 800, 0.9];                        // the pool: its middle's x and y, its size
 var C25_CLOSE = [1.7, 9.6, 12.4];                      // close on the statue at 1.7 times, easing out to the wide from 9.6 to 12.4 s
 
+// The road into Chiang Saen at dusk, painted once (the scenery pass, 2026-10-26): Chang Ngu's range in the dusk's
+// light, the paddies by the road, the town's trees painted at the right, all warm with the dusk; the road across.
+// A sheet WIDE + 400 across, from x -200. e.g. pen.drawImage(c25Set(), -200, 0);
+var C25_SET = null;
+function c25Set() {
+  if (C25_SET) { return C25_SET; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE + 400;
+  paper.height = 1080;
+  var b = paper.getContext("2d"), d;
+  b.translate(200, 0);
+  [-WIDE, 0, WIDE].forEach(function (w) { b.save(); b.translate(w, 0); cngFar(b, w, 640, "dusk"); b.restore(); });
+  csBand(b, -200, 620, WIDE + 400, 460, "#8fa868", "#6f8a50");   // the fields by the road at dusk
+  cngPaddies(b, 628, 6, WIDE + 200);
+  [[1380, 0.24, "mango"], [1560, 0.28, "longan"], [1740, 0.22, "ratchaphruek"], [1880, 0.26, "mango"]].forEach(function (tr, k) {
+    thkTreeOn(b, tr[0], 700, tr[1], 101 + k, [[tr[2], 20, 14]]);   // the town's trees, where the road goes in
+  });
+  b.globalCompositeOperation = "source-atop";             // the dusk's warm light over all
+  b.fillStyle = "rgba(220, 110, 70, 0.16)";
+  b.fillRect(-200, 0, WIDE + 400, 1080);
+  b.globalCompositeOperation = "source-over";
+  b.fillStyle = "#7a7470";                                // the road, across and into the town at the right
+  b.fillRect(-200, 760, WIDE + 400, 70);
+  b.fillStyle = "#e9e2c8";
+  for (d = 0; d < WIDE; d += 120) { b.fillRect(d, 792, 60, 5); }
+  C25_SET = paper;
+  return paper;
+}
+
 // u: 0 to 1 (held there outside it); gives back 0 to 1, eased in and out. e.g. var up = c25Ease((t - 18.4) / 0.5);
 function c25Ease(u) { u = clamp(u); return u * u * (3 - 2 * u); }
 
 // Scene 25, the entry the film calls (SCENES): t, its own second, 0 to C25_LONG (30 s). Gives back nothing: it draws the
-// whole sheet with pen. From sets.js: cngSky("dusk"), CNG_CLOUDS.dusk, cngSkyline(); from chiangsaen.js statuePool();
+// whole sheet with pen. From sets.js: cngSky("sunset"), cngClouds(), cngFar(), cngPaddies(); from chiangsaen.js statuePool();
 // from myth.js changNgu(). Its words are C25_LINES (C120 to C122). Its z plan: the sky, the hills, the road, the pool
 // and the statue on its plinth; Bua-kham before them; the black over all at the end.
 function cngSceneToday(t) {
   var pool = C25_POOL;
-  pen.drawImage(cngSky("dusk"), 0, 0);
-  cumulus(pen, t + 140, CNG_CLOUDS.dusk);
+  pen.drawImage(cngSky("sunset"), 0, 0);                 // a sunset of its own, the sun low over the hills
+  scenerySun(t, 420, mix(300, 380, t / C25_LONG), 30, {glow: 10, colour: "255, 180, 100", disc: ["#fff2d0", "#ffcf80", "#ffaa5a"]});
+  cngClouds(t + 140, "dusk");
   decorate(t, C25_LIFE, "back");                      // on the frame, under the camera's close
   var out = c25Ease((t - C25_CLOSE[1]) / (C25_CLOSE[2] - C25_CLOSE[1])), zoom = mix(C25_CLOSE[0], 1, out);
   pen.save();                                                          // the camera: close on the statue, then the wide
   pen.translate(WIDE / 2, 700); pen.scale(zoom, zoom); pen.translate(-mix(pool[0], WIDE / 2, out), -700);
-  cngSkyline(pen, -200, 640, 200, "#8a8aa6", 21);
-  csBand(pen, -200, 620, WIDE + 400, 460, "#8fa868", "#6f8a50");               // the fields by the road at dusk
-  pen.fillStyle = "#7a7470";                                           // the road, across and into the town at the right
-  pen.fillRect(-200, 760, WIDE + 400, 70);
-  pen.fillStyle = "#e9e2c8";
-  for (var d = 0; d < WIDE; d += 120) { pen.fillRect(d, 792, 60, 5); }
+  pen.drawImage(c25Set(), -200, 0);                                    // the range, the fields, the town's trees, the road
   for (var k = 0; k < 7; k++) {                                        // street lamps along it, coming on
     var lx = 140 + k * 280, on = between(t, 1 + k * 0.4, 2.4 + k * 0.4);
     pen.strokeStyle = "#3a3a40"; pen.lineWidth = 5;
@@ -42,6 +67,7 @@ function cngSceneToday(t) {
       var g = pen.createRadialGradient(lx + 24, 646, 2, lx + 24, 646, 60);
       g.addColorStop(0, "rgba(255, 230, 160, " + (0.9 * on).toFixed(3) + ")"); g.addColorStop(1, "rgba(255, 230, 160, 0)");
       pen.fillStyle = g; pen.fillRect(lx - 40, 586, 130, 120);
+      sceneryLampLight(t, lx + 24, 646, 800, {reach: 200, strength: 0.6 * on, colour: "255, 220, 150", seed: k});   // its pool on the road
     }
   }
   statuePool(pen, pool[0], pool[1], pool[2], t);

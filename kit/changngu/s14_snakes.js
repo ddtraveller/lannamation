@@ -35,7 +35,7 @@ function c14Fear(t) {
 function cngSceneSnakes(t) {
   var river = cngRiver(), fear = c14Fear(t), first = between(t, 5, 7);
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 20, CNG_CLOUDS.day);
+  cngClouds(t + 20, "day");
   pen.drawImage(river.back, 0, 0);
   cngRiverLife(t, {flushed: first, away: t - 7});       // the birds rise and fly away (owner, 2026-10-25)
   C14_SNAKES.forEach(function (s) {
@@ -43,6 +43,7 @@ function cngSceneSnakes(t) {
     if (x !== null) { riverSnake(x, C14_SWIM, Object.assign({size: s[2], face: -1}, s[3])); }
   });
   pen.drawImage(river.near, 0, 0);
+  cngRiverBank(t, "edge");                               // reeds and grass along the water's edge
   var sprites = [], back = between(t, 6, 9) * (1 - between(t, 44, 52));   // they scramble back from the water and huddle
   for (var k = 0; k < CNG_KIDS; k++) {
     (function (k) {
@@ -68,5 +69,6 @@ function cngSceneSnakes(t) {
     elephantHook(pen, w[0], w[1] + 30 * cngAgeSize(13), cngAgeSize(13) * 0.9, {angle: 0.12});
   }});
   drawByZ(sprites);
+  cngRiverBank(t, "frame");
   cngFadeIn(t, 1);
 }

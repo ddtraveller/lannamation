@@ -233,3 +233,139 @@ seen in stills first, and each scene is rendered once at the end):
     hero is Maeng's newest hero with the new beasts (the same one Maeng's film opens with when this ships); the card
     as v2. `../chain.py` hero + card (`--fade 1,0.75`) + tale; the whole checked at v2's length (1296.0 s), -14 LUFS,
     peak at most -1 dBFS; shown to the owner. **v3 goes to S3 only on the owner's word.**
+
+### v3, the owner's picks (2026-10-26)
+
+- **The far mountains: C** (of three candidates beside a photograph of the Lao hills across the Mae Khong from
+  Chiang Saen): ridge behind ridge, taller, blue and hazy with the air, a few pines standing out of the forest, the
+  Lao bank's low line of trees in front (every photograph has it). `farRange()`'s sheet made small (0.72) about its
+  foot and copied beside itself mirrored, so the range is far across a wide river: `CNG_FAR`, `cngFar()` in sets.js.
+- **The Mae Khong's water: "Water 1"** (owner: "Look at the water in the pond scene and try to recreate the lazy slow
+  Mae Khong and give it the qualities of water like the pond has"): the river as a water (`sceneryWaterSurface()`):
+  the Lao bank, the sandbar and the ducks mirrored in it, strong across the far water and fading toward the near bank;
+  brown with silt whatever it mirrors; slow streaks of current and foam drifting downstream, left to right (the river
+  runs south, we look east into Laos); the water parting at the sandbar's upstream end; a thin mist along the far water.
+- **The ducks: B** (owner: "The 2 birds in the water could use a lot more detail"): `spotbill()` redrawn from
+  photographs of the Indian spot-billed duck: pale head and long pale neck finely streaked, dark crown and eye stripe,
+  the red spot at the bill's base, the black bill tipped yellow, dark flanks scaled with pale edges, the breast paler
+  and spotted, the white tertials, the green speculum, shaded, with its reflection and a small wake.
+
+### v3, scene by scene
+
+- **s01, the Mae Khong at dawn** (owner's yes to a plan of 7, 2026-10-26; done, stills seen, "Good"): the sunrise sky
+  (`cngSky("sunrise")`), soft clouds (`cngClouds()`) dawn going to day; the sun coming up over the Lao hills
+  (`C01_SUN`, `scenerySun()` after the clouds, before the hills) and its glitter on the water (`natGlitter()`, over the
+  mist); the far range in the dawn's light (`cngFar(..., "dawn")`), fading to the day's; the dawn's mist lying on the
+  river and rising off it, gone as the day comes; the egret mirrored under it (`C01_EGRET_HIGH`); the barb's one leap
+  with its rings (`C01_LEAP`, `sceneryLeap()`); reeds and clumps of grass along the near bank, soft grass in the bottom
+  corners (`cngRiverBank()`); the town's trees painted in fruit and flower (mango, longan, golden shower, flame of the
+  forest, a frangipani by the chedi), flowers at the houses' feet, the houses moved left, clear of the wall; the sand's
+  step where the town's panel meets the river's mended; one live river under both panels (`cngTown()` in two: back and
+  front). And the bank's wall in 3D (owner: "make the right hand side brick wall look more 3D. have a path for soldiers
+  like a road and then battlements on the right hand side", with a photograph of Chiang Saen's wall): `cngBankWall()`,
+  its walkway paved, its inner face of brick, its parapet and merlons on the river's side, the earth bank below.
+  A frame of s01 is about 0.5 s on a loaded laptop: render it in one run of its own.
+- **s02, the Black Khom take Yonok** (owner's yes to a plan of 7; done, "Good"): soft clouds in all three shots;
+  Chang Ngu's range behind the court and the gate (`cngFar()` at foot 560); the rampart behind the court in 3D
+  (`cngCourt()`: merlons on its outer edge, the walkway along its top, its inner face of brick with courses and joints,
+  shade at its foot); `cityWall()` in depth (chiangsaen.js, Chang Ngu's own: merlons with lit tops and shaded sides,
+  the coping, grass on the earth face, shaded palisade posts, the gate's passage with its sides and the town's daylight
+  beyond as the doors open, the moat a water mirroring the wall, `look.t` for its ripples; a page without
+  pinewoods.js keeps the old waves); the court's trees painted (golden shower, frangipani, mango), small beds of
+  hibiscus and orange jasmine at its back, finer paving (`cngBeds("court")`); the fields as paddies in rows behind
+  bunds, ruts in the road, bamboo, a mango on a bund, beds of flame of the forest and hibiscus at the sides
+  (`cngBeds("fields")`), soft grass in the corners; no air (the city is taken).
+- **s03, to Si Tuang** (owner's yes to a plan of 9; done, "Good"), and with it the village set of s04, s08, s09, s11,
+  s13, s17, s19, s20, s23: soft clouds; Chang Ngu's range behind Doi Nang Non; Doi Nang Non clothed in forest
+  (`sceneryForest()`, moved into scenery.js from the Maeng film's maengForest() by agreement with its session, 64402ea,
+  Maeng's frames pixel-identical; `CNG_FOREST_BLOOMS`); the paddies in rows behind their bunds (`cngPaddies()`, scene
+  2's fields on it too, their frames unchanged); the Mae Sai a water with grass and reeds along it (`cngStream()`);
+  the trees painted in fruit and flower (longan, mango, golden shower, flame of the forest, a frangipani by the
+  headman's house); small beds at the back of the ground; the fences' bamboo grained, the lashings thin; soft grass in
+  the corners (`cngBeds(t, "village", "frame")`); the air light only, no petals or butterfly (he loses his crown).
+  The other village scenes still have their cartoon clouds and no corner grass: each gets them when it is visited.
+- **s04, four tuang of gold** (owner's yes to a plan of 6; done, "Good"): soft clouds; the near Mae Sai a water
+  (`C04_WATER`: the panners mirrored, `C04_RINGS` at their shins, reeds at its edges); the close on a teak floor
+  (`sceneryWoodGrain()`) and a woven tray, strips over and under with their grain, its rim bound (`c04Close()`,
+  painted once), shadows under the bael and the lumps, glints winking on the gold; the old picture's court with its
+  beds in sepia; soft grass in the corners; no air.
+- **s05, Thukkhita** (owner's yes to a plan of 6; done), and with it the room of s08, s10, s12 (day and night): through
+  the window Chang Ngu's range and a ridge of forest (`sceneryForest()` over the window only), a frangipani painted in
+  flower; the teak boards each grained (`sceneryWoodGrain()`, a knot on every fifth), their edges lit and shaded, the
+  beam grained and the rafters' edges lit, the floor plank by plank; the window's light lying on the floor in bars
+  with a faint shaft (the moon's, paler, at night); the mat woven over and under; dust motes in the shaft
+  (`cngMotes()`, the air of a room by day).
+- **From s06 on, the owner (2026-10-26): "Go ahead and make plans without consulting me."** Each scene's plan is
+  written here and built; the stills are shown together at the end.
+- **s06, the novice** (my plan, done): the lane at sunrise (`cngSky("sunrise")`, dawn clouds, Chang Ngu's range in the
+  dawn's light), the rampart behind in 3D (`cngRampart()`, out of `cngCourt()`, scene 2's frames unchanged), painted
+  trees in flower and fruit, flowers at the houses' feet, ruts and grass along the lane, the dawn's mist low between the
+  houses, the first light (no petals or butterfly); the court with soft clouds and its beds; no air in the court.
+- **s07, the wish** (my plan, done): a sunset of its own (`cngSky("sunset")`), soft dusk clouds, the sun going down
+  over the range at the left (`C07_SUN`); Ku Kaeo's set painted for each light (`cngKuKaeo(light)`: Chang Ngu's range
+  in the dusk's light, the hill clothed by `sceneryForest()`, flowers near its foot, the great tree and a frangipani by
+  the chedi painted, grass and stones along the path, the dusk's warm light over it); in the days going over him,
+  fine stars and the moon at night (no Milky Way, no fireflies: only his small light rises).
+- **s08, the dream** (my plan, done): the room and the village from s05 and s03; the lamp's own light on her and the
+  floor at night (`sceneryLampLight()`); soft pale clouds in the dream's sky; dust motes in the morning room; no other
+  air (the dream). The white elephant at its new height stands right (c7b37e6).
+- **s09, weapons** (my plan, done): the forge's yard painted once (`c09Yard()`: beaten earth with charcoal, pebbles and
+  footprints, dark with soot under the forge; the weapons' mat woven); the forge's smoke rising and leaning; the fire's
+  light on the smiths (`sceneryLampLight()`, orange); soft clouds; grass in the corners; the light of the day.
+- **s10, the birth**: the room of s05 (day) carries it; no air (v2 left life out on purpose).
+- **Soft clouds everywhere** (2026-10-26): every scene's `cumulus()` with `CNG_CLOUDS` is `cngClouds()` now, but s22's
+  heavenly clouds and s26's night, which are their scenes' own.
+- **s11, growing up** (my plan, done): the forge's yard from s09, moved into sets.js as `cngForgeGround(f, mat)` (s09's
+  frames unchanged); the forge's smoke and the fire's light; the season's light as v2; grass in the corners; the day's
+  light and one butterfly (a boy growing up). The room's floor: a knot on every third plank (the eyes along the floor).
+- **s12, the deva** (my plan, done): the night room of s05; the lamp's light (`sceneryLampLight()`); the vision's river
+  as the film now paints it (`cngRiver()` small in the oval: the range, the still brown water, the sandbar), and the
+  three white elephants float in it, the water to their bellies, a ring round each (they stood on it in v2); no air.
+- **s13, to the river** (my plan, done): the bamboo at sunrise (dawn clouds, the dawn's mist on the fields, the first
+  light); the children's run with soft clouds and one butterfly; on the bank the reeds and grass along the water
+  (`cngRiverBank()`), rings where he washes (`C13_RINGS`), grass in the corners, the light only.
+- **s14, s15, s16, s18 on the river** (my plan, done): the river set of s01 carries them; v2's flat band and waves over
+  whoever is in the channel are the river's own face now (`cngRiverOver()`: the elephant's legs, the children to their
+  shoulders); reeds and grass along the near bank, soft grass in the corners (`cngRiverBank()`); no air in s14 and s15
+  (the snakes), the light only in s16 and s18. **Scene 18's title** (step 6): ช้างพานคำ edged in dark brown over a soft
+  dark halo, so it reads over any sky (it was pale over a cloud at 690 s of the tale); s16's ควานทน the same.
+- **s17, the golden plate** (my plan, done): soft clouds in all three shots; the yard's beaten earth
+  (`cngForgeGround(null)`: a yard with no forge, no soot) and the forge's (scenes 9, 11), its smoke and the fire's
+  light; grass in the corners; the light of the day.
+- **s19, golden pots** (my plan, done): soft clouds; the yard's beaten earth under the yard and the stable; the stable's
+  thatch laid in rows of bundles, its strands down the slope, its posts grained (`cngStable()`); the moat shot's water
+  rippling (`cityWall()` look.t), and outside the earthwork the fields and the road to its gate (`cngFields()`), not the
+  village's houses as in v2; grass in the corners; the light of the day.
+- **s20, three years; s21, Thung San Chai** (my plan, done): the range, fields, court and gate of s02 carry them; the
+  drill field painted once (`c20Ground()`: grass worn to the earth in patches, its blades); the Khom court's beds; soft
+  grass in the corners of the open shots; the light only on the drill field, no air for the spies, the Khom king or
+  the battle.
+- **s22, the stone wall** (my plan, done): the road south painted once (`c22RoadSet()`: Chang Ngu's range, the slope
+  clothed by `sceneryForest()`, the road's ruts and grass), soft clouds by day, fine stars and the moon through the
+  month's nights; heaven's clouds soft and lit gold from within, above and below (`sceneryClouds()` colours of its
+  own); Indra's wall in depth (`risingWall()` in chiangsaen.js: each stone lit and shaded, speckled, moss in its
+  joints, the wall's top lit and its near end in shade).
+- **s23, Doi Chang Ngu** (my plan, done): the plain painted once (`c23Plain()`: Chang Ngu's range, the paddies, the
+  hill), Doi Chang Ngu's forest painted as a mountain's (`karstHill()` with natBush() where the scenery's painters are
+  loaded, its circles kept for a page without them); the home yard's beaten earth with its fowl on it (v2 drew the
+  ground over them); soft clouds; grass in the corners; the light.
+- **s24, the brothers** (my plan, done): the court's beds; the wedding under a sunset of its own; Wiang Chai Prakan's
+  back painted once (`c24TownSet()`: Chang Ngu's range, the plain, the earthwork), the Kok a water mirroring them
+  (`C24_WATER`, scenery.js), grass along its near bank, soft grass in the corners, the light.
+- **s25, Chiang Saen today** (my plan, done): a sunset and the sun low over the hills; the road at dusk painted once
+  (`c25Set()`: Chang Ngu's range in the dusk's light, the paddies, the town's trees painted, the dusk's warm light);
+  each street lamp's pool of light on the road as it comes on (`sceneryLampLight()`).
+- **s26, the credits** (my plan, done): a clear night sky (`cngSky("clear")`) with fine stars, no Milky Way
+  (`sceneryStars()`), soft clouds in the moon's light; the river at night is the new river; the moon, owl, bats and
+  fireflies as v2. `CNG_CLOUDS` and `cngSkyline()` are gone (nothing calls them now).
+
+### v3: where it stands (2026-10-26, about 20:30 ICT)
+
+All 26 scenes painted and seen in stills (overview: one still of each). The page generators (scene_page.py and
+film_page.py, kept privately) load the scenery's painters as the pages do. **Not yet done:** step 5's quick clips
+with narration, step 8's kit check on a copy (`checks/kit_check.py` over all 26 pages, film.html and chiangsaen.html:
+chiangsaen.js changed, spotbill(), cityWall(), risingWall(), karstHill()), the commit and push (by path, after the
+kit check), step 9's render (the laptop and ONE Spark render job at a time, the next only after the last ends: the
+owner's rule since 2026-10-26; Maeng's renders first), step 10's sound, chain and the owner's look. A frame of s01
+and the river scenes is about 0.5 s on a loaded laptop (natReflect twice in some): render each in a run of its own.
+

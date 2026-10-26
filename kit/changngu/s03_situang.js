@@ -15,7 +15,7 @@ function c03Walk(t) {
 }
 
 // Scene 3, the entry the film calls (SCENES): t, its own second, 0 to C03_LONG (35 s). Gives back nothing: it draws the
-// whole sheet with pen. From sets.js: cngSky("day"), CNG_CLOUDS.day, cngVillage(), CNG_HOUSE, CNG_GROUND, cngPerson()
+// whole sheet with pen. From sets.js: cngSky("day"), cngClouds(), cngVillage(), CNG_HOUSE, CNG_GROUND, cngPerson()
 // with CNG_KING, CNG_HEADMAN and CNG_QUEEN. Its words are C03_LINES (C009 to C012).
 // Its z plan: the sky and the village's back sheet painted first; then by drawByZ the walkers by their feet; then the
 // near ground's fences over them. e.g. cngSceneSituang(12);
@@ -25,7 +25,7 @@ function cngSceneSituang(t) {
   var crowned = t < (C03_OFF[0] + C03_OFF[1]) / 2;       // the crown comes off while his hands are at his head
   var king = Object.assign({}, crowned ? CNG_KING : CNG_HEADMAN, crowned ? {} : {sarong: CNG_KING.sarong});
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 10, CNG_CLOUDS.day);
+  cngClouds(t + 10, "day");
   var village = cngVillage();
   pen.save();
   pen.translate(-cam, 0);
@@ -50,5 +50,7 @@ function cngSceneSituang(t) {
   ]);
   pen.drawImage(village.front, 0, 0);
   pen.restore();
+  cngBeds(t, "village", "frame");                        // soft grass in the corners, and the light coming through: no
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.5, 3]});   // petals or butterfly, he is losing his crown
   cngFadeIn(t, 1);
 }

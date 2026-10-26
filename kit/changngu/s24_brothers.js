@@ -24,8 +24,9 @@ var C24_KOK = [770, 80];                                               // the Ko
 function c24Court(t) {
   var p = CNG_PALACE, dais = hoKhamDais(p[1], p[2]);
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 30, CNG_CLOUDS.day);
+  cngClouds(t + 30, "day");
   pen.drawImage(cngCourt(), 0, 0);
+  cngBeds(t, "court", "back");
   var go = between(t, 11.6, 13.8), tx = mix(420, 760, go), wai = between(t, 13.9, 14.6);
   function kingAt(s) {                                                  // the king's look at second s: his hand out to Phrom
     var offers = between(s, 6.2, 7.2) * (1 - between(s, 10.4, 11.2)), going = between(s, 11.6, 13.8);
@@ -63,9 +64,10 @@ function c24Court(t) {
 // The wedding, at dusk in the same hall: the king, the groom and the bride on the dais; the band in the courtyard.
 function c24Wedding(t) {
   var p = CNG_PALACE, dais = hoKhamDais(p[1], p[2]), dusk = ["#e8682e", 0.22];
-  pen.drawImage(cngSky("dusk"), 0, 0);
-  cumulus(pen, t + 80, CNG_CLOUDS.dusk);
+  pen.drawImage(cngSky("sunset"), 0, 0);                  // a sunset of its own (the scenery pass, 2026-10-26)
+  cngClouds(t + 80, "dusk");
   pen.drawImage(cngCourt(), 0, 0);
+  cngBeds(t, "court", "back");
   pen.fillStyle = "rgba(200, 90, 50, 0.22)";                           // the court in the dusk's light
   pen.fillRect(0, 0, WIDE, 1080);
   var sprites = [
@@ -90,17 +92,40 @@ function c24Wedding(t) {
   drawByZ(sprites);
 }
 
-// Wiang Chai Prakan on the Kok: the far hills, its rampart of earth and its timber gate, the bank, the river nearest;
+// Wiang Chai Prakan on the Kok, painted (the scenery pass, 2026-10-26): its back once (Chang Ngu's range, the plain,
+// the rampart of earth and its timber gate), the Kok a water mirroring them (scenery.js), its near bank once (grass
+// along the water's edge).
+var C24_TOWN = null;
+var C24_WATER = {edge: [[-300, C24_KOK[0] + C24_KOK[1] + 40], [-300, C24_KOK[0]], [WIDE / 2, C24_KOK[0] + 1], [WIDE + 300, C24_KOK[0]],
+                        [WIDE + 300, C24_KOK[0] + C24_KOK[1] + 40]],
+                 top: [[-300, C24_KOK[0]], [WIDE / 2, C24_KOK[0] + 1], [WIDE + 300, C24_KOK[0]]], line: C24_KOK[0], left: 0, right: WIDE,
+                 foot: C24_KOK[0] + C24_KOK[1] + 10, depths: ["#7fa9a4", "#5f8e8a"], mirror: [[C24_KOK[0], 0.95], [C24_KOK[0] + 40, 0.7]],
+                 tint: "40, 84, 80", rings: [[400, C24_KOK[0] + 40, 34.5], [1300, C24_KOK[0] + 50, 37.2]], mist: null};
+function c24TownSet() {
+  if (C24_TOWN) { return C24_TOWN; }
+  var back = document.createElement("canvas"), near = document.createElement("canvas");
+  back.width = near.width = WIDE;
+  back.height = near.height = 1080;
+  var b = back.getContext("2d"), n = near.getContext("2d"), keep = pen, k;
+  cngFar(b, 0, 600);
+  csBand(b, 0, 560, WIDE, 520, "#a9c97a", "#86a85a");
+  cityWall(b, -100, C24_WALL[0], WIDE + 200, C24_WALL[1], {plain: true, open: 1});
+  csBand(n, 0, C24_KOK[0] + C24_KOK[1], WIDE, 1080 - C24_KOK[0] - C24_KOK[1], "#b9a070", "#9a8058");   // the near bank
+  pen = n;
+  for (k = 0; k < 14; k++) { thkPlace(sceneryGrass(40 + 40 * dice(k), 9, 541 + k), 60 + k * 140 + 40 * dice(k + 3), C24_KOK[0] + C24_KOK[1] + 14, 1, 0); }
+  pen = keep;
+  C24_TOWN = {back: back, near: near};
+  return C24_TOWN;
+}
 // porters carry earth in at the gate; Phrom and Kaeo Supha on the bank; the town's name in gold.
 function c24Town(t) {
+  var town = c24TownSet();
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 110, CNG_CLOUDS.day);
-  cngSkyline(pen, 0, 600, 200, "#a9bca6", 9);
-  csBand(pen, 0, 560, WIDE, 520, "#a9c97a", "#86a85a");
-  cityWall(pen, -100, C24_WALL[0], WIDE + 200, C24_WALL[1], {plain: true, open: 1});
-  csBand(pen, 0, C24_KOK[0], WIDE, C24_KOK[1], "#7fa9a4", "#5f8e8a");   // the Kok
-  waves(pen, 0, C24_KOK[0] + 6, WIDE, C24_KOK[1] - 10, "rgba(240, 250, 240, 0.35)", t * 30);
-  csBand(pen, 0, C24_KOK[0] + C24_KOK[1], WIDE, 1080 - C24_KOK[0] - C24_KOK[1], "#b9a070", "#9a8058");   // the near bank
+  cngClouds(t + 110, "day");
+  pen.drawImage(town.back, 0, 0);
+  sceneryWaterDepths(C24_WATER);                        // the Kok
+  sceneryWaterSurface(t, C24_WATER);
+  pen.drawImage(town.near, 0, 0);
   var bank = C24_WALL[0] + 110, sprites = [];
   for (var k = 0; k < 4; k++) {
     (function (k) {
@@ -122,10 +147,12 @@ function c24Town(t) {
   drawByZ(sprites);
   var a = between(t, 33.2, 34.2) * (1 - between(t, 38.6, 39.6));      // the town's name
   cngGoldName("เวียงไชยปราการ", "Wiang Chai Prakan, on the Kok", 960, 220, a);
+  cngBeds(t, "fields", "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 35]});
 }
 
 // Scene 24, the entry the film calls (SCENES): t, its own second, 0 to C24_LONG (40 s). Gives back nothing: it draws the
-// whole sheet with pen. From sets.js: cngCourt(), cngPalace(), CNG_PALACE, cngSkyline(), cngPorter(), cngPerson() with
+// whole sheet with pen. From sets.js: cngCourt(), cngPalace(), CNG_PALACE, cngFar(), cngPorter(), cngPerson() with
 // CNG_KING, CNG_QUEEN, CNG_PHROM, CNG_THUKKHITA and CNG_KAEO_SUPHA, cngAgeSize(), cngCutsOver(); from chiangsaen.js cityWall(); from
 // band.js musician(). Its words are C24_LINES (C115 to C119). Its z plan: each shot's set; by drawByZ the hall's back,
 // who sits on the dais and the hall's front in "set", then the people in the courtyard or on the bank by their feet.

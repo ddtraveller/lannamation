@@ -30,6 +30,7 @@ function c08Sleeper(t) {
 function c08Dream(t) {
   var village = cngVillage(), cam = WIDE * 0.7 - 260 * between(t, 9, 21);
   pen.drawImage(cngSky("dream"), 0, 0);
+  cngClouds(t + 40, "day", 0.7);                         // soft pale clouds in the dream's sky
   pen.save();
   pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
@@ -71,6 +72,7 @@ function cngSceneDream(t) {
     pen.drawImage(cngRoom("night"), 0, 0);
     pratheep(pen, C08_MAT[0] + 330, CNG_FLOOR + 40, 2.2, t, 1, {});
     c08Sleeper(t);
+    sceneryLampLight(t, C08_MAT[0] + 330, CNG_FLOOR + 14, CNG_FLOOR + 60, {reach: 260, strength: 0.8, seed: 3});   // its light on her
     pen.restore();
   } else if (t < C08_CUTS[1]) {
     c08Dream(t);
@@ -90,6 +92,7 @@ function cngSceneDream(t) {
     person(C08_MAT[0] + 260, CNG_FLOOR + 50, cngPerson("noble", Object.assign({}, CNG_HEADMAN, {sarong: CNG_KING.sarong}),
                                                       {id: "phang", floor: "cross", face: -1, feel: t > 27 ? "happy" : "concerned",
                                                        mouth: talk(answers), at: [C08_MAT[0] - 80, CNG_FLOOR - 200]}));
+    cngMotes(t);                                           // dust in the first light
     pen.restore();
   }
   cngCutsOver(t, C08_CUTS);

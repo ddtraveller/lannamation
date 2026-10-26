@@ -14,10 +14,17 @@ var C01_SKY_LIFE = [
   {name: "flock at dawn", kind: "flock", layer: "back", course: [[1.5, 2150, 230], [8.8, -320, 170]]}
 ];
 var C01_LIFE = [                                         // over the water, so drawn after the river (the pan is still at 0)
-  {name: "egret over the river", kind: "egret", layer: "back", look: {fly: true, size: 0.8, seed: 2}, course: [[1.0, -120, 700], [8.6, 2100, 670]]},
-  {name: "barb", kind: "fish", layer: "back", look: {size: 1.1},
-   course: [[3.0, 640, 712, "hide"], [5.0, 640, 712], [5.8, 760, 712, "hide"], [6.6, 760, 712], [7.3, 680, 712, "hide"], [40, 680, 712, "hide"]]}
+  {name: "egret over the river", kind: "egret", layer: "back", look: {fly: true, size: 0.8, seed: 2}, course: [[1.0, -120, 700], [8.6, 2100, 670]]}
 ];
+// The egret mirrored in the water under it (the scenery pass, 2026-10-26): it flies C01_EGRET_HIGH over the water, so
+// its reflection is as far below the water as it is above.
+var C01_EGRET_HIGH = 26;
+// The barb leaps once by the sandbar, out of the water and back in, with its rings (scenery.js sceneryLeap(), as the
+// hero film's pond's fish; until 2026-10-26 it came up and went down three times).
+var C01_LEAP = {at: 5.0, from: [640, 712], to: [740, 712], high: 70, air: 0.8, size: 1.1};
+// The sun coming up over Laos, behind the far hills (east, across the river): its x in the river's panel, and the y it
+// comes up from (behind the hills) to the y it reaches as the scene ends.
+var C01_SUN = [1460, 300, 150];
 
 // The titles over the river (as maeng/s01_doi.js's): the series, Lanna Tales (นิทานล้านนา), in the Lanna script, gold;
 // then the tale's name, ตำนานช้างงู, in the Lanna script, with its English small beneath. Both written by the Kam
@@ -64,7 +71,7 @@ function c01Title(t) {
 }
 
 // Scene 1, the entry the film calls (SCENES): t, its own second, 0 to C01_LONG (30 s). Gives back nothing: it draws the
-// whole sheet with pen and leaves it as it found it. From sets.js: cngSky("dawn"), CNG_CLOUDS.dawn, cngRiver(),
+// whole sheet with pen and leaves it as it found it. From sets.js: cngSky("sunrise"), cngClouds(), cngRiver(),
 // cngRiverLife(), cngTown(). Its words are C01_LINES (C001 to C004), written under it by the page (cngSubtitles).
 // Its z plan: nothing stands on the ground; the set is painted from the back to the front, the river's life on it.
 function cngSceneMekong(t) {
@@ -72,26 +79,55 @@ function cngSceneMekong(t) {
   var ease = pan * pan * (3 - 2 * pan);
   pen.save();
   pen.translate(WIDE * ease, 0);
-  pen.drawImage(cngSky("dawn"), -WIDE, 0);
-  pen.drawImage(cngSky("dawn"), 0, 0);
+  pen.drawImage(cngSky("sunrise"), -WIDE, 0);
+  pen.drawImage(cngSky("sunrise"), 0, 0);
   pen.globalAlpha = 0.3 + 0.7 * light;
   pen.drawImage(cngSky("day"), -WIDE, 0);
   pen.drawImage(cngSky("day"), 0, 0);
   pen.globalAlpha = 1;
   pen.restore();                                         // the clouds on the frame, not on the pan: far off, they hardly
-  cumulus(pen, t + 20, CNG_CLOUDS.dawn);                 // move as the land goes by, and none is cut where the two panels
+  cngClouds(t + 20, "dawn", 1 - light);                  // move as the land goes by, and none is cut where the two panels
+  cngClouds(t + 20, "day", light);                       // meet (found 2026-10-25); soft, in the light going from dawn to day
   decorate(t, C01_SKY_LIFE, "back");
-  pen.save();                                            // meet (cumulus draws on one sheet's width; found 2026-10-25)
+  pen.save();
   pen.translate(WIDE * ease, 0);
-  var river = cngRiver();
+  var sunY = mix(C01_SUN[1], C01_SUN[2], between(t, 0, C01_LONG));   // the sun, after the clouds (they would grey it),
+  scenerySun(t, C01_SUN[0], sunY, 30, {glow: 10, colour: "255, 206, 150"});   // before the hills it comes up behind
+  var river = cngRiver(), town = cngTown();
+  pen.drawImage(town.back, -WIDE, 0);
   pen.drawImage(river.back, 0, 0);
-  cngRiverLife(t, {});
+  pen.globalAlpha = 1 - light;                           // the far range in the dawn's light, going as the day comes
+  cngFar(pen, 0, CNG_WATER, "dawn");
+  pen.save(); pen.translate(-WIDE, 0); cngFar(pen, -WIDE, CNG_WATER, "dawn"); pen.restore();
+  pen.globalAlpha = 1;
+  cngRiverFlow(t, -WIDE + WIDE * CNG_TOWN_EDGE - 200, WIDE);   // one river under both panels, running under the town's bank
+  var dawn = 1 - between(t, 4, C01_LONG - 4);
+  var span = [-WIDE + WIDE * CNG_TOWN_EDGE - 200, WIDE];  // the dawn's mist lying on the river and rising off it, going as the day comes
+  softMist(t, CNG_WATER + 40, 50, 0.45 * dawn, 21, "250, 232, 214");
+  natSteam(t, span[0], span[1], CNG_WATER + 70, {count: 40, rise: 60, wide: 150, life: 9, lean: 90, alpha: 0.24 * dawn, flat: 0.22, patch: 0.85,
+                                                  colour: "250, 236, 222", sun: C01_SUN[0], glow: 0.6, seed: 3});
+  natSteam(t, span[0], span[1], CNG_WATER + 170, {count: 50, rise: 90, wide: 120, life: 8, lean: 120, alpha: 0.28 * dawn, flat: 0.05, patch: 0.85,
+                                                   colour: "250, 236, 222", sun: C01_SUN[0], glow: 0.6, seed: 5});
+  natGlitter(t, C01_SUN[0], CNG_WATER, CNG_BANK, 0.9 * (0.5 + 0.5 * dawn), "255, 214, 160");   // the sun's path on the water, over the mist
+  cngRiverLife(t, {water: false});
+  sceneryLeap(t, "rings", C01_LEAP);
+  sceneryLeap(t, "air", C01_LEAP);
+  var egretAt = courseAt(t, C01_LIFE[0].course);
+  if (egretAt.on) {                                      // its reflection, under it in the water
+    pen.save();
+    sceneryWaterShape(cngRiverWater(span[0], span[1]));
+    pen.clip();
+    pen.globalAlpha = 0.45;
+    pen.translate(0, 2 * (egretAt.y + C01_EGRET_HIGH));
+    pen.scale(1, -1);
+    egret(egretAt.x, egretAt.y, t, Object.assign({}, C01_LIFE[0].look, {face: egretAt.face, fly: true, peck: 0}));
+    pen.restore();
+  }
   decorate(t, C01_LIFE, "back");
   pen.drawImage(river.near, 0, 0);
-  pen.drawImage(cngTown(), -WIDE, 0);
-  var bank = -WIDE + WIDE * CNG_TOWN_EDGE + 80;          // the water off the town's bank moves as the river's does
-  waves(pen, bank, CNG_WATER + 6, -bank, CNG_BANK - CNG_WATER, "rgba(250, 238, 210, 0.22)", t);
-  mistDrift(pen, t, {left: -WIDE, right: WIDE, top: 560, bottom: 680, count: 6, drift: 9, seed: 5, alpha: 0.5 * (1 - light)});
+  cngRiverBank(t, "edge");
+  pen.drawImage(town.front, -WIDE, 0);
+  cngRiverBank(t, "frame");
   pen.restore();
   c01Title(t);
   cngFadeIn(t, 2);

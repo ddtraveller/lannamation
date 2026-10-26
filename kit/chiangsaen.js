@@ -44,35 +44,72 @@ function csBand(brush, x, y, wide, tall, top, bottom) {
 //   x, base: the left end and the foot of the high rampart (the moat's edge); wide: pixels; size: 1 is a rampart 150
 //   pixels high; look: gate (true), open (0 shut to 1 open; 0), outer (true: the low outer rampart and the moat), plain
 //   (true: a village's defences, earth and timber only, no brick: the chronicle's Wiang Phan, a moat dug and filled
-//   and "ประตูหับไข", gates that open and shut).
+//   and "ประตูหับไข", gates that open and shut), t (seconds, the moat's ripples: 0).
 // e.g. cityWall(pen, 200, 820, 1500, 1, {open: 0.8});
 function cityWall(brush, x, base, wide, size, look) {
   look = look || {};
   var s = size, top = base - 150 * s, gx = x + wide / 2, gw = 96 * s, n;
   var gate = look.gate !== false, open = look.open || 0;
-  brush.fillStyle = "#8a8f52";                                              // the high rampart, its earth face
+  // In depth (owner, 2026-10-26: "make the ... brick wall look more 3D ... It just needs to have thickness"): the earth
+  // face shaded toward its foot, each merlon with its lit top and its side in shade, the passage of the gate with its
+  // sides and the town's daylight beyond as the doors open, shade where the wall meets the moat, and the moat a water
+  // that mirrors the wall (scenery.js's way) where it was a band of waves.
+  var face = brush.createLinearGradient(0, top + 20 * s, 0, base);
+  face.addColorStop(0, "#949a5a"); face.addColorStop(1, "#727a44");
+  brush.fillStyle = face;                                                   // the high rampart, its earth face
   brush.beginPath(); brush.moveTo(x, base); brush.lineTo(x + 30 * s, top + 20 * s); brush.lineTo(x + wide - 30 * s, top + 20 * s);
   brush.lineTo(x + wide, base); brush.closePath(); brush.fill();
+  brush.strokeStyle = "rgba(60, 80, 30, 0.35)";                             // grass growing on it, in short strokes
+  brush.lineWidth = 1.2 * s;
+  for (n = 0; n < wide / (6 * s); n++) {
+    var gx0 = x + 30 * s + dice(n * 3 + 1) * (wide - 60 * s), gy0 = top + 30 * s + dice(n * 5 + 2) * (base - top - 34 * s), gl = (3 + 4 * dice(n)) * s;
+    brush.beginPath(); brush.moveTo(gx0, gy0); brush.lineTo(gx0 + (dice(n + 9) - 0.5) * 2 * s, gy0 - gl); brush.stroke();
+  }
   if (!look.plain) {
     csBand(brush, x + 30 * s, top - 14 * s, wide - 60 * s, 34 * s, "#b5664a", "#9a5440");   // the brick parapet
-    brush.fillStyle = "#b5664a";
-    for (n = x + 30 * s; n < x + wide - 40 * s; n += 28 * s) { brush.fillRect(n, top - 30 * s, 16 * s, 18 * s); }
+    brush.fillStyle = "rgba(255, 226, 190, 0.35)";                          // its coping, lit
+    brush.fillRect(x + 30 * s, top - 14 * s, wide - 60 * s, 3 * s);
+    brush.fillStyle = "rgba(50, 24, 14, 0.3)";                              // its shade on the earth below
+    brush.fillRect(x + 30 * s, top + 20 * s, wide - 60 * s, 6 * s);
+    for (n = x + 30 * s; n < x + wide - 40 * s; n += 28 * s) {              // the merlons: face, lit top, side in shade
+      brush.fillStyle = "#b5664a"; brush.fillRect(n, top - 30 * s, 16 * s, 18 * s);
+      brush.fillStyle = "#d69a76";
+      brush.beginPath(); brush.moveTo(n, top - 30 * s); brush.lineTo(n + 16 * s, top - 30 * s);
+      brush.lineTo(n + 20 * s, top - 33 * s); brush.lineTo(n + 4 * s, top - 33 * s); brush.closePath(); brush.fill();
+      brush.fillStyle = "#87452f";
+      brush.beginPath(); brush.moveTo(n + 16 * s, top - 30 * s); brush.lineTo(n + 20 * s, top - 33 * s);
+      brush.lineTo(n + 20 * s, top - 15 * s); brush.lineTo(n + 16 * s, top - 12 * s); brush.closePath(); brush.fill();
+    }
     brush.strokeStyle = "rgba(70, 30, 20, 0.35)";
     brush.lineWidth = 1;
     for (n = top - 12 * s; n < top + 20 * s; n += 8 * s) { brush.beginPath(); brush.moveTo(x + 30 * s, n); brush.lineTo(x + wide - 30 * s, n); brush.stroke(); }
   }
-  brush.fillStyle = "#7a5432";                                              // the teak palisade on the outer slope
-  for (n = x + 20 * s; n < x + wide - 20 * s; n += 11 * s) {
+  for (n = x + 20 * s; n < x + wide - 20 * s; n += 11 * s) {                // the teak palisade on the outer slope
     if (gate && Math.abs(n - gx) < gw / 2 + 10 * s) { continue; }
     var foot = base - 40 * s - 50 * s * Math.min(1, Math.min(n - x, x + wide - n) / (60 * s));
+    brush.fillStyle = "#7a5432";
     brush.fillRect(n, foot - 52 * s, 7 * s, 52 * s);
     brush.beginPath(); brush.moveTo(n, foot - 52 * s); brush.lineTo(n + 3.5 * s, foot - 60 * s); brush.lineTo(n + 7 * s, foot - 52 * s); brush.fill();
+    brush.fillStyle = "#57391f";                                            // each post's shaded side
+    brush.fillRect(n + 4.5 * s, foot - 52 * s, 2.5 * s, 52 * s);
   }
   if (gate) {
+    var inset = 16 * s, deep = 10 * s;                                      // how far the passage's far end is set in
     brush.fillStyle = look.plain ? "#6a4a2a" : "#9a5440";                    // the lining of the passage: brick, or timber
     brush.fillRect(gx - gw / 2 - 12 * s, base - 116 * s, gw + 24 * s, 116 * s);
     brush.fillStyle = "#2a2018";
     brush.fillRect(gx - gw / 2, base - 104 * s, gw, 104 * s);
+    brush.fillStyle = look.plain ? "#c9b48a" : "#d8c49a";                   // the town's daylight at the far end
+    brush.fillRect(gx - gw / 2 + inset, base - 104 * s + deep, gw - 2 * inset, 104 * s - deep);
+    brush.fillStyle = look.plain ? "#4a3420" : "#6e3a28";                   // the passage's sides, going in
+    brush.beginPath(); brush.moveTo(gx - gw / 2, base - 104 * s); brush.lineTo(gx - gw / 2 + inset, base - 104 * s + deep);
+    brush.lineTo(gx - gw / 2 + inset, base); brush.lineTo(gx - gw / 2, base); brush.closePath(); brush.fill();
+    brush.fillStyle = look.plain ? "#3a2818" : "#56301f";
+    brush.beginPath(); brush.moveTo(gx + gw / 2, base - 104 * s); brush.lineTo(gx + gw / 2 - inset, base - 104 * s + deep);
+    brush.lineTo(gx + gw / 2 - inset, base); brush.lineTo(gx + gw / 2, base); brush.closePath(); brush.fill();
+    brush.fillStyle = "#2a2018";                                            // its ceiling
+    brush.beginPath(); brush.moveTo(gx - gw / 2, base - 104 * s); brush.lineTo(gx + gw / 2, base - 104 * s);
+    brush.lineTo(gx + gw / 2 - inset, base - 104 * s + deep); brush.lineTo(gx - gw / 2 + inset, base - 104 * s + deep); brush.closePath(); brush.fill();
     brush.fillStyle = "#7a4a26";                                            // the two teak doors, swung in
     var leaf = (gw / 2) * (1 - 0.85 * open);
     brush.fillRect(gx - gw / 2, base - 104 * s, leaf, 104 * s);
@@ -82,8 +119,19 @@ function cityWall(brush, x, base, wide, size, look) {
     brush.strokeRect(gx + gw / 2 - leaf, base - 104 * s, leaf, 104 * s);
   }
   if (look.outer !== false) {
-    csBand(brush, x - 10 * s, base, wide + 20 * s, 46 * s, "#5f8e8a", "#3f6e6c");          // the moat
-    waves(brush, x - 10 * s, base + 4 * s, wide + 20 * s, 40 * s, "rgba(240, 250, 240, 0.35)", 0);
+    var moat = brush.createLinearGradient(0, base, 0, base + 46 * s);       // the moat: still water, the wall mirrored in it
+    moat.addColorStop(0, "#4f7a76"); moat.addColorStop(1, "#3a6260");
+    brush.fillStyle = moat;
+    brush.fillRect(x - 10 * s, base, wide + 20 * s, 46 * s);
+    if (typeof natReflect === "function") {                                 // a page with the scenery's painters (pinewoods.js)
+      var keep = pen;
+      pen = brush;                                                          // natReflect() draws with pen
+      natReflect(look.t || 0, base, {left: x - 10 * s, right: x + wide + 10 * s, foot: base + 46 * s, ripple: 0.4, tint: "30, 64, 60",
+                                      deep: 0.55, sheen: Math.round(wide / 60), line: 0.4});
+      pen = keep;
+    } else {
+      waves(brush, x - 10 * s, base + 4 * s, wide + 20 * s, 40 * s, "rgba(240, 250, 240, 0.35)", look.t || 0);
+    }
     if (gate) { brush.fillStyle = "#8a6a44"; brush.fillRect(gx - 34 * s, base - 2 * s, 68 * s, 48 * s); }   // the bridge
     brush.fillStyle = "#93ab5e";                                            // the low outer rampart, nearest us
     brush.beginPath(); brush.moveTo(x - 10 * s, base + 76 * s); brush.lineTo(x - 10 * s, base + 52 * s);
@@ -116,15 +164,25 @@ function karstHill(brush, x, base, size, look) {
   brush.strokeStyle = "rgba(90, 86, 76, 0.45)";                             // streaks where the rain runs down
   brush.lineWidth = 2 * s;
   for (k = 3; k < 38; k += 3) { brush.beginPath(); brush.moveTo(pts[k][0], pts[k][1] + 10 * s); brush.lineTo(pts[k][0] + 3 * s, base - 8 * s - 30 * s * dice(k)); brush.stroke(); }
-  for (k = 2; k <= 38; k += 2) {                                            // the forest on its top
-    for (var j = 0; j < 3; j++) {
-      brush.fillStyle = ["#5d8c44", "#79a856", "#4a7638"][(k + j) % 3];
-      brush.beginPath(); brush.arc(pts[k][0] + (j - 1) * 8 * s, pts[k][1] - 4 * s - 6 * s * dice(k * 3 + j), (8 + 4 * dice(k + j)) * s, 0, 7); brush.fill();
+  if (typeof natBush === "function") {                                      // a page with the scenery's painters: the
+    var keep = pen, pool = [0, 1, 2].map(function (m) {                     // forest painted as a mountain's is (2026-10-26)
+      return natBush(200, 110, 610 + m, THK_SHADE.map(function (g) { return blend(g, "#7a8a3a", 0.1 * m); }), [], PIX);
+    });
+    pen = brush;
+    for (k = 2; k <= 38; k += 2) { thkPlace(pool[k % 3], pts[k][0], pts[k][1] + 10 * s, (0.16 + 0.05 * dice(k)) * s, 0); }
+    for (k = 0; k < 6; k++) { thkPlace(pool[k % 3], x - 84 * s + k * 18 * s, base - tall * 0.5 + 8 * s, 0.13 * s, 0); }   // a ledge
+    pen = keep;
+  } else {
+    for (k = 2; k <= 38; k += 2) {                                          // the forest on its top
+      for (var j = 0; j < 3; j++) {
+        brush.fillStyle = ["#5d8c44", "#79a856", "#4a7638"][(k + j) % 3];
+        brush.beginPath(); brush.arc(pts[k][0] + (j - 1) * 8 * s, pts[k][1] - 4 * s - 6 * s * dice(k * 3 + j), (8 + 4 * dice(k + j)) * s, 0, 7); brush.fill();
+      }
     }
-  }
-  for (k = 0; k < 9; k++) {                                                 // a ledge of trees across its face
-    brush.fillStyle = ["#5d8c44", "#4a7638"][k % 2];
-    brush.beginPath(); brush.arc(x - 90 * s + k * 14 * s, base - tall * 0.5 - 4 * s * dice(k), 8 * s, 0, 7); brush.fill();
+    for (k = 0; k < 9; k++) {                                               // a ledge of trees across its face
+      brush.fillStyle = ["#5d8c44", "#4a7638"][k % 2];
+      brush.beginPath(); brush.arc(x - 90 * s + k * 14 * s, base - tall * 0.5 - 4 * s * dice(k), 8 * s, 0, 7); brush.fill();
+    }
   }
   if (look.cave !== false) {                                                // the cave at its foot
     brush.fillStyle = "#1e1c18";
@@ -336,21 +394,131 @@ function redAvadavat(brush, x, y, size, look) {
       b.fillStyle = "#fff"; [[-4, -legs - 12], [2, -legs - 7], [-8, -legs - 6]].forEach(function (p) { b.beginPath(); b.arc(p[0], p[1], 1.3, 0, 7); b.fill(); }); }});
 }
 
-// The Indian spot-billed duck, swimming: a brown scaled body, a pale face, a dark crown, a black bill tipped yellow;
-// it bobs with t. At (x, y), the waterline. e.g. spotbill(pen, 300, 800, 1, {face: 1, t: t});
+// The Indian spot-billed duck, swimming (owner, 2026-10-26: "The 2 birds in the water could use a lot more detail"; the
+// pick B, drawn from photographs of the bird): a pale head and a long pale neck finely streaked, a dark crown and a
+// dark stripe through the eye, the red spot at the base of the bill, the black bill tipped yellow; the flanks dark,
+// each feather edged pale like scales, the breast paler and spotted; the folded wing dark, the white tertials a patch
+// at the rear, the green speculum edged white, the tail black and cocked. Shaded from above, its reflection under it
+// broken by the water, a small wake behind it; it bobs with t. At (x, y), the waterline; size 1 about 70 across.
+// e.g. spotbill(pen, 300, 800, 1, {face: 1, t: t});
 function spotbill(brush, x, y, size, look) {
   look = look || {};
-  var face = look.face || 1, bob = Math.sin((look.t || 0) * 2 + x) * 1.5;
-  brush.save(); brush.translate(x, y + bob); brush.scale(face * size, size);
-  brush.fillStyle = "#6a5440"; brush.beginPath(); brush.ellipse(0, -8, 26, 10, 0, Math.PI, 0); brush.fill();
-  brush.fillStyle = "#4a3a2c"; brush.beginPath(); brush.moveTo(-26, -8); brush.lineTo(-34, -14); brush.lineTo(-22, -12); brush.fill();
-  brush.fillStyle = "#d8c8a8"; brush.beginPath(); brush.ellipse(18, -24, 8, 7, 0, 0, 7); brush.fill();
-  brush.fillRect(14, -20, 6, 12);
-  brush.fillStyle = "#3a2c22"; brush.beginPath(); brush.arc(18, -27, 6, Math.PI, 0); brush.fill();
-  brush.fillStyle = "#1a1612"; brush.fillRect(25, -25, 11, 4);
-  brush.fillStyle = "#e8c83a"; brush.fillRect(33, -25, 4, 4);
-  brush.strokeStyle = "rgba(240, 236, 220, 0.6)"; brush.lineWidth = 1.5;
-  brush.beginPath(); brush.ellipse(0, -2, 32, 4, 0, 0, Math.PI); brush.stroke();
+  var face = look.face || 1, t = look.t || 0, bob = Math.sin(t * 2 + x) * 1.5, k;
+  function body() {
+    brush.beginPath();
+    brush.moveTo(26, -1);
+    brush.bezierCurveTo(28, -8, 24, -14, 14, -15);         // breast up to the shoulder
+    brush.bezierCurveTo(2, -17, -16, -17, -28, -14);        // the back
+    brush.lineTo(-40, -19);                                 // the tail's point, cocked up
+    brush.lineTo(-33, -9);
+    brush.bezierCurveTo(-28, -3, -20, 0, -12, 1);           // the stern into the water
+    brush.lineTo(24, 1);
+    brush.closePath();
+  }
+  function neckHead(pale) {
+    brush.fillStyle = pale;
+    brush.beginPath();                                      // the neck, long and upright
+    brush.moveTo(11, -12); brush.bezierCurveTo(13, -24, 15, -32, 16.5, -38);
+    brush.lineTo(24, -38); brush.bezierCurveTo(22.5, -30, 23.5, -20, 25.5, -8); brush.closePath(); brush.fill();
+    brush.beginPath(); brush.ellipse(21, -41, 8.5, 7, -0.15, 0, 7); brush.fill();   // the head
+  }
+  brush.save();
+  brush.translate(x, y + bob);
+  brush.scale(face * size, size);
+  brush.save();                                             // the reflection: the duck upside down, dim, in slices
+  brush.globalAlpha = 0.28;
+  for (k = 0; k < 6; k++) {
+    brush.save();
+    brush.beginPath(); brush.rect(-50, 1 + k * 4, 100, 4); brush.clip();
+    brush.translate(Math.sin(t * 3 + k * 1.7) * 1.6, 2);
+    brush.scale(1, -0.8);
+    neckHead("#cfc2a6"); brush.fillStyle = "#4a3828"; body(); brush.fill();
+    brush.restore();
+  }
+  brush.restore();
+  brush.strokeStyle = "rgba(240, 232, 214, 0.45)";        // the wake, two lines opening behind it
+  brush.lineWidth = 1;
+  [3.5, 6].forEach(function (open, i) {
+    brush.beginPath(); brush.moveTo(-12, 1 + i); brush.quadraticCurveTo(-30, open, -52, open + 2 + Math.sin(t * 2 + i)); brush.stroke(); });
+  var neck = brush.createLinearGradient(10, -48, 26, -10);
+  neck.addColorStop(0, "#f0e6d0"); neck.addColorStop(1, "#cbbd9e");
+  neckHead(neck);
+  var shade = brush.createLinearGradient(0, -18, 0, 2);
+  shade.addColorStop(0, "#6a5240"); shade.addColorStop(1, "#3e2e22");
+  brush.fillStyle = shade; body(); brush.fill();
+  brush.save();                                             // the flanks
+  body(); brush.clip();
+  var front = brush.createLinearGradient(8, 0, 26, 0);     // the breast paler, toward the neck
+  front.addColorStop(0, "rgba(214, 198, 168, 0)"); front.addColorStop(1, "rgba(214, 198, 168, 0.9)");
+  brush.fillStyle = front; brush.fillRect(0, -20, 30, 22);
+  for (var row = 0; row < 6; row++) {
+    for (var c = 0; c < 16; c++) {
+      var fx = -26 + c * 3.4 + (row % 2) * 1.7 + (dice(row * 31 + c) - 0.5) * 1.2, fy = -12.5 + row * 2.3;
+      var w = 1.9 + 0.5 * dice(c * 7 + row);
+      if (fx > 24 - row * 1.5) { continue; }
+      if (fx > 9) {                                         // the breast: dark spots on pale
+        brush.fillStyle = "rgba(78, 58, 42, 0.8)";
+        brush.beginPath(); brush.ellipse(fx, fy, w * 0.45, w * 0.35, 0, 0, 7); brush.fill();
+        continue;
+      }
+      brush.fillStyle = "#e4d6bc";                          // the flank: dark feathers edged pale
+      brush.beginPath(); brush.ellipse(fx, fy, w, w * 0.72, 0, 0, 7); brush.fill();
+      brush.fillStyle = fx < -12 ? "#3e2c20" : "#54402e";
+      brush.beginPath(); brush.ellipse(fx - 0.2, fy - 0.35, w * 0.7, w * 0.5, 0, 0, 7); brush.fill();
+    }
+  }
+  var under = brush.createLinearGradient(0, -6, 0, 1);     // shade under the flank, where it meets the water
+  under.addColorStop(0, "rgba(30, 20, 14, 0)"); under.addColorStop(1, "rgba(30, 20, 14, 0.45)");
+  brush.fillStyle = under; brush.fillRect(-45, -8, 80, 10);
+  brush.restore();
+  brush.fillStyle = "#33261c";                              // the folded wing over the back
+  brush.beginPath(); brush.moveTo(14, -15); brush.bezierCurveTo(4, -17, -14, -18, -30, -14);
+  brush.bezierCurveTo(-20, -10, -6, -10, 10, -12); brush.closePath(); brush.fill();
+  brush.strokeStyle = "rgba(200, 180, 150, 0.45)";        // its feathers' edges
+  brush.lineWidth = 0.8;
+  [[6, -13.5], [-2, -13.8], [-10, -13.6]].forEach(function (p) {
+    brush.beginPath(); brush.moveTo(p[0], p[1]); brush.quadraticCurveTo(p[0] - 5, p[1] - 1.5, p[0] - 9, p[1] + 0.5); brush.stroke(); });
+  brush.fillStyle = "#2a8a7a";                              // the green speculum
+  brush.beginPath(); brush.moveTo(-14, -12.2); brush.lineTo(-24, -12.6); brush.lineTo(-23, -10.6); brush.lineTo(-14, -10.4); brush.fill();
+  brush.fillStyle = "#f6f2ea";                              // the white tertials
+  brush.beginPath(); brush.moveTo(-15, -14.6); brush.quadraticCurveTo(-24, -16, -31, -14.2);
+  brush.quadraticCurveTo(-24, -13.2, -15, -12.8); brush.closePath(); brush.fill();
+  brush.fillStyle = "#1e1814";                              // the black tail
+  brush.beginPath(); brush.moveTo(-28, -14); brush.lineTo(-40, -19); brush.lineTo(-33, -9); brush.quadraticCurveTo(-30, -8, -26, -10); brush.fill();
+  brush.strokeStyle = "rgba(255, 246, 226, 0.35)";        // the light along the back
+  brush.lineWidth = 1;
+  brush.beginPath(); brush.moveTo(16, -15.3); brush.bezierCurveTo(4, -17.4, -12, -17.6, -26, -14.8); brush.stroke();
+  brush.save();                                             // the dark crown, on the head's own outline, and the eye stripe
+  brush.beginPath(); brush.ellipse(21, -41, 8.5, 7, -0.15, 0, 7); brush.clip();
+  brush.fillStyle = "#3a2c22";
+  brush.beginPath(); brush.moveTo(10, -44.6); brush.quadraticCurveTo(20, -46.2, 30, -45.2); brush.lineTo(30, -52); brush.lineTo(10, -52); brush.fill();
+  brush.strokeStyle = "rgba(74, 58, 46, 0.9)";
+  brush.lineWidth = 1.2;
+  brush.lineCap = "round";
+  brush.beginPath(); brush.moveTo(12.5, -40.4); brush.quadraticCurveTo(20, -42.9, 28.5, -42.4); brush.stroke();
+  brush.restore();
+  brush.fillStyle = "#1a1410"; brush.beginPath(); brush.arc(23.5, -42.6, 1.6, 0, 7); brush.fill();   // the eye
+  brush.fillStyle = "#fff"; brush.beginPath(); brush.arc(24, -43.1, 0.55, 0, 7); brush.fill();
+  brush.fillStyle = "#e04a2a";                              // the red spot at the bill's base
+  brush.beginPath(); brush.ellipse(28.4, -42, 1.3, 1.9, 0.3, 0, 7); brush.fill();
+  brush.fillStyle = "#1e1c1e";                              // the bill, black, a little down-curved
+  brush.beginPath(); brush.moveTo(28, -43.5); brush.quadraticCurveTo(36, -42, 41, -37.6); brush.lineTo(39.5, -36.2);
+  brush.quadraticCurveTo(34, -37.5, 28, -38.6); brush.closePath(); brush.fill();
+  brush.fillStyle = "#f2d23a";                              // its yellow tip
+  brush.beginPath(); brush.moveTo(36.2, -39.6); brush.quadraticCurveTo(39.5, -38.6, 41, -37.6); brush.lineTo(39.5, -36.2);
+  brush.quadraticCurveTo(37.8, -37, 35.6, -37.6); brush.closePath(); brush.fill();
+  brush.strokeStyle = "rgba(255, 255, 255, 0.25)";        // the light on it
+  brush.lineWidth = 0.8;
+  brush.beginPath(); brush.moveTo(30, -42.8); brush.quadraticCurveTo(35, -41.6, 38.5, -39.2); brush.stroke();
+  brush.strokeStyle = "rgba(90, 70, 50, 0.35)";           // fine streaks down the neck
+  brush.lineWidth = 0.7;
+  for (k = 0; k < 9; k++) {
+    var sx = 13 + (k % 3) * 3.5, sy = -34 + Math.floor(k / 3) * 8;
+    brush.beginPath(); brush.moveTo(sx, sy); brush.lineTo(sx + 0.6, sy + 2.4); brush.stroke();
+  }
+  brush.strokeStyle = "rgba(250, 244, 228, 0.8)";         // the water at its side
+  brush.lineWidth = 1.2;
+  brush.beginPath(); brush.moveTo(-16, 1.2); brush.quadraticCurveTo(4, 3, 30, 1.2); brush.stroke();
   brush.restore();
 }
 
@@ -585,7 +753,9 @@ function almsBowl(brush, x, y, size) {
 
 // Indra's wall (the chronicle: a deva "เนรมิตกำแพงหินศิลา", raises a wall of stone before Phrom): cut stone rising out
 // of the ground across x..x + wide, u 0 (none) to 1 (risen to tall pixels), a deva's light along its top as it rises,
-// dust at its foot. The owner's pick, 2026-10-23. e.g. risingWall(pen, 600, 900, 700, 360, between(t, 2, 5));
+// dust at its foot. The owner's pick, 2026-10-23. In depth since 2026-10-26 (the scenery pass): each stone lit along
+// its top and left, shaded along its bottom and right, its face speckled, moss in a joint here and there; the wall's
+// top lit and its near end in shade, so it has thickness. e.g. risingWall(pen, 600, 900, 700, 360, between(t, 2, 5));
 function risingWall(brush, x, base, wide, tall, u) {
   var h = tall * Math.max(0, Math.min(1, u));
   if (h <= 0) { return; }
@@ -596,10 +766,28 @@ function risingWall(brush, x, base, wide, tall, u) {
       var bx = x + k * 70 - (row % 2) * 35, by = base - (row + 1) * 40 + (tall - h);
       brush.fillStyle = ["#9a968a", "#8a8678", "#a8a496"][(row + k) % 3];
       brush.fillRect(bx + 2, by + 2, 66, 36);
+      brush.fillStyle = "rgba(255, 250, 236, 0.35)";       // lit along its top and left
+      brush.fillRect(bx + 2, by + 2, 66, 3); brush.fillRect(bx + 2, by + 2, 3, 36);
+      brush.fillStyle = "rgba(40, 36, 28, 0.35)";          // in shade along its bottom and right
+      brush.fillRect(bx + 2, by + 35, 66, 3); brush.fillRect(bx + 65, by + 2, 3, 36);
+      for (var d = 0; d < 6; d++) {                        // its face speckled
+        brush.fillStyle = d % 2 ? "rgba(60, 56, 46, 0.3)" : "rgba(230, 226, 210, 0.3)";
+        brush.fillRect(bx + 8 + 52 * dice(row * 31 + k * 7 + d), by + 8 + 24 * dice(row * 13 + k * 3 + d * 5), 2, 2);
+      }
+      if (dice(row * 17 + k * 5) < 0.18) {                 // moss in a joint
+        brush.fillStyle = "rgba(96, 120, 60, 0.7)";
+        brush.beginPath(); brush.ellipse(bx + 20 + 30 * dice(k + row), by + 38, 12, 3, 0, 0, 7); brush.fill();
+      }
       brush.strokeStyle = "#6a665a"; brush.lineWidth = 1.5; brush.strokeRect(bx + 2, by + 2, 66, 36);
     }
   }
   brush.restore();
+  brush.fillStyle = "#c8c4b4";                             // its top, lit: the wall's thickness
+  brush.beginPath(); brush.moveTo(x - 20, base - h); brush.lineTo(x + wide + 20, base - h);
+  brush.lineTo(x + wide + 44, base - h - 14); brush.lineTo(x + 4, base - h - 14); brush.closePath(); brush.fill();
+  brush.fillStyle = "#6e6a5e";                             // its near end, in shade
+  brush.beginPath(); brush.moveTo(x + wide + 20, base - h); brush.lineTo(x + wide + 44, base - h - 14);
+  brush.lineTo(x + wide + 44, base - 14); brush.lineTo(x + wide + 20, base); brush.closePath(); brush.fill();
   if (u < 1) {
     var glow = brush.createLinearGradient(0, base - h - 30, 0, base - h + 10);
     glow.addColorStop(0, "rgba(255, 240, 180, 0)"); glow.addColorStop(1, "rgba(255, 240, 180, 0.8)");

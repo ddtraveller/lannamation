@@ -28,9 +28,11 @@ function c13Child(k, x, y, look) {
 
 // The bamboo at dawn: he cuts a culm (the dap's strokes), then holds up his hook.
 function c13Bamboo(t) {
-  pen.drawImage(cngSky("dawn"), 0, 0);
+  pen.drawImage(cngSky("sunrise"), 0, 0);                // the sunrise (the scenery pass, 2026-10-26), soft dawn clouds
+  cngClouds(t + 15, "dawn");
   var village = cngVillage();
   pen.save(); pen.translate(-WIDE * 0.15, 0); pen.drawImage(village.back, 0, 0); pen.restore();
+  softMist(t, 820, 60, 0.4, 27, "250, 232, 214");      // the dawn's mist lying low on the fields
   bamboo(pen, 1260, 900, 1.3, 3);
   bamboo(pen, 1460, 920, 1.1, 5);
   pen.fillStyle = "rgba(240, 170, 120, 0.2)"; pen.fillRect(0, 0, WIDE, 1080);
@@ -43,12 +45,15 @@ function c13Bamboo(t) {
   } else {
     c13Phrom(1080, 900, {face: -1, feel: "happy", reachA: [1010, 700]});
   }
+  cngBeds(t, "village", "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.5, 13]});   // the first light
 }
 
 // The village: he calls, and the children come running from the houses to him.
 function c13Children(t) {
   var village = cngVillage(), cam = WIDE * 0.6;
   pen.drawImage(cngSky("day"), 0, 0);
+  cngClouds(t + 40, "day");
   pen.save();
   pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
@@ -73,14 +78,16 @@ function c13Children(t) {
 }
 
 // The bank: they run in along the sand; he kneels at the edge and washes his face; they wait, looking at the river.
+var C13_RINGS = [[1330, CNG_BANK - 6, 25.5], [1340, CNG_BANK - 4, 27.0], [1330, CNG_BANK - 6, 28.4]];
 function c13Bank(t) {
   var river = cngRiver();
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 10, CNG_CLOUDS.day);
+  cngClouds(t + 10, "day");
   pen.drawImage(river.back, 0, 0);
   cngRiverLife(t, {});
   decorate(t, C13_LIFE, "back");
   pen.drawImage(river.near, 0, 0);
+  cngRiverBank(t, "edge");                               // reeds and grass along the water's edge
   var run = between(t, 20, 25), px = mix(-100, 1260, run), washing = t > 25 && t < 31;
   var sprites = [{name: "phrom", kind: "person", x: px, y: CNG_BANK + 30, draw: function () {
     if (run < 1) { c13Phrom(px, CNG_BANK + 30, {face: 1, step: t / BEAT * 1.4}); return; }
@@ -104,6 +111,9 @@ function c13Bank(t) {
     pen.fillStyle = "rgba(240, 250, 245, 0.7)";
     for (var d = 0; d < 6; d++) { pen.beginPath(); pen.arc(px + 70 + 30 * dice(d + Math.floor(t * 4)), CNG_BANK - 4 - 20 * dice(d * 3 + Math.floor(t * 4)), 4, 0, 7); pen.fill(); }
   }
+  ripples(pen, C13_RINGS, t);                              // rings on the water where his hands go in
+  cngRiverBank(t, "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 14]});
 }
 
 // Scene 13, the entry the film calls (SCENES): t, its own second, 0 to C13_LONG (35 s). Gives back nothing: it draws the

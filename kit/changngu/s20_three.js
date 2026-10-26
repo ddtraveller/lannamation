@@ -10,12 +10,40 @@ var C20_LINES = [[1.4, 8.71, "C093"], [9.8, 14.04, "C094"], [17.0, 25.4, "C095"]
 var C20_CUTS = [9.3, 16.4, 26.6];
 
 // The training field: the elephant charging across with Phrom on it, the spearmen drilling in two rows. age: Phrom's.
+// The drill field below the village painted once (the scenery pass, 2026-10-26): grass, worn to the earth in patches
+// where the men drill and the elephant runs, tufts standing in it.
+var C20_GROUND = null;
+function c20Ground() {
+  if (C20_GROUND) { return C20_GROUND; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var b = paper.getContext("2d"), n;
+  csBand(b, 0, 800, WIDE, 280, "#a9c97a", "#86a85a");
+  for (n = 0; n < 40; n++) {                             // the worn patches, flattened with the distance
+    var x = dice(n * 3 + 1) * WIDE, y = 812 + Math.pow(dice(n * 5 + 2), 0.9) * 260, near = (y - 800) / 280;
+    var g = b.createRadialGradient(x, y, 2, x, y, 60 + 120 * near);
+    g.addColorStop(0, "rgba(176, 150, 100, 0.5)"); g.addColorStop(1, "rgba(176, 150, 100, 0)");
+    b.save(); b.translate(x, y); b.scale(1, 0.28); b.translate(-x, -y);
+    b.fillStyle = g; b.fillRect(x - 200, y - 200, 400, 400);
+    b.restore();
+  }
+  b.strokeStyle = "rgba(70, 110, 40, 0.5)";              // the grass's blades, larger near
+  for (n = 0; n < 900; n++) {
+    var gx = dice(n * 7 + 3) * WIDE, gy = 806 + Math.pow(dice(n * 11 + 5), 0.8) * 274, l = 3 + 9 * (gy - 800) / 280;
+    b.lineWidth = 0.6 + (gy - 800) / 280;
+    b.beginPath(); b.moveTo(gx, gy); b.lineTo(gx + (dice(n) - 0.5) * l * 0.6, gy - l); b.stroke();
+  }
+  C20_GROUND = paper;
+  return paper;
+}
+
 function c20Field(t, age, season) {
   var village = cngVillage();
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 60, CNG_CLOUDS.day);
+  cngClouds(t + 60, "day");
   pen.drawImage(village.back, -WIDE * 0.3, 0);
-  csBand(pen, 0, 800, WIDE, 280, "#a9c97a", "#86a85a");
+  pen.drawImage(c20Ground(), 0, 0);
   var lap = (t * 0.09) % 1, ex = mix(-500, WIDE + 500, lap);
   var e = elephant(ex, 840, {size: 0.5, face: 1, colour: "#f1ddd3", cloth: "#c9962a", step: t / BEAT / 2.2, trunk: 0.6});
   person(e.seat[0], e.seat[1], cngPerson("boy", CNG_PHROM, {id: "phromrides", size: cngAgeSize(age), face: 1, floor: "astride",
@@ -34,12 +62,14 @@ function c20Field(t, age, season) {
     pen.fillStyle = ["rgba(60, 120, 60, 0.12)", "rgba(230, 170, 60, 0.16)", "rgba(220, 225, 235, 0.22)"][season];
     pen.fillRect(0, 0, WIDE, 1080);
   }
+  cngBeds(t, "village", "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 29]});
 }
 
 // Yonok's gate: two men in plain cloth go in among the townspeople; the guards see nothing.
 function c20Spies(t) {
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 90, CNG_CLOUDS.day);
+  cngClouds(t + 90, "day");
   pen.drawImage(cngFields(), 0, 0);
   cngGateWall(1);
   var sprites = [];
@@ -60,6 +90,7 @@ function c20Spies(t) {
     }});
   });
   drawByZ(sprites);
+  cngBeds(t, "fields", "frame");
 }
 
 // Yonok: the Khom king on the step of his hall, furious; his soldiers hurry off to gather the army; the two spies at the
@@ -67,8 +98,9 @@ function c20Spies(t) {
 function c20Khom(t) {
   var p = CNG_PALACE, floor = hoKhamFloor(p[1], p[2]);
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 20, CNG_CLOUDS.day);
+  cngClouds(t + 20, "day");
   pen.drawImage(cngCourt(), 0, 0);
+  cngBeds(t, "court", "back");
   var shouts = (t > 33.08 && t < 38.16), stamp = t > 27.4 && t < 31 ? Math.abs(Math.sin(t * 6)) : 0;
   var go = between(t, 38.0, 44.0), spies = between(t, 38.76, 45.2);
   drawByZ([

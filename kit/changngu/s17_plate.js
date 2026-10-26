@@ -14,8 +14,9 @@ var C17_CUTS = [17.6, 28.2];
 function c17Yard(t) {
   var village = cngVillage(), cam = WIDE * 0.85;
   pen.drawImage(cngSky("day"), 0, 0);
+  cngClouds(t + 30, "day");
   pen.save(); pen.translate(-cam, 0); pen.drawImage(village.back, 0, 0); pen.restore();
-  csBand(pen, 0, 820, WIDE, 260, "#b9a070", "#9a8058");
+  pen.drawImage(cngForgeGround(null, false), 0, 0);       // the yard's beaten earth (sets.js)
   var speaks = (t > 5.2 && t < 10.75) || (t > 11.35 && t < 16.71);
   decorate(t, cngYard(1360, 884, 4), "back");                 // the yard's fowl (owner, 2026-10-25)
   drawByZ([
@@ -37,17 +38,21 @@ function c17Yard(t) {
       var c = CNG_CHILDREN[3];
       person(600, 880, cngPerson(c.kind, c.look, {id: "runner", size: cngAgeSize(11), face: 1, feel: "concerned", sit: 0.15, bend: 0.2}));
     }}
-  ]);
+  ]);  cngBeds(t, "village", "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 21]});
 }
 
 // The forge: the smiths beat the gold into the plate on the anvil, sparks of gold at each stroke.
 function c17Forge(t) {
   var village = cngVillage(), cam = WIDE * 0.92;
   pen.drawImage(cngSky("day"), 0, 0);
+  cngClouds(t + 30, "day");
   pen.save(); pen.translate(-cam, 0); pen.drawImage(village.back, 0, 0); pen.restore();
-  csBand(pen, 0, 800, WIDE, 280, "#b9a070", "#9a8058");
   var f = [900, 860, 1.25], s = f[2], anvil = [f[0] + 126 * s, f[1] - 62 * s];
+  pen.drawImage(cngForgeGround(f, false), 0, 0);          // the forge's yard (sets.js), as scenes 9 and 11
   forge(pen, f[0], f[1], s, t);
+  natSteam(t, f[0] - 40 * s, f[0] + 40 * s, f[1] - 70 * s, {count: 10, rise: 260, wide: 70, life: 6, lean: 120, alpha: 0.22, flat: 0.8,
+                                                            patch: 0.6, colour: "190, 184, 176", seed: 17});   // its smoke
   var grow = between(t, 18, 26);                           // the gold spreading into a plate under the hammer
   cngPlate(anvil[0], anvil[1] - 8, 0.25 + 0.35 * grow, t);
   var phase = (t % 0.8) / 0.8, up = phase < 0.6 ? phase / 0.6 : 1 - (phase - 0.6) / 0.4;
@@ -61,13 +66,16 @@ function c17Forge(t) {
       person(anvil[0] - 150, f[1] + 14, cngPerson("villager", CNG_SMITH, {id: "smith2", face: 1, turban: "#3a4a5a", feel: "happy", at: anvil}));
     }}
   ]);
+  sceneryLampLight(t, f[0], f[1] - 64 * s, f[1] + 10, {reach: 340, strength: 0.7, colour: "255, 150, 70", seed: 6});   // the fire's light
+  cngBeds(t, "village", "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 17]});
 }
 
 // The path out of the village: Thukkhita runs with the plate by its cord toward the river.
 function c17Run(t) {
   var village = cngVillage(), run = between(t, 28.6, 39), cam = mix(WIDE * 0.9, WIDE * 0.1, run);
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 30, CNG_CLOUDS.day);
+  cngClouds(t + 30, "day");
   pen.save(); pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
   var x = cam + 900;
@@ -79,6 +87,8 @@ function c17Run(t) {
   cngPlate(hand[0] - 4, hand[1] + 80, 0.55, t);
   pen.drawImage(village.front, 0, 0);
   pen.restore();
+  cngBeds(t, "village", "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 19]});
 }
 
 // Scene 17, the entry the film calls (SCENES): t, its own second, 0 to C17_LONG (40 s). Gives back nothing: it draws the

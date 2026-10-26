@@ -15,9 +15,10 @@ var C23_CHANGE = [21.4, 23.4];                         // the burst: the elephan
 function c23Home(t) {
   var village = cngVillage(), cam = WIDE * 0.66;
   pen.drawImage(cngSky("day"), 0, 0);
+  cngClouds(t + 50, "day");
   pen.save(); pen.translate(-cam, 0); pen.drawImage(village.back, 0, 0); pen.restore();
+  pen.drawImage(cngForgeGround(null, false), 0, 0);       // the yard's beaten earth, and on it (not under it, as in v2)
   decorate(t, cngYard(300, 884, 7), "back");                 // the yard's fowl (owner, 2026-10-25)
-  csBand(pen, 0, 820, WIDE, 260, "#b9a070", "#9a8058");
   var kneel = between(t, 1, 3) * (1 - between(t, 8, 9.5)), off = t > 6.2, go = between(t, 9, 15.3);
   var ex = mix(980, WIDE + 400, go * go);
   var e = elephant(ex, 860, {size: 0.55, face: 1, colour: "#f1ddd3", cloth: off ? null : "#c9962a", sit: kneel,
@@ -39,17 +40,32 @@ function c23Home(t) {
       pen.strokeStyle = "#8a5a1a"; pen.lineWidth = 2; pen.strokeRect(480, 860, 120, 22);
     }
   }
+  cngBeds(t, "village", "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 33]});
 }
 
 // The plain: the elephant goes out to the hill, the people far behind; the burst; the snake slides into the cave.
+// The plain painted once (the scenery pass, 2026-10-26): Chang Ngu's range, the paddies in rows (sets.js
+// cngPaddies()), and Doi Chang Ngu standing up out of them, its forest painted (chiangsaen.js karstHill()).
+var C23_PLAIN = null;
+function c23Plain() {
+  if (C23_PLAIN) { return C23_PLAIN; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var b = paper.getContext("2d");
+  cngFar(b, 0, 760);
+  csBand(b, 0, 740, WIDE, 340, "#b3cf82", "#8fb060");
+  cngPaddies(b, 748, 10, WIDE);
+  karstHill(b, C23_HILL[0], C23_HILL[1], C23_HILL[2], {});
+  C23_PLAIN = paper;
+  return paper;
+}
+
 function c23Hill(t) {
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 50, CNG_CLOUDS.day);
-  cngSkyline(pen, 0, 760, 160, "#b3c4ae", 4);
-  csBand(pen, 0, 740, WIDE, 340, "#b3cf82", "#8fb060");
-  pen.strokeStyle = "rgba(90, 120, 50, 0.35)"; pen.lineWidth = 1.5;
-  for (var b = 1; b < 8; b++) { var by = 760 + b * 22 + b * b * 2; pen.beginPath(); pen.moveTo(0, by); pen.lineTo(WIDE, by + 4 * Math.sin(b)); pen.stroke(); }
-  karstHill(pen, C23_HILL[0], C23_HILL[1], C23_HILL[2], {});
+  cngClouds(t + 50, "day");
+  pen.drawImage(c23Plain(), 0, 0);
   var cave = [C23_HILL[0] + 16 * C23_HILL[2], C23_HILL[1]];
   var walk = between(t, 15.5, C23_CHANGE[0]), ex = mix(200, cave[0] - 120, walk), changed = t > (C23_CHANGE[0] + C23_CHANGE[1]) / 2;
   if (!changed) {
@@ -70,10 +86,12 @@ function c23Hill(t) {
   cngBurst(t, cave[0] - 80, 760, C23_CHANGE);
   var a = between(t, 26.2, 27.2) * (1 - between(t, 33, 34));   // the hill's name
   cngGoldName("ดอยช้างงู", "Doi Chang Ngu, the hill of the snake elephant", 560, 220, a);
+  cngBeds(t, "fields", "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 31]});
 }
 
 // Scene 23, the entry the film calls (SCENES): t, its own second, 0 to C23_LONG (40 s). Gives back nothing: it draws the
-// whole sheet with pen. From sets.js: cngVillage(), cngSkyline(), cngPerson() with CNG_PHROM, cngAgeSize(), cngCutsOver();
+// whole sheet with pen. From sets.js: cngVillage(), cngFar(), cngPerson() with CNG_PHROM, cngAgeSize(), cngCutsOver();
 // cngBurst(); from chiangsaen.js karstHill();
 // from beasts.js elephant(); from naga.js riverSnake(). Its words are C23_LINES (C110 to C114). Its z plan: each shot's
 // set, the elephant or the snake, the people, the burst and the name over all.

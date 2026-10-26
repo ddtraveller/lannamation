@@ -38,13 +38,25 @@ function c18Name(t) {
   if (a <= 0) { return; }
   pen.save();
   pen.globalAlpha = a;
+  // It reads over any sky (v3, plan step 6: it was pale over a cloud at 690 s of the tale): a soft dark halo behind
+  // the words, and their letters edged in dark brown, under the gold.
+  var halo = pen.createRadialGradient(WIDE / 2, 214, 20, WIDE / 2, 214, 520);
+  halo.addColorStop(0, "rgba(40, 24, 10, 0.42)"); halo.addColorStop(1, "rgba(40, 24, 10, 0)");
+  pen.save(); pen.translate(WIDE / 2, 214); pen.scale(1, 0.24); pen.translate(-WIDE / 2, -214);
+  pen.fillStyle = halo; pen.fillRect(WIDE / 2 - 520, 214 - 520, 1040, 1040);
+  pen.restore();
   pen.textAlign = "center";
+  pen.lineJoin = "round";
+  pen.font = "700 80px 'Noto Serif Thai', 'Leelawadee UI', serif";
+  pen.strokeStyle = "rgba(70, 40, 12, 0.9)"; pen.lineWidth = 7;
+  pen.strokeText("ช้างพานคำ", WIDE / 2, 200);
   pen.shadowColor = "rgba(255, 196, 90, 0.7)"; pen.shadowBlur = 16;
   pen.fillStyle = "#f2d27a";
-  pen.font = "700 80px 'Noto Serif Thai', 'Leelawadee UI', serif";
   pen.fillText("ช้างพานคำ", WIDE / 2, 200);
   pen.shadowBlur = 0;
   pen.font = "italic 38px " + LETTERS_LATIN + ", serif";
+  pen.strokeStyle = "rgba(50, 30, 10, 0.8)"; pen.lineWidth = 4;
+  pen.strokeText("Chang Phan Kham, the elephant of the golden plate", WIDE / 2, 256);
   pen.fillStyle = "#fff6dc";
   pen.fillText("Chang Phan Kham, the elephant of the golden plate", WIDE / 2, 256);
   pen.restore();
@@ -58,7 +70,7 @@ function c18Name(t) {
 function cngSceneTing(t) {
   var river = cngRiver(), comes = between(t, 6, 13), out = between(t, 10.5, 13);
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 90, CNG_CLOUDS.day);
+  cngClouds(t + 90, "day");
   pen.drawImage(river.back, 0, 0);
   cngRiverLife(t, {});
   decorate(t, C18_LIFE, "back");
@@ -72,11 +84,11 @@ function cngSceneTing(t) {
   if (out < 1) {                                           // the water over its legs while it is still in the river
     pen.save();
     pen.globalAlpha = 1 - out;
-    csBand(pen, 0, C18_SWIM - 8, WIDE, CNG_BANK - C18_SWIM + 30, "#a68e66", "#8a7250");
-    waves(pen, 0, C18_SWIM - 6, WIDE, CNG_BANK - C18_SWIM + 20, "rgba(250, 238, 210, 0.3)", t);
+    cngRiverOver(t, C18_SWIM - 8);
     pen.restore();
   }
   pen.drawImage(river.near, 0, 0);
+  cngRiverBank(t, "edge");                               // reeds and grass along the water's edge
   if (out >= 1) {                                          // on the sand now: it is drawn again over the bank
     e = elephant(ex, ey, {size: 0.62, face: face, colour: "#f1ddd3", cloth: "#c9962a", trunk: 0.3 + 0.5 * Math.max(0, Math.sin(t * 2)),
                           mouth: t > 15 ? 0.3 : 0.1});
@@ -97,5 +109,7 @@ function cngSceneTing(t) {
   pen.restore();
   c18Rings(t, [hand[0], hand[1] + 90]);
   c18Name(t);
+  cngRiverBank(t, "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 18]});
   cngFadeIn(t, 1);
 }

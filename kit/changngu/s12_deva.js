@@ -18,8 +18,8 @@ function c12Vision(t) {
   pen.globalAlpha = open;
   pen.beginPath(); pen.ellipse(v[0], v[1], v[2], v[3], 0, 0, 7); pen.clip();
   csBand(pen, v[0] - v[2], v[1] - v[3], 2 * v[2], v[3], "#c9b4dc", "#f2e2ee");   // a dream's sky
-  csBand(pen, v[0] - v[2], v[1], 2 * v[2], v[3], "#b8a07a", "#8a7250");           // the river
-  waves(pen, v[0] - v[2], v[1] + 6, 2 * v[2], v[3], "rgba(250, 238, 210, 0.35)", t);
+  var river = cngRiver();                                // the river as the film paints it (sets.js), the range across it, small
+  [river.back, river.near].forEach(function (sheet) { pen.drawImage(sheet, 0, 300, WIDE, 560, v[0] - v[2], v[1] - v[3], 2 * v[2], 2 * v[3]); });
   C12_COUNT.forEach(function (at, k) {
     var shown = between(t, at, at + 1.2);
     if (shown <= 0) { return; }
@@ -33,6 +33,17 @@ function c12Vision(t) {
       pen.fillStyle = g; pen.beginPath(); pen.arc(x, y - 40, 90, 0, 7); pen.fill();
     }
     pen.restore();
+  });
+  pen.save();                                            // they float: the water over their legs, a ring round each
+  pen.beginPath(); pen.rect(v[0] - v[2], v[1] + 20, 2 * v[2], v[3]); pen.clip();
+  pen.globalAlpha = open * 0.94;
+  [river.back, river.near].forEach(function (sheet) { pen.drawImage(sheet, 0, 300, WIDE, 560, v[0] - v[2], v[1] - v[3], 2 * v[2], 2 * v[3]); });
+  pen.restore();
+  pen.strokeStyle = "rgba(250, 240, 220, 0.5)"; pen.lineWidth = 1.5;
+  C12_COUNT.forEach(function (at, k) {
+    if (between(t, at, at + 1.2) <= 0) { return; }
+    var x = v[0] - 200 + k * 200 + 30 * Math.sin(t * 0.6 + k);
+    pen.beginPath(); pen.ellipse(x, v[1] + 22, 50, 5, 0, 0, 7); pen.stroke();
   });
   pen.restore();
   pen.save();
@@ -53,6 +64,7 @@ function cngSceneDeva(t) {
   pen.translate(-960, -(CNG_FLOOR - 60));
   pen.drawImage(cngRoom("night"), 0, 0);
   pratheep(pen, 330, CNG_FLOOR + 30, 2.0, t, 2, {});
+  sceneryLampLight(t, 330, CNG_FLOOR + 6, CNG_FLOOR + 50, {reach: 240, strength: 0.7, seed: 4});   // its light
   var size = cngAgeSize(13);
   pen.save();                                              // Phrom asleep on his side on the mat, a cloth over him
   pen.translate(C12_MAT[0] + 120, C12_MAT[1] - 18);

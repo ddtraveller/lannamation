@@ -27,12 +27,18 @@ function c04Lump(x, y, size) {
 }
 
 // The panners: three people of Si Tuang knee-deep in the Mae Sai, bent over wide pans of wood, swirling them.
+// The Mae Sai close is a water (the scenery pass, 2026-10-26: "yes" to the near stream as the hero film's pond): its
+// face from the panners' shins down mirrors them and the bank behind (pinewoods.js natReflect()), rings spread round
+// their shins as they work, light lies along the current, reeds stand at its edges. C04_WATER: the y of its face.
+var C04_WATER = C04_STREAM[1] - 26;
+var C04_RINGS = [];                                    // a ring at each panner's shins every 2.2 s, each in its own time
+[600, 780, 930].forEach(function (x, i) { for (var k = 0; k < 6; k++) { C04_RINGS.push([x + 20, C04_WATER + 6 + (i % 2) * 24, k * 2.2 + i * 0.7]); } });
 function c04Panning(t) {
   var village = cngVillage();
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 30, CNG_CLOUDS.day);
+  cngClouds(t + 30, "day");
   pen.drawImage(village.back, 0, 0);
-  csBand(pen, 0, 950, WIDE, 130, "#86aca8", "#5f8a86");    // the Mae Sai, close, across the near ground
+  csBand(pen, 0, 950, WIDE, 130, "#86aca8", "#4f7f7a");    // the Mae Sai, close, across the near ground
   pen.fillStyle = "#c9b285";
   pen.fillRect(0, 942, WIDE, 10);
   var sprites = [];
@@ -49,24 +55,105 @@ function c04Panning(t) {
     }});
   });
   drawByZ(sprites);
-  pen.fillStyle = "rgba(127, 166, 162, 0.9)";             // the stream over their shins
-  pen.fillRect(0, C04_STREAM[1] - 26, WIDE, 1080 - C04_STREAM[1] + 26);
-  waves(pen, 0, C04_STREAM[1] - 24, WIDE, 90, "rgba(240, 250, 245, 0.45)", t);
+  natReflect(t, C04_WATER, {ripple: 0.7, tint: "40, 80, 76", deep: 0.6, sheen: 40, line: 0});   // the stream over their shins
+  ripples(pen, C04_RINGS, t);
+  [[50, 0.8, 1], [WIDE - 60, 0.9, 2]].forEach(function (r) {   // reeds at its edges
+    sceneryReeds(r[0], 1090, r[1], t, "back"); sceneryReeds(r[0], 1090, r[1], t, "front");
+  });
+  cngBeds(t, "village", "frame");
 }
 
-// Close: on a woven tray, four lumps of gold beside a small bael fruit on its twig.
-function c04Tuang(t) {
-  csBand(pen, 0, 0, WIDE, 1080, "#c9b48a", "#a8926a");
-  pen.fillStyle = "#b08850";                               // the woven bamboo tray
-  pen.beginPath(); pen.ellipse(WIDE / 2, 660, 720, 250, 0, 0, 7); pen.fill();
-  pen.strokeStyle = "rgba(110, 70, 30, 0.35)"; pen.lineWidth = 3;
-  for (var k = -14; k <= 14; k++) {
-    pen.beginPath(); pen.moveTo(WIDE / 2 + k * 48, 420); pen.lineTo(WIDE / 2 + k * 48 + 30, 900); pen.stroke();
+// Close: on a woven tray, four lumps of gold beside a small bael fruit on its twig. The tray and the floor painted once
+// (the scenery pass, 2026-10-26): teak planks with their grain (scenery.js sceneryWoodGrain()), the tray woven of
+// bamboo strips over and under, each with its grain, its rim bound round, its shadow on the floor; shadows under the
+// bael and the lumps, and glints winking on the gold.
+var C04_LUMPS = [[880, 690], [1110, 740], [1320, 680], [1520, 750]];
+var C04_CLOSE = null;
+function c04Close() {
+  if (C04_CLOSE) { return C04_CLOSE; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var b = paper.getContext("2d"), k, j;
+  for (k = 0; k * 120 < 1080; k++) {                     // the teak floor, plank by plank
+    b.fillStyle = ["#8a5a36", "#7e5232", "#94603a"][k % 3];
+    b.fillRect(0, k * 120, WIDE, 118);
+    sceneryWoodGrain(b, 0, k * 120, WIDE, 118, {along: "x", seed: k + 3, knots: 2});
+    b.fillStyle = "rgba(30, 16, 8, 0.6)"; b.fillRect(0, k * 120 + 117, WIDE, 3);
   }
+  var shade = b.createRadialGradient(WIDE / 2, 700, 200, WIDE / 2, 700, 820);   // the tray's shadow
+  shade.addColorStop(0, "rgba(20, 10, 4, 0.5)"); shade.addColorStop(1, "rgba(20, 10, 4, 0)");
+  b.save(); b.translate(0, 700); b.scale(1, 0.36); b.translate(0, -700);
+  b.fillStyle = shade; b.fillRect(0, 0, WIDE, 1400);
+  b.restore();
+  b.save();
+  b.beginPath(); b.ellipse(WIDE / 2, 660, 720, 250, 0, 0, 7); b.clip();
+  b.fillStyle = "#b08850"; b.fillRect(0, 380, WIDE, 560);
+  var cell = 40;                                         // the weave: strips one way and the other, over and under
+  for (k = -40; k < 40; k++) {
+    for (j = -12; j < 12; j++) {
+      var cx = WIDE / 2 + (k - j) * cell * 0.7, cy = 660 + (k + j) * cell * 0.25;
+      var over = (k + j) % 2 === 0, one = (k + 2 * j) % 3;
+      b.save(); b.translate(cx, cy); b.scale(1, 0.36); b.rotate(Math.PI / 4);
+      b.fillStyle = over ? ["#c99a5e", "#c2925a", "#d0a468"][(one + 3) % 3] : ["#a27a46", "#9a7242", "#aa824e"][(one + 3) % 3];
+      b.fillRect(-cell / 2, -cell / 2, cell, cell);
+      b.strokeStyle = "rgba(110, 76, 36, 0.35)"; b.lineWidth = 1;   // its grain, along the strip that is on top
+      for (var g = -3; g <= 3; g++) {
+        b.beginPath();
+        if (over) { b.moveTo(-cell / 2, g * 5); b.lineTo(cell / 2, g * 5 + 1); } else { b.moveTo(g * 5, -cell / 2); b.lineTo(g * 5 + 1, cell / 2); }
+        b.stroke();
+      }
+      b.strokeStyle = "rgba(70, 44, 18, 0.45)"; b.strokeRect(-cell / 2, -cell / 2, cell, cell);
+      b.restore();
+    }
+  }
+  var dish = b.createRadialGradient(WIDE / 2, 640, 100, WIDE / 2, 660, 720);   // its hollow, lit in the middle
+  dish.addColorStop(0, "rgba(255, 236, 190, 0.18)"); dish.addColorStop(1, "rgba(60, 36, 12, 0.35)");
+  b.fillStyle = dish; b.fillRect(0, 380, WIDE, 560);
+  b.restore();
+  b.lineWidth = 22; b.strokeStyle = "#7a5530";           // the rim, bound round with a strip
+  b.beginPath(); b.ellipse(WIDE / 2, 660, 720, 250, 0, 0, 7); b.stroke();
+  b.lineWidth = 4; b.strokeStyle = "rgba(230, 196, 140, 0.6)";
+  b.beginPath(); b.ellipse(WIDE / 2, 654, 714, 244, 0, Math.PI * 1.05, Math.PI * 1.95); b.stroke();
+  b.strokeStyle = "rgba(60, 36, 14, 0.7)"; b.lineWidth = 2;
+  for (k = 0; k < 90; k++) {
+    var a = k / 90 * Math.PI * 2;
+    b.beginPath(); b.moveTo(WIDE / 2 + Math.cos(a) * 712, 660 + Math.sin(a) * 242); b.lineTo(WIDE / 2 + Math.cos(a + 0.02) * 728, 660 + Math.sin(a + 0.02) * 258); b.stroke();
+  }
+  C04_CLOSE = paper;
+  return paper;
+}
+// A soft shadow on the tray at (x, y), wide by wide * 0.3. e.g. c04Shadow(560, 724, 150);
+function c04Shadow(x, y, wide) {
+  var g = pen.createRadialGradient(x, y, 0, x, y, wide);
+  g.addColorStop(0, "rgba(40, 22, 6, 0.55)"); g.addColorStop(1, "rgba(40, 22, 6, 0)");
+  pen.save(); pen.translate(x, y); pen.scale(1, 0.3); pen.translate(-x, -y);
+  pen.fillStyle = g; pen.fillRect(x - wide, y - wide, wide * 2, wide * 2);
+  pen.restore();
+}
+// A glint winking on the gold at (x, y) at second t: a four-pointed star of light. e.g. c04Glint(860, 610, t, 2);
+function c04Glint(x, y, t, seed) {
+  var on = Math.max(0, Math.sin(t * 2.4 + seed * 1.9)), r = 22 * on;
+  if (r < 1) { return; }
+  pen.save();
+  pen.globalCompositeOperation = "lighter";
+  pen.fillStyle = "rgba(255, 246, 210, " + (0.85 * on).toFixed(3) + ")";
+  pen.beginPath();
+  pen.moveTo(x, y - r); pen.quadraticCurveTo(x, y, x + r, y); pen.quadraticCurveTo(x, y, x, y + r);
+  pen.quadraticCurveTo(x, y, x - r, y); pen.quadraticCurveTo(x, y, x, y - r); pen.fill();
+  pen.restore();
+}
+function c04Tuang(t) {
+  pen.drawImage(c04Close(), 0, 0);
+  c04Shadow(560, 724, 150);
   flora("bael", 560, 720, {size: 3.2});
   var shown = between(t, 13.6, 17);                       // the lumps come one after another as the line counts them
-  [[880, 690], [1110, 740], [1320, 680], [1520, 750]].forEach(function (p, i) {
-    if (shown * 4 > i) { c04Lump(p[0], p[1], 2.4); }
+  C04_LUMPS.forEach(function (p, i) {
+    if (shown * 4 > i) {
+      c04Shadow(p[0] + 10, p[1] + 2, 100);
+      c04Lump(p[0], p[1], 2.4);
+      c04Glint(p[0] - 30, p[1] - 90, t, i);
+    }
   });
 }
 
@@ -78,6 +165,7 @@ function c04Long(t) {
   pen.filter = "sepia(0.75) brightness(1.05)";
   pen.drawImage(cngSky("day"), 0, 0);
   pen.drawImage(cngCourt(), 0, 0);
+  cngBeds(t, "court", "back");                           // its beds, as scene 2's court has them, in the old colour
   cngPalace("back");
   person(p[0], dais, cngPerson("noble", CNG_KING, {id: "oldking", floor: "cross", face: -1, age: 0.7, beard: "#e8e2d6",
                                                    at: [p[0] - 300, floor]}));
@@ -96,7 +184,7 @@ function c04Long(t) {
 function c04Away(t) {
   var village = cngVillage(), cam = WIDE * 0.5;
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 60, CNG_CLOUDS.day);
+  cngClouds(t + 60, "day");
   pen.save();
   pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
@@ -121,6 +209,7 @@ function c04Away(t) {
   ]);
   pen.drawImage(village.front, 0, 0);
   pen.restore();
+  cngBeds(t, "village", "frame");
 }
 
 // Scene 4, the entry the film calls (SCENES): t, its own second, 0 to C04_LONG (45 s). Gives back nothing: it draws the

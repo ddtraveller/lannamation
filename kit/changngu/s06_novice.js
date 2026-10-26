@@ -20,9 +20,10 @@ function c06Novice(x, y, look) {
 
 // The lane at dawn: the novice walks to a house where a woman waits with rice, stops, and she puts rice in his bowl.
 function c06Lane(t) {
-  pen.drawImage(cngSky("dawn"), 0, 0);
-  cumulus(pen, t + 30, CNG_CLOUDS.dawn);
+  pen.drawImage(cngSky("sunrise"), 0, 0);
+  cngClouds(t + 30, "dawn");
   pen.drawImage(cngLane("dawn"), 0, 0);
+  softMist(t, 720, 60, 0.35, 23, "250, 232, 214");      // the dawn's mist lying low between the houses
   var walk = between(t, 0.5, 8), x = mix(200, 900, walk), step = walk > 0 && walk < 1 ? (t - 0.5) / BEAT / 2 : 0;
   var giving = between(t, 9.5, 11) * (1 - between(t, 12.5, 13.5));   // her hand to his bowl and back
   var leaves = between(t, 14, 16), xn = x + 500 * leaves;
@@ -39,6 +40,8 @@ function c06Lane(t) {
       pen.beginPath(); pen.arc(mix(1060, 960, giving), mix(CNG_LANE_Y - 132, CNG_LANE_Y - 168, giving), 8, 0, 7); pen.fill();
     }}
   ]);
+  cngBeds(t, "village", "frame");
+  sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 5]});   // the first light; no petals or butterfly
 }
 
 // The Khom king's courtyard: the novice waiting; the king on the step of his hall speaks and points at him; his people
@@ -46,8 +49,9 @@ function c06Lane(t) {
 function c06Court(t) {
   var p = CNG_PALACE, floor = hoKhamFloor(p[1], p[2]);
   pen.drawImage(cngSky("day"), 0, 0);
-  cumulus(pen, t + 70, CNG_CLOUDS.day);
+  cngClouds(t + 70, "day");
   pen.drawImage(cngCourt(), 0, 0);
+  cngBeds(t, "court", "back");
   var speaking = C06_SPEAKS.some(function (s) { return t >= s[0] && t < s[1]; });
   var rest = [p[0] - 150, floor - 55], points = [p[0] - 330, floor - 160];   // his hand at his side; pointing at the novice
   var arm = poseSteps(t, [[0, {reachA: rest}], [23.56, {reachA: points}], [32.0, {reachA: rest}]], 0.35);   // eased, not switched (pop_check)
