@@ -391,6 +391,12 @@ into the pond area." So, with `thicket.js` (moved beside the kit from `thicket/`
   plants (`thkLayers()`), which part to each side onto the pond; the last of them fades, and the pond is open by
   her next line (the flame-of-the-forest trees, elephants and lotus). The plants near the middle went to the sides,
   where the push carries them out: one left in the middle stood in front of the maiden.
+- **The pond's water as the pine lake's** (owner, 2026-10-26: "update the pond scene with the pine lake style of water
+  and mist with what is behind the water being reflected in it"; pinewoods.js): `pondDepths()` under the fish, dark
+  still water; `pondSurface()` over them, the far bank, the trees, the hills and the sky mirrored about the far bank's
+  line (`natReflect()`), strong across the water and fading toward the near bank (`POND_MIRROR`), so the fish are seen
+  down in it near at hand; the drops' rings; mist lying on the water and strands rising off it (`softMist()`,
+  `natSteam()`), and a few wisps over the far bank. The kit's `pond()` is no longer drawn here.
 
 The woven cloth (the first scene) is as it was. sash.html, the hero film before it was the Maeng film's opening, is
 as it was. Not re-rendered: lanna_tales_maeng.mp4 on the site still has the hero film as it was.

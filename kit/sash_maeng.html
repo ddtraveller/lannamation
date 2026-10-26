@@ -44,6 +44,7 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6,
 <script src="night.js"></script>
 <script src="butterflies.js"></script>
 <script src="thicket.js"></script>
+<script src="pinewoods.js"></script>
 <script>
 // sash.html - a film of the kit. It opens on a cloth, close up: twelve rows
 // of the small things of Thai life, woven across it. Music begins, and the
@@ -935,6 +936,67 @@ function pondReeds(x, base, size, t, part) {
   pen.restore();
 }
 
+// The pond's water, in its box on the old sheet (POND_BOX: x, y, wide, tall; its far bank curves across the top, as
+// the kit's pond() draws one), as the pine lake's water is drawn (pinewoods.js). POND_LINE: the line of the far bank
+// that the mirror turns about.
+var POND_BOX = [380, 700, 900, 340], POND_LINE = 724;
+function pondShape() {                    // the pond's outline as a path, for its fill and as a clip
+  var x = POND_BOX[0], y = POND_BOX[1], wide = POND_BOX[2], tall = POND_BOX[3];
+  pen.beginPath();
+  pen.moveTo(x, y + tall);
+  pen.bezierCurveTo(x - wide * 0.03, y + tall * 0.3, x + wide * 0.2, y, x + wide * 0.5, y + tall * 0.07);
+  pen.bezierCurveTo(x + wide * 0.8, y + tall * 0.14, x + wide * 1.03, y + tall * 0.3, x + wide, y + tall);
+  pen.closePath();
+}
+// The deep of it, under the fish: still water, dark green going darker toward the near bank.
+function pondDepths() {
+  pen.save();
+  pondShape();
+  var g = pen.createLinearGradient(0, POND_BOX[1], 0, POND_BOX[1] + POND_BOX[3]);
+  g.addColorStop(0, "#3f6a5e");
+  g.addColorStop(1, "#173c38");
+  pen.fillStyle = g;
+  pen.fill();
+  pen.restore();
+}
+// Its face, over the fish: the mirror (natReflect()), broken by a breath of wind, strong at the far bank and fading
+// toward the near one, as water mirrors most where one looks across it and lets one see down into it near at hand
+// (POND_MIRROR: [from y, how strong], in bands), so the fish show through it near the bank; darker than what it
+// mirrors, as the pine lake is; the drops' rings (POND_RINGS); the mist lying on the water (softMist()) and strands of
+// it rising (natSteam()), all inside the pond; then its bank's line, and a few wisps rising over the far bank.
+var POND_MIRROR = [[POND_LINE, 0.95], [790, 0.7], [850, 0.45], [920, 0.3]];
+function pondSurface(t) {
+  var x = POND_BOX[0], y = POND_BOX[1], wide = POND_BOX[2], tall = POND_BOX[3], mist = "246, 250, 246";
+  pen.save();
+  pondShape();
+  pen.clip();
+  POND_MIRROR.forEach(function (band, n) {
+    var to = n + 1 < POND_MIRROR.length ? POND_MIRROR[n + 1][0] : y + tall;
+    pen.save();
+    pen.beginPath();
+    pen.rect(x - 20, band[0], wide + 40, to - band[0]);
+    pen.clip();
+    pen.globalAlpha = band[1];
+    natReflect(t, POND_LINE, {left: x - 20, right: x + wide + 20, foot: y + tall, ripple: 0.5, tint: "18, 52, 48", deep: 0.6, sheen: 36});
+    pen.restore();
+  });
+  pen.fillStyle = "rgba(8, 20, 18, 0.18)";         // still water is darker than what it mirrors
+  pen.fillRect(x - 20, POND_LINE, wide + 40, y + tall - POND_LINE);
+  ripples(pen, POND_RINGS, t);
+  softMist(t, POND_LINE + 10, 30, 0.32, 9, mist);
+  natSteam(t, x, x + wide, POND_LINE + 40, {count: 26, rise: 60, wide: 150, life: 9, lean: 90, alpha: 0.22, flat: 0.22, patch: 0.85, colour: mist, seed: 3});
+  natSteam(t, x, x + wide, POND_LINE + 120, {count: 60, rise: 90, wide: 120, life: 8, lean: 120, alpha: 0.32, flat: 0.05, patch: 0.85, colour: mist, seed: 5});   // the strands
+  pen.restore();
+  pen.save();
+  pondShape();
+  pen.strokeStyle = "rgba(40, 80, 70, 0.85)";      // the bank's line, as pond() has it
+  pen.lineWidth = 2.2;
+  pen.lineJoin = "round";
+  pen.stroke();
+  pen.restore();
+  natSteam(t, x + 120, x + wide - 120, POND_LINE + 4, {count: 14, rise: 70, wide: 120, life: 10, lean: 60, alpha: 0.16, flat: 0.3, patch: 0.7, colour: mist, seed: 11});
+}
+
 function scenePond(t) {                 // 42.59-69.94 on its own clock, shown 44.41-69.48 (35-53 until 2026-10-24; 3 s longer since 2026-10-21, the elephants pointed out; 9.35 s more for the narrator's own pace): the pond: lotus, fish, a maiden at the bank who wais; a Chinese dragon flies by with a flag; elephants far off
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t + POND_AT);
   pen.drawImage(POND.back, 0, 0);
@@ -957,7 +1019,12 @@ function scenePond(t) {                 // 42.59-69.94 on its own clock, shown 4
   // known by the order the people are drawn in, and their own time (ownTime()) and what hangs from them would change
   // with it. Theirs are the names that order gave them, n0 and n1, so they move as the film was passed. The falling
   // blossom in "front".
-  var sprites = [{name: "water", kind: "pond", z: "set", y: 700, draw: function () { pond(pen, 380, 700, 900, 340, {t: t, rings: POND_RINGS}); }}];
+  // The water as the pine lake's is (pinewoods.js; owner, 2026-10-26: "update the pond scene with the pine lake style of
+  // water and mist with what is behind the water being reflected in it"): its depths in "set", under the fish; its
+  // surface at 3.5, over the fish and under what grows in the water: the far bank, the trees, the hills and the sky
+  // mirrored in it, the rings of the drops, and the mist lying on it and rising off it.
+  var sprites = [{name: "water", kind: "pond", z: "set", y: 700, draw: function () { pondDepths(); }},
+                 {name: "the water's face", kind: "pond", z: 3.5, y: 700, draw: function () { pondSurface(t); }}];
   // The fish of a Lanna pond (the kit's nativeFish(), side on and true to the species, from the "Lanna fish"
   // notebook): a snakehead lying deep, two mud barbs below, a school of flying barbs just under the surface, and two
   // gouramis, the one she watches first (owner, 2026-10-20: "Work to improve the fish in the pond scene", then "try
