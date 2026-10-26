@@ -11,6 +11,7 @@
 <body>
 <canvas id="stage" width="1920" height="1080"></canvas>
 <script src="oldcartoon.js"></script>
+<script src="chiangsaen.js"></script>
 <script>
 // The "looks" sheet: every name a look can have, each on a figure of its
 // own, with the name and the value that figure was given written under it.
@@ -50,7 +51,8 @@ var PARTS = [
     ["coat", "scientist", function () { return {}; }, "coat: true"],
     ["buttons", "fellow", function () { return {buttons: false}; }, "buttons: false"],
     ["plain", "monk", function () { return {}; }, "plain: true"],
-    ["shoes", "fellow", function () { return {shoes: true}; }, "shoes: true"]
+    ["shoes", "fellow", function () { return {shoes: true}; }, "shoes: true"],
+    ["wraps", "luagirl", function () { return {}; }, 'wraps: "#1e1a20"|(the Lua girl)']
   ]],
   ["the head", [
     ["bun", "lady", function () { return {}; }, "bun: true"],
@@ -110,7 +112,9 @@ var PARTS = [
     ["wai", "maiden", function () { return {wai: true}; }, "wai: true"],
     ["wristA", "fellow", function () { return {handA: [60, 10], wristA: -1}; }, "wristA: -1"],
     ["wristB", "fellow", function () { return {handB: [-60, 10], wristB: 1}; }, "wristB: 1"],
-    ["grip", "fellow", function () { return {grip: true, handA: [30, 40], handB: [-10, 40]}; }, "grip: true"]
+    ["grip", "fellow", function () { return {grip: true, handA: [30, 40], handB: [-10, 40]}; }, "grip: true"],
+    ["beads", "lady", function () { return {beads: LUA_BEADS}; }, "beads: LUA_BEADS"],
+    ["earrings", "lady", function () { return {earrings: "#e8742a"}; }, 'earrings: "#e8742a"']
   ]],
   ["the hands, and what they hold", [
     ["fingersA", "fellow", function () { return {handA: [60, -40], fingersA: [0, 1, 1, 1, 0.8]}; }, "fingersA: [0, 1, 1, 1, 0.8]"],
@@ -123,6 +127,7 @@ var PARTS = [
     ["gestureB", "lady", function () { return {handB: [-44, -110], gestureB: "planting"}; }, 'gestureB: "planting"'],
     ["bangles", "lady", function () { return {bangles: 5, handA: [50, -30]}; }, "bangles: 5"],
     ["holding", "celestial", function () { return {}; }, 'holding: "lotus"'],
+    ["dap", "fellow", function () { return {holding: "dap", dap: 0.8, handA: [50, 0]}; }, 'holding: "dap",|dap: 0.8'],
     ["parasol", "lady", function (t) { return {parasol: parasolAt(t % 8, 1)}; }, "parasol: parasolAt(t, 1)"],
     ["dance", "lady", function () { return {handA: [50, -70]}; }, "dance: true"],
     ["drum", "drummer", function () { return {}; }, "drum: true"]

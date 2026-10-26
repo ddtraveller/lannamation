@@ -3771,6 +3771,61 @@ brush: a canvas 2D context; x, base: pixels of the sheet; size: needed; look: op
 e.g. ruenPhuk(pen, 900, 900, 1.2, {glow: 0.7});
 ```
 
+## offerings.js
+
+offerings.js - the offerings and the thread of Lanna's rites, for the Lanna cartoon kit: for blessings, weddings, the temple and the soul-calling (สู่ขวัญ) in any tale. Load it after oldcartoon.js:  <script src="oldcartoon.js"></script> <script src="offerings.js"></script>  Each is a painter on a brush, as pieces.js's are; t is the second where something moves. The owner's pick, 2026-10-26 ("Yes, all four"), drawn from what the north uses: swaiDok(brush, x, y, size, t)          the flower cone (สวยดอก): a cone of folded banana leaf, flowers, a beeswax candle and three sticks of incense; carried to the temple, held in a wai (put it between the wrists person() gives back, joints.wristA and wristB) khanDok(brush, x, base, size, t)       the footed bowl of flowers (ขันดอก), lacquered red and black, heaped with flowers and flower cones; offered at the temple, set out at a blessing malai(brush, x, y, size, t)            the jasmine garland (พวงมาลัย), hanging from (x, y): at a spirit house, in the hand of one who gives it to an elder saiSinWrist(brush, x, y, angle, size)  the white thread (สายสิญจน์) tied round a wrist (joints.wristA) saiSinLine(brush, points, t)           the white thre
+
+### `offFill(brush, fill, ink, width)`
+
+```
+Fills the path just made and lines it. Returns nothing.
+```
+
+### `offFlowers(brush, x, y, r, seed)`
+
+```
+Flowers for an offering, heaped about (x, y) within radius r: marigolds (ดาวเรือง), jasmine buds, a few red
+roses; seed: the same heap for the same seed.
+```
+
+### `swaiDok(brush, x, y, size, t)`
+
+```
+swaiDok(brush, x, y, size, t): the flower cone (สวยดอก): a cone of folded banana leaf, its point down at (x, y),
+filled with flowers, a small candle of beeswax and three sticks of incense standing in it, their smoke rising;
+carried to the temple and held in a wai. About 70 tall at size 1.
+```
+
+### `khanDok(brush, x, base, size, t)`
+
+```
+khanDok(brush, x, base, size, t): the bowl of flowers (ขันดอก): a lacquered bowl, red within and black without,
+on a tall foot, heaped with flowers and flower cones, standing on (x, base); offered at the temple, set out at a
+blessing or a wedding. About 110 wide at size 1.
+```
+
+### `malai(brush, x, y, size, t)`
+
+```
+malai(brush, x, y, size, t): the jasmine garland (พวงมาลัย), hanging from (x, y): a loop of strung jasmine buds, a
+knot of red rose and marigold at its foot, a pendant of jasmine and two ribbon tails swinging; hung at a spirit
+house, given to an elder. About 90 long at size 1.
+```
+
+### `saiSinWrist(brush, x, y, angle, size)`
+
+```
+saiSinWrist(brush, x, y, angle, size): the white thread (สายสิญจน์) tied round a wrist at (x, y), the hand's way
+angle: a few turns of white cotton and the knot, its two short ends; for the soul-calling, a wedding, a goodbye.
+```
+
+### `saiSinLine(brush, points, t)`
+
+```
+saiSinLine(brush, points, t): the white thread strung round a gathering or a house, from point to point, sagging
+between them and stirring a little.
+```
+
 ## flora.js
 
 flora.js - the flowers and fruits of Thailand, drawn small, for films made with oldcartoon.js. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="flora.js"></script>  and call flora(name, x, y, look) from a scene. (x, y) is the foot of a flower's stem, or the ground a fruit lies on. The names are the keys of FLORA below; each has its Thai name beside it, and how that is said.  flora("mango", 700, 900, {size: 1.5}); flora("orchid", 300, 1000, {colour: "#e86fb0"});  A tree in flower or in fruit is painted on a set's sheet, as the kit's tree() is, with the named flower or fruit hanging in its boughs:  floraTree(brush, 240, 900, 1.0, "mango", 1);  They are drawn in the kit's manner: flat colour inside a fine dark line. What each is, in rules, is the comment above its painter. The flowers are the ones of a northern garden and a temple's offering tray: ratchaphruek, the golden shower that is the national flower; thong kwao, the flame of the forest that is Chiang Mai's own; frangipani; an orchid; hibiscus; bougainvillea; jasmine; and marigold. The fruits are the ones of the market and the orchard: mango, durian, mangosteen, rambutan, the longan of Lamphun and Chian
@@ -7140,6 +7195,18 @@ e.g. var walk = amble("buffalo", clock, 1400, 300, 1, {size: 0.7, rope: true});
      buffalo(walk.x, GROUND, walk.look);
 ```
 
+### `horseTackShape(fill, ink, width)`
+
+(no comment)
+
+### `horseTack(kind)`
+
+(no comment)
+
+### `horseTackHead(kind)`
+
+(no comment)
+
 ### `horse(x, y, look)`
 
 ```
@@ -7147,13 +7214,14 @@ e.g. var walk = amble("buffalo", clock, 1400, 300, 1, {size: 0.7, rope: true});
 The small horse of the Yunnan caravans (ม้าต่าง, ma tang), as the Haw traders led them over the hills into the north:
 short and sturdy, a deep chest, a thick neck carried up, a big head, a short dark mane that stands up and a long
 dark tail, slim legs on single hooves, darker below the knee. It walks as the other beasts do (step), and
-GAITS.horse is its gait. A bay unless told (colour; mane, the colour of its mane, tail and lower legs).
+GAITS.horse is its gait. A bay unless told (colour; mane, the colour of its mane, tail and lower legs). look.tack dresses
+it to be ridden (horseTack, above).
 look.pack: a pack saddle of wood on its back, with a load lashed on each side: true, or the colour of the load's
 cloth. About 330 high at the withers at size 1. It gives back {seat, head, nose, load}: the top of the load; the
 head and the nose (where the halter's rope ties) in the film's own pixels, as the buffalo's head.
   x, y   the ground under its middle, in pixels of the sheet
   look   an object, never left out: its keys are BEAST_KEYS above (a horse
-         reads size, face, step, colour, mane, pack, feel, slope)
+         reads size, face, step, colour, mane, pack, tack, feel, slope)
 Returns {seat: [x, y], head: [x, y], nose: [x, y], load: [x, y] or null}: seat
 is on its back, where a rider sits; load is the top of the load, null with
 no pack. It draws with pen; it sets FINE and LINE while it draws and leaves
@@ -7439,6 +7507,28 @@ changNgu(x, y, look): Chang Ngu, the snake-elephant (described above), its chest
 Returns nothing: it draws with pen at the film's clock (the body waves, the heads sway one after another). It
 sets FINE and LINE while it draws and leaves them at 1 and STYLE.line.
 e.g. changNgu(900, 960, {size: 0.62, face: -1});
+```
+
+## ogre.js
+
+ogre.js - a living ogre (ยักษ์), for the Lanna cartoon kit: the ogres of the tales (Hong Hin's three ogre kings, the jataka tales' ogres of the forest). Load it after oldcartoon.js:  <script src="oldcartoon.js"></script> <script src="ogre.js"></script>  An ogre is a person's body at a giant's size, in a skin of its own, with an ogre's head drawn over the person's head, at the place and the size person() gives back (joints.crown, joints.chin). The owner's pick, 2026-10-26, all three: "mural"   the murals' green yaksha, the gold spire crown (ชฎา) and the flames at the ears: the kit's temple-gate yak() alive "forest"  a forest ogre: dark blue-grey, wild hair, tusks, no crown "king"    a red ogre king, crowned and in gold Its face: round white eyes that bulge and roll, a ring round each, thick curled brows, a broad nose, a mouth the width of the face with a row of teeth and a fang rising from each corner, big ears with gold rings. ogre(x, y, t, look)        draws the whole ogre and gives back the person's joints; look: kind (one of OGRES), and any of person()'s keys (size, face, step, at, feel, reachA...), which win over the kind's own ogreHead(j, kind, face, t) the head alone, over a 
+
+### `ogFill(fill, ink, width)`
+
+(no comment)
+
+### `ogreHead(j, kind, face, t)`
+
+```
+ogreHead(j, kind, face, t): the head drawn over the person's, j what person() gave back.
+```
+
+### `ogre(x, y, t, look)`
+
+```
+ogre(x, y, t, look): the ogre standing on (x, y) at second t (see the top of this file). look.kind: "mural" unless
+told. Returns the joints person() gives back.
+e.g. var j = ogre(1300, GROUND, t, {kind: "forest", face: -1, step: t * 0.5, at: [600, 700]});
 ```
 
 ## night.js

@@ -685,3 +685,17 @@ The kit's sticky-rice steamer `huad()` already stands on a round clay pot over t
 cooking pots for the tales ("whatever you think is the most fun and realistic"; a clay stove and a pot on a tripod
 were the other two, the stove a later thing and the tripod not the north's). Size it up for a feast: in the tale of
 the white eel the meat is shared to every house. Sheet: `nonglom.html`.
+
+## Offerings and the white thread (2026-10-26)
+
+`offerings.js`, beside the kit: the offerings of Lanna's rites, for blessings, weddings, the temple and the
+soul-calling in any tale (the owner: "Yes, all four"). Painters on a brush, as `pieces.js`'s are. Sheet:
+`offerings.html`.
+
+| Painter | What it is |
+|---|---|
+| `swaiDok(brush, x, y, size, t)` | the flower cone (สวยดอก): folded banana leaf, flowers, a beeswax candle and three sticks of incense, their smoke rising; held in a wai, between the wrists `person()` gives back (`joints.wristA`, `wristB`) |
+| `khanDok(brush, x, base, size, t)` | the footed bowl of flowers (ขันดอก), lacquered red within and black without, heaped with flowers and cones |
+| `malai(brush, x, y, size, t)` | the jasmine garland (พวงมาลัย), hanging from (x, y), a knot of rose and marigold, a pendant, ribbon tails swinging |
+| `saiSinWrist(brush, x, y, angle, size)` | the white thread (สายสิญจน์) tied round a wrist, a few turns and the knot |
+| `saiSinLine(brush, points, t)` | the white thread strung from point to point round a gathering or a house, sagging between |

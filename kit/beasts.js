@@ -79,10 +79,11 @@
 //   tufts      the tiger's: false for one without the flame tufts at its joints
 // and for the horse (a pack horse of the Haw caravans; see horse() toward the end):
 //   pack       a pack saddle with a load lashed on each side: true, or the colour of the load's cloth
+//   tack       a riding horse's gear (see horseTack): "village", "lanna" or "royal"
 //   mane       the colour of its mane, its tail and its lower legs
 var BEAST_KEYS = {};
 
-["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground", "feel", "pack", "mane", "graze", "turn"].forEach(function (name) { BEAST_KEYS[name] = true; });
+["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground", "feel", "pack", "mane", "graze", "turn", "tack"].forEach(function (name) { BEAST_KEYS[name] = true; });
 
 // Where a walking foot is in its stride: [how far forward of its joint, how
 // high off the ground]. "s" is how far through the stride it is; it is on
@@ -2089,17 +2090,135 @@ function amble(kind, t, from, to, start, look) {
   return {x: from + way * pace * done, look: given, arrives: start + strides * gait[2] * BEAT};
 }
 
+// ---------- a riding horse's gear ----------
+// look.tack: three ways to dress a horse to be ridden, the owner's picks of three, 2026-10-26 (all three), for the
+// kings, the messengers and the travellers of the tales; a rider sits astride the seat horse() gives back.
+//   "village"  a folded cloth over the back, its weave in stripes, and a rope round the belly
+//   "lanna"    a wooden saddle with a high front and back over a red cloth fringed in gold, a leather breast band
+//              and crupper, and red wool tassels on them and on the brow, as the north's and the Shan states' horse
+//              gear has them
+//   "royal"    a cloth of red brocade in gold diamonds to the belly, edged in gold, a gilded saddle, a gold breast
+//              band set with red stones, a gold plume on the brow: a king's horse
+// horseTack(kind) draws what goes on the body, in horse()'s frame (its feet at (0, 0), facing right, the bob given);
+// horseTackHead(kind) what goes on the head, in the head's frame there. Each reads the film's clock for what swings.
+// Returns nothing: they draw with pen.
+var HORSE_TACKS = {village: true, lanna: true, royal: true};
+
+function horseTackShape(fill, ink, width) {
+  pen.fillStyle = fill;
+  pen.fill();
+  pen.strokeStyle = ink;
+  pen.lineWidth = width || 2.2;
+  pen.stroke();
+}
+
+function horseTack(kind) {
+  var k, f;
+  if (kind === "village") {
+    pen.beginPath();                                // the cloth, folded, its corners hanging a little
+    pen.moveTo(-70, -330); pen.quadraticCurveTo(10, -346, 90, -338); pen.lineTo(98, -268); pen.quadraticCurveTo(10, -258, -78, -266); pen.closePath();
+    horseTackShape("#c8a868", "#5a4024");
+    pen.strokeStyle = "rgba(90, 64, 36, 0.55)";     // its weave in stripes
+    pen.lineWidth = 2;
+    pen.beginPath();
+    for (k = 0; k < 4; k++) { pen.moveTo(-72 + k * 2, -318 + k * 14); pen.quadraticCurveTo(10, -332 + k * 14, 94, -324 + k * 14); }
+    pen.stroke();
+    pen.strokeStyle = "#7a5a32";                    // the rope girth
+    pen.lineWidth = 5;
+    pen.beginPath(); pen.moveTo(40, -270); pen.quadraticCurveTo(46, -230, 40, -188); pen.stroke();
+    return;
+  }
+  if (kind === "lanna") {
+    pen.beginPath();                                // the saddle cloth, red, fringed in gold
+    pen.moveTo(-84, -326); pen.quadraticCurveTo(10, -342, 104, -334); pen.lineTo(112, -258); pen.quadraticCurveTo(10, -246, -92, -256); pen.closePath();
+    horseTackShape("#a8282e", "#4a1010");
+    pen.strokeStyle = "#e0b23a";
+    pen.lineWidth = 2.4;
+    pen.beginPath(); pen.moveTo(-88, -264); pen.quadraticCurveTo(10, -254, 108, -266); pen.stroke();
+    pen.strokeStyle = "#e8c860";
+    pen.lineWidth = 1.6;
+    pen.beginPath();
+    for (f = -86; f <= 108; f += 7) { var dip = 0.001 * (f - 10) * (f - 10); pen.moveTo(f, -258 + dip); pen.lineTo(f + 1, -246 + dip); }
+    pen.stroke();
+    pen.beginPath();                                // the wooden saddle: a seat between a high pommel and cantle
+    pen.moveTo(-46, -336); pen.quadraticCurveTo(-60, -380, -38, -384); pen.quadraticCurveTo(-30, -352, 10, -350);
+    pen.quadraticCurveTo(52, -352, 62, -388); pen.quadraticCurveTo(84, -382, 70, -334); pen.quadraticCurveTo(10, -344, -46, -336); pen.closePath();
+    horseTackShape("#7a4a24", "#2e1a0a");
+    pen.strokeStyle = "#5a3a1a";                    // the breast band and the crupper, leather
+    pen.lineWidth = 4;
+    pen.beginPath(); pen.moveTo(100, -320); pen.quadraticCurveTo(170, -300, 196, -250); pen.moveTo(-80, -318); pen.quadraticCurveTo(-150, -310, -182, -290); pen.stroke();
+    [[196, -252], [150, -298], [-150, -306], [-182, -292]].forEach(function (pt, n) {   // the red wool tassels, swinging
+      var sw = 4 * Math.sin(clock * 3 + n);
+      pen.strokeStyle = "#c8202a";
+      pen.lineWidth = 2.2;
+      pen.beginPath();
+      for (var w = -2; w <= 2; w++) { pen.moveTo(pt[0], pt[1]); pen.lineTo(pt[0] + w * 2 + sw, pt[1] + 22); }
+      pen.stroke();
+      pen.beginPath(); pen.arc(pt[0], pt[1], 4, 0, 7); pen.fillStyle = "#e0b23a"; pen.fill();
+    });
+    return;
+  }
+  if (kind === "royal") {
+    pen.beginPath();                                // the brocade cloth, deep, to the belly
+    pen.moveTo(-96, -330); pen.quadraticCurveTo(10, -348, 116, -338); pen.lineTo(126, -228); pen.quadraticCurveTo(10, -208, -104, -222); pen.closePath();
+    horseTackShape("#7a1a2e", "#3a0a14");
+    pen.save();
+    pen.clip();
+    pen.strokeStyle = "#e0b23a";                    // its gold diamonds
+    pen.lineWidth = 1.6;
+    pen.beginPath();
+    for (var r = 0; r < 5; r++) {
+      for (var c = 0; c < 11; c++) {
+        var dx = -90 + c * 21 + (r % 2) * 10, dy = -316 + r * 20;
+        pen.moveTo(dx, dy - 6); pen.lineTo(dx + 6, dy); pen.lineTo(dx, dy + 6); pen.lineTo(dx - 6, dy); pen.closePath();
+      }
+    }
+    pen.stroke();
+    pen.restore();
+    pen.strokeStyle = "#e0b23a";                    // the gold edge
+    pen.lineWidth = 5;
+    pen.beginPath(); pen.moveTo(-104, -222); pen.quadraticCurveTo(10, -208, 126, -228); pen.stroke();
+    pen.beginPath();                                // the gilded saddle
+    pen.moveTo(-40, -340); pen.quadraticCurveTo(-54, -378, -32, -382); pen.quadraticCurveTo(-24, -354, 12, -352);
+    pen.quadraticCurveTo(50, -354, 58, -384); pen.quadraticCurveTo(80, -378, 66, -338); pen.quadraticCurveTo(12, -346, -40, -340); pen.closePath();
+    horseTackShape("#d8a83a", "#6a4a10");
+    pen.strokeStyle = "#e0b23a";                    // the gold breast band, set with red stones
+    pen.lineWidth = 7;
+    pen.beginPath(); pen.moveTo(110, -322); pen.quadraticCurveTo(176, -300, 200, -248); pen.stroke();
+    [0.3, 0.55, 0.8].forEach(function (u) { oval(mix(110, 200, u), mix(-322, -248, u) - 8 * Math.sin(u * 3), 4, 4, "#c8202a"); });
+  }
+}
+
+function horseTackHead(kind) {
+  if (kind === "lanna") {                           // a red wool tassel on the brow
+    pen.strokeStyle = "#c8202a";
+    pen.lineWidth = 2.4;
+    pen.beginPath();
+    for (var w = -3; w <= 3; w++) { pen.moveTo(76, -150); pen.lineTo(84 + w * 2, -124 + Math.abs(w)); }
+    pen.stroke();
+    pen.beginPath(); pen.arc(76, -150, 5, 0, 7); pen.fillStyle = "#e0b23a"; pen.fill();
+  } else if (kind === "royal") {                    // a gold plume on the brow, stirring
+    pen.save();
+    pen.translate(70, -162);
+    pen.rotate(-0.4 + 0.1 * Math.sin(clock * 2));
+    pen.beginPath(); pen.moveTo(0, 0); pen.quadraticCurveTo(-14, -30, 4, -58); pen.quadraticCurveTo(14, -30, 6, 0); pen.closePath();
+    horseTackShape("#f0c84a", "#8a5a10", 1.6);
+    pen.restore();
+  }
+}
+
 // ---------- a pack horse ----------
 // The small horse of the Yunnan caravans (ม้าต่าง, ma tang), as the Haw traders led them over the hills into the north:
 // short and sturdy, a deep chest, a thick neck carried up, a big head, a short dark mane that stands up and a long
 // dark tail, slim legs on single hooves, darker below the knee. It walks as the other beasts do (step), and
-// GAITS.horse is its gait. A bay unless told (colour; mane, the colour of its mane, tail and lower legs).
+// GAITS.horse is its gait. A bay unless told (colour; mane, the colour of its mane, tail and lower legs). look.tack dresses
+// it to be ridden (horseTack, above).
 // look.pack: a pack saddle of wood on its back, with a load lashed on each side: true, or the colour of the load's
 // cloth. About 330 high at the withers at size 1. It gives back {seat, head, nose, load}: the top of the load; the
 // head and the nose (where the halter's rope ties) in the film's own pixels, as the buffalo's head.
 //   x, y   the ground under its middle, in pixels of the sheet
 //   look   an object, never left out: its keys are BEAST_KEYS above (a horse
-//          reads size, face, step, colour, mane, pack, feel, slope)
+//          reads size, face, step, colour, mane, pack, tack, feel, slope)
 // Returns {seat: [x, y], head: [x, y], nose: [x, y], load: [x, y] or null}: seat
 // is on its back, where a rider sits; load is the top of the load, null with
 // no pack. It draws with pen; it sets FINE and LINE while it draws and leaves
@@ -2253,8 +2372,13 @@ function horse(x, y, look) {
   pen.moveTo(74, -168); pen.lineTo(112, -76);
   pen.moveTo(98, -100); pen.quadraticCurveTo(130, -96, 170, -88);
   pen.stroke();
+  if (look.tack) { horseTackHead(look.tack); }      // the riding gear's brow tassel or plume, on the head as it nods
   var poll = pen.getTransform().transformPoint(new DOMPoint(66, -170)), nose = pen.getTransform().transformPoint(new DOMPoint(150, -82));
   pen.restore();
+  if (look.tack) {                                  // a riding horse's gear
+    if (!HORSE_TACKS[look.tack]) { checkName("The horse's tack", look.tack, HORSE_TACKS); }
+    else { horseTack(look.tack); }
+  }
   var load = null;
   if (look.pack) {                                  // the pack saddle: a frame of wood, and a load lashed on each side
     var cloth = typeof look.pack === "string" ? look.pack : "#c9b48a";

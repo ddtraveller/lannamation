@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>offerings - the flower cone, the bowl, the garland, the white thread</title>
+<style>html, body { margin: 0; background: #111; } canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920, pixels: 1, hop: false, film: 0, light: [-0.6, 0.5]};</script>
+<script src="oldcartoon.js"></script>
+<script src="backdrops.js"></script>
+<script src="pieces.js"></script>
+<script src="naga.js"></script>
+<script src="beasts.js"></script>
+<script src="offerings.js"></script>
+<script>
+// The "offerings" sheet: offerings.js. A woman kneeling in a wai with a flower cone (swaiDok, between the wrists
+// person() gives back) and the bowl of flowers before her (khanDok); a garland on its post and a girl giving one to
+// an elder (malai); a grandmother tying the white thread round a child's wrist, the thread strung behind (saiSin*).
+var DURATION = 6;
+var BEAT = 0.5;
+var SHEET = new URLSearchParams(location.search).get("sheet") || "rain";
+var NAMES = {rain: ["A  fine streaks, three depths", "B  a mural's teardrops, rings on the puddles", "C  a thangka's veils of rain"],
+             lightning: ["A  a mural's bolt: gold, lined, forking", "B  the 1930s cartoon's flat zigzag", "C  sheet lightning inside the cloud"],
+             flood: ["A  the murals' waves, muddied, things afloat", "B  flat still water, long ripple lines", "C  a thangka's water in zones"]};
+function caption(text, x, y, size) {
+  pen.fillStyle = "#3a2c1c"; pen.textAlign = "center"; pen.font = (size || 26) + "px Georgia, serif"; pen.fillText(text, x, y);
+}
+function sheet(t) {
+  var names = ["the flower cone (สวยดอก) in a wai, the bowl (ขันดอก)", "the jasmine garland (พวงมาลัย)", "the white thread (สายสิญจน์), the soul-calling"];
+  for (var k = 0; k < 3; k++) {
+    var x0 = k * 640;
+    pen.save();
+    pen.beginPath(); pen.rect(x0, 0, 640, 1080); pen.clip();
+    pen.drawImage(backdrop("village"), 0, 0);
+    if (k === 0) {
+      khanDok(pen, x0 + 430, 960, 1.2, t);
+      var j = person(x0 + 260, 960, cast("maiden", {id: "offer", face: 1, size: 1.15, floor: true, wai: true}));
+      swaiDok(pen, (j.wristA[0] + j.wristB[0]) / 2 + 4, (j.wristA[1] + j.wristB[1]) / 2 + 26, 0.75, t);
+    } else if (k === 1) {
+      pen.fillStyle = "#7a5634"; pen.fillRect(x0 + 520, 600, 16, 360); pen.strokeStyle = "#3a2614"; pen.lineWidth = 2; pen.strokeRect(x0 + 520, 600, 16, 360);
+      malai(pen, x0 + 528, 640, 1.4, t);
+      person(x0 + 380, 960, cast("lady", {id: "elder", face: -1, size: 1.1, age: 0.8, hair: "#e8e3da", bend: 0.1, reachA: [x0 + 300, 760]}));
+      var g = person(x0 + 190, 960, cast("maiden", {id: "giver", face: 1, size: 1.0, reachA: [x0 + 286, 760], reachB: [x0 + 276, 770]}));
+      malai(pen, g.wristA[0] + 4, g.wristA[1] - 4, 1.0, t);
+    } else {
+      saiSinLine(pen, [[x0, 640], [x0 + 200, 650], [x0 + 420, 640], [x0 + 640, 652]], t);
+      var c = person(x0 + 330, 960, cast("child", {id: "kid", face: 1, size: 0.75, reachA: [x0 + 400, 800]}));
+      person(x0 + 480, 960, cast("lady", {id: "granny", face: -1, size: 1.05, age: 1, hair: "#e8e3da", bend: 0.25, reachA: [c.wristA[0] + 8, c.wristA[1] - 4], reachB: [c.wristA[0] + 14, c.wristA[1] + 6]}));
+      saiSinWrist(pen, c.wristA[0], c.wristA[1], -0.2, 1.3);
+      khanDok(pen, x0 + 150, 960, 0.9, t);
+    }
+    pen.restore();
+    pen.fillStyle = "rgba(246, 237, 212, 0.92)";
+    pen.fillRect(x0 + 20, 1010, 600, 46);
+    caption(names[k], x0 + 320, 1042, 22);
+  }
+  pen.fillStyle = "#111"; pen.fillRect(638, 0, 4, 1080); pen.fillRect(1278, 0, 4, 1080);
+}
+function draw(t) {
+  settled(t, function (at) { clock = at; sheet(at); });
+  screen.fillStyle = "#111"; screen.fillRect(0, 0, 1920, 1080); screen.drawImage(FILM, 0, 0, 1920, 1080);
+}
+var rendering = false;
+function play(now) { if (!rendering) { draw((now / 1000) % DURATION); } requestAnimationFrame(play); }
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

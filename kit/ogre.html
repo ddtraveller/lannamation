@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ogre - the ogres of the tales: the yaksha, the forest ogre, the ogre king</title>
+<style>html, body { margin: 0; background: #111; } canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920, pixels: 1, hop: false, film: 0, light: [-0.6, 0.5]};</script>
+<script src="oldcartoon.js"></script>
+<script src="backdrops.js"></script>
+<script src="pieces.js"></script>
+<script src="naga.js"></script>
+<script src="beasts.js"></script>
+<script src="ogre.js"></script>
+<script>
+// The "ogre" sheet: ogre.js. The three kinds, each a giant beside a frightened boy, walking: the murals' green yaksha,
+// the forest ogre, the red ogre king (ogre(), a person's body with the ogre's head over it).
+var DURATION = 6;
+var BEAT = 0.5;
+var SHEET = new URLSearchParams(location.search).get("sheet") || "rain";
+var NAMES = {rain: ["A  fine streaks, three depths", "B  a mural's teardrops, rings on the puddles", "C  a thangka's veils of rain"],
+             lightning: ["A  a mural's bolt: gold, lined, forking", "B  the 1930s cartoon's flat zigzag", "C  sheet lightning inside the cloud"],
+             flood: ["A  the murals' waves, muddied, things afloat", "B  flat still water, long ripple lines", "C  a thangka's water in zones"]};
+function caption(text, x, y, size) {
+  pen.fillStyle = "#3a2c1c"; pen.textAlign = "center"; pen.font = (size || 26) + "px Georgia, serif"; pen.fillText(text, x, y);
+}
+function sheet(t) {
+  var kinds = [["mural", "the murals' yaksha (kind \"mural\")"],
+               ["forest", "a forest ogre (kind \"forest\")"],
+               ["king", "an ogre king (kind \"king\")"]];
+  for (var k = 0; k < 3; k++) {
+    var x0 = k * 640, kind = kinds[k];
+    pen.save();
+    pen.beginPath(); pen.rect(x0, 0, 640, 1080); pen.clip();
+    pen.drawImage(backdrop(k === 1 ? "waterfall" : "garden"), 0, 0);
+    person(x0 + 190, 960, cast("boy", {id: "kid" + k, face: 1, size: 0.75, feel: "surprised", at: [x0 + 420, 520]}));
+    ogre(x0 + 440, 990, t, {kind: kind[0], id: "ogre" + k, face: -1, step: t * 0.5, at: [x0 + 190, 760]});
+    pen.restore();
+    pen.fillStyle = "rgba(246, 237, 212, 0.92)";
+    pen.fillRect(x0 + 20, 1010, 600, 46);
+    caption(kind[1], x0 + 320, 1042, 22);
+  }
+  pen.fillStyle = "#111"; pen.fillRect(638, 0, 4, 1080); pen.fillRect(1278, 0, 4, 1080);
+}
+function draw(t) {
+  settled(t, function (at) { clock = at; sheet(at); });
+  screen.fillStyle = "#111"; screen.fillRect(0, 0, 1920, 1080); screen.drawImage(FILM, 0, 0, 1920, 1080);
+}
+var rendering = false;
+function play(now) { if (!rendering) { draw((now / 1000) % DURATION); } requestAnimationFrame(play); }
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

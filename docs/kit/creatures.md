@@ -703,3 +703,18 @@ photographs and picked by the owner; each painter's comment says what it is draw
 Phra Ruang's three shapes are plain animals, as the chronicle tells them (no crown: the owner asked for what is
 most historically accurate). The white barking deer and the white mice of the second and third signs are
 `taleanimals.js`'s `barkingDeer` (`white: true`) and `whiteMice`.
+
+## A riding horse's gear (2026-10-26)
+
+`horse(x, y, {tack: ...})`: the kit's horse (a pack horse until now) dressed to be ridden, for the kings, the
+messengers and the travellers of the tales; a rider sits astride the seat it gives back (`person(h.seat[0],
+h.seat[1] + 18, {floor: "astride"})`, as on the elephant). The owner's picks, all three of three:
+
+| `tack` | What it is |
+|---|---|
+| `"village"` | a folded cloth over the back, its weave in stripes, and a rope round the belly |
+| `"lanna"` | a wooden saddle with a high front and back on a red cloth fringed in gold, a leather breast band and crupper, red wool tassels on them and on the brow (the north's and the Shan states' horse gear) |
+| `"royal"` | a red brocade cloth in gold diamonds to the belly, edged in gold, a gilded saddle, a gold breast band with red stones, a gold plume on the brow: a king's horse |
+
+`horseTack(kind)` and `horseTackHead(kind)` draw it in the horse's own frames, so it walks and nods with the horse.
+Sheet: `riding.html`.

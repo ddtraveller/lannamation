@@ -754,3 +754,14 @@ Three new keys of `person()` carry what the Lua wear, and anyone else may:
 | `wraps` | a colour: cloth wound round each shin from below the knee to the ankle (ปอซวง), the turns of the cloth across it |
 
 Not drawn yet: the arm wraps (ปอเต๊ะ) and the porcupine-quill pin in the bun.
+
+## The ogres of the tales (2026-10-26)
+
+`ogre.js`, beside the kit: `ogre(x, y, t, look)` is a living ogre (ยักษ์), a person's body at a giant's size (1.75 unless
+told) in a skin of its own, with an ogre's head drawn over the person's head at the place `person()` gives back
+(`joints.crown`, `joints.chin`): round white eyes that bulge and roll, thick curled brows, a mouth the width of the
+face with a fang at each corner, big ears ringed in gold. `look.kind`: `"mural"` (the murals' green yaksha with the
+gold spire crown, the kit's temple-gate `yak()` alive), `"forest"` (dark, wild-haired, tusked, no crown) or `"king"`
+(red, crowned, in gold); the rest of the look is `person()`'s (size, face, step, at, feel, reachA) and wins over the
+kind's own (`OGRE_LOOKS`). It gives back the person's joints. `ogreHead(j, kind, face, t)` is the head alone, over a
+person a scene draws itself. The owner's picks, all three. Sheet: `ogre.html`.
