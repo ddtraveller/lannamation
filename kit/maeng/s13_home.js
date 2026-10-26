@@ -13,6 +13,10 @@ var S13_SHOTS = [17.52, 35.83];                       // the crowd at the pen; t
 var S13_CAMERA = [1234, 690, 1.4];                  // close on the pen, as scene 8's
 var S13_BOLT = 14.42;                                // when it leaps the fence
 var S13_FLEE = 1.1;                                 // and then the seconds it takes to run out of the picture
+// The run home (owner, 2026-10-26: "yes", to its dust, the bushes and a flock at its howl): a flock startled up out of
+// the trees over the cave as its howl comes from inside, wheeling away; the morning sun over Doi Khao Khwai today.
+var S13_STARTLE = [{name: "flock from the trees", kind: "flock", z: "sky", course: [[25.4, 1420, 520], [28.4, 1700, 300], [31.4, 2150, 180]]}];
+var S13_SUN = [250, 300];
 // The crowd: who comes, from which side, where each stops, and when it sets off.
 var S13_CROWD = [["inta", 2.2, 2100, 1560, 948], ["sinuan", 3.03, 2150, 1690, 965], ["khammun", 4.43, -200, 760, 950],
                  ["buakham", 5.21, -260, 880, 968], ["bunma", 6.01, 2120, 1460, 975], ["dokkham", 6.61, -300, 980, 980],
@@ -57,6 +61,43 @@ function s13TroughLine(x) {
 // sheet with pen. From sets.js: maengYardAt(), maengYardTrough(), maengGarden(), MAENG_PEN, maengSlope(),
 // MAENG_SLOPE_CAVE, maengTrail(), maengMountain(), maengPeak(), maengSky("day"), MAENG_CLOUDS.day, maengDark(). Its
 // life is S13_LIFE; its words S13_LINES (M073 to M077), written under it by the page.
+// The dust behind the creature as it runs up the trail: a puff where its feet were each moment of the last second,
+// swelling, rising off the path and fading, paler than the path (the path's own tan was lost on it). t: the scene's second. Gives back nothing: it draws with pen.
+function s13Dust(t) {
+  for (var k = 1; k <= 12; k++) {
+    var back = t - k * 0.1, run = between(back, S13_SHOTS[0] + 0.4, S13_SHOTS[0] + 6.4);
+    if (run <= 0 || run >= 1) { continue; }
+    var x = mix(-160, MAENG_SLOPE_CAVE[0] - 20, run), y = maengTrail(x) + 6, age = k / 13, r = 22 + 46 * age;
+    var cy = y - r * 0.5 - 24 * age, puff = pen.createRadialGradient(x, cy, 0, x, cy, r);
+    puff.addColorStop(0, "rgba(242, 232, 210, " + (0.95 * (1 - age)).toFixed(3) + ")");
+    puff.addColorStop(0.5, "rgba(242, 232, 210, " + (0.6 * (1 - age)).toFixed(3) + ")");
+    puff.addColorStop(1, "rgba(242, 232, 210, 0)");
+    pen.fillStyle = puff;
+    pen.fillRect(x - r, cy - r, r * 2, r * 2);
+  }
+}
+// Where the gilded spire's tip stands from the temple's foot (temple() at 0.22), and its glint: a four-pointed
+// sparkle, swelling and gone, every 2.6 s. t: seconds; x, y: the tip. Gives back nothing: it draws with pen.
+var S13_SPIRE = [74, -90];
+function s13Sparkle(t, x, y) {
+  var u = (t % 2.6) / 2.6, shine = Math.pow(Math.sin(Math.PI * Math.min(1, u * 2.5)), 2), long = 26 * shine;
+  if (shine < 0.02) { return; }
+  pen.save();
+  pen.globalCompositeOperation = "lighter";
+  var core = pen.createRadialGradient(x, y, 0, x, y, 12);
+  core.addColorStop(0, "rgba(255, 250, 220, " + (0.9 * shine).toFixed(3) + ")");
+  core.addColorStop(1, "rgba(255, 230, 150, 0)");
+  pen.fillStyle = core;
+  pen.fillRect(x - 12, y - 12, 24, 24);
+  pen.strokeStyle = "rgba(255, 246, 210, " + (0.8 * shine).toFixed(3) + ")";
+  pen.lineWidth = 1.4;
+  pen.beginPath();
+  pen.moveTo(x - long, y); pen.lineTo(x + long, y);
+  pen.moveTo(x, y - long * 0.8); pen.lineTo(x, y + long * 0.8);
+  pen.stroke();
+  pen.restore();
+}
+
 // Its z plan (oldcartoon.js, Z): at the pen, the yard, the far trough and the garden as painted first; then by drawByZ
 // in "people" by their feet: the pen with the creature (its back, the creature, its front: one sprite at its foot,
 // MAENG_PEN; it leaps out over the front), the crowd, each at its own feet, and the trough's near part by its line,
@@ -80,13 +121,13 @@ function sceneHome(t) {
     if (leap >= 1) { at = [mix(k[0] + 520, k[0] + 1250, fled), k[1] - 22]; }
     drawByZ(lifeSprites(t, S13_LIFE).concat([
       {name: "pen", kind: "kok", x: k[0], y: k[1], draw: function () {
-        kok(pen, k[0], k[1], k[2], 1, {part: "back"});
+        kok(pen, k[0], k[1], k[2], 1, {fine: true, part: "back"});
         if (fled < 1) {
           maengSiHuHaTa(at[0], at[1], {size: 0.45, face: 1, feel: t < 6.61 ? "concerned" : "fear",
                                        step: leap > 0 ? leap * 6 + Math.max(0, t - S13_BOLT - 1.6) * 14 : undefined,
                                        mouth: t > 13.02 && t < 14.22 ? 0.7 : 0});
         }
-        kok(pen, k[0], k[1], k[2], 1, {part: "front"});
+        kok(pen, k[0], k[1], k[2], 1, {fine: true, part: "front"});
       }},
       {name: "trough", kind: "trough", line: s13TroughLine, draw: function () { maengYardTrough(1, "near"); }}
     ], s13Crowd(t)));
@@ -97,9 +138,11 @@ function sceneHome(t) {
     maengClouds(t + 70, "day");
     pen.drawImage(slope.back, 0, 0);
     pen.drawImage(slope.front, 0, 0);
+    maengCaveBushes(MAENG_CAVE_BEHIND, size * 1.6, 3);   // the cave as scenes 5 and 6 have it (sets.js)
     sceneryCave(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f"});
     var run = between(t, S13_SHOTS[0] + 0.4, S13_SHOTS[0] + 6.4), x = mix(-160, MAENG_SLOPE_CAVE[0] - 20, run);
     var inside = between(t, S13_SHOTS[0] + 6.4, S13_SHOTS[0] + 7.6);   // it goes in, into the dark, smaller and fainter
+    s13Dust(t);                                     // the dust its feet kick up behind it
     if (inside < 1) {
       pen.save();
       pen.globalAlpha = 1 - inside;
@@ -107,14 +150,19 @@ function sceneHome(t) {
                                                          step: run > 0 && run < 1 ? run * 30 : undefined});
       pen.restore();
     }
+    drawByZ(lifeSprites(t, S13_STARTLE));           // the flock its howl starts up out of the trees
+    maengCaveBushes(MAENG_CAVE_BEFORE, size * 1.6, 9, null, 3 * Math.sin(Math.PI * inside));   // shaking as it pushes past them
+    maengSnareBush();
     pen.drawImage(slope.fore, 0, 0);
   } else {                                           // Doi Khao Khwai today, and the temple on its shoulder
     var mountain = maengMountain();
     pen.drawImage(maengSky("day"), 0, 0);
     maengClouds(t + 30, "day");
+    scenerySun(t, S13_SUN[0], S13_SUN[1], 30, MAENG_MORNING_SUN);   // a morning: the sun low at the left
     pen.drawImage(mountain.back, 0, 0);
     mistDrift(pen, t, {left: 0, right: WIDE, top: 640, bottom: 770, count: 4, drift: 8, seed: 13, alpha: 0.45});
     pen.drawImage(mountain.front, 0, 0);
+    softMist(t, mix(960, 920, between(t, S13_SHOTS[1], S13_LONG)), 110, 0.5, 17, "250, 240, 228");   // in the valley at its foot, lifting
     // the temple, small and far, on the top of the mountain's shoulder, its base where the ground is lowest under it,
     // so no side of it stands out over the slope (owner, 2026-10-21: "half of it is off the mountain so place it so it
     // is fully on the mountain"; it stood at 640, on the shoulder's fall)
@@ -124,7 +172,10 @@ function sceneHome(t) {
     pen.scale(0.22, 0.22);
     temple(pen, 0, 0);
     pen.restore();
+    var templeFoot = Math.max(maengPeak(templeAt - templeHalf), maengPeak(templeAt), maengPeak(templeAt + templeHalf)) + 6;
+    s13Sparkle(t, templeAt + S13_SPIRE[0], templeFoot + S13_SPIRE[1]);   // the gilded spire catching the sun
     drawByZ(lifeSprites(t, S13_LIFE));
+    maengMorningLight(S13_SUN[0], S13_SUN[1], 1);
   }
   maengDark(t, S13_SHOTS[0] - 1.2, S13_SHOTS[0]);
   maengDark(t, S13_SHOTS[1] - 1.2, S13_SHOTS[1]);

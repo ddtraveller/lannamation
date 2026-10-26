@@ -17,7 +17,9 @@ var S10_HEAP = [1330, 962];                         // where he heaps the gold h
 var S10_DIG = [8.14, 15.76];                          // the digging: every mound opened again
 var S10_CREW = [[950, 0], [1560, 1], [1830, 2]];    // the traders sitting by the trough at night, each by a lantern
 var S10_HORSES = [[1440, "#8a5a3a"], [1700, "#5a4a3a"]];   // unloaded, resting in the field behind the trough
-var S10_NIGHT = [820, 1320, 742, 1.6];             // the night shot's camera: close, panning along the path as the trough grows (x from, to; y; zoom)
+var S10_NIGHT = [820, 1320, 742, 1.6];
+var S10_SUN = [880, 395];                           // the dusk shot's sun, going down behind the hills right of the hut (40 px over the shot)
+var S10_DAWN_SUN = [1790, 300, 190];                // the dawn shot's sun: its x, and the y it comes up from to the y it reaches             // the night shot's camera: close, panning along the path as the trough grows (x from, to; y; zoom)
 
 // Its life: hens in the garden by day; a flock flying home to roost as the caravan comes at dusk; and at dawn, at
 // the palace, mist low over the courtyard and a flock over.
@@ -71,6 +73,16 @@ function s10Strike(t, late) {                       // 0 to 1: how high a hammer
 // x, y: where it lands, in pixels of the sheet; u: 0 to 1 since it landed (s10Strike()'s spark); seed: which
 // sparks. Gives back nothing: it draws with pen. e.g. if (strike.spark !== null) { s10Sparks(x, y, strike.spark, 3); }
 function s10Sparks(x, y, u, seed) {                 // sparks off the gold where a hammer lands: out and up, and gone
+  if (u < 0.5) {                                    // the flash where it lands, glowing out
+    pen.save();
+    pen.globalCompositeOperation = "lighter";
+    var flash = pen.createRadialGradient(x, y, 0, x, y, 46);
+    flash.addColorStop(0, "rgba(255, 220, 120, " + (0.6 * (1 - 2 * u)).toFixed(3) + ")");
+    flash.addColorStop(1, "rgba(255, 200, 90, 0)");
+    pen.fillStyle = flash;
+    pen.fillRect(x - 46, y - 46, 92, 92);
+    pen.restore();
+  }
   for (var n = 0; n < 6; n++) {
     var a = -Math.PI * (0.15 + 0.7 * dice(seed * 7 + n)), far = 10 + 34 * u * (0.6 + 0.6 * dice(seed * 3 + n));
     pen.fillStyle = "rgba(255, " + (190 + n * 10) + ", 90, " + (1 - u).toFixed(3) + ")";
@@ -113,9 +125,9 @@ function s10Garden(t) {                             // the crier goes by calling
   maengGarden(t, MAENG_MOUNDS.length, Math.floor(dug), null);
   var sprites = lifeSprites(t, S10_LIFE).concat([
     {name: "pen", kind: "kok", x: k[0], y: k[1], draw: function () {
-      kok(pen, k[0], k[1], k[2], 1, {part: "back"});
+      kok(pen, k[0], k[1], k[2], 1, {fine: true, part: "back"});
       maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: t > 7.52 ? "happy" : "neutral"});
-      kok(pen, k[0], k[1], k[2], 1, {part: "front"});
+      kok(pen, k[0], k[1], k[2], 1, {fine: true, part: "front"});
     }},
     {name: "heap", kind: "gold", x: S10_HEAP[0], y: S10_HEAP[1], draw: function () { s10Heap(S10_HEAP[0], S10_HEAP[1], Math.floor(dug * 1.2), t); }}
   ]);
@@ -149,23 +161,24 @@ function s10Garden(t) {                             // the crier goes by calling
 // one's own x, the slope of the path put the first horse's hind leg over the second trader). e.g. s10Caravan(25);
 function s10Caravan(t) {                            // dusk: the Haw caravan comes along the path; he asks them to help
   var yard = maengYard(), dusk = 0.4, k = MAENG_PEN;
-  pen.drawImage(maengSky("dusk"), 0, 0);
-  maengClouds(t + 10, "dawn");
+  pen.drawImage(maengSky("sunset"), 0, 0);       // a painted sunset, the sun going down behind the hills at the left
+  scenerySun(t, S10_SUN[0], S10_SUN[1] + 40 * between(t, S10_SHOTS[0], S10_SHOTS[1]), 34, {glow: 10, colour: "255, 190, 110"});
+  maengClouds(t + 10, "dusk");
   pen.drawImage(yard.back, 0, 0);
   pen.globalAlpha = dusk; pen.drawImage(yard.backNight, 0, 0); pen.globalAlpha = 1;
   pen.drawImage(yard.front, 0, 0);
   pen.globalAlpha = dusk; pen.drawImage(yard.frontNight, 0, 0); pen.globalAlpha = 1;
   var tint = [MAENG_NIGHT[0], MAENG_NIGHT[1] * dusk];
-  ruenPhuk(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2] * 0.92, {glow: 0.3, tint: tint});
+  ruenPhuk(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2] * 0.92, {fine: true, ladder: "in", glow: 0.3, tint: tint});
   maengGarden(t, MAENG_MOUNDS.length, MAENG_MOUNDS.length, tint);
   // asks: his hand out to the heap, to the cut (29.3 s); speaks: his mouth, to the end of the narrator's voice (2026-10-24:
   // the hand once went back with the voice, at 28.46 s, in view: the pop check)
   var asks = t > 26.66 && t < 32.23, speaks = t > 26.66 && t < 31.41, start = 15.6, file = maengWay(1360) + 12;   // the caravan's one depth
   var sprites = lifeSprites(t, S10_LIFE).concat([
     {name: "pen", kind: "kok", x: k[0], y: k[1], draw: function () {
-      kok(pen, k[0], k[1], k[2], 1, {part: "back", tint: tint});
+      kok(pen, k[0], k[1], k[2], 1, {fine: true, part: "back", tint: tint});
       maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: t > 20.23 ? "surprised" : "happy"});
-      kok(pen, k[0], k[1], k[2], 1, {part: "front", tint: tint});
+      kok(pen, k[0], k[1], k[2], 1, {fine: true, part: "front", tint: tint});
     }},
     {name: "heap", kind: "gold", x: 820, y: 966, draw: function () { s10Heap(820, 966, 22, t); }},
     {name: "lad", kind: "person", x: 700, y: 962, draw: function () {
@@ -189,6 +202,14 @@ function s10Caravan(t) {                            // dusk: the Haw caravan com
     }});
   });
   drawByZ(sprites);
+  pen.save();                                       // the sun's last light, warm from the left, over all of it
+  pen.globalCompositeOperation = "lighter";
+  var warm = pen.createRadialGradient(S10_SUN[0], S10_SUN[1], 60, S10_SUN[0], S10_SUN[1], 1700);
+  warm.addColorStop(0, "rgba(255, 150, 70, 0.16)");
+  warm.addColorStop(1, "rgba(255, 150, 70, 0)");
+  pen.fillStyle = warm;
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.restore();
 }
 
 // The third shot (t, the scene's second, 29 s to 50 s), under a camera panning by S10_NIGHT: the trough laid from 0
@@ -218,6 +239,7 @@ function s10Night(t) {                              // all night under the lante
   pen.scale(c[3], c[3]);
   pen.translate(-mix(c[0], c[1], between(t, S10_SHOTS[1], S10_SHOTS[2])), -c[2]);
   maengYardAt(t, 1, 0.6);
+  sceneryFireflies(t, {far: [[[300, 790, 1900, 880], 40, 9]], near: 0});   // fireflies over the fields behind
   var sprites = S10_HORSES.map(function (h, n) {
     return {name: "horse" + n, kind: "horse", z: "back", x: h[0], y: 836, draw: function () {
       horse(h[0], 836, {size: 0.5, colour: blend(h[1], tint[0], tint[1]), face: -1});
@@ -232,15 +254,19 @@ function s10Night(t) {                              // all night under the lante
      draw: function () { maengYardTrough(built, "far"); }},
     {name: "garden", kind: "garden", z: S10_PLOT, draw: function () { maengGarden(t, MAENG_MOUNDS.length, MAENG_MOUNDS.length, tint); }},
     {name: "pen", kind: "kok", x: k[0], y: k[1], draw: function () {
-      kok(pen, k[0], k[1], k[2], 1, {part: "back", tint: tint});
+      kok(pen, k[0], k[1], k[2], 1, {fine: true, part: "back", tint: tint});
       maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: "sleepy"});
-      kok(pen, k[0], k[1], k[2], 1, {part: "front", tint: tint});
+      kok(pen, k[0], k[1], k[2], 1, {fine: true, part: "front", tint: tint});
     }},
     {name: "lad", kind: "person", x: 640, y: 962, draw: function () { person(640, 962, maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: "happy"})); }},
     {name: "trough, near", kind: "trough", line: function (x) { return s10TroughLine("near", x); },
      draw: function () { maengYardTrough(built, "near"); }}
   );
   drawByZ(sprites);
+  S10_CREW.forEach(function (c) {                   // each lantern lights the ground, the man under it and the trough
+    var y = maengTroughAt(c[0])[1] - 8;
+    sceneryLampLight(t, c[0] + 108, y - 296, y + 4, {reach: 300, seed: c[1] * 3});
+  });
   pen.restore();
 }
 
@@ -285,16 +311,20 @@ function s10Dawn(t) {                               // dawn at the palace: the t
     city.backDawn = maengTinted(city.back, MAENG_DAWN[0], MAENG_DAWN[1]);
     city.frontDawn = maengTinted(city.front, MAENG_DAWN[0], MAENG_DAWN[1]);
   }
-  pen.drawImage(maengSky("dawn"), 0, 0);
+  var rise = between(t, S10_SHOTS[2], S10_LONG);   // the sun coming up over the shot, and the city out of the dawn's blue
+  pen.drawImage(maengSky("sunrise"), 0, 0);
+  scenerySun(t, S10_DAWN_SUN[0], mix(S10_DAWN_SUN[1], S10_DAWN_SUN[2], rise), 30, {glow: 10, colour: "255, 206, 150"});
   maengClouds(t + 90, "dawn");
-  pen.drawImage(city.backDawn, 0, 0);
-  pen.drawImage(city.frontDawn, 0, 0);
-  mistDrift(pen, t, {left: 0, right: WIDE, top: 760, bottom: 900, count: 5, wide: 560, drift: 6, seed: 41, glow: "#f6c9a0",
-                     alpha: 0.5 * (1 - between(t, 59.07, 65.31))});   // the dawn's mist, low over the courtyard, going as the sun comes
+  pen.drawImage(city.back, 0, 0);
+  pen.globalAlpha = 1 - 0.6 * rise; pen.drawImage(city.backDawn, 0, 0); pen.globalAlpha = 1;
+  pen.drawImage(city.front, 0, 0);
+  pen.globalAlpha = 1 - 0.6 * rise; pen.drawImage(city.frontDawn, 0, 0); pen.globalAlpha = 1;
+  softMist(t, 850, 90, 0.55 * (1 - 0.6 * between(t, 60, S10_LONG)), 41, "250, 226, 206");   // the dawn's mist, low over the courtyard, thinning as the sun comes
+  var dawnTint = [MAENG_DAWN[0], MAENG_DAWN[1] * (1 - 0.6 * rise)];
   var done = t > 59.27, strike = s10Strike(t, 0), x = MAENG_STAIR - 120;
   drawByZ(lifeSprites(t, S10_LIFE).concat([
-    {name: "palace, back", kind: "palace", z: "set", draw: function () { maengPalace(t, "back", MAENG_DAWN); }},
-    {name: "palace, front", kind: "palace", z: "set", draw: function () { maengPalace(t, "front", MAENG_DAWN); }},
+    {name: "palace, back", kind: "palace", z: "set", draw: function () { maengPalace(t, "back", dawnTint); }},
+    {name: "palace, front", kind: "palace", z: "set", draw: function () { maengPalace(t, "front", dawnTint); }},
     {name: "trader1", kind: "person", x: x, y: row - 8, draw: function () {
       // Done, he gets up over 0.6 s, the hammer still in his hand (he once stood up in one frame, a pop)
       var rise = between(t, 59.27, 59.89);
@@ -303,7 +333,10 @@ function s10Dawn(t) {                               // dawn at the palace: the t
       s10Hammer(joints, MAENG_TRADERS[1].size);
       if (!done && strike.spark !== null) { s10Sparks(x + 46, row - 52, strike.spark, Math.floor(t * 1.6)); }
     }},
-    {name: "trough", kind: "trough", line: s10DawnLine, draw: function () { linKham(pen, [[-40, row], [MAENG_STAIR, row - 4]], 1, {size: 1.2}); }},
+    {name: "trough", kind: "trough", line: s10DawnLine, draw: function () {
+      linKham(pen, [[-40, row], [MAENG_STAIR, row - 4]], 1, {size: 1.2});
+      maengGlint(t, [[-40, row], [MAENG_STAIR, row - 4]], 46 * 1.2, S10_SHOTS[2], 3.5);   // the first light running along its gold (sets.js)
+    }},
     {name: "trader0", kind: "person", x: x - 240, y: row + 30, draw: function () {
       person(x - 240, row + 30, maengTrader(0, {face: 1, feel: done ? "laughing" : "happy"}));
     }}

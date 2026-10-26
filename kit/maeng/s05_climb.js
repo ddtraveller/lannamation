@@ -10,16 +10,13 @@ var S05_LINES = [[3.0, 8.53, "M024"], [8.79, 14.48, "M025"], [23.9, 29.95, "M026
 var S05_TOP = MAENG_SLOPE_CAVE[0] - 140;            // where he stops, below the cave's ledge
 var S05_SNARE = [MAENG_SLOPE_CAVE[0] - 60, MAENG_SLOPE_CAVE[1] + 8];
 var S05_CLOUDS = {count: 5, lit: "#f6b07a", shade: "#9a5a6a", below: true};
-var S05_BEHIND = [[-86, -58, 13], [-64, -82, 14], [-36, -92, 13], [-6, -96, 14], [24, -94, 13], [52, -88, 14], [80, -70, 13], [94, -40, 12]];
-var S05_BEFORE = [[-80, 10, 12], [-52, 14, 13], [74, 12, 12], [96, 4, 11]];
+var S05_BEHIND = MAENG_CAVE_BEHIND, S05_BEFORE = MAENG_CAVE_BEFORE;   // the cave's bushes, the same in every scene (sets.js)
 
 // list: S05_BEHIND or S05_BEFORE, each [x and y from MAENG_SLOPE_CAVE, radius] at size 1; size: how much larger;
 // seed: picks their greens; tint: [colour, 0 to 1] (MAENG_DUSK). Gives back nothing: it draws with pen.
 // e.g. s05Crowns(S05_BEHIND, MAENG_SLOPE_CAVE[2] * 1.6, 3, MAENG_DUSK);
 function s05Crowns(list, size, seed, tint) {          // the forest's own crowns over and beside the cave, at its size
-  list.forEach(function (c, n) {                     // painted bushes, as the slope's (sets.js maengBush())
-    maengBush(MAENG_SLOPE_CAVE[0] + c[0] * size, MAENG_SLOPE_CAVE[1] + c[1] * size, c[2] * size, seed + n, tint);
-  });
+  maengCaveBushes(list, size, seed, tint);           // painted bushes, as the slope's (sets.js)
 }
 
 // Its life: a band of mist drifting across the slope at dusk, below the cave; and a great hornbill crossing the
@@ -85,8 +82,8 @@ function sceneClimb(t) {
   // a small bush before his hand where he bends to the snare, so the hand that does not grip is not seen, the snare's
   // bent pole and its noose left clear to the right of it (owner, 2026-10-26: "Add a small bush so it hides the boy's
   // hand when bending down ... but leave enough room to see the snare"); before him, by its foot
-  sprites.push({name: "bush at the snare", kind: "bush", x: S05_SNARE[0] - 22, y: ground + 6, draw: function () {
-    maengBush(S05_SNARE[0] - 22, S05_SNARE[1] - 38, 30, 3, tint);
+  sprites.push({name: "bush at the snare", kind: "bush", x: S05_SNARE[0] - 30, y: ground + 34, draw: function () {
+    maengSnareBush(tint);                           // (sets.js) its foot down on the slope below the ledge
   }});
   drawByZ(sprites);
   pen.drawImage(slope.foreDusk, 0, 0);              // the rock before it all: the rope goes behind it

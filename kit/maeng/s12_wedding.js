@@ -19,6 +19,45 @@ var S12_LIFE = [
    course: [[S12_SHOTS[0], MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [S12_LONG, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4]]}
 ];
 
+// The wedding's dusk (owner, 2026-10-26: "yes", to a painted sunset, lanterns and fireflies): the sun going down
+// behind the far hills left of the palace, from S12_SUN[1] to S12_SUN[2]; strings of lit khom across the court, each
+// [from, to, sag] (pixels of the sheet), from the trees to the palace's eaves, a lantern every S12_KHOM_GAP along it.
+var S12_SUN = [880, 330, 405];
+var S12_STRINGS = [[[120, 560], [976, 430], 70], [[1664, 430], [1900, 520], 40]];
+var S12_KHOM_GAP = 105;
+// The lanterns on the strings: [x, y where each is tied, its colour], made once. e.g. s12Khoms().length
+var S12_KHOMS = null;
+function s12Khoms() {
+  if (S12_KHOMS) { return S12_KHOMS; }
+  S12_KHOMS = [];
+  S12_STRINGS.forEach(function (s, k) {
+    var long = Math.hypot(s[1][0] - s[0][0], s[1][1] - s[0][1]), count = Math.floor(long / S12_KHOM_GAP);
+    for (var n = 1; n < count; n++) {
+      var u = n / count;
+      S12_KHOMS.push([mix(s[0][0], s[1][0], u), mix(s[0][1], s[1][1], u) + s[2] * 4 * u * (1 - u),
+                      [KHOM_RED, KHOM_GREEN, KHOM_BLUE][(n + k) % 3]]);
+    }
+  });
+  return S12_KHOMS;
+}
+// The strings and their lanterns at second t, lit "lit" (0 to 1). Gives back nothing: it draws with pen.
+function s12Strings(t, lit) {
+  pen.strokeStyle = "#4a3426";
+  pen.lineWidth = 1.6;
+  S12_STRINGS.forEach(function (s) {
+    pen.beginPath();
+    pen.moveTo(s[0][0], s[0][1]);
+    pen.quadraticCurveTo((s[0][0] + s[1][0]) / 2, (s[0][1] + s[1][1]) / 2 + s[2] * 2, s[1][0], s[1][1]);
+    pen.stroke();
+  });
+  s12Khoms().forEach(function (k, n) { khom(k[0], k[1], {size: 0.13, colour: k[2], lit: lit, late: n * 0.37}); });
+}
+// The lanterns' light, laid over the court after its people: each string lantern's and the palace's two. lit: 0 to 1.
+function s12Glow(t, lit) {
+  s12Khoms().forEach(function (k, n) { sceneryLampLight(t, k[0], k[1] + 40, 960, {reach: 170, strength: 0.7 * lit, seed: n}); });
+  MAENG_PALACE_THINGS.forEach(function (k, n) { sceneryLampLight(t, k.x, k.base + 70, 880, {reach: 240, strength: lit, seed: 9 + n}); });
+}
+
 // joints: what person() gave back for the one who holds it; full: true heaps rice in it. Gives back nothing: it
 // draws with pen, in the film's own pixels. e.g. s12Bowl(person(x, 905, look), true);
 function s12Bowl(joints, full) {                    // a wooden bowl in a near hand, its rice heaped once it is filled
@@ -49,8 +88,16 @@ function s12City(t, tint) {                         // the courtyard, the palace
     city.backDusk = maengTinted(city.back, MAENG_DUSK[0], MAENG_DUSK[1]);
     city.frontDusk = maengTinted(city.front, MAENG_DUSK[0], MAENG_DUSK[1]);
   }
-  pen.drawImage(maengSky(tint ? "dusk" : "day"), 0, 0);
-  maengClouds(t + 150, tint ? "dawn" : "day");
+  if (tint) {                                        // the wedding: the sunset deepening, the sun going down behind the hills
+    var deepen = between(t, 1.5, S12_SHOTS[0] - 1);
+    pen.drawImage(maengSky("sunset"), 0, 0);
+    pen.globalAlpha = 0.5 * deepen; pen.drawImage(maengSky("night"), 0, 0); pen.globalAlpha = 1;
+    maengClouds(t + 150, "dusk");
+    scenerySun(t, S12_SUN[0], mix(S12_SUN[1], S12_SUN[2], deepen), 32, {glow: 10, colour: "255, 180, 100", disc: ["#fff2d0", "#ffcf80", "#ffaa5a"]});
+  } else {
+    pen.drawImage(maengSky("day"), 0, 0);
+    maengClouds(t + 150, "day");
+  }
   pen.drawImage(tint ? city.backDusk : city.back, 0, 0);
   pen.drawImage(tint ? city.frontDusk : city.front, 0, 0);
   maengPalace(t, "back", tint);
@@ -82,7 +129,9 @@ function s12Set(t, dais, tint, lamps) {
 function sceneWedding(t) {
   var p = MAENG_PALACE, dais = hoKhamDais(p[1], p[2]);
   if (t < S12_SHOTS[0]) {                            // the wedding, at dusk
+    var lit = 0.6 + 0.4 * between(t, 1.5, S12_SHOTS[0] - 1);   // the lanterns brighter as the sky darkens
     s12City(t, MAENG_DUSK);
+    s12Strings(t, lit);
     var sprites = s12Set(t, [
       ["king", p[0] - 170, maengPerson("noble", MAENG_KING, {id: "king", floor: "cross", face: 1, feel: "happy", at: [p[0], dais - 120]})],
       ["groom", p[0] - 30, maengPerson("noble", MAENG_GROOM, {id: "groom", floor: "cross", face: 1, feel: "happy", at: [p[0] + 90, dais - 120]})],
@@ -102,6 +151,11 @@ function sceneWedding(t) {
         person(915, 960, cast("inta", {floor: "cross", size: 0.74, face: -1, smile: 1, id: "guest1"}));
       }}
     ]));
+    s12Glow(t, lit);                                // their light on the band, the guests and the court
+    pen.save();                                     // and fireflies coming out as the light goes
+    pen.globalAlpha = between(t, 6, 11);
+    sceneryFireflies(t, {far: [[[0, 640, WIDE, 900], 40, 7]], near: 0});
+    pen.restore();
   } else if (t < S12_SHOTS[1]) {                     // by day, at the palace's stair: rice for the poor
     s12City(t, null);
     var giver = MAENG_STAIR + 40, gave = 0;

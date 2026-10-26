@@ -13,6 +13,8 @@ var S11_SHOTS = [19.04, 32.81];                       // the palace; the yard, t
 var S11_KING = [13.86, 18.62];                         // when the king speaks
 var S11_LAD = [34.31, 40.12];                         // when Thukkhata speaks
 var S11_CAMERA = [1234, 690, 1.4];                  // the last shot, close on the pen and the garden, as scene 8's
+var S11_SUN = [130, 250];                           // the morning's sun, low at the left (pixels of the sheet, without a camera)
+var S11_SUN_LOOK = MAENG_MORNING_SUN;               // low and warm, as a morning's (sets.js)
 
 // Its life: the blue magpie back on the palace roof's finial as the king wakes; by the hut the rooster crowing, it
 // is morning, as the king's man follows the trough there; hens in the garden.
@@ -64,8 +66,10 @@ function s11Palace(t) {                             // the king wakes, and the t
   var city = maengCity(), p = MAENG_PALACE, row = 880, floor = hoKhamFloor(p[1], p[2]), x = p[0] - 60;
   pen.drawImage(maengSky("day"), 0, 0);
   maengClouds(t + 120, "day");
+  scenerySun(t, S11_SUN[0], S11_SUN[1], 30, S11_SUN_LOOK);   // the morning's sun, low at the left, through the clouds
   pen.drawImage(city.back, 0, 0);
   pen.drawImage(city.front, 0, 0);
+  softMist(t, 850, 90, 0.45 * (1 - between(t, 3, 16)), 43, "252, 238, 222");   // the dawn's mist still on the court, going
   maengPalace(t, "back");
   var waking = t < 7.51, sees = t >= 7.51;
   var king = maengPerson("noble", MAENG_KING, {id: "king", face: -1, feel: waking ? "sleepy" : t < 13.86 ? "surprised" : "concerned",
@@ -84,9 +88,13 @@ function s11Palace(t) {                             // the king wakes, and the t
   var walks = {x: 920, look: man};
   if (t > 16.31) { walks = stroll(t, 920, -200, 16.31, man); }   // off he goes, along the trough
   drawByZ(lifeSprites(t, S11_LIFE).concat([
-    {name: "trough", kind: "trough", line: s11PalaceLine, draw: function () { linKham(pen, [[-40, row], [MAENG_STAIR, row - 4]], 1, {size: 1.2}); }},
+    {name: "trough", kind: "trough", line: s11PalaceLine, draw: function () {
+      linKham(pen, [[-40, row], [MAENG_STAIR, row - 4]], 1, {size: 1.2});
+      maengGlint(t, [[MAENG_STAIR, row - 4], [-40, row]], 46 * 1.2, 0, 4);   // the sun on its gold, running out from the stair
+    }},
     {name: "herald", kind: "person", x: walks.x, y: row + 40, draw: function () { person(walks.x, row + 40, walks.look); }}
   ]));
+  maengMorningLight(S11_SUN[0], S11_SUN[1], 1);
 }
 
 // The z plan of the yard's two shots, drawn by the kit's drawByZ() (oldcartoon.js, Z): the set first, as painted (the
@@ -104,16 +112,27 @@ function s11TroughLine(x) {
 // feel: the creature's feeling. Gives back nothing: it draws with pen. e.g. s11Pen("happy");
 function s11Pen(feel) {
   var k = MAENG_PEN;
-  kok(pen, k[0], k[1], k[2], 1, {part: "back"});
+  kok(pen, k[0], k[1], k[2], 1, {fine: true, part: "back"});
   maengSiHuHaTa(k[0] - 60, k[1] - 22, {size: 0.45, face: 1, feel: feel});
-  kok(pen, k[0], k[1], k[2], 1, {part: "front"});
+  kok(pen, k[0], k[1], k[2], 1, {fine: true, part: "front"});
 }
 
 // The second shot (t, the scene's second, 14.28 s to 27.28 s): the king's man walks in along the path to the hut.
 // Gives back nothing: it draws with pen. From sets.js: maengYardAt(), maengYardTrough(), maengGarden(), MAENG_PEN,
 // maengWay(), maengPerson() with MAENG_LAD and MAENG_HERALD. e.g. s11Follow(20);
+// The yard's morning: its sun low at the left, over the far hills (maengYardAt()'s heavens), and the mist low over the
+// rice fields behind the hut (its behind), thinning through the two shots. t: the scene's second. Gives back nothing.
+function s11Yard(t) {
+  maengYardAt(t, 0, 0, function () {
+    mistDrift(pen, t, {left: 0, right: WIDE, top: 755, bottom: 872, count: 6, wide: 560, drift: 6, seed: 23,
+                       alpha: 0.6 * (1 - 0.6 * between(t, S11_SHOTS[0], S11_LONG))});
+  }, undefined, undefined, function () { scenerySun(t, S11_SUN[0] + 630, S11_SUN[1] + 50, 28, S11_SUN_LOOK); });
+}
+// The trough's whole line in the yard, from the hut out and across the fields, for its glint (maengGlint()).
+function s11YardLine() { var route = maengTroughRoute(); return route.near.concat(route.far.slice(1)); }
+
 function s11Follow(t) {                             // the yard by day: the king's man follows the trough to the hut
-  maengYardAt(t, 0, 0);
+  s11Yard(t);
   maengYardTrough(1, "far");
   maengGarden(t, 6, 0, null);
   var lad = maengPerson("boy", MAENG_LAD, {id: "lad", face: 1, feel: t > 27.31 ? "surprised" : "happy"});
@@ -123,10 +142,14 @@ function s11Follow(t) {                             // the yard by day: the king
   var walks = maengWay(man.x) + 18;
   drawByZ(lifeSprites(t, S11_LIFE).concat([
     {name: "pen", kind: "kok", x: MAENG_PEN[0], y: MAENG_PEN[1], draw: function () { s11Pen("happy"); }},
-    {name: "trough", kind: "trough", line: s11TroughLine, draw: function () { maengYardTrough(1, "near"); }},
+    {name: "trough", kind: "trough", line: s11TroughLine, draw: function () {
+      maengYardTrough(1, "near");
+      maengGlint(t, s11YardLine(), 46 * 0.9, S11_SHOTS[0], 4);   // the sun on its gold, running along it toward the hut
+    }},
     {name: "lad", kind: "person", x: 640, y: 962, draw: function () { person(640, 962, lad); }},
     {name: "herald", kind: "person", x: man.x, y: walks, draw: function () { person(man.x, walks, man.look); }}
   ]));
+  maengMorningLight(S11_SUN[0] + 630, S11_SUN[1] + 50, 0.8);
 }
 
 // The last shot (t, the scene's second, 27.28 s to 40.78 s), under the camera S11_CAMERA: he speaks (S11_LAD) and
@@ -138,7 +161,7 @@ function s11Garden(t) {                             // "I built it, and there is
   pen.translate(WIDE / 2, 540);
   pen.scale(S11_CAMERA[2], S11_CAMERA[2]);
   pen.translate(-S11_CAMERA[0], -S11_CAMERA[1]);
-  maengYardAt(t, 0, 0);
+  s11Yard(t);
   maengYardTrough(1, "far");
   maengGarden(t, 6, 0, null);                       // new mounds: the creature's gold, every day since
   drawByZ(lifeSprites(t, S11_LIFE).concat([          // the yard's z plan (above s11TroughLine): the hen in front of the trough
@@ -153,4 +176,5 @@ function s11Garden(t) {                             // "I built it, and there is
     }}
   ]));
   pen.restore();
+  maengMorningLight(0, 0, 0.8);                     // from the left, past the picture's edge under the camera
 }

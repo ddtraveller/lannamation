@@ -74,10 +74,16 @@ the soldiers and their spears (figures.md).
 - Maeng (owner, 2026-10-26: "start upgrading and updating the meang si hoo cartoon like the hero video"): begun. Done:
   the far mountains of every set (farRange()), the meadow's and the city's trees painted in flower and fruit, the
   air of scenes 3, 6, 9, 11, 12 and 14 (MAENG_AIR in maeng/sets.js) with soft grass or blossom at the picture's edges.
-  Then, from stills the owner approved: Doi Khao Khwai painted anew (maengDoi(): rows of bushes, pines, flowers and
+  Then, from stills the owner approved: Doi Khao Khwai painted anew (maengForest(): rows of bushes, pines, flowers and
   fruit near its foot), the new cave in scenes 1, 5, 6 and 13 (sceneryCave()), scene 1's night with fine stars, the
   moon and bats going out behind the mountain, soft clouds in place of the cartoon cumulus in every scene, the film's
-  own far mountains (MAENG_FAR: no limestone peak). To do: flowering beds behind the people in the yard and the meadow,
-  the far ridges' plain faces, the rice fields, a clip of each scene for the owner, then the film rendered again.
-- Chang Ngu: not yet; its story.py has no SCENERY (tale_plan.py names every scene). Its river is a water for
-  sceneryWaterSurface().
+  own far mountains (MAENG_FAR: no limestone peak). Then the owner went through every scene, 1 to 15, from stills
+  and a plan each ("I'd like to go through all the scenes like this"), all approved: the paddy water mirrored with
+  egrets over it (2), the meadow's grass, flowers and the magpie's branch (3), the hut's bamboo and the pen's woodwork
+  in fine grain, its ladder up into the house (4, ruenPhuk() and kok() look.fine), the cave's bushes and the bush at
+  the snare (5, 6, 13), the yard's stars and moon and the fire's light (7), the garden's earth and the sun and moon
+  crossing the sky (8), the palace's plinth, posts, court and wall and jars of flowers (9 to 12, hoKham() look.fine),
+  the sunset, the lanterns' light and the dawn (10), the morning (11), the wedding's sunset and strings of khom (12),
+  the run home and Doi Khao Khwai in the morning (13), the goodbye's dusk and lamp (14), the credits' night (15). To
+  do: the film rendered again, all 15 scenes, with the new beasts (c7b37e6); the owner's word before S3.
+- Chang Ngu: v3, its own plan, kit/changngu/TODO.md "v3" (scene by scene with the owner, as Maeng).

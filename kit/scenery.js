@@ -462,14 +462,16 @@ function sceneryCave(brush, x, y, size, look) {
   pen = keep;
 }
 
-// The light of the hour over one of the cave's sprites ("face" or "rocks"): its tinted copy at the tint's strength.
-// cave: sceneryCaveBuild()'s; tint: [colour, amount] or nothing. Returns nothing: it draws with pen.
-function sceneryCaveTint(cave, part, tint) {
+// The light of the hour over one of the cave's sprites ("face" or "rocks"), or any {part: sprite, tints: {}}: its
+// tinted copy at the tint's strength, placed at x, y as the sprite was (0, 0 when left out: the cave draws under a
+// translate). cave: sceneryCaveBuild()'s, or the like; tint: [colour, amount] or nothing. Returns nothing: it draws
+// with pen. e.g. thkPlace(built.earth, 1400, 905, 1, 0); sceneryCaveTint(built, "earth", tint, 1400, 905);
+function sceneryCaveTint(cave, part, tint, x, y) {
   if (!tint || tint[1] <= 0) { return; }
   var key = part + " " + tint[0];
   var tinted = cave.tints[key] || (cave.tints[key] = sceneryTinted(cave[part], tint[0]));
   pen.globalAlpha = Math.min(1, tint[1]);
-  thkPlace(tinted, 0, 0, 1, 0);
+  thkPlace(tinted, x || 0, y || 0, 1, 0);
   pen.globalAlpha = 1;
 }
 
@@ -704,6 +706,70 @@ function sceneryMoon(t, x, y, r, look) {
     pen.fillRect(mx - mr, my - mr, mr * 2, mr * 2);
   }
   pen.restore();
+  pen.restore();
+}
+
+// --- the sun ---
+
+// The sun as the scenery paints it (owner, 2026-10-26, of the Maeng film's days going by: "go with your plans for 8"):
+// a soft warm disc, white at its heart, in a wide glow of its light, drawn after the sky and before the clouds and
+// the hills, so it sets behind them. (oldcartoon.js sun() is the thangka's sun of flames, or the 1930s sun's face.)
+// t: seconds (unused, for the moon's company); x, y: its middle; r: its radius; look: {alpha (0 to 1, 1), glow (how
+// wide its light: 8 radii), colour ("r, g, b" of the light, a warm white), disc ([heart, middle, rim] colours: white
+// going to a pale gold; a low sun's warmer, as in a pale morning sky, where a white one is lost)}. Returns nothing: it
+// draws with pen.
+// e.g. scenerySun(t, 1500, 320, 24, {alpha: 1});
+function scenerySun(t, x, y, r, look) {
+  look = look || {};
+  var alpha = look.alpha === undefined ? 1 : look.alpha, light = look.colour || "255, 240, 196";
+  if (alpha <= 0) { return; }
+  pen.save();
+  pen.globalAlpha = alpha;
+  var wide = r * (look.glow || 8), halo = pen.createRadialGradient(x, y, r * 0.6, x, y, wide);
+  halo.addColorStop(0, "rgba(" + light + ", 0.55)");
+  halo.addColorStop(0.25, "rgba(" + light + ", 0.18)");
+  halo.addColorStop(1, "rgba(" + light + ", 0)");
+  pen.fillStyle = halo;
+  pen.fillRect(x - wide, y - wide, wide * 2, wide * 2);
+  var disc = pen.createRadialGradient(x, y, 0, x, y, r), colours = look.disc || ["#fffef6", "#fff4cc", "rgba(255, 232, 170, 0.9)"];
+  disc.addColorStop(0, colours[0]);
+  disc.addColorStop(0.7, colours[1]);
+  disc.addColorStop(1, colours[2]);
+  pen.fillStyle = disc;
+  pen.beginPath();
+  pen.arc(x, y, r, 0, 7);
+  pen.fill();
+  pen.restore();
+}
+
+// --- a lamp's light ---
+
+// The light of a lamp or a lantern at night (owner, 2026-10-26, of the Maeng film's night of the trough: "yes", to the
+// lanterns lighting the ground and the men): a warm glow round the flame, flickering with it, and a pool of its light
+// on the ground below, flattened as the ground lies; laid on with "lighter", so it brightens what is there.
+// t: seconds; x, y: the flame; ground: the y of the ground under it; look: {reach (the glow's radius: 240), strength (0
+// to 1: 1), colour ("r, g, b": a candle's orange), seed}. Returns nothing: it draws with pen.
+// e.g. sceneryLampLight(t, 900, 520, 820, {reach: 260});
+function sceneryLampLight(t, x, y, ground, look) {
+  look = look || {};
+  var reach = look.reach || 240, c = look.colour || "255, 170, 80", seed = look.seed || 0;
+  var flicker = (look.strength === undefined ? 1 : look.strength) *
+                (1 + 0.07 * Math.sin(t * 11.3 + seed) + 0.04 * Math.sin(t * 19.7 + seed * 2) + 0.03 * Math.sin(t * 31.1 + seed * 3));
+  pen.save();
+  pen.globalCompositeOperation = "lighter";
+  var glow = pen.createRadialGradient(x, y, 4, x, y, reach);
+  glow.addColorStop(0, "rgba(" + c + ", " + (0.5 * flicker).toFixed(3) + ")");
+  glow.addColorStop(0.3, "rgba(" + c + ", " + (0.14 * flicker).toFixed(3) + ")");
+  glow.addColorStop(1, "rgba(" + c + ", 0)");
+  pen.fillStyle = glow;
+  pen.fillRect(x - reach, y - reach, reach * 2, reach * 2);
+  pen.translate(x, ground);                          // its pool on the ground
+  pen.scale(1, 0.22);
+  var pool = pen.createRadialGradient(0, 0, 0, 0, 0, reach * 0.9);
+  pool.addColorStop(0, "rgba(" + c + ", " + (0.45 * flicker).toFixed(3) + ")");
+  pool.addColorStop(1, "rgba(" + c + ", 0)");
+  pen.fillStyle = pool;
+  pen.fillRect(-reach, -reach, reach * 2, reach * 2);
   pen.restore();
 }
 

@@ -10,7 +10,11 @@ var BEAT = 0.5;
 // "day", "dusk". The clouds are not on it: a scene drifts them over it (cumulus.js).
 var MAENG_SKY = {};
 
-// maengSky(kind): kind "night", "dawn", "day" or "dusk". Gives back the sky's canvas (WIDE by 1080 pixels of the
+// "sunset" and "sunrise" (owner, 2026-10-26, of scene 10: "yes", to a painted sunset and dawn): the sky of the hour
+// the sun is down at the hills, violet overhead going through rose to gold at them, a scene drawing the sun itself
+// (scenery.js scenerySun()) and the clouds of the hour over it.
+// "clear": the night's sky with no stars painted on it, for the fine ones of scenery.js (the credits).
+// maengSky(kind): kind "night", "clear", "dawn", "day", "dusk", "sunset" or "sunrise". Gives back the sky's canvas (WIDE by 1080 pixels of the
 // sheet), painted on the first call and kept in MAENG_SKY after.
 // e.g. pen.drawImage(maengSky("dawn"), 0, 0);
 function maengSky(kind) {
@@ -19,10 +23,12 @@ function maengSky(kind) {
   paper.width = WIDE;
   paper.height = 1080;
   var brush = paper.getContext("2d"), n, sky = brush.createLinearGradient(0, 0, 0, 1080);
-  var stops = {night: [[0, "#070b24"], [0.6, "#1b2350"], [1, "#40336b"]],
+  var stops = {night: [[0, "#070b24"], [0.6, "#1b2350"], [1, "#40336b"]], clear: [[0, "#070b24"], [0.6, "#1b2350"], [1, "#40336b"]],
                dawn: [[0, "#232a5a"], [0.5, "#6a5a8e"], [0.78, "#e3a07f"], [1, "#f6d39c"]],
                day: [[0, "#8ccfc6"], [0.6, "#f4ecd2"], [1, "#f1d3bd"]],
-               dusk: [[0, "#f0642a"], [0.5, "#f2a23c"], [1, "#7fb89a"]]}[kind];
+               dusk: [[0, "#f0642a"], [0.5, "#f2a23c"], [1, "#7fb89a"]],
+               sunset: [[0, "#463c78"], [0.12, "#8a5488"], [0.24, "#d8707a"], [0.33, "#f29a5a"], [0.42, "#f8c070"], [1, "#f8d898"]],
+               sunrise: [[0, "#2a3470"], [0.14, "#5a5c98"], [0.26, "#c08aa4"], [0.38, "#f2b48a"], [0.52, "#fbdca6"], [1, "#fbe8c0"]]}[kind];
   stops.forEach(function (s) { sky.addColorStop(s[0], s[1]); });
   brush.fillStyle = sky;
   brush.fillRect(0, 0, WIDE, 1080);
@@ -146,6 +152,28 @@ function maengBush(x, y, r, seed, tint) {
     thkPlace(tinted, x, y + r * 0.6, size, 0);
     pen.globalAlpha = 1;
   }
+}
+
+// The cave on the slope is the same in every scene that comes to it (5, 6 and 13; owner, 2026-10-26: "Make sure to
+// reuse what you did in scene 5 with the bush, etc."): the forest's bushes over and beside it (MAENG_CAVE_BEHIND,
+// drawn before it) and before its foot (MAENG_CAVE_BEFORE, after it), each [x and y from MAENG_SLOPE_CAVE, radius];
+// and the bush that grows up from the slope before the snare's spot, where the boy bends (maengSnareBush()).
+var MAENG_CAVE_BEHIND = [[-86, -58, 13], [-64, -82, 14], [-36, -92, 13], [-6, -96, 14], [24, -94, 13], [52, -88, 14], [80, -70, 13], [94, -40, 12]];
+var MAENG_CAVE_BEFORE = [[-80, 10, 12], [-52, 14, 13], [74, 12, 12], [96, 4, 11]];
+// list: MAENG_CAVE_BEHIND or MAENG_CAVE_BEFORE; size: the cave's size times 1.6; seed: a number; tint: [colour, amount]
+// or nothing; shake: pixels they sway by the kit's clock (the near ones while the creature struggles), 0 for still.
+// Gives back nothing: it draws with pen. e.g. maengCaveBushes(MAENG_CAVE_BEHIND, MAENG_SLOPE_CAVE[2] * 1.6, 3);
+function maengCaveBushes(list, size, seed, tint, shake) {
+  list.forEach(function (c, n) {
+    maengBush(MAENG_SLOPE_CAVE[0] + c[0] * size + (shake || 0) * Math.sin(clock * 31 + n), MAENG_SLOPE_CAVE[1] + c[1] * size, c[2] * size, seed + n, tint);
+  });
+}
+// The bush before the snare's spot, growing up from the slope below the ledge (owner, 2026-10-26: "Add a small bush so
+// it hides the boy's hand when bending down ... but leave enough room to see the snare", "Make the bush extend all the
+// way to the ground", "Keep going down with the bush because it's floating"). MAENG_SNARE_BUSH: its x, the y of its
+// foot, its radius. tint: [colour, amount] or nothing. Gives back nothing: it draws with pen. e.g. maengSnareBush();
+function maengSnareBush(tint) {
+  maengBush(MAENG_SNARE_BUSH[0], MAENG_SNARE_BUSH[1] - 0.6 * MAENG_SNARE_BUSH[2], MAENG_SNARE_BUSH[2], 3, tint);
 }
 
 // The bushes before the cave's foot on the mountain, so it sits in the forest; with their colour at night (scene 1).
@@ -429,19 +457,27 @@ var MAENG_HUT_THINGS = [
 // t: the scene's second (the clouds drift by it, the fields' life moves by it); night: 0 by day to 1 at night;
 // glow: the hut's lamp, 0 (out) to 1, 0 when left out; behind: a function of no arguments, or left out; fliers: a
 // function of no arguments drawn over the fields before their water, so the water mirrors what it draws (birds
-// flying over), or left out; away: 0 to 1,
+// flying over), or left out; heavens: a function of no arguments drawn in the sky after its stars and its clouds
+// (a sun under the soft clouds was greyed by them) and before the hills, so what it draws sets behind them (scene
+// 8's sun and moon), or left out; sky: the sky under the night, a kind of maengSky() ("day" when left out; "sunset"
+// for a dusk's afterglow, its clouds lit as a dusk's: scene 14); away: 0 to 1,
 // how far the folk of the fields have gone home, when the scene says (left out: by the night, as below). Gives back
 // nothing: it draws with pen, the whole picture behind the people (life in the fields only while night < 0.5).
 // e.g. maengYardAt(t, 1, 0.9, function () { s02Mist(t); });
-function maengYardAt(t, night, glow, behind, away, fliers) {   // behind: drawn after the far sheet, before the yard and the hut (mist over the fields)
+function maengYardAt(t, night, glow, behind, away, fliers, heavens, sky) {   // behind: drawn after the far sheet, before the yard and the hut (mist over the fields)
   var yard = maengYard();
-  pen.drawImage(maengSky("day"), 0, 0);
+  pen.drawImage(maengSky(sky || "day"), 0, 0);
   if (night > 0) {
     pen.globalAlpha = night;
     pen.drawImage(maengSky("night"), 0, 0);
     pen.globalAlpha = 1;
+    // the night's stars and the moon over the yard, as scenes 1 and 4 have them (scenery.js; owner, 2026-10-26: "yes",
+    // to the stars and the moon wherever the yard is seen at night)
+    sceneryStars(t, {band: null, horizon: 760, count: 1600, bright: 30, alpha: night});
+    sceneryMoon(t, 1560, 150, 40, {alpha: night});
   }
-  maengClouds(t + 10, night > 0.5 ? "night" : "day");
+  maengClouds(t + 10, night > 0.5 ? "night" : sky === "sunset" ? "dusk" : "day");
+  if (heavens) { heavens(); }
   pen.drawImage(yard.back, 0, 0);
   if (night > 0) { pen.globalAlpha = night; pen.drawImage(yard.backNight, 0, 0); pen.globalAlpha = 1; }
   if (fliers) { fliers(); }                         // what flies over the fields, before the water that mirrors it
@@ -456,7 +492,7 @@ function maengYardAt(t, night, glow, behind, away, fliers) {   // behind: drawn 
   if (behind) { behind(); }
   pen.drawImage(yard.front, 0, 0);
   if (night > 0) { pen.globalAlpha = night; pen.drawImage(yard.frontNight, 0, 0); pen.globalAlpha = 1; }
-  ruenPhuk(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2] * 0.92, {glow: glow || 0, tint: night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null});
+  ruenPhuk(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2] * 0.92, {fine: true, ladder: "in", glow: glow || 0, tint: night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null});
   dress(t, MAENG_YARD_THINGS, "back", night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null);
 }
 
@@ -542,6 +578,7 @@ function maengMeadow() {
 // a rock and bushes at the lower left that the path passes behind. Scenes 5 (at dusk) and 6 (by day). Three
 // sheets, "back" (sky to the hillside), "front" (the path) and "fore" (drawn after the people), and each at dusk.
 var MAENG_SLOPE_CAVE = [1380, 660, 1.15];
+var MAENG_SNARE_BUSH = [MAENG_SLOPE_CAVE[0] - 90, MAENG_SLOPE_CAVE[1] + 42, 52];   // the bush at the snare's spot (maengSnareBush())
 var MAENG_DUSK = ["#5a2a46", 0.34];
 var MAENG_SLOPE = null;
 
@@ -595,6 +632,13 @@ function maengSlope() {
     b.ellipse(sx, sy, 3 + 3 * dice(n * 5 + 4), 2 + 1.5 * dice(n * 5 + 4), 0, 0, 7);
     b.fill();
   }
+  var tufts = [0, 1, 2].map(function (k) { return sceneryGrassBank(110 + 30 * dice(k + 81), 91 + k * 5); }), keepTufts = pen;
+  pen = b;                                          // grass along both edges of the path, so it lies in the slope
+  for (n = 0; n < 60; n++) {
+    var gx = -20 + (n / 60) * (last + 20) + 12 * dice(n * 3 + 81), half = mix(34, 13, between(gx, -40, last)), side = n % 2 ? 1 : -1;
+    thkPlace(tufts[n % 3], gx, maengTrail(gx) + 6 + side * half * (0.9 + 0.3 * dice(n + 82)) + (side > 0 ? 6 : 2), mix(0.16, 0.07, between(gx, -40, last)), 0);
+  }
+  pen = keepTufts;
   b = fore.getContext("2d");                        // the rock and the bushes before it all, at the lower left: mossy
   var keepPen = pen;                                // limestone as the cave's (scenery.js), the bushes as the slope's
   pen = b;
@@ -625,6 +669,76 @@ var MAENG_MOUNDS = [];
   MAENG_MOUNDS.sort(function (a, b) { return a[2] - b[2]; });
 })();
 
+// The garden's earth, painted once (owner, 2026-10-26, of scene 8: "go with your plans for 8"): the tilled patch
+// lit from above and darker toward us, its furrows each a ridge lit on its top and shaded below, clods and small
+// stones, and the seedlings in the rows, two or four leaves each, lit on one side. Its point is the patch's top left
+// (MAENG_GARDEN). Gives back {earth: a sprite, tints: {}}.
+function maengGardenBuild() {
+  var g = MAENG_GARDEN, n, k;
+  var earth = thkSprite(g[2] + 100, g[3] + 60, 50, 30, function () {
+    var soil = pen.createLinearGradient(0, 0, 0, g[3]);
+    soil.addColorStop(0, "#94704a");
+    soil.addColorStop(1, "#7a5838");
+    pen.fillStyle = soil;
+    pen.beginPath();
+    pen.moveTo(0, 0);
+    pen.lineTo(g[2], 0);
+    pen.quadraticCurveTo(g[2] + 14, g[3] * 0.5, g[2] + 24, g[3]);
+    pen.lineTo(-24, g[3]);
+    pen.quadraticCurveTo(-12, g[3] * 0.5, 0, 0);
+    pen.closePath();
+    pen.fill();
+    pen.save();
+    pen.clip();
+    for (n = 0; n < 900; n++) {                     // the soil's grain: crumbs a little lighter and darker
+      var cx = -24 + dice(n * 3 + 501) * (g[2] + 48), cy = dice(n * 3 + 502) * g[3];
+      pen.fillStyle = dice(n * 3 + 503) > 0.5 ? "rgba(176, 138, 96, 0.5)" : "rgba(84, 58, 34, 0.45)";
+      pen.fillRect(cx, cy, 1 + dice(n + 504) * 1.6, 1 + dice(n + 505) * 1.2);
+    }
+    for (k = 0; k < 4; k++) {                       // the furrows: a ridge lit on its top, its shade in the trough below
+      var fy = (k + 0.5) * g[3] / 4, spread = 6 * k;
+      for (n = 0; n < 2; n++) {
+        pen.strokeStyle = n ? "rgba(70, 46, 26, 0.55)" : "rgba(190, 152, 108, 0.6)";
+        pen.lineWidth = n ? 3.4 : 2.2;
+        pen.beginPath();
+        for (var x = -20 - spread; x <= g[2] + 20 + spread; x += 12) {
+          var y = fy + (n ? 4 : -1) + 1.3 * Math.sin(x * 0.05 + k * 2) + (dice(k * 97 + x) - 0.5) * 1.2;
+          if (x === -20 - spread) { pen.moveTo(x, y); } else { pen.lineTo(x, y); }
+        }
+        pen.stroke();
+      }
+    }
+    for (n = 0; n < 70; n++) {                      // clods and small stones, each lit on its top
+      var kx = -16 + dice(n * 5 + 601) * (g[2] + 32), ky = 3 + dice(n * 5 + 602) * (g[3] - 6), kr = 1.6 + dice(n * 5 + 603) * 3.4;
+      var stone = dice(n * 5 + 604) > 0.8;
+      pen.fillStyle = stone ? "#8e8676" : "#6e4e30";
+      pen.beginPath(); pen.ellipse(kx, ky, kr, kr * 0.65, 0, 0, 7); pen.fill();
+      pen.fillStyle = stone ? "rgba(214, 206, 188, 0.7)" : "rgba(184, 146, 102, 0.75)";
+      pen.beginPath(); pen.ellipse(kx - kr * 0.2, ky - kr * 0.25, kr * 0.6, kr * 0.3, 0, 0, 7); pen.fill();
+    }
+    pen.restore();
+    for (n = 0; n < 9; n++) {                       // the seedlings in the rows, where they stood (the garden's own)
+      var sx = 20 + n * 52, sy = 8 + (n % 3) * 22, leaves = n % 2 ? 4 : 2, high = 7 + 3 * dice(n + 701);
+      pen.strokeStyle = "#5c7a32";
+      pen.lineWidth = 1.6;
+      pen.beginPath(); pen.moveTo(sx, sy); pen.lineTo(sx, sy - high); pen.stroke();
+      pen.fillStyle = "rgba(60, 40, 22, 0.35)";      // its shadow on the soil
+      pen.beginPath(); pen.ellipse(sx + 3, sy + 1, 7, 1.8, 0, 0, 7); pen.fill();
+      for (k = 0; k < leaves; k++) {
+        var side = k % 2 ? 1 : -1, up = k < 2 ? 0 : 4, lx = sx + side * 6, ly = sy - high + up + 1;
+        var leaf = pen.createLinearGradient(sx, ly - 4, sx + side * 12, ly + 3);
+        leaf.addColorStop(0, side < 0 ? "#a6d468" : "#7fae48");
+        leaf.addColorStop(1, side < 0 ? "#6f9e3c" : "#4f7a2c");
+        pen.fillStyle = leaf;
+        pen.beginPath();
+        pen.ellipse(lx, ly, 6.5 - up * 0.4, 2.8, side * (0.35 + 0.1 * dice(n * 4 + k)), 0, 7);
+        pen.fill();
+      }
+    }
+  }, PIX);
+  return {earth: earth, tints: {}};
+}
+
 // The garden at second t: "count" mounds (a part of one rising while he heaps it), "dug" how many have been
 // opened again (scene 10), the gold glinting at the open ones; tint as the hut's.
 // t: seconds (the glints shine by it); count: how many mounds, 0 to MAENG_MOUNDS.length (a fraction: the last one
@@ -633,44 +747,33 @@ var MAENG_MOUNDS = [];
 // e.g. maengGarden(t, 6, 0, null);
 function maengGarden(t, count, dug, tint) {
   function tone(c) { return tint ? blend(c, tint[0], tint[1]) : c; }
-  var g = MAENG_GARDEN, n;
-  pen.fillStyle = tone("#8a6440");                  // the tilled earth
-  pen.beginPath();
-  pen.moveTo(g[0], g[1]);
-  pen.lineTo(g[0] + g[2], g[1]);
-  pen.lineTo(g[0] + g[2] + 24, g[1] + g[3]);
-  pen.lineTo(g[0] - 24, g[1] + g[3]);
-  pen.closePath();
-  pen.fill();
-  pen.strokeStyle = tone("#6a4a2e");
-  pen.lineWidth = 2;
-  for (n = 1; n < 4; n++) {                         // the rows
-    pen.beginPath();
-    pen.moveTo(g[0] - 6 * n, g[1] + n * g[3] / 4);
-    pen.lineTo(g[0] + g[2] + 6 * n, g[1] + n * g[3] / 4);
-    pen.stroke();
-  }
-  for (n = 0; n < 9; n++) {                         // a few seedlings, the garden's own
-    var sx = g[0] + 20 + n * 52, sy = g[1] + 8 + (n % 3) * 22;
-    pen.strokeStyle = tone("#5f8f3a");
-    pen.lineWidth = 2;
-    pen.beginPath();
-    pen.moveTo(sx, sy); pen.quadraticCurveTo(sx - 5, sy - 8, sx - 9, sy - 10);
-    pen.moveTo(sx, sy); pen.quadraticCurveTo(sx + 5, sy - 8, sx + 9, sy - 10);
-    pen.stroke();
-  }
+  var g = MAENG_GARDEN, n, k, built = thkOnce("maeng-garden", maengGardenBuild);
+  thkPlace(built.earth, g[0], g[1], 1, 0);          // the tilled earth, its furrows, clods and seedlings (painted once)
+  sceneryCaveTint(built, "earth", tint, g[0], g[1]);            // and the hour's light over it, as the cave's
   for (n = 0; n < MAENG_MOUNDS.length; n++) {
     var m = MAENG_MOUNDS[n], rise = clamp(count - n);
     if (rise <= 0) { break; }
     var open = n < dug;
-    pen.beginPath();                                // a mound of earth, or a hole where one was opened
-    if (open) { pen.ellipse(m[0], m[1] + 2, 20, 7, 0, 0, 7); }
-    else { pen.ellipse(m[0], m[1], 22, 11 * rise, 0, Math.PI, 0); }
-    pen.fillStyle = tone(open ? "#4a3220" : "#a07a50");
+    pen.fillStyle = "rgba(60, 40, 22, 0.3)";   // its shadow on the soil
+    pen.beginPath(); pen.ellipse(m[0] + 3, m[1] + 2, 25, 4, 0, 0, 7); pen.fill();
+    pen.beginPath();                                // a mound of fresh earth, darker and moist, lit on its top; or a hole
+    if (open) { pen.ellipse(m[0], m[1] + 2, 20, 7, 0, 0, 7); pen.fillStyle = tone("#3e2a1a"); }
+    else {
+      pen.ellipse(m[0], m[1], 22, 11 * rise, 0, Math.PI, 0);
+      var heap = pen.createLinearGradient(m[0] - 10, m[1] - 11 * rise, m[0] + 8, m[1]);
+      heap.addColorStop(0, tone("#a47c52"));
+      heap.addColorStop(1, tone("#5e3e24"));
+      pen.fillStyle = heap;
+    }
     pen.fill();
-    pen.strokeStyle = tone("#5a3e26");
-    pen.lineWidth = 1.4;
+    pen.strokeStyle = tone("#4e3420");
+    pen.lineWidth = 1.2;
     pen.stroke();
+    for (k = 0; k < 7; k++) {                       // loose crumbs of it thrown round its foot
+      var a = dice(n * 13 + k) * Math.PI, d = 22 + 8 * dice(n * 13 + k + 5);
+      pen.fillStyle = tone(k % 2 ? "#6a4628" : "#8e6a44");
+      pen.beginPath(); pen.ellipse(m[0] - Math.cos(a) * d, m[1] + 1 - Math.sin(a) * 3, 2.2 * rise, 1.4 * rise, 0, 0, 7); pen.fill();
+    }
     if (!open && m[2] > 0.55 && rise >= 1) { goldNugget(pen, m[0] + 6, m[1] - 6, 0.75, t, {shine: 0.9, seed: n}); }   // a glint of gold not quite buried
   }
 }
@@ -730,11 +833,56 @@ var MAENG_PALACE_THINGS = [
 // e.g. maengPalace(t, "back", MAENG_DAWN); person(...); maengPalace(t, "front", MAENG_DAWN);
 function maengPalace(t, part, tint, lit) {          // the palace hall, back or front, dressed; lit (0 to 1): its lanterns' candles
   var p = MAENG_PALACE;
-  hoKham(pen, p[0], p[1], p[2], {part: part, tint: tint, pediment: "peacock"});
+  hoKham(pen, p[0], p[1], p[2], {fine: true, part: part, tint: tint, pediment: "peacock"});
   if (part === "front") {
     dress(t, lit ? MAENG_PALACE_THINGS.map(function (one) { return Object.assign({}, one, {look: Object.assign({}, one.look, {lit: lit})}); })
                  : MAENG_PALACE_THINGS, "back");
+    var pots = thkOnce("maeng-pots", maengPotsBuild);   // the pots of flowers at the stair's foot, in the hour's light
+    MAENG_POTS.forEach(function (one, n) {
+      thkPlace(pots["pot" + n], one[0], one[1], 1, 0);
+      sceneryCaveTint(pots, "pot" + n, tint, one[0], one[1]);
+    });
   }
+}
+// Pots of flowers at the foot of the palace's stair (owner, 2026-10-26: "yes", to flowers by the palace, so the court
+// is not bare): glazed jars of the north, jasmine and marigolds, each [x, y of its foot, flora's name, size].
+var MAENG_POTS = [[MAENG_PALACE[0] - 128, MAENG_PALACE[1] + 10, "jasmine", 0.62], [MAENG_PALACE[0] + 128, MAENG_PALACE[1] + 10, "marigold", 0.6],
+                  [MAENG_PALACE[0] - 330, MAENG_PALACE[1] + 8, "marigold", 0.56], [MAENG_PALACE[0] + 330, MAENG_PALACE[1] + 8, "jasmine", 0.58]];
+// Gives back {pot0, pot1, ..., tints: {}}: each pot with its plant, a sprite whose point is the pot's foot.
+function maengPotsBuild() {
+  var built = {tints: {}};
+  MAENG_POTS.forEach(function (one, n) {
+    built["pot" + n] = thkSprite(160, 220, 80, 200, function () {
+      pen.fillStyle = "rgba(60, 40, 24, 0.3)";       // its shadow on the brick
+      pen.beginPath(); pen.ellipse(6, 2, 30, 6, 0, 0, 7); pen.fill();
+      [[-9, 0.85], [9, 0.9], [0, 1]].forEach(function (f) { flora(one[2], f[0], -44, {size: one[3] * f[1], ground: false}); });   // a full pot: three plants
+      var jar = pen.createLinearGradient(-26, 0, 26, 0);   // the jar, glazed, lit on its left
+      jar.addColorStop(0, "#6f8a6a");
+      jar.addColorStop(0.35, "#4e6a52");
+      jar.addColorStop(1, "#2a3a2e");
+      pen.fillStyle = jar;
+      pen.beginPath();
+      pen.moveTo(-16, 0);
+      pen.bezierCurveTo(-30, -14, -30, -34, -20, -44);
+      pen.lineTo(20, -44);
+      pen.bezierCurveTo(30, -34, 30, -14, 16, 0);
+      pen.closePath();
+      pen.fill();
+      pen.strokeStyle = "rgba(20, 30, 22, 0.6)";
+      pen.lineWidth = 1.2;
+      pen.stroke();
+      pen.strokeStyle = "rgba(200, 180, 120, 0.55)";   // a band round its shoulder
+      pen.lineWidth = 1.6;
+      pen.beginPath(); pen.moveTo(-26, -32); pen.quadraticCurveTo(0, -27, 26, -32); pen.stroke();
+      pen.fillStyle = "rgba(255, 255, 240, 0.35)";   // the glaze's light
+      pen.beginPath(); pen.ellipse(-14, -26, 3, 9, 0.2, 0, 7); pen.fill();
+      pen.fillStyle = "#3a4a3c";                     // its rim, and the earth in it
+      pen.beginPath(); pen.ellipse(0, -44, 21, 4.5, 0, 0, 7); pen.fill();
+      pen.fillStyle = "#4a3422";
+      pen.beginPath(); pen.ellipse(0, -44, 17, 3, 0, 0, 7); pen.fill();
+    }, PIX);
+  });
+  return built;
 }
 var MAENG_FINIAL = [MAENG_PALACE[0] + 196 * MAENG_PALACE[2], MAENG_PALACE[1] - 810 * MAENG_PALACE[2]];   // the tip of the roof's right cho fa, where a bird perches
 var MAENG_STAIR = 1100;                             // where a trough laid to the palace meets its stair (x)
@@ -765,14 +913,48 @@ function maengCity() {
   b.fillStyle = "#b5704e";                          // the wall of brick, its top stepped
   b.fillRect(0, 760, WIDE, 70);
   for (x = 0; x < WIDE; x += 34) { b.fillRect(x, 744, 20, 18); }
-  b.strokeStyle = "rgba(90, 40, 24, 0.45)";
-  b.lineWidth = 1.5;
-  for (n = 0; n < 4; n++) {
-    b.beginPath(); b.moveTo(0, 774 + n * 15); b.lineTo(WIDE, 774 + n * 15); b.stroke();
+  // laid brick by brick, no two quite one red, the courses' mortar between them; the steps of its top lit, their
+  // right sides in shade; streaks down it from the rains and moss at its foot (owner, 2026-10-26: "yes", to the
+  // city's wall and court brick by brick)
+  for (n = 0; n < 5; n++) {
+    for (x = -(n % 2) * 16; x < WIDE; x += 32) {
+      var hue = dice(n * 131 + x) - 0.5;
+      b.fillStyle = blend("#b5704e", hue > 0 ? "#d08a62" : "#8a4c34", Math.abs(hue) * 0.6);
+      b.fillRect(x + 1, 761 + n * 14, 30, 12);
+    }
+  }
+  b.fillStyle = "rgba(90, 40, 24, 0.4)";
+  for (n = 0; n < 5; n++) { b.fillRect(0, 760 + n * 14, WIDE, 1.2); }
+  for (x = 0; x < WIDE; x += 34) {
+    b.fillStyle = "#d89a72"; b.fillRect(x, 744, 20, 3);
+    b.fillStyle = "rgba(70, 30, 18, 0.35)"; b.fillRect(x + 15, 747, 5, 15);
+  }
+  b.fillStyle = "#d89a72";
+  b.fillRect(0, 760, WIDE, 2);
+  for (n = 0; n < 60; n++) {
+    var sx = dice(n * 3 + 901) * WIDE, len = 20 + 45 * dice(n * 3 + 902), rain = b.createLinearGradient(0, 762, 0, 762 + len);
+    rain.addColorStop(0, "rgba(60, 40, 34, " + (0.1 + 0.12 * dice(n + 903)).toFixed(3) + ")");
+    rain.addColorStop(1, "rgba(60, 40, 34, 0)");
+    b.fillStyle = rain;
+    b.fillRect(sx, 762, 3 + 7 * dice(n + 904), len);
+  }
+  for (n = 0; n < 140; n++) {
+    b.fillStyle = "rgba(96, 120, 64, " + (0.25 + 0.3 * dice(n + 905)).toFixed(3) + ")";
+    b.beginPath(); b.ellipse(dice(n * 3 + 906) * WIDE, 826 - 9 * dice(n + 907), 5 + 9 * dice(n + 908), 2.5 + 2 * dice(n + 909), 0, 0, 7); b.fill();
   }
   b = front.getContext("2d");
   b.fillStyle = "#cdb48a";                          // the courtyard, paved with brick
   b.fillRect(0, 830, WIDE, 250);
+  for (n = 0; n < 12; n++) {                        // each brick its own tone, worn a little lighter at its middle
+    var top = 836 + n * (8 + n * 1.6), deep = 8 + n * 1.6;
+    for (x = (n % 2) * 20 - 40; x < WIDE; x += 40 + n * 3) {
+      var hue2 = dice(n * 211 + x * 3) - 0.5;
+      b.fillStyle = blend("#cdb48a", hue2 > 0 ? "#e2cca2" : "#a88a62", Math.abs(hue2) * 0.7);
+      b.fillRect(x + 1, top + 1, 38 + n * 3, deep - 1);
+      b.fillStyle = "rgba(255, 246, 220, 0.18)";
+      b.fillRect(x + 4, top + 2, 30 + n * 3, Math.max(1, deep * 0.3));
+    }
+  }
   b.strokeStyle = "rgba(130, 90, 60, 0.45)";
   b.lineWidth = 1.6;
   for (n = 0; n < 12; n++) {
@@ -780,6 +962,21 @@ function maengCity() {
     b.beginPath(); b.moveTo(0, y); b.lineTo(WIDE, y); b.stroke();
     for (x = (n % 2) * 20; x < WIDE; x += 40 + n * 3) { b.beginPath(); b.moveTo(x, y); b.lineTo(x, y + 8 + n * 1.6); b.stroke(); }
   }
+  for (n = 0; n < 260; n++) {                       // moss and grass in the joints, more toward the wall and the edges
+    var my = 836 + Math.pow(dice(n * 3 + 921), 1.8) * 240, mx = dice(n * 3 + 922) * WIDE;
+    if (Math.abs(mx - MAENG_PALACE[0]) < 420 && dice(n + 923) > 0.25) { continue; }   // the way to the palace is kept clear
+    b.fillStyle = "rgba(100, 128, 66, " + (0.25 + 0.3 * dice(n + 924)).toFixed(3) + ")";
+    b.beginPath(); b.ellipse(mx, my, 3 + 5 * dice(n + 925), 1.2 + 1.2 * dice(n + 926), 0, 0, 7); b.fill();
+  }
+  b.save();                                         // the palace's shade on the court before it, flattened
+  b.translate(MAENG_PALACE[0], MAENG_PALACE[1] + 6);
+  b.scale(1, 0.08);
+  var under = b.createRadialGradient(0, 0, 40, 0, 0, 420);
+  under.addColorStop(0, "rgba(70, 50, 30, 0.3)");
+  under.addColorStop(1, "rgba(70, 50, 30, 0)");
+  b.fillStyle = under;
+  b.fillRect(-440, -440, 880, 880);
+  b.restore();
   MAENG_CITY = {back: back, front: front};
   return MAENG_CITY;
 }
@@ -799,9 +996,10 @@ var MAENG_AIR = {
   decree: {petals: [14, "#f6b8cc", 7, 1.0], light: [0.5, 5]},
   morning: {butterfly: {kind: "bluebottle", x: 1600, y: 520, vx: -80, weave: 55, seed: 9, size: 1.2, turn: -1.2, wing: 4},
             petals: [12, "#f6b8cc", 6, 1.0], light: [0.7, 6]},
+  gold: {butterfly: {kind: "grassyellow", x: 1420, y: 640, vx: 0, weave: 120, seed: 13, size: 1.1, turn: 0, wing: 8}, light: [0.45, 8]},
   wedding: {butterfly: {kind: "birdwing", x: 200, y: 380, vx: 70, weave: 60, seed: 11, size: 1.3, turn: 1.2, wing: 5},
             petals: [40, "#f6b8cc", 8, 1.1], light: [0.6, 7]},
-  goodbye: {far: [[[0, 700, WIDE, 880], 50, 5]], near: 0}
+  goodbye: {far: [[[0, 700, WIDE, 880], 50, 5]], near: 12}
 };
 // The picture's edges, soft: grass at the bottom corners, and over a royal place blossom hanging into a top corner.
 // Painted once. Returns {day: [...], palace: [...]} for sceneryBeds().
@@ -897,6 +1095,49 @@ function maengYardTrough(built, part, tint) {
   // part's gold where the trough turns up (2026-10-23).
   if (part === "far") { linKham(pen, route.far, clamp((all - route.nearLong) / route.farLong), {size: 0.9, tint: tint, joined: true}); }
   else { linKham(pen, route.near, clamp(all / route.nearLong), {size: 0.9, tint: tint}); }
+}
+
+// The sun on the trough's gold (owner, 2026-10-26: "yes", to the trough catching the first light, scenes 10 and 11): a
+// glint running along it from its far end, once every "period" seconds from second "from". t: seconds; points: the
+// line it lies on ([x, y], pixels of the sheet, as linKham() takes them); lift: how high its top is over that line
+// (linKham's 46 times its size). Gives back nothing: it draws with pen.
+// e.g. maengGlint(t, [[-40, 880], [MAENG_STAIR, 876]], 55, 56.07, 3.5);
+function maengGlint(t, points, lift, from, period) {
+  var u = (((t - from) / period) % 1 + 1) % 1, total = 0, k, lengths = [];
+  for (k = 1; k < points.length; k++) { lengths.push(Math.hypot(points[k][0] - points[k - 1][0], points[k][1] - points[k - 1][1])); total += lengths[k - 1]; }
+  var go = u * total;
+  for (k = 0; k < lengths.length - 1 && go > lengths[k]; k++) { go -= lengths[k]; }
+  var a = points[k], b = points[k + 1], f = clamp(go / (lengths[k] || 1));
+  var x = mix(a[0], b[0], f), y = mix(a[1], b[1], f) - lift, shine = Math.sin(Math.PI * u);
+  pen.save();
+  pen.globalCompositeOperation = "lighter";
+  pen.translate(x, y);
+  pen.scale(1.8, 0.4);
+  var glint = pen.createRadialGradient(0, 0, 0, 0, 0, 34);
+  glint.addColorStop(0, "rgba(255, 250, 225, " + (0.9 * shine).toFixed(3) + ")");
+  glint.addColorStop(0.3, "rgba(255, 224, 150, " + (0.35 * shine).toFixed(3) + ")");
+  glint.addColorStop(1, "rgba(255, 210, 120, 0)");
+  pen.fillStyle = glint;
+  pen.fillRect(-34, -34, 68, 68);
+  pen.restore();
+}
+
+// The morning's sun as scenerySun() takes it: low and warm, gold where a white one is lost in a pale sky (scenes 11, 13).
+var MAENG_MORNING_SUN = {glow: 10, colour: "255, 214, 150", disc: ["#fff6d8", "#ffe09a", "#ffcf78"]};
+// The morning's light (owner, 2026-10-26, of scene 11: "yes", to its morning light): the sun low at the left warming
+// the whole picture a little, laid on with "lighter". x, y: the sun, in the pixels the pen draws in; strength: 0 to 1.
+// Gives back nothing: it draws with pen over the whole sheet. e.g. maengMorningLight(120, 200, 1);
+function maengMorningLight(x, y, strength) {
+  pen.save();
+  pen.globalCompositeOperation = "lighter";
+  var warm = pen.createRadialGradient(x, y, 0, x, y, 1900);   // none on the sun's own disc, which it washed to a ring
+  warm.addColorStop(0, "rgba(255, 214, 150, 0)");
+  warm.addColorStop(0.04, "rgba(255, 214, 150, " + (0.2 * strength).toFixed(3) + ")");
+  warm.addColorStop(0.4, "rgba(255, 214, 150, " + (0.08 * strength).toFixed(3) + ")");
+  warm.addColorStop(1, "rgba(255, 214, 150, 0)");
+  pen.fillStyle = warm;
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.restore();
 }
 
 // ---------- the narration ----------

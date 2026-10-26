@@ -29,6 +29,19 @@ var S08_LIFE = [
   {name: "flock", kind: "flock", z: "sky", course: [[1.0, 2150, 200], [19.16, -150, 160]]}
 ];
 
+// The sun and the moon crossing the sky as the days go by (owner, 2026-10-26: "go with your plans for 8"): each day
+// the sun comes up from behind the hills at the left of the view, climbs over them and goes down behind them at the
+// right, and the moon after it by night; on a plain day the sun stands at its noon. days: the days gone by (0 at
+// noon of the first, a whole number at each noon after). Gives back nothing: it draws with pen, in the sheet's pixels,
+// before the clouds and the hills (maengYardAt()'s heavens).
+var S08_ARC = [1380, 2050, 440, 95];               // where it rises and sets (x), the y it rises from, how high it climbs
+function s08Heavens(days) {
+  var s = ((days % 1) + 0.25) % 1, day = s < 0.5, u = (day ? s : s - 0.5) * 2;
+  var x = S08_ARC[0] + (S08_ARC[1] - S08_ARC[0]) * u, y = S08_ARC[2] - S08_ARC[3] * Math.sin(Math.PI * u);
+  if (day) { scenerySun(0, x, y, 20, {alpha: 1}); }
+  else { sceneryMoon(0, x, y, 14, {alpha: 1, glow: 5}); }
+}
+
 // Scene 8, the entry the film calls (SCENES): t, its own second, 0 to S08_LONG (45.12 s): the gold on the pen's floor,
 // picked up at 11.1 s; the first mound from 17.82 s; the days go by at S08_DAYS (20.12 s to 27.12 s), a mound each;
 // the full garden; from 32.12 s he leads the buffalo out; out of black over 1.5 s, into it from 43.12 s. Gives back nothing: it draws
@@ -49,7 +62,8 @@ function sceneGold(t) {
   pen.translate(-S08_CAMERA[0], -S08_CAMERA[1]);
   // The folk of the fields go home as the days begin to race (fading out over 0.8 s) and come back as they end: at a day a
   // second they blinked on and off with every night (the blink check, 2026-10-22).
-  maengYardAt(t, night, 0, undefined, between(t, S08_DAYS[0], S08_DAYS[0] + 0.8) * (1 - between(t, S08_DAYS[1], S08_DAYS[1] + 0.8)));
+  maengYardAt(t, night, 0, undefined, between(t, S08_DAYS[0], S08_DAYS[0] + 0.8) * (1 - between(t, S08_DAYS[1], S08_DAYS[1] + 0.8)),
+              undefined, function () { s08Heavens(days); });
   var tint = night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null;
   maengGarden(t, Math.min(MAENG_MOUNDS.length, mounds), 0, tint);
   var pleased = t > 11.1 && t < 20.1;
@@ -64,10 +78,10 @@ function sceneGold(t) {
     return one;
   });
   sprites.push({name: "pen", kind: "kok", x: MAENG_PEN[0], y: MAENG_PEN[1], draw: function () {
-    kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {part: "back", tint: tint});
+    kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {fine: true, part: "back", tint: tint});
     maengSiHuHaTa(MAENG_PEN[0] - 60, MAENG_PEN[1] - 22, {size: 0.45, face: 1, feel: pleased ? "satiated" : t < 10.38 ? "sleepy" : "happy"});
     if (t < 11.38) { goldNugget(pen, MAENG_PEN[0] + 70, MAENG_PEN[1] - 30, 0.9, t, {seed: 3}); }   // on the pen's floor
-    kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {part: "front", tint: tint});
+    kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {fine: true, part: "front", tint: tint});
   }});
   var lad = maengPerson("boy", MAENG_LAD, {id: "lad"}), x, y = 948;
   if (t < 17.95) {                                 // at the pen: the gold picked up, held up, a wonder
@@ -93,6 +107,10 @@ function sceneGold(t) {
   }
   drawByZ(sprites);
   pen.restore();
+  // the plain days' air, a little light and a butterfly over the garden (sets.js MAENG_AIR.gold), gone while the days
+  // race and back after them
+  var calm = 1 - between(t, S08_DAYS[0] - 1, S08_DAYS[0]) + between(t, S08_DAYS[1], S08_DAYS[1] + 1);
+  if (calm > 0) { pen.save(); pen.globalAlpha = calm; maengAir(t, "gold"); pen.restore(); }
   // A short dip to dark between him standing back from the full garden and leading the buffalo out, where he blinked
   // out of the garden and into the edge of the picture at 32.12 s (the blink check, 2026-10-22): the picture is black
   // at 32.12 s, when the lead begins, and back by 33.32 s, before "But he still herded buffalo" (M049).

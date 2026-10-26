@@ -12,6 +12,38 @@ var S07_LONG = 69.74;
 var S07_SOUND = {calls: [[0, "cicadas", 0.5, 24.06], [24.06, "crickets", 0.35, 45.68]]};
 var S07_LINES = [[2.0, 7.24, "M036"], [8.86, 12.5, "M037"], [13.74, 18.23, "M038"], [18.44, 23.95, "M039"], [25.16, 32.15, "M040"], [33.9, 39.83, "M041"], [40.06, 46.89, "M042"], [47.1, 51.75, "M043"], [51.97, 58.14, "M044"]];
 var S07_FIRE = [1430, 952];
+// The fire's light at night, over the scene under its camera (owner, 2026-10-26: "yes", to firelight and sparks): the
+// night deeper away from the fire; a warm light round it, flickering with the flames, on the ground, the boy, the
+// pen and the creature's face; and sparks going up out of it, cooling from yellow to red as they rise, and gone.
+// t: the scene's second. Gives back nothing: it draws with pen.
+// e.g. s07Firelight(40);
+function s07Firelight(t) {
+  var x = S07_FIRE[0], y = S07_FIRE[1] - 50, n;
+  var flicker = 1 + 0.06 * Math.sin(t * 11.3) + 0.04 * Math.sin(t * 19.7 + 1.1) + 0.03 * Math.sin(t * 31.1 + 2.3);
+  var deep = pen.createRadialGradient(x, y, 120, x, y, 900);   // the dark away from it
+  deep.addColorStop(0, "rgba(8, 10, 30, 0)");
+  deep.addColorStop(1, "rgba(8, 10, 30, 0.42)");
+  pen.fillStyle = deep;
+  pen.fillRect(x - 1400, y - 1000, 2800, 2000);
+  pen.save();
+  pen.globalCompositeOperation = "lighter";
+  var warm = pen.createRadialGradient(x, y, 10, x, y, 430 * flicker);   // the warm light round it
+  warm.addColorStop(0, "rgba(255, 150, 60, " + (0.32 * flicker).toFixed(3) + ")");
+  warm.addColorStop(0.4, "rgba(220, 110, 40, " + (0.14 * flicker).toFixed(3) + ")");
+  warm.addColorStop(1, "rgba(200, 90, 30, 0)");
+  pen.fillStyle = warm;
+  pen.fillRect(x - 500, y - 500, 1000, 1000);
+  for (n = 0; n < 16; n++) {                         // the sparks, each on its own way up, again and again
+    var p = ((t * (0.45 + 0.25 * dice(n + 71)) + dice(n + 73)) % 1 + 1) % 1;
+    var sx = x + (dice(n + 75) - 0.5) * 50 + 22 * Math.sin(p * 6 + n) * p, sy = y - 10 - p * (220 + 120 * dice(n + 77));
+    var a = (1 - p) * (0.6 + 0.4 * Math.sin(t * 17 + n)), green = Math.round(210 - 150 * p);
+    pen.fillStyle = "rgba(255, " + green + ", 70, " + Math.max(0, a).toFixed(3) + ")";
+    pen.beginPath();
+    pen.arc(sx, sy, 2.4 * (1 - p) + 0.6, 0, 7);
+    pen.fill();
+  }
+  pen.restore();
+}
 var S07_CAMERA = [1220, 740, 1.6];                  // the camera close on the pen and the fire: its middle and its nearness (no lower than 1080 - 540 / 1.6, or the sheet's foot shows)
 var S07_NIGHT = 24.06;                               // the cut to night
 var S07_FEEDS = [39.05, 58.84, 61.84, 64.84];           // the seconds an ember leaves the fire for its mouth: the first on "Pop!", caught as the next line begins
@@ -76,9 +108,9 @@ function sceneEmbers(t) {
   var beast;
   var sprites = lifeSprites(t, S07_LIFE).concat([
     {name: "pen", kind: "kok", x: MAENG_PEN[0], y: MAENG_PEN[1], draw: function () {
-      kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {part: "back", tint: tint});
+      kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {fine: true, part: "back", tint: tint});
       beast = maengSiHuHaTa(MAENG_PEN[0] - 20, MAENG_PEN[1] - 22, beastLook);
-      kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {part: "front", tint: tint});
+      kok(pen, MAENG_PEN[0], MAENG_PEN[1], MAENG_PEN[2], 1, {fine: true, part: "front", tint: tint});
     }}
   ]);
   if (night) {                                      // the fire, and Thukkhata by it
@@ -116,6 +148,7 @@ function sceneEmbers(t) {
     }});
   }
   drawByZ(sprites);
+  if (night) { s07Firelight(t); }                   // the fire lights what is round it, and sparks go up
   pen.restore();
   if (dark > 0) {
     pen.fillStyle = "rgba(0, 0, 0, " + dark.toFixed(3) + ")";

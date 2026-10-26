@@ -737,16 +737,17 @@ process!" How the hero film's places were made beautiful (sash_maeng.html, 2026-
 scenes go through, after a scene is built and before its life is decorated. Its painters are `scenery.js`; each piece
 is painted once into a sprite and placed every frame, swaying, so a frame stays in the kit's budget.
 
-1. **Candidates first.** Stills of the scene as it is and dressed two or three ways (the hero's were "the air only",
-   "the air and the beds", and C, "all the way"); the owner picks how far to go, and the pick holds for the film
-   ("Go C all the way").
+1. **Scene by scene, with the owner.** Stills of the scene as it is (three or four of its moments), a short numbered
+   plan of what to paint, the owner's "yes", then stills again (the Maeng film, all 15 scenes so: "I'd like to go
+   through all the scenes like this"). The hero began instead from candidates, dressed two or three ways ("the air
+   only", "the air and the beds", and C, "all the way": "Go C all the way"); ask before doing that again.
 2. **The far mountains.** `farRange(colour, air, base)` on the set's back sheet in place of flat `hills()`: a far
    ridge pale with the air (`ridgeLayer()`), a limestone peak as Doi Luang Chiang Dao stands (`peakSprite()`), a range
    clothed in forest with pines (`forestHill()`), each hazed; one sheet for each light (day, dusk, night). What stands
    on a range (an elephant on its ridge, terraces) keeps the range it stood on. Each film has its own mountains, not
    another's (owner: "Don't reuse the same background mountain as the hero video"): `{peak: false, ridges: 2,
    pines: 12, seed: 7}` is the Maeng film's. A mountain of the tale itself is clothed the same way, in rows of small
-   bushes along its own ridge, flowers and fruit near its foot (maeng/sets.js `maengDoi()`); a cave in it is
+   bushes along its own ridge, flowers and fruit near its foot (maeng/sets.js `maengForest()`); a cave in it is
    `sceneryCave()`, a dark arch cut into mossy limestone.
 3. **Painted trees, flowers of the place.** Every plain tree a painted one (`thkTreeOn()`), in fruit or flower as the
    place has it (a longan in a yard, the golden shower and the flame of the forest by water, a frangipani at a temple
@@ -765,12 +766,24 @@ is painted once into a sprite and placed every frame, swaying, so a frame stays 
 7. **The sky.** Soft clouds with no edge (`sceneryClouds()`, in the light of the hour) in place of the cartoon
    cumulus; at night many fine stars, a few bright ones twinkling (`sceneryStars()`, no Milky Way unless asked), the
    moon (`sceneryMoon()`), and bats going out over the mountains (night.js `batStream()`, drawn between a far range
-   and a near one so they fly behind it).
+   and a near one so they fly behind it). A sky of its hour, not day and night mixed (a dusk at a third of the way to
+   night was a muddy grey): a painted sunset, violet overhead through rose to gold at the hills, or a sunrise (the
+   Maeng film's `maengSky("sunset")`, `"sunrise"`), with the sun itself (`scenerySun()`) going down or coming up behind
+   the hills, and the clouds lit from below in its colours (`sceneryClouds()` "dusk", "dawn"). Draw the sun after the
+   soft clouds (under them it is greyed), give a low sun a warm disc (`disc`: a white one is lost in a pale morning
+   sky), and keep a light laid on round it off its disc (it hollows it to a ring). Days going by can be the sun, then
+   the moon, crossing the sky over the hills (the Maeng film's scene 8).
 8. **The air.** By day (`sceneryAir()`): the light coming through, a few falling petals, and one butterfly at most,
    on a course that crosses the picture and leaves ("a bit too many butterflies"). At night: fireflies far and near
    (`sceneryFireflies()`). The line's feeling rules it, as it rules the life ("Decorating a scene"): no petals or
    butterfly through a death or a grief, no fireflies where the scene is afraid.
-9. **Look, then watch.** Stills of each scene at its moments, the owner's notes taken scene by scene; then a quick
+9. **The light of the hour on things.** A lamp or a lantern at night lights the ground and whoever is by it
+   (`sceneryLampLight()`, laid on with "lighter"; a fire as the Maeng film's scene 7); a low sun warms the whole
+   picture from its side; gold catches the light (a glint running along it, a sparkle on a spire). Wood and bamboo
+   seen near have their grain (`ruenPhuk()`, `kok()`, `hoKham()` look.fine; `sceneryWoodGrain()`,
+   `sceneryBambooGrain()`). What moves through a place leaves a sign of it where the line allows: dust behind a
+   run (paler than the path, or it is lost on it), bushes shaking as someone pushes past, a flock started up.
+10. **Look, then watch.** Stills of each scene at its moments, the owner's notes taken scene by scene; then a quick
    clip of the scene with its own narration (`render.py <page> clip.mp4 --fast --no-vanish --from A --to B`, the
    film's sound laid under it with ffmpeg) for the owner to watch; only then the full render. A change to the kit is
    checked on a copy (`checks/kit_check.py`), and a film already made must look the same where nothing was meant to

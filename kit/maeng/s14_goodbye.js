@@ -10,6 +10,9 @@ var S14_SOUND = {calls: [[0, "crickets", 0.3, 19.97]]};
 var S14_LINES = [[2.0, 9.75, "M078"], [9.96, 15.9, "M079"]];
 var S14_SPEAKS = [[2.0, 9.36], [9.96, 15.51]];          // she says them herself: her mouth moves through them
 var S14_WAI = [9.62, 10.23, 16.27, 16.77];                // the hands come up, are joined (a wai, and a small bow), part, are down
+// The lamp in the hut's doorway (ruenPhuk()'s door at (33, -126), its floor at -96, times the hut's size), whose light
+// falls on the veranda and the yard (owner, 2026-10-26: "yes", to a true dusk, the lamp's light and fireflies near).
+var S14_LAMP = [MAENG_HUT[0] + 33 * MAENG_HUT[2] * 0.92, MAENG_HUT[1] - 126 * MAENG_HUT[2] * 0.92, MAENG_HUT[1] - 96 * MAENG_HUT[2] * 0.92];
 var S14_LIFE = [
   {name: "flock at dusk", kind: "flock", z: "sky", course: [[0.5, -150, 230], [16.97, 2150, 180]]}
 ];
@@ -25,7 +28,9 @@ function s14Ease(u) { u = clamp(u); return u * u * (3 - 2 * u); }
 // "people". e.g. sceneGoodbye(10);
 function sceneGoodbye(t) {
   var dusk = 0.35;
-  maengYardAt(t, dusk, 1);
+  maengYardAt(t, dusk, 1, undefined, undefined, undefined, undefined, "sunset");   // the afterglow under the night
+  sceneryLampLight(t, S14_LAMP[0], S14_LAMP[1], S14_LAMP[2], {reach: 260});        // the lamp's light on the veranda
+  sceneryLampLight(t, S14_LAMP[0], S14_LAMP[1] + 120, 965, {reach: 300, strength: 0.45, seed: 4});   // and down on the yard
   var look = cast("buakham", {size: 1.05, id: "buakham", smile: 1}), walk = stroll(t, 2120, 1240, 0.3, look);
   if (t > walk.arrives) {
     var speaking = S14_SPEAKS.some(function (s) { return t >= s[0] && t < s[1]; });

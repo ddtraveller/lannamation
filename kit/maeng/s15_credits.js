@@ -254,7 +254,7 @@ var S15_FIGURES = {
   "Water jar": function (b) { namton(b, 0, 0, 1.2); }, "Tung": creditSmall(0.5, function (b) { tung(b, 0, 0, 0, true); }),
   "Great drum": function (b) { drumCart(b, 0, 0, 0.5, 1); }, "Granary": function (b) { longKhao(b, 0, 0, 0.6); },
   "Sawian": function (b) { sawian(b, 0, 0, 1.2); }, "Hut": function (b) { tub(b, 0, 0, 1.4); },
-  "Ho Kham": function (b) { hoKham(b, 0, 0, 0.45, {part: "back", pediment: "peacock"}); hoKham(b, 0, 0, 0.45, {part: "front", pediment: "peacock"}); },
+  "Ho Kham": function (b) { hoKham(b, 0, 0, 0.45, {fine: true, part: "back", pediment: "peacock"}); hoKham(b, 0, 0, 0.45, {fine: true, part: "front", pediment: "peacock"}); },
   "Rice basket, basket": creditMany([[-50, function (b) { kongKhao(b, 0, 0, 1.1); }], [50, function (b) { krabung(b, 0, 0, 1.1); }]]),
   "Mortar": function (b) { mortar(b, 0, 0, 1.1); }, "Ta laew": function (b) { taLaew(b, 0, 0, 1.1); },
   "Hen, black chickens": creditMany([[-80, function (b, u) { rooster(0, 0, u * 2, {hen: true}); }], [0, function (b, u) { rooster(0, 0, u * 2, {black: true}); }],
@@ -304,7 +304,11 @@ function s15Owl(o, t, moon) {                        // one of S15_OWLS, at seco
 // t: seconds. Draws the moon (S15_MOON), the clouds and the "side" owls with pen; gives back the moon, as
 // nightMoon() gives it. e.g. var moon = s15NightSky(t);
 function s15NightSky(t) {                             // behind the far hills: the moon, the clouds, the owl in flight
-  var moon = nightMoon(S15_MOON[0], S15_MOON[1], S15_MOON[2]);
+  // the night's fine stars, no Milky Way, and the soft moon, as the film's other nights (owner, 2026-10-26: "yes", to
+  // the credits' night as theirs); the moon's place for the owls' and the moth's moonlight (moonLight())
+  sceneryStars(t, {band: null, horizon: 760, count: 1600, bright: 30});
+  sceneryMoon(t, S15_MOON[0], S15_MOON[1], S15_MOON[2]);
+  var moon = {x: S15_MOON[0], y: S15_MOON[1], r: S15_MOON[2]};
   maengClouds(t, "night");
   S15_OWLS.forEach(function (o) { if (o[2] === "side") { s15Owl(o, t, moon); } });   // high, behind the hills
   return moon;
@@ -386,10 +390,12 @@ function sceneCredits(t) {
     mountain.backNight = maengTinted(mountain.back, MAENG_NIGHT[0], 0.7);
     mountain.frontNight = maengTinted(mountain.front, MAENG_NIGHT[0], 0.75);
   }
-  pen.drawImage(maengSky("night"), 0, 0);
+  pen.drawImage(maengSky("clear"), 0, 0);
   var moon = s15NightSky(t);
   pen.drawImage(mountain.backNight, 0, 0);
+  softMist(t, 770, 90, 0.3, 31, "160, 176, 214");    // moonlit mist in the valley between the far ranges and the mountain
   pen.drawImage(mountain.frontNight, 0, 0);
+  softMist(t, 1000, 110, 0.35, 29, "170, 186, 220");  // and low at its foot
   s15NightNear(t, moon);
   pen.fillStyle = "rgba(4, 6, 20, 0.45)";            // a veil, so the words read over the mountain
   pen.fillRect(0, 0, WIDE, 1080);

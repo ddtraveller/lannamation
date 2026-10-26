@@ -250,8 +250,10 @@ woven figures) it writes by hand as a page of the kit, as `lanna_cartoon.html`
 teaches, and renders with `render.py`; its places are painted as the hero
 film's are (`docs/kit/places.md`, "Painting the scenery", with `scenery.js`):
 far mountains, painted trees in flower, flowering beds behind the people, soft
-blossom framing the picture, still water that mirrors its banks, and the air of
-the day (light, petals, one butterfly at most) or fireflies at night.
+blossom framing the picture, still water that mirrors its banks, a sky of its
+hour (a sunset, a sunrise, the sun, the moon and fine stars), the light of lamps
+and the grain of wood, and the air of the day (light, petals, one butterfly at
+most) or fireflies at night.
 
 ## What the page is
 

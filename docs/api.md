@@ -3419,7 +3419,8 @@ e.g. firewood(pen, 400, 930, 1, {turn: 0.2});
 A pen (คอก) of bamboo for an animal, its front's middle on (x, base), "wide" across and two-thirds as deep:
 posts at its corners and along its sides, two rails of split bamboo round it, bound at each post. A pen is
 drawn in two parts, so that what is kept in it stands inside: look.part "back" (the far fence, before the
-animal) and "front" (the near fence, after it). 110 high at size 1. look.tint as the hut's.
+animal) and "front" (the near fence, after it). 110 high at size 1. look.tint as the hut's; look.fine as the hut's (the
+posts' fibres and nodes, the rails' grain, the bindings wound in rattan).
 brush: a canvas 2D context; x, base: the front's middle, pixels of the sheet; wide: pixels of the
 sheet (not scaled by size); size: the posts' and the rails' scale (1 is 110 high); look: part
 ("back" when left out, or "front"), tint. Returns nothing: it draws with brush, and leaves its
@@ -3530,6 +3531,11 @@ the floor, the dais) and "front" (the posts and the roof). 800 wide and 700 high
 the dais's top 190 (hoKhamFloor() and hoKhamDais() give where). look.tint as the hut's. look.pediment "peacock":
 a peacock carved in the gable among leaf scrolls, as the Lanna halls' gables have it (the household notebook's
 sources: the pediment of the old Ho Kham at Wat Phan Tao, "a peacock surrounded by foliate ornament").
+look.fine (owner, 2026-10-26, of the Maeng film's palace: "yes", to finer stone and woodwork): the plinth's mouldings
+as a Lanna base has them, an upturned lotus (bua khwam) under its top and a lotus (bua hngai) over its foot, a
+waist between, weathered; each step of the stair lit on its tread and shaded on its riser; the posts round, lit on
+one side, with the teak's grain; the wall in shade under the eaves; the floor's planks; the dais's gold sheen.
+Left out, it is drawn as it was.
 hoKhamFloor(base, size) gives back the y, pixels of the sheet, of the hall's floor: base - 150 x size.
 e.g. person(560, hoKhamFloor(980, 0.9), cast("noble"));
 ```
@@ -3545,7 +3551,7 @@ e.g. person(720, hoKhamDais(980, 0.9), cast("noble", {floor: "cross"}));
 
 ```
 brush: a canvas 2D context; x, base: pixels of the sheet; size: needed; look: part ("back" when left
-out, or "front"), pediment ("peacock" or none), tint. Returns nothing: it draws with brush, and
+out, or "front"), pediment ("peacock" or none), tint, fine (true or left out). Returns nothing: it draws with brush, and
 leaves brush as it found it.
 e.g. hoKham(pen, 720, 980, 0.9, {part: "back"}); person(720, hoKhamDais(980, 0.9), cast("noble")); hoKham(pen, 720, 980, 0.9, {part: "front"});
 ```
@@ -3752,6 +3758,31 @@ tint. Returns nothing: it draws with brush, and leaves brush as it found it.
 e.g. fireStick(pen, person(600, 950, cast("boy")).handA, [760, 930], {hot: 0.6});
 ```
 
+### `caneFibres(brush, x0, y0, x1, y1, vertical, seed, light, dark)`
+
+```
+Fine detail on split bamboo, for the house and the pen when look.fine is true (owner, 2026-10-26, of the Maeng film's
+yard: "The deck and woodwork could use some detail"): fibres along a piece, a little lighter and darker, and a node's
+ridge lit above and shaded below. brush: a 2D context in the piece's frame; x0, y0, x1, y1: the piece; vertical:
+true when its fibres run up and down; seed: a number; light, dark: colours. Returns nothing: it draws with brush.
+e.g. caneFibres(brush, -5, -96, 5, 0, true, 3, "#e8d6a0", "#6a5430");
+```
+
+### `caneNode(brush, x0, x1, y, light, dark)`
+
+```
+A node across a bamboo piece at y (x0 to x1 wide), as caneFibres(): lit above, shaded below. Returns nothing.
+e.g. caneNode(brush, -5, 5, -70, "#e8d6a0", "#6a5430");
+```
+
+### `hoKhamPlinth(brush, tone)`
+
+```
+The plinth of a hall (hoKham() look.fine), in the hall's frame (its foot's middle at 0, 0; 760 wide, 150 high):
+a lit top, the upturned lotus under it, a weathered waist, the lotus over the foot, and the foot in shade. The
+stair is drawn over its middle after. brush: a 2D context; tone: the hall's colour for the hour. Returns nothing.
+```
+
 ### `ruenPhuk(brush, x, base, size, look)`
 
 ```
@@ -3765,7 +3796,10 @@ leaf panels (ตับ), a plain ridge with crossed bamboo tips (no carved kalae
 water jar at its foot to wash the feet; hardly any windows; under the house, firewood and tools.
 ruenPhuk(brush, x, base, size, look): standing on (x, base); about 290 wide and 240 high at size 1; the door at the
 right, the veranda and the ladder right of it, where the tub's door and ladder were. look: glow (0 to 1, a lamp in
-the doorway at night), tint ([colour, amount]).
+the doorway at night), tint ([colour, amount]), fine (true: the bamboo's fibres and nodes, the deck's slat ends, the
+ladder's lashings: caneFibres(), for a house seen near; false when left out, as it was), ladder ("in": the ladder
+rises from the yard up into the veranda through a gap in its railing, behind the deck's edge, its water jar at its
+foot; left out, it leans at the veranda's end as it did).
 brush: a canvas 2D context; x, base: pixels of the sheet; size: needed; look: optional, glow (0 to
 1, 0), tint. Returns nothing: it draws with brush, and leaves brush as it found it.
 e.g. ruenPhuk(pen, 900, 900, 1.2, {glow: 0.7});
@@ -7363,7 +7397,7 @@ stands, for a rider. (elephant() calls it for a look with front: true.)
           cloth, howdah are read)
   colour  the hide
 Returns a number: the head's height above the ground, in pixels of pen's
-frame (about 606 standing). It draws with pen.
+frame (about 546 standing). It draws with pen.
 e.g. var tall = elephantFront({front: true, trunk: 0.5}, "#8e9098");
 ```
 
@@ -7375,7 +7409,7 @@ A water buffalo seen from the front, coming toward us, drawn the same way.
   look    the buffalo's look (step, late, feel, rope are read)
   colour  the hide
 Returns a number: the head's height above the ground, in pixels of pen's
-frame (about 346). It draws with pen.
+frame (about 278). It draws with pen.
 e.g. var tall = buffaloFront({front: true, rope: true}, "#55565f");
 ```
 
@@ -10003,11 +10037,13 @@ e.g. sceneryLeap(t, "rings", LEAP); sceneryLeap(t, "air", LEAP);
 
 (no comment)
 
-### `sceneryCaveTint(cave, part, tint)`
+### `sceneryCaveTint(cave, part, tint, x, y)`
 
 ```
-The light of the hour over one of the cave's sprites ("face" or "rocks"): its tinted copy at the tint's strength.
-cave: sceneryCaveBuild()'s; tint: [colour, amount] or nothing. Returns nothing: it draws with pen.
+The light of the hour over one of the cave's sprites ("face" or "rocks"), or any {part: sprite, tints: {}}: its
+tinted copy at the tint's strength, placed at x, y as the sprite was (0, 0 when left out: the cave draws under a
+translate). cave: sceneryCaveBuild()'s, or the like; tint: [colour, amount] or nothing. Returns nothing: it draws
+with pen. e.g. thkPlace(built.earth, 1400, 905, 1, 0); sceneryCaveTint(built, "earth", tint, 1400, 905);
 ```
 
 ### `sceneryCaveBuild(rock)`
@@ -10069,6 +10105,30 @@ patches on it, in a wide glow of its light; drawn after the stars and before the
 t: seconds; x, y: its middle; r: its radius; look: {alpha (0 to 1, 1), glow (how wide its light: 6 radii), colour
 ("r, g, b" of the light, a cool white), seed}. Returns nothing: it draws with pen.
 e.g. sceneryMoon(t, 1500, 200, 46, {alpha: 1});
+```
+
+### `scenerySun(t, x, y, r, look)`
+
+```
+The sun as the scenery paints it (owner, 2026-10-26, of the Maeng film's days going by: "go with your plans for 8"):
+a soft warm disc, white at its heart, in a wide glow of its light, drawn after the sky and before the clouds and
+the hills, so it sets behind them. (oldcartoon.js sun() is the thangka's sun of flames, or the 1930s sun's face.)
+t: seconds (unused, for the moon's company); x, y: its middle; r: its radius; look: {alpha (0 to 1, 1), glow (how
+wide its light: 8 radii), colour ("r, g, b" of the light, a warm white), disc ([heart, middle, rim] colours: white
+going to a pale gold; a low sun's warmer, as in a pale morning sky, where a white one is lost)}. Returns nothing: it
+draws with pen.
+e.g. scenerySun(t, 1500, 320, 24, {alpha: 1});
+```
+
+### `sceneryLampLight(t, x, y, ground, look)`
+
+```
+The light of a lamp or a lantern at night (owner, 2026-10-26, of the Maeng film's night of the trough: "yes", to the
+lanterns lighting the ground and the men): a warm glow round the flame, flickering with it, and a pool of its light
+on the ground below, flattened as the ground lies; laid on with "lighter", so it brightens what is there.
+t: seconds; x, y: the flame; ground: the y of the ground under it; look: {reach (the glow's radius: 240), strength (0
+to 1: 1), colour ("r, g, b": a candle's orange), seed}. Returns nothing: it draws with pen.
+e.g. sceneryLampLight(t, 900, 520, 820, {reach: 260});
 ```
 
 ### `sceneryBambooGrain(brush, x, y, w, h, look)`

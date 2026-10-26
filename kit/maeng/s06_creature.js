@@ -15,15 +15,12 @@ var S06_NEAR = 1.55;                                // the camera's nearness to 
 var S06_SPOT = [MAENG_SLOPE_CAVE[0] - 20, MAENG_SLOPE_CAVE[1] + 14];   // where the creature stands, at the cave's mouth
 var S06_SNARE = [MAENG_SLOPE_CAVE[0] - 60, MAENG_SLOPE_CAVE[1] + 8];
 var S06_VINE = 250;                                 // how far behind him it walks home, on the vine (from where they stood, 190): the vine short, and seen
-var S06_BEHIND = [[-86, -58, 13], [-64, -82, 14], [-36, -92, 13], [-6, -96, 14], [24, -94, 13], [52, -88, 14], [80, -70, 13], [94, -40, 12]];
-var S06_BEFORE = [[-80, 10, 12], [-52, 14, 13], [74, 12, 12], [96, 4, 11]];
+var S06_BEHIND = MAENG_CAVE_BEHIND, S06_BEFORE = MAENG_CAVE_BEFORE;   // the cave's bushes, the same in every scene (sets.js)
 
 // list: S06_BEHIND or S06_BEFORE, as s05Crowns() takes; size, seed as there; shake: pixels they sway by the kit's
 // clock, 0 for still. Gives back nothing: it draws with pen. e.g. s06Crowns(S06_BEFORE, MAENG_SLOPE_CAVE[2] * 1.6, 9, 3);
 function s06Crowns(list, size, seed, shake) {        // the forest's own crowns over and beside the cave; the near ones shake while it struggles
-  list.forEach(function (c, n) {                     // painted bushes, as the slope's (sets.js maengBush())
-    maengBush(MAENG_SLOPE_CAVE[0] + c[0] * size + shake * Math.sin(clock * 31 + n), MAENG_SLOPE_CAVE[1] + c[1] * size, c[2] * size, seed + n);
-  });
+  maengCaveBushes(list, size, seed, null, shake);    // painted bushes, as the slope's (sets.js)
 }
 
 // Its life: morning mist on the slope, thinning as he climbs; and once all is calm, as he wonders if it is his
@@ -35,6 +32,15 @@ var S06_LIFE = [
   {name: "the creature's roar", kind: "flock", z: "sky", course: [[0, -999, -999], [0.1, -999, -999]],
    calls: [[5.59, "maeng-angry", 3.7]]}
 ];
+
+// A few flowers by the path, below it, in the day's light (owner, 2026-10-26, of scene 6's stills: flowers by the path
+// and the cave): sprites of flora.js, painted once. Gives back [{sprite, x, y}, ...].
+function s06FlowersBuild() {
+  return [[230, "phayasuea", 0.34, {colour: "#ec6c9c"}], [610, "dokkaew", 0.3], [820, "buatong", 0.32], [1010, "jasmine", 0.3],
+          [1150, "phayasuea", 0.28, {colour: "#f07aa8"}]].map(function (f) {
+    return {sprite: sceneryPlant(f[1], f[2], f[3]), x: f[0], y: maengTrail(f[0]) + 6 + mix(34, 13, between(f[0], -40, MAENG_SLOPE_CAVE[0] - 20)) + 14};
+  });
+}
 
 // Scene 6, the entry the film calls (SCENES): t, its own second, 0 to S06_LONG (60 s): he climbs to the snare, the
 // creature tugs (5.2 s to 9.5 s) and comes out (to 12.5 s), its eyes open from 21.04 s, he ties the vine at about
@@ -111,6 +117,11 @@ function sceneCreature(t) {
       vine(pen, wrist, neck, 30, {round: 44, seed: 3});
     }});
   }
+  // the bush at the snare's spot, as in scene 5 (sets.js), and a few flowers by the path in the day's light
+  sprites.push({name: "bush at the snare", kind: "bush", x: MAENG_SNARE_BUSH[0], y: MAENG_SNARE_BUSH[1], draw: function () { maengSnareBush(); }});
+  thkOnce("s06-flowers", s06FlowersBuild).forEach(function (f) {
+    sprites.push({name: "flower", kind: "flower", x: f.x, y: f.y, draw: function () { thkPlace(f.sprite, f.x, f.y, 1, thkSway(t, f.x * 0.01, 0.3)); }});
+  });
   drawByZ(sprites);
   pen.drawImage(slope.fore, 0, 0);
   pen.restore();

@@ -41,10 +41,12 @@ step went the first time. Each step ends in something the owner looks at, and no
    (`stills.py`) and checked (`checks/kit_check.py`, `pop_check.py`, `arms_check.py`; render.py's blink check), shown to
    the owner as stills. Scene cuts fade through black.
 6b. **Paint the scenery** (owner, 2026-10-26: "Make sure new videos will be generated with this process!"), as the
-   hero film's places were: `docs/kit/places.md`, "Painting the scenery", with `scenery.js`. Candidates first (the
-   scene as it is and dressed two or three ways); then far mountains (`farRange()`), painted trees in flower, beds of
-   flowering bushes behind the people, the picture framed by soft blossom, water as the pine lake's, and the air
-   (light, petals, one butterfly at most; fireflies at night) as the line's feeling allows. A set shared by many
+   hero film's places were: `docs/kit/places.md`, "Painting the scenery", with `scenery.js`. Scene by scene with the
+   owner (stills of the scene, a short plan, the owner's yes, stills again); far mountains of the film's own
+   (`farRange()`), painted trees in flower, beds of flowering bushes behind the people, the picture framed by soft
+   blossom, water as the pine lake's, a sky of its hour (a sunset, a sunrise, the sun, the moon and fine stars), the
+   light on things (lamps, gold, the grain of wood), and the air (light, petals, one butterfly at most; fireflies at
+   night) as the line's feeling allows. A set shared by many
    scenes is painted once, in `<film>/sets.js`. Stills, then a quick clip of the scene with its narration for the owner.
 7. **Wire, sound, render, join**, as "Putting a tale together" below: `film.html` lays the scenes end to end; each
    line's feeling makes the music and the scenes' life calls their sounds; the voice is laid over the music
