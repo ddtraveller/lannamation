@@ -699,3 +699,19 @@ soul-calling in any tale (the owner: "Yes, all four"). Painters on a brush, as `
 | `malai(brush, x, y, size, t)` | the jasmine garland (พวงมาลัย), hanging from (x, y), a knot of rose and marigold, a pendant, ribbon tails swinging |
 | `saiSinWrist(brush, x, y, angle, size)` | the white thread (สายสิญจน์) tied round a wrist, a few turns and the knot |
 | `saiSinLine(brush, points, t)` | the white thread strung from point to point round a gathering or a house, sagging between |
+
+## The tools of the fields (2026-10-26)
+
+`tools.js`, beside the kit: the tools a farmer works with, for any tale of the fields (Lao Chok and his hoe, Ngam
+Mueang's spade, a harvest). Painters on a brush. The hoe and the spade go along a line of the scene and a person holds
+one by sending the wrists to points on the handle (`reachA`, `reachB`, `grip: true`). A bent arm may stop short of the
+point it is sent to, so a tool held in one hand is drawn at the joints `person()` gives back (`joints.wristA`,
+`handA`), as the sheet draws the sickle. The owner: "Into the kit". Sheet: `tools.html`.
+
+| Painter | What it is |
+|---|---|
+| `chok(brush, ax, ay, bx, by, size, side)` | the hoe (จก): its handle from the end (ax, ay) to the head (bx, by), the blade at a right angle to it on `side` (1 or -1) |
+| `siam(brush, ax, ay, bx, by, size)` | the digging spade (เสียม): its handle from the end down to the blade, a narrow flat iron in line with it |
+| `khiao(brush, x, y, angle, size)` | the sickle (เคียว): its handle's end at (x, y) running at `angle`, the blade a toothed crescent |
+| `riceClump(brush, x, base, size, t, look)` | a clump of ripe rice stirring in the breeze; `look.gather: [x, y]` draws its stalks in to a hand, `look.cut` leaves the stubble |
+| `toolWood(brush, ax, ay, bx, by, wide, colour)`, `toolIron(brush, points, colour)` | a wooden handle, a piece of forged iron, for drawing another tool |

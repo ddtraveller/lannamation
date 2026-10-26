@@ -3826,6 +3826,55 @@ saiSinLine(brush, points, t): the white thread strung round a gathering or a hou
 between them and stirring a little.
 ```
 
+## tools.js
+
+tools.js - the tools of the fields, for the Lanna cartoon kit, drawn from photographs of the north's: the hoe (จก, chok), the digging spade (เสียม, siam), the sickle (เคียว, khiao), and the ripe rice the sickle cuts. Load it after oldcartoon.js:  <script src="oldcartoon.js"></script> <script src="tools.js"></script>  Each is a painter on a brush. The hoe and the spade are drawn along a line of the scene, so a person holds one by sending the wrists to points on its handle (look.reachA, reachB, grip: true), as the swords of Chang Ngu are. A bent arm may stop short of the point it is sent to: draw a tool held in one hand (the sickle) at the joints person() gives back (joints.wristA, handA), not at the point it was sent to. The owner's pick, 2026-10-26 ("Into the kit"). Lao Chok is named for his hoe (ปู่เจ้าลาวจก); Ngam Mueang dug after Phra Ruang with a spade (the Ngoen Yang chronicle).
+
+### `toolWood(brush, ax, ay, bx, by, wide, colour)`
+
+```
+a wooden handle from (ax, ay) to (bx, by)
+```
+
+### `toolIron(brush, points, colour)`
+
+```
+a piece of forged iron: dark, its edge ground bright
+```
+
+### `chok(brush, ax, ay, bx, by, size, side)`
+
+```
+chok(brush, ax, ay, bx, by, size): the hoe, its handle from the end (ax, ay) to the head (bx, by), the blade at a
+right angle to it, forward: a long straight handle of hard wood about 1.2 m, an iron eye round its head, a blade
+as long as a forearm, narrow and squared at its edge (the north's hoe for breaking ground on a slope).
+```
+
+### `siam(brush, ax, ay, bx, by, size)`
+
+```
+siam(brush, ax, ay, bx, by, size): the digging spade, its handle from the end (ax, ay) down to the blade at (bx, by):
+a long round handle, a narrow flat iron blade in line with it, a little wider at its edge, for digging holes for
+posts and roots out of the ground.
+```
+
+### `khiao(brush, x, y, angle, size)`
+
+```
+khiao(brush, x, y, angle, size): the sickle, its handle's end at (x, y) running at angle (radians): a short wooden
+handle and a thin blade curving round like a new moon, its inner edge toothed, for cutting rice by the handful.
+```
+
+### `riceClump(brush, x, base, size, t, look)`
+
+```
+riceClump(brush, x, base, size, t, look): a clump of ripe rice as it stands in the paddy, drawn from photographs:
+a dozen stalks from one root, uneven, leaning a little each its own way, long thin leaves curving out from them,
+and at each tip a head of gold grain that droops on its stalk; the clump stirs in the breeze. look.gather: [x, y],
+the stalks drawn in to a hand there (a reaper holding a handful); look.cut: the stalks cut off below the hand, the
+handful lifted with it (the stubble left standing). Returns nothing.
+```
+
 ## flora.js
 
 flora.js - the flowers and fruits of Thailand, drawn small, for films made with oldcartoon.js. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="flora.js"></script>  and call flora(name, x, y, look) from a scene. (x, y) is the foot of a flower's stem, or the ground a fruit lies on. The names are the keys of FLORA below; each has its Thai name beside it, and how that is said.  flora("mango", 700, 900, {size: 1.5}); flora("orchid", 300, 1000, {colour: "#e86fb0"});  A tree in flower or in fruit is painted on a set's sheet, as the kit's tree() is, with the named flower or fruit hanging in its boughs:  floraTree(brush, 240, 900, 1.0, "mango", 1);  They are drawn in the kit's manner: flat colour inside a fine dark line. What each is, in rules, is the comment above its painter. The flowers are the ones of a northern garden and a temple's offering tray: ratchaphruek, the golden shower that is the national flower; thong kwao, the flame of the forest that is Chiang Mai's own; frangipani; an orchid; hibiscus; bougainvillea; jasmine; and marigold. The fruits are the ones of the market and the orchard: mango, durian, mangosteen, rambutan, the longan of Lamphun and Chian

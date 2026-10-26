@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>tools - the hoe, the spade, the sickle and the rice</title>
+<style>html, body { margin: 0; background: #111; } canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920, pixels: 1, hop: false, film: 0, light: [-0.6, 0.5]};</script>
+<script src="oldcartoon.js"></script>
+<script src="backdrops.js"></script>
+<script src="pieces.js"></script>
+<script src="naga.js"></script>
+<script src="beasts.js"></script>
+<script src="tools.js"></script>
+<script>
+// The "tools" sheet: tools.js. A farmer breaking ground with the hoe (chok, swung round the hands, the blade
+// leading), one digging with the spade (siam, the foot driving it in, the handle levered back), and a reaper cutting
+// rice with the sickle (khiao, drawn at the hand person() gives back, the far hand gathering the handful: riceClump).
+var DURATION = 8;
+var BEAT = 0.5;
+function caption(text, x, y, size) {
+  pen.fillStyle = "#3a2c1c"; pen.textAlign = "center"; pen.font = (size || 26) + "px Georgia, serif"; pen.fillText(text, x, y);
+}
+function along(a, b, u) { return [mix(a[0], b[0], u), mix(a[1], b[1], u)]; }
+function sheet(t) {
+  var names = ["the hoe (จก): breaking ground", "the digging spade (เสียม)", "the sickle (เคียว): cutting rice"];
+  for (var k = 0; k < 3; k++) {
+    var x0 = k * 640, x = x0 + 250;
+    pen.save();
+    pen.beginPath(); pen.rect(x0, 0, 640, 1080); pen.clip();
+    pen.drawImage(backdrop("paddy"), 0, 0);
+    if (k === 0) {
+      // the hoe swings round the hands in the picture's plane, its length the same all the way: lifted back over the
+      // shoulder, over the top, down into the ground ahead; quick down, slow up
+      var c = (t * 0.55) % 1;                       // one stroke: lifted slowly (70%), struck fast (30%)
+      var down = c < 0.7 ? 1 - (0.5 - 0.5 * Math.cos(c / 0.7 * Math.PI)) : (c - 0.7) / 0.3;   // 1 in the ground, 0 lifted
+      down = down * down * (3 - 2 * down);
+      var grip = [mix(x + 70, x + 70, down), mix(700, 790, down)], angle = mix(-2.5, 0.95, down), long = 230;
+      var head = [grip[0] + Math.cos(angle) * long * 0.75, grip[1] + Math.sin(angle) * long * 0.75], end = [grip[0] - Math.cos(angle) * long * 0.25, grip[1] - Math.sin(angle) * long * 0.25];
+      person(x, 960, cast("farmer", {id: "hoer", face: 1, size: 1.2, reachA: along(end, head, 0.12), reachB: along(end, head, 0.4), grip: true, bend: 0.18 * down}));
+      chok(pen, end[0], end[1], head[0], head[1], 1.1, 1);   // the blade leads the stroke, toward the ground
+    } else if (k === 1) {
+      // the spade: leaning in, both hands low on the handle, the foot on the blade's shoulder driving it in, then the
+      // handle levered back
+      var p = (t * 0.5) % 1, push = p < 0.5 ? 0.5 - 0.5 * Math.cos(p / 0.5 * Math.PI) : 1, lever = p < 0.5 ? 0 : 0.5 - 0.5 * Math.cos((p - 0.5) / 0.5 * Math.PI);
+      var foot = [x + 110, 930 + 22 * push], top = [x + 60 - 40 * lever, 720 + 20 * push];
+      person(x, 960, cast("farmer", {id: "digger", face: 1, size: 1.2, bend: 0.32, grip: true, reachA: along(top, foot, 0.08), reachB: along(top, foot, 0.36),
+                                      raise: [1, 26 - 22 * push, 46]}));
+      siam(pen, top[0], top[1], foot[0], foot[1], 1.1);
+    } else {
+      // the sickle: bent deep to the rice, the far hand gathering a handful, the near hand cutting below it; the
+      // handful lifted, cut, and put down, and the next
+      var r = (t * 0.45) % 1, cut = r > 0.55, lift = r > 0.55 ? Math.min(1, (r - 0.55) / 0.2) : 0;
+      var slash = cut ? 1 : Math.min(1, r / 0.5);
+      riceClump(pen, x + 300, 955, 1, t);
+      var j = person(x, 960, cast("farmer", {id: "reaper", face: 1, size: 1.2, bend: 0.55, reachB: [x + 175, 840 - 40 * lift],
+                                            reachA: [x + 150 + 30 * slash, 900 - 10 * slash], fingersA: [0.9, 0.95, 0.97, 0.98, 0.7], fingersB: [0.9, 0.95, 0.97, 0.98, 0.7]}));
+      // the far hand's handful, where the hand truly is: the clump drawn in to it (over the fingers, as a held handful
+      // is), or, cut, the bunch it lifts, its stalks fanning down and its heads drooping
+      var hold = j.wristB;
+      if (!cut) { riceClump(pen, x + 185, 958, 1, t, {gather: hold}); }
+      else {
+        riceClump(pen, x + 185, 958, 1, t, {cut: true});
+        for (var s2 = 0; s2 < 9; s2++) {
+          var fan = (s2 - 4) * 0.07, foot = [hold[0] + Math.sin(fan) * 60, hold[1] + Math.cos(fan) * 60], top = [hold[0] - Math.sin(fan) * 70 + 6, hold[1] - 70];
+          pen.strokeStyle = "#8a9a3a"; pen.lineWidth = 2; pen.lineCap = "round";
+          pen.beginPath(); pen.moveTo(foot[0], foot[1]); pen.quadraticCurveTo(hold[0], hold[1], top[0], top[1]); pen.stroke();
+          pen.strokeStyle = "#c8a238"; pen.lineWidth = 1.6;   // the drooping head
+          var hx = top[0] + 18 + 6 * fan * 10, hy = top[1] + 14;
+          pen.beginPath(); pen.moveTo(top[0], top[1]); pen.quadraticCurveTo(top[0] + 10, top[1] - 8, hx, hy); pen.stroke();
+          for (var g = 1; g <= 4; g++) { oval(mix(top[0], hx, g / 4), mix(top[1], hy, g / 4) - 4 * Math.sin(g / 4 * Math.PI), 2, 3, "#e0b848"); }
+        }
+      }
+      // the sickle in the near hand where it truly is: its handle across the closed fingers, along the hand's way
+      var wa = j.wristA, ha = j.handA, way = Math.atan2(ha[1] - wa[1], ha[0] - wa[0]);
+      khiao(pen, wa[0] - Math.cos(way) * 6, wa[1] - Math.sin(way) * 6, way, 1.1);
+    }
+    pen.restore();
+    pen.fillStyle = "rgba(246, 237, 212, 0.92)";
+    pen.fillRect(x0 + 20, 1010, 600, 46);
+    caption(names[k], x0 + 320, 1042, 22);
+  }
+  pen.fillStyle = "#111"; pen.fillRect(638, 0, 4, 1080); pen.fillRect(1278, 0, 4, 1080);
+}
+function draw(t) {
+  settled(t, function (at) { clock = at; sheet(at); });
+  screen.fillStyle = "#111"; screen.fillRect(0, 0, 1920, 1080); screen.drawImage(FILM, 0, 0, 1920, 1080);
+}
+var rendering = false;
+function play(now) { if (!rendering) { draw((now / 1000) % DURATION); } requestAnimationFrame(play); }
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

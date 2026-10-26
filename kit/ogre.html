@@ -19,10 +19,6 @@
 // the forest ogre, the red ogre king (ogre(), a person's body with the ogre's head over it).
 var DURATION = 6;
 var BEAT = 0.5;
-var SHEET = new URLSearchParams(location.search).get("sheet") || "rain";
-var NAMES = {rain: ["A  fine streaks, three depths", "B  a mural's teardrops, rings on the puddles", "C  a thangka's veils of rain"],
-             lightning: ["A  a mural's bolt: gold, lined, forking", "B  the 1930s cartoon's flat zigzag", "C  sheet lightning inside the cloud"],
-             flood: ["A  the murals' waves, muddied, things afloat", "B  flat still water, long ripple lines", "C  a thangka's water in zones"]};
 function caption(text, x, y, size) {
   pen.fillStyle = "#3a2c1c"; pen.textAlign = "center"; pen.font = (size || 26) + "px Georgia, serif"; pen.fillText(text, x, y);
 }
