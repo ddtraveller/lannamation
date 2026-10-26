@@ -97,6 +97,23 @@ function s03Ease(u) { u = clamp(u); return u * u * (3 - 2 * u); }
 // and in "people" by their feet or bases: the
 // tufts, the buffalo (S03_GROUND - 6), the pile of wood (- 4), the eaten tuft (- 2), the lad (S03_GROUND), so a tuft
 // nearer than his feet is in front of his legs as he walks home past it.
+// The rope falling from his hand as he lets go: from his wrist to the buffalo's nose, its end going down to the
+// grass by the muzzle. wrist, nose: [x, y] in the film's own pixels; u: 0 (held) to 1 (on the grass). Gives back
+// nothing: it draws with pen.
+function s03Slack(wrist, nose, u) {
+  var end = [mix(wrist[0], nose[0] + 40 * PIX, u), mix(wrist[1], nose[1] + 70 * PIX, u)];
+  pen.save();
+  pen.setTransform(1, 0, 0, 1, 0, 0);
+  pen.strokeStyle = "#c9a878";
+  pen.lineWidth = 3 * PIX;
+  pen.lineCap = "round";
+  pen.beginPath();
+  pen.moveTo(end[0], end[1]);
+  pen.quadraticCurveTo((end[0] + nose[0]) / 2, Math.max(end[1], nose[1]) + 26 * PIX * (1 - u), nose[0], nose[1]);
+  pen.stroke();
+  pen.restore();
+}
+
 function sceneWork(t) {
   pen.drawImage(maengSky("day"), 0, 0);
   maengClouds(t + 40, "day");
@@ -111,9 +128,15 @@ function sceneWork(t) {
     ]));
     return;
   }
+  // He lets go of the rope over 0.6 s, his back hand coming down from where it held it and the rope falling slack
+  // from the buffalo's nose to the grass (the render's look-over, 2026-10-26: "lad and buffalo blinked out at 13.02
+  // s": the arm dropped and the rope was gone in one frame, where the lead gave way to the two of them apart).
+  var letGo = between(t, ox.arrives + 1, ox.arrives + 1.6), nose = null;
   sprites = sprites.concat(s03Tufts(t, ox), [       // it grazes where it stopped
     {name: "buffalo", kind: "buffalo", x: ox.x, y: S03_GROUND - 6, draw: function () {
-      buffalo(ox.x, S03_GROUND - 6, Object.assign({}, ox.look, {graze: s03Graze(t, ox)}));
+      var drawn = buffalo(ox.x, S03_GROUND - 6, Object.assign({}, ox.look, {graze: s03Graze(t, ox)}));
+      var s = 0.62 * GAITS.buffalo[0] * PIX;     // where the rope goes through its nose, as maengLead() finds it
+      nose = [drawn.head[0] + ox.look.face * 104 * s, drawn.head[1] + 92 * s];
     }}
   ]);
   if (t < 25.48) {                                     // to the tree, and down to gather the wood
@@ -122,6 +145,9 @@ function sceneWork(t) {
     // Stooping to the wood, a hand to the ground, from 16 s; up again before he bends to the bundle (S03_LIFT). Each
     // eased over half a second (poseSteps; it once came in one frame, a pop: checks/pop_check.py).
     Object.assign(lad, poseSteps(t, [[0, {}], [17.48, {sit: 1, bend: 0.9, reachA: [go.x + 40, S03_GROUND - 10], feel: "concerned"}], [23.18, {}]], 0.5));
+    if (letGo < 1) {                                // the hand that held the rope, as maengLead() held it, easing down
+      Object.assign(lad, poseSteps(t, [[0, {handB: [-56, 26], fingersB: [0.75, 0.85, 0.9, 0.95, 0.7]}], [ox.arrives + 1, {}]], 0.6));
+    }
     if (t >= S03_LIFT[0]) {                         // the lift: down to the bound bundle, and up with it to his shoulder
       sprites.push(s03Lift(t, go));
     } else {
@@ -130,7 +156,10 @@ function sceneWork(t) {
       }});
     }
     drawByZ(sprites.concat(t >= S03_LIFT[0] ? [] : [
-      {name: "lad", kind: "person", x: go.x, y: S03_GROUND, draw: function () { person(go.x, S03_GROUND, lad); }}
+      {name: "lad", kind: "person", x: go.x, y: S03_GROUND, draw: function () {
+        var joints = person(go.x, S03_GROUND, lad);
+        if (letGo < 1 && nose) { s03Slack(joints.wristB, nose, letGo); }
+      }}
     ]));
   } else {                                          // home with the bundle on his shoulder
     go = stroll(t, S03_PILE - 50, -260, 25.48, lad);

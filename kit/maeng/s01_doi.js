@@ -118,9 +118,9 @@ function sceneDoi(t) {
                    glow: glow, seed: 7, alpha: 0.85});   // the sea of mist in the valleys between the far ranges
   mistDrift(pen, t, {left: 0, right: WIDE, top: 620, bottom: 760, count: 5, drift: 10, seed: 3, alpha: 0.6});
   // bats, between the far ridges and the mountain (owner, 2026-10-26: "add some bats that fly behind the mountain"): a
-  // stream rising from behind its peak into the sky, and another crossing the far ridges and going behind it
+  // stream rising from behind its peak into the sky (a second, crossing the far ridges from the right, went: owner,
+  // 2026-10-26, of the render: "get rid of the second set of bats")
   batStream(t, {from: [1180, 560], to: [380, 120], start: 3, count: 26, size: 1.7, far: 0.55, spread: 90, colour: "#2c2638", long: 11});
-  batStream(t, {from: [1980, 430], to: [-200, 520], start: 6, count: 18, size: 1.2, far: 0.9, spread: 60, colour: "#1e1a28", long: 16, every: 0.4});
   pen.drawImage(mountain.frontDawn, 0, 0);
   pen.globalAlpha = day;
   pen.drawImage(mountain.front, 0, 0);
