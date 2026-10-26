@@ -1,0 +1,531 @@
+{
+ "note": "Sorted by eye from sheets/faces_*.jpg (trace numbers). sex f/m/?, age band: baby, child (3-10), girl/boy (11-15), young (16-30), adult (31-55), elder (55+). person: same id = same person. skip: why left out.",
+ "faces": {
+  "0": {
+   "sex": "?",
+   "age": "baby",
+   "person": "baby-a"
+  },
+  "1": {
+   "sex": "?",
+   "age": "baby",
+   "person": "baby-a"
+  },
+  "2": {
+   "sex": "?",
+   "age": "baby"
+  },
+  "3": {
+   "sex": "m",
+   "age": "adult",
+   "person": "man-a",
+   "pose": "looking down"
+  },
+  "5": {
+   "sex": "m",
+   "age": "adult",
+   "person": "man-a",
+   "pose": "looking down"
+  },
+  "6": {
+   "sex": "f",
+   "age": "young",
+   "pose": "near profile"
+  },
+  "7": {
+   "sex": "m",
+   "age": "young"
+  },
+  "8": {
+   "skip": "blurred"
+  },
+  "9": {
+   "skip": "blurred"
+  },
+  "10": {
+   "sex": "f",
+   "age": "young"
+  },
+  "11": {
+   "sex": "f",
+   "age": "young"
+  },
+  "12": {
+   "sex": "f",
+   "age": "young",
+   "pose": "looking down"
+  },
+  "13": {
+   "sex": "f",
+   "age": "girl",
+   "pose": "looking down"
+  },
+  "14": {
+   "sex": "f",
+   "age": "adult",
+   "skip": "blurred"
+  },
+  "15": {
+   "sex": "f",
+   "age": "young"
+  },
+  "16": {
+   "sex": "f",
+   "age": "girl",
+   "pose": "looking down"
+  },
+  "17": {
+   "sex": "f",
+   "age": "adult",
+   "skip": "blurred"
+  },
+  "18": {
+   "sex": "f",
+   "age": "child"
+  },
+  "19": {
+   "skip": "Kayan (hill tribe)"
+  },
+  "20": {
+   "skip": "a drawing"
+  },
+  "21": {
+   "sex": "m",
+   "age": "adult",
+   "expr": "broad smile"
+  },
+  "22": {
+   "sex": "f",
+   "age": "girl",
+   "pose": "looking down"
+  },
+  "23": {
+   "skip": "no face"
+  },
+  "24": {
+   "skip": "European visitor"
+  },
+  "25": {
+   "sex": "m",
+   "age": "young"
+  },
+  "26": {
+   "skip": "no face"
+  },
+  "27": {
+   "skip": "sunglasses"
+  },
+  "28": {
+   "sex": "m",
+   "age": "boy",
+   "pose": "turned"
+  },
+  "29": {
+   "sex": "m",
+   "age": "young",
+   "skip": "glasses, cap"
+  },
+  "30": {
+   "skip": "no face"
+  },
+  "31": {
+   "skip": "no face"
+  },
+  "32": {
+   "sex": "m",
+   "age": "adult",
+   "expr": "smile, hat"
+  },
+  "33": {
+   "sex": "f",
+   "age": "girl",
+   "person": "girl-b"
+  },
+  "34": {
+   "sex": "f",
+   "age": "girl",
+   "person": "girl-b"
+  },
+  "35": {
+   "skip": "no face"
+  },
+  "36": {
+   "sex": "f",
+   "age": "adult",
+   "expr": "smile"
+  },
+  "37": {
+   "sex": "f",
+   "age": "young",
+   "expr": "broad smile"
+  },
+  "38": {
+   "sex": "f",
+   "age": "young",
+   "pose": "tilted"
+  },
+  "39": {
+   "sex": "f",
+   "age": "young"
+  },
+  "40": {
+   "sex": "f",
+   "age": "young"
+  },
+  "41": {
+   "sex": "f",
+   "age": "young"
+  },
+  "42": {
+   "sex": "f",
+   "age": "young"
+  },
+  "43": {
+   "sex": "f",
+   "age": "young"
+  },
+  "44": {
+   "sex": "m",
+   "age": "child"
+  },
+  "45": {
+   "sex": "f",
+   "age": "young"
+  },
+  "46": {
+   "sex": "f",
+   "age": "young"
+  },
+  "47": {
+   "sex": "f",
+   "age": "young"
+  },
+  "48": {
+   "sex": "f",
+   "age": "girl"
+  },
+  "49": {
+   "sex": "?",
+   "age": "child"
+  },
+  "50": {
+   "sex": "?",
+   "age": "child"
+  },
+  "51": {
+   "sex": "f",
+   "age": "elder"
+  },
+  "52": {
+   "sex": "f",
+   "age": "child"
+  },
+  "53": {
+   "sex": "f",
+   "age": "young"
+  },
+  "54": {
+   "sex": "f",
+   "age": "young",
+   "pose": "turned"
+  },
+  "55": {
+   "sex": "f",
+   "age": "child"
+  },
+  "56": {
+   "sex": "f",
+   "age": "girl"
+  },
+  "57": {
+   "sex": "f",
+   "age": "young"
+  },
+  "58": {
+   "sex": "f",
+   "age": "young"
+  },
+  "59": {
+   "sex": "f",
+   "age": "young",
+   "skip": "blurred"
+  },
+  "60": {
+   "sex": "?",
+   "age": "child",
+   "skip": "blurred"
+  },
+  "61": {
+   "sex": "?",
+   "age": "child",
+   "skip": "blurred"
+  },
+  "62": {
+   "sex": "f",
+   "age": "adult",
+   "skip": "damaged print"
+  },
+  "63": {
+   "sex": "f",
+   "age": "young",
+   "person": "dara"
+  },
+  "64": {
+   "sex": "f",
+   "age": "young",
+   "person": "dara"
+  },
+  "65": {
+   "sex": "m",
+   "age": "elder",
+   "expr": "talking, hat"
+  },
+  "66": {
+   "sex": "f",
+   "age": "child",
+   "expr": "smile"
+  },
+  "68": {
+   "sex": "m",
+   "age": "adult"
+  },
+  "69": {
+   "sex": "f",
+   "age": "young",
+   "expr": "stage make-up"
+  },
+  "70": {
+   "sex": "m",
+   "age": "elder"
+  },
+  "71": {
+   "skip": "too small"
+  },
+  "72": {
+   "sex": "f",
+   "age": "girl",
+   "pose": "tilted"
+  },
+  "73": {
+   "sex": "f",
+   "age": "girl",
+   "pose": "tilted"
+  },
+  "74": {
+   "sex": "f",
+   "age": "girl"
+  },
+  "75": {
+   "sex": "f",
+   "age": "girl",
+   "pose": "tilted"
+  },
+  "76": {
+   "sex": "f",
+   "age": "girl"
+  },
+  "77": {
+   "sex": "f",
+   "age": "girl",
+   "pose": "tilted"
+  },
+  "78": {
+   "sex": "f",
+   "age": "girl"
+  },
+  "79": {
+   "sex": "f",
+   "age": "girl"
+  },
+  "80": {
+   "sex": "f",
+   "age": "girl",
+   "pose": "tilted"
+  },
+  "81": {
+   "sex": "f",
+   "age": "girl",
+   "pose": "tilted"
+  },
+  "82": {
+   "skip": "blurred"
+  },
+  "83": {
+   "skip": "blurred"
+  },
+  "84": {
+   "sex": "f",
+   "age": "young",
+   "person": "dara",
+   "pose": "turned"
+  },
+  "85": {
+   "sex": "f",
+   "age": "young",
+   "person": "dara"
+  },
+  "86": {
+   "skip": "no face"
+  },
+  "87": {
+   "sex": "f",
+   "age": "young",
+   "person": "dara",
+   "pose": "turned"
+  },
+  "88": {
+   "sex": "f",
+   "age": "child",
+   "pose": "near profile"
+  },
+  "89": {
+   "sex": "f",
+   "age": "girl",
+   "pose": "turned"
+  },
+  "90": {
+   "sex": "f",
+   "age": "young",
+   "person": "dancer-52"
+  },
+  "91": {
+   "sex": "f",
+   "age": "young",
+   "person": "dancer-52"
+  },
+  "92": {
+   "sex": "f",
+   "age": "young",
+   "person": "dancer-52"
+  },
+  "93": {
+   "sex": "f",
+   "age": "young",
+   "person": "dancer-52"
+  },
+  "94": {
+   "sex": "f",
+   "age": "young",
+   "person": "dancer-52"
+  },
+  "95": {
+   "sex": "f",
+   "age": "young",
+   "person": "dancer-52"
+  },
+  "96": {
+   "sex": "m",
+   "age": "adult"
+  },
+  "97": {
+   "sex": "f",
+   "age": "young"
+  },
+  "98": {
+   "sex": "f",
+   "age": "young",
+   "expr": "smile"
+  },
+  "99": {
+   "sex": "m",
+   "age": "adult"
+  },
+  "100": {
+   "sex": "m",
+   "age": "young"
+  },
+  "101": {
+   "sex": "f",
+   "age": "adult"
+  },
+  "103": {
+   "sex": "f",
+   "age": "adult",
+   "pose": "turned"
+  },
+  "104": {
+   "sex": "m",
+   "age": "young",
+   "pose": "turned"
+  },
+  "105": {
+   "sex": "m",
+   "age": "elder"
+  },
+  "106": {
+   "sex": "f",
+   "age": "elder",
+   "expr": "broad smile"
+  },
+  "107": {
+   "sex": "f",
+   "age": "young"
+  },
+  "108": {
+   "sex": "f",
+   "age": "young",
+   "expr": "broad smile"
+  },
+  "109": {
+   "skip": "no face"
+  },
+  "110": {
+   "sex": "m",
+   "age": "boy"
+  },
+  "111": {
+   "sex": "m",
+   "age": "boy",
+   "expr": "laugh"
+  },
+  "112": {
+   "sex": "?",
+   "age": "child"
+  },
+  "113": {
+   "sex": "f",
+   "age": "young",
+   "pose": "turned"
+  },
+  "114": {
+   "sex": "f",
+   "age": "young"
+  },
+  "115": {
+   "sex": "f",
+   "age": "young"
+  },
+  "116": {
+   "sex": "f",
+   "age": "young"
+  },
+  "117": {
+   "sex": "f",
+   "age": "young"
+  },
+  "118": {
+   "sex": "f",
+   "age": "young"
+  },
+  "119": {
+   "sex": "f",
+   "age": "young"
+  },
+  "120": {
+   "sex": "f",
+   "age": "young"
+  },
+  "121": {
+   "sex": "f",
+   "age": "young"
+  }
+ },
+ "cast": {
+  "woman": [
+   10,
+   41,
+   15
+  ]
+ },
+ "cast_note": "woman = the average of traced faces 10, 41 and 15 (the young women with the narrowest jaws and calm faces); the first choice, [41, 15, 107], read as a man's face shape in full face."
+}

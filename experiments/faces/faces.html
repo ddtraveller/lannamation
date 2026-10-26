@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>faces - traced faces of the north, moved by their muscles (experimental)</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="../../kit/oldcartoon.js"></script>
+<script src="faces_data.js"></script>
+<script src="faces.js"></script>
+<script src="faces_parts.js"></script>
+<script src="faces_glue.js"></script>
+<script>
+// The experiment's sheet (README.md): the hero film's first woman with a traced face. Above, close: full face and
+// turned, with the hair strand by strand, and the kit's own hair on the same face. Below, small, at
+// the size of a figure in a crowd, the same three beside the kit's own face. She smiles and blinks as the film's woman does.
+var DURATION = 6;
+var BEAT = 0.5;
+var LOOK = {shirt: "#f2ead8", legs: "#2f3f6e", sin: 0, sabai: false, weave: 1, flower: "#f28fa8", pins: true, smile: 1,
+            mesh: "woman", meshStyle: "between"};
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "22px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheet(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  var close = [[{turn: 1}, "full face"], [{turn: 0.3}, "turned"], [{turn: 1, meshHair: "kit"}, "the kit's own hair"]];
+  close.forEach(function (c, n) {
+    pen.save();
+    pen.beginPath();
+    pen.rect(n * WIDE / 3, 0, WIDE / 3, 650);
+    pen.clip();
+    person(n * WIDE / 3 + WIDE / 6, 1590, cast("lady", Object.assign({}, LOOK, c[0], {size: 4.4, id: "close-" + n})));
+    pen.restore();
+    caption(c[1], n * WIDE / 3 + WIDE / 6, 680);
+  });
+  pen.fillStyle = "#eadcc2";
+  pen.fillRect(0, 710, WIDE, 370);
+  var small = [[{turn: 1}, "full face"], [{turn: 0.3}, "turned"], [{turn: 1, meshHair: "kit"}, "kit hair"],
+               [{mesh: undefined}, "the kit's own face"]];
+  small.forEach(function (c, n) {
+    person(240 + n * 320, 1045, cast("lady", Object.assign({}, LOOK, c[0], {size: 0.72, id: "small-" + n})));
+    caption(c[1], 240 + n * 320, 1072);
+  });
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>
