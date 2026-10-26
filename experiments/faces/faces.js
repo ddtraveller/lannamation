@@ -313,7 +313,7 @@ function faceMoved(face, pulls) {
       w *= clamp(1.3 - Math.abs(out[n][0]) / Math.abs(rest[234][0]));
       if (w <= 0) { continue; }
       var y = out[n][1] - hinge[0], z = out[n][2] - hinge[1];
-      var y2 = y * c - z * s, z2 = y * s + z * c;
+      var y2 = y * c + z * s, z2 = -y * s + z * c;                // opening carries the chin down and back
       out[n][1] += (hinge[0] + y2 - out[n][1]) * w;
       out[n][2] += (hinge[1] + z2 - out[n][2]) * w;
     }
