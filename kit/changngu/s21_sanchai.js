@@ -10,6 +10,7 @@ var C21_SOUND = {calls: []};
 var C21_LINES = [[1.4, 4.7, "C099"], [5.4, 13.26, "C100"], [14.4, 18.26, "C101"], [18.46, 25.1, "C102"], [25.3, 29.23, "C103"], [37.0, 44.45, "C104"]];
 var C21_CUTS = [13.8, 36.0];
 var C21_STRIKES = 0.7;                                 // seconds between the mahout's strokes on the plate
+var C21_LAYER = null;                                  // the sheet the elephant fades on, going through the gate
 
 // The white elephant with Phrom on its back and the mahout on its neck striking the plate; at (x, y), its size and
 // facing; walking: its step. Gives back the elephant's {seat, head}.
@@ -88,16 +89,32 @@ function c21Gate(t) {
   pen.drawImage(cngFields(), 0, 0);
   var up = between(t, 36.4, 42.6), hit = 42.6;
   cngGateWall(t < hit ? 0 : Math.min(1, (t - hit) * 4));
-  if (t >= hit && t < hit + 1.6) {                         // the dust of the doors bursting
+  // through the gate: on into it, smaller as it goes, fading into the dust (v3: it was taken off whole at hit + 0.6).
+  // While it fades it is drawn on a sheet of its own (C21_LAYER, pen's size and transform) laid down faded: the kit's
+  // faces set their own globalAlpha, so a faded pen would leave the riders' faces whole.
+  var into = between(t, hit, hit + 0.8);
+  if (into < 1) {
+    var x = mix(300, CNG_GATE[0] - 20, up), y = mix(1080, CNG_GATE[1] + 80, up) - 40 * into, size = mix(0.6, 0.32, up) - 0.04 * into;
+    var keep = pen;
+    if (into > 0) {
+      C21_LAYER = C21_LAYER || document.createElement("canvas");
+      C21_LAYER.width = keep.canvas.width;                 // (setting it clears the sheet)
+      C21_LAYER.height = keep.canvas.height;
+      pen = C21_LAYER.getContext("2d");
+      pen.setTransform(keep.getTransform());
+    }
+    c21War(t, x, y, size, 1, up < 1 || into > 0);
+    pen = keep;
+    if (into > 0) {
+      pen.save(); pen.setTransform(1, 0, 0, 1, 0, 0); pen.globalAlpha = 1 - into; pen.drawImage(C21_LAYER, 0, 0); pen.restore();
+    }
+  }
+  if (t >= hit && t < hit + 1.6) {                         // the dust of the doors bursting, over it
     var u = (t - hit) / 1.6;
     pen.fillStyle = "rgba(200, 180, 140, " + (0.7 * (1 - u)).toFixed(3) + ")";
     for (var d = 0; d < 18; d++) {
       pen.beginPath(); pen.arc(CNG_GATE[0] + (dice(d) - 0.5) * 300 * (0.4 + u), CNG_GATE[1] - 60 * u - 80 * dice(d + 3), 30 + 40 * u, 0, 7); pen.fill();
     }
-  }
-  if (t < hit + 0.6) {
-    var x = mix(300, CNG_GATE[0] - 20, up), y = mix(1080, CNG_GATE[1] + 80, up), size = mix(0.6, 0.32, up);
-    c21War(t, x, y, size, 1, up < 1);
   }
   cngBeds(t, "fields", "frame");
 }
