@@ -26,8 +26,12 @@
   header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 16px; }
   header h1 { font-size: 20px; margin: 0 12px 0 0; }
   header h1 .en { display: block; font-weight: normal; }
-  .maker { display: grid; grid-template-columns: 190px minmax(0, 1fr) 250px; gap: 12px; padding: 0 16px 16px; }
+  .maker { display: grid; grid-template-columns: 190px minmax(0, 1fr) 250px; gap: 12px; padding: 0 16px 16px; align-items: start; }
   .palette, .panel { background: var(--sheet); border: 2px solid var(--line); border-radius: 16px; padding: 10px; min-width: 0; }
+  /* The things to add scroll in their own column and it stays in sight, so all of them and the stage are seen at once
+     (owner, 2026-10-26); without it the column was some 9800 px tall and the page scrolled the stage away. */
+  .palette { position: sticky; top: 8px; max-height: calc(100vh - 16px); overflow-y: auto; scrollbar-gutter: stable;
+    scrollbar-color: var(--soft) var(--paper); }
   .palette h2, .panel h2 { font-size: 15px; margin: 8px 0 6px; }
   .fold { cursor: pointer; user-select: none; }
   .fold::before { content: "▾ "; color: var(--red); font-size: 12px; }
@@ -38,7 +42,7 @@
   .palette .row button { padding: 6px 8px; font-size: 14px; }
   .palette .row button[data-pic] { padding: 3px 3px 2px; font-size: 12px; line-height: 1.2; flex: 0 0 calc(50% - 3px); min-width: 0; }
   .palette .row button[data-pic] canvas { display: block; width: 100%; height: auto; border-radius: 8px; background: var(--paper); margin-bottom: 2px; }
-  .stage-wrap { min-width: 0; }
+  .stage-wrap { min-width: 0; position: sticky; top: 8px; }   /* the stage stays in sight too, beside the things, while the panel scrolls */
   .stage-box { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; }
   .stage-box canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform-origin: 0 0; }
   .tools .zoom { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
@@ -153,6 +157,8 @@
   @media (max-width: 900px) { .guide { top: auto; bottom: 0; left: 0; right: 0; width: auto; max-height: 55vh; border-radius: 18px 18px 0 0; } }
   @media (max-width: 900px) {
     .maker { grid-template-columns: 1fr; }
+    .palette, .stage-wrap { position: static; }
+    .palette { max-height: 34vh; }   /* above the stage here: short enough that the stage shows under it */
     .palette .row { flex-wrap: nowrap; overflow-x: auto; }
     .palette .row button[data-pic] { flex: none; width: 104px; }
   }
