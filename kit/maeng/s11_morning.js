@@ -123,7 +123,10 @@ function s11Pen(feel) {
 // The yard's morning: its sun low at the left, over the far hills (maengYardAt()'s heavens), and the mist low over the
 // rice fields behind the hut (its behind), thinning through the two shots. t: the scene's second. Gives back nothing.
 function s11Yard(t) {
-  maengYardAt(t, 0, 0, function () {
+  // the yard's clock 5 s back: its rice planters step back to their start every 30 s, (t * 2) % 60 in sets.js, and at
+  // 30 s that jump fell in this shot (19.04 s to 32.81 s; the pop check, 2026-10-27); the shot comes in through black,
+  // so nothing else of the yard can be seen to differ, as in scene 2
+  maengYardAt(t - 5, 0, 0, function () {
     mistDrift(pen, t, {left: 0, right: WIDE, top: 755, bottom: 872, count: 6, wide: 560, drift: 6, seed: 23,
                        alpha: 0.6 * (1 - 0.6 * between(t, S11_SHOTS[0], S11_LONG))});
   }, undefined, undefined, function () { scenerySun(t, S11_SUN[0] + 630, S11_SUN[1] + 50, 28, S11_SUN_LOOK); });
