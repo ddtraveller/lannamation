@@ -124,6 +124,9 @@ drawn:
 - most of it (`VANISH.edge`, 0.8) was already off the film: it walked off the edge;
 - it was drawn faint (`pen.globalAlpha` at most `VANISH.faint`, 0.15): it faded;
 - it had shrunk to `VANISH.small` (0.03) of the most it covered: it went into the distance;
+- it is a kind that dives (`VANISH.dives`, `["fish"]`): decorate.js's fish going back into the water at the end of a
+  leap, its ring on the water where it went in (owner, 2026-10-27: "Add that kind of fish as an exception to the blink
+  check");
 - where it was, the film is nearly black in either frame (`VANISH.dark`): a cut's fade, a fade to black;
 - where it was, the two frames hardly differ (`VANISH.still`): it was hidden, behind a sheet or a door.
 

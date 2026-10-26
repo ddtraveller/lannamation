@@ -11575,15 +11575,17 @@ function heard(from, to, fps) {
 // drawn,
 //   most of it (edge) was already off the film,
 //   it was drawn faint (pen.globalAlpha at most faint),
-//   it had shrunk to a small part (small) of the most it covered, or
+//   it had shrunk to a small part (small) of the most it covered,
+//   it is a kind that dives (dives: decorate.js's fish, back into the water at the end of a leap, its ring on the
+//   water where it went in; owner, 2026-10-27: "Add that kind of fish as an exception to the blink check"), or
 // where it was, the film is nearly black in either frame (dark: a cut's fade, a fade to black), or the two frames
 // hardly differ (still: it was hidden, behind a sheet or a door, when the scene stopped drawing it).
 // Anything else blinked out, and is told. A thing is known from one frame to the next by its name (the sprite's,
 // else the person's id, else its kind) and, among those of a name, by the nearest.
-// edge, faint, small: parts of 1. dark: the brightness (0-255) under which the film counts as black. still: how
+// edge, faint, small: parts of 1. dives: the kinds (a life's kind) that may leave so. dark: the brightness (0-255) under which the film counts as black. still: how
 // much the two frames may differ there (0-255, on the average) and the thing count as hidden. snap: how wide the
 // small copy of each frame is that the pictures are compared on.
-var VANISH = {edge: 0.8, faint: 0.15, small: 0.03, dark: 20, still: 6, snap: 480};
+var VANISH = {edge: 0.8, faint: 0.15, small: 0.03, dives: ["fish"], dark: 20, still: 6, snap: 480};
 
 // What pops (owner, 2026-10-22, of the kit's research into 2D animation: Spine, Rive and Unity ease from one pose to
 // the next over a mix time, where a scene that sets a look at a second, "t < 5 ? one : other", changes it in one
@@ -11718,6 +11720,7 @@ function blinkWatch() {
     var inside = area([Math.max(box[0], 0), Math.max(box[1], 0), Math.min(box[2], film[2]), Math.min(box[3], film[3])]);
     if (area(box) === 0 || inside <= (1 - VANISH.edge) * area(box)) { return false; }
     if (one.alpha <= VANISH.faint || area(box) <= VANISH.small * one.most) { return false; }
+    if (VANISH.dives.indexOf(one.kind) >= 0) { return false; }
     var light = Math.min(inBox(box, before), inBox(box, after)), change = inBox(box, before, after);
     return light >= VANISH.dark && change >= VANISH.still;
   }
