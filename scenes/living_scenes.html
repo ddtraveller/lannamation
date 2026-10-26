@@ -51,19 +51,25 @@ canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
 <div class="about" id="about"><div>
   <h2>ฉากมีชีวิต · Living Scenes · 生动的场景</h2>
   <p>A quiet picture of the north of Thailand that keeps changing: a forest, a village, a farm, a market, the world of the
-     old stories, or the fish of a river pool, seen from under the water. Every bird, animal, fish and insect in it decides for itself what to do next.
+     old stories, the fish of a river pool, seen from under the water, or a slow walk through dense flowering plants with
+     no one on it. Every bird, animal, fish and insect in it decides for itself what to do next.
      <small>ภาพชนบทล้านนาที่มีชีวิต สัตว์ทุกตัวตัดสินใจเองว่าจะทำอะไรต่อ · 北泰的画面在变化，每只动物自己决定下一步做什么。</small></p>
   <p>How they decide: each kind has its own ways, written from how the real animal behaves. A buffalo grazes most of
      the day and wallows at noon; an egret walks at its feet for the insects it stirs up; a hen scratches and pecks,
-     and her chicks run back to her when they stray; a grasshopper sits still until something comes close. Each one
+     and her chicks run back to her when they stray; a grasshopper sits still until something comes close; a kingfisher
+     watches the water from its perch, dives, and beats its fish on the branch; gibbons sing in the morning. Each one
      weighs its ways by the hour, by how hungry and how tired it is, and by who is near, and picks one.</p>
   <p>Watch, or press 🔈 for their sounds and the sounds around them, and tick 🎵 for quiet music made for each place.
      Nothing to do and nothing to win: it is a fish tank.</p>
   <p><small>Drawn with the Lanna cartoon kit (github.com/ddtraveller/lannamation). The sounds are the kit's: most made
      for it by MOSS-SoundEffect (OpenMOSS, Apache-2.0) or given to everyone by those who recorded them (sounds.py names
-     each). Two are used under CC BY 4.0: the water buffalo, recorded by Ashwin A. in Aluva, Kerala (iNaturalist
-     249871642), and the cicadas, by Wich'yanan (Jay) Limparungpatthanakij in Chom Thong, Chiang Mai (iNaturalist
-     344470233).</small></p>
+     each). These are used under CC BY 4.0: the water buffalo, recorded by Ashwin A. in Aluva, Kerala (iNaturalist
+     249871642); the cicadas, by Wich'yanan (Jay) Limparungpatthanakij in Chom Thong, Chiang Mai (iNaturalist
+     344470233), who also recorded the white-throated kingfisher in Buriram (278101138); the crow (193695337), the
+     spotted dove (194270206), the red-breasted parakeet (190984478) and the Asian common toad (221466417), by Sam
+     Hambly in Thailand; the rice-field frog, by 古國順 in Yunlin, Taiwan (270181401); and the white-handed gibbon, by
+     Thomas Gyselinck in Thailand (386482709). The common kingfisher is luc de bruijn's, "IJsvogel in Nieuwegein", under
+     CC BY 3.0 (Wikimedia Commons). The barking deer, by Charles Joynson, was given to everyone (CC0).</small></p>
   <button id="aboutClose">✔</button>
 </div></div>
 
@@ -86,6 +92,17 @@ canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
 <script src="../kit/night.js"></script>
 <script src="../kit/himmaphan.js"></script>
 <script src="../kit/chiangsaen.js"></script>
+<script src="../kit/rain.js"></script>
+<script src="../kit/lannabirds.js"></script>
+<script src="../kit/taleanimals.js"></script>
+<script src="../kit/forestanimals.js"></script>
+<script src="../kit/butterflies.js"></script>
+<script src="../kit/mangrai.js"></script>
+<script src="../kit/thicket.js"></script>
+<script src="../kit/thicket/s01_pink.js"></script>
+<script src="../kit/thicket/s02_hedge.js"></script>
+<script src="../kit/thicket/s03_trees.js"></script>
+<script src="../kit/thicket/s04_clearing.js"></script>
 <script>
 var BEAT = 0.5;                          // the kit reads this: how long one beat is
 STYLE.hop = false;                       // no 1930s bounce: people walk and stand still, as in the maker unless asked (owner, 2026-10-23)
@@ -120,7 +137,11 @@ var PLACES = {
   valley: {ground: [770, 1040], water: null, sky: [100, 400]},
   // the page's own picture (below): no ground, no sky, water from the surface to the bed; bed: where the riverbed's
   // top edge is; near: how near the fish are, so many times larger than beside the people, going so much farther
-  underwater: {ground: null, water: [110, 900], sky: null, bed: 950, near: 3}
+  underwater: {ground: null, water: [110, 900], sky: null, bed: 950, near: 3},
+  // the thicket (below): no backdrop picture; the plants of thicket.js in layers the camera moves through, and the
+  // creatures in the layer it looks at, the ground low in it and the air above; the camera is among the plants, so
+  // what lives there is near, as the fish under the water are (near: drawn and going so much larger)
+  thicket: {ground: [820, 1000], water: null, sky: [260, 700], thicket: true, near: 3}
 };
 
 // ---------- the underwater place, a backdrop of this page's own in the kit's table of backdrops ----------
@@ -234,7 +255,13 @@ var SETTINGS = {
             things: [["flower", 5], ["grasstuft", 4], ["reeds", 1]],
             creatures: [["peafowl", 2, 0.6], ["pheasant", 2, 0.5], ["hornbill", 1, 0.5], ["magpie", 2, 0.6], ["sunbird", 2, 0.7],
                         ["egret", 2, 0.4], ["plover", 2, 0.4], ["lapwing", 1, 0.3], ["avadavat", 3, 0.5], ["elephant", 1, 0.35],
-                        ["fieldmouse", 1, 0.4], ["grasshopper", 3, 0.7], ["fish", 4, 1], ["spotbill", 2, 0.6], ["flock", 1, 0.4]],
+                        ["fieldmouse", 1, 0.4], ["grasshopper", 3, 0.7], ["fish", 4, 1], ["spotbill", 2, 0.6], ["flock", 1, 0.4],
+                        // the animals of the north's forests, cliffs and rivers (lannabirds.js, taleanimals.js,
+                        // forestanimals.js, butterflies.js, mangrai.js; 2026-10-26)
+                        ["crow", 1, 0.3], ["dove", 2, 0.4], ["kingfisher", 1, 0.6], ["commonkf", 1, 0.4], ["parakeet", 2, 0.5],
+                        ["myna", 1, 0.4], ["gibbon", 2, 0.5], ["butterfly", 3, 0.7], ["barkingdeer", 1, 0.5], ["sambar", 1, 0.35],
+                        ["banteng", 1, 0.3], ["goral", 2, 0.7], ["bamboorat", 1, 0.3], ["turtle", 1, 0.5], ["catfish", 1, 0.3],
+                        ["beetle", 1, 0.3]],
             people: []},
   rural: {names: ["ชนบท", "The countryside", "乡村"], places: ["paddy", "village", "river", "valley"],
           pieces: [["ruenphuk", 1], ["longkhao", 1], ["tub", 1], ["fieldhut", 1], ["namton", 1], ["talaew", 1], ["banana", 2],
@@ -242,34 +269,54 @@ var SETTINGS = {
           things: [["flower", 3], ["grasstuft", 4], ["tung", 1]],
           creatures: [["buffalo", 2, 0.8], ["egret", 3, 0.7], ["hen", 2, 0.8], ["rooster", 1, 0.6], ["chick", 3, 0.6], ["dog", 1, 0.7],
                       ["cat", 1, 0.5], ["pig", 1, 0.4], ["horse", 1, 0.2], ["sunbird", 1, 0.4], ["magpie", 1, 0.4],
-                      ["grasshopper", 2, 0.6], ["fish", 3, 1], ["spotbill", 2, 0.6]],
-          people: ["farmer", "villager", "oldfarmer", "boy", "girl", "grandmother", "inta", "buakham", "bunma", "dokkham"]},
+                      ["grasshopper", 2, 0.6], ["fish", 3, 1], ["spotbill", 2, 0.6],
+                      ["crow", 2, 0.6], ["dove", 2, 0.7], ["kingfisher", 1, 0.5], ["butterfly", 2, 0.6], ["myna", 1, 0.3],
+                      ["beetle", 1, 0.3], ["turtle", 1, 0.3]],
+          // the Lua (Lawa) of the hills too, in their own dress (2026-10-26)
+          people: ["farmer", "villager", "oldfarmer", "boy", "girl", "grandmother", "inta", "buakham", "bunma", "dokkham",
+                   "luagirl", "luawife", "luaman"]},
   farm: {names: ["ไร่นา", "The farm", "农场"], places: ["paddy", "village", "meadow"],
          pieces: [["kok", 1], ["longkhao", 1], ["sawian", 1], ["mortar", 1], ["krabung", 1], ["grass", 2], ["firewood", 1], ["fieldhut", 1],
                   ["banana", 1], ["tree", 1]],
          things: [["huad", 1], ["grasstuft", 4], ["flower", 2]],
          creatures: [["buffalo", 2, 0.9], ["hen", 3, 0.9], ["rooster", 1, 0.8], ["blackhen", 1, 0.5], ["blackrooster", 1, 0.4],
-                     ["chick", 4, 0.8], ["pig", 2, 0.7], ["dog", 1, 0.7], ["egret", 2, 0.6], ["grasshopper", 2, 0.6], ["cat", 1, 0.4]],
+                     ["chick", 4, 0.8], ["pig", 2, 0.7], ["dog", 1, 0.7], ["egret", 2, 0.6], ["grasshopper", 2, 0.6], ["cat", 1, 0.4],
+                     ["crow", 1, 0.5], ["dove", 2, 0.7], ["butterfly", 2, 0.5], ["beetle", 2, 0.5]],
          people: ["farmer", "oldfarmer", "khammun", "sinuan", "boy", "girl"]},
   mythical: {names: ["ตำนาน", "The old stories", "传说"], places: ["vermilion", "golden", "hermitage", "longlife", "garden", "sky", "midnight"],
              pieces: [["floratree", 2]],
              things: [["flower", 4]],
              creatures: [["naga", 1, 0.7], ["dragon", 1, 0.5], ["mom", 1, 0.5], ["luang", 1, 0.4], ["kinnari", 2, 0.7], ["thewada", 2, 0.6],
-                         ["hong", 2, 0.7], ["maeng", 1, 0.4], ["changngu", 1, 0.3], ["whiteelephant", 1, 0.4]],
+                         ["hong", 2, 0.7], ["maeng", 1, 0.4], ["changngu", 1, 0.3], ["whiteelephant", 1, 0.4],
+                         // the white crow, mother of the five Buddhas; Chiang Mai's signs, the white sambar, the white
+                         // barking deer and the white mice; the golden turtle of เต่าน้อยอองคำ
+                         ["whitecrow", 1, 0.6], ["whitedeer", 2, 0.5], ["whitesambar", 1, 0.4], ["whitemice", 1, 0.5],
+                         ["goldturtle", 1, 0.5]],
              people: []},
   town: {names: ["ในเมือง", "The town", "城镇"], places: ["market", "village", "yipeng"],
          pieces: [["house", 1], ["tree", 1], ["palm", 1], ["namton", 1]],
          things: [["tungsaimu", 2], ["tungyai", 1], ["khomline", 2], ["food", 3], ["chedisai", 1], ["pratheep", 1], ["krathong", 2]],
          creatures: [["dog", 2, 0.8], ["cat", 1, 0.6], ["hen", 2, 0.5], ["chick", 2, 0.4], ["magpie", 1, 0.4], ["flock", 1, 0.5],
-                     ["band", 1, 0.5], ["rotdaeng", 1, 0.5]],
+                     ["band", 1, 0.5], ["rotdaeng", 1, 0.5], ["crow", 2, 0.6], ["dove", 2, 0.6], ["butterfly", 1, 0.4]],
          people: ["lady", "fellow", "villager", "girl", "boy", "grandmother", "inta", "buakham", "sinuan", "bunma", "dokkham", "devotee"]},
   underwater: {names: ["ใต้น้ำ", "Under the water", "水下"], places: ["underwater"], pieces: [],
-               things: [["weed", 9], ["bubbles", 3]], creatures: [["fish", 16, 1]], people: []}
+               things: [["weed", 9], ["bubbles", 3]], creatures: [["fish", 16, 1], ["catfish", 1, 0.4]], people: []},
+  // through the flowers (owner, 2026-10-26: "do a scene like in Spirited Away but without a person moving through
+  // flowers and thick vegetation"): thicket/'s four places of dense flowering plants, the camera going on through them
+  // (THICKET); what lives in it needs no tree to perch on: butterflies, red avadavats in the low growth, a dove
+  thicket: {names: ["ทางดอกไม้", "Through the flowers", "穿过花丛"], places: ["thicket"], pieces: [], things: [],
+            creatures: [["butterfly", 6, 1], ["avadavat", 2, 0.4], ["dove", 1, 0.3]], people: []}
 };
 // the night's own creatures, added on a night picture; the day's fliers that sleep are left out there
-var NIGHT_ADDS = [["owl", 1, 0.9], ["moth", 1, 0.6], ["fireflies", 1, 1], ["bats", 1, 0.6]];
+var NIGHT_ADDS = [["owl", 1, 0.9], ["moth", 1, 0.6], ["fireflies", 1, 1], ["bats", 1, 0.6],
+                  ["toad", 2, 0.7], ["ricefrog", 1, 0.5], ["loris", 1, 0.5]];
 var DAY_ONLY = {sunbird: true, magpie: true, hornbill: true, egret: true, avadavat: true, peafowl: true, pheasant: true, grasshopper: true,
-                plover: true, lapwing: true, flock: true, hen: true, rooster: true, blackhen: true, blackrooster: true, chick: true};
+                plover: true, lapwing: true, flock: true, hen: true, rooster: true, blackhen: true, blackrooster: true, chick: true,
+                crow: true, dove: true, kingfisher: true, commonkf: true, parakeet: true, myna: true, gibbon: true, butterfly: true};
+// the kinds that live only where the place has what they need: water to fish in, cliffs to stand on
+var NEEDS = {kingfisher: function (P) { return !!P.water; }, commonkf: function (P) { return !!P.water; },
+             goral: function (P, place) { return place === "crags" || place === "doi" || place === "valley"; }};
+function fits(kind, P, place) { return !NEEDS[kind] || NEEDS[kind](P, place); }
 
 // ---------- the kinds of creature: their group, where they live, how they are drawn, their call ----------
 // group: walker, fowl, flier, swimmer, insect, mythic, person, ambient (no mind: it only does its one thing); where:
@@ -362,6 +409,90 @@ var KINDS = {
              if (c.doing === "wai" && !P[2]) { look.wai = Math.max(0, Math.min(1, (t - c.from) / 0.6, (c.until - t) / 0.6)); }   // the hands rise to the wai, and come down
              return person(P[0], P[1], cast(c.cast, look));
            }},
+  // the animals of 2026-10-26: lannabirds.js, taleanimals.js, forestanimals.js, butterflies.js, mangrai.js. Each is drawn
+  // at size c.s, its SIZES measured at the kit's size 1
+  crow: {group: "flier", where: "ground", speed: 110, call: "crow", who: "a large-billed crow",
+         draw: function (c, P, t) { crowAt(c, P, t, "black"); }},
+  whitecrow: {group: "flier", where: "ground", speed: 100, call: "crow", who: "the white crow, mother of the five Buddhas",
+              draw: function (c, P, t) { crowAt(c, P, t, "white"); }},
+  dove: {group: "flier", where: "ground", speed: 100, call: "dove-alt", who: "a spotted dove",
+         draw: function (c, P, t) {
+           var air = c.flying && P[2];
+           spottedDove(P[0], P[1] - (air ? 40 : 0), t, {size: c.s, face: P[3], seed: c.id, fly: air || undefined, step: !air && P[2] ? P[6] / (22 * c.s) : undefined,
+                       peck: c.doing === "peck" ? peckAt(t, c) : 0, coo: c.doing === "call" ? 1 : 0, fluff: c.doing === "rest" ? 0.5 : 0});
+         }},
+  kingfisher: {group: "flier", where: "sky", speed: 190, call: "kingfisher", who: "a white-throated kingfisher",
+               draw: function (c, P, t) { kingfisherAt(c, P, t, "whitethroat"); }},
+  commonkf: {group: "flier", where: "sky", speed: 200, call: "kingfisher-common", who: "a small common kingfisher",
+             draw: function (c, P, t) { kingfisherAt(c, P, t, "common"); }},
+  parakeet: {group: "flier", where: "sky", speed: 210, call: "parakeet", who: "a red-breasted parakeet",
+             draw: function (c, P, t) {
+               parakeet(P[0], P[1], t, {size: c.s, face: P[3], seed: c.id, kind: c.id % 3 === 0 ? "blossom" : "redbreast", hen: c.id % 2 === 0,
+                        fly: !!P[2] || undefined, eat: c.doing === "eat" ? 1 : 0, preen: c.doing === "preen" ? 1 : 0,
+                        call: c.doing === "call" ? 1 : 0, shake: c.doing === "shake" ? 1 : 0});
+             }},
+  myna: {group: "flier", where: "ground", speed: 140, call: null, who: "a hill myna",
+         draw: function (c, P, t) {
+           var air = c.flying && P[2];
+           hillMyna(P[0], P[1] - (air ? 30 : 0), t, {size: c.s, face: P[3], step: !air && P[2] ? P[6] / (18 * c.s) : undefined, flap: air ? 1 : 0});
+         }},
+  gibbon: {group: "flier", where: "sky", speed: 110, call: "gibbon", who: "a white-handed gibbon",
+           // swinging arm over arm from tree to tree: gibbon() travels by its own swings, so it is given where it set off
+           draw: function (c, P, t) {
+             var look = {size: c.s, face: P[3], seed: c.id, dark: c.id % 2 === 0, sing: c.doing === "call" ? 1 : 0};
+             if (P[2]) { var s = P[6] / (120 * c.s); look.swing = s; look.sing = 0; gibbon(P[0] - P[3] * s * 120 * c.s, P[1], t, look); }
+             else { gibbon(P[0], P[1], t, look); }
+           }},
+  loris: {group: "flier", where: "sky", speed: 10, call: null, who: "a Bengal slow loris",
+          draw: function (c, P, t) {
+            slowLoris(P[0], P[1], t, {size: c.s, face: P[3], seed: c.id, look: c.doing === "look" ? 1 : 0.2, curl: c.doing === "curl" ? 1 : 0,
+                      shine: scene.night ? 0.7 : 0});
+          }},
+  toad: {group: "insect", where: "ground", speed: 40, call: "toad", who: "an Asian common toad",
+         draw: function (c, P, t) { toadAt(c, P, t, "toad"); }},
+  ricefrog: {group: "insect", where: "ground", speed: 45, call: "ricefrog", who: "a rice-field frog",
+             draw: function (c, P, t) { toadAt(c, P, t, "frog"); }},
+  beetle: {group: "flier", where: "ground", speed: 30, call: null, who: "a rhinoceros beetle",
+           draw: function (c, P, t) {
+             var air = c.flying && P[2];
+             rhinoBeetle(P[0], P[1] - (air ? 50 : 0), t, {size: c.s, face: P[3], seed: c.id, kind: c.id % 3 ? "male" : "female", fly: air || undefined,
+                         step: !air && P[2] ? P[6] / (10 * c.s) : undefined, lift: c.doing === "lift" ? 1 : 0});
+           }},
+  turtle: {group: "swimmer", where: "water", speed: 18, call: null, who: "a pond turtle",
+           draw: function (c, P, t) { turtleAt(c, P, t, 0); }},
+  goldturtle: {group: "swimmer", where: "water", speed: 18, call: null, who: "the golden turtle of the old tale",
+               draw: function (c, P, t) { turtleAt(c, P, t, 1); }},
+  catfish: {group: "swimmer", where: "water", speed: 22, call: null, who: "a Mekong giant catfish, the lord's fish",
+            draw: function (c, P, t) { giantCatfish(P[0], P[1], t, {size: c.s * (PLACES[scene.place].near || 1), face: P[3], seed: c.id, light: scene.night ? 0.2 : 0.6}); }},
+  butterfly: {group: "insect", where: "ground", speed: 70, call: null, who: "a butterfly",
+              // over the ground, up and down as it goes; sitting on a flower when it visits one
+              draw: function (c, P, t) {
+                var kind = BF_KINDS[c.id % 4], f = BF_SIZES[kind], size = c.s * f[0] * PX_PER_CM / f[1];
+                var sitting = c.doing === "sip" && !P[2], lift = sitting ? 0 : 60 + 30 * Math.sin(t * 1.3 + c.id) + 12 * Math.sin(t * 5 + c.id);
+                butterfly(kind, P[0], P[1] - lift, t, {size: size, seed: c.id, rest: sitting || undefined,
+                          turn: sitting ? 0 : P[3] * Math.PI / 2 + 0.25 * Math.sin(t * 2.6 + c.id)});
+              }},
+  barkingdeer: {group: "walker", where: "ground", speed: 45, call: "barking-deer", who: "a barking deer",
+                draw: function (c, P, t) { deerAt(c, P, t, false); }},
+  whitedeer: {group: "walker", where: "ground", speed: 40, call: "barking-deer", who: "a white barking deer of Chiang Mai's signs",
+              draw: function (c, P, t) { deerAt(c, P, t, true); }},
+  sambar: {group: "walker", where: "ground", speed: 45, call: null, who: "a sambar deer",
+           draw: function (c, P, t) { sambar(P[0], P[1], t, {size: c.s, face: P[3], seed: c.id, calf: c.id % 4 === 0, step: step(P, 160 * c.s), graze: c.doing === "graze" ? 1 : 0}); }},
+  whitesambar: {group: "walker", where: "ground", speed: 40, call: null, who: "the white sambar of Chiang Mai's first sign",
+                draw: function (c, P, t) { sambar(P[0], P[1], t, {size: c.s, face: P[3], seed: c.id, white: true, calf: c.id % 4 === 0, step: step(P, 160 * c.s), graze: c.doing === "graze" ? 1 : 0}); }},
+  banteng: {group: "walker", where: "ground", speed: 45, call: null, who: "a banteng, the red ox of the forest",
+            draw: function (c, P, t) { banteng(P[0], P[1], t, {size: c.s, face: P[3], step: step(P, 150 * c.s)}); }},
+  goral: {group: "walker", where: "ground", speed: 40, call: null, who: "a goral of the limestone cliffs",
+          draw: function (c, P, t) {
+            var bound = c.act === "bound up the rocks" && P[2], u = bound ? Math.max(0, Math.min(1, (t - c.from) / (c.go || 1))) : 0;
+            goral(P[0], P[1] - (bound ? 50 * Math.sin(u * Math.PI) : 0), t, {size: c.s, face: P[3], seed: c.id, leap: bound ? u : 0,
+                  step: !bound ? step(P, GAITS.goral[1] / 0.62 * 1.15 * c.s) : undefined,
+                  graze: c.doing === "graze" ? 1 : 0, alert: c.doing === "alert" ? 1 : 0});
+          }},
+  bamboorat: {group: "walker", where: "ground", speed: 20, call: null, who: "a hoary bamboo rat",
+              draw: function (c, P, t) { bambooRat(P[0], P[1], t, {size: c.s, face: P[3], dig: c.doing === "dig" ? 1 : 0}); }},
+  whitemice: {group: "walker", where: "ground", speed: 50, call: "mouse-squeak", who: "the white mouse and her four young",
+              draw: function (c, P, t) { whiteMice(P[0], P[1], t, {size: c.s, face: P[3], seed: c.id, along: P[2] ? P[6] / (24 * c.s) : undefined}); }},
   // ambient: drawn the same way all through; no mind
   flock: {group: "ambient", where: "sky", draw: function (c, P, t) { birds(t + c.id * 3, ((c.x + t * 40) % 2300) - 200, c.y); }},
   fireflies: {group: "ambient", where: "ground", draw: function (c, P, t) { farFireflies(t, {box: [0, c.y - 160, WIDE, c.y + 60], count: 70, seed: c.id}); }},
@@ -380,6 +511,45 @@ var KINDS = {
     });
   }}
 };
+// A crow (colour "black" or "white", the mother come down from heaven shining a little): it walks with its swagger,
+// pecks, caws, flies when it goes far.
+function crowAt(c, P, t, colour) {
+  var air = c.flying && P[2];
+  whiteCrow(P[0], P[1] - (air ? 40 : 0), t, {colour: colour, size: c.s, face: P[3], seed: c.id, fly: air || undefined,
+            step: !air && P[2] ? P[6] / (30 * c.s) : undefined, peck: c.doing === "peck" ? peckAt(t, c) : 0,
+            caw: c.doing === "call" ? 1 : 0, glow: colour === "white" ? 0.5 : 0});
+}
+// A kingfisher: on its perch it watches the water and calls; it dives head first, comes up with a fish, and beats
+// it on its perch (c.fishFrom, c.fishGone: when it has a fish, from its dive until it has eaten it).
+function kingfisherAt(c, P, t, kind) {
+  var look = {size: c.s, face: P[3], seed: c.id, kind: kind}, fish = c.fishFrom && t >= c.fishFrom && (!c.fishGone || t < c.fishGone);
+  if (c.doing === "dive") { if (P[2]) { look.dive = 1; } else { look.hover = true; look.fish = true; } }
+  else if (P[2]) { look.fly = true; look.fish = fish || undefined; }
+  else { look.watch = c.doing === "watch" ? 1 : 0; look.call = c.doing === "call" ? 1 : 0; look.fish = fish || undefined; look.beat = c.doing === "beat" ? 1 : 0; }
+  kingfisher(P[0], P[1], t, look);
+}
+// A toad or a rice-field frog: it sits breathing, calls with its throat swelling, hops, snaps at a fly.
+function toadAt(c, P, t, kind) {
+  toad(P[0], P[1], t, {size: c.s, face: P[3], seed: c.id, kind: kind, call: c.doing === "call" ? 1 : 0,
+       hop: P[2] ? P[6] / (30 * c.s) : undefined, tongue: c.doing === "tongue" ? Math.min(1, (t - c.from) / 0.7) : 0});
+}
+// A pond turtle (gold 0) or the golden turtle (gold 1): it paddles, rests, comes up to breathe.
+function turtleAt(c, P, t, gold) {
+  goldTurtle(P[0], P[1], t, {size: c.s * (PLACES[scene.place].near || 1), face: P[3], seed: c.id, gold: gold, swim: true,
+             breathe: c.act === "come up to breathe" && !P[2] ? 1 : 0});
+}
+// A barking deer (white: one of Chiang Mai's signs); every fourth a spotted fawn. It walks, grazes, stands alert with
+// its white tail flagged, barks.
+function deerAt(c, P, t, white) {
+  var fawn = c.id % 4 === 0, pace = GAITS.deer[1] / 0.62 * c.s * (fawn ? 0.55 : 1);
+  barkingDeer(P[0], P[1], t, {size: c.s, face: P[3], seed: c.id, white: white, fawn: fawn, step: step(P, pace),
+              graze: c.doing === "graze" ? 1 : 0, alert: c.doing === "alert" ? 1 : 0, bark: c.doing === "call" ? 1 : 0});
+}
+// The four butterflies of butterflies.js, each as wide as it really is across its wings: [cm, pixels across its
+// wings at the kit's size 1 (measured 2026-10-26)]. butterfly() takes the kind; c.id picks it.
+var BF_KINDS = ["lacewing", "grassyellow", "bluebottle", "birdwing"];
+var BF_SIZES = {birdwing: [15, 66], lacewing: [8, 51], bluebottle: [7, 47], grassyellow: [4, 29]};
+
 // ---------- one scale for every creature ----------
 // Each kind as big as it really is beside the people (owner, 2026-10-23: "animals, people, birds, insects all seem
 // to be randomly sized"): a grown person is drawn 340 pixels tall and is about 160 cm, so a centimetre is PX_PER_CM
@@ -402,7 +572,16 @@ var SIZES = {buffalo: [125, 264], elephant: [260, 384], whiteelephant: [260, 384
              blackrooster: [48, 106], chick: [8, 78], peafowl: [100, 230], pheasant: [90, 226], sunbird: [10, 62],
              magpie: [65, 140], hornbill: [110, 150], egret: [46, 110], plover: [15, 122], lapwing: [30, 124],
              avadavat: [10, 64], owl: [34, 146], spotbill: [58, 104], grasshopper: [6, 52], moth: [25, 76],
-             kinnari: [155, 206], thewada: [160, 222], mom: [120, 240], maeng: [90, 200]};
+             kinnari: [155, 206], thewada: [160, 222], mom: [120, 240], maeng: [90, 200],
+             // the animals of 2026-10-26, measured drawn alone at the kit's size 1 (each one's painted box): length for
+             // the birds that stand level, the toads, the beetle, the turtles, the loris, the catfish, the rat and the
+             // mice (the mother, her tail too, as the kit's mouse); height to the top of the head for the upright
+             // kingfishers and parakeet, the sitting gibbon and the deer, the goral, the sambar and the banteng
+             crow: [50, 109], whitecrow: [50, 109], dove: [30, 67], kingfisher: [28, 57], commonkf: [17, 37], parakeet: [38, 87],
+             myna: [27, 84], gibbon: [60, 136], loris: [33, 86], toad: [10, 19], ricefrog: [11, 22], beetle: [7, 25],
+             turtle: [33, 73], goldturtle: [33, 73], catfish: [150, 474], barkingdeer: [65, 127], whitedeer: [65, 127],
+             sambar: [165, 363], whitesambar: [165, 363], banteng: [165, 275], goral: [90, 171], bamboorat: [50, 114],
+             whitemice: [17, 144]};
 // Each dish as wide as it really is (owner, 2026-10-23: "food is gigantic"): [cm across, pixels across at the
 // maker's size 2.2 (measured 2026-10-23)]: a basket of sticky rice, a bowl of khao soi or a curry, a plate of som tam,
 // mango and sticky rice, sai ua, nam phrik, pad thai or mu ping, the pan of khanom krok, and a khantoke on its stand.
@@ -563,13 +742,79 @@ var ETHOGRAMS = {
            ["go to a friend", "walk", "person", [6, 10], apart("person", 1.5, 180)],
            ["wai", "wai", "stay", [3, 5], function (c) { return W.near(c, "person", 400) ? 1.2 : 0; }]]
 };
+// the animals of 2026-10-26, each as the real one behaves:
+// a crow walks and pecks in the open, hops when it hurries, caws most in the morning, and flies a little way
+ETHOGRAMS.crow = [["walk and peck", "peck", "near", [6, 12], function (c) { return 1 + 2 * c.hunger; }], ["hop about", "walk", "quick", [1, 2], 1],
+                  ["stand", "rest", "stay", [5, 10], function (c) { return 0.5 + c.tired; }],
+                  ["caw", "call", "stay", [2, 3], function () { return hour(0) ? 0.8 : 0.2; }], ["fly a little way", "fly", "far", [3, 5], 0.4]];
+// a spotted dove walks nodding and pecks at seeds, bows and coos, rests puffed up in the heat
+ETHOGRAMS.dove = [["walk and peck", "peck", "near", [6, 12], function (c) { return 1 + 2 * c.hunger; }], ["walk", "walk", "near", [3, 6], 1],
+                  ["coo", "call", "stay", [4, 6], function () { return hour(0) ? 1 : 0.35; }],
+                  ["rest", "rest", "stay", [8, 16], function (c) { return hour(1) ? 1.5 : 0.3 + c.tired; }], ["fly a little way", "fly", "far", [2, 4], 0.4]];
+// a kingfisher sits long on its perch over the water watching, dives head first, beats what it caught on its perch,
+// calls its laughing call, and flies off low to another perch
+ETHOGRAMS.kingfisher = [["watch the water", "watch", "stay", [4, 10], 3], ["dive for a fish", "dive", "plunge", [1.2, 2], function () { return W.water ? 1.2 : 0; }],
+                        ["beat the fish", "beat", "stay", [2.5, 3.5], function (c) { return c.fishFrom && !c.fishGone ? 8 : 0; }],
+                        ["call", "call", "stay", [2, 3], 0.3], ["fly to another perch", "fly", "far", [2, 4], 0.8]];
+// a parakeet eats in the tree it is in, preens, shakes, calls loud, and flies fast to another tree
+ETHOGRAMS.parakeet = [["eat a fig", "eat", "stay", [6, 12], function (c) { return 1 + 2 * c.hunger; }], ["preen", "preen", "stay", [4, 8], 1],
+                      ["shake", "shake", "stay", [1, 1.5], 0.2], ["call", "call", "stay", [2, 3], 0.4], ["rest", "rest", "stay", [5, 10], 1],
+                      ["fly to another tree", "fly", "far", [2, 4], 1.2]];
+// a hill myna hops on the ground and in the trees, and flies between them
+ETHOGRAMS.myna = [["hop about", "walk", "near", [3, 6], 2], ["peck", "peck", "stay", [3, 6], 1.5], ["sit", "rest", "stay", [4, 8], 1],
+                  ["fly a little way", "fly", "far", [2, 4], 0.6]];
+// gibbons sing in the morning, sit long in the canopy, and swing arm over arm to another tree
+ETHOGRAMS.gibbon = [["sing", "call", "stay", [8, 14], function () { return hour(0) ? 3 : 0.3; }], ["sit", "rest", "stay", [8, 16], 2],
+                    ["swing to another tree", "fly", "far", [3, 6], 1.2]];
+// a slow loris keeps to its branch at night: it looks about with its great eyes, rests, sleeps curled
+ETHOGRAMS.loris = [["look about", "look", "stay", [5, 10], 2], ["rest", "rest", "stay", [8, 16], 2], ["sleep curled", "curl", "stay", [10, 20], 0.6]];
+// a toad or a frog sits still at night, calls, hops a little way, snaps at a fly
+ETHOGRAMS.toad = [["sit", "rest", "stay", [6, 14], 2], ["call", "call", "stay", [4, 8], function () { return W.night ? 2 : 0.2; }],
+                  ["hop", "walk", "quick", [1, 1.5], 0.8], ["snap at a fly", "tongue", "stay", [1, 1.5], 0.4]];
+// a rhinoceros beetle walks slowly on the ground, rests, raises its horns, and flies a little way
+ETHOGRAMS.beetle = [["walk", "walk", "near", [4, 8], 1.5], ["rest", "rest", "stay", [6, 14], 2], ["raise its horns", "lift", "stay", [2, 3], 0.5],
+                    ["fly a little way", "fly", "far", [2, 4], 0.3]];
+// a turtle paddles slowly, rests, and comes up to breathe
+ETHOGRAMS.turtle = [["paddle", "swim", "near", [8, 14], 2], ["rest", "rest", "stay", [8, 14], 1.5],
+                    ["come up to breathe", "swim", "surface", [3, 5], 0.6]];
+// the giant catfish glides slowly through the deep, and hangs still in it
+ETHOGRAMS.catfish = [["glide", "swim", "near", [10, 18], 3], ["hang in the deep", "rest", "stay", [8, 14], 1]];
+// a butterfly flutters over the ground and visits the flowers
+ETHOGRAMS.butterfly = [["flutter", "fly", "near", [3, 6], 2], ["visit a flower", "sip", "flower", [4, 8], function () { return W.flowers ? 3 : 0; }],
+                       ["flutter on", "fly", "far", [3, 6], 0.6]];
+// a barking deer grazes and browses, walks, stands alert when someone comes near, and barks at a dog
+ETHOGRAMS.barkingdeer = [["graze", "graze", "near", [10, 20], function (c) { return 1 + 3 * c.hunger; }], ["walk", "walk", "near", [6, 12], 1.6],
+                         ["stand alert", "alert", "stay", [3, 6], function (c) { return W.near(c, "person", 500) || W.near(c, "dog", 500) ? 2 : 0.3; }],
+                         ["bark", "call", "stay", [2, 3], function (c) { return W.near(c, "dog", 600) ? 1 : 0.08; }],
+                         ["rest", "rest", "stay", [10, 20], function (c) { return 0.3 + 2 * c.tired; }]];
+// a sambar grazes, walks, and rests in the heat
+ETHOGRAMS.sambar = [["graze", "graze", "near", [12, 24], function (c) { return 1 + 3 * c.hunger; }], ["walk", "walk", "near", [6, 12], 1.6],
+                    ["rest", "rest", "stay", [10, 20], function (c) { return 0.3 + 2 * c.tired + (hour(1) ? 1 : 0); }]];
+// a banteng walks the open forest and stands
+ETHOGRAMS.banteng = [["walk", "walk", "near", [8, 14], 2], ["stand", "rest", "stay", [10, 20], 1.5]];
+// a goral grazes on its ledge, stands still looking down, walks, and bounds up the rocks
+ETHOGRAMS.goral = [["graze", "graze", "near", [8, 16], function (c) { return 1 + 2 * c.hunger; }], ["stand and look", "alert", "stay", [4, 10], 1.5],
+                   ["walk", "walk", "near", [4, 8], 1], ["bound up the rocks", "walk", "quick", [1, 1.5], 0.5],
+                   ["rest", "rest", "stay", [8, 16], function (c) { return 0.3 + c.tired; }]];
+// a bamboo rat digs at the roots, and rests by its burrow
+ETHOGRAMS.bamboorat = [["dig", "dig", "stay", [6, 12], 2], ["rest", "rest", "stay", [6, 12], 1]];
+// the white mouse runs with her young behind her, and stops to sniff
+ETHOGRAMS.whitemice = [["run", "walk", "near", [3, 6], 2], ["stop and sniff", "rest", "stay", [3, 8], 1.5]];
+ETHOGRAMS.whitecrow = ETHOGRAMS.crow;
+ETHOGRAMS.commonkf = ETHOGRAMS.kingfisher;
+ETHOGRAMS.ricefrog = ETHOGRAMS.toad;
+ETHOGRAMS.goldturtle = ETHOGRAMS.turtle;
+ETHOGRAMS.whitedeer = ETHOGRAMS.barkingdeer;
+ETHOGRAMS.whitesambar = ETHOGRAMS.sambar;
 ETHOGRAMS.blackhen = ETHOGRAMS.hen;
 ETHOGRAMS.blackrooster = ETHOGRAMS.rooster;
 // The shy: what a creature moves away from when it comes close, and how close (gently: a few steps or a short
 // flight, no chase).
 var SHY = {grasshopper: [["hen", "rooster", "chick", "person", "dog", "blackrooster"], 140, 0.5], fieldmouse: [["cat", "dog", "person"], 220],
            plover: [["person", "dog"], 260], lapwing: [["person", "dog"], 260], avadavat: [["person", "dog", "cat"], 220],
-           pheasant: [["person", "dog"], 320], chick: [["dog", "cat"], 150]};
+           pheasant: [["person", "dog"], 320], chick: [["dog", "cat"], 150],
+           crow: [["dog", "cat", "person"], 140, 0.6], dove: [["dog", "cat", "person"], 160, 0.6], myna: [["dog", "cat"], 140, 0.6],
+           barkingdeer: [["person", "dog"], 320], sambar: [["person", "dog"], 380], goral: [["person", "dog"], 320]};
 var HENS = {hen: true, blackhen: true};  // what "hen" means: a hen of either coat (the chicks' mothers, the rooster's hens)
 
 // choose(c): one row of its ethogram, weighed by how likely each is now.
@@ -595,7 +840,9 @@ function nearest(c, kind, r) {
 var SEED = 1;
 function rng() { SEED = (SEED * 1664525 + 1013904223) % 4294967296; return SEED / 4294967296; }
 function pick(list) { return list[Math.floor(rng() * list.length)]; }
-function between(a, b) { return a + rng() * (b - a); }
+// a number at random from a to b (named apart from the kit's between(t, a, b), which this page used to hide: the
+// kit's own easing of a person's feelings and a fowl's start were given random numbers)
+function randomBetween(a, b) { return a + rng() * (b - a); }
 
 // ---------- a scene ----------
 var scene = null, sceneStart = 0, nextId = 1;
@@ -605,12 +852,12 @@ function compose(seed, settingName) {
   var s = SETTINGS[name], place = ASK.get("place") && PLACES[ASK.get("place")] ? ASK.get("place") : pick(s.places), P = PLACES[place];
   var sc = {setting: name, place: place, night: !!P.night, hour: Math.floor(rng() * 3), creatures: [], things: [], seed: seed};
   COUNT = Number(ASK.get("count")) ? Math.max(1, Math.min(60, Number(ASK.get("count"))))
-        : Math.round(between(COUNTS[name][0], COUNTS[name][1]));
+        : Math.round(randomBetween(COUNTS[name][0], COUNTS[name][1]));
   // the set pieces, each painted once as a picture of its own (pieceSprite())
   var pieces = [];
   if (P.ground) {
     s.pieces.forEach(function (row) {
-      for (var n = 0; n < row[1]; n++) { if (rng() < 0.75) { pieces.push([row[0], between(80, WIDE - 80), between(P.ground[0], P.ground[0] + 50)]); } }
+      for (var n = 0; n < row[1]; n++) { if (rng() < 0.75) { pieces.push([row[0], randomBetween(80, WIDE - 80), randomBetween(P.ground[0], P.ground[0] + 50)]); } }
     });
   }
   sc.perches = [];
@@ -619,7 +866,7 @@ function compose(seed, settingName) {
     var x = Math.round(p[1]), y = Math.round(p[2]), sprite = pieceSprite(p[0], x, y);
     for (var tries = 0; sprite && BUILDINGS[p[0]] && standsIn(sc.pieces, sprite); tries++) {   // a building is not
       if (tries === 6) { return; }                                                             // built into another:
-      x = Math.round(between(80, WIDE - 80)); sprite = pieceSprite(p[0], x, y);                // somewhere else, or not
+      x = Math.round(randomBetween(80, WIDE - 80)); sprite = pieceSprite(p[0], x, y);                // somewhere else, or not
     }
     if (sprite) { sc.pieces.push(sprite); }
     (PERCHES[p[0]] || []).forEach(function (o) { sc.perches.push([x + o[0], y + o[1] + 4]); });
@@ -628,26 +875,26 @@ function compose(seed, settingName) {
   var level = !P.sky ? "clear" : CLOUDS[ASK.get("clouds")] ? ASK.get("clouds") : pick(Object.keys(CLOUDS)), wind = rng() < 0.5 ? -1 : 1;
   sc.clouds = level;
   sc.cloudList = [];
-  for (var n = Math.round(between(CLOUDS[level][0], CLOUDS[level][1])); n > 0; n--) {
-    var size = between(0.5, 1.3);
-    sc.cloudList.push({x: between(0, WIDE + 600), y: between(P.sky[0] + 40, P.sky[0] + 40 + 0.7 * (P.sky[1] - P.sky[0])),
-                       size: size, v: wind * size * between(6, 12)});
+  for (var n = Math.round(randomBetween(CLOUDS[level][0], CLOUDS[level][1])); n > 0; n--) {
+    var size = randomBetween(0.5, 1.3);
+    sc.cloudList.push({x: randomBetween(0, WIDE + 600), y: randomBetween(P.sky[0] + 40, P.sky[0] + 40 + 0.7 * (P.sky[1] - P.sky[0])),
+                       size: size, v: wind * size * randomBetween(6, 12)});
   }
   sc.cloudList.sort(function (a, b) { return a.size - b.size; });   // the far (small) ones first
   // what stands and stirs
   s.things.forEach(function (row) {
     for (var n = 0; n < row[1]; n++) {
       if (rng() > 0.7) { continue; }
-      var t = {name: row[0], x: between(90, WIDE - 90), id: nextId++};
+      var t = {name: row[0], x: randomBetween(90, WIDE - 90), id: nextId++};
       if (row[0] === "khomline") {             // a rope of khom: its left pole at x, span wide, count lanterns
         if (!P.ground) { continue; }
-        t.span = between(600, 1000); t.x = between(80, WIDE - 80 - t.span); t.count = 3 + Math.floor(rng() * 3);
-        t.y = between(P.ground[0] + 10, P.ground[0] + 60);
+        t.span = randomBetween(600, 1000); t.x = randomBetween(80, WIDE - 80 - t.span); t.count = 3 + Math.floor(rng() * 3);
+        t.y = randomBetween(P.ground[0] + 10, P.ground[0] + 60);
       }
-      else if (row[0] === "krathong") { if (!P.water) { continue; } t.y = between(P.water[0] + 20, P.water[1]); }
-      else if (row[0] === "weed" || row[0] === "bubbles") { if (!P.bed) { continue; } t.y = between(P.bed + 10, P.bed + 70); }
+      else if (row[0] === "krathong") { if (!P.water) { continue; } t.y = randomBetween(P.water[0] + 20, P.water[1]); }
+      else if (row[0] === "weed" || row[0] === "bubbles") { if (!P.bed) { continue; } t.y = randomBetween(P.bed + 10, P.bed + 70); }
       else if (!P.ground) { continue; }
-      else { t.y = between(P.ground[0] + 20, P.ground[1] - 40); }
+      else { t.y = randomBetween(P.ground[0] + 20, P.ground[1] - 40); }
       if (row[0] === "flower") { t.flower = pick(FLOWERS); }
       if (row[0] === "food") { t.food = pick(Object.keys(window.FOODS || {})); }
       sc.things.push(t);
@@ -656,7 +903,7 @@ function compose(seed, settingName) {
   // the creatures: COUNT of them (people and the night's own among them), drawn from the setting's kinds by how
   // likely each is there, each kind up to its most; a chick only where there is a hen
   var pool = s.creatures.concat(P.night ? NIGHT_ADDS : []).filter(function (row) {
-    return !(P.night && DAY_ONLY[row[0]]) && spotFor(KINDS[row[0]].where, P, row[0]);
+    return !(P.night && DAY_ONLY[row[0]]) && fits(row[0], P, place) && spotFor(KINDS[row[0]].where, P, row[0]);
   });
   var people = P.ground && s.people.length ? Math.min(Math.round(COUNT / 4), 4) : 0, have = {}, tries = 0;
   while (sc.creatures.length < COUNT - people && pool.length && tries++ < 400) {
@@ -668,11 +915,16 @@ function compose(seed, settingName) {
     if (!spot) { continue; }
     if (row[0] === "chick") {                    // beside its mother
       var hen = sc.creatures.filter(function (o) { return HENS[o.kind]; })[0];
-      spot = [hen.x + between(-80, 80), hen.y + between(-10, 10)];
+      spot = [hen.x + randomBetween(-80, 80), hen.y + randomBetween(-10, 10)];
     }
     sc.creatures.push(born(row[0], spot, PERCHERS[row[0]] !== undefined ? {perch: spot} : {}));
   }
   for (var n = 0; n < people; n++) { sc.creatures.push(born("person", spotFor("ground", P), {cast: pick(s.people)})); }
+  if (P.thicket) { sc.creatures.forEach(function (c) { c.s *= P.near; }); }   // among the plants, near: larger
+  // a shower now and then over the fields and the forest by day (rain.js; owner's films call it from a light shower to
+  // the monsoon): one scene in seven, light; ?rain= 0 to 1 sets it (0: none)
+  var wet = /natural|rural|farm/.test(name) && !P.night && P.ground && P.sky && !P.thicket;
+  sc.rain = ASK.get("rain") !== null ? Math.max(0, Math.min(1, Number(ASK.get("rain")) || 0)) : wet && rng() < 1 / 7 ? randomBetween(0.05, 0.35) : 0;
   return sc;
 }
 // A perch for a bird: a free point on a tree's crown, or the ground (as often as PERCHERS says, or when there is no
@@ -681,20 +933,21 @@ function perchFor(sc, P, kind, from) {
   var free = sc.perches.filter(function (q) {
     return (!from || q[0] !== from[0] || q[1] !== from[1]) && !sc.creatures.some(function (c) { return c.perch === q; });
   });
-  if (P.ground && (!free.length || rng() < PERCHERS[kind])) { return [between(100, WIDE - 100), between(P.ground[0] + 10, P.ground[1])]; }
+  if (TREE_ONLY[kind] && !free.length) { return null; }
+  if (P.ground && (!free.length || rng() < PERCHERS[kind])) { return [randomBetween(100, WIDE - 100), randomBetween(P.ground[0] + 10, P.ground[1])]; }
   return free.length ? pick(free) : null;
 }
 function spotFor(where, P, kind) {
-  if (where === "water") { return P.water ? [between(120, WIDE - 120), between(P.water[0] + 20, P.water[1] - 10)] : null; }
-  if (where === "sky") { return [between(120, WIDE - 120), between(P.sky[0], P.sky[1])]; }
-  if (kind === "fireflies" || kind === "band" || kind === "rotdaeng") { return P.ground ? [between(100, WIDE - 600), between(P.ground[0] + 30, P.ground[1] - 20)] : null; }
-  return P.ground ? [between(100, WIDE - 100), between(P.ground[0] + 10, P.ground[1])] : null;
+  if (where === "water") { return P.water ? [randomBetween(120, WIDE - 120), randomBetween(P.water[0] + 20, P.water[1] - 10)] : null; }
+  if (where === "sky") { return [randomBetween(120, WIDE - 120), randomBetween(P.sky[0], P.sky[1])]; }
+  if (kind === "fireflies" || kind === "band" || kind === "rotdaeng") { return P.ground ? [randomBetween(100, WIDE - 600), randomBetween(P.ground[0] + 30, P.ground[1] - 20)] : null; }
+  return P.ground ? [randomBetween(100, WIDE - 100), randomBetween(P.ground[0] + 10, P.ground[1])] : null;
 }
 function born(kind, spot, more) {
-  var c = Object.assign({kind: kind, id: nextId++, x: spot[0], y: spot[1], s: between(0.95, 1.05) * sizeOf(kind), late: rng() * 0.6,
+  var c = Object.assign({kind: kind, id: nextId++, x: spot[0], y: spot[1], s: randomBetween(0.95, 1.05) * sizeOf(kind), late: rng() * 0.6,
                          hunger: rng(), tired: rng() * 0.6, doing: "rest", until: 0, keys: [[0, spot[0], spot[1]]],
                          fish: pick(["gourami", "barb", "flying", "snakehead"]), flying: false}, more);
-  c.until = between(0.5, 4);             // each decides first at a moment of its own
+  c.until = randomBetween(0.5, 4);             // each decides first at a moment of its own
   return c;
 }
 
@@ -705,7 +958,9 @@ var PERCHES = {tree: [[-140, -394], [0, -515], [140, -419]], palm: [[0, -442]], 
                areca: [[-60, -500], [0, -515], [60, -480]], floratree: [[-120, -365], [0, -469], [120, -396]]};
 // The birds that perch (owner, 2026-10-23: "Make sure birds only perch on the ground or in a tree and not in the
 // sky"): each starts on a perch, and every flight ends on one, a tree's crown or the ground (how likely the ground).
-var PERCHERS = {magpie: 0.25, hornbill: 0, sunbird: 0, owl: 0};
+var PERCHERS = {magpie: 0.25, hornbill: 0, sunbird: 0, owl: 0, kingfisher: 0.3, commonkf: 0.3, myna: 0.5, parakeet: 0, gibbon: 0, loris: 0};
+// those that never come down: with no tree in the place they are not there (perchFor() gives none)
+var TREE_ONLY = {parakeet: true, gibbon: true, loris: true};
 
 // A set piece as a picture of its own, drawn among the creatures by its foot (owner, 2026-10-23, of "an animal or a
 // person standing a little behind a house is drawn in front of it": "Yeah, the open items"), so one that walks behind
@@ -833,10 +1088,10 @@ function caught(c, t) {
 // pace, then held there till the bout is over.
 function act(c, row, now) {
   if (WRAPS[c.kind]) { flyOn(c, row, now); return; }
-  var k = kindOf(c), P = PLACES[scene.place], doing = row[1], how = row[2], seconds = between(row[3][0], row[3][1]);
+  var k = kindOf(c), P = PLACES[scene.place], doing = row[1], how = row[2], seconds = randomBetween(row[3][0], row[3][1]);
   var here = where(c.keys, now), x = here[0], y = here[1], tx = x, ty = y, speed = k.speed || 50;
   var band = k.where === "water" ? P.water : k.where === "sky" ? P.sky : P.ground || P.sky;
-  var near = k.where === "water" && P.near || 1;   // under the water the fish are near: they go farther, and faster
+  var near = (k.where === "water" || P.thicket) && P.near || 1;   // under the water, or among the flowers: near, so farther and faster
   speed *= Math.sqrt(near);
   function inBand(nx, ny) { return [Math.max(80, Math.min(WIDE - 80, nx)), Math.max(band[0] + 10, Math.min(band[1] - 10, ny))]; }
   var goal = null;
@@ -844,13 +1099,16 @@ function act(c, row, now) {
   if (ROAMS[c.kind] && (how === "in" || how === "near" || how === "quick")) { goal = roam(c, how, doing, x, y, band); }
   else if (how === "near" || how === "quick" || how === "far") {
     var reach = (how === "far" ? (k.where === "sky" ? 700 : 450) : how === "quick" ? 90 : (k.where === "water" ? 220 : 180)) * near;
-    goal = inBand(x + between(-reach, reach), y + between(-reach, reach) * (k.where === "sky" ? 0.6 : 0.25));
+    goal = inBand(x + randomBetween(-reach, reach), y + randomBetween(-reach, reach) * (k.where === "sky" ? 0.6 : 0.25));
     if (how === "quick") { speed *= 2.5; }
-  } else if (how === "water" && P.water && P.ground) { goal = inBand(x + between(-200, 200), P.ground[0] + 10); }
-  else if (how === "surface" && P.water) { goal = inBand(x + between(-40, 40), P.water[0] + 15); }
+  } else if (how === "water" && P.water && P.ground) { goal = inBand(x + randomBetween(-200, 200), P.ground[0] + 10); }
+  else if (how === "surface" && P.water) { goal = inBand(x + randomBetween(-40, 40), P.water[0] + 15); }
+  else if (how === "plunge" && P.water) {           // a kingfisher's dive: head first to the water's surface near it
+    goal = [Math.max(80, Math.min(WIDE - 80, x + randomBetween(-220, 220))), P.water[0] + 12];
+  }
   else if (how === "flower") {
     var f = scene.things.filter(function (t) { return t.name === "flower"; });
-    if (f.length) { var fl = pick(f); goal = [fl.x + between(-10, 10), fl.y - bloomHigh(fl.flower)]; }   // at its bloom
+    if (f.length) { var fl = pick(f); goal = [fl.x + randomBetween(-10, 10), fl.y - bloomHigh(fl.flower)]; }   // at its bloom
   } else if (how !== "stay") {
     var other = how === "mother" || how === "hens" ? nearest(c, "hen", 2000) : nearest(c, how === "herd" ? c.kind : how, how === "grasshopper" ? 320 : 2000);
     if (other && how === "grasshopper") {           // straight to it: its place now, the beak a little in front of the feet
@@ -859,11 +1117,11 @@ function act(c, row, now) {
       other = null;
     }
     if (other) {
-      var side = other.x > x ? -1 : 1, gap = how === "mother" ? between(30, 70) : between(70, 140);
-      goal = inBand(other.x + side * gap, other.y + between(-15, 15));
+      var side = other.x > x ? -1 : 1, gap = how === "mother" ? randomBetween(30, 70) : randomBetween(70, 140);
+      goal = inBand(other.x + side * gap, other.y + randomBetween(-15, 15));
     }
   }
-  if (PERCHERS[c.kind] !== undefined && how !== "flower") {
+  if (PERCHERS[c.kind] !== undefined && how !== "flower" && how !== "plunge") {
     if (how !== "stay" || !c.perch) {           // it flies on, or it is in the air: to a perch
       var to = perchFor(scene, P, c.kind, c.perch);
       if (to) { goal = to; doing = how === "stay" ? "rest" : "fly"; }
@@ -883,6 +1141,9 @@ function act(c, row, now) {
   c.doing = doing;
   c.act = row[0];
   c.from = now;                          // when this bout began (the wai rises from here)
+  c.go = go;                             // how long its leg takes (a goral's bound is drawn over it)
+  if (doing === "dive") { c.fishFrom = now + go; c.fishGone = 0; }        // it comes up with a fish
+  if (doing === "beat") { c.fishGone = now + seconds; }                   // beaten, and swallowed at the bout's end
   c.until = now + seconds;
   if (doing === "graze" || doing === "peck" || doing === "sip" || how === "surface") { c.hunger = Math.max(0, c.hunger - 0.45); }
   if (doing === "rest") { c.tired = Math.max(0, c.tired - 0.5); }
@@ -902,9 +1163,9 @@ function flyOn(c, row, now) {
   var band = PLACES[scene.place].sky, last = c.keys[c.keys.length - 1];
   c.dir = c.dir || (rng() < 0.5 ? -1 : 1);
   if (last[0] < now) { c.keys.push(last = [now, last[1], last[2]]); }   // only the first time: it sets off from here
-  var seconds = between(row[3][0], row[3][1]), pace = row[2] === "far" ? 1 : 0.45;
+  var seconds = randomBetween(row[3][0], row[3][1]), pace = row[2] === "far" ? 1 : 0.45;
   var x = last[1] + c.dir * kindOf(c).speed * pace * seconds;
-  var y = Math.max(band[0] + 10, Math.min(band[1] - 10, last[2] + between(-120, 120)));
+  var y = Math.max(band[0] + 10, Math.min(band[1] - 10, last[2] + randomBetween(-120, 120)));
   var reached = c.keys.filter(function (key) { return key[0] <= now; }).length;
   if (reached > 4) { c.keys = c.keys.slice(reached - 4); }         // enough behind it for a long body's trail
   c.keys.push([last[0] + seconds, x, y]);
@@ -923,17 +1184,20 @@ function flyOn(c, row, now) {
 // feet, walking, at its largest (measured 2026-10-23: elephant 348, white elephant 348, horse 285, buffalo 257, mom
 // 218, pig 202, maeng 183, cat 129, mouse 125, dog 107, a person 77).
 var ROAMS = {buffalo: 310, elephant: 420, whiteelephant: 420, pig: 245, horse: 345, cat: 155, dog: 130, fieldmouse: 150,
-             mom: 260, maeng: 220, person: 95};
+             mom: 260, maeng: 220, person: 95,
+             // the animals of 2026-10-26, measured as the others (a fifth more than the most drawn ahead of or behind
+             // the feet, walking, at the largest): barking deer 120, sambar 290, banteng 385, goral 125, the mice 60
+             barkingdeer: 145, whitedeer: 145, sambar: 350, whitesambar: 350, banteng: 465, goral: 150, whitemice: 75};
 function roam(c, how, doing, x, y, band) {
   c.dir = c.dir || (rng() < 0.5 ? -1 : 1);
-  var m = ROAMS[c.kind], ty = Math.max(band[0] + 10, Math.min(band[1] - 10, y + between(-40, 40)));
-  if (how === "in") { return [c.dir > 0 ? between(150, 600) : WIDE - between(150, 600), ty]; }
+  var m = ROAMS[c.kind], ty = Math.max(band[0] + 10, Math.min(band[1] - 10, y + randomBetween(-40, 40)));
+  if (how === "in") { return [c.dir > 0 ? randomBetween(150, 600) : WIDE - randomBetween(150, 600), ty]; }
   if (rng() < 0.15) { c.dir = -c.dir; }
-  var walk = doing === "walk", tx = x + c.dir * (walk && how !== "quick" ? between(300, 700) : how === "quick" ? 90 : between(60, 180));
+  var walk = doing === "walk", tx = x + c.dir * (walk && how !== "quick" ? randomBetween(300, 700) : how === "quick" ? 90 : randomBetween(60, 180));
   if (tx > 120 && tx < WIDE - 120) { return [tx, ty]; }
   if (walk) { return [c.dir > 0 ? WIDE + m + 1 : -m - 1, ty]; }    // at the end of the screen it goes on, off it
   c.dir = -c.dir;                                                   // grazing: it turns round
-  return [x + c.dir * between(60, 180), ty];
+  return [x + c.dir * randomBetween(60, 180), ty];
 }
 // A lap: when the whole of it has gone past the edge, its course is moved across by the screen and both margins,
 // every point of it at once, so a long body comes round whole. A four-legged one may come round as another
@@ -946,7 +1210,7 @@ function onward(c, t) {
     if (folk.length) { c.cast = pick(folk); }
   } else if (walker && rng() < 0.5) {
     var others = SETTINGS[scene.setting].creatures.filter(function (row) {
-      return ROAMS[row[0]] && row[0] !== c.kind &&
+      return ROAMS[row[0]] && row[0] !== c.kind && fits(row[0], PLACES[scene.place], scene.place) &&
              scene.creatures.filter(function (o) { return o.kind === row[0]; }).length < row[1];
     });
     if (others.length) {
@@ -983,7 +1247,7 @@ function startled(c, now) {
   if (shy[2] !== undefined && Math.random() > shy[2]) { return false; }   // it did not notice this time
   var k = kindOf(c), away = c.x >= near.x ? 1 : -1;
   prune(c, now);
-  var tx = Math.max(80, Math.min(WIDE - 80, c.x + away * between(140, 240))), go = Math.abs(tx - c.x) / ((k.speed || 50) * 2.5);
+  var tx = Math.max(80, Math.min(WIDE - 80, c.x + away * randomBetween(140, 240))), go = Math.abs(tx - c.x) / ((k.speed || 50) * 2.5);
   c.keys.push([now + go, tx, c.y], [now + go + 2, tx, c.y]);
   c.flying = k.group === "flier";
   c.doing = "walk"; c.act = "moves away"; c.until = now + go + 2; c.x = tx;
@@ -997,7 +1261,7 @@ var SOUND = {on: false, ctx: null, buffers: {}, beds: [], lastCall: {}};
 var SOUND_BASES = [["audio/kit_sounds/", ".mp3"], ["../kit/out/sounds/", ".wav"]];
 var BEDS = {natural: {day: ["cicadas"], night: ["crickets", "frogs"]}, rural: {day: ["cicadas"], night: ["crickets", "frogs"]},
             farm: {day: ["cicadas"], night: ["crickets"]}, mythical: {day: ["wind"], night: ["wind"]}, town: {day: [], night: ["crickets"]},
-            underwater: {day: [], night: []}};   // the kit has no sound of water yet
+            underwater: {day: [], night: []}, thicket: {day: ["cicadas"], night: ["crickets"]}};   // the kit has no sound of water yet
 function soundFile(name, done) {
   if (SOUND.buffers[name] !== undefined) { done(SOUND.buffers[name]); return; }
   var tries = SOUND_BASES.slice();
@@ -1040,7 +1304,7 @@ function startBeds() {
 // it loops, fades in, and crosses to the next setting's piece when the scene changes. The checkbox turns it on.
 var MUSIC = {on: false, playing: null, name: ""};
 var MUSIC_FOR = {natural: "scene_natural", rural: "scene_rural", farm: "scene_farm", town: "scene_town", mythical: "scene_mythical",
-                 underwater: "scene_natural"};   // no piece of its own yet: the forest's
+                 underwater: "scene_natural", thicket: "scene_natural"};   // no piece of their own yet: the forest's
 function musicName() { return scene.night ? "scene_night" : MUSIC_FOR[scene.setting]; }
 function musicFade(node, to, seconds) {
   if (!node || !node.gain) { return; }
@@ -1076,6 +1340,7 @@ function stopMusic() {
 var fade = {from: 0, to: 0, at: 0};       // a fade through black between scenes
 function newScene(seed) {
   scene = compose(seed || Math.floor(Math.random() * 1e9), ASK.get("setting"));
+  if (PLACES[scene.place].thicket) { THICKET.forEach(thicketLayers); }   // all four built now, in the scene's fade-in
   sceneStart = performance.now();
   var names = SETTINGS[scene.setting].names;
   byId("placeName").textContent = names[0];
@@ -1090,11 +1355,66 @@ var SCENE_SECONDS = 240;
 // 16.7 ms): the animals drew in under 9 ms up to 32 of them, and the town's people and truck in 12.5 ms at 16 and 24
 // ms at 24; by eye, the village was lively at 16 and crowded at 24, the forest's small birds spread out up to 32,
 // and the market was full at about 10.
-var COUNTS = {natural: [10, 20], rural: [8, 14], farm: [8, 14], town: [6, 10], mythical: [5, 8], underwater: [8, 16]};
+var COUNTS = {natural: [10, 20], rural: [8, 14], farm: [8, 14], town: [6, 10], mythical: [5, 8], underwater: [8, 16], thicket: [6, 10]};
 var COUNT = 8;
 // How cloudy a scene is (owner, 2026-10-23: "Add a random level of clouds"): one level picked at random, or ?clouds=;
 // each the fewest and most clouds of it.
 var CLOUDS = {clear: [0, 0], few: [2, 3], some: [4, 6], many: [7, 10], overcast: [12, 16]};
+// ---------- through the flowers ----------
+// The thicket setting (owner, 2026-10-26: "do a scene like in Spirited Away but without a person moving through
+// flowers and thick vegetation"; and so thicket/, the film "Through the flowers", made the day before from the same
+// reference). Its four places of dense flowering plants are the film's own layers (thicket.js thkLayers()): the pink
+// thicket, the green hedge, under the trees, the clearing. A film's scene is twelve seconds; here the camera goes on:
+// THICKET_SEG seconds pushing slowly forward through one of them, then through the bright air of the next, as if light
+// came through the leaves (THICKET_FADE seconds out and in), round the four and again, starting where the scene's
+// seed says. The film's own animals are left out of its layers: the page's creatures live in the layer the camera
+// looks at (the last at depth 1 or less), so the near plants pass in front of them as it moves.
+// Each: its key and builder (thicket/s0N_*.js), its sky [[stop, colour], ...] to skyTo, the air's colour (the haze
+// over its far layers), its falling petals [count, colour, seed, size] or none, its light [strength, seed], how dark
+// its edges are; all read from the film's scene functions (s01Pink() and the rest).
+var THICKET = [
+  {key: "pink", build: s01Build, sky: [[0, "#fbf3d8"], [0.55, "#e9f0c8"], [1, "#b8d48a"]], skyTo: 1080, air: "#f6f2d6",
+   petals: [36, "#f3a6c0", 3, 1.2], light: [0.7, 1], vignette: 0.3},
+  {key: "hedge", build: s02Build, sky: [[0, "#f6f1d4"], [1, "#d8e8b0"]], skyTo: 600, air: "#f0f2d4", petals: null,
+   light: [0.5, 4], vignette: 0.3},
+  {key: "trees", build: s03Build, sky: [[0, "#dfe8c4"], [0.6, "#b8cc98"], [1, "#5a7448"]], skyTo: 1080, air: "#e4ecc8", petals: null,
+   light: [1, 7], vignette: 0.42},
+  {key: "clearing", build: s04Build, sky: [[0, "#9cc8de"], [0.7, "#e6efe0"], [1, "#f8f0d6"]], skyTo: 800, air: "#eef2e0",
+   petals: [30, "#f6b8cc", 9, 1.1], light: [0.45, 11], vignette: 0.25}];
+var THICKET_SEG = 32, THICKET_FADE = 2.2, THICKET_LAYERS = {};
+// One place's layers for this page: the film's, built once (thkOnce, the film's own cache), without their own
+// animals; the layer the creatures live in is marked "home". Returns the list.
+function thicketLayers(a) {
+  if (THICKET_LAYERS[a.key]) { return THICKET_LAYERS[a.key]; }
+  var layers = thkOnce(a.key, a.build).map(function (layer) { return Object.assign({}, layer, {live: null}); }), home = 0;
+  layers.forEach(function (layer, n) { if (layer.depth <= 1) { home = n; } });
+  layers[home].home = true;
+  return (THICKET_LAYERS[a.key] = layers);
+}
+// The thicket at second at: the sky, the layers with the creatures (live(), drawn in their layer's frame), the
+// petals, the light and the edges, and the bright air the camera passes through between two places.
+function thicketFrame(at, live) {
+  var n = Math.floor(at / THICKET_SEG), into = at - n * THICKET_SEG, u = into / THICKET_SEG;
+  var a = THICKET[(n + scene.seed) % THICKET.length], layers = thicketLayers(a);
+  var sky = pen.createLinearGradient(0, 0, 0, a.skyTo);
+  a.sky.forEach(function (stop) { sky.addColorStop(stop[0], stop[1]); });
+  pen.fillStyle = sky;
+  pen.fillRect(0, 0, WIDE, 1080);
+  layers.forEach(function (layer) { layer.live = layer.home ? live : null; });
+  thkLayers(at, layers, {x: 8 * into, z: 0.3 * u, y: -30 * u}, a.air);   // on, steadily, a little to the side and up
+  if (a.petals) { thkPetals(at, a.petals[0], a.petals[1], a.petals[2], a.petals[3]); }
+  thkLight(at, a.light[0], a.light[1]);
+  thkVignette(a.vignette);
+  var bright = n === 0 && into < THICKET_FADE ? 0 : Math.max(0, 1 - into / THICKET_FADE, 1 - (THICKET_SEG - into) / THICKET_FADE);
+  if (bright > 0) {
+    pen.save();
+    pen.globalAlpha = 0.92 * bright * bright * (3 - 2 * bright);
+    pen.fillStyle = a.air;
+    pen.fillRect(0, 0, WIDE, 1080);
+    pen.restore();
+  }
+}
+
 // the frame time, for a check: window.FRAMES holds the last 300 frames' milliseconds of drawing
 window.FRAMES = [];
 function frame(now) {
@@ -1120,9 +1440,11 @@ function frame(now) {
   scene.creatures = scene.creatures.filter(function (c) { return !c.gone; });
   settled(t, function (at) {
     clock = at;
-    var hangs = window.BACKDROP_HANGING && BACKDROP_HANGING[scene.place];
-    pen.drawImage(backdrop(scene.place, !!hangs), 0, 0);
-    if (hangs) { backdropSway(scene.place, at); }
+    var place = PLACES[scene.place], hangs = window.BACKDROP_HANGING && BACKDROP_HANGING[scene.place];
+    if (!place.thicket) {
+      pen.drawImage(backdrop(scene.place, !!hangs), 0, 0);
+      if (hangs) { backdropSway(scene.place, at); }
+    }
     // what is on the water is drawn first, so a house or a tree on the bank in front covers a duck, a fish or a
     // krathong on the water behind it (owner, 2026-10-23: "Check z order on swimming ducks. They are going in front
     // of houses they should be behind"); then the set pieces, the things and the creatures, each by its feet
@@ -1139,12 +1461,18 @@ function frame(now) {
       var z = k.where === "sky" ? "front" : k.where === "water" ? "back" : undefined;
       (k.where === "water" ? onWater : who).push({kind: c.kind === "person" ? "person" : "thing", z: z, y: P[1], draw: function () { k.draw(c, P, at); }});
     });
+    if (place.thicket) { thicketFrame(at, function () { drawByZ(onWater); drawByZ(who); }); return; }
     scene.cloudList.forEach(function (k) {          // drifting on the wind; off one side, in again at the other
       var x = ((k.x + at * k.v) % (WIDE + 600) + WIDE + 600) % (WIDE + 600) - 300;
       cloud(x, k.y, k.size, scene.night ? "#4d5274" : undefined);
     });
     drawByZ(onWater);
     drawByZ(who);
+    if (scene.rain) {                               // the shower over all of it, its far shafts under the clouds
+      var wet = {heavy: scene.rain, cloud: place.sky[0] + 60, far: place.ground[0] - 30, ground: place.ground[1], wind: 0.2, seed: scene.seed % 997};
+      if (place.water) { wet.water = [[0, place.water[0], WIDE, place.water[1] - place.water[0]]]; }
+      rain(pen, at, wet);
+    }
   });
   screen.fillStyle = "#000";
   screen.fillRect(0, 0, 1920, 1080);
