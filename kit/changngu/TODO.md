@@ -155,3 +155,63 @@ in v1). Joined: hero 122.5 s, card 12.0 s, tale 1161.5 s = 1296.0 s, -14.0 LUFS,
 Shipped over v1 at krueng.ai/video/lanna_tales_changngu.mp4 (owner: "yes"); `series.json` says v2's parts.
 
 Seen after: scene 18's pale title, ช้างพานคำ, lies over a cloud at 690 s of the tale and reads poorly. Not fixed.
+
+## v3: the scenery pass, the new beasts, scene 18's title (owner, 2026-10-26)
+
+The owner chose, of "the Chang Ngu video upgrade": **the scenery pass as the Maeng film's** (`docs/kit/places.md`,
+"Painting the scenery", with `../scenery.js`), **the new elephants and buffalo** (c7b37e6: shorter legs; the white
+elephant and Chang Ngu draw through `elephant()`) and **scene 18's pale title** over a cloud (690 s of the tale).
+Everything else as v2. The steps, in the order to do them (rendering is the slow step, so every scene is painted and
+seen in stills first, and each scene is rendered once at the end):
+
+1. **Read how Maeng was painted** before touching anything: `docs/kit/places.md` "Painting the scenery", the header
+   of `../scenery.js` and `../scenery.html`, and Maeng's own use of it (`../maeng/sets.js`: `MAENG_FAR`, `MAENG_AIR`,
+   `maengDoi()`; 9287bd0). The Maeng pass is still going on in a peer session: `../scenery.js` is the kit's and
+   shared, so a change there is agreed with the peer first; Chang Ngu's painting goes in `sets.js` here.
+2. **SCENERY in `story.py`**, a line for each of the 25 scenes of the plan (`python tale_plan.py changngu` names any
+   without and the plan shows it red; the credits, s26, are painted with them). By set, as the scenes use them (one
+   set painted once serves all its scenes):
+   - **the Mae Khong** (`cngRiver`, `cngRiverLife`): s01, s13, s14, s15, s16, s18, s26. The river as a water
+     (`sceneryWaterSurface()`), but a wide brown river that flows, not a still pond: its mirror soft and broken,
+     the sandbar and the far (Lao) bank's trees mirrored; plants along the near bank; no lotus in the main stream.
+   - **the village and its yard** (`cngVillage`, `cngYard`): s03, s04, s08, s09, s11, s13, s17, s19, s20, s23.
+     Painted trees in fruit (longan, mango, banana, papaya), flowers at the houses' feet, beds behind the people.
+   - **the town, court, palace, gate and fields** (`cngTown`, `cngCourt`, `cngPalace`, `cngGateWall`, `cngFields`,
+     `cngLane`): s01, s02, s04, s06, s20, s21, s24. The fields as Maeng's paddies were painted.
+   - **Ku Kaeo's hill** (`cngKuKaeo`, `cngKuKaeoRidge`): s07, at dusk; a frangipani at the temple.
+   - **the new city's skyline and Doi Chang Ngu** (`cngSkyline`): s22, s23, s24, s25.
+   - **the room** (`cngRoom`): s05, s08, s10, s12; only what shows through the window.
+   - **the skies** (`cngSky`): soft clouds (`sceneryClouds()`) in place of the cartoon cumulus everywhere (this also
+     clears scene 18's title of its cloud, step 6); the nights of s08, s12 and s26 with fine stars, the moon,
+     bats behind a far range and fireflies.
+   - **the far mountains**: Chang Ngu's own (`farRange()`), not the hero's nor Maeng's (owner: "Don't reuse the same
+     background mountain"): the low hills across the Mae Khong in Laos and the Chiang Saen basin's, compared with real
+     photographs of the place (kept out of the repo).
+   - **the air** by the line's feeling (the kit's rule): none where v2 left life out on purpose (s02 the Khom take the
+     city, s04 the tribute, s08 the dream, s10 the birth, s12 the deva, s14 and s15 the snakes, s20 the spies, s21 the
+     battle, s22 Indra's wall, s26 the credits' night, which takes fireflies only if the owner wants).
+3. **Candidates first**: stills of three sets as they are and dressed three ways (A the air only, B the air and the
+   beds, C all the way), the river (s01), the village (s11) and the town (s02), plus two or three far-mountain
+   candidates beside a photograph of the place; the owner picks how far to go, and the pick holds for the film.
+4. **Paint set by set** in `sets.js`, the most-used first: the river, the village and yard, the town, the skyline, Ku
+   Kaeo, the room's window, the night skies. Keep every action above y 880 (the subtitles); what flies or swims is
+   given its z (the z rule).
+5. **Stills of every scene** at its moments (`../stills.py`), the owner's notes taken scene by scene; then a quick
+   clip of each changed scene with its narration (`render.py ... --fast --no-vanish --from A --to B`, the film's
+   sound laid under it) for the owner to watch.
+6. **Scene 18's title**: find where the scene titles are drawn for the film (`film.html` and the kit's `film()`),
+   and make ช้างพานคำ read over any sky (no cloud behind it once the soft clouds are in, and the title's own
+   shading if it still reads poorly); the stills at 690 s of the tale show it.
+7. **The new beasts** come with the render: the scenes that draw an elephant, the white elephant or Chang Ngu (s08,
+   s12, s15, s16, s18, s19, s20, s21, s22, s23, s25, s26) are looked at in stills for the elephant's new height
+   (shorter legs: what is set on its back, a rider, a howdah, a trunk reaching to someone, its feet in the river).
+   The swimming white elephant of s15, s16 and s18 was moved with c7b37e6 (`SWIM + 160`).
+8. **Kit check on a copy** of every changed page (all 26 scenes and `film.html`, plus `scenery.html` if the kit
+   changed), never on the shared checkout.
+9. **Render every scene once** from a clean worktree at the commit (`../scenes.py` on the laptop and
+   `../maeng/render_back.py` on the Spark, from the two ends), one heavy job on the laptop at a time, agreed with the
+   peer that renders Maeng; the render's look (popped, blinked out) read for every scene.
+10. **The sound is v2's**: the scenes keep their seconds, so the tale's sound is copied from v2's tale as it is. The
+    hero is Maeng's newest hero with the new beasts (the same one Maeng's film opens with when this ships); the card
+    as v2. `../chain.py` hero + card (`--fade 1,0.75`) + tale; the whole checked at v2's length (1296.0 s), -14 LUFS,
+    peak at most -1 dBFS; shown to the owner. **v3 goes to S3 only on the owner's word.**
