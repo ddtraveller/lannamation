@@ -25,6 +25,8 @@ canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
 .corner label { display: inline-flex; align-items: center; gap: 5px; font-size: 14px; background: #fffdf6;
                 border: 1px solid var(--line); border-radius: 10px; padding: 5px 10px; cursor: pointer; }
 .corner label input { margin: 0; accent-color: #b8742a; }
+.corner .amounts label { padding: 4px 8px; font-size: 13px; }
+.corner .amounts input { width: 84px; }
 .corner .minds { margin-top: 6px; font-size: 13px; color: var(--soft); }
 .about { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.55); }
 .about.open { display: flex; }
@@ -46,6 +48,19 @@ canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
     <button id="fullBtn">⛶ <small>full screen</small></button>
     <button id="aboutBtn">ⓘ</button>
   </div>
+  <div class="row amounts" id="amounts">
+    <label title="birds">🐦 นก <input type="range" min="0" max="3" step="0.25" value="1" data-sort="birds" aria-label="birds"></label>
+    <label title="butterflies">🦋 ผีเสื้อ <input type="range" min="0" max="3" step="0.25" value="1" data-sort="butterflies" aria-label="butterflies"></label>
+    <label title="fish">🐟 ปลา <input type="range" min="0" max="3" step="0.25" value="1" data-sort="fish" aria-label="fish"></label>
+    <label title="animals">🐃 สัตว์ <input type="range" min="0" max="3" step="0.25" value="1" data-sort="animals" aria-label="animals"></label>
+    <label title="people">🧑 คน <input type="range" min="0" max="3" step="0.25" value="1" data-sort="people" aria-label="people"></label>
+  </div>
+  <div class="row amounts" id="weather">
+    <label title="rain">🌧️ ฝน <input type="range" min="0" max="1" step="0.05" value="0" data-weather="rain" aria-label="rain"></label>
+    <label title="mist">🌫️ หมอก <input type="range" min="0" max="1" step="0.05" value="0" data-weather="mist" aria-label="mist"></label>
+    <label title="clouds">☁️ เมฆ <input type="range" min="0" max="1" step="0.0625" value="0" data-weather="clouds" aria-label="clouds"></label>
+    <button id="weatherBtn" title="each scene its own weather">🎲 <small>its own weather</small></button>
+  </div>
   <div class="minds" id="minds">🌿 แต่ละตัวใช้ชีวิตของมันเอง · each one goes about its own day</div>
 </div>
 <div class="about" id="about"><div>
@@ -59,6 +74,10 @@ canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
      and her chicks run back to her when they stray; a grasshopper sits still until something comes close; a kingfisher
      watches the water from its perch, dives, and beats its fish on the branch; gibbons sing in the morning. Each one
      weighs its ways by the hour, by how hungry and how tired it is, and by who is near, and picks one.</p>
+  <p>Now and then one goes off the page, a bird flying off, a fish swimming away, and another comes in from the side.
+     The sliders 🐦 🦋 🐟 🐃 🧑 set how many birds, butterflies, fish, animals and people there are, from none to three
+     times as many: the ones not wanted go off the page, the new ones come in from the edges.
+     <small>แถบเลื่อนตั้งจำนวนนก ผีเสื้อ ปลา สัตว์ และคน · 滑块设置鸟、蝴蝶、鱼、动物和人的数量。</small></p>
   <p>Watch, or press 🔈 for their sounds and the sounds around them, and tick 🎵 for quiet music made for each place.
      Nothing to do and nothing to win: it is a fish tank.</p>
   <p><small>Drawn with the Lanna cartoon kit (github.com/ddtraveller/lannamation). The sounds are the kit's: most made
@@ -872,15 +891,20 @@ function compose(seed, settingName) {
     (PERCHES[p[0]] || []).forEach(function (o) { sc.perches.push([x + o[0], y + o[1] + 4]); });
   });
   // the clouds: a level picked at random (or ?clouds=), each cloud somewhere in the place's sky, one wind for all
+  // A place with no sky (under the water, through the flowers) has none of its own, but the clouds slider may give it
+  // some, in the sky band of most places (owner, 2026-10-26: "if someone wants to add clouds... that's ok. It's all just
+  // for fun"). CLOUD_MOST of them are made, in the order they come, and as many as the scene's amount are drawn.
   var level = !P.sky ? "clear" : CLOUDS[ASK.get("clouds")] ? ASK.get("clouds") : pick(Object.keys(CLOUDS)), wind = rng() < 0.5 ? -1 : 1;
+  var sky = P.sky || [80, 420];
   sc.clouds = level;
-  sc.cloudList = [];
-  for (var n = Math.round(randomBetween(CLOUDS[level][0], CLOUDS[level][1])); n > 0; n--) {
+  sc.cloudAmount = Math.round(randomBetween(CLOUDS[level][0], CLOUDS[level][1])) / CLOUD_MOST;
+  sc.cloudPool = [];
+  for (var n = 0; n < CLOUD_MOST; n++) {
     var size = randomBetween(0.5, 1.3);
-    sc.cloudList.push({x: randomBetween(0, WIDE + 600), y: randomBetween(P.sky[0] + 40, P.sky[0] + 40 + 0.7 * (P.sky[1] - P.sky[0])),
+    sc.cloudPool.push({x: randomBetween(0, WIDE + 600), y: randomBetween(sky[0] + 40, sky[0] + 40 + 0.7 * (sky[1] - sky[0])),
                        size: size, v: wind * size * randomBetween(6, 12)});
   }
-  sc.cloudList.sort(function (a, b) { return a.size - b.size; });   // the far (small) ones first
+  cloudsFor(sc);
   // what stands and stirs
   s.things.forEach(function (row) {
     for (var n = 0; n < row[1]; n++) {
@@ -921,11 +945,22 @@ function compose(seed, settingName) {
   }
   for (var n = 0; n < people; n++) { sc.creatures.push(born("person", spotFor("ground", P), {cast: pick(s.people)})); }
   if (P.thicket) { sc.creatures.forEach(function (c) { c.s *= P.near; }); }   // among the plants, near: larger
+  sc.base = {};                                  // how many of each sort the scene drew, which the sliders scale
+  sc.creatures.forEach(function (c) { var sort = amountOf(c.kind); if (sort) { sc.base[sort] = (sc.base[sort] || 0) + 1; } });
   // a shower now and then over the fields and the forest by day (rain.js; owner's films call it from a light shower to
   // the monsoon): one scene in seven, light; ?rain= 0 to 1 sets it (0: none)
   var wet = /natural|rural|farm/.test(name) && !P.night && P.ground && P.sky && !P.thicket;
   sc.rain = ASK.get("rain") !== null ? Math.max(0, Math.min(1, Number(ASK.get("rain")) || 0)) : wet && rng() < 1 / 7 ? randomBetween(0.05, 0.35) : 0;
+  // mist: on a morning over the forest and the fields, half the time, lying along the ground and drifting across the
+  // hills; ?mist= 0 to 1 sets it
+  var misty = /natural|rural|farm/.test(name) && !P.night && sc.hour === 0 && P.ground && !P.thicket;
+  sc.mist = ASK.get("mist") !== null ? Math.max(0, Math.min(1, Number(ASK.get("mist")) || 0)) : misty && rng() < 0.5 ? randomBetween(0.3, 0.7) : 0;
   return sc;
+}
+var CLOUD_MOST = 16;                     // the most clouds a scene has: overcast
+// The clouds drawn: the first of the scene's pool, as many as its amount says, the far (small) ones first.
+function cloudsFor(sc) {
+  sc.cloudList = sc.cloudPool.slice(0, Math.round(sc.cloudAmount * CLOUD_MOST)).sort(function (a, b) { return a.size - b.size; });
 }
 // A perch for a bird: a free point on a tree's crown, or the ground (as often as PERCHERS says, or when there is no
 // tree); not the one it is on (from). Returns [x, y], or null when the place has neither.
@@ -1070,8 +1105,8 @@ function caught(c, t) {
   prey.gone = true;                               // taken out after this frame's turn of every creature
   scene.eaten = (scene.eaten || 0) + 1;
   var sc = scene;
-  setTimeout(function () {                        // a new one in the grass, if this scene is still showing
-    if (scene !== sc) { return; }
+  setTimeout(function () {                        // a new one in the grass, if this scene is still showing (and animals are wanted)
+    if (scene !== sc || !AMOUNTS.animals) { return; }
     var P = PLACES[sc.place], at = (performance.now() - sceneStart) / 1000;
     var g = born("grasshopper", spotFor("ground", P, "grasshopper"), {});
     g.keys = [[at, g.x, g.y]]; g.until = at + 2;
@@ -1254,6 +1289,152 @@ function startled(c, now) {
   return true;
 }
 
+// ---------- how many of each, and coming and going ----------
+// The owner, 2026-10-26: "add a slider for birds, butterflies, fish, animals, and people to increase or decrease their
+// amounts and make sure birds and other creatures go off the page and are replaced like humans do". Every creature is of
+// one sort (amountOf()); a sort's slider (AMOUNTS: 0 none, 1 as the scene drew them, up to 3) sets how many of it the
+// scene keeps (amountWanted()). One that is not wanted goes off the page and is gone; one more that is wanted comes in
+// from an edge. And now and then (LEAVE, at a creature's choosing) one goes off the page of its own accord, a bird
+// flying off, a fish swimming off, a butterfly fluttering off, and someone of its sort comes in from one side or the
+// other, a kind of the place's own (as the people and the four-legged ones already go off and come round: onward()).
+var AMOUNT_KINDS = {butterfly: "butterflies", moth: "butterflies", fish: "fish", catfish: "fish", person: "people",
+                    flock: "birds", spotbill: "birds", gibbon: "animals", loris: "animals", beetle: "animals"};
+var AMOUNTS = {birds: 1, butterflies: 1, fish: 1, animals: 1, people: 1};
+var LEAVE = 0.03;                        // how likely a creature is to go off at a choosing (a few times a minute in a scene)
+// The sort of a kind: "birds", "butterflies", "fish", "animals" or "people"; null for what lives on its own (fireflies,
+// bats, the band, the truck).
+function amountOf(kind) {
+  if (AMOUNT_KINDS[kind]) { return AMOUNT_KINDS[kind]; }
+  var group = KINDS[kind].group;
+  return group === "ambient" ? null : group === "fowl" || group === "flier" ? "birds" : "animals";
+}
+// How many of a sort the scene keeps: as many as it drew times the slider, and up to 3 times; a sort it drew none of
+// gets two for each step past 1, when the place has a kind of it.
+function amountWanted(sort) {
+  var base = scene.base[sort] || 0, v = AMOUNTS[sort];
+  return v <= 1 ? Math.round(base * v) : Math.round(base + (v - 1) * Math.max(base, 2));
+}
+// How far past the edge one must be to be wholly off the page: the walkers' and the wrapping fliers' own margins (ROAMS,
+// WRAPS), else a fifth more than the most it was drawn ahead of or behind where it is (EDGES: at its size of SIZES,
+// moving and still, measured 2026-10-26), at its own size, and under the water as much larger as the place is near
+// (a swimmer is drawn larger by it); 300 for one not measured.
+var EDGES = {hen: 42, rooster: 150, blackhen: 42, blackrooster: 150, chick: 12, peafowl: 288, pheasant: 148, sunbird: 16, magpie: 124,
+             hornbill: 182, egret: 50, plover: 16, lapwing: 38, avadavat: 12, owl: 40, fish: 28, spotbill: 64, grasshopper: 10,
+             naga: 710, changngu: 274, crow: 60, whitecrow: 136, dove: 42, kingfisher: 42, commonkf: 26, parakeet: 56, myna: 32,
+             gibbon: 124, loris: 42, toad: 26, ricefrog: 28, beetle: 8, turtle: 38, goldturtle: 38, catfish: 178, butterfly: 16,
+             bamboorat: 54};
+function edgeOf(c) {
+  if (ROAMS[c.kind] || WRAPS[c.kind]) { return ROAMS[c.kind] || WRAPS[c.kind]; }
+  var P = PLACES[scene.place], near = kindOf(c).where === "water" && P.near || 1;
+  return EDGES[c.kind] ? Math.ceil(1.2 * EDGES[c.kind] * c.s / sizeOf(c.kind) * near) + 10 : 300;
+}
+// How fast one goes when it comes or goes: its own speed (no slower than 60, the slow loris too), nearer the faster.
+function speedOf(c) {
+  var P = PLACES[scene.place], k = kindOf(c), near = (k.where === "water" || P.thicket) && P.near || 1;
+  return Math.max(60, k.speed || 50) * Math.sqrt(near);
+}
+// Whether it goes through the air when it comes or goes: the birds that fly, and what lives in the sky.
+function fliesOff(c) {
+  var k = kindOf(c);
+  return (k.group === "flier" && c.kind !== "gibbon" && c.kind !== "loris") || k.where === "sky";
+}
+// Where a flock's leader is drawn at second t (KINDS.flock), for when it has gone round off the left edge.
+function flockX(c, t) { return ((c.x + t * 40) % 2300) - 200; }
+// A creature sets off for the nearer edge (a walker the way it faces), and past it; it is gone there (going()), and
+// when replace is true someone of its sort comes in. A flock and the wrapping fliers go on as they go.
+function leave(c, now, replace) {
+  c.leaving = true;
+  c.replace = replace;
+  var k = kindOf(c);
+  if (k.group === "ambient" || WRAPS[c.kind]) { return; }
+  var P = PLACES[scene.place], here = where(c.keys, now), m = edgeOf(c), flies = fliesOff(c);
+  var side = ROAMS[c.kind] && c.dir ? c.dir : here[0] < WIDE / 2 ? -1 : 1;
+  var band = k.where === "water" ? P.water : flies && P.sky ? P.sky : P.ground || P.sky;
+  var ty = Math.max(band[0] + 10, Math.min(band[1] - 10, flies ? randomBetween(band[0], band[1]) : here[1] + randomBetween(-60, 60)));
+  var tx = side < 0 ? -m - 1 : WIDE + m + 1, go = Math.hypot(tx - here[0], ty - here[1]) / (speedOf(c) * (flies ? 1.3 : 1));
+  prune(c, now);
+  c.keys.push([now + go, tx, ty]);
+  c.dir = side;
+  c.perch = null;
+  c.flying = k.where === "ground" && k.group === "flier";
+  c.doing = flies ? "fly" : k.where === "water" ? "swim" : "walk";
+  c.act = "goes away";
+  c.until = now + go + 1;
+  c.x = tx; c.y = ty;
+}
+// One that is leaving, at second t: gone once it is wholly off the page (and, when it was to be, someone of its sort
+// comes in); a wrapping flier chooses its next stretch of flight; one knocked off its way sets off again.
+function going(c, t) {
+  var k = kindOf(c), m = edgeOf(c);
+  if (k.group === "ambient") { if (flockX(c, t) < -150) { c.gone = true; } return; }
+  var x = where(c.keys, t)[0];
+  if (x < -m || x > WIDE + m) {
+    c.gone = true;
+    var sort = amountOf(c.kind), kept = scene.creatures.filter(function (o) { return !o.leaving && !o.gone && amountOf(o.kind) === sort; });
+    if (c.replace && kept.length < amountWanted(sort)) { newcomer(sort, t, false); }   // not when the slider has asked for fewer since
+  } else if (t >= c.until) {
+    if (WRAPS[c.kind]) { act(c, choose(c), t); } else { leave(c, t, c.replace); }
+  }
+}
+// Whether a creature may go off of its own accord at this choosing: not one that already comes and goes (onward()),
+// nor a chick that keeps to its mother, nor a grasshopper a hen may be after, nor what lives on its own.
+function mayLeave(c) {
+  return !ROAMS[c.kind] && !WRAPS[c.kind] && kindOf(c).group !== "ambient" && c.kind !== "chick" && c.kind !== "grasshopper" &&
+         Math.random() < LEAVE;
+}
+// The kinds of a sort that may come into this scene: of the setting (and the night's own at night), as compose()
+// draws them, no chick (it comes only with its mother) and nothing that lives on its own.
+function newcomerRows(sort) {
+  var s = SETTINGS[scene.setting], P = PLACES[scene.place];
+  if (sort === "people") { return P.ground && s.people.length ? [["person", 4, 1]] : []; }
+  return s.creatures.concat(P.night ? NIGHT_ADDS : []).filter(function (row) {
+    var k = KINDS[row[0]];
+    return amountOf(row[0]) === sort && k.group !== "ambient" && row[0] !== "chick" && !(P.night && DAY_ONLY[row[0]]) &&
+           fits(row[0], P, scene.place) && spotFor(k.where, P, row[0]) && (!TREE_ONLY[row[0]] || scene.perches.length);
+  });
+}
+// Someone of a sort comes into the scene at second now: a kind of the place by how likely it is there, to a spot of its
+// own (a perch for a bird that perches). inside: there at once (a new scene); else it comes in from one side, a moment
+// later, walking, flying or swimming to its spot. Returns it, or null when the place has no kind of that sort.
+function newcomer(sort, now, inside) {
+  var rows = newcomerRows(sort);
+  if (!rows.length) { return null; }
+  var sum = rows.reduce(function (a, r) { return a + r[2]; }, 0), pickAt = rng() * sum, row = rows[rows.length - 1];
+  for (var i = 0; i < rows.length; i++) { pickAt -= rows[i][2]; if (pickAt <= 0) { row = rows[i]; break; } }
+  var kind = row[0], k = KINDS[kind], P = PLACES[scene.place], perches = PERCHERS[kind] !== undefined;
+  var spot = perches ? perchFor(scene, P, kind, null) : spotFor(k.where, P, kind);
+  if (!spot) { return null; }
+  var c = born(kind, spot, kind === "person" ? {cast: pick(SETTINGS[scene.setting].people)} : perches ? {perch: spot} : {});
+  if (P.thicket) { c.s *= P.near; }
+  if (!inside) {
+    var side = rng() < 0.5 ? -1 : 1, m = edgeOf(c), flies = fliesOff(c), wait = now + randomBetween(0, 3);
+    var band = k.where === "water" ? P.water : flies && P.sky ? P.sky : P.ground || P.sky;
+    var y0 = flies ? randomBetween(band[0], band[1]) : Math.max(band[0] + 10, Math.min(band[1] - 10, spot[1] + randomBetween(-30, 30)));
+    var x0 = side < 0 ? -m - 1 : WIDE + m + 1, go = Math.hypot(spot[0] - x0, spot[1] - y0) / speedOf(c);
+    c.keys = [[wait, x0, y0], [wait + go, spot[0], spot[1]]];
+    c.dir = -side;
+    c.flying = k.where === "ground" && k.group === "flier";
+    c.doing = flies ? "fly" : k.where === "water" ? "swim" : "walk";
+    c.act = "comes in";
+    c.until = wait + go + randomBetween(0.5, 2);
+  }
+  scene.creatures.push(c);
+  return c;
+}
+// Brings each sort to the number its slider wants, at second now: the ones nearest an edge go off (at once, in a new
+// scene: instant), and newcomers come in.
+function settleAmounts(now, instant) {
+  Object.keys(AMOUNTS).forEach(function (sort) {
+    var here = scene.creatures.filter(function (c) { return !c.leaving && !c.gone && amountOf(c.kind) === sort; }), want = amountWanted(sort);
+    if (here.length > want) {
+      here.sort(function (a, b) { return Math.min(a.x, WIDE - a.x) - Math.min(b.x, WIDE - b.x); });
+      here.slice(0, here.length - want).forEach(function (c) { if (instant) { c.gone = true; } else { leave(c, now, false); } });
+    }
+    for (var n = here.length; n < want; n++) { if (!newcomer(sort, now, instant)) { break; } }
+  });
+  scene.creatures = scene.creatures.filter(function (c) { return !c.gone; });
+}
+
 // ---------- sound ----------
 // Off until "sound" is pressed (a browser lets a page play sound only after a tap). Each call is a file of the kit's
 // sounds.py: on krueng.ai under audio/kit_sounds/, in a copy of the kit made by sounds.py into kit/out/sounds/.
@@ -1340,6 +1521,8 @@ function stopMusic() {
 var fade = {from: 0, to: 0, at: 0};       // a fade through black between scenes
 function newScene(seed) {
   scene = compose(seed || Math.floor(Math.random() * 1e9), ASK.get("setting"));
+  settleAmounts(0, true);                        // as many of each sort as the sliders want, there from the start
+  weatherSet();                                  // its weather, or the sliders' when they were moved
   if (PLACES[scene.place].thicket) { THICKET.forEach(thicketLayers); }   // all four built now, in the scene's fade-in
   sceneStart = performance.now();
   var names = SETTINGS[scene.setting].names;
@@ -1415,6 +1598,21 @@ function thicketFrame(at, live) {
   }
 }
 
+// The scene's mist at second at (highlands.js, as the films lay it): behind the creatures (front false), bands drifting
+// across between the sky and the ground and a sea of it lying along the ground, more and thicker the more there is;
+// in front of everything (front true), past 0.4, a veil over all of it, a fog. White by day, blue-grey at night.
+function mistDrawn(at, place, front) {
+  var v = scene.mist, colour = scene.night ? "#9aa2bc" : "#ffffff";
+  if (!v) { return; }
+  if (front) {
+    if (v > 0.4) { pen.save(); pen.globalAlpha = 0.7 * (v - 0.4); pen.fillStyle = colour; pen.fillRect(0, 0, WIDE, 1080); pen.restore(); }
+    return;
+  }
+  var sky = place.sky || [80, 420], ground = place.ground || [760, 1040], seed = scene.seed % 97;
+  mistDrift(pen, at, {top: sky[1] - 60, bottom: ground[0] + 40, count: Math.round(2 + 5 * v), alpha: Math.min(1, 0.4 + 0.6 * v), colour: colour, seed: seed});
+  mistSea(pen, at, {level: ground[0] + 10, deep: 100 + 200 * v, layers: 2, alpha: Math.min(1, 0.3 + 0.7 * v), colour: colour, seed: seed});
+}
+
 // the frame time, for a check: window.FRAMES holds the last 300 frames' milliseconds of drawing
 window.FRAMES = [];
 function frame(now) {
@@ -1424,6 +1622,7 @@ function frame(now) {
   if (fade.at && now - fade.at > 1500 && !fade.swapped) { fade.swapped = true; newScene(); t = 0; }
   if (fade.at && now - fade.at > 3000) { fade = {}; }
   scene.creatures.forEach(function (c) {
+    if (c.leaving) { going(c, t); return; }        // on its way off the page
     if (kindOf(c).group === "ambient") { return; }
     c.hunger = Math.min(1, c.hunger + 0.004 * 0.016);
     var moving = c.doing === "walk" || c.doing === "fly" || c.doing === "swim";
@@ -1434,7 +1633,7 @@ function frame(now) {
       W = {hour: scene.hour, night: scene.night, water: !!PLACES[scene.place].water,
            flowers: scene.things.some(function (x) { return x.name === "flower"; }),
            near: function (me, kind, r) { return nearest(me, kind, r); }};
-      act(c, choose(c), t);
+      if (mayLeave(c)) { leave(c, t, true); } else { act(c, choose(c), t); }
     }
   });
   scene.creatures = scene.creatures.filter(function (c) { return !c.gone; });
@@ -1461,18 +1660,28 @@ function frame(now) {
       var z = k.where === "sky" ? "front" : k.where === "water" ? "back" : undefined;
       (k.where === "water" ? onWater : who).push({kind: c.kind === "person" ? "person" : "thing", z: z, y: P[1], draw: function () { k.draw(c, P, at); }});
     });
-    if (place.thicket) { thicketFrame(at, function () { drawByZ(onWater); drawByZ(who); }); return; }
-    scene.cloudList.forEach(function (k) {          // drifting on the wind; off one side, in again at the other
-      var x = ((k.x + at * k.v) % (WIDE + 600) + WIDE + 600) % (WIDE + 600) - 300;
-      cloud(x, k.y, k.size, scene.night ? "#4d5274" : undefined);
-    });
-    drawByZ(onWater);
-    drawByZ(who);
+    function clouds() {
+      scene.cloudList.forEach(function (k) {        // drifting on the wind; off one side, in again at the other
+        var x = ((k.x + at * k.v) % (WIDE + 600) + WIDE + 600) % (WIDE + 600) - 300;
+        cloud(x, k.y, k.size, scene.night ? "#4d5274" : undefined);
+      });
+    }
+    if (place.thicket) {                            // through the flowers, the clouds the slider gives over it all
+      thicketFrame(at, function () { drawByZ(onWater); drawByZ(who); });
+      clouds();
+    } else {
+      clouds();
+      mistDrawn(at, place, false);
+      drawByZ(onWater);
+      drawByZ(who);
+    }
     if (scene.rain) {                               // the shower over all of it, its far shafts under the clouds
-      var wet = {heavy: scene.rain, cloud: place.sky[0] + 60, far: place.ground[0] - 30, ground: place.ground[1], wind: 0.2, seed: scene.seed % 997};
+      var sky = place.sky || [80, 420], ground = place.ground || [760, 1040];
+      var wet = {heavy: scene.rain, cloud: sky[0] + 60, far: ground[0] - 30, ground: ground[1], wind: 0.2, seed: scene.seed % 997};
       if (place.water) { wet.water = [[0, place.water[0], WIDE, place.water[1] - place.water[0]]]; }
       rain(pen, at, wet);
     }
+    mistDrawn(at, place, true);
   });
   screen.fillStyle = "#000";
   screen.fillRect(0, 0, 1920, 1080);
@@ -1509,6 +1718,53 @@ byId("musicBox").onchange = function () {
   SOUND.ctx = SOUND.ctx || new (window.AudioContext || window.webkitAudioContext)();
   SOUND.ctx.resume();
   if (MUSIC.on) { startMusic(); } else { stopMusic(); }
+};
+// The sliders of how many: each sort's from ?birds= (and the rest) or from the last visit (this browser's own), else 1;
+// moved, the scene settles to it at once (settleAmounts()), and every new scene keeps to it.
+document.querySelectorAll("#amounts input").forEach(function (box) {
+  var sort = box.dataset.sort, kept = null;
+  try { kept = localStorage.getItem("living-" + sort); } catch (e) { kept = null; }
+  var v = ASK.get(sort) !== null ? Number(ASK.get(sort)) : kept !== null ? Number(kept) : 1;
+  AMOUNTS[sort] = isFinite(v) ? Math.max(0, Math.min(3, v)) : 1;
+  box.value = AMOUNTS[sort];
+  box.oninput = function () {
+    AMOUNTS[sort] = Number(box.value);
+    try { localStorage.setItem("living-" + sort, box.value); } catch (e) { /* kept for this visit only */ }
+    settleAmounts((performance.now() - sceneStart) / 1000, false);
+  };
+});
+// The weather's sliders (owner, 2026-10-26: "Add a slider for rain and one for mist and one for clouds too"): each shows
+// the scene's own (picked at random as the scene is made); moved, it holds for this scene and every scene after
+// (WEATHER, kept in this browser), until 🎲 gives each scene its own weather again. null: the scene's own.
+var WEATHER = {rain: null, mist: null, clouds: null};
+function weatherKept(name) {
+  var v = null;
+  try { v = localStorage.getItem("living-" + name); } catch (e) { v = null; }
+  return v === null || v === "" || !isFinite(Number(v)) ? null : Math.max(0, Math.min(1, Number(v)));
+}
+// Lays the sliders' weather on the scene (those moved), and sets each slider to the scene's.
+function weatherSet() {
+  if (WEATHER.rain !== null) { scene.rain = WEATHER.rain; }
+  if (WEATHER.mist !== null) { scene.mist = WEATHER.mist; }
+  if (WEATHER.clouds !== null) { scene.cloudAmount = WEATHER.clouds; cloudsFor(scene); }
+  var now = {rain: scene.rain, mist: scene.mist, clouds: scene.cloudAmount};
+  document.querySelectorAll("#weather input").forEach(function (box) { box.value = now[box.dataset.weather]; });
+}
+document.querySelectorAll("#weather input").forEach(function (box) {
+  var name = box.dataset.weather;
+  WEATHER[name] = ASK.get(name) !== null ? null : weatherKept(name);   // ?rain= and the rest win, for a check
+  box.oninput = function () {
+    WEATHER[name] = Number(box.value);
+    try { localStorage.setItem("living-" + name, box.value); } catch (e) { /* kept for this visit only */ }
+    weatherSet();
+  };
+});
+byId("weatherBtn").onclick = function () {
+  Object.keys(WEATHER).forEach(function (name) {
+    WEATHER[name] = null;
+    try { localStorage.removeItem("living-" + name); } catch (e) { /* nothing kept */ }
+  });
+  fade = {at: performance.now()};               // a new scene, with weather of its own
 };
 var still = 0;                            // the corner fades away when the pointer has been still for a while
 ["pointermove", "pointerdown", "keydown"].forEach(function (name) {   // a tap on a phone brings it back too
