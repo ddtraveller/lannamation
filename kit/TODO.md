@@ -68,3 +68,16 @@ the soldiers and their spears (figures.md).
   dusk and the night sets is farRange() (a far ridge, a limestone peak, a forested range). Still to do: the rice
   fields' mountains (paddySet(), drawn on the paddy backdrop), the middle range (its ridge is where the elephants
   walk and the terraces stand), and the mist between them
+
+## The films' scenery (docs/kit/places.md, "Painting the scenery"; scenery.js)
+
+- Maeng (owner, 2026-10-26: "start upgrading and updating the meang si hoo cartoon like the hero video"): begun. Done:
+  the far mountains of every set (farRange()), the meadow's and the city's trees painted in flower and fruit, the
+  air of scenes 3, 6, 9, 11, 12 and 14 (MAENG_AIR in maeng/sets.js) with soft grass or blossom at the picture's edges.
+  Then, from stills the owner approved: Doi Khao Khwai painted anew (maengDoi(): rows of bushes, pines, flowers and
+  fruit near its foot), the new cave in scenes 1, 5, 6 and 13 (sceneryCave()), scene 1's night with fine stars, the
+  moon and bats going out behind the mountain, soft clouds in place of the cartoon cumulus in every scene, the film's
+  own far mountains (MAENG_FAR: no limestone peak). To do: flowering beds behind the people in the yard and the meadow,
+  the far ridges' plain faces, the rice fields, a clip of each scene for the owner, then the film rendered again.
+- Chang Ngu: not yet; its story.py has no SCENERY (tale_plan.py names every scene). Its river is a water for
+  sceneryWaterSurface().

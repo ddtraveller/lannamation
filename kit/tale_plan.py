@@ -5,8 +5,12 @@
 
 A new tale starts as a plan the owner reads before anything is drawn (docs/kit/films.md, "A new tale, from start to
 finish"). Its folder's story.py holds it all: SCENES, each (title, seconds, what we see, what the kit has, what it
-needs, [(English, Central Thai, Kam Mueang), ...]), the plan's own words around them (PLAN), and SAY_AS, the
-names said the Northern way by the voice. From it this writes:
+needs, [(English, Central Thai, Kam Mueang), ...]), the plan's own words around them (PLAN), SAY_AS, the
+names said the Northern way by the voice, and SCENERY, {scene number: how its place is painted}: the far mountains,
+the painted trees, the flowering beds behind the people and the blossom framing the picture, the water, the air (light,
+petals, one butterfly at most; fireflies at night), as docs/kit/places.md, "Painting the scenery", sets out and
+scenery.js paints (the owner, 2026-10-26: "Make sure new videos will be generated with this process!"); a scene with
+none is named each time this runs, and stands red on the plan. From it this writes:
   plan.html     the plan: the tale in short, the choices made, every scene with its seconds, its kit (green: there,
                 red: new) and its lines in English, Central Thai and Kam Mueang. For the owner, before anything else.
   words.js      the film's words for its pages, <FOLDER>_WORDS[id] = [what the voice says, what the subtitle writes,
@@ -90,6 +94,9 @@ def plan_page(story, lines):
         words = "".join("<li><span class='id'>%s</span> %s<br><span class='th'>%s</span><br><span class='th km'>%s</span></li>"
                         % (line[0], e(line[2]), e(line[3]), e(line[4])) for line in mine)
         kit = "<span class='have'>%s</span>" % e(have) + ("<br><span class='new'>new: %s</span>" % e(new) if new else "")
+        scenery = getattr(story, "SCENERY", {}).get(number)
+        kit += ("<br><span class='have'>scenery: %s</span>" % e(scenery) if scenery
+                else "<br><span class='new'>scenery: not planned yet (docs/kit/places.md, \"Painting the scenery\")</span>")
         rows.append("<tr><td>%d</td><td class='t'>%s–%s</td><td><b>%s</b><br>%s</td><td>%s</td></tr>"
                     "<tr class='words'><td></td><td colspan='3'><ol>%s</ol></td></tr>"
                     % (number, clock(at), clock(at + seconds), e(title), e(see), kit, words))
@@ -122,6 +129,10 @@ def main():
     if wrong:
         raise SystemExit(1)
     lines = lines_of(story)
+    unpainted = [str(n) for n in range(1, len(story.SCENES) + 1) if n not in getattr(story, "SCENERY", {})]
+    if unpainted:
+        print("no scenery planned yet for scene %s (SCENERY in story.py; docs/kit/places.md, \"Painting the scenery\")"
+              % ", ".join(unpainted))
     if "--check" in sys.argv:
         print("%s/story.py: %d scenes, %d lines, nothing wrong" % (sys.argv[1], len(story.SCENES), len(lines)))
         return

@@ -247,7 +247,11 @@ Code also reads `.claude/skills/<name>/SKILL.md`. Start the agent again and ask
 it for a cartoon: it reads this file, runs the loop above, and shows you the
 stills and the video. A film beyond the JSON (a camera that moves, a cloth of
 woven figures) it writes by hand as a page of the kit, as `lanna_cartoon.html`
-teaches, and renders with `render.py`.
+teaches, and renders with `render.py`; its places are painted as the hero
+film's are (`docs/kit/places.md`, "Painting the scenery", with `scenery.js`):
+far mountains, painted trees in flower, flowering beds behind the people, soft
+blossom framing the picture, still water that mirrors its banks, and the air of
+the day (light, petals, one butterfly at most) or fireflies at night.
 
 ## What the page is
 

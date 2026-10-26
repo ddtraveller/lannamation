@@ -90,12 +90,26 @@ function s02Walk(t, start, names) {                 // the family on the path fr
 // Its z plan (oldcartoon.js, Z): the yard as painted first (maengYardAt), then by drawByZ the flock in "sky", and in
 // "people" the hens and the family by their feet: the hens peck left of the hut, away from the path, so no one passes
 // in front of another. e.g. sceneFamily(30);
+// A flock of cattle egrets flying over the fields in the morning, from the right to the left, the paddies' water
+// mirroring them (owner, 2026-10-26: "show a flock of egrets flying over and being reflected in the water"): drawn over
+// the fields before their water (maengYardAt()'s fliers), low enough that the mirror takes them in. S02_EGRETS: the
+// second the first comes in at the right edge, and how fast they fly (pixels a second).
+var S02_EGRETS = [8, 170];
+// t: the scene's second. Gives back nothing: it draws with pen. e.g. s02Egrets(10);
+function s02Egrets(t) {
+  for (var k = 0; k < 6; k++) {
+    var x = WIDE + 120 + k * 70 - S02_EGRETS[1] * (t - S02_EGRETS[0]);
+    if (x < -150 || x > WIDE + 150) { continue; }
+    egret(x, 735 + 16 * (k % 3) - 10 * Math.floor(k / 3) + 5 * Math.sin(t * 1.3 + k), t, {fly: true, face: -1, size: 0.5, seed: k});
+  }
+}
+
 function sceneFamily(t) {
   if (t < 32.24) {                                   // morning: the three go to the city
     // the yard's clock a tenth slower, so its rice planters' step back to their start (every 30 s of it, sets.js) comes at
     // 33.3 s, after the fade at 30.74 s, not in view at 30 s (the pop check, 2026-10-24: 3 s back made it negative at
     // the start, and the field folk's feet jumped); the next morning's is 15 s back, below
-    maengYardAt(t * 0.9, 0, 0, function () { s02Mist(t); });
+    maengYardAt(t * 0.9, 0, 0, function () { s02Mist(t); }, undefined, function () { s02Egrets(t); });
     drawByZ(lifeSprites(t, S02_LIFE).concat(s02Walk(t, 19.5, ["boy", "mother", "father"])));   // 3 until 2026-10-24: they stand
     // while she named them, and walked on until the fade (owner: "follow the family for a few seconds longer")
     maengDark(t, 30.74, 99);

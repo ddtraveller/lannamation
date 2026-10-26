@@ -50,7 +50,7 @@ function s12City(t, tint) {                         // the courtyard, the palace
     city.frontDusk = maengTinted(city.front, MAENG_DUSK[0], MAENG_DUSK[1]);
   }
   pen.drawImage(maengSky(tint ? "dusk" : "day"), 0, 0);
-  cumulus(pen, t + 150, tint ? MAENG_CLOUDS.dawn : MAENG_CLOUDS.day);
+  maengClouds(t + 150, tint ? "dawn" : "day");
   pen.drawImage(tint ? city.backDusk : city.back, 0, 0);
   pen.drawImage(tint ? city.frontDusk : city.front, 0, 0);
   maengPalace(t, "back", tint);
@@ -130,6 +130,7 @@ function sceneWedding(t) {
         }};
       })));
   }
+  maengAir(t, "wedding", "palace");                // the wedding's air: petals, a birdwing, the light (sets.js)
   maengDark(t, S12_SHOTS[0] - 1.2, S12_SHOTS[0]);
   maengDark(t, S12_SHOTS[1] - 1.2, S12_SHOTS[1]);
   maengDark(t, S12_LONG - 1.6, S12_LONG + 10);

@@ -82,27 +82,14 @@ function s01Eyes(t) {                               // five green eyes in the ca
   });
 }
 
-// The trees about the cave, live with it in the scene's light: over the top of its rocks and beside them,
-// so the forest grows over it (behind: drawn before it), and before its foot (after it).
-var S01_BEHIND = [[-86, -58, 13, 6], [-64, -82, 14, 7], [-36, -92, 13, 8], [-6, -96, 14, 9], [24, -94, 13, 10], [52, -88, 14, 11], [80, -70, 13, 12], [94, -40, 12, 15], [-94, -26, 12, 16]];
-var S01_BEFORE = [[-62, 8, 11, 1], [-40, 12, 13, 2], [-16, 14, 12, 3], [8, 13, 13, 4], [32, 12, 12, 5], [56, 9, 13, 13], [80, 6, 11, 14]];
-
-// list: S01_BEHIND or S01_BEFORE, each [x and y from MAENG_CAVE, radius, seed]; dawn: how much of MAENG_DAWN's colour
-// is on them, 0 to 1. Gives back nothing: it draws with pen. e.g. s01Crowns(S01_BEHIND, MAENG_DAWN[1]);
-function s01Crowns(list, dawn) {
-  list.forEach(function (c) {
-    var green = blend(blend(FOREST_GREENS[c[3] % FOREST_GREENS.length], "#79ad84", 0.15), MAENG_DAWN[0], dawn);   // the slope's own haze, then the light
-    crown(pen, MAENG_CAVE[0] + c[0], MAENG_CAVE[1] + c[1], c[2], green, 60 + c[3]);
-  });
-}
-
 // Scene 1, the entry the film calls (SCENES): t, its own second, 0 to S01_LONG (30 s). Gives back nothing: it draws
 // the whole sheet with pen and leaves it as it found it. From sets.js: maengMountain(), maengSky("night"/"dawn"),
 // MAENG_CLOUDS.dawn, MAENG_CAVE, MAENG_DAWN. Its words are S01_LINES (M001 to M004, 8 s to 24 s), written under it
 // by the page (maengSubtitles); S01_SOUND and S01_LIFE are heard only. e.g. sceneDoi(12);
 // Its z plan (oldcartoon.js, Z): nothing stands on the ground here, so nothing is sorted by drawByZ: all of it is the
-// set, painted from the back to the front (the skies, the far ranges, the sea of mist, the mountain, the crowns behind
-// the cave, its mouth, the eyes in its dark, the crowns before it, the low mist, the fog), then the titles over it. Its
+// set, painted from the back to the front (the skies with their stars, moon and clouds, the far ranges, the sea of mist,
+// the bats, the mountain, the cave, the eyes in its dark, the bushes before it, the low mist, the fog), then the titles
+// over it. Its
 // life is only the howl's sound, in "sky", drawn by nothing.
 function sceneDoi(t) {
   var mountain = maengMountain(), light = between(t, 0, S01_LONG);
@@ -113,10 +100,15 @@ function sceneDoi(t) {
   pen.scale(push, push);
   pen.translate(-mix(WIDE / 2, MAENG_CAVE[0], u), -mix(540, MAENG_CAVE[1], u));
   pen.drawImage(maengSky("night"), 0, 0);
+  // the night's stars, many and fine, a few bright and twinkling, and the moon (scenery.js; owner, 2026-10-26: "some
+  // nice stars to the night", "get rid of the milky way", "Maybe re-add the moon"), going as the dawn comes
+  sceneryStars(t, {band: null, horizon: 760, count: 1600, bright: 30, glow: "240, 150, 70", alpha: 1 - light});
+  sceneryMoon(t, 1480, 190, 44, {alpha: 1 - light});
   pen.globalAlpha = 0.25 + 0.75 * light;            // the dawn comes up behind the stars
   pen.drawImage(maengSky("dawn"), 0, 0);
   pen.globalAlpha = 1;
-  cumulus(pen, t + 30, MAENG_CLOUDS.dawn);
+  sceneryClouds(t + 30, {light: "night", count: 4, top: 120, bottom: 380, wide: [300, 560], seed: 4, alpha: 1 - light});   // soft clouds, moonlit,
+  sceneryClouds(t + 30, {light: "dawn", count: 4, top: 120, bottom: 380, wide: [300, 560], seed: 4, alpha: light});       // then lit by the dawn
   pen.drawImage(mountain.backDawn, 0, 0);
   pen.globalAlpha = day;
   pen.drawImage(mountain.back, 0, 0);
@@ -125,15 +117,24 @@ function sceneDoi(t) {
   mistSea(pen, t, {level: 760, left: 0, right: WIDE, deep: 150, swell: 14, wave: 150, drift: 4, layers: 3, colour: "#efe8f2",
                    glow: glow, seed: 7, alpha: 0.85});   // the sea of mist in the valleys between the far ranges
   mistDrift(pen, t, {left: 0, right: WIDE, top: 620, bottom: 760, count: 5, drift: 10, seed: 3, alpha: 0.6});
+  // bats, between the far ridges and the mountain (owner, 2026-10-26: "add some bats that fly behind the mountain"): a
+  // stream rising from behind its peak into the sky, and another crossing the far ridges and going behind it
+  batStream(t, {from: [1180, 560], to: [380, 120], start: 3, count: 26, size: 1.7, far: 0.55, spread: 90, colour: "#2c2638", long: 11});
+  batStream(t, {from: [1980, 430], to: [-200, 520], start: 6, count: 18, size: 1.2, far: 0.9, spread: 60, colour: "#1e1a28", long: 16, every: 0.4});
   pen.drawImage(mountain.frontDawn, 0, 0);
   pen.globalAlpha = day;
   pen.drawImage(mountain.front, 0, 0);
   pen.globalAlpha = 1;
   mistBand(pen, 860, 770, 900, t, {tilt: -0.2, colour: "#efe8f2", glow: glow, seed: 9, alpha: 0.7});   // along the mountain's side, below the cave
-  s01Crowns(S01_BEHIND, dawn);
-  caveMouth(pen, MAENG_CAVE[0], MAENG_CAVE[1], 0.62, {t: t, rock: "#5f574f", tint: [MAENG_DAWN[0], dawn]});
+  // the cave, made new among mossy limestone (scenery.js sceneryCave(); owner, 2026-10-26: "Make new cave rocks, too"),
+  // the eyes in its dark, and bushes before its foot, in the dawn's light
+  sceneryCave(pen, MAENG_CAVE[0], MAENG_CAVE[1], 0.99, {t: t, rock: "#7a7468", tint: [MAENG_DAWN[0], dawn]});
   s01Eyes(t);
-  s01Crowns(S01_BEFORE, dawn);
+  var bushes = thkOnce("maeng-cave-bushes", maengCaveBushesBuild);
+  sceneryBeds(t, bushes.day, {sway: 0.2});
+  pen.globalAlpha = dawn;
+  sceneryBeds(t, bushes.dawn, {sway: 0.2});
+  pen.globalAlpha = 1;
   mistDrift(pen, t, {left: 0, right: WIDE, top: 880, bottom: 1000, count: 4, wide: 640, drift: 7, seed: 4, alpha: 0.65});
   var lifts = between(t, 1, 13.15);                    // the fog the film opens in: it sinks and thins, and the mountain comes out
   if (lifts < 1) {

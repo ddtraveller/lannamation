@@ -68,6 +68,96 @@ function maengRange(base, tall, shape) {           // the ridge of hills(brush, 
 }
 
 var MAENG_MOUNTAIN = null;
+// The flowers and fruit of the mountain's near slopes, a little colour in its green (owner, 2026-10-26: "Add some
+// flowers/fruits, etc. on the near part of the mountain"): for each band of bushes (hazy top, middle, near foot), three
+// mixes of THK_BLOOMS as the forests of the north have them: tiger's claw (phayasuea) and jasmine, the flame of the
+// forest, the golden shower, longan in fruit, golden orchids.
+var MAENG_DOI_BLOOMS = [[[], [], []],
+                        [[["orchid", 3, 5, "#e8c23a"]], [], [["phayasuea", 3, 5, "#ec6c9c"]]],
+                        [[["phayasuea", 22, 8, "#f07aa8"], ["jasmine", 18, 6]], [["thongkwao", 24, 9]], [["ratchaphruek", 6, 20], ["longan", 6, 12]]]];
+
+// Doi Khao Khwai on a sheet (brush), painted as the new places are (owner, 2026-10-26, of a still: "I like the
+// direction"): its body along its own ridge (maengPeak()) clothed in rows of small bushes as pinewoods.js
+// forestHill() clothes a hill, each lower row nearer and larger, hazier toward the top, flowers and fruit near its foot
+// (MAENG_DOI_BLOOMS); pines standing out of the canopy along the ridge. Gives back nothing: it paints on brush (pen
+// points at it while it paints, and is put back).
+// e.g. maengDoi(front.getContext("2d"));
+function maengDoi(brush) {
+  maengForest(brush, maengPeak, {blooms: MAENG_DOI_BLOOMS, pines: 34});
+}
+
+// A slope of the mountain clothed in forest, as scene 1's Doi Khao Khwai is (and scenes 5, 6 and 13's hillside, the
+// same mountain near: owner, 2026-10-26, "Can you reuse any of scene 1 stuff for scene 5?"): the shade under the
+// canopy, pines standing along the ridge, and row on row of small bushes down from it, each lower row nearer and
+// larger, hazier toward the top. brush: a 2D context; ridge: a function of x giving the slope's top y; look: {blooms:
+// three bands' mixes as MAENG_DOI_BLOOMS (none when left out), pines (how many: 34), top, foot (the y where the bushes
+// are smallest and largest: 360 and 1080), seed}. Gives back nothing: it paints on brush (pen points at it while it
+// paints, and is put back). e.g. maengForest(b, maengHillside, {pines: 12, top: 220});
+function maengForest(brush, ridge, look) {
+  look = look || {};
+  var keep = pen, haze = "#a9cfc9", x, r, n, top = look.top === undefined ? 360 : look.top, foot = look.foot || 1080, seed = look.seed || 0;
+  var blooms = look.blooms || [[[], [], []], [[], [], []], [[], [], []]];
+  pen = brush;
+  brush.beginPath();                                 // the shade under the canopy
+  brush.moveTo(0, 1080);
+  for (x = 0; x <= WIDE; x += 8) { brush.lineTo(x, ridge(x) + 24); }
+  brush.lineTo(WIDE, 1080);
+  brush.closePath();
+  brush.fillStyle = "#1e3a2c";
+  brush.fill();
+  var pools = [0, 1, 2].map(function (k) {           // three bands of bushes, hazy near the top to deep near the foot
+    var greens = THK_SHADE.map(function (g) { return blend(g, haze, [0.45, 0.22, 0.05][k]); });
+    return [0, 1, 2].map(function (m) {
+      var pal = m === 1 ? greens.map(function (g) { return blend(g, "#7a8a3a", 0.12); }) : m === 2 ? greens.map(function (g) { return blend(g, "#1e3c44", 0.1); }) : greens;
+      return natBush(200, 110, 300 + seed + k * 7 + m, pal, blooms[k][m], PIX);
+    });
+  });
+  var pines = [0, 1, 2].map(function (m) { return pineSprite(220, m === 1 ? "old" : "forest", 400 + m, PIX); });
+  for (n = 0; n < (look.pines === undefined ? 34 : look.pines); n++) {   // pines along the ridge, their feet in the canopy
+    var px = 120 + 1760 * dice(n * 1.7 + 5 + seed), crest = ridge(px);
+    if (crest > 1000) { continue; }
+    thkPlace(pines[n % 3], px, crest + 34 + 20 * dice(n + 2), 0.45 + 0.35 * dice(n + 9), 0);
+  }
+  for (r = 0; r < 30; r++) {                         // row on row down from the ridge, each lower one nearer and larger
+    for (x = -60 - 120 * dice(r + 1); x < WIDE + 120; ) {
+      var y = ridge(x) + 22 + r * 30 + (dice(x * 0.01 + r * 3.1) - 0.3) * 18;
+      if (y > 1120) { x += 120; continue; }
+      var near = clamp((y - top) / (foot - top)), size = 0.45 + 0.75 * near, band = near < 0.3 ? 0 : near < 0.6 ? 1 : 2;
+      thkPlace(pools[band][Math.floor(dice(x * 0.03 + r * 7) * 3)], x, y, size * (0.85 + 0.3 * dice(x * 0.02 + r)), 0);
+      x += 200 * size * (0.45 + 0.3 * dice(x * 0.011 + r));
+    }
+  }
+  pen = keep;
+}
+
+// One bush of the slope's forest where a scene had a round crown (scenes 5 and 6: the forest's own over and beside
+// the cave), painted as the slope's are (maengForest()). x, y: the crown's middle; r: its radius; seed: a number; tint:
+// [colour, amount], the light of the hour, or nothing. Gives back nothing: it draws with pen.
+// e.g. maengBush(1300, 600, 30, 4, [MAENG_DUSK[0], 0.3]);
+var MAENG_BUSHES = {};
+function maengBush(x, y, r, seed, tint) {
+  var key = seed % 6;
+  var b = MAENG_BUSHES[key] || (MAENG_BUSHES[key] = {sprite: natBush(200, 110, 700 + key, key % 2 ? THK_SHADE : THK_GREENS, [], PIX), tints: {}});
+  var size = r * 2.4 / 200;
+  thkPlace(b.sprite, x, y + r * 0.6, size, 0);
+  if (tint && tint[1] > 0) {
+    var tinted = b.tints[tint[0]] || (b.tints[tint[0]] = sceneryTinted(b.sprite, tint[0]));
+    pen.globalAlpha = Math.min(1, tint[1]);
+    thkPlace(tinted, x, y + r * 0.6, size, 0);
+    pen.globalAlpha = 1;
+  }
+}
+
+// The bushes before the cave's foot on the mountain, so it sits in the forest; with their colour at night (scene 1).
+// Painted once. Gives back {day: [...], night: [...]} for sceneryBeds().
+function maengCaveBushesBuild() {
+  var day = [{sprite: natBush(200, 110, 501, THK_SHADE, [], PIX), x: MAENG_CAVE[0] - 120, y: MAENG_CAVE[1] + 78, size: 0.9},
+             {sprite: natBush(200, 110, 502, THK_GREENS, [["phayasuea", 6, 5, "#ec6c9c"]], PIX), x: MAENG_CAVE[0] + 150, y: MAENG_CAVE[1] + 84, size: 0.95}];
+  return {day: day, dawn: day.map(function (it) { return Object.assign({}, it, {sprite: sceneryTinted(it.sprite, MAENG_DAWN[0])}); })};
+}
+// The film's far mountains (scenery.js farRange()): ridge behind ridge, rounded, no limestone peak, few pines; not the
+// hero film's (owner, 2026-10-26: "Don't reuse the same background mountain as the hero video").
+var MAENG_FAR = {peak: false, ridges: 2, pines: 12, seed: 7};
 
 // The light before the sun is up: a set is painted by day and this laid over it (MAENG_DAWN[1] of it), and
 // whatever a scene draws live on the set is blended toward it by as much.
@@ -104,8 +194,10 @@ function maengMountain() {
   }
   var back = sheet(), front = sheet(), brush = back.getContext("2d"), x;
   var far = ["#a9cfc9", "#8dbfa9", "#79ad84", "#5f9a66"];
-  hills(brush, WIDE, 700, 360, 1.7, far[0]);
-  forestSlope(brush, maengRange(700, 360, 1.7), 0, WIDE, 780, {far: 0.8, small: 3, large: 6, haze: far[0], seed: 41});
+  // the far mountains, painted as the hero film's are (scenery.js farRange(); owner, 2026-10-26: "make sure the process
+  // of beautification of scenery occurs following the same process as for the hero video") but the film's own, not the
+  // hero's ("Don't reuse the same background mountain as the hero video"): ridge behind ridge, no limestone peak
+  brush.drawImage(farRange(far[0], "226, 238, 240", 700, MAENG_FAR), 0, 0);
   hills(brush, WIDE, 800, 260, 3.9, far[1]);
   forestSlope(brush, maengRange(800, 260, 3.9), 0, WIDE, 860, {far: 0.5, small: 4, large: 9, haze: far[1], seed: 42});
   var veil = "226, 238, 240", haze = brush.createLinearGradient(0, 560, 0, 880);
@@ -114,21 +206,19 @@ function maengMountain() {
   haze.addColorStop(1, "rgba(" + veil + ", 0)");
   brush.fillStyle = haze;
   brush.fillRect(0, 560, WIDE, 320);
-  brush = front.getContext("2d");
-  brush.beginPath();                                // Doi Khao Khwai: deepest along its ridge
-  brush.moveTo(0, 1080);
-  for (x = 0; x <= WIDE; x += 8) { brush.lineTo(x, maengPeak(x)); }
-  brush.lineTo(WIDE, 1080);
-  brush.closePath();
-  var body = brush.createLinearGradient(0, 340, 0, 1080);
-  body.addColorStop(0, blend(far[2], "#1f3a3a", 0.3));
-  body.addColorStop(1, far[3]);
-  brush.fillStyle = body;
-  brush.fill();
-  forestSlope(brush, maengPeak, 0, WIDE, 1080, {far: 0.15, small: 6, large: 15, haze: far[2], seed: 43});
-  MAENG_MOUNTAIN = {back: back, front: front, backDawn: maengTinted(back, MAENG_DAWN[0], MAENG_DAWN[1] * 1.15),
-                    frontDawn: maengTinted(front, MAENG_DAWN[0], MAENG_DAWN[1])};
+  maengDoi(front.getContext("2d"));                 // Doi Khao Khwai, painted as the new places are
+  // the light before dawn: the night's blue, as deep as in the still the owner approved (2026-10-26, "good")
+  MAENG_MOUNTAIN = {back: back, front: front, backDawn: maengTinted(back, MAENG_NIGHT[0], 0.7),
+                    frontDawn: maengTinted(front, MAENG_NIGHT[0], 0.5)};
   return MAENG_MOUNTAIN;
+}
+
+// ---------- the clouds ----------
+// Soft clouds in the light of the hour (scenery.js sceneryClouds(); owner, 2026-10-26: "Refine the clouds so they look
+// more natural"), where the film had the kit's cartoon cumulus: "day", "dawn", "dusk" or "night"; t, the scene's clock
+// (each scene gave its own start, kept). Gives back nothing: it draws with pen. e.g. maengClouds(t + 40, "day");
+function maengClouds(t, light) {
+  sceneryClouds(t, {light: light, count: 5, top: 70, bottom: 360, wide: [300, 540], seed: 4});
 }
 
 // ---------- the people ----------
@@ -222,8 +312,7 @@ function maengYard() {
     return paper;
   }
   var back = sheet(), front = sheet(), brush = back.getContext("2d"), x, n;
-  hills(brush, WIDE, 720, 330, 5.2, "#a9cfc9");
-  forestSlope(brush, maengRange(720, 330, 5.2), 0, WIDE, 800, {far: 0.8, small: 3, large: 6, haze: "#a9cfc9", seed: 51});
+  brush.drawImage(farRange("#a9cfc9", "226, 238, 240", 720, MAENG_FAR), 0, 0);   // the far mountains (scenery.js)
   hills(brush, WIDE, 790, 200, 0.8, "#8dbfa9");
   forestSlope(brush, maengRange(790, 200, 0.8), 0, WIDE, 830, {far: 0.55, small: 4, large: 8, haze: "#8dbfa9", seed: 52});
   brush.fillStyle = "#b07a58";                      // the city on the horizon: roofs behind its wall, the wall, a gate
@@ -288,6 +377,31 @@ function maengYard() {
   brush.ellipse(916, 899, 34, 7, 0, 0, 7);
   brush.fill();
   banana(brush, 916, 898);
+  // Wild bushes in flower along the back of the yard where it meets the fields, clear of the hut, the path, the pen and
+  // the garden (docs/kit/places.md, "Painting the scenery", 4; owner, 2026-10-26: "continue with planned upgrades"): a
+  // poor family's yard, so the flowers of the hedgerow, tiger's claw, jasmine, the white dok kaew, not a garden's.
+  // (the two further right, on their banks out over the fields, taken away: owner, 2026-10-26, "Get rid of the 2
+  // hedgerows on mounds")
+  [[700, 900, 220, 80, 601, [["phayasuea", 14, 7, "#ec6c9c"], ["jasmine", 12, 6]]]].forEach(function (b) {
+    // each on a low bank of earth with grass on its top, as a hedgerow grows on a bund (owner, 2026-10-26: "Put the
+    // hedgerows on the ground instead of floating")
+    var half = b[2] * 0.56, bank = brush.createLinearGradient(0, b[1] - 8, 0, b[1] + 16);
+    bank.addColorStop(0, "#8a9a52");
+    bank.addColorStop(0.3, "#a08058");
+    bank.addColorStop(1, "#8a6c48");
+    brush.fillStyle = "rgba(60, 44, 28, 0.25)";    // its shadow on the ground
+    brush.beginPath();
+    brush.ellipse(b[0] + 10, b[1] + 15, half * 1.05, 7, 0, 0, 7);
+    brush.fill();
+    brush.fillStyle = bank;
+    brush.beginPath();
+    brush.moveTo(b[0] - half, b[1] + 14);
+    brush.quadraticCurveTo(b[0] - half * 0.85, b[1] - 8, b[0], b[1] - 8);
+    brush.quadraticCurveTo(b[0] + half * 0.85, b[1] - 8, b[0] + half, b[1] + 14);
+    brush.closePath();
+    brush.fill();
+    thkPlace(sceneryBush(b[2], b[3], b[4], THK_GREENS, b[5]), b[0], b[1], 1, 0);
+  });
   pen = keep;
   MAENG_YARD = {back: back, front: front, backNight: maengTinted(back, MAENG_NIGHT[0], MAENG_NIGHT[1] + 0.1),
                 frontNight: maengTinted(front, MAENG_NIGHT[0], MAENG_NIGHT[1])};
@@ -313,11 +427,13 @@ var MAENG_HUT_THINGS = [
 ];
 
 // t: the scene's second (the clouds drift by it, the fields' life moves by it); night: 0 by day to 1 at night;
-// glow: the hut's lamp, 0 (out) to 1, 0 when left out; behind: a function of no arguments, or left out; away: 0 to 1,
+// glow: the hut's lamp, 0 (out) to 1, 0 when left out; behind: a function of no arguments, or left out; fliers: a
+// function of no arguments drawn over the fields before their water, so the water mirrors what it draws (birds
+// flying over), or left out; away: 0 to 1,
 // how far the folk of the fields have gone home, when the scene says (left out: by the night, as below). Gives back
 // nothing: it draws with pen, the whole picture behind the people (life in the fields only while night < 0.5).
 // e.g. maengYardAt(t, 1, 0.9, function () { s02Mist(t); });
-function maengYardAt(t, night, glow, behind, away) {   // behind: drawn after the far sheet, before the yard and the hut (mist over the fields)
+function maengYardAt(t, night, glow, behind, away, fliers) {   // behind: drawn after the far sheet, before the yard and the hut (mist over the fields)
   var yard = maengYard();
   pen.drawImage(maengSky("day"), 0, 0);
   if (night > 0) {
@@ -325,9 +441,11 @@ function maengYardAt(t, night, glow, behind, away) {   // behind: drawn after th
     pen.drawImage(maengSky("night"), 0, 0);
     pen.globalAlpha = 1;
   }
-  cumulus(pen, t + 10, night > 0.5 ? MAENG_CLOUDS.night : MAENG_CLOUDS.day);
+  maengClouds(t + 10, night > 0.5 ? "night" : "day");
   pen.drawImage(yard.back, 0, 0);
   if (night > 0) { pen.globalAlpha = night; pen.drawImage(yard.backNight, 0, 0); pen.globalAlpha = 1; }
+  if (fliers) { fliers(); }                         // what flies over the fields, before the water that mirrors it
+  maengFieldWater(t);                              // the flooded plots, mirroring the hills, the sky and the fliers
   var home = away !== undefined ? clamp(away) : clamp((night - 0.4) / 0.2);   // the farmers, the buffalo and the egrets: they fade out
   if (home < 1) {                                  // through dusk and back in at dawn, where they were there or not at half
     pen.save();                                    // dark and blinked on and off as scene 8's days went by (the blink check,
@@ -371,19 +489,48 @@ function maengMeadow() {
   brush.closePath();
   brush.fill();
   house(brush, 250, 872, 0.42);                     // the headman's house, far off
-  brush.strokeStyle = "rgba(70, 110, 40, 0.7)";     // tufts of long grass
-  brush.lineWidth = 2;
-  for (n = 0; n < 160; n++) {
-    var gx = dice(n * 3 + 1) * WIDE, gy = 880 + dice(n * 3 + 2) * 200, gh = 8 + 10 * dice(n * 3 + 3) * (gy - 860) / 220;
-    brush.beginPath();
-    brush.moveTo(gx - 4, gy); brush.lineTo(gx - 6, gy - gh);
-    brush.moveTo(gx, gy); brush.lineTo(gx + 1, gy - gh * 1.2);
-    brush.moveTo(gx + 4, gy); brush.lineTo(gx + 7, gy - gh);
-    brush.stroke();
-  }
   var keep = pen;
   pen = brush;
-  tree(brush, MAENG_TREE[0], MAENG_TREE[1], 1.5);   // the great tree
+  // The meadow's grass as the kit paints it now (pinewoods.js grassBank(), in clumps, larger toward us) and small
+  // flowers in it, the field flowers of the north (owner, 2026-10-26: "add some little flower, see if there is better
+  // grass in the kit"), the nearer drawn after the further.
+  var grass = [0, 1, 2].map(function (k) { return sceneryGrassBank(120 + 40 * dice(k + 61), 71 + k * 5); }), lawn = [];
+  var little = ["dokkaew", "jasmine", "buatong", "phayasuea", "marigold"];
+  for (n = 0; n < 70; n++) {
+    var gy = 872 + dice(n * 3 + 2) * 205, near = (gy - 860) / 220;
+    lawn.push({y: gy, draw: function (x, y, d) { return function () { thkPlace(grass[Math.floor(d * 3)], x, y, 0.1 + 0.26 * ((y - 860) / 220), 0); }; }(dice(n * 3 + 1) * WIDE, gy, dice(n * 3 + 3))});
+  }
+  for (n = 0; n < 46; n++) {
+    var fy = 878 + dice(n * 5 + 7) * 195;
+    lawn.push({y: fy + 0.5, draw: function (x, y, name) { return function () {
+      flora(name, x, y, {size: 0.16 + 0.16 * ((y - 860) / 220), ground: false});
+    }; }(dice(n * 5 + 6) * WIDE, fy, little[n % little.length])});
+  }
+  lawn.sort(function (a, b) { return a.y - b.y; }).forEach(function (one) { one.draw(); });
+  thkTreeOn(brush, MAENG_TREE[0], MAENG_TREE[1], 1.2, 31, []);   // the great tree, painted as the hero film's trees are
+  // a limb out of its trunk's left side, for the magpie to sit on (S03_LIFE's course stands it at 1520, 588; owner,
+  // 2026-10-26: "make a branch for the bird to sit on"), and a few leaves at its tip
+  var limb = brush.createLinearGradient(0, 580, 0, 650);
+  limb.addColorStop(0, "#8a765e");
+  limb.addColorStop(1, "#4f4033");
+  brush.fillStyle = limb;
+  brush.beginPath();
+  brush.moveTo(MAENG_TREE[0] - 6, 668);
+  brush.quadraticCurveTo(1530, 640, 1482, 598);
+  brush.quadraticCurveTo(1458, 584, 1430, 586);
+  brush.quadraticCurveTo(1456, 594, 1478, 606);
+  brush.quadraticCurveTo(1524, 632, MAENG_TREE[0] - 6, 642);
+  brush.closePath();
+  brush.fill();
+  brush.strokeStyle = "rgba(50, 38, 28, 0.6)";
+  brush.lineWidth = 1.4;
+  brush.stroke();
+  thkPlace(natBush(80, 40, 621, THK_GREENS, [], PIX), 1428, 594, 1, 0);
+  // wild bushes in flower at the meadow's far edge, behind the buffalo and the boy (docs/kit/places.md, "Painting the
+  // scenery", 4): the golden bua tong of the cool season's hills, tiger's claw
+  [[900, 866, 260, 90, 611, [["buatong", 16, 9]]], [1220, 870, 220, 80, 612, [["phayasuea", 12, 7, "#ec6c9c"]]]].forEach(function (b) {
+    thkPlace(sceneryBush(b[2], b[3], b[4], THK_GREENS, b[5]), b[0], b[1], 1, 0);
+  });
   pen = keep;
   MAENG_MEADOW = {front: front};
   return MAENG_MEADOW;
@@ -421,19 +568,8 @@ function maengSlope() {
     return paper;
   }
   var back = sheet(), front = sheet(), fore = sheet(), b = back.getContext("2d"), x, n;
-  hills(b, WIDE, 640, 300, 2.4, "#a9cfc9");
-  forestSlope(b, maengRange(640, 300, 2.4), 0, WIDE, 760, {far: 0.75, small: 3, large: 7, haze: "#a9cfc9", seed: 61});
-  b.beginPath();                                    // the hillside
-  b.moveTo(0, 1080);
-  for (x = 0; x <= WIDE; x += 8) { b.lineTo(x, maengHillside(x)); }
-  b.lineTo(WIDE, 1080);
-  b.closePath();
-  var earth = b.createLinearGradient(0, 300, 0, 1080);
-  earth.addColorStop(0, "#4f7a4c");
-  earth.addColorStop(1, "#3f6440");
-  b.fillStyle = earth;
-  b.fill();
-  forestSlope(b, maengHillside, 0, WIDE, 1080, {far: 0.05, small: 10, large: 24, seed: 62});
+  b.drawImage(farRange("#a9cfc9", "226, 238, 240", 640, MAENG_FAR), 0, 0);   // the far mountains (scenery.js)
+  maengForest(b, maengHillside, {pines: 10, top: 200, seed: 40});   // the hillside, clothed as scene 1's mountain
   b = front.getContext("2d");
   // The path: a band of worn earth up the slope, narrowing as it climbs away, and running in under the cave's
   // ledge (no end of it shows); its edges soft, a few stones on it.
@@ -459,24 +595,15 @@ function maengSlope() {
     b.ellipse(sx, sy, 3 + 3 * dice(n * 5 + 4), 2 + 1.5 * dice(n * 5 + 4), 0, 0, 7);
     b.fill();
   }
-  b = fore.getContext("2d");                        // the rock and the bushes before it all, at the lower left
-  b.beginPath();
-  b.moveTo(-20, 1080);
-  b.quadraticCurveTo(-10, 880, 120, 860);
-  b.quadraticCurveTo(250, 850, 300, 930);
-  b.quadraticCurveTo(330, 1000, 310, 1080);
-  b.closePath();
-  var stone = b.createLinearGradient(0, 850, 300, 1080);
-  stone.addColorStop(0, "#9a8f80");
-  stone.addColorStop(1, "#5e554c");
-  b.fillStyle = stone;
-  b.fill();
-  b.strokeStyle = inkFor("#7a7066");
-  b.lineWidth = 2.6;
-  b.stroke();
-  [[60, 900, 34], [180, 880, 30], [300, 960, 36], [380, 1040, 40]].forEach(function (c, k) {
-    crown(b, c[0], c[1], c[2], FOREST_GREENS[(k + 1) % FOREST_GREENS.length], 80 + k);
-  });
+  b = fore.getContext("2d");                        // the rock and the bushes before it all, at the lower left: mossy
+  var keepPen = pen;                                // limestone as the cave's (scenery.js), the bushes as the slope's
+  pen = b;
+  // the two bushes up the slope behind the rock, then the rock, then the two before it (owner, 2026-10-26: "Looks like a
+  // bush and boulder have a z order issue": all four were drawn over it)
+  [[40, 930, 0.9, 42], [210, 905, 0.8, 43]].forEach(function (c) { thkPlace(natBush(200, 110, c[3], THK_SHADE, [], PIX), c[0], c[1], c[2], 0); });
+  thkPlace(rockSprite(330, 230, 41, {stone: "#7a7468", moss: 0.45, jag: 0.5}, PIX), 140, 1100, 1, 0);
+  [[330, 1010, 1.0, 44], [420, 1090, 1.15, 45]].forEach(function (c) { thkPlace(natBush(200, 110, c[3], THK_SHADE, [], PIX), c[0], c[1], c[2], 0); });
+  pen = keepPen;
   MAENG_SLOPE = {back: back, front: front, fore: fore,
                  backDusk: maengTinted(back, MAENG_DUSK[0], MAENG_DUSK[1]), frontDusk: maengTinted(front, MAENG_DUSK[0], MAENG_DUSK[1]),
                  foreDusk: maengTinted(fore, MAENG_DUSK[0], MAENG_DUSK[1])};
@@ -626,12 +753,14 @@ function maengCity() {
     return paper;
   }
   var back = sheet(), front = sheet(), b = back.getContext("2d"), x, n;
-  hills(b, WIDE, 700, 300, 4.1, "#a9cfc9");
-  forestSlope(b, maengRange(700, 300, 4.1), 0, WIDE, 760, {far: 0.8, small: 3, large: 6, haze: "#a9cfc9", seed: 71});
+  b.drawImage(farRange("#a9cfc9", "226, 238, 240", 700, MAENG_FAR), 0, 0);   // the far mountains (scenery.js)
   var keep = pen;                                   // the roofs of the city over its wall, and its trees
   pen = b;
   [[160, 0.55], [430, 0.5], [700, 0.58], [1750, 0.52]].forEach(function (h) { house(b, h[0], 790, h[1]); });
-  [[300, 0.9], [560, 1.0], [1650, 0.95], [1880, 0.85]].forEach(function (tr) { tree(b, tr[0], 790, tr[1]); });
+  // the city's trees painted as the hero film's are (thicket.js thkTreeOn()), in flower and fruit as a royal city's:
+  // the frangipani, the golden shower, a longan, the flame of the forest
+  [[300, 0.72, [["frangipani", 30, 14]]], [560, 0.8, [["ratchaphruek", 24, 28]]], [1650, 0.76, [["longan", 22, 14]]],
+   [1880, 0.68, [["thongkwao", 36, 14]]]].forEach(function (tr, k) { thkTreeOn(b, tr[0], 790, tr[1], 21 + k, tr[2]); });
   pen = keep;
   b.fillStyle = "#b5704e";                          // the wall of brick, its top stepped
   b.fillRect(0, 760, WIDE, 70);
@@ -653,6 +782,42 @@ function maengCity() {
   }
   MAENG_CITY = {back: back, front: front};
   return MAENG_CITY;
+}
+
+// ---------- the air, and the picture framed ----------
+// As the hero film's scenes (scenery.js; docs/kit/places.md, "Painting the scenery", 5 and 7; owner, 2026-10-26: "make
+// sure the process of beautification of scenery occurs following the same process as for the hero video"): by day the
+// light coming through, a few petals and one butterfly at most, crossing the picture and leaving; at dusk the
+// fireflies coming out over the fields; and soft grass and blossom at the picture's edges, out of focus. Only where the
+// line's feeling allows: none through the father's dying (scenes 2 and 4), the climb at dusk (5), the cold night of the
+// embers (7), the days and nights of the gold (8), the night of the trough (10), or the creature's going home (13).
+// MAENG_AIR: each scene's, as sceneryAir() takes it ("goodbye": fireflies, as sceneryFireflies() does).
+var MAENG_AIR = {
+  work: {butterfly: {kind: "grassyellow", x: 1500, y: 620, vx: -70, weave: 50, seed: 4, size: 1.2, turn: -1.2, wing: 3},
+         petals: [8, "#f2e2a0", 5, 0.9], light: [0.55, 3]},
+  creature: {butterfly: {kind: "lacewing", x: 260, y: 420, vx: 60, weave: 60, seed: 6, size: 1.3, turn: 1.2, wing: 2}, light: [0.6, 4]},
+  decree: {petals: [14, "#f6b8cc", 7, 1.0], light: [0.5, 5]},
+  morning: {butterfly: {kind: "bluebottle", x: 1600, y: 520, vx: -80, weave: 55, seed: 9, size: 1.2, turn: -1.2, wing: 4},
+            petals: [12, "#f6b8cc", 6, 1.0], light: [0.7, 6]},
+  wedding: {butterfly: {kind: "birdwing", x: 200, y: 380, vx: 70, weave: 60, seed: 11, size: 1.3, turn: 1.2, wing: 5},
+            petals: [40, "#f6b8cc", 8, 1.1], light: [0.6, 7]},
+  goodbye: {far: [[[0, 700, WIDE, 880], 50, 5]], near: 0}
+};
+// The picture's edges, soft: grass at the bottom corners, and over a royal place blossom hanging into a top corner.
+// Painted once. Returns {day: [...], palace: [...]} for sceneryBeds().
+function maengFrameBuild() {
+  return {day: [{sprite: sceneryGrass(420, 14, 501), x: -20, y: 1120}, {sprite: sceneryGrass(380, 12, 502), x: 1950, y: 1120}],
+          palace: [{sprite: sceneryHanging(520, 240, 503, THK_SHADE, [["frangipani", 10, 14], ["jasmine", 20, 8]]), x: 140, y: -40},
+                   {sprite: sceneryGrass(380, 12, 504), x: 1950, y: 1120}]};
+}
+// The air of scene "kind" (a key of MAENG_AIR) and its frame ("day", "palace" or none) at second t, over everything and
+// under the scene's fade. Gives back nothing: it draws with pen, in the film's pixels (after a camera is put back).
+// e.g. maengAir(t, "work", "day");
+function maengAir(t, kind, frame) {
+  if (frame) { sceneryBeds(t, thkOnce("maeng-frame", maengFrameBuild)[frame], {sway: 0.4, blur: 5}); }
+  var air = MAENG_AIR[kind];
+  if (air.far) { sceneryFireflies(t, air); return; }
+  sceneryAir(t, air);
 }
 
 // ---------- a fade, the pen, the Haw traders, the trough in the yard ----------
@@ -779,18 +944,16 @@ var FIELD_TURN = 3.5, FIELD_TURN_FIRST = 3;
 var FIELD_LED = [1, 1000, 5];                       // the led buffalo: its row, where it is at a scene's start, how fast it goes
 var FIELD_PLANTERS = [[3, 1060], [3, 1180], [3, 1320]];   // women planting rice in the flooded plot, bent over
 
-// The plots of FIELD_PLOTS and their bunds, painted with brush (a 2D context: the yard's far sheet). Gives back
-// nothing. e.g. maengFields(back.getContext("2d"));
+// The plots of FIELD_PLOTS and their bunds, painted with brush (a 2D context: the yard's far sheet); the flooded
+// plots' seedlings and glints on a sheet of their own (maengFieldOver()), their water drawn live (maengFieldWater()).
+// Gives back nothing. e.g. maengFields(back.getContext("2d"));
 function maengFields(brush) {
   var n, k;
   FIELD_PLOTS.forEach(function (p, i) {
     var row = fieldRow(p[0]), top = row[0], deep = row[1], x0 = p[1], x1 = p[2];
-    if (p[3] === "water") {                         // the sky in the water, pale, a little rippled
-      var w = brush.createLinearGradient(0, top, 0, top + deep);
-      w.addColorStop(0, "#cfe3e6");
-      w.addColorStop(1, "#9fc4c6");
-      brush.fillStyle = w;
-      brush.fillRect(x0, top, x1 - x0, deep + 2);
+    if (p[3] === "water") {                         // the water is drawn live (maengFieldWater()); here its glints and seedlings,
+      var keepBrush = brush;                        // on their own sheet laid over it
+      brush = maengFieldOver();
       brush.strokeStyle = "rgba(255, 255, 255, 0.55)";
       brush.lineWidth = 1;
       for (k = 0; k < 5; k++) {
@@ -804,6 +967,7 @@ function maengFields(brush) {
           brush.beginPath(); brush.moveTo(sx, sy + 2); brush.lineTo(sx + 0.6, sy - 1 - p[0] * 0.3); brush.stroke();
         }
       }
+      brush = keepBrush;
     } else if (p[3] === "mud") {                    // ploughed: wet earth, furrows along it
       brush.fillStyle = "#8a6a48";
       brush.fillRect(x0, top, x1 - x0, deep + 2);
@@ -836,6 +1000,38 @@ function maengFields(brush) {
     brush.fillStyle = "#a08058";
     brush.fillRect(p[1] - 1, row[0], 2 + p[0] * 0.5, row[1] + 2);
   });
+}
+
+// The flooded plots' water as the hero film's pond (owner, 2026-10-26: "redo the water in scene 2 to look like the
+// pond scene water in the hero", then "Make the water reflective"): the hills, the sky and whatever flies over the
+// fields mirrored in it about the fields' far edge (pinewoods.js natReflect()), still, so the mirror holds, little of
+// the water's own colour over it and its light glinting; then the rows of seedlings and the glints over it
+// (MAENG_FIELD_OVER). Drawn live in each flooded plot, after the yard's far
+// sheet (by day or night: what it mirrors is already on the picture). t: the scene's second. Gives back nothing: it
+// draws with pen. e.g. maengFieldWater(t);
+var MAENG_FIELD_OVER = null;
+function maengFieldOver() {                         // the seedlings' sheet: a clear canvas WIDE by 1080, its 2D context
+  if (!MAENG_FIELD_OVER) {
+    MAENG_FIELD_OVER = document.createElement("canvas");
+    MAENG_FIELD_OVER.width = WIDE;
+    MAENG_FIELD_OVER.height = 1080;
+  }
+  return MAENG_FIELD_OVER.getContext("2d");
+}
+function maengFieldWater(t) {
+  maengYard();                                      // the plots and their seedlings' sheet are painted with the yard
+  var foot = fieldRow(FIELD_ROWS - 1)[0] + fieldRow(FIELD_ROWS - 1)[1];
+  pen.save();
+  pen.beginPath();
+  FIELD_PLOTS.forEach(function (p) {
+    if (p[3] !== "water") { return; }
+    var row = fieldRow(p[0]);
+    pen.rect(p[1] + 1, row[0] + 2, p[2] - p[1] - 2, row[1]);
+  });
+  pen.clip();
+  natReflect(t, FIELD_TOP, {left: 0, right: WIDE, foot: foot, ripple: 0.12, tint: "40, 78, 80", deep: 0.12, sheen: 80, line: 0});
+  pen.drawImage(MAENG_FIELD_OVER, 0, 0);
+  pen.restore();
 }
 
 // Where the ploughing buffalo is at second t: {x, face, turn}: along FIELD_PLOUGH at 9 a second, facing the way it

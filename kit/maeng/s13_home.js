@@ -94,10 +94,10 @@ function sceneHome(t) {
   } else if (t < S13_SHOTS[1]) {                     // the run home, up the trail and into the cave
     var slope = maengSlope(), size = MAENG_SLOPE_CAVE[2];
     pen.drawImage(maengSky("day"), 0, 0);
-    cumulus(pen, t + 70, MAENG_CLOUDS.day);
+    maengClouds(t + 70, "day");
     pen.drawImage(slope.back, 0, 0);
     pen.drawImage(slope.front, 0, 0);
-    caveMouth(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f"});
+    sceneryCave(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f"});
     var run = between(t, S13_SHOTS[0] + 0.4, S13_SHOTS[0] + 6.4), x = mix(-160, MAENG_SLOPE_CAVE[0] - 20, run);
     var inside = between(t, S13_SHOTS[0] + 6.4, S13_SHOTS[0] + 7.6);   // it goes in, into the dark, smaller and fainter
     if (inside < 1) {
@@ -111,7 +111,7 @@ function sceneHome(t) {
   } else {                                           // Doi Khao Khwai today, and the temple on its shoulder
     var mountain = maengMountain();
     pen.drawImage(maengSky("day"), 0, 0);
-    cumulus(pen, t + 30, MAENG_CLOUDS.day);
+    maengClouds(t + 30, "day");
     pen.drawImage(mountain.back, 0, 0);
     mistDrift(pen, t, {left: 0, right: WIDE, top: 640, bottom: 770, count: 4, drift: 8, seed: 13, alpha: 0.45});
     pen.drawImage(mountain.front, 0, 0);

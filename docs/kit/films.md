@@ -18,7 +18,8 @@ step went the first time. Each step ends in something the owner looks at, and no
    rule: a temple may stand in a film, a monk or novice is kit only, never in the maker.
 2. **The plan, one file.** `<film>/story.py` holds every scene (title, seconds, what we see, the kit it has, what
    it needs new) and every line (English, Central Thai, Kam Mueang); `python tale_plan.py <film>` writes the plan page
-   (`plan.html`), the words (`words.js`, `<FILM>_WORDS[id]`) and the Central Thai for a writer (`central.txt`). The
+   (`plan.html`), the words (`words.js`, `<FILM>_WORDS[id]`) and the Central Thai for a writer (`central.txt`); its
+   `SCENERY` names how each scene's place is painted (step 6b), and the plan shows a scene without it red. The
    length: the whole film the owner asks for, less the hero film (97.75 s), the studio's card (12 s) and the
    credits; Maeng told about 0.12 lines a second (79 lines in 626 s), scenes of 25 to 55 s. Questions the sources
    leave open go to the owner before anything is drawn, all at once.
@@ -39,6 +40,12 @@ step went the first time. Each step ends in something the owner looks at, and no
    them together at the end"): on its own clock from 0, drawn by its z plan (`drawByZ`), looked at in stills
    (`stills.py`) and checked (`checks/kit_check.py`, `pop_check.py`, `arms_check.py`; render.py's blink check), shown to
    the owner as stills. Scene cuts fade through black.
+6b. **Paint the scenery** (owner, 2026-10-26: "Make sure new videos will be generated with this process!"), as the
+   hero film's places were: `docs/kit/places.md`, "Painting the scenery", with `scenery.js`. Candidates first (the
+   scene as it is and dressed two or three ways); then far mountains (`farRange()`), painted trees in flower, beds of
+   flowering bushes behind the people, the picture framed by soft blossom, water as the pine lake's, and the air
+   (light, petals, one butterfly at most; fireflies at night) as the line's feeling allows. A set shared by many
+   scenes is painted once, in `<film>/sets.js`. Stills, then a quick clip of the scene with its narration for the owner.
 7. **Wire, sound, render, join**, as "Putting a tale together" below: `film.html` lays the scenes end to end; each
    line's feeling makes the music and the scenes' life calls their sounds; the voice is laid over the music
    (`sash_narrate.py --spoken`); the scenes render on two machines (`scenes.py`, `render_back.py`) from one clean

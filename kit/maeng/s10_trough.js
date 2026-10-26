@@ -150,7 +150,7 @@ function s10Garden(t) {                             // the crier goes by calling
 function s10Caravan(t) {                            // dusk: the Haw caravan comes along the path; he asks them to help
   var yard = maengYard(), dusk = 0.4, k = MAENG_PEN;
   pen.drawImage(maengSky("dusk"), 0, 0);
-  cumulus(pen, t + 10, MAENG_CLOUDS.dawn);
+  maengClouds(t + 10, "dawn");
   pen.drawImage(yard.back, 0, 0);
   pen.globalAlpha = dusk; pen.drawImage(yard.backNight, 0, 0); pen.globalAlpha = 1;
   pen.drawImage(yard.front, 0, 0);
@@ -286,7 +286,7 @@ function s10Dawn(t) {                               // dawn at the palace: the t
     city.frontDawn = maengTinted(city.front, MAENG_DAWN[0], MAENG_DAWN[1]);
   }
   pen.drawImage(maengSky("dawn"), 0, 0);
-  cumulus(pen, t + 90, MAENG_CLOUDS.dawn);
+  maengClouds(t + 90, "dawn");
   pen.drawImage(city.backDawn, 0, 0);
   pen.drawImage(city.frontDawn, 0, 0);
   mistDrift(pen, t, {left: 0, right: WIDE, top: 760, bottom: 900, count: 5, wide: 560, drift: 6, seed: 41, glow: "#f6c9a0",

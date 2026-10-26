@@ -21,9 +21,8 @@ var S06_BEFORE = [[-80, 10, 12], [-52, 14, 13], [74, 12, 12], [96, 4, 11]];
 // list: S06_BEHIND or S06_BEFORE, as s05Crowns() takes; size, seed as there; shake: pixels they sway by the kit's
 // clock, 0 for still. Gives back nothing: it draws with pen. e.g. s06Crowns(S06_BEFORE, MAENG_SLOPE_CAVE[2] * 1.6, 9, 3);
 function s06Crowns(list, size, seed, shake) {        // the forest's own crowns over and beside the cave; the near ones shake while it struggles
-  list.forEach(function (c, n) {
-    var green = blend(FOREST_GREENS[(n + seed) % FOREST_GREENS.length], "#79ad84", 0.05);
-    crown(pen, MAENG_SLOPE_CAVE[0] + c[0] * size + shake * Math.sin(clock * 31 + n), MAENG_SLOPE_CAVE[1] + c[1] * size, c[2] * size, green, seed + n);
+  list.forEach(function (c, n) {                     // painted bushes, as the slope's (sets.js maengBush())
+    maengBush(MAENG_SLOPE_CAVE[0] + c[0] * size + shake * Math.sin(clock * 31 + n), MAENG_SLOPE_CAVE[1] + c[1] * size, c[2] * size, seed + n);
   });
 }
 
@@ -61,7 +60,7 @@ function sceneCreature(t) {
   if (mist > 0) { mistDrift(pen, t, {left: -200, right: WIDE + 200, top: 560, bottom: 780, count: 5, wide: 520, drift: 7, seed: 33, alpha: 0.6 * mist}); }
   var struggle = t > 5.49 && t < 11.26 ? 1 : 0;        // something tugs at the snare
   s06Crowns(S06_BEHIND, size * 1.6, 3, 0);
-  caveMouth(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f"});
+  sceneryCave(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f"});
   // The creature: hidden in the cave's dark at first (only its pull on the snare shows), then out into the
   // light; its four ears first, then its eyes opening one after another; afraid, then calm, then it follows.
   var out = between(t, 11.26, 13.95), wake = t < 20.82 ? 0 : Math.min(5, (t - 24.48) / 0.45 + 1), leave = t > 44.08;
@@ -115,6 +114,7 @@ function sceneCreature(t) {
   drawByZ(sprites);
   pen.drawImage(slope.fore, 0, 0);
   pen.restore();
+  maengAir(t, "creature");                         // the day's air on the slope (sets.js), in the film's pixels
   var dark = Math.max(1 - between(t, 0, 1.5), between(t, 64.95, 68.45));
   if (dark > 0) {
     pen.fillStyle = "rgba(0, 0, 0, " + dark.toFixed(3) + ")";

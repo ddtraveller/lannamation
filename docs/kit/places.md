@@ -729,6 +729,56 @@ The rules the first round taught:
   bushes painted once as the hero film's garden is, thicket.js: `look` {wide, high, seed, greens "sun" or "shade",
   blooms}). They take no night tint: a scene at night lays its own dark over them.
 
+## Painting the scenery (2026-10-26)
+
+The owner, of the Maeng film: "make sure the process of beautification of scenery occurs following the same process
+as for the hero video. Kit, skills, etc. should be considered", and "Make sure new videos will be generated with this
+process!" How the hero film's places were made beautiful (sash_maeng.html, 2026-10-25 and 26), as a pass every film's
+scenes go through, after a scene is built and before its life is decorated. Its painters are `scenery.js`; each piece
+is painted once into a sprite and placed every frame, swaying, so a frame stays in the kit's budget.
+
+1. **Candidates first.** Stills of the scene as it is and dressed two or three ways (the hero's were "the air only",
+   "the air and the beds", and C, "all the way"); the owner picks how far to go, and the pick holds for the film
+   ("Go C all the way").
+2. **The far mountains.** `farRange(colour, air, base)` on the set's back sheet in place of flat `hills()`: a far
+   ridge pale with the air (`ridgeLayer()`), a limestone peak as Doi Luang Chiang Dao stands (`peakSprite()`), a range
+   clothed in forest with pines (`forestHill()`), each hazed; one sheet for each light (day, dusk, night). What stands
+   on a range (an elephant on its ridge, terraces) keeps the range it stood on. Each film has its own mountains, not
+   another's (owner: "Don't reuse the same background mountain as the hero video"): `{peak: false, ridges: 2,
+   pines: 12, seed: 7}` is the Maeng film's. A mountain of the tale itself is clothed the same way, in rows of small
+   bushes along its own ridge, flowers and fruit near its foot (maeng/sets.js `maengDoi()`); a cave in it is
+   `sceneryCave()`, a dark arch cut into mossy limestone.
+3. **Painted trees, flowers of the place.** Every plain tree a painted one (`thkTreeOn()`), in fruit or flower as the
+   place has it (a longan in a yard, the golden shower and the flame of the forest by water, a frangipani at a temple
+   at night), and the flowers of flora.js at a house's foot.
+4. **Flowering beds behind the people.** Bushes in flower (`sceneryBush()`, blooms of THK_BLOOMS) at the back of the
+   ground where they hide no one, drawn before the people or in `drawByZ`'s "back" band, so a creature far off walks
+   behind them (the hero's peafowl: "appears in front of a new bush it should be behind").
+5. **The picture framed.** Out of focus in front of everything (`sceneryBeds(t, list, {blur: 5})`): blossom hanging
+   into a top corner (`sceneryHanging()`), soft bushes or grass at the bottom corners (`sceneryGrass()`).
+6. **Water as the pine lake's.** A pond or a pool as a water (`sceneryWaterDepths()`, `sceneryWaterSurface()`): its
+   banks mirrored in it, strong across it and fading toward the near bank so what swims shows near at hand; no line
+   round it; its bank a smooth wandering line (an S, not a box), running off the foot of the picture when it is near;
+   plants along its far bank (`sceneryBankPlants()`) and small ones over its top edge, reeds and grass over its near
+   sides (`sceneryEdgePlants()`, `sceneryWaterPlants()`); lotus rising out of it (`sceneryLotus()`); mist lying on it
+   and rising off it. A flier over it is mirrored (`sceneryMirrored()`); one fish may leap once (`sceneryLeap()`).
+7. **The sky.** Soft clouds with no edge (`sceneryClouds()`, in the light of the hour) in place of the cartoon
+   cumulus; at night many fine stars, a few bright ones twinkling (`sceneryStars()`, no Milky Way unless asked), the
+   moon (`sceneryMoon()`), and bats going out over the mountains (night.js `batStream()`, drawn between a far range
+   and a near one so they fly behind it).
+8. **The air.** By day (`sceneryAir()`): the light coming through, a few falling petals, and one butterfly at most,
+   on a course that crosses the picture and leaves ("a bit too many butterflies"). At night: fireflies far and near
+   (`sceneryFireflies()`). The line's feeling rules it, as it rules the life ("Decorating a scene"): no petals or
+   butterfly through a death or a grief, no fireflies where the scene is afraid.
+9. **Look, then watch.** Stills of each scene at its moments, the owner's notes taken scene by scene; then a quick
+   clip of the scene with its own narration (`render.py <page> clip.mp4 --fast --no-vanish --from A --to B`, the
+   film's sound laid under it with ffmpeg) for the owner to watch; only then the full render. A change to the kit is
+   checked on a copy (`checks/kit_check.py`), and a film already made must look the same where nothing was meant to
+   change (its frames before and after, compared pixel by pixel).
+
+A tale's plan names each scene's scenery before anything is drawn (`SCENERY` in its `story.py`; `tale_plan.py` names
+any scene without one, and the plan shows it red), so a new film is painted this way from its first scene.
+
 ## What is drawn over what: z (2026-10-21)
 
 The owner: "One thing that constantly bites the QA process is the Z layer for the creatures. Go through and set a

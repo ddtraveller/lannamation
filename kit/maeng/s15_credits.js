@@ -305,7 +305,7 @@ function s15Owl(o, t, moon) {                        // one of S15_OWLS, at seco
 // nightMoon() gives it. e.g. var moon = s15NightSky(t);
 function s15NightSky(t) {                             // behind the far hills: the moon, the clouds, the owl in flight
   var moon = nightMoon(S15_MOON[0], S15_MOON[1], S15_MOON[2]);
-  cumulus(pen, t, CLOUD_LOOKS.night);
+  maengClouds(t, "night");
   S15_OWLS.forEach(function (o) { if (o[2] === "side") { s15Owl(o, t, moon); } });   // high, behind the hills
   return moon;
 }

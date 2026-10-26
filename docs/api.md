@@ -5804,6 +5804,8 @@ this, then what stands in front of the water. look:
   tint     the water's own colour, "r, g, b", and deep, how much of it lies over the mirror at the foot (0 to 1)
   sheen    how many lines of light lie on the ripples (60 when left out)
   left, right: the water's extent across (the whole sheet when left out)
+  line     how dark the line is where the shore meets the water (0.35 when left out; 0 none, for water whose bank
+           plants or grass cover its edge)
 t: seconds. Returns nothing: it draws with pen, and leaves pen as it found it.
 ```
 
@@ -9814,6 +9816,283 @@ go (over 0.8 s), for the thanks; figures: the film's bowing figures for its "pai
 Gives back nothing: it writes with pen. e.g. creditRoll(t, rows, [3, 174], 177.5, figures);
 ```
 
+## scenery.js
+
+scenery.js - a scene's place painted as the hero film's is (sash_maeng.html, 2026-10-25 and 26), for any film of the kit: flowering beds behind the people and soft blossom framing the picture in front, the air of the day (its light, falling petals, one butterfly) or of the night (fireflies near and far), far mountains, and still water that mirrors its banks, with plants at its edges, lotus rising out of it and a fish that leaps. The owner, of the hero: "Go C all the way and redo the pond scene so it seems like the viewer is coming through a beautiful garden into the pond area", then "update the pond scene with the pine lake style of water and mist", "see if you can use the new kit to make better background mountains"; and of the Maeng film: "make sure the process of beautification of scenery occurs following the same process as for the hero video ... Make sure new videos will be generated with this process!" The process is docs/kit/places.md, "Painting the scenery"; this file is its painters. Load it after the kit and the files it paints with:  <script src="oldcartoon.js"></script> <script src="flora.js"></script> <script src="butterflies.js"></script> <script src="night.js"></scri
+
+### `sceneryBush(wide, high, seed, greens, blooms)`
+
+```
+A flowering bush as a sprite, its base's middle its point: thkBush() painted once. wide, high: film pixels; seed: a
+number; greens: seven colours (THK_GREENS, THK_SHADE, THK_SUN); blooms: [[name, count, r, colour], ...] of
+THK_BLOOMS. Returns thkSprite()'s.
+e.g. var bed = sceneryBush(520, 280, 401, THK_GREENS, [["bougainvillea", 50, 16, "#d8338a"]]);
+```
+
+### `sceneryHanging(wide, high, seed, greens, blooms)`
+
+```
+A flowering bush upside down, its top's middle its point: blossom hanging into the picture from above, for a top
+corner. As sceneryBush(). Returns thkSprite()'s.
+e.g. var hanging = sceneryHanging(560, 260, 481, THK_SHADE, [["phayasuea", 40, 10, "#f3a6c0"]]);
+```
+
+### `sceneryPlant(name, size, look)`
+
+```
+One plant of flora.js as a sprite, the foot of its stem its point. name: a key of FLORA; size: flora()'s; look:
+flora()'s (colour). Returns thkSprite()'s.
+e.g. var tahern = sceneryPlant("tahern", 1.5);
+```
+
+### `sceneryGrass(high, count, seed, greens)`
+
+```
+A tuft of grass as a sprite, its foot's middle its point: thkGrass() painted once. high: film pixels; count: blades;
+seed: a number; greens: seven colours (THK_GREENS when left out). Returns thkSprite()'s.
+e.g. var grass = sceneryGrass(420, 14, 451);
+```
+
+### `sceneryGrassBank(high, seed, greens)`
+
+```
+A bank of grass as a sprite, its foot's middle its point: pinewoods.js grassBank() painted once (620 across), to be
+placed small. high: film pixels; seed: a number; greens: GRASS_GREEN when left out. Returns thkSprite()'s.
+e.g. var tuft = sceneryGrassBank(130, 31);
+```
+
+### `sceneryBeds(t, items, look)`
+
+```
+Places a list of pictures at second t, each swaying in the air: [{sprite, x, y, size}, ...] (size 1 when left out).
+look: {sway: how far they sway, 0 to 1 (0.35); blur: pixels, for what is so near it is out of focus (the soft
+blossom framing the picture: 5)}. Returns nothing: it draws with pen.
+e.g. sceneryBeds(t, [{sprite: bed, x: 40, y: 925}]);   sceneryBeds(t, frame, {sway: 0.4, blur: 5});
+```
+
+### `sceneryAir(t, look)`
+
+```
+The air of a day over a scene at second t, in front of everything: one butterfly at most, drifting across and away
+(owner, 2026-10-26, of the hero: "a bit too many butterflies"), falling petals, and the light coming through.
+look: {butterfly: {kind (a key of BUTTERFLIES), x, y (where it is at second 0), vx, vy, weave, seed, size, turn
+(radians added to its heading), wing (its own seed)} or null; petals: [count, colour, seed, size] or null; light:
+[strength, seed] or null}. Returns nothing: it draws with pen.
+e.g. sceneryAir(t, {butterfly: {kind: "lacewing", x: 300, y: 520, vx: 90, weave: 60, seed: 3, size: 1.4, turn: 1.2, wing: 2},
+                    petals: [26, "#f6b8cc", 3, 1.1], light: [0.7, 2]});
+```
+
+### `sceneryFireflies(t, look)`
+
+```
+The fireflies of a night at second t: far ones in their many (night.js farFireflies(), in look.far: [[box, count,
+seed], ...]) and near ones in the air over the people, larger, each glowing and fading on its own (look.near: how
+many, 70 in the hero's dance). Returns nothing: it draws with pen.
+e.g. sceneryFireflies(t, {far: [[[0, 420, WIDE, 1000], 160, 0], [[0, 560, WIDE, 1060], 60, 3]], near: 70});
+```
+
+### `farRange(colour, air, base, look)`
+
+```
+The far mountains: far off a ridge pale with the air (wildplaces.js ridgeLayer()); standing up out of it a
+limestone peak, as Doi Luang Chiang Dao stands to the north of Chiang Mai (peakSprite()); and in front a range
+clothed in forest, row on row of small bushes with pines standing out of it (pinewoods.js forestHill()); each hazed
+by the air between it and us, laid over what is painted and nowhere else. colour: the set's far colour, "#rrggbb";
+air: the haze's "r, g, b"; base: the far range's foot, y; look: {peak: the peak's x (560 + SIDE), seed}. Painted once
+for each colour and look (thkOnce()), as a sheet of its own. Returns the sheet, a canvas WIDE by 1080, clear where
+there is sky: draw it on a set's back sheet first. A film has mountains of its own, not another's (owner,
+2026-10-26, of the Maeng film: "Don't reuse the same background mountain as the hero video"): look.peak false for
+none, look.ridges 2 for a second far ridge between (rounder, lower), look.pines how many pines (40), look.seed.
+e.g. back.drawImage(farRange("#a9cfc9", "226, 238, 240", 720), 0, 0);
+     back.drawImage(farRange("#a9cfc9", "226, 238, 240", 720, {peak: false, ridges: 2, pines: 12, seed: 7}), 0, 0);
+```
+
+### `sceneryWaterShape(water)`
+
+```
+The water's outline as a path, for its fill and as a clip: a smooth line through water.edge. Returns nothing: it
+makes a path on pen. e.g. sceneryWaterShape(POND); pen.clip();
+```
+
+### `sceneryBankAt(water, x)`
+
+```
+The far bank's height at x, read off water.top (a little below the points, as the smooth line runs inside them).
+Returns a y. e.g. sceneryBankAt(POND, 800)
+```
+
+### `sceneryWaterDepths(water)`
+
+```
+The deep of the water, under what swims in it: still water, its colour going from water.depths[0] at the far bank to
+water.depths[1] at the foot. Returns nothing: it draws with pen. e.g. sceneryWaterDepths(POND);
+```
+
+### `sceneryWaterSurface(t, water, mirrored)`
+
+```
+The water's face at second t, over what swims in it: what stands behind it mirrored (pinewoods.js natReflect(), with
+no shore line), in water.mirror's bands; then mirrored(), if given (a flier's reflection: sceneryMirrored()); the
+water darker than what it mirrors; the drops' rings; the mist lying on it and strands of it rising, inside the water;
+and a few wisps over the far bank. Returns nothing: it draws with pen.
+e.g. sceneryWaterSurface(t, POND, function () { sceneryMirrored(t, flier, 50, "bluebottle", {size: 1.3}); });
+```
+
+### `sceneryMirrored(t, at, high, kind, look)`
+
+```
+A flier's reflection on still water (a butterfly, a bird low over it): upside down, as far below the water under
+it as it is above it ("high"), drawn with the water's face (sceneryWaterSurface()'s mirrored). at: where the flier is
+({x, y, turn}, butterflyDrift()'s), in the water's own pixels; kind: a key of BUTTERFLIES; look: butterfly()'s
+(turn added to at.turn). Returns nothing: it draws with pen.
+e.g. sceneryMirrored(t, {x: 900, y: 830, turn: 0.3}, 50, "bluebottle", {size: 1.3, seed: 5, turn: -1.2});
+```
+
+### `sceneryReeds(x, base, size, t, part)`
+
+```
+A clump of reeds at the water's edge, its blades swaying; part "back" the ones behind what stands in them, "front"
+the ones before it. x, base: its foot; size: 1 is about 160 tall; t: seconds. Returns nothing: it draws with pen.
+e.g. sceneryReeds(445, 1010, 0.9, t, "back"); sceneryReeds(445, 1010, 0.9, t, "front");
+```
+
+### `sceneryBankPlants(water, x0, x1, seed)`
+
+```
+The plants along the far bank: low bushes (natBush()), green grass and now and then one in flower, standing on the
+bank's line from x0 to x1; drawn before the water's face, so the water mirrors them. Returns [{sprite, x, y, size},
+...] for sceneryBeds(); painted once (call it inside thkOnce()). seed: a number.
+e.g. var bank = thkOnce("pond-bank", function () { return sceneryBankPlants(POND, 470, 1200, 70); });
+```
+
+### `sceneryEdgePlants(water, x0, x1, seed)`
+
+```
+Small plants standing in the water's top edge, close along it from x0 to x1, over the line where it meets the far
+bank: tufts of grass and short reeds. Returns [[kind ("grass" or "reeds"), x, y, size, seed], ...] for
+sceneryWaterPlants(). seed: a number.
+e.g. var edge = sceneryEdgePlants(POND, 440, 1230, 200);
+```
+
+### `sceneryWaterPlants(t, list)`
+
+(no comment)
+
+### `sceneryLotus(part, x, line, deep, size, seed, colour, t)`
+
+```
+A clump of lotus rising out of the water: its root "deep" below the water line at "line", so the stems come up
+through the water. part "under": the whole clump, to be drawn under the water's face, which lies over what is in the
+water; part "over": only what stands above the water line, crisp, with pads lying on the water round where it comes
+up and a ring round the stems. lotusClump()'s arguments otherwise. Returns nothing: it draws with pen.
+e.g. sceneryLotus("under", 520, 1010, 60, 0.9, 4, "#ee7f9c", t); ... sceneryLotus("over", 520, 1010, 60, 0.9, 4, "#ee7f9c", t);
+```
+
+### `sceneryLeap(t, part, leap)`
+
+```
+A fish that leaps once: at leap.at seconds it comes up out of the water at leap.from, nose up, arcs leap.high over
+the water in leap.air seconds and goes back in nose down at leap.to, and is gone; a ring spreads where it leaves the
+water and where it goes in, with a splash of drops. leap: {at, from: [x, y], to: [x, y], high, air, size, kind (a
+key of NATIVE_FISH, "barb" when left out)}. part: "air" (the leap, above the water line only) or "rings" (the rings
+and the splash), both over the water's face. t: seconds. Returns nothing: it draws with pen.
+e.g. sceneryLeap(t, "rings", LEAP); sceneryLeap(t, "air", LEAP);
+```
+
+### `sceneryCave(brush, x, y, size, look)`
+
+(no comment)
+
+### `sceneryCaveTint(cave, part, tint)`
+
+```
+The light of the hour over one of the cave's sprites ("face" or "rocks"): its tinted copy at the tint's strength.
+cave: sceneryCaveBuild()'s; tint: [colour, amount] or nothing. Returns nothing: it draws with pen.
+```
+
+### `sceneryCaveBuild(rock)`
+
+```
+The cave's rocks as one sprite, its point at the mouth's foot: the two jambs, the lintel over the arch, the ledge,
+small stones, and two small bushes on the top; and the face of rock behind the opening. rock: the stone's
+colour. Returns {face, rocks, tints: {}}.
+```
+
+### `sceneryTinted(sprite, colour)`
+
+```
+A copy of a sprite with one colour laid over what is painted on it (to be drawn over the sprite at some
+strength: the light of an hour). sprite: thkSprite()'s; colour: a CSS colour. Returns a sprite like it.
+e.g. var dusk = sceneryTinted(rocks, "#5a2a46");
+```
+
+### `sceneryStars(t, look)`
+
+```
+A clear night's sky as the mountains of the north show it (owner, 2026-10-26: "some nice stars to the night", with
+a photograph of the Milky Way over Doi Inthanon's ridges for its look): thousands of fine stars, more of them along
+the Milky Way; the Milky Way itself, a dusty band of light with darker lanes in it; a warm glow low over the
+horizon; and a few bright stars, white and pale cyan, each with a soft glow, twinkling. Over a dark sky and under
+everything else. A sky may have no Milky Way (owner, 2026-10-26, of the Maeng film's night: "get rid of the milky
+way"): band null, the stars spread over the whole sky. t: seconds; look: {band: [x0, y0, x1, y1] (the Milky Way's
+line across the sheet) or null, horizon (the y
+the sky reaches), count (fine stars, 2600), bright (24), glow ("r, g, b" of the horizon's light, or null), seed,
+alpha (0 to 1, how much of the night shows)}. The fine stars and the band are painted once for each look
+(thkOnce()). Returns nothing: it draws with pen.
+e.g. sceneryStars(t, {band: [200, 0, 1500, 760], horizon: 760, glow: "240, 150, 70", alpha: 1});
+```
+
+### `sceneryStarSheet(band, horizon, count, glow, seed)`
+
+```
+sceneryStars()'s sheet, painted once: the Milky Way's dusty band and its dark lanes (band null: none, and the stars
+spread evenly), the fine stars, the horizon's glow. Returns a canvas WIDE by 1080 (at PIX), clear where nothing is.
+```
+
+### `sceneryClouds(t, look)`
+
+(no comment)
+
+### `sceneryCloud(wide, seed, colours)`
+
+```
+One soft cloud as a sprite, its foot's middle its point: puffs of shade, then of half light and of light above
+them, each a round of colour fading to nothing at its edge, the whole flattened. wide: film pixels; seed: a
+number; colours: [shade, half light, lit tops]. Returns thkSprite()'s.
+```
+
+### `sceneryMoon(t, x, y, r, look)`
+
+```
+The moon (owner, 2026-10-26, of the Maeng film's night: "Maybe re-add the moon"): a pale disc, its seas soft grey
+patches on it, in a wide glow of its light; drawn after the stars and before the clouds, so they drift over it.
+t: seconds; x, y: its middle; r: its radius; look: {alpha (0 to 1, 1), glow (how wide its light: 6 radii), colour
+("r, g, b" of the light, a cool white), seed}. Returns nothing: it draws with pen.
+e.g. sceneryMoon(t, 1500, 200, 46, {alpha: 1});
+```
+
+### `sceneryBambooGrain(brush, x, y, w, h, look)`
+
+```
+Fine grain over a strip of split bamboo (ฟาก, flattened, as a hut's wall or floor is), painted once on a sheet
+(owner, 2026-10-26, of the Maeng film's hut: "give it fine grained detail as well as the floor"): fibres along the
+strip, a little lighter and darker, a few long hairline splits, and the nodes, ridges lit on one side and shaded on
+the other. brush: a 2D context; x, y, w, h: the strip; look: {along: "y" (the fibres run up and down; "x" across),
+nodes: [where along the strip, pixels from its start], seed, light, dark ("r, g, b")}. Returns nothing: it draws
+with brush and leaves it as it found it.
+e.g. sceneryBambooGrain(b, 0, 0, 24, 700, {along: "y", nodes: [330], seed: 3});
+```
+
+### `sceneryWoodGrain(brush, x, y, w, h, look)`
+
+```
+Fine grain over a piece of timber (a post, a beam, a plank), painted once on a sheet: grain lines along it that
+wave, a knot or two with the grain bending round it, the edges a little darker. brush: a 2D context; x, y, w, h: the
+piece; look: {along: "y" (a post) or "x" (a beam), seed, dark ("r, g, b"), knots (how many: 1)}. Returns nothing: it
+draws with brush and leaves it as it found it.
+e.g. sceneryWoodGrain(b, 90, 0, 34, 710, {along: "y", seed: 2});
+```
+
 ## thicket.js
 
 thicket.js - plants painted as a painter of Ghibli's backgrounds paints them, in layers a camera moves through; made for "Through the flowers" (thicket/) and used by the hero film too (sash_maeng.html). What its scenes share: a camera that moves through layers of plants, each layer as far as its depth says (parallax), pushed in, swaying in the air and soft when it is far or very near; pictures painted once (sprites) of the bushes, flowers and grass the layers hold; the falling petals, the shafts of light and the pollen in them. Load it after the kit, flora.js, butterflies.js and northbirds.js.  A scene builds its layers once, the first time it is drawn (thkOnce()), and then draws them with thkLayers(t, layers, cam) and its animals between them.
@@ -10701,8 +10980,12 @@ tale_plan.py - a tale's plan and its words, from one file: the scenes, what each
 
 A new tale starts as a plan the owner reads before anything is drawn (docs/kit/films.md, "A new tale, from start to
 finish"). Its folder's story.py holds it all: SCENES, each (title, seconds, what we see, what the kit has, what it
-needs, [(English, Central Thai, Kam Mueang), ...]), the plan's own words around them (PLAN), and SAY_AS, the
-names said the Northern way by the voice. From it this writes:
+needs, [(English, Central Thai, Kam Mueang), ...]), the plan's own words around them (PLAN), SAY_AS, the
+names said the Northern way by the voice, and SCENERY, {scene number: how its place is painted}: the far mountains,
+the painted trees, the flowering beds behind the people and the blossom framing the picture, the water, the air (light,
+petals, one butterfly at most; fireflies at night), as docs/kit/places.md, "Painting the scenery", sets out and
+scenery.js paints (the owner, 2026-10-26: "Make sure new videos will be generated with this process!"); a scene with
+none is named each time this runs, and stands red on the plan. From it this writes:
   plan.html     the plan: the tale in short, the choices made, every scene with its seconds, its kit (green: there,
                 red: new) and its lines in English, Central Thai and Kam Mueang. For the owner, before anything else.
   words.js      the film's words for its pages, <FOLDER>_WORDS[id] = [what the voice says, what the subtitle writes,

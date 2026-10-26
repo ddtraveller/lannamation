@@ -39,6 +39,7 @@ function sceneGoodbye(t) {
   drawByZ(lifeSprites(t, S14_LIFE).concat([
     {name: "buakham", kind: "person", x: walk.x, y: 965, draw: function () { person(walk.x, 965, walk.look); }}
   ]));
+  maengAir(t, "goodbye");                          // at dusk the fireflies coming out over the fields (sets.js)
   maengDark(t, S14_LONG - 1.8, S14_LONG + 10);
   maengDark(t, -10, 0);
 }

@@ -99,7 +99,7 @@ function s03Ease(u) { u = clamp(u); return u * u * (3 - 2 * u); }
 // nearer than his feet is in front of his legs as he walks home past it.
 function sceneWork(t) {
   pen.drawImage(maengSky("day"), 0, 0);
-  cumulus(pen, t + 40, MAENG_CLOUDS.day);
+  maengClouds(t + 40, "day");
   pen.drawImage(maengYard().back, 0, 0);
   var ox = s03Ox(t), lad = maengPerson("boy", MAENG_LAD, {id: "lad"}), go;
   var gathered = between(t, 17.48, 22.98);              // how much of the wood he has picked up
@@ -144,4 +144,5 @@ function sceneWork(t) {
       }}
     ]));
   }
+  maengAir(t, "work", "day");                     // the meadow's air, and its grass soft at the corners (sets.js)
 }

@@ -35,6 +35,7 @@ function sceneMorning(t) {
   if (t < S11_SHOTS[0]) { s11Palace(t); }
   else if (t < S11_SHOTS[1]) { s11Follow(t); }
   else { s11Garden(t); }
+  maengAir(t, "morning", "day");                   // the morning's air (sets.js)
   maengDark(t, S11_SHOTS[0] - 1.2, S11_SHOTS[0]);
   maengDark(t, S11_SHOTS[1] - 1.2, S11_SHOTS[1]);
   maengDark(t, S11_LONG - 1.2, S11_LONG + 10);
@@ -62,7 +63,7 @@ function s11PalaceLine(x) {
 function s11Palace(t) {                             // the king wakes, and the trough is at his stair
   var city = maengCity(), p = MAENG_PALACE, row = 880, floor = hoKhamFloor(p[1], p[2]), x = p[0] - 60;
   pen.drawImage(maengSky("day"), 0, 0);
-  cumulus(pen, t + 120, MAENG_CLOUDS.day);
+  maengClouds(t + 120, "day");
   pen.drawImage(city.back, 0, 0);
   pen.drawImage(city.front, 0, 0);
   maengPalace(t, "back");

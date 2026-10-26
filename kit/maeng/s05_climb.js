@@ -17,9 +17,8 @@ var S05_BEFORE = [[-80, 10, 12], [-52, 14, 13], [74, 12, 12], [96, 4, 11]];
 // seed: picks their greens; tint: [colour, 0 to 1] (MAENG_DUSK). Gives back nothing: it draws with pen.
 // e.g. s05Crowns(S05_BEHIND, MAENG_SLOPE_CAVE[2] * 1.6, 3, MAENG_DUSK);
 function s05Crowns(list, size, seed, tint) {          // the forest's own crowns over and beside the cave, at its size
-  list.forEach(function (c, n) {
-    var green = blend(blend(FOREST_GREENS[(n + seed) % FOREST_GREENS.length], "#79ad84", 0.05), tint[0], tint[1]);
-    crown(pen, MAENG_SLOPE_CAVE[0] + c[0] * size, MAENG_SLOPE_CAVE[1] + c[1] * size, c[2] * size, green, seed + n);
+  list.forEach(function (c, n) {                     // painted bushes, as the slope's (sets.js maengBush())
+    maengBush(MAENG_SLOPE_CAVE[0] + c[0] * size, MAENG_SLOPE_CAVE[1] + c[1] * size, c[2] * size, seed + n, tint);
   });
 }
 
@@ -44,7 +43,7 @@ var S05_LIFE = [
 function sceneClimb(t) {
   var slope = maengSlope(), tint = MAENG_DUSK, size = MAENG_SLOPE_CAVE[2];
   pen.drawImage(maengSky("dusk"), 0, 0);
-  cumulus(pen, t + 70, S05_CLOUDS);
+  maengClouds(t + 70, "dusk");
   pen.drawImage(slope.backDusk, 0, 0);
   pen.drawImage(slope.frontDusk, 0, 0);             // the path, under the cave's ledge
   mistDrift(pen, t, {left: 0, right: WIDE, top: 640, bottom: 790, count: 5, wide: 520, drift: 8, seed: 31, colour: "#eadcea",
@@ -52,7 +51,7 @@ function sceneClimb(t) {
   var sprites = lifeSprites(t, S05_LIFE).concat([
     {name: "crowns behind", kind: "trees", z: "set", draw: function () { s05Crowns(S05_BEHIND, size * 1.6, 3, tint); }},
     {name: "cave", kind: "cave", z: "set", draw: function () {
-      caveMouth(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f", tint: tint});
+      sceneryCave(pen, MAENG_SLOPE_CAVE[0], MAENG_SLOPE_CAVE[1], size, {t: t, rock: "#5f574f", tint: tint});
     }},
     {name: "crowns before", kind: "trees", z: "set", draw: function () { s05Crowns(S05_BEFORE, size * 1.6, 9, tint); }}
   ]);
@@ -83,6 +82,12 @@ function sceneClimb(t) {
   x = go.x;
   ground = maengTrail(x) + 8;
   sprites.push({name: "lad", kind: "person", x: x, y: ground, draw: function () { s05Lad(t, x, ground, lad, roping, tint); }});
+  // a small bush before his hand where he bends to the snare, so the hand that does not grip is not seen, the snare's
+  // bent pole and its noose left clear to the right of it (owner, 2026-10-26: "Add a small bush so it hides the boy's
+  // hand when bending down ... but leave enough room to see the snare"); before him, by its foot
+  sprites.push({name: "bush at the snare", kind: "bush", x: S05_SNARE[0] - 22, y: ground + 6, draw: function () {
+    maengBush(S05_SNARE[0] - 22, S05_SNARE[1] - 38, 30, 3, tint);
+  }});
   drawByZ(sprites);
   pen.drawImage(slope.foreDusk, 0, 0);              // the rock before it all: the rope goes behind it
   var dark = Math.max(1 - between(t, 0, 2), between(t, 47.71, 49.71));

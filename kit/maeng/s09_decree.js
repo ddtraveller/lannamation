@@ -51,7 +51,7 @@ var S09_LIFE = [
 function sceneDecree(t) {
   var city = maengCity(), p = MAENG_PALACE;
   pen.drawImage(maengSky("day"), 0, 0);
-  cumulus(pen, t + 90, MAENG_CLOUDS.day);
+  maengClouds(t + 90, "day");
   pen.drawImage(city.back, 0, 0);
   pen.drawImage(city.front, 0, 0);
   var dais = hoKhamDais(p[1], p[2]), speaking = S09_KING.some(function (s) { return t >= s[0] && t < s[1]; });
@@ -95,6 +95,7 @@ function sceneDecree(t) {
     sprites.push({name: "prince" + n, kind: "person", x: walk.x, y: build.row, draw: function () { person(walk.x, build.row, walk.look); }});
   });
   drawByZ(sprites);
+  maengAir(t, "decree", "palace");                 // the city's air, blossom hanging into the corner (sets.js)
   if (t < 1.5 || t > 66.8) {
     pen.fillStyle = "rgba(0, 0, 0, " + Math.max(1 - t / 1.5, between(t, 66.8, 68.8)).toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);

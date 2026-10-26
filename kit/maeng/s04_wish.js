@@ -74,9 +74,13 @@ function s04Room() {                                // the inside of the hut, pa
     b.lineWidth = 4;
     var nodeY = 330 + 24 * Math.sin(k * 0.13);
     b.beginPath(); b.moveTo(k + 2, nodeY); b.lineTo(k + 22, nodeY + 2); b.stroke();
+    // the strip's fine grain: its fibres, a split or two, its nodes as ridges (scenery.js; owner, 2026-10-26: "Look at
+    // the bamboo or wood and see if you can give it fine grained detail as well as the floor")
+    sceneryBambooGrain(b, k, 0, 24, 700, {along: "y", nodes: [nodeY, nodeY - 250 + 30 * Math.sin(k * 0.07), nodeY + 260], seed: k / 26 + 1});
   }
   b.fillStyle = "#8a6a40";                          // the rail, and the rattan ties at each post
   b.fillRect(0, 300, WIDE, 14);
+  sceneryWoodGrain(b, 0, 300, WIDE, 14, {along: "x", seed: 31, knots: 0});
   b.strokeStyle = "#5a3a1e";
   b.lineWidth = 4;
   [107, 1807].forEach(function (px) { b.beginPath(); b.moveTo(px - 22, 294); b.lineTo(px + 22, 320); b.moveTo(px + 22, 294); b.lineTo(px - 22, 320); b.stroke(); });
@@ -84,6 +88,9 @@ function s04Room() {                                // the inside of the hut, pa
   b.fillRect(90, 0, 34, 710);
   b.fillRect(1790, 0, 34, 710);
   b.fillRect(0, 70, WIDE, 26);
+  sceneryWoodGrain(b, 90, 0, 34, 710, {along: "y", seed: 32});   // their grain and knots
+  sceneryWoodGrain(b, 1790, 0, 34, 710, {along: "y", seed: 33});
+  sceneryWoodGrain(b, 0, 70, WIDE, 26, {along: "x", seed: 34, knots: 3});
   b.fillStyle = "#0e1230";                          // the doorway, open on the night: stars, and the ladder's top
   b.fillRect(1440, 230, 210, 470);
   for (n = 0; n < 26; n++) {
@@ -100,7 +107,15 @@ function s04Room() {                                // the inside of the hut, pa
   b.strokeRect(1440, 230, 210, 470);
   b.fillStyle = "#8a6a44";                          // the floor of split bamboo, its slats running back
   b.fillRect(0, 700, WIDE, 380);
-  b.strokeStyle = "rgba(70, 48, 28, 0.55)";
+  for (k = -1; k < 9; k++) {                        // each slat its own tone and fine grain
+    var y0 = k < 0 ? 700 : 708 + k * (12 + k * 4.5), y1 = 708 + (k + 1) * (12 + (k + 1) * 4.5);
+    b.fillStyle = k % 2 ? "rgba(255, 236, 200, 0.05)" : "rgba(60, 40, 20, 0.06)";
+    b.fillRect(0, y0, WIDE, y1 - y0);
+    for (var seg = 0; seg < WIDE; seg += 640) {
+      sceneryBambooGrain(b, seg, y0, 640, y1 - y0, {along: "x", nodes: [120 + 200 * dice(k * 3 + seg), 420 + 150 * dice(k * 5 + seg)], seed: 50 + k * 7 + seg / 640});
+    }
+  }
+  b.strokeStyle = "rgba(70, 48, 28, 0.55)";         // the gaps between the slats, dark
   b.lineWidth = 2;
   for (k = 0; k < 9; k++) {
     var fy = 708 + k * (12 + k * 4.5);
@@ -162,6 +177,43 @@ function s04Blanket(x, y, size) {                   // a cloth of faded checks o
 // 10 s to 35.6 s), the boy holds his hand from 37.5 s, the lamp goes out 46 s to 50.5 s, black from 55 s. Gives back
 // nothing: it draws the whole sheet with pen. From sets.js: MAENG_HUT_THINGS, maengPerson() with MAENG_FATHER and
 // MAENG_LAD. Its life is S04_LIFE; its words S04_LINES (M015 to M023), written under it by the page.
+// The night through the open doorway, drawn after the room's dark, for the lamp does not light it: the night sky with
+// its fine stars, a few twinkling, and the moon low in the corner (scenery.js), Doi Khao Khwai dark against it with a
+// rim of moonlight, then the ladder's top and the door's frame. t: the scene's second. Gives back nothing: it draws
+// with pen. e.g. s04Night(20);
+var S04_DOOR = [1440, 230, 210, 470];                // the doorway: its left, top, width and height (s04Room() paints it)
+function s04Night(t) {
+  var d = S04_DOOR, x;
+  pen.save();
+  pen.beginPath();
+  pen.rect(d[0], d[1], d[2], d[3]);
+  pen.clip();
+  var sky = pen.createLinearGradient(0, d[1], 0, d[1] + d[3]);
+  sky.addColorStop(0, "#070b24");
+  sky.addColorStop(1, "#262a58");
+  pen.fillStyle = sky;
+  pen.fillRect(d[0], d[1], d[2], d[3]);
+  sceneryStars(t, {band: null, horizon: 700, count: 1600, bright: 30, glow: null});
+  sceneryMoon(t, d[0] + d[2] - 34, d[1] + 70, 20, {glow: 5});
+  pen.beginPath();                                  // the mountain, dark, its top lit by the moon
+  pen.moveTo(d[0], d[1] + d[3]);
+  for (x = d[0]; x <= d[0] + d[2]; x += 6) { pen.lineTo(x, d[1] + 330 - 110 * Math.exp(-Math.pow((x - d[0] - 140) / 70, 2)) - 6 * Math.sin(x * 0.09)); }
+  pen.lineTo(d[0] + d[2], d[1] + d[3]);
+  pen.closePath();
+  pen.fillStyle = "#0b0e22";
+  pen.fill();
+  pen.strokeStyle = "rgba(120, 132, 180, 0.5)";
+  pen.lineWidth = 2;
+  pen.stroke();
+  pen.strokeStyle = "#5a4630";                      // the ladder's top
+  pen.lineWidth = 8;
+  pen.beginPath(); pen.moveTo(1500, 700); pen.lineTo(1496, 640); pen.moveTo(1590, 700); pen.lineTo(1594, 640); pen.stroke();
+  pen.restore();
+  pen.strokeStyle = "#2a1e14";                      // the frame, in the dark of the room
+  pen.lineWidth = 6;
+  pen.strokeRect(d[0], d[1], d[2], d[3]);
+}
+
 // Its z plan (oldcartoon.js, Z): the room as painted first; then by drawByZ the tokay in "set" (on the wall), and in
 // "people" by their feet or bases: the mice at the wall's foot and the mat's edge (703 to 828), the hut's things (the
 // hearth's pot, the baskets, 748 to 770: the house mouse runs behind the pot on its way to the post), the corner
@@ -196,19 +248,22 @@ function sceneWish(t) {
       pratheep(pen, S04_LAMP[0], S04_LAMP[1], 2.6 * Math.max(0.15, flame), t, 3);
     }}
   ]));
-  // The room is lit by the lamp alone: dark round the edges, and darker as the lamp burns low.
-  var reach = 160 + 420 * flame, dark = pen.createRadialGradient(S04_LAMP[0], S04_LAMP[1] - 80, 40, S04_LAMP[0], S04_LAMP[1] - 80, reach + 300);
+  // The room is lit by the lamp alone: dark round the edges, and darker as the lamp burns low; the light breathing
+  // with the flame (owner, 2026-10-26: "ok, continue", the lamp's flicker among what was offered).
+  var flicker = 1 + 0.035 * Math.sin(t * 13.1) + 0.025 * Math.sin(t * 23.7 + 1.3) + 0.015 * Math.sin(t * 41.3 + 2.1);
+  var reach = (160 + 420 * flame) * flicker, dark = pen.createRadialGradient(S04_LAMP[0], S04_LAMP[1] - 80, 40, S04_LAMP[0], S04_LAMP[1] - 80, reach + 300);
   dark.addColorStop(0, "rgba(12, 8, 22, " + (0.04 + 0.62 * (1 - flame)).toFixed(3) + ")");
   dark.addColorStop(1, "rgba(12, 8, 22, " + (0.88 + 0.1 * (1 - flame)).toFixed(3) + ")");
   pen.fillStyle = dark;
   pen.fillRect(0, 0, WIDE, 1080);
   if (flame > 0.01) {                               // and warm where it reaches
     var warm = pen.createRadialGradient(S04_LAMP[0], S04_LAMP[1] - 40, 10, S04_LAMP[0], S04_LAMP[1] - 40, 520 * flame);
-    warm.addColorStop(0, "rgba(255, 180, 90, " + (0.22 * flame).toFixed(3) + ")");
+    warm.addColorStop(0, "rgba(255, 180, 90, " + (0.22 * flame * flicker).toFixed(3) + ")");
     warm.addColorStop(1, "rgba(255, 180, 90, 0)");
     pen.fillStyle = warm;
     pen.fillRect(0, 0, WIDE, 1080);
   }
+  s04Night(t);                                      // the night through the doorway, which the lamp does not light
   if (t > 57.39) {                                     // and the scene goes to black
     pen.fillStyle = "rgba(0, 0, 0, " + between(t, 57.39, 61.39).toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);
