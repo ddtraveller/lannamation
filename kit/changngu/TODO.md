@@ -166,8 +166,13 @@ seen in stills first, and each scene is rendered once at the end):
 
 1. **Read how Maeng was painted** before touching anything: `docs/kit/places.md` "Painting the scenery", the header
    of `../scenery.js` and `../scenery.html`, and Maeng's own use of it (`../maeng/sets.js`: `MAENG_FAR`, `MAENG_AIR`,
-   `maengDoi()`; 9287bd0). The Maeng pass is still going on in a peer session: `../scenery.js` is the kit's and
-   shared, so a change there is agreed with the peer first; Chang Ngu's painting goes in `sets.js` here.
+   `maengForest(brush, ridge, {blooms, pines, top, foot, seed})`, the slope clothing `maengDoi()` became;
+   `maengSky()`'s "sunset" and "sunrise", `maengMorningLight()`, `maengGlint()`; 9287bd0 and the peer's commit after
+   it). The Maeng pass is still going on in a peer session: `../scenery.js` is the kit's and shared, so a change there
+   is agreed with the peer first; Chang Ngu's painting goes in `sets.js` here. 9287bd0's calls keep their signatures;
+   the peer adds only optional ones: `scenerySun()` (a warm disc for a low sun: a white one is lost in a pale sky),
+   `sceneryLampLight()` (a lantern's flicker and its pool of light), `sceneryCaveTint()` with the x, y the sprite was
+   placed at, and in `../pieces.js` `look.fine` (bamboo fibres, teak grain, a plinth's mouldings) and a ladder "in".
 2. **SCENERY in `story.py`**, a line for each of the 25 scenes of the plan (`python tale_plan.py changngu` names any
    without and the plan shows it red; the credits, s26, are painted with them). By set, as the scenes use them (one
    set painted once serves all its scenes):
@@ -182,35 +187,48 @@ seen in stills first, and each scene is rendered once at the end):
    - **the new city's skyline and Doi Chang Ngu** (`cngSkyline`): s22, s23, s24, s25.
    - **the room** (`cngRoom`): s05, s08, s10, s12; only what shows through the window.
    - **the skies** (`cngSky`): soft clouds (`sceneryClouds()`) in place of the cartoon cumulus everywhere (this also
-     clears scene 18's title of its cloud, step 6); the nights of s08, s12 and s26 with fine stars, the moon,
-     bats behind a far range and fireflies.
+     clears scene 18's title of its cloud, step 6); the nights of s08, s12 and s26 with fine stars and NO Milky Way
+     (`sceneryStars()` band null), the moon, bats behind a far range and fireflies; a sky of its own for each dusk and
+     dawn (s01's dawn, s07's dusk, s25's), as Maeng's "sunset" and "sunrise" (a flat dusk gradient looked poor); a
+     low sun drawn after the clouds (they grey it), as a warm disc.
    - **the far mountains**: Chang Ngu's own (`farRange()`), not the hero's nor Maeng's (owner: "Don't reuse the same
      background mountain"): the low hills across the Mae Khong in Laos and the Chiang Saen basin's, compared with real
      photographs of the place (kept out of the repo).
    - **the air** by the line's feeling (the kit's rule): none where v2 left life out on purpose (s02 the Khom take the
      city, s04 the tribute, s08 the dream, s10 the birth, s12 the deva, s14 and s15 the snakes, s20 the spies, s21 the
      battle, s22 Indra's wall, s26 the credits' night, which takes fireflies only if the owner wants).
-3. **Candidates first**: stills of three sets as they are and dressed three ways (A the air only, B the air and the
-   beds, C all the way), the river (s01), the village (s11) and the town (s02), plus two or three far-mountain
-   candidates beside a photograph of the place; the owner picks how far to go, and the pick holds for the film.
-4. **Paint set by set** in `sets.js`, the most-used first: the river, the village and yard, the town, the skyline, Ku
-   Kaeo, the room's window, the night skies. Keep every action above y 880 (the subtitles); what flies or swims is
-   given its z (the z rule).
-5. **Stills of every scene** at its moments (`../stills.py`), the owner's notes taken scene by scene; then a quick
-   clip of each changed scene with its narration (`render.py ... --fast --no-vanish --from A --to B`, the film's
-   sound laid under it) for the owner to watch.
+3. **Scene by scene, with the owner** (owner's pick, 2026-10-26, as the Maeng pass went: "I'd like to go through all
+   the scenes like this"; no A/B/C sheet): for each scene, 3 or 4 stills of it as it is, a numbered plan of what
+   its place gets, the owner's yes, then build and show stills again. The far mountains come first, with two or
+   three candidates beside a photograph of the place, since every set stands in front of them. A set shared by many
+   scenes is painted the first time a scene needs it, in `sets.js`, and the later scenes take it from there.
+4. **What the owner taught in the Maeng pass**, to do from the start: a bush or hedgerow stands on the ground, its
+   foot running all the way down ("Keep going down with the bush because it's floating"); bushes about a boulder
+   split into those behind it and those before it; thin wraps on lashings, not bold crosses; fine grain on wood and
+   bamboo; flowers and fruit on the near slopes for colour; water mirrored as the hero's pond, egrets over it and in
+   it; one butterfly at most. Keep every action above y 880 (the subtitles); what flies or swims is given its z.
+   Traps: `between()` is a smoothstep, not a straight line; a "lighter" wash centred on a sun hollows it to a ring
+   (start its gradient clear at the middle); dust or paint the colour of the path vanishes on it; a heavy page (500
+   ms a frame) times out in a stills sheet of many frames, so take one frame a run; a camera push moves pixel probes.
+5. **Every scene's stills** at its moments (`../stills.py`) once its plan is built, then a quick clip of each changed
+   scene with its narration (`render.py ... --fast --no-vanish --from A --to B`, the film's sound laid under it) for
+   the owner to watch.
 6. **Scene 18's title**: find where the scene titles are drawn for the film (`film.html` and the kit's `film()`),
    and make ช้างพานคำ read over any sky (no cloud behind it once the soft clouds are in, and the title's own
    shading if it still reads poorly); the stills at 690 s of the tale show it.
 7. **The new beasts** come with the render: the scenes that draw an elephant, the white elephant or Chang Ngu (s08,
    s12, s15, s16, s18, s19, s20, s21, s22, s23, s25, s26) are looked at in stills for the elephant's new height
    (shorter legs: what is set on its back, a rider, a howdah, a trunk reaching to someone, its feet in the river).
-   The swimming white elephant of s15, s16 and s18 was moved with c7b37e6 (`SWIM + 160`).
+   The swimming white elephant of s15, s16 and s18 was moved with c7b37e6 (`SWIM + 160`): check its waterline against
+   the river's new mirror; if it is to be mirrored it is drawn before the water, as a flier over it is
+   (`sceneryMirrored()`).
 8. **Kit check on a copy** of every changed page (all 26 scenes and `film.html`, plus `scenery.html` if the kit
    changed), never on the shared checkout.
 9. **Render every scene once** from a clean worktree at the commit (`../scenes.py` on the laptop and
-   `../maeng/render_back.py` on the Spark, from the two ends), one heavy job on the laptop at a time, agreed with the
-   peer that renders Maeng; the render's look (popped, blinked out) read for every scene.
+   `../maeng/render_back.py` on the Spark, from the two ends), one heavy job on the laptop at a time. The Maeng film's
+   14 scenes render first (agreed with the peer, 2026-10-26: its pass is painted, this one starts with stills, which
+   are light); the peer says when it starts and when the laptop is free. The render's look (popped, blinked out) read
+   for every scene.
 10. **The sound is v2's**: the scenes keep their seconds, so the tale's sound is copied from v2's tale as it is. The
     hero is Maeng's newest hero with the new beasts (the same one Maeng's film opens with when this ships); the card
     as v2. `../chain.py` hero + card (`--fade 1,0.75`) + tale; the whole checked at v2's length (1296.0 s), -14 LUFS,
