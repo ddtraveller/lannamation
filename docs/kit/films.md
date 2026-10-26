@@ -409,6 +409,14 @@ into the pond area." So, with `thicket.js` (moved beside the kit from `thicket/`
   rooted 60 under the water (`pondLotus()`: the whole clump under the water's face, what stands above the water line
   over it, pads on the water and a ring round the stems); the bluebottle flies low across the pond
   (`pondButterfly()`) and the water mirrors it, upside down, twice its height below it (`pondButterflyMirror()`).
+  More grass over the near corners; a mud barb that leaps once out of the water at 20.5 s of the pond's clock, a ring
+  and a splash where it leaves and where it goes back in, and is gone (`pondLeap()`; owner: "Add a leaping fish that
+  jumps once", then "Just have it disappear").
+- **The far mountains** (owner, 2026-10-26: "see if you can use the new kit to make better background mountains"):
+  `farRange()` in `paintSet()`, for the village, the pond, the dusk and the night sets: a far ridge pale with the air
+  (`ridgeLayer()`), a limestone peak standing up out of it as Doi Luang Chiang Dao does (`peakSprite()`), and a range
+  clothed in forest with pines (`forestHill()`), each hazed by the air before it; painted once for each light. The
+  middle range, whose ridge the elephants walk, and the rice fields' mountains are as they were (kit/TODO.md).
 
 The woven cloth (the first scene) is as it was. sash.html, the hero film before it was the Maeng film's opening, is
 as it was. Not re-rendered: lanna_tales_maeng.mp4 on the site still has the hero film as it was.

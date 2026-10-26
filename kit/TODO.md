@@ -64,4 +64,7 @@ the soldiers and their spears (figures.md).
 - the mountains behind the village, the pond and the fields painted anew with the kit's new painters, as the
   garden and the pond were (owner, 2026-10-26: "upgrading the mountains in the background with the new kit"):
   forestHill() and softMist() of pinewoods.js, ridgeLayer(), limestonePeak() and natRays() of wildplaces.js, in
-  place of the backdrop's flat hills and hillMist()
+  place of the backdrop's flat hills and hillMist(). Begun the same day: the far range of the village, the pond, the
+  dusk and the night sets is farRange() (a far ridge, a limestone peak, a forested range). Still to do: the rice
+  fields' mountains (paddySet(), drawn on the paddy backdrop), the middle range (its ridge is where the elephants
+  walk and the terraces stand), and the mist between them
