@@ -382,7 +382,9 @@ into the pond area." So, with `thicket.js` (moved beside the kit from `thicket/`
   hedge in flower along the far bank and ta hern by the water; bua tong and marigold at the paddy's edges; jasmine and
   frangipani by night.
 - **In front of everything** (`gardenFront()`, after it): blossom hanging in from a top corner and soft bushes or
-  grass at the foot, out of focus; shafts of light, pollen, falling petals and butterflies (butterflies.js) by day;
+  grass at the foot, out of focus; shafts of light, pollen, falling petals and one butterfly (butterflies.js) by day,
+  that drifts across and out of the frame (two all through each scene were "a bit too many butterflies", the owner,
+  2026-10-26);
   at the dance fireflies, far ones and near ones that glow over the dancers.
 - **The pond is come to through the garden:** for its first GARDEN_IN (4.2) seconds, under the narrator's
   "People were more in harmony with nature", the camera pushes through two near layers of flowering bushes and

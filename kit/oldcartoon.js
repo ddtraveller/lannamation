@@ -124,7 +124,9 @@ var Z_KINDS = {
   dragon: "*", naga: "*", luang: "*", lantern: "*",
   birds: null, flock: null, magpie: null, hornbill: null, sunbird: null, egret: null, owl: null, bats: null, moth: null,
   fireflies: null, khom: null, khomphat: null, khomdao: null, khombua: null,
-  gourami: null, barb: null, flyingbarb: null, snakehead: null, tokay: null, gecko: null, fish: null
+  gourami: null, barb: null, flyingbarb: null, snakehead: null, tokay: null, gecko: null, fish: null,
+  butterfly: null, crow: null, dove: null, myna: null, kingfisher: null, parakeet: null, gibbon: null, loris: null,
+  turtle: null, catfish: null
 };
 
 // zOf(kind, z, depth): the band, a number, one of that kind is drawn in.

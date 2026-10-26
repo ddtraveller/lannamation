@@ -1,5 +1,6 @@
 // decorate.js - the life of a scene: animals and birds on courses, for films made with oldcartoon.js.
-// Load it after the kit and after the files of the animals a scene uses (beasts.js, northbirds.js, ...):
+// Load it after the kit and after the files of the animals a scene uses (beasts.js, northbirds.js, butterflies.js,
+// lannabirds.js, taleanimals.js, forestanimals.js, mangrai.js; offerings.js and thicket.js for those things):
 //
 //     <script src="oldcartoon.js"></script>
 //     <script src="decorate.js"></script>
@@ -146,8 +147,161 @@ var LIFE_KINDS = {
     nativeFish(pen, 0, 0, size, at.face, look.kind || "barb", t);
     pen.restore();
     return [at.x - 40 * size, at.y - rise - 20 * size, at.x + 40 * size, at.y + 6];
+  },
+
+  // The animals of 2026-10-26 (butterflies.js, lannabirds.js, taleanimals.js, forestanimals.js, mangrai.js; load the
+  // file of each a scene uses), each going as far as its feet go, the strides living_scenes.html measured for them.
+  // A bird that can walk flies a way that sets out from a stop marked "fly" (or every way, look.fly), up off the
+  // course by its own height; one of the trees and the air (kingfisher, parakeet) flies whenever it moves.
+  // a butterfly (look.kind, a key of BUTTERFLIES: lacewing unless told): it flutters from stop to stop, lifting and
+  // dipping as it goes and facing the way it goes; at a "sip" stop it sits on the flower, its wings opening and
+  // shutting slowly. Few are better than many: one or two to a scene, on courses that cross it and leave
+  // (owner, 2026-10-26, of the hero film: "a bit too many butterflies")
+  butterfly: function (at, look, t) {
+    var size = look.size || 1, sits = !at.moving && at.what === "sip", seed = look.seed || 0, own = Object.assign({}, look);
+    var lift = sits ? 0 : 12 * Math.sin(t * 5 + seed) + 8 * Math.sin(t * 1.3 + seed);
+    delete own.kind;
+    butterfly(look.kind || "lacewing", at.x, at.y - lift, t, Object.assign(own, {size: size, rest: sits || undefined,
+              turn: sits ? 0 : at.face * Math.PI / 2 * (at.moving ? 1 : 0.3) + 0.25 * Math.sin(t * 2.6 + seed)}));
+    return [at.x - 40 * size, at.y - lift - 40 * size, at.x + 40 * size, at.y - lift + 40 * size];
+  },
+  // the large-billed crow (look.colour "white": the white crow of the tale, shining a little): it walks with its
+  // swagger, pecks at "peck", caws at "call"
+  crow: function (at, look, t) {
+    var size = look.size || 1, air = lifeFlies(at, look);
+    whiteCrow(at.x, at.y - (air ? 40 * size : 0), t, Object.assign({colour: "black", glow: look.colour === "white" ? 0.5 : 0}, look,
+              {face: at.face, fly: air || undefined, step: !air && at.moving ? at.along / (30 * size) : undefined,
+               peck: lifePeck(at, t), caw: at.what === "call" ? 1 : look.caw}));
+    return [at.x - 90 * size, at.y - 130 * size, at.x + 90 * size, at.y];
+  },
+  // the spotted dove: walks, pecks at "peck", coos at "call", fluffs up at "rest"
+  dove: function (at, look, t) {
+    var size = look.size || 1, air = lifeFlies(at, look);
+    spottedDove(at.x, at.y - (air ? 40 * size : 0), t, Object.assign({}, look, {face: at.face, fly: air || undefined,
+                step: !air && at.moving ? at.along / (22 * size) : undefined, peck: lifePeck(at, t),
+                coo: at.what === "call" ? 1 : look.coo, fluff: at.what === "rest" ? 0.5 : look.fluff}));
+    return [at.x - 70 * size, at.y - 90 * size, at.x + 70 * size, at.y];
+  },
+  // the hill myna: hops along, flaps up when it flies
+  myna: function (at, look, t) {
+    var size = look.size || 1, air = lifeFlies(at, look), own = Object.assign({}, look);
+    delete own.fly;                                  // the myna's own look has flap, not fly
+    hillMyna(at.x, at.y - (air ? 30 * size : 0), t, Object.assign(own, {face: at.face,
+             step: !air && at.moving ? at.along / (18 * size) : undefined, flap: air ? 1 : look.flap}));
+    return [at.x - 60 * size, at.y - 80 * size, at.x + 60 * size, at.y];
+  },
+  // a kingfisher (look.kind "whitethroat" or "common"): on a perch it watches the water ("watch") or calls ("call");
+  // it flies while it moves, and at a "dive" stop hovers with a fish
+  kingfisher: function (at, look, t) {
+    var size = look.size || 1;
+    kingfisher(at.x, at.y, t, Object.assign({}, look, {face: at.face, fly: at.moving || undefined,
+               hover: at.what === "dive" || undefined, fish: at.what === "dive" || look.fish,
+               watch: at.what === "watch" ? 1 : look.watch, call: at.what === "call" ? 1 : look.call}));
+    return [at.x - 70 * size, at.y - 80 * size, at.x + 70 * size, at.y + 30 * size];
+  },
+  // a parakeet (look.kind "redbreast" or "blossom"): it flies while it moves; on a branch it eats ("eat"), preens
+  // ("preen") or calls ("call")
+  parakeet: function (at, look, t) {
+    var size = look.size || 1;
+    parakeet(at.x, at.y, t, Object.assign({}, look, {face: at.face, fly: at.moving || undefined,
+             eat: at.what === "eat" ? 1 : look.eat, preen: at.what === "preen" ? 1 : look.preen, call: at.what === "call" ? 1 : look.call}));
+    return [at.x - 80 * size, at.y - 90 * size, at.x + 80 * size, at.y + 40 * size];
+  },
+  // a toad (look.kind "frog": a rice-field frog): it hops from stop to stop, calls at "call", its throat swelling
+  toad: function (at, look, t) {
+    var size = look.size || 1;
+    toad(at.x, at.y, t, Object.assign({}, look, {face: at.face, hop: at.moving ? at.along / (30 * size) : undefined,
+         call: at.what === "call" ? 1 : look.call}));
+    return [at.x - 40 * size, at.y - 40 * size, at.x + 40 * size, at.y];
+  },
+  // a rhinoceros beetle: it creeps, lifts its horn at "lift", flies a way that sets out from a "fly" stop
+  beetle: function (at, look, t) {
+    var size = look.size || 1, air = lifeFlies(at, look);
+    rhinoBeetle(at.x, at.y - (air ? 50 * size : 0), t, Object.assign({}, look, {face: at.face, fly: air || undefined,
+                step: !air && at.moving ? at.along / (10 * size) : undefined, lift: at.what === "lift" ? 1 : look.lift}));
+    return [at.x - 50 * size, at.y - (air ? 90 : 40) * size, at.x + 50 * size, at.y];
+  },
+  // a pond turtle (look.gold 1: the golden turtle of the tale): it paddles, and comes up to breathe at "breathe"
+  turtle: function (at, look, t) {
+    var size = look.size || 1;
+    goldTurtle(at.x, at.y, t, Object.assign({swim: true}, look, {face: at.face, breathe: at.what === "breathe" ? 1 : look.breathe}));
+    return [at.x - 70 * size, at.y - 40 * size, at.x + 70 * size, at.y + 10 * size];
+  },
+  // a barking deer (look.white: Chiang Mai's white one; look.fawn): walks, grazes ("graze"), stands with its tail
+  // flagged ("alert"), barks ("call")
+  deer: function (at, look, t) {
+    var size = look.size || 1, pace = GAITS.deer[1] / 0.62 * size * (look.fawn ? 0.55 : 1);
+    barkingDeer(at.x, at.y, t, Object.assign({}, look, {face: at.face, step: at.moving ? at.along / pace : undefined,
+                graze: at.what === "graze" ? 1 : look.graze, alert: at.what === "alert" ? 1 : look.alert, bark: at.what === "call" ? 1 : look.bark}));
+    return [at.x - 110 * size, at.y - 150 * size, at.x + 110 * size, at.y];
+  },
+  // a sambar (look.white: the white one of Chiang Mai's first sign; look.calf): walks, grazes ("graze")
+  sambar: function (at, look, t) {
+    var size = look.size || 1;
+    sambar(at.x, at.y, t, Object.assign({}, look, {face: at.face, step: at.moving ? at.along / (160 * size) : undefined,
+           graze: at.what === "graze" ? 1 : look.graze}));
+    return [at.x - 160 * size, at.y - 260 * size, at.x + 160 * size, at.y];
+  },
+  banteng: function (at, look, t) {                  // the red ox of the forest: it walks
+    var size = look.size || 1;
+    banteng(at.x, at.y, t, Object.assign({}, look, {face: at.face, step: at.moving ? at.along / (150 * size) : undefined}));
+    return [at.x - 170 * size, at.y - 230 * size, at.x + 170 * size, at.y];
+  },
+  // a goral of the limestone: it walks, grazes ("graze"), stands alert ("alert"); a way that sets out from a
+  // "leap" stop it bounds up in one arc
+  goral: function (at, look, t) {
+    var size = look.size || 1, bound = at.moving && at.mark === "leap";
+    goral(at.x, at.y - (bound ? 50 * size * Math.sin(Math.PI * at.part) : 0), t, Object.assign({}, look, {face: at.face,
+          leap: bound ? at.part : undefined, step: at.moving && !bound ? at.along / (GAITS.goral[1] / 0.62 * 1.15 * size) : undefined,
+          graze: at.what === "graze" ? 1 : look.graze, alert: at.what === "alert" ? 1 : look.alert}));
+    return [at.x - 100 * size, at.y - 150 * size, at.x + 100 * size, at.y];
+  },
+  bambooRat: function (at, look, t) {                // the hoary bamboo rat: it stands, and digs at "dig"
+    var size = look.size || 1;
+    bambooRat(at.x, at.y, t, Object.assign({}, look, {face: at.face, dig: at.what === "dig" ? 1 : look.dig}));
+    return [at.x - 60 * size, at.y - 50 * size, at.x + 60 * size, at.y];
+  },
+  // the white mouse and her four young of the tale: they scurry in a line as far as they go
+  whiteMice: function (at, look, t) {
+    var size = look.size || 1;
+    whiteMice(at.x, at.y, t, Object.assign({}, look, {face: at.face, along: at.moving ? at.along / (24 * size) : look.along}));
+    return [at.x - 160 * size, at.y - 30 * size, at.x + 60 * size, at.y];
+  },
+  // a white-handed gibbon (look.dark: a dark one): from stop to stop it swings arm over arm (gibbon() travels by its
+  // own swings, so it is drawn from where it set out); at a "call" stop it sings
+  gibbon: function (at, look, t) {
+    var size = look.size || 1, own = Object.assign({}, look, {face: at.face, sing: at.what === "call" ? 1 : look.sing});
+    if (at.moving) {
+      var swing = at.along / (120 * size);
+      own.swing = swing;
+      own.sing = 0;
+      gibbon(at.x - at.face * swing * 120 * size, at.y, t, own);
+    } else {
+      gibbon(at.x, at.y, t, own);
+    }
+    return [at.x - 120 * size, at.y - 40 * size, at.x + 120 * size, at.y + 200 * size];
+  },
+  // a Bengal slow loris, on a branch: it creeps from stop to stop, looks round ("look"), curls up ("curl"); give it
+  // look.shine at night, its eyes catching the light
+  loris: function (at, look, t) {
+    var size = look.size || 1;
+    slowLoris(at.x, at.y, t, Object.assign({}, look, {face: at.face, creep: at.moving ? at.along / (40 * size) : look.creep,
+              look: at.what === "look" ? 1 : 0.2, curl: at.what === "curl" ? 1 : look.curl}));
+    return [at.x - 70 * size, at.y - 70 * size, at.x + 70 * size, at.y + 20 * size];
+  },
+  catfish: function (at, look, t) {                  // a Mekong giant catfish, gliding under the water from stop to stop
+    var size = look.size || 1;
+    giantCatfish(at.x, at.y, t, Object.assign({}, look, {face: at.face}));
+    return [at.x - 260 * size, at.y - 60 * size, at.x + 260 * size, at.y + 60 * size];
   }
 };
+
+// lifeFlies(at, look) says whether a bird that walks flies where courseAt() has it: on the way out from a stop
+// marked "fly", or on every way when look.fly is true. at: courseAt()'s answer; look: the bird's look.
+// Changes nothing. e.g. lifeFlies(courseAt(t, [[0, 300, 950, "fly"], [2, 900, 500]]), {})   // true at t 1
+function lifeFlies(at, look) {
+  return at.moving && (!!look.fly || at.mark === "fly");
+}
 
 // lifePeck(at, t) gives back a peck, 0 to 1 (down and up twice a second), when at.what is "peck",
 // and undefined otherwise. at: what courseAt() gives back; t: seconds.
@@ -273,7 +427,8 @@ function lifeDrawn(t, one, at) {
 
 // ---------- things: what a place has ----------
 // A place's things are a list too: [{name, kind, x, base, size, look, layer, from, to}, ...], each drawn standing
-// on (x, base) by its kind's painter (THING_KINDS: the household things of pieces.js, the water jar, the lantern),
+// on (x, base) by its kind's painter (THING_KINDS: the household things of pieces.js, the water jar, the lantern,
+// the offerings of offerings.js, a flower of flora.js, a flowering bush of thicket.js),
 // "back" or "front" of the people as decorate()'s life is, and only from "from" to "to" (seconds) when given: a
 // pot that is on the fire in one scene and not in another. dress(t, things, layer, tint) draws one layer of them,
 // tint (a set's [colour, amount], at night) over every one that takes one. What is the same in every scene of a
@@ -287,7 +442,30 @@ var THING_KINDS = {
   mortar: function (one, look) { mortar(pen, one.x, one.base, one.size || 1, look); },
   taLaew: function (one, look) { taLaew(pen, one.x, one.base, one.size || 1, look); },
   namton: function (one) { namton(pen, one.x, one.base, one.size || 1); },
-  khom: function (one, look) { khom(one.x, one.base, Object.assign({size: one.size || 1}, look)); }   // hung from (x, base)
+  khom: function (one, look) { khom(one.x, one.base, Object.assign({size: one.size || 1}, look)); },  // hung from (x, base)
+  // the offerings of Lanna's rites (offerings.js): the flower cone, the footed bowl of flowers, the jasmine garland
+  // (hung from (x, base): at a spirit house, a post, a doorway)
+  swaiDok: function (one, look, t) { swaiDok(pen, one.x, one.base, one.size || 1, t); },
+  khanDok: function (one, look, t) { khanDok(pen, one.x, one.base, one.size || 1, t); },
+  malai: function (one, look, t) { malai(pen, one.x, one.base, one.size || 1, t); },
+  // one flower or plant of flora.js standing at (x, base): look.flower, a key of FLORA, and its own look (colour)
+  flora: function (one, look) {
+    var own = Object.assign({size: one.size || 1}, look);
+    delete own.flower;
+    delete own.tint;
+    flora(look.flower, one.x, one.base, own);
+  },
+  // a bed of flowering bushes, as the hero film's garden has them (thicket.js thkBush(), painted once and swaying in
+  // the air): look {wide, high, seed, greens ("sun", "shade", or THK_GREENS when left out), blooms: [[name, count, r,
+  // colour], ...] of THK_BLOOMS}; its base's middle at (x, base)
+  bush: function (one, look, t) {
+    var wide = look.wide || 400, high = look.high || 220, seed = look.seed || 1;
+    var greens = {sun: THK_SUN, shade: THK_SHADE}[look.greens] || THK_GREENS;
+    var sprite = thkOnce("bush " + JSON.stringify([wide, high, seed, look.greens, look.blooms]), function () {
+      return thkSprite(wide + 80, high + 60, wide / 2 + 40, high + 20, function () { thkBush(wide, high, seed, greens, look.blooms || []); }, PIX);
+    });
+    thkPlace(sprite, one.x, one.base, one.size || 1, thkSway(t, one.x * 0.01, 0.35));
+  }
 };
 
 // dress(t, things, layer, tint) draws one layer of a place's things at second t.

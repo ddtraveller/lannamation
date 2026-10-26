@@ -6521,7 +6521,7 @@ e.g. spinningWheel(pen, 400, 900, 1, t)
 
 ## decorate.js
 
-decorate.js - the life of a scene: animals and birds on courses, for films made with oldcartoon.js. Load it after the kit and after the files of the animals a scene uses (beasts.js, northbirds.js, ...):  <script src="oldcartoon.js"></script> <script src="decorate.js"></script>  A scene that is built is decorated in passes (docs/kit/places.md, "Decorating a scene"): its place (flora and mist, painted on its sheets or drawn live), its things (what a home or a hall of that place has: dress(), at the end of this file), its life (what lives there, at that hour, each on a course: decorate()), and a check of it (checks/ghost.py plots every course; checks/seek_check.py; kit_check.py).  A course is a row of stops, [[second, x, y, what], ...]: where the animal is at each second, and what it does there ("sniff", "up", "rest", "peck", "hide", or nothing). From the first stop's second to the last stop's it is drawn; between two stops it goes from one to the other at an even pace, facing the way it goes, its feet or wings going as far as it goes; at a stop whose "what" is "hide" it is not drawn until the next stop (gone into a hole, into the thatch, behind the trees). Every frame is worked out f
+decorate.js - the life of a scene: animals and birds on courses, for films made with oldcartoon.js. Load it after the kit and after the files of the animals a scene uses (beasts.js, northbirds.js, butterflies.js, lannabirds.js, taleanimals.js, forestanimals.js, mangrai.js; offerings.js and thicket.js for those things):  <script src="oldcartoon.js"></script> <script src="decorate.js"></script>  A scene that is built is decorated in passes (docs/kit/places.md, "Decorating a scene"): its place (flora and mist, painted on its sheets or drawn live), its things (what a home or a hall of that place has: dress(), at the end of this file), its life (what lives there, at that hour, each on a course: decorate()), and a check of it (checks/ghost.py plots every course; checks/seek_check.py; kit_check.py).  A course is a row of stops, [[second, x, y, what], ...]: where the animal is at each second, and what it does there ("sniff", "up", "rest", "peck", "hide", or nothing). From the first stop's second to the last stop's it is drawn; between two stops it goes from one to the other at an even pace, facing the way it goes, its feet or wings going as far as it goes; at a stop whose "what" is "hide" 
 
 ### `courseAt(t, course)`
 
@@ -6537,6 +6537,14 @@ pixels; points the route [[x, y], ...]; speed in pixels a second.
 course: [[second, x, y, what], ...] in order of the seconds (see the top of this file).
 Changes nothing outside itself.
 e.g. var at = courseAt(t, [[2, 300, 900], [6, 700, 900, "sniff"], [8, 700, 900]]);
+```
+
+### `lifeFlies(at, look)`
+
+```
+lifeFlies(at, look) says whether a bird that walks flies where courseAt() has it: on the way out from a stop
+marked "fly", or on every way when look.fly is true. at: courseAt()'s answer; look: the bird's look.
+Changes nothing. e.g. lifeFlies(courseAt(t, [[0, 300, 950, "fly"], [2, 900, 500]]), {})   // true at t 1
 ```
 
 ### `lifePeck(at, t)`

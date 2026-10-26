@@ -712,6 +712,22 @@ The rules the first round taught:
   at a "peck" stop, flies with `look.fly`) and `fish` (a barb, or `look.kind` of `NATIVE_FISH`, that leaps from stop
   to stop out of the water in an arc, a ring where it leaves and goes back in; give its stops "hide"). Both have no
   z of their own: give one in a scene drawn by `drawByZ`.
+- **The animals of 2026-10-26 as kinds of life** (the owner: "update it as you see fit with the new items and
+  features of the animation framework"): `butterfly` (`look.kind` of `BUTTERFLIES`; it sits at a "sip" stop),
+  `crow` (`look.colour` "white" for the tale's), `dove`, `myna`, `kingfisher` ("watch", "call", "dive"), `parakeet`
+  ("eat", "preen", "call"), `toad` (`look.kind` "frog"), `beetle` ("lift"), `turtle` (`look.gold`; "breathe"), `deer`
+  ("graze", "alert", "call"), `sambar`, `banteng`, `goral` (a way out of a "leap" stop is one bound), `bambooRat`
+  ("dig"), `whiteMice`, `gibbon` (swings stop to stop; "call" sings), `loris` ("look", "curl") and `catfish`. Their
+  strides are living_scenes.html's, so a scene and the living scenes walk them alike. A bird that walks flies the
+  way out of a stop marked "fly" (or every way, `look.fly`); the kingfisher and parakeet fly whenever they move.
+  The butterfly, the birds that fly, the gibbon, loris, turtle and catfish have no z of their own (`Z_KINDS` null).
+- **Few butterflies.** One or two to a scene, on a course that crosses it and leaves, not one in the air all through
+  (owner, 2026-10-26, of the hero film with the garden: "a bit too many butterflies"; the hero now has one to a
+  scene, that drifts out of the frame).
+- **Things of the rites and the garden** (`dress()`): `swaiDok`, `khanDok` and `malai` (offerings.js; the garland
+  hangs from its point), `flora` (one flower or plant of flora.js: `look.flower`), and `bush` (a bed of flowering
+  bushes painted once as the hero film's garden is, thicket.js: `look` {wide, high, seed, greens "sun" or "shade",
+  blooms}). They take no night tint: a scene at night lays its own dark over them.
 
 ## What is drawn over what: z (2026-10-21)
 
