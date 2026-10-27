@@ -399,7 +399,36 @@ krueng.ai/video/lanna_tales_changngu.mp4 at 07:04 (owner: "Go ahead and ship the
    flower, the porters' track, bamboo, a flame of the forest; the near bank tall grass in plume, reeds, flowering
    bushes; butterflies.
 
-To render: scenes 2, 3, 4, 5, 6, 8, 9, 11, 13, 17, 19, 20, 21, 24, 25, 26 (the village's and the fields' sets, the
-porters, the rice, the statue, the credits' statue); v3's clips of 1, 7, 10, 12, 14, 15, 16, 18, 22, 23 kept. v3's
-sound (the scenes' lengths are as they were). Then the join, the checks (1295.966 s, -14 LUFS, peak <= -1) and the
-owner's look; S3 only on the owner's word.
+Items 1 to 6 are in lannamation 0b54310 (pushed 2026-10-27), each seen in stills (before and after on one sheet). Not
+rendered: the render began and was stopped (the owner, 09:30: "hold off on V4").
+
+### v4: on hold, and what it waits for (2026-10-27, about 09:50)
+
+v4 is rendered once, after two pieces of work from other sessions land in lannamation (the owner: "a new set of sprites
+for Chang Ngu is coming that will go into v4 as well as a hand animation change for the kit that will affect all
+scenes"):
+
+- A new set of sprites for Chang Ngu (another session): they go into v4.
+- A change to the kit's hand animation, which touches every scene of every film. The first part is in: d61af03, "Hands
+  run into the wrist and the fingers into the palm, with no line at either join". So v4 renders all 26 scenes, not
+  only the 16 that items 1 to 6 change, and no v3 clip is kept.
+
+Then, in order:
+
+1. The kit check, once, on a copy of lannamation main with all of it (`checks/kit_check.py` over the 26 scene pages,
+   `film.html`, `chiangsaen.html`, and the Maeng and hero pages the hand change touches). A check of 0b54310 was
+   stopped by the owner after 6 of 47 pages, none failed.
+2. Render the 26 scenes: the laptop from 1 up and the Spark from 26 down, in software (no `--gpus`), one container a
+   scene, ONE Spark job at a time; a script copies the Spark's clips to the laptop and leaves empty clips on the Spark
+   for the laptop's scenes, so neither renders what the other has. Never two heavy Chrome jobs on the laptop at once
+   (a render's first screenshot timed out beside a kit check, 2026-10-27 08:37).
+3. The sound: v2's tale sound, if the scenes keep their seconds; a new sprite that changes a scene's length means that
+   scene's sound again.
+4. The join (`../chain.py`: the hero with the new beasts, the card with `--fade 1,0.75`, the tale) and the checks
+   (1295.966 s while the lengths hold, -15 to -13 LUFS, peak at most -1 dBFS), then the owner's look. S3 only on the
+   owner's word.
+5. Sync lannamation into watdonchan (`scripts/sync_lannamation.py`, in a watdonchan worktree of feat/lanna-flora, never
+   the main checkout) once the other sessions' kit changes are in: it carries 28259ef, ad1a5df, 5a74fdc and 0b54310 too.
+
+The Maeng film (live as v29 since 2026-10-27 09:39) has every scene drawn with the old hands; whether it renders again
+for the hand change is the owner's call.

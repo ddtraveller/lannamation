@@ -11,6 +11,16 @@ each new look as a sheet of candidates beside its reference (the owner picks, on
 rounds), then the kit check once, then every scene rendered once, then the sound, then the join. Research that
 waits on others starts first and runs while the drawing goes on.
 
+## Live: v29 (2026-10-27 09:39 ICT)
+
+`lanna_tales_maeng.mp4` on krueng.ai is v29 (the owner: "Go ahead and ship the videos and commit and push."): the hero
+with the new beasts, the studio's card, and the tale of the scenery pass rendered again, scene 8's hen staying in view
+(28259ef) and scene 11's rice planters no longer jumping back (5a74fdc, the yard's clock 5 s back), under the narrator's
+sound of v25. 1057.85 s, -14.1 LUFS, peak -1.8 dBFS, 950,179,679 bytes; the public copy read back and matched.
+
+Next: the kit's hand animation is changing for every scene (d61af03 is its first part, 2026-10-27). This film's
+scenes were drawn with the old hands; rendering them again for it is the owner's call.
+
 ## For the next join (owner, 2026-10-22)
 
 - **No thanks card.** "Next time the film is rendered drop the special thanks to Jing's Kitchen": join without
