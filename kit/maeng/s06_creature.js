@@ -55,6 +55,7 @@ function s06FlowersBuild() {
 // where it stands at the mouth, the lad, and the vine just in front of the nearest of them (it runs from his hand to
 // its neck, over both); last, as painted, the slope's foreground. e.g. sceneCreature(20);
 function sceneCreature(t) {
+  maengSeason("harvest");                           // the cold season, two days later (sets.js; NATURE.md)
   var slope = maengSlope(), size = MAENG_SLOPE_CAVE[2];
   pen.save();                                       // close to the cave: everything seen S06_NEAR times larger about it
   pen.translate(WIDE / 2 + 80, 600);

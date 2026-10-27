@@ -89,6 +89,19 @@ var MAENG_SLOPE_BLOOMS = [[[], [], [["turning", 16, 7, "#c9a03a"]]],
                           [[], [["turning", 45, 9, "#c8762e"]], []],
                           [[], [], [["turning", 80, 11, "#d9a83a"]]]];
 var MAENG_DOI_BLOOMS = MAENG_SLOPE_BLOOMS;
+// In the early rains (scene 13, the credits after it) the hill is fresh green, the turned leaves gone, and the golden
+// shower's last racemes still out in May; in the rains, green alone.
+var MAENG_RAINS_BLOOMS = [[[], [], []], [[], [["ratchaphruek", 4, 16]], []], [[["ratchaphruek", 9, 18]], [], [["ratchaphruek", 6, 18]]]];
+// Whether the season is one of the cool or dry months, when the forest has turned (NATURE.md). Gives back true or false.
+// e.g. if (maengCold()) { ... }
+function maengCold() { return MAENG_SEASON === "harvest" || MAENG_SEASON === "stubble" || MAENG_SEASON === "dry"; }
+// The hill's flowers and turned leaves for the season, as sceneryForest() takes them. e.g. maengHillBlooms()
+function maengHillBlooms() {
+  return maengCold() ? MAENG_SLOPE_BLOOMS : MAENG_SEASON === "ploughing" ? MAENG_RAINS_BLOOMS : [[[], [], []], [[], [], []], [[], [], []]];
+}
+// The key the hill's sheets are kept under: one for the turned months, one for the early rains, one for the rains.
+function maengHillKey() { return maengCold() ? "cold" : MAENG_SEASON === "ploughing" ? "early" : "green"; }
+var MAENG_MOUNTAINS = {}, MAENG_SLOPES = {};
 
 // Doi Khao Khwai on a sheet (brush), painted as the new places are (owner, 2026-10-26, of a still: "I like the
 // direction"): its body along its own ridge (maengPeak()) clothed in rows of small bushes as pinewoods.js
@@ -97,7 +110,7 @@ var MAENG_DOI_BLOOMS = MAENG_SLOPE_BLOOMS;
 // points at it while it paints, and is put back).
 // e.g. maengDoi(front.getContext("2d"));
 function maengDoi(brush) {
-  maengForest(brush, maengPeak, {blooms: MAENG_DOI_BLOOMS, pines: 34});
+  maengForest(brush, maengPeak, {blooms: maengHillBlooms(), pines: 34});   // the season's (since the beauty pass)
 }
 
 // A slope of the mountain clothed in forest, as scene 1's Doi Khao Khwai is (and scenes 5, 6 and 13's hillside, the
@@ -118,8 +131,9 @@ function maengForest(brush, ridge, look) {           // scenery.js's, since 2026
 var MAENG_BUSHES = {};
 function maengBush(x, y, r, seed, tint) {
   var key = seed % 6;
-  var blooms = [[["turning", 5, 7, "#d4a83e"]], [], [["turning", 4, 7, "#b8662e"]], [], [["turning", 4, 7, "#c98a3a"]], []][key];   // three turning (the beauty pass)
-  var b = MAENG_BUSHES[key] || (MAENG_BUSHES[key] = {sprite: natBush(200, 110, 700 + key, key % 2 ? THK_SHADE : THK_GREENS, blooms, PIX), tints: {}});
+  var blooms = maengCold() ? [[["turning", 5, 7, "#d4a83e"]], [], [["turning", 4, 7, "#b8662e"]], [], [["turning", 4, 7, "#c98a3a"]], []][key] : [];   // three turning in the cool months (the beauty pass)
+  var kept = maengHillKey() + key;                  // one kept for each time of the year; key stays the number it paints by
+  var b = MAENG_BUSHES[kept] || (MAENG_BUSHES[kept] = {sprite: natBush(200, 110, 700 + key, key % 2 ? THK_SHADE : THK_GREENS, blooms, PIX), tints: {}});
   var size = r * 2.4 / 200;
   thkPlace(b.sprite, x, y + r * 0.6, size, 0);
   if (tint && tint[1] > 0) {
@@ -189,6 +203,7 @@ function maengTinted(paper, colour, amount) {     // a copy of a sheet, with one
 // MAENG_MOUNTAIN after.
 // e.g. var mountain = maengMountain(); pen.drawImage(mountain.frontDawn, 0, 0);
 function maengMountain() {
+  MAENG_MOUNTAIN = MAENG_MOUNTAINS[maengHillKey()] || null;   // one painted for each time of the year (the beauty pass)
   if (MAENG_MOUNTAIN) { return MAENG_MOUNTAIN; }
   function sheet() {
     var paper = document.createElement("canvas");
@@ -212,7 +227,7 @@ function maengMountain() {
   brush.fillRect(0, 560, WIDE, 320);
   maengDoi(front.getContext("2d"));                 // Doi Khao Khwai, painted as the new places are
   // the light before dawn: the night's blue, as deep as in the still the owner approved (2026-10-26, "good")
-  MAENG_MOUNTAIN = {back: back, front: front, backDawn: maengTinted(back, MAENG_NIGHT[0], 0.7),
+  MAENG_MOUNTAIN = MAENG_MOUNTAINS[maengHillKey()] = {back: back, front: front, backDawn: maengTinted(back, MAENG_NIGHT[0], 0.7),
                     frontDawn: maengTinted(front, MAENG_NIGHT[0], 0.5)};
   return MAENG_MOUNTAIN;
 }
@@ -658,6 +673,7 @@ function maengTrail(x) {                           // where the path is at x: up
 // kept in MAENG_SLOPE after.
 // e.g. var slope = maengSlope(); pen.drawImage(slope.backDusk, 0, 0);
 function maengSlope() {
+  MAENG_SLOPE = MAENG_SLOPES[maengHillKey()] || null;   // one painted for each time of the year (the beauty pass)
   if (MAENG_SLOPE) { return MAENG_SLOPE; }
   function sheet() {
     var paper = document.createElement("canvas");
@@ -667,7 +683,7 @@ function maengSlope() {
   }
   var back = sheet(), front = sheet(), fore = sheet(), b = back.getContext("2d"), x, n;
   b.drawImage(farRange("#a9cfc9", "226, 238, 240", 640, MAENG_FAR), 0, 0);   // the far mountains (scenery.js)
-  maengForest(b, maengHillside, {pines: 10, top: 200, seed: 40, blooms: MAENG_SLOPE_BLOOMS});   // the hillside, clothed as scene 1's mountain
+  maengForest(b, maengHillside, {pines: 10, top: 200, seed: 40, blooms: maengHillBlooms()});   // the hillside, clothed as scene 1's mountain
   b = front.getContext("2d");
   // The path: a band of worn earth up the slope, narrowing as it climbs away, and running in under the cave's
   // ledge (no end of it shows); its edges soft, a few stones on it.
@@ -705,11 +721,11 @@ function maengSlope() {
   pen = b;
   // the two bushes up the slope behind the rock, then the rock, then the two before it (owner, 2026-10-26: "Looks like a
   // bush and boulder have a z order issue": all four were drawn over it)
-  [[40, 930, 0.9, 42, [["turning", 6, 9, "#d4a83e"]]], [210, 905, 0.8, 43, [["turning", 5, 8, "#b8662e"]]]].forEach(function (c) { thkPlace(natBush(200, 110, c[3], THK_SHADE, c[4], PIX), c[0], c[1], c[2], 0); });
+  [[40, 930, 0.9, 42, maengCold() ? [["turning", 6, 9, "#d4a83e"]] : []], [210, 905, 0.8, 43, maengCold() ? [["turning", 5, 8, "#b8662e"]] : []]].forEach(function (c) { thkPlace(natBush(200, 110, c[3], THK_SHADE, c[4], PIX), c[0], c[1], c[2], 0); });
   thkPlace(rockSprite(330, 230, 41, {stone: "#7a7468", moss: 0.45, jag: 0.5}, PIX), 140, 1100, 1, 0);
-  [[330, 1010, 1.0, 44, [["turning", 6, 9, "#c98a3a"]]], [420, 1090, 1.15, 45, [["turning", 7, 9, "#d4a83e"]]]].forEach(function (c) { thkPlace(natBush(200, 110, c[3], THK_SHADE, c[4], PIX), c[0], c[1], c[2], 0); });   // turning in the cold season (the beauty pass)
+  [[330, 1010, 1.0, 44, maengCold() ? [["turning", 6, 9, "#c98a3a"]] : []], [420, 1090, 1.15, 45, maengCold() ? [["turning", 7, 9, "#d4a83e"]] : []]].forEach(function (c) { thkPlace(natBush(200, 110, c[3], THK_SHADE, c[4], PIX), c[0], c[1], c[2], 0); });   // turning in the cold season (the beauty pass)
   pen = keepPen;
-  MAENG_SLOPE = {back: back, front: front, fore: fore,
+  MAENG_SLOPE = MAENG_SLOPES[maengHillKey()] = {back: back, front: front, fore: fore,
                  backDusk: maengTinted(back, MAENG_DUSK[0], MAENG_DUSK[1]), frontDusk: maengTinted(front, MAENG_DUSK[0], MAENG_DUSK[1]),
                  foreDusk: maengTinted(fore, MAENG_DUSK[0], MAENG_DUSK[1])};
   return MAENG_SLOPE;
@@ -1064,7 +1080,10 @@ var MAENG_AIR = {
             petals: [12, "#f2cf3a", 6, 1.0], light: [0.7, 6]},
   gold: {butterfly: {kind: "grassyellow", x: 1420, y: 640, vx: 0, weave: 120, seed: 13, size: 1.1, turn: 0, wing: 8}, light: [0.45, 8]},
   wedding: {petals: [40, "#f2cf3a", 8, 1.1], light: [0.6, 7]},
-  goodbye: {far: [[[0, 700, WIDE, 880], 50, 5]], near: 12}
+  // the run home in the early rains (scene 13): butterflies out with the first rains over the slope (the beauty pass)
+  home: {butterfly: {kind: "grassyellow", x: 300, y: 820, vx: 60, weave: 70, seed: 21, size: 1.0, turn: 1.2, wing: 9},
+        more: [{kind: "lacewing", x: 1500, y: 760, vx: -45, weave: 80, seed: 22, size: 1.1, turn: -1.2, wing: 10}], light: [0.45, 9]},
+  goodbye: {far: [[[0, 700, WIDE, 880], 50, 5]], near: 12}   // the early rains: fireflies true now (NATURE.md)
 };
 // The picture's edges, soft: grass at the bottom corners, and over a royal place blossom hanging into a top corner.
 // Painted once. Returns {day: [...], palace: [...]} for sceneryBeds().

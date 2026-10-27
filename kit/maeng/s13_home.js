@@ -155,6 +155,7 @@ function sceneHome(t) {
     maengCaveBushes(MAENG_CAVE_BEFORE, size * 1.6, 9, null, 3 * Math.sin(Math.PI * inside));   // shaking as it pushes past them
     maengSnareBush();
     pen.drawImage(slope.fore, 0, 0);
+    maengAir(t, "home");                            // two butterflies of the first rains over the slope (sets.js; the beauty pass)
   } else {                                           // Doi Khao Khwai today, and the temple on its shoulder
     var mountain = maengMountain();
     pen.drawImage(maengSky("day"), 0, 0);

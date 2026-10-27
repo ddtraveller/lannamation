@@ -45,6 +45,7 @@ var S05_LIFE = [
 // "people" by their feet the snare and the lad (his rope with him); last, as painted, the rock before it all, which
 // the rope goes behind. e.g. sceneClimb(30);
 function sceneClimb(t) {
+  maengSeason("harvest");                           // the cold season, after the father's death (sets.js; NATURE.md)
   var slope = maengSlope(), tint = MAENG_DUSK, size = MAENG_SLOPE_CAVE[2];
   pen.drawImage(maengSky("dusk"), 0, 0);
   maengClouds(t + 70, "dusk");

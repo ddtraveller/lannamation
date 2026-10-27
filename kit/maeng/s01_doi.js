@@ -92,6 +92,7 @@ function s01Eyes(t) {                               // five green eyes in the ca
 // over it. Its
 // life is only the howl's sound, in "sky", drawn by nothing.
 function sceneDoi(t) {
+  maengSeason("harvest");                           // the cold season: the forest turning (sets.js; NATURE.md)
   var mountain = maengMountain(), light = between(t, 0, S01_LONG);
   var day = 0.6 * light * light * (3 - 2 * light), dawn = MAENG_DAWN[1] * (1 - day);   // the sun coming up behind the mountain
   var u = Math.pow(between(t, 15.15, 34.27), 1.6), push = 1 + 0.42 * u;   // the slow push in, the cave coming to the middle

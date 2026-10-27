@@ -385,6 +385,7 @@ function s15NightNear(t, moon) {                      // in front of the mountai
 // words, the bats over it all but cut out behind the near ridge, the rolling words with their bowing figures, and the
 // pandas' thanks.
 function sceneCredits(t) {
+  maengSeason("ploughing");                         // the early rains, after scene 14 (sets.js; NATURE.md)
   var mountain = maengMountain();
   if (!mountain.backNight) {                         // the mountain by night, as the yard is at night
     mountain.backNight = maengTinted(mountain.back, MAENG_NIGHT[0], 0.7);
