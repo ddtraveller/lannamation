@@ -133,6 +133,19 @@ var THK_BLOOMS = {
   ratchaphruek: function (x, y, r, turn, colour, seed) { thkScaled(x, y, r / 30, function () { floraRaceme(0, 0, 80, seed); }); },
   longan: function (x, y, r, turn, colour, seed) { thkScaled(x, y, r / 40, function () { FLORA.longan.hang(seed); }); },
   mango: function (x, y, r, turn, colour, seed) { thkScaled(x, y, r / 40, function () { FLORA.mango.hang(seed); }); },
+  // the mango's flowers, December to February: an upright panicle, a cone of tiny cream-yellow flowers on reddish
+  // stalks, standing up out of the leaves (2026-10-27, the Maeng film's beauty pass)
+  mangoflower: function (x, y, r, turn, colour, seed) {
+    var tall = r * 2.2;
+    pen.strokeStyle = "#9a5a3a";
+    pen.lineWidth = Math.max(0.6, r * 0.08);
+    pen.beginPath(); pen.moveTo(x, y); pen.lineTo(x + Math.sin(turn) * tall * 0.15, y - tall); pen.stroke();
+    for (var n = 0; n < 22; n++) {
+      var u = dice(seed * 3 + n), side = (dice(seed * 5 + n) - 0.5) * r * (1.1 - u);
+      pen.fillStyle = blend(colour || "#f2e2a0", "#e8b860", dice(seed * 7 + n) * 0.5);
+      pen.beginPath(); pen.arc(x + side + Math.sin(turn) * tall * 0.15 * u, y - tall * u, r * 0.13, 0, 7); pen.fill();
+    }
+  },
   // not a flower: a few leaves turned yellow or russet, as the deciduous forest of the north turns in the cool, dry
   // months before it drops them (2026-10-27, the Maeng film's beauty pass); colour the turn ("#d4a83e" when left out)
   turning: function (x, y, r, turn, colour, seed) {

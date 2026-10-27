@@ -66,6 +66,11 @@ var S07_LIFE = [
    course: [[26.46, 600, 978, "hide"], [27.19, 600, 978], [30.95, 860, 982, "sniff"], [32.8, 860, 982, "up"], [40.37, 860, 982],
             [41.68, 560, 978, "hide"], [41.94, 560, 978, "hide"]]},
   // its happy howls once the first ember is eaten and its eyes light (sounds.py, maeng-happy)
+  // a crow come to the yard by day, walking and pecking by the pen, cawing once, gone before the night (the beauty
+  // pass, owner, 2026-10-27; the large-billed crow of the north: nature_research.md)
+  {name: "crow", kind: "crow", z: "people", look: {size: 0.36},
+   course: [[0, 1500, 978, "peck"], [5, 1500, 978], [8, 1560, 982, "peck"], [14, 1560, 982], [16, 1530, 980, "call"], [19, 1530, 980],
+            [21, 1530, 980, "fly"], [23.6, 2100, 700]]},
   {name: "the creature's joy", kind: "flock", z: "sky", course: [[0, -999, -999], [0.1, -999, -999]],
    calls: [[42.07, "maeng-happy", 2.8]]}
 ];

@@ -23,6 +23,13 @@ function s05Crowns(list, size, seed, tint) {          // the forest's own crowns
 // sky on its slow heavy wings, in the quiet between "pulling the rope behind him" (M025) and the rope catching (M026).
 var S05_LIFE = [
   {name: "great hornbill", kind: "hornbill", z: "sky", look: {size: 0.5}, course: [[16, 2150, 230], [23.4, -260, 150]]},
+  // egrets flying home to their roost at dusk, a loose line high over the slope after the hornbill has gone (the beauty
+  // pass, owner, 2026-10-27; true of the cold season's evenings: nature_research.md)
+  {name: "egret home 1", kind: "egret", z: "sky", look: {size: 0.2, fly: true, seed: 0}, course: [[25.0, 2080, 210], [41.0, -140, 170]]},
+  {name: "egret home 2", kind: "egret", z: "sky", look: {size: 0.2, fly: true, seed: 1}, course: [[25.7, 2080, 242], [41.7, -140, 202]]},
+  {name: "egret home 3", kind: "egret", z: "sky", look: {size: 0.2, fly: true, seed: 2}, course: [[26.4, 2080, 222], [42.4, -140, 182]]},
+  {name: "egret home 4", kind: "egret", z: "sky", look: {size: 0.2, fly: true, seed: 3}, course: [[27.1, 2080, 254], [43.1, -140, 214]]},
+  {name: "egret home 5", kind: "egret", z: "sky", look: {size: 0.2, fly: true, seed: 4}, course: [[27.8, 2080, 234], [43.8, -140, 194]]},
   // the creature, unseen in its cave, howls once as the snare is set and dusk comes on (sounds.py, maeng-base)
   {name: "the creature's howl", kind: "flock", z: "sky", course: [[0, -999, -999], [0.1, -999, -999]],
    calls: [[42.71, "maeng-base", 0.87]]}

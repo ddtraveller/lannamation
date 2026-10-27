@@ -36,8 +36,9 @@ var S06_LIFE = [
 // A few flowers by the path, below it, in the day's light (owner, 2026-10-26, of scene 6's stills: flowers by the path
 // and the cave): sprites of flora.js, painted once. Gives back [{sprite, x, y}, ...].
 function s06FlowersBuild() {
-  return [[230, "phayasuea", 0.34, {colour: "#ec6c9c"}], [610, "dokkaew", 0.3], [820, "buatong", 0.32], [1010, "jasmine", 0.3],
-          [1150, "phayasuea", 0.28, {colour: "#f07aa8"}]].map(function (f) {
+  // (dok kaew since the beauty pass, 2026-10-27: the tiger's claw, bua tong and jasmine here were of the high doi,
+  // the Americas or the garden: NATURE.md)
+  return [[230, "dokkaew", 0.34], [610, "dokkaew", 0.3], [1010, "dokkaew", 0.3]].map(function (f) {
     return {sprite: sceneryPlant(f[1], f[2], f[3]), x: f[0], y: maengTrail(f[0]) + 6 + mix(34, 13, between(f[0], -40, MAENG_SLOPE_CAVE[0] - 20)) + 14};
   });
 }

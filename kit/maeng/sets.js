@@ -83,9 +83,11 @@ var MAENG_MOUNTAIN = null;
 // on the nearer slopes (THK_BLOOMS.turning). The tiger's claw, the bua tong, the golden shower, the flame of the
 // forest, longan in fruit and the March orchid that were here are of the high doi, from the Americas, or of another
 // season (the beauty pass, owner, 2026-10-27: "be true and real more than anything").
-var MAENG_SLOPE_BLOOMS = [[[["turning", 8, 7, "#c9a03a"]], [["turning", 6, 7, "#b8662e"]], [["turning", 6, 7, "#d48a3a"]]],
-                          [[["turning", 22, 9, "#d4a83e"]], [["turning", 18, 9, "#b8562a"]], [["turning", 16, 9, "#e09a3a"]]],
-                          [[["turning", 40, 11, "#d4a83e"]], [["turning", 32, 11, "#b8562a"]], [["turning", 30, 11, "#e09a3a"], ["turning", 14, 11, "#9a3a22"]]]];
+// One bush in three turned, and heavily, the rest green: a dry forest turns tree by tree, not a speckle on every
+// bush alike (that read as a blight, 2026-10-27).
+var MAENG_SLOPE_BLOOMS = [[[], [], [["turning", 16, 7, "#c9a03a"]]],
+                          [[], [["turning", 45, 9, "#c8762e"]], []],
+                          [[], [], [["turning", 80, 11, "#d9a83a"]]]];
 var MAENG_DOI_BLOOMS = MAENG_SLOPE_BLOOMS;
 
 // Doi Khao Khwai on a sheet (brush), painted as the new places are (owner, 2026-10-26, of a still: "I like the
@@ -505,7 +507,8 @@ function maengYardPlants(brush) {
   areca(brush, 1610, 912, 0.95, 3);                 // two areca palms at the garden's back, and the betel on its stake
   areca(brush, 1662, 916, 0.82, 5);
   flora("phlu", 1586, 918, {size: 0.42, ground: false});
-  var fruit = MAENG_SEASON === "dry" ? [["mango", 26, 12]] : [];   // the mango at the right, its fruit hanging in the hot months
+  // the mango at the right: in flower in January and February, its fruit hanging in the hot months
+  var fruit = MAENG_SEASON === "dry" ? [["mango", 26, 12]] : MAENG_SEASON === "stubble" ? [["mangoflower", 34, 9]] : [];
   thkTreeOn(brush, 1868, 926, 0.62, 77, fruit);
   [[-30, 1135, 300, 170, 641, 1.6], [1960, 1132, 280, 170, 642, 1.5], [170, 942, 300, 74, 643, 1]].forEach(function (b) {
     thkPlace(sceneryBush(b[2], b[3], b[4], THK_GREENS, maengYardBlooms(b[5])), b[0], b[1], 1, 0);   // the two corners, and a bed before the bamboo
