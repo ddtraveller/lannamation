@@ -21,14 +21,14 @@ function c23Home(t) {
   decorate(t, cngYard(300, 884, 7), "back");                 // the yard's fowl (owner, 2026-10-25)
   var kneel = between(t, 1, 3) * (1 - between(t, 8, 9.5)), off = t > 6.2, go = between(t, 9, 15.3);
   var ex = mix(980, WIDE + 400, go * go);
-  var e = elephant(ex, 860, {size: 0.55, face: 1, colour: "#f1ddd3", cloth: off ? null : "#c9962a", sit: kneel,
+  var e = elephant(ex, 860, {size: 0.55, face: 1, colour: "#f1ddd3", regalia: !off, sit: kneel,
                              step: go > 0 ? t / BEAT / 2.4 : 0, trunk: 0.3});
   var down = between(t, 3.2, 5.2), px = mix(e.seat[0], 620, down), py = mix(e.seat[1], 880, down);
   if (down < 1) {
     person(px, py, cngPerson("boy", CNG_PHROM, {id: "phromdown", size: cngAgeSize(16), face: -1, floor: down < 0.3 ? "astride" : undefined, feel: "happy"}));
     if (down > 0) {                                         // he slides down its far side to the ground clear of it: its body before
                                                             // him all the way, so his legs'
-      elephant(ex, 860, {size: 0.55, face: 1, colour: "#f1ddd3", cloth: off ? null : "#c9962a", sit: kneel,   // change from astride
+      elephant(ex, 860, {size: 0.55, face: 1, colour: "#f1ddd3", regalia: !off, sit: kneel,   // change from astride
                          step: go > 0 ? t / BEAT / 2.4 : 0, trunk: 0.3});                                 // to standing is not seen
     }
   } else {
@@ -74,7 +74,7 @@ function c23Hill(t) {
     var slide = between(t, C23_CHANGE[1], C23_CHANGE[1] + 6.5);
     pen.save();
     pen.beginPath(); pen.rect(0, 0, cave[0] + 10, 1080); pen.clip();
-    riverSnake(mix(cave[0] - 120, cave[0] + 620, slide), cave[1] + 4, {size: 0.6, face: 1, kind: "pearl"});
+    riverSnake(mix(cave[0] - 120, cave[0] + 620, slide), cave[1] + 4, {size: 0.6, face: 1, kind: "naga"});
     pen.restore();
   }
   var people = between(t, 16, 26);                          // the people, far behind, following, then stopping to look

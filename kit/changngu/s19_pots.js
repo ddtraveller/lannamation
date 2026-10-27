@@ -17,7 +17,7 @@ function c19Yard(t) {
   pen.save(); pen.translate(-cam, 0); pen.drawImage(village.back, 0, 0); pen.restore();
   pen.drawImage(cngForgeGround(null, false), 0, 0);       // the yard's beaten earth (sets.js)
   var speaks = t > 6.2 && t < 14.2;
-  elephant(1420, 830, {size: 0.5, face: -1, colour: "#f1ddd3", cloth: "#c9962a", trunk: 0.2 + 0.2 * Math.sin(t)});
+  elephant(1420, 830, {size: 0.5, face: -1, colour: "#f1ddd3", regalia: true, trunk: 0.2 + 0.2 * Math.sin(t)});
   decorate(t, cngYard(1780, 880, 6), "back");                 // the yard's fowl (owner, 2026-10-25)
   drawByZ([
     {name: "phrom", kind: "person", x: 980, y: 870, draw: function () {
@@ -48,7 +48,7 @@ function c19Stable(t) {
   cngStable(pen, sx, base, 1, "back");
   var eats = t < 21 ? Math.max(0, Math.sin((t - 15) * 1.4)) : 0;
   salung(pen, sx - 300, base - 4, 0.9, {grass: true});
-  elephant(sx + 30, base, {size: 0.55, face: -1, colour: "#f1ddd3", cloth: "#c9962a", trunk: 0.15 + 0.45 * eats, mouth: 0.3 * eats});
+  elephant(sx + 30, base, {size: 0.55, face: -1, colour: "#f1ddd3", regalia: true, trunk: 0.15 + 0.45 * eats, mouth: 0.3 * eats});
   var pot = t > 22.6, plop = between(t, 25.2, 26.0);
   if (pot) {
     var px = sx + 300;

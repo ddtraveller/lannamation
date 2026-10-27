@@ -7262,6 +7262,60 @@ function leafPath(brush, long, wide, bow) {
   brush.closePath();
 }
 
+// The curl of Lanna and Thai ornament (kranok, กนก), drawn by the Naga of Chang Ngu (naga.js) and the white
+// elephant's regalia (beasts.js), 2026-10-27.
+// A curl of cloud, water or smoke: from (x, y) heading "dir" (radians, the way pen turns), "len" long and "wide" (its
+// half-width) at its root, narrow at the root and to its tip. It bends more and more toward its tip and rolls into a
+// spiral: "hand" 1 rolls clockwise on the sheet, -1 the other way; "roll" is how far it turns in all (radians; 6 is a
+// turn and a bit). With "depth" above 0 it sprouts smaller curls from its outer side that roll the other way, each with
+// depth one less, drawn behind it: so it branches as the edge of a cloud or a wave does. c: {fill, vein, lw, ink} and, if
+// wanted, leaf (it swells in its first half, as a flame's leaf), sprout (the look of its sprouts) and sproutFrom (the
+// share of its length below which it sprouts nothing). sway: radians added to its rolling (it breathes), handed on to
+// its sprouts a moment later. Draws with pen; returns nothing.
+// e.g. kranokCurl(0, 0, -1.6, 120, 8, -1, 5, 1, {fill: "#d6a437", vein: "#f7e2a0", lw: 1}, 0);
+function kranokCurl(x, y, dir, len, wide, hand, roll, depth, c, sway) {
+  var pts = [], n = 44, ds = len / n, h = dir, px = x, py = y, r = roll * (1 + sway);
+  for (var i = 0; i <= n; i++) {
+    var u = i / n;
+    pts.push([px, py, h]);
+    h += (0.25 + 1.75 * u * u) / 0.833 * r / len * hand * ds;   // the turning grows toward the tip, r over its length
+    px += Math.cos(h) * ds;
+    py += Math.sin(h) * ds;
+  }
+  if (depth > 0) {
+    [[0.22, 0.5], [0.42, 0.4], [0.6, 0.3]].filter(function (at) { return at[0] >= (c.sproutFrom || 0); }).forEach(function (at, j) {
+      var p = pts[Math.round(at[0] * n)];
+      kranokCurl(p[0], p[1], p[2] - hand * (0.95 + 0.15 * j), len * at[1], wide * (1 - at[0]) * 0.7, -hand, roll * 0.95,
+                 depth - 1, c.leaf ? c.sprout : c, sway * 1.2 + 0.08 * Math.sin(clock * 1.9 + j + depth));
+    });
+  }
+  var left = [], right = [];
+  pts.forEach(function (p, k) {
+    var w = Math.max(0.4, wide * Math.pow(1 - k / n, 1.15) * (1 + (c.leaf || 0) * Math.sin(Math.PI * Math.min(1, k / n * 1.6)))
+                          * Math.min(1, 0.3 + 6 * k / n));
+    left.push([p[0] - Math.sin(p[2]) * w, p[1] + Math.cos(p[2]) * w]);
+    right.push([p[0] + Math.sin(p[2]) * w, p[1] - Math.cos(p[2]) * w]);
+  });
+  pen.beginPath();
+  left.forEach(function (p, k) { if (k) { pen.lineTo(p[0], p[1]); } else { pen.moveTo(p[0], p[1]); } });
+  for (var m = right.length - 1; m >= 0; m--) { pen.lineTo(right[m][0], right[m][1]); }
+  pen.closePath();
+  pen.fillStyle = c.fill;
+  pen.fill();
+  pen.strokeStyle = c.ink || "#3a2814";             // a dark brown unless told
+  pen.lineWidth = c.lw;
+  pen.lineJoin = "round";
+  pen.stroke();
+  if (c.vein && wide > 1.5) {                                   // its vein, a fine line of another colour down its middle
+    pen.beginPath();
+    for (var v = 2; v < n * 0.85; v++) { if (v > 2) { pen.lineTo(pts[v][0], pts[v][1]); } else { pen.moveTo(pts[v][0], pts[v][1]); } }
+    pen.strokeStyle = c.vein;
+    pen.lineWidth = Math.max(c.lw, wide * 0.15);
+    pen.lineCap = "round";
+    pen.stroke();
+  }
+}
+
 // One petal: pale at its foot and its colour at the tip, fine veins that fan
 // toward the tip, and a thin line round it.
 // brush: a 2D context, its origin at the petal's foot; long, wide, bow: leafPath()'s; pale, deep, line: CSS

@@ -1,15 +1,15 @@
 // s14_snakes.js - scene 14 of the film of Chang Ngu: two snakes (55 s). On the Mae Khong's bank, the children waiting,
 // Phrom at the water's edge. Down the channel between the bank and the sandbar comes the first snake, as big as a rice
-// granary, mottled (the chronicle: "ใหญ่เท่าเทนซาวข้าว เป็นเบื้อเป็นเหลื้องยาว"; naga.js riverSnake, the plain kind at
-// its largest); the birds on the bar burst up; the children scream and scramble back from the water and huddle; it goes
+// granary, mottled (the chronicle: "ใหญ่เท่าเทนซาวข้าว เป็นเบื้อเป็นเหลื้องยาว"; naga.js riverSnake, since 2026-10-27 the kind
+// "nagaRed", a red Naga with a python's blotches, the owner's); the birds on the bar burst up; the children scream and scramble back from the water and huddle; it goes
 // by. Then the second, as thick as a palm trunk, smooth and shining (the chronicle: "ใหญ่ประมาณเท่าต้นตาล มีวรรณเลื่อมสว่าง");
 // they shake with fear as it passes; and Phrom stands alone at the edge, looking after it.
 var C14_LONG = 55;
 var C14_SOUND = {calls: []};
 var C14_LINES = [[1.4, 5.92, "C061"], [6.12, 10.97, "C062"], [12.0, 15.5, "C063"], [21.0, 28.88, "C064"], [29.08, 33.08, "C065"], [33.28, 37.96, "C066"]];
 var C14_SWIM = CNG_BANK - 54;                          // the snakes' water line, the channel before the bank
-var C14_SNAKES = [[3, 21, 1.6, {kind: "plain"}],       // from, to (seconds), size, look
-                  [22, 41, 1.0, {kind: "plain", body: "#a89060", blot: null, belly: "#f0e4c0", late: 0.4}]];
+var C14_SNAKES = [[3, 21, 1.6, {kind: "nagaRed"}],     // from, to (seconds), size, look
+                  [22, 41, 1.0, {kind: "nagaGreen", late: 0.4}]];
 
 // Where a snake's head is at second t, or null when it is not in the river: from the right edge to past the left.
 function c14Head(snake, t) {

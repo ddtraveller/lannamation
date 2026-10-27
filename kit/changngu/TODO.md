@@ -432,3 +432,20 @@ Then, in order:
 
 The Maeng film (live as v29 since 2026-10-27 09:39) has every scene drawn with the old hands; whether it renders again
 for the hand change is the owner's call.
+
+## The first snake as a Naga, and the white elephant's regalia (owner, 2026-10-27)
+
+- **The three snakes** are one Naga (`naga.js` `riverNaga`, `riverSnake()` kinds "nagaRed", "nagaGreen", "naga"):
+  almond scales that shimmer as it moves, three wave horns, a flame ridge, the kit's new `kranokCurl()` (oldcartoon.js)
+  for every curl, teeth and an undulating tongue; chosen with the owner from stills and 4-second clips. The owner: "The
+  story says the first one is blotched all over so use the red one and add some python type spots, the second shining
+  so add a glow to that one, then use the white one as the last snake": scene 14's first is red with a python's
+  blotches, its second green and purple with a glow, and the third (scenes 15 and 23) white and gold.
+- **The white elephant once it is Phrom's** (scenes 19 to 23) wears `regalia: true` (`beasts.js`): caparison, head
+  ornament with a tassel, gold tusks, bells, a howdah under a tiered parasol, pennants, anklets, in the same colours.
+  The riders stay where each scene put them (Phrom and the mahout on the neck; the howdah behind them is empty).
+- The dream's three elephants (scene 12) wear their snakes' colours: red, deep green, and the third's gold cloth.
+- v5 render (owner: "any scene with human hands will need to get re rendered", with the hand change d61af03): scenes 2
+  to 26 again, the laptop from 2 up and the Spark from 26 down (`render_cng5`, `~/spark/cng_render5`); scene 1, with no
+  people, keeps its clip. The kit check after the render (owner: "hold off on the kit for now and run it after").
+- Open, for the owner: whether Phrom rides in the howdah in scene 21.

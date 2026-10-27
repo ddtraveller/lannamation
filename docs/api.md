@@ -1584,6 +1584,22 @@ default 0. Returns nothing: it begins a new path on brush and closes it, unfille
 e.g. leafPath(pen, 40, 10, 0.2); pen.fill();
 ```
 
+### `kranokCurl(x, y, dir, len, wide, hand, roll, depth, c, sway)`
+
+```
+The curl of Lanna and Thai ornament (kranok, กนก), drawn by the Naga of Chang Ngu (naga.js) and the white
+elephant's regalia (beasts.js), 2026-10-27.
+A curl of cloud, water or smoke: from (x, y) heading "dir" (radians, the way pen turns), "len" long and "wide" (its
+half-width) at its root, narrow at the root and to its tip. It bends more and more toward its tip and rolls into a
+spiral: "hand" 1 rolls clockwise on the sheet, -1 the other way; "roll" is how far it turns in all (radians; 6 is a
+turn and a bit). With "depth" above 0 it sprouts smaller curls from its outer side that roll the other way, each with
+depth one less, drawn behind it: so it branches as the edge of a cloud or a wave does. c: {fill, vein, lw, ink} and, if
+wanted, leaf (it swells in its first half, as a flame's leaf), sprout (the look of its sprouts) and sproutFrom (the
+share of its length below which it sprouts nothing). sway: radians added to its rolling (it breathes), handed on to
+its sprouts a moment later. Draws with pen; returns nothing.
+e.g. kranokCurl(0, 0, -1.6, 120, 8, -1, 5, 1, {fill: "#d6a437", vein: "#f7e2a0", lw: 1}, 0);
+```
+
 ### `paintPetal(brush, long, wide, bow, pale, deep, line)`
 
 ```
@@ -6977,7 +6993,7 @@ e.g. dress(t, [{name: "jar", kind: "namton", x: 820, base: 940}], "back");
 
 ## naga.js
 
-naga.js - a Naga, the many-headed serpent of the temple stairs, for films made with oldcartoon.js. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="naga.js"></script>  and call naga(x, y, look) from a scene, as person() is called. At its end are the giant river snakes of the tale of Chang Ngu, riverSnake(x, water, look), which swim with their heads up out of a river.  It was read from one drawing the owner gave (2026-10-13): a five-headed Naga in black line on gold paper, from Chiang Mai. Nothing of the drawing is copied. This file keeps what the drawing does, as rules, and draws its own serpent in the kit's manner: flat colour inside a fine dark line.  1. Several heads, one body. Five necks fan out of one chest, the middle neck the longest, and every head looks the same way. A head that is further forward lies over the neck behind it. 2. A head is a profile with a turned-up nose, an open mouth, and a tall flame of a crest that leans back, about one and a half heads high. 3. The body is one band that narrows all the way: about a head wide at the chest, a third of that at the tail. It lies in an S and one loop, and where it crosses itself the part nearer th
+naga.js - a Naga, the many-headed serpent of the temple stairs, for films made with oldcartoon.js. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="naga.js"></script>  and call naga(x, y, look) from a scene, as person() is called. At its end are the giant river snakes of the tale of Chang Ngu, riverSnake(x, water, look), which swim with their heads up out of a river; the first of them, the largest, as a Naga in white and gold (its kind "naga", riverNaga()).  It was read from one drawing the owner gave (2026-10-13): a five-headed Naga in black line on gold paper, from Chiang Mai. Nothing of the drawing is copied. This file keeps what the drawing does, as rules, and draws its own serpent in the kit's manner: flat colour inside a fine dark line.  1. Several heads, one body. Five necks fan out of one chest, the middle neck the longest, and every head looks the same way. A head that is further forward lies over the neck behind it. 2. A head is a profile with a turned-up nose, an open mouth, and a tall flame of a crest that leans back, about one and a half heads high. 3. The body is one band that narrows all the way: about a head wide at the chest, a third of th
 
 ### `nagaWalk(dense, step)`
 
@@ -7128,6 +7144,125 @@ Returns {head, neck}, each [x, y], points of the sheet: the head's middle, and t
 it holds on. It draws with pen at the film's clock; only what is above the water line shows. It sets FINE and
 LINE while it draws and leaves them at 1 and STYLE.line.
 e.g. var snake = riverSnake(1100, 780, {size: 0.8, face: -1, kind: "pearl"});
+```
+
+### `riverNagaBetween(a, b, u, alpha)`
+
+```
+A colour between two [hue, saturation, lightness] (a at 0, b at 1), "alpha" (1 unless given), as riverNagaHsl() gives.
+e.g. riverNagaBetween([40, 75, 42], [40, 75, 62], 0.5)
+```
+
+### `riverNagaHsl(h, s, l, a)`
+
+```
+A CSS colour from hue, saturation and lightness (0 to 360, 0 to 100, 0 to 100) and an alpha (1 unless given).
+e.g. riverNagaHsl(42, 80, 60)
+```
+
+### `riverNagaFrame(line, face, wide)`
+
+```
+The band of a body along a line, to measure places on: for each point its place, its way toward the tail, its way
+toward the belly, its half-width and the length so far. line: a list of [x, y], head first; face: 1 or -1; wide: a
+function of the way along (0 to 1) giving the half-width. Returns {p, t, n, w, len, total}. Draws nothing.
+e.g. var f = riverNagaFrame(nagaLine(spine, 6), -1, function (u) { return mix(64, 16, u); });
+```
+
+### `riverNagaAt(f, a, v)`
+
+```
+A place on a band (riverNagaFrame): "a" along it from the head, in pixels, and "v" across it (-1 the back's edge,
+1 the belly's). Returns {x, y, turn: the way toward the tail (radians), w: the half-width, n, t}. Draws nothing.
+e.g. var p = riverNagaAt(f, 120, -0.5);
+```
+
+### `riverNagaLit(n, v)`
+
+```
+How much light a spot of the round body catches, v across it (-1 to 1) and n its way toward the belly: about -0.3
+in the shade to 1 in full light. e.g. riverNagaLit([0, 1], -0.6)
+```
+
+### `riverNagaOutline(f, face)`
+
+```
+The outline of a band (riverNagaFrame) with its tail ending round, as a Path2D. face: 1 or -1. Draws nothing.
+e.g. pen.fill(riverNagaOutline(f, -1));
+```
+
+### `riverNagaScale(x, y, turn, ra, rb, lit, shimmer)`
+
+```
+One scale: an almond from a little before (x, y) to "ra" behind it toward the tail, "rb" its half-width, turned to
+"turn"; white, cool in the shade and warm in the light, with a gold lid-line; across it a band of gold and champagne
+with a near-white glint, which lies where the way the scale is turned and its light put it, so it slides as the body
+moves. lit: riverNagaLit() of its place; shimmer: a little more or less light, running along the body. Draws with pen.
+e.g. riverNagaScale(400, 300, 0, 12, 6, 0.7, 0);
+```
+
+### `riverNagaBody(f, face)`
+
+```
+The body on its band (riverNagaFrame): the fins along the back, the scales from the tail to the head (each one
+nearer the head lies over the root of the one behind), the jewelled collar behind the head, the ivory-gold plates of
+the belly, and its outline. face: 1 or -1. Draws with pen; returns nothing.
+e.g. riverNagaBody(f, -1);
+```
+
+### `riverNagaHorn(lw, sway, root, size, lean)`
+
+```
+One horn, in the head's units (the head faces +x): from its root, a little down in the snout, it swells back like a
+breaking wave and three quarters of the way up turns forward to a flame point; gold with white kranok tongues on its
+outer edge, round lobes along it, and within it bands one inside the other as on a stair end (white with gold beads,
+gold, a white core with gold scrolls and a spiral swirl at the inside of its bend). root: its foot; size: 1 for the
+front one; lean: radians it is turned back; lw: its line; sway (-1 to 1) bends its tip. Draws with pen.
+e.g. riverNagaHorn(1, 0, [66, -36], 1, 0);
+```
+
+### `riverNagaTooth(x, y, down, long, wide, lw, fang)`
+
+```
+A tooth standing on an edge at (x, y), in the head's units: "long" toward "down" (1 hangs, -1 stands), "wide" at its
+root, its point curved back toward the throat; ivory, its throat side a little darker; a fang wears a gold collar.
+lw: its line. Draws with pen. e.g. riverNagaTooth(90, -12, 1, 24, 4, 1, true);
+```
+
+### `riverNagaTongue(out, lw)`
+
+```
+The forked tongue, in the lower jaw's units: it lies along the jaw and out past its point, and it undulates, a wave
+running from its root to its tip and growing toward the tip, slow at rest and quick while it flicks out. out (0 to
+1): how far it is flicked out; lw: its line. Rose with a touch of purple, a pale groove down it. Draws with pen.
+e.g. riverNagaTongue(0, 1);
+```
+
+### `riverNagaHead(hx, hy, hs, face)`
+
+```
+The head, about 160 long in its own units, facing +x, at (hx, hy) of the sheet, hs the scale (the snake's size),
+face 1 or -1. Behind it the mane and the ridge; the three horns; the skull scaled as the body is; the teeth, the
+lower jaw on its hinge with the beard, the tongue and its teeth; the lip, the cheek's rosette, the brow and the eye.
+It breathes, the jaw a little open; a hiss about every 20 s opens it wide and lifts the snout; the tongue flicks every
+3.6 s; the eye blinks every 4.3 s. Draws with pen. e.g. riverNagaHead(900, 600, 1.6, -1);
+```
+
+### `riverNagaCubic(a, b, c, d, u)`
+
+```
+A point and its slope on the cubic curve a, b, c, d (each [x, y]) at u (0 to 1): [x, y, dx, dy]. Draws nothing.
+e.g. riverNagaCubic([0, 0], [10, 0], [20, 10], [30, 10], 0.5)
+```
+
+### `riverNaga(x, water, s, face, late, colours)`
+
+```
+riverSnake()'s kind "naga": the snake swimming as riverSnake() lays it (the same spine, water line and wake), drawn as
+a Naga. x, water, s: the head's x, the water line, the size; face: 1 or -1; late: as riverSnake(); colours: the name
+of its palette in RIVER_NAGA_COLOURS ("gold" unless told). Returns {head,
+neck} as riverSnake() does. It sets FINE and LINE while it draws and leaves them at 1 and STYLE.line.
+e.g. riverNaga(1100, 780, 1.6, -1, 0, "gold");
 ```
 
 ## dragon.js
@@ -7387,6 +7522,40 @@ width and lineCap set.
 e.g. elephantEye(inkFor("#8e9098"), false, null, "#8e9098")
 ```
 
+### `elephantGilt(colour, width)`
+
+```
+Fills the path pen holds with "colour" and inks it in the regalia's brown, "width" wide (2.4 unless told).
+e.g. pen.beginPath(); pen.arc(0, 0, 9, 0, 7); elephantGilt(ELEPHANT_REGALIA.gold);
+```
+
+### `elephantAnklet()`
+
+```
+A gold band with beads round an ankle, in the foot's own frame (its pad's top at about y -6): elephant()'s foot()
+draws it for one in regalia. Returns nothing.
+e.g. elephantAnklet();
+```
+
+### `elephantRegalia(phase)`
+
+```
+The regalia on the back, in elephant()'s frame for the body: the caparison (gold, a white field with a champagne sheen,
+a border of beads, a four-petalled medallion with a purple stone, gold scrolls, a gold fringe), the collar of bells,
+and the howdah of white and gold under a parasol of four tiers, with a pennant at either end. phase: the walk's step
+(or the clock), for the fringe and the bells. Returns nothing.
+e.g. elephantRegalia(clock * 0.25);
+```
+
+### `elephantRegaliaHead()`
+
+```
+The regalia on the head, in elephant()'s frame for the head: a white head-cloth from the crown to the trunk's root under a net of gold
+with beads where it crosses, a jewelled gold plate on the brow with an emerald, and a tassel of gold and white that
+hangs between the eyes and swings. Returns nothing.
+e.g. elephantRegaliaHead();
+```
+
 ### `elephantRings(bands)`
 
 ```
@@ -7444,7 +7613,7 @@ folded, so that someone can climb on.
   look   an object, never left out ({} gives a grey tusker standing, size 1,
          facing right): its keys are BEAST_KEYS above (the elephant reads
          size, face, ground, step, colour, late, front, trunk, tusks, cloth,
-         howdah, sit, mouth, feel, and slope: radians, as beastLegs() says)
+         howdah, regalia, sit, mouth, feel, and slope: radians, as beastLegs() says)
 Returns {seat: [x, y], head: [x, y]}, points of the sheet. It draws with
 pen at the film's clock; it sets the kit's FINE and LINE while it draws
 and leaves them at 1 and STYLE.line.

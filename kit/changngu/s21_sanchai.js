@@ -15,7 +15,7 @@ var C21_LAYER = null;                                  // the sheet the elephant
 // The white elephant with Phrom on its back and the mahout on its neck striking the plate; at (x, y), its size and
 // facing; walking: its step. Gives back the elephant's {seat, head}.
 function c21War(t, x, y, size, face, walking) {
-  var e = elephant(x, y, {size: size, face: face, colour: "#f1ddd3", cloth: "#c9962a", step: walking ? t / BEAT / 2.4 : 0,
+  var e = elephant(x, y, {size: size, face: face, colour: "#f1ddd3", regalia: true, step: walking ? t / BEAT / 2.4 : 0,
                           trunk: 0.5 + 0.3 * Math.sin(t * 2)});
   var back = [e.seat[0] - face * 130 * size, e.seat[1] + 14 * size];   // Phrom further back, the mahout on the neck
   person(back[0], back[1], cngPerson("boy", CNG_PHROM, {id: "phromwar", size: cngAgeSize(16) * size / 0.6, face: face, floor: "astride",

@@ -49,7 +49,7 @@ function c22Road(t, night) {
 function c22Riders(t, x, walking, face) {
   var sprites = [];
   sprites.push({name: "white elephant", kind: "elephant", x: x, y: C22_ROAD, draw: function () {
-    var e = elephant(x, C22_ROAD, {size: 0.55, face: face, colour: "#f1ddd3", cloth: "#c9962a", step: walking ? t / BEAT / 2.4 : 0,
+    var e = elephant(x, C22_ROAD, {size: 0.55, face: face, colour: "#f1ddd3", regalia: true, step: walking ? t / BEAT / 2.4 : 0,
                                    trunk: walking ? 0.3 : 0.8, mouth: walking ? 0 : 0.3});
     person(e.seat[0], e.seat[1], cngPerson("boy", CNG_PHROM, {id: "phromwall", size: cngAgeSize(16), face: face, floor: "astride",
                                                              feel: walking ? "angry" : "surprised"}));

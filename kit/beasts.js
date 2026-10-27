@@ -57,6 +57,10 @@
 //              fringe, a cloth on its brow, and bands of gold on its tusks
 //   howdah     true: a seat of wood on its back, with a cushion, a rail and a high
 //              back. The seat it gives back is then on the cushion
+//   regalia    true: a royal elephant's equipment in white and gold (ELEPHANT_REGALIA): a caparison, a head
+//              ornament with a tassel, gold on the tusks, a collar of bells, a howdah under a tiered parasol
+//              with two pennants, anklets; it takes the place of cloth and howdah. The seat it gives back is
+//              the neck's, where the mahout sits, unless howdah is true too
 //   only       "head": only its head is drawn, the legs, the body and the tail left out (Chang Ngu's
 //              heads on their necks, myth.js; a clip cut its jaw and its lifted trunk)
 // and for the buffalo only:
@@ -85,7 +89,7 @@
 //   mane       the colour of its mane, its tail and its lower legs
 var BEAST_KEYS = {};
 
-["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground", "feel", "pack", "mane", "graze", "turn", "tack", "only"].forEach(function (name) { BEAST_KEYS[name] = true; });
+["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground", "feel", "pack", "mane", "graze", "turn", "tack", "only", "regalia"].forEach(function (name) { BEAST_KEYS[name] = true; });
 
 // How much lower the body of the elephant and of the buffalo stands than it was first drawn, in pixels of
 // its own drawing: their legs are that much shorter (owner, 2026-10-26: "Compare them to real Northern Thai
@@ -285,6 +289,205 @@ function elephantEye(ink, shut, e, skin) {
   pen.moveTo(-8, 15);
   pen.quadraticCurveTo(2, 19, 12, 14);
   pen.stroke();
+}
+
+// The white elephant's regalia (owner, 2026-10-27: "give the one that is captured a look with the same color scheme
+// as the image you're doing now but with equipment like in the picture"): the equipment of a royal elephant, after a
+// picture of one the owner gave (a caparison, a head ornament with a tassel between the eyes, gold on the tusks, a
+// collar of bells, a howdah under a tiered parasol, pennants, anklets), in the colours of the Naga of Chang Ngu (naga.js
+// riverNaga): white and gold, champagne, a purple and an emerald, no red. elephant() draws it for the key "regalia".
+var ELEPHANT_REGALIA = {white: "#fbf8f0", gold: "#d6a437", goldDeep: "#a8741e", goldLight: "#f7e2a0", ink: "#3a2814",
+                        purple: "#6b3d8f", green: "#2f8f6a"};
+
+// Fills the path pen holds with "colour" and inks it in the regalia's brown, "width" wide (2.4 unless told).
+// e.g. pen.beginPath(); pen.arc(0, 0, 9, 0, 7); elephantGilt(ELEPHANT_REGALIA.gold);
+function elephantGilt(colour, width) {
+  pen.fillStyle = colour;
+  pen.fill();
+  pen.strokeStyle = ELEPHANT_REGALIA.ink;
+  pen.lineWidth = width || 2.4;
+  pen.lineJoin = "round";
+  pen.stroke();
+}
+
+// A gold band with beads round an ankle, in the foot's own frame (its pad's top at about y -6): elephant()'s foot()
+// draws it for one in regalia. Returns nothing.
+// e.g. elephantAnklet();
+function elephantAnklet() {
+  pen.beginPath();
+  pen.moveTo(-47, -20); pen.quadraticCurveTo(0, -12, 47, -20); pen.lineTo(46, -4); pen.quadraticCurveTo(0, 4, -46, -4); pen.closePath();
+  elephantGilt(ELEPHANT_REGALIA.gold, 2);
+  for (var b = -36; b <= 36; b += 12) { oval(b, -11 + Math.abs(b) * 0.04, 3.2, 3.2, ELEPHANT_REGALIA.goldLight); }
+}
+
+// The regalia on the back, in elephant()'s frame for the body: the caparison (gold, a white field with a champagne sheen,
+// a border of beads, a four-petalled medallion with a purple stone, gold scrolls, a gold fringe), the collar of bells,
+// and the howdah of white and gold under a parasol of four tiers, with a pennant at either end. phase: the walk's step
+// (or the clock), for the fringe and the bells. Returns nothing.
+// e.g. elephantRegalia(clock * 0.25);
+function elephantRegalia(phase) {
+  var swing = Math.sin(phase * Math.PI * 2);
+  // the caparison: gold outside, a white field inside with a border of beads, a medallion and gold scrolls, a fringe
+  var cap = new Path2D();
+  cap.moveTo(-176, -530);
+  cap.bezierCurveTo(-70, -560, 70, -556, 146, -522);
+  cap.lineTo(156, -338);
+  cap.quadraticCurveTo(-10, -312, -184, -338);
+  cap.closePath();
+  pen.fillStyle = ELEPHANT_REGALIA.gold; pen.fill(cap);
+  var field = new Path2D();
+  field.moveTo(-160, -518);
+  field.bezierCurveTo(-66, -544, 64, -540, 132, -510);
+  field.lineTo(140, -356);
+  field.quadraticCurveTo(-10, -332, -166, -356);
+  field.closePath();
+  pen.fillStyle = ELEPHANT_REGALIA.white; pen.fill(field);
+  pen.save(); pen.clip(field);
+  var sheen = pen.createLinearGradient(-160, -540, 140, -340);       // a champagne sheen across it
+  sheen.addColorStop(0, "rgba(246, 228, 180, 0)"); sheen.addColorStop(0.5, "rgba(246, 228, 180, 0.45)"); sheen.addColorStop(1, "rgba(246, 228, 180, 0)");
+  pen.fillStyle = sheen; pen.fillRect(-200, -560, 380, 240);
+  pen.restore();
+  pen.strokeStyle = ELEPHANT_REGALIA.goldDeep; pen.lineWidth = 2; pen.stroke(field);
+  for (var b = 0; b <= 1.001; b += 1 / 16) {                          // beads along the field's lower border
+    oval(mix(-160, 136, b), -350 - 12 * Math.sin(b * Math.PI), 3.2, 3.2, ELEPHANT_REGALIA.goldLight);
+  }
+  var gold = {fill: ELEPHANT_REGALIA.gold, vein: ELEPHANT_REGALIA.goldLight, lw: 1.4};
+  [[-1, 1], [1, -1]].forEach(function (side) {                         // gold scrolls either side of the medallion
+    kranokCurl(-10 + side[0] * 34, -440, side[0] > 0 ? 0.2 : Math.PI - 0.2, 92, 7, side[1], 6.4, 1, gold, 0.06 * Math.sin(clock * 1.2));
+    kranokCurl(-10 + side[0] * 30, -420, side[0] > 0 ? 0.9 : Math.PI - 0.9, 58, 5, -side[1], 6, 0, gold, 0.06 * Math.sin(clock * 1.2 + 1));
+  });
+  for (var pet = 0; pet < 4; pet++) {                                  // the medallion, a four-petalled flower
+    var pa = pet * Math.PI / 2 + Math.PI / 4;
+    oval(-10 + Math.cos(pa) * 18, -436 + Math.sin(pa) * 18, 15, 9, ELEPHANT_REGALIA.gold, pa);
+  }
+  oval(-10, -436, 11, 11, ELEPHANT_REGALIA.goldLight);
+  oval(-10, -436, 6, 6, ELEPHANT_REGALIA.purple);
+  pen.strokeStyle = ELEPHANT_REGALIA.ink; pen.lineWidth = 2.4; pen.lineJoin = "round"; pen.stroke(cap);
+  for (var fr = 0; fr <= 24; fr++) {                                    // the gold fringe, swinging a little in the walk
+    var fx = mix(-182, 154, fr / 24), fy = -338 + 26 * Math.sin(fr / 24 * Math.PI) - 2;
+    var sway = 5 * swing * Math.sin(fr * 0.7);
+    hose(fx, fy, fx + sway, fy + 26, 0, 3.2, ELEPHANT_REGALIA.gold);
+    oval(fx + sway, fy + 28, 3.4, 4, ELEPHANT_REGALIA.goldLight);
+  }
+  // the collar: a gold band round the neck before the shoulder, with three bells
+  hose(178, -536, 222, -330, 0.14, 13, ELEPHANT_REGALIA.gold);
+  hose(178, -536, 222, -330, 0.14, 4, ELEPHANT_REGALIA.goldLight);
+  [[0.35, 0], [0.62, 1], [0.86, 2]].forEach(function (bell) {
+    var u = bell[0], bx = mix(182, 222, u) + 8 * Math.sin(u * Math.PI), by = mix(-536, -330, u);
+    pen.save(); pen.translate(bx, by); pen.rotate(0.25 * swing * Math.cos(bell[1]));
+    hose(0, 0, 0, 16, 0, 3, ELEPHANT_REGALIA.gold);
+    pen.beginPath(); pen.moveTo(-9, 34); pen.quadraticCurveTo(-10, 14, 0, 14); pen.quadraticCurveTo(10, 14, 9, 34); pen.closePath();
+    elephantGilt(ELEPHANT_REGALIA.gold, 1.8);
+    oval(0, 36, 3, 3, ELEPHANT_REGALIA.goldDeep);
+    pen.restore();
+  });
+  // the howdah: a white seat with gold rails, a high back with a gold scroll
+  pen.beginPath();
+  pen.moveTo(-126, -556); pen.quadraticCurveTo(-20, -572, 92, -552); pen.lineTo(92, -592); pen.quadraticCurveTo(-20, -610, -126, -596); pen.closePath();
+  elephantGilt(ELEPHANT_REGALIA.white, 2.2);
+  pen.strokeStyle = ELEPHANT_REGALIA.gold; pen.lineWidth = 4;
+  pen.beginPath(); pen.moveTo(-124, -576); pen.quadraticCurveTo(-20, -592, 90, -572); pen.stroke();
+  pen.beginPath(); pen.moveTo(-140, -556); pen.bezierCurveTo(-156, -616, -156, -676, -128, -712); pen.bezierCurveTo(-104, -686, -100, -616, -106, -556); pen.closePath();
+  elephantGilt(ELEPHANT_REGALIA.white, 2.2);
+  kranokCurl(-124, -580, -1.75, 96, 4.5, -1, 6, 0, gold, 0.05 * Math.sin(clock));
+  hose(-138, -552, 100, -546, -0.04, 10, ELEPHANT_REGALIA.gold);
+  for (var post = 1; post < 4; post++) {
+    hose(-126 + post * 71, -550, -126 + post * 71, -604, 0, 6, ELEPHANT_REGALIA.gold);
+    oval(-126 + post * 71, -608, 6, 6, ELEPHANT_REGALIA.goldLight);
+  }
+  hose(-122, -610, 98, -604, -0.04, 6, ELEPHANT_REGALIA.gold);
+  // the pennants: white swallow-tails edged in gold on gold poles, at either end of the howdah, waving
+  [[-136, -560, 0], [100, -552, 1.7]].forEach(function (pole) {
+    var top = pole[1] - 250;
+    hose(pole[0], pole[1], pole[0], top, 0, 5, ELEPHANT_REGALIA.gold);
+    oval(pole[0], top - 6, 6, 9, ELEPHANT_REGALIA.goldLight);
+    var wave = function (u) { return 10 * Math.sin(clock * 3 + pole[2] - u * 4) * u; };
+    pen.beginPath();
+    pen.moveTo(pole[0], top + 6);
+    for (var k = 1; k <= 10; k++) { var u = k / 10; pen.lineTo(pole[0] - 150 * u, top + 6 + u * 6 + wave(u)); }
+    pen.lineTo(pole[0] - 118, top + 34 + wave(0.8));
+    pen.lineTo(pole[0] - 150, top + 62 + wave(1));
+    for (k = 10; k >= 0; k--) { var v = k / 10; pen.lineTo(pole[0] - 150 * v, top + 62 - v * 8 + wave(v)); }
+    pen.closePath();
+    elephantGilt(ELEPHANT_REGALIA.white, 2);
+    pen.strokeStyle = ELEPHANT_REGALIA.gold; pen.lineWidth = 4;
+    pen.beginPath();
+    for (k = 0; k <= 10; k++) { var w2 = k / 10; pen.lineTo(pole[0] - 140 * w2, top + 34 + w2 * 0 + wave(w2)); }
+    pen.stroke();
+  });
+  // the parasol: a gold pole from the howdah, four tiers of white with gold rims and fringes, a gold spire on top
+  pen.save();
+  pen.translate(-16, -560);
+  pen.rotate(0.02 * Math.sin(clock * 1.1));
+  hose(0, 0, 0, -470, 0, 7, ELEPHANT_REGALIA.gold);
+  [[-200, 116], [-284, 94], [-356, 74], [-416, 54]].forEach(function (tier) {
+    var y0 = tier[0], w = tier[1];
+    pen.beginPath();
+    pen.moveTo(-w * 0.28, y0 - 34);
+    pen.quadraticCurveTo(-w * 0.9, y0 - 22, -w, y0);
+    for (var sc = 0; sc < 8; sc++) {
+      var x1 = -w + (sc + 1) * w / 4, xm = x1 - w / 8;
+      pen.quadraticCurveTo(xm, y0 + 10, x1, y0);
+    }
+    pen.quadraticCurveTo(w * 0.9, y0 - 22, w * 0.28, y0 - 34);
+    pen.closePath();
+    elephantGilt(ELEPHANT_REGALIA.white, 2);
+    pen.strokeStyle = ELEPHANT_REGALIA.gold; pen.lineWidth = 4;
+    pen.beginPath(); pen.moveTo(-w * 0.95, y0 - 6); pen.quadraticCurveTo(0, y0 - 2, w * 0.95, y0 - 6); pen.stroke();
+    for (var d = -w + w / 8; d < w; d += w / 4) {
+      hose(d, y0 + 4, d + 2 * Math.sin(clock * 2 + d), y0 + 22, 0, 2.4, ELEPHANT_REGALIA.gold);
+      oval(d + 2 * Math.sin(clock * 2 + d), y0 + 24, 2.6, 3, ELEPHANT_REGALIA.goldLight);
+    }
+  });
+  pen.beginPath(); pen.moveTo(-12, -450); pen.quadraticCurveTo(-4, -500, 0, -540); pen.quadraticCurveTo(4, -500, 12, -450); pen.closePath();
+  elephantGilt(ELEPHANT_REGALIA.gold, 1.8);
+  oval(0, -454, 9, 6, ELEPHANT_REGALIA.goldLight);
+  pen.restore();
+}
+
+// The regalia on the head, in elephant()'s frame for the head: a white head-cloth from the crown to the trunk's root under a net of gold
+// with beads where it crosses, a jewelled gold plate on the brow with an emerald, and a tassel of gold and white that
+// hangs between the eyes and swings. Returns nothing.
+// e.g. elephantRegaliaHead();
+function elephantRegaliaHead() {
+  var cloth = new Path2D();
+  cloth.moveTo(30, -142);
+  cloth.quadraticCurveTo(70, -150, 104, -134);
+  cloth.bezierCurveTo(154, -118, 184, -70, 186, -18);
+  cloth.lineTo(150, -10);
+  cloth.bezierCurveTo(140, -60, 102, -100, 30, -142);
+  cloth.closePath();
+  pen.fillStyle = ELEPHANT_REGALIA.white; pen.fill(cloth);
+  pen.save(); pen.clip(cloth);
+  pen.strokeStyle = ELEPHANT_REGALIA.gold; pen.lineWidth = 2.2;                     // the gold net
+  pen.beginPath();
+  for (var k = -8; k <= 8; k++) {
+    pen.moveTo(40 + k * 18, -160); pen.lineTo(200 + k * 18, 0);
+    pen.moveTo(200 + k * 18, -160); pen.lineTo(40 + k * 18, 0);
+  }
+  pen.stroke();
+  for (var i = -8; i <= 8; i++) { for (var j = 0; j < 10; j++) { oval(50 + i * 18 + j * 9, -150 + j * 18, 2.4, 2.4, ELEPHANT_REGALIA.goldLight); } }
+  pen.restore();
+  pen.strokeStyle = ELEPHANT_REGALIA.ink; pen.lineWidth = 2.2; pen.stroke(cloth);
+  pen.strokeStyle = ELEPHANT_REGALIA.gold; pen.lineWidth = 6; pen.lineCap = "round";
+  pen.beginPath(); pen.moveTo(34, -140); pen.quadraticCurveTo(70, -148, 104, -132); pen.bezierCurveTo(152, -116, 182, -70, 184, -18); pen.stroke();
+  // the plate on the brow, with its emerald
+  pen.beginPath(); pen.moveTo(110, -120); pen.quadraticCurveTo(140, -112, 150, -82); pen.quadraticCurveTo(132, -66, 112, -78); pen.quadraticCurveTo(100, -100, 110, -120); pen.closePath();
+  elephantGilt(ELEPHANT_REGALIA.gold, 2);
+  oval(126, -96, 8, 9, ELEPHANT_REGALIA.green);
+  oval(123, -99, 2.6, 2.6, "#e8fff2");
+  // the tassel, from the end of the cloth, between the eyes, down the trunk
+  var swing = 0.12 * Math.sin(clock * 1.8);
+  pen.save(); pen.translate(168, -14); pen.rotate(swing);
+  hose(0, 0, 0, 24, 0, 4, ELEPHANT_REGALIA.gold);
+  pen.beginPath(); pen.moveTo(-10, 40); pen.quadraticCurveTo(-11, 22, 0, 22); pen.quadraticCurveTo(11, 22, 10, 40); pen.closePath();
+  elephantGilt(ELEPHANT_REGALIA.gold, 1.8);
+  for (var t = 0; t < 7; t++) {
+    var tx = -10 + t * 3.3;
+    hose(tx, 40, tx * 1.4 + 2 * Math.sin(clock * 3 + t), 92, 0, 2.6, t % 2 ? ELEPHANT_REGALIA.white : ELEPHANT_REGALIA.goldLight);
+  }
+  pen.beginPath(); pen.moveTo(-12, 40); pen.lineTo(12, 40); pen.strokeStyle = ELEPHANT_REGALIA.goldDeep; pen.lineWidth = 4; pen.stroke();
+  pen.restore();
 }
 
 // Two bands of gold across a tusk: the tusk's shape is the pen's path when
@@ -709,7 +912,7 @@ var ELEPHANT_UNSEEN = null;                         // the sheet the body goes o
 //   look   an object, never left out ({} gives a grey tusker standing, size 1,
 //          facing right): its keys are BEAST_KEYS above (the elephant reads
 //          size, face, ground, step, colour, late, front, trunk, tusks, cloth,
-//          howdah, sit, mouth, feel, and slope: radians, as beastLegs() says)
+//          howdah, regalia, sit, mouth, feel, and slope: radians, as beastLegs() says)
 // Returns {seat: [x, y], head: [x, y]}, points of the sheet. It draws with
 // pen at the film's clock; it sets the kit's FINE and LINE while it draws
 // and leaves them at 1 and STYLE.line.
@@ -805,6 +1008,7 @@ function elephant(x, y, look) {
     heavy(edge);
     pen.stroke();
     light();
+    if (look.regalia) { elephantAnklet(); }       // a gold band round the ankle
     for (var nail = 0; nail < nails; nail++) {
       pen.beginPath();
       pen.ellipse(51 - nail * 16, 42 + (nail ? 2.5 : 0), 7.5, 8.5, 0, Math.PI, 0);
@@ -899,7 +1103,7 @@ function elephant(x, y, look) {
     pen.quadraticCurveTo(-10 + n * 26, -278, -24 + n * 26, -304);
   }
   pen.stroke();
-  if (look.howdah) {                                // the two girths that hold the howdah, round the belly
+  if (look.howdah && !look.regalia) {               // the two girths that hold the howdah, round the belly
     pen.strokeStyle = "#6a4a2a";
     pen.lineWidth = 7;
     pen.beginPath();
@@ -910,7 +1114,8 @@ function elephant(x, y, look) {
     pen.stroke();
   }
   pen.restore();
-  if (look.cloth) {                                 // a cloth over the back, with a gold border and a fringe
+  if (look.regalia) { elephantRegalia(walk ? look.step : clock * 0.25); }   // the regalia over the back
+  else if (look.cloth) {                            // a cloth over the back, with a gold border and a fringe
     pen.beginPath();
     pen.moveTo(-156, -532);
     pen.bezierCurveTo(-60, -556, 64, -552, 132, -522);
@@ -935,7 +1140,7 @@ function elephant(x, y, look) {
     }
     pen.stroke();
   }
-  if (look.howdah) {                                // a howdah: a seat of wood on the back, a cushion in it, a rail round it and a high back
+  if (look.howdah && !look.regalia) {               // a howdah: a seat of wood on the back, a cushion in it, a rail round it and a high back
     pen.beginPath();                                // the cushion
     pen.moveTo(-122, -560);
     pen.quadraticCurveTo(-20, -574, 88, -556);
@@ -975,7 +1180,7 @@ function elephant(x, y, look) {
     shape(ivory);
     if (rings) { elephantRings([[128 + dx, 86 + dy, 172 + dx, 58 + dy], [150 + dx, 110 + dy, 190 + dx, 80 + dy]]); }
   }
-  if (look.tusks !== false) { tusk(20, -10, "#e9dcc0", look.cloth); }   // the far tusk, behind the trunk. One that is dressed has gold on its tusks
+  if (look.tusks !== false) { tusk(20, -10, "#e9dcc0", look.cloth || look.regalia); }   // the far tusk, behind the trunk. One that is dressed has gold on its tusks
   // The trunk: a row of points, each turned a little from the one before.
   // Hanging, it turns in slowly and its end curls in. Lifted, it turns up in
   // its first few points, close before the face, and its end curls forward.
@@ -1034,7 +1239,8 @@ function elephant(x, y, look) {
     pen.arc(104 + dice(n + 45) * 62, -80 + dice(n + 55) * 110, 2.2, 0, 7);
     pen.fill();
   }
-  if (look.cloth) {                                 // a cloth on the brow, from the top of the head to where the trunk begins, with a gold edge and a tassel
+  if (look.regalia) { elephantRegaliaHead(); }      // the regalia's head ornament
+  else if (look.cloth) {                            // a cloth on the brow, from the top of the head to where the trunk begins, with a gold edge and a tassel
     pen.beginPath();
     pen.moveTo(40, -141);
     pen.quadraticCurveTo(70, -147, 100, -133);
@@ -1054,7 +1260,7 @@ function elephant(x, y, look) {
     pen.stroke();
     oval(158, 16, 5, 6, STYLE.gold);
   }
-  if (look.tusks !== false) { tusk(0, 0, "#fff6ea", look.cloth); }      // the near tusk
+  if (look.tusks !== false) { tusk(0, 0, "#fff6ea", look.cloth || look.regalia); }      // the near tusk
   pen.save();                                       // the eye
   pen.translate(112, -40);
   elephantEye(ink, shut, e, colour);

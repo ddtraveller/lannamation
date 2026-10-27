@@ -45,7 +45,7 @@ function c20Field(t, age, season) {
   pen.drawImage(village.back, -WIDE * 0.3, 0);
   pen.drawImage(c20Ground(), 0, 0);
   var lap = (t * 0.09) % 1, ex = mix(-500, WIDE + 500, lap);
-  var e = elephant(ex, 840, {size: 0.5, face: 1, colour: "#f1ddd3", cloth: "#c9962a", step: t / BEAT / 2.2, trunk: 0.6});
+  var e = elephant(ex, 840, {size: 0.5, face: 1, colour: "#f1ddd3", regalia: true, step: t / BEAT / 2.2, trunk: 0.6});
   person(e.seat[0], e.seat[1], cngPerson("boy", CNG_PHROM, {id: "phromrides", size: cngAgeSize(age), face: 1, floor: "astride",
                                                            feel: "happy", handA: liftHand(0.7)}));
   var sprites = [], thrust = Math.max(0, Math.sin(t * 2.6));

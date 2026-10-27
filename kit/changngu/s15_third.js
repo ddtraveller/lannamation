@@ -56,7 +56,7 @@ function cngSceneThird(t) {
   cngRiverLife(t, {flushed: between(t, 13, 15), away: t - 15});   // and fly away again
   var hx = c15Head(t), neck = null, elephantAt = null;
   if (!changed && t > 12) {
-    var snake = riverSnake(hx, C15_SWIM, {size: 0.85, face: -1, kind: "pearl"});
+    var snake = riverSnake(hx, C15_SWIM, {size: 0.85, face: -1, kind: "naga"});
     neck = [snake.neck[0], snake.neck[1]];
   }
   if (changed) {                                           // the white elephant, swimming, Phrom on its neck

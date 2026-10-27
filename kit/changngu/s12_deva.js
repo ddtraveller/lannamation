@@ -9,6 +9,9 @@ var C12_LINES = [[1.6, 7.82, "C050"], [8.02, 11.94, "C051"], [12.14, 17.14, "C05
 var C12_MAT = [780, CNG_FLOOR + 70];
 var C12_VISION = [880, 520, 300, 150];                 // the vision's middle, and its half width and height
 var C12_COUNT = [23.6, 29.4, 35.2];                    // when each elephant comes into the vision
+// Each elephant's blanket, as the snake it stands for (owner, 2026-10-27: "Give them each a saddle or blanket like the colors
+// of the dragon they represent"): the first red (naga.js crimson), the second deep green (emerald), the third gold.
+var C12_CLOTHS = ["#b8301e", "#1f5a40", "#c9962a"];
 
 // The vision: a soft round of the Mae Khong with the white elephants floating down it, how many by t. e.g. c12Vision(30);
 function c12Vision(t) {
@@ -26,7 +29,7 @@ function c12Vision(t) {
     var x = v[0] - 200 + k * 200 + 30 * Math.sin(t * 0.6 + k), y = v[1] + 60 + 6 * Math.sin(t * 1.5 + k);
     pen.save();
     pen.globalAlpha = open * shown * (k === 2 ? 1 : 0.8);
-    elephant(x, y, {size: 0.18, face: -1, colour: "#f1ddd3", cloth: k === 2 ? "#c9962a" : undefined, trunk: 0.3});
+    elephant(x, y, {size: 0.18, face: -1, colour: "#f1ddd3", cloth: C12_CLOTHS[k], trunk: 0.3});
     if (k === 2) {                                         // the third, in a light of its own
       var g = pen.createRadialGradient(x, y - 40, 4, x, y - 40, 90);
       g.addColorStop(0, "rgba(255, 240, 180, 0.6)"); g.addColorStop(1, "rgba(255, 240, 180, 0)");
