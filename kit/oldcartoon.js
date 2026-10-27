@@ -2645,7 +2645,11 @@ function glove(x, y, angle, thumb, bare, open, nails, curls) {
 //   pose.pitch     the turn about the across line, in radians: above 0 the fingertips come toward us
 //   pose.nails     as glove(): true for gold tips, "long" for the nails of fon lep
 //   pose.colour    the skin (SKIN unless told)
-var HAND = {palm: 9.5, wrist: 6.5, knuckle: 13, apart: 5.2, fat: 2.5, thick: 2.4, finger: 12.5,
+//   pose.wrist     {under, ahead}, for a hand that runs into a bare forearm with no line at the wrist
+//                  (person() gives it): under(palm) inks and paints the wrist over the hand's outline
+//                  before the hand's colours, palm being the two sides of the palm 4 past the wrist, in
+//                  pen's frame as it is then; ahead() clips pen to past the wrist for the hand's thin lines
+var HAND ={palm: 9.5, wrist: 6.5, knuckle: 13, apart: 5.2, fat: 2.5, thick: 2.4, finger: 12.5,
             lengths: [1.02, 1.16, 1.08, 0.84], thumb: 13};
 var REST = [0.2, 0.26, 0.32, 0.38, 0.45];           // a hand hanging at rest: the fingers gently curled, the little one most
 
@@ -2769,10 +2773,15 @@ function hand(x, y, angle, pose) {
   function facing(nx, ny, nz) { return see(nx, ny, nz)[2]; }
   // A part is a bone between two points of the frame, round (a finger) or a
   // slab (the palm: as wide as the hand across, as thick as a palm is, so
-  // seen edge-on it is thin): [depth, ax, ay, bx, by, wideA, wideB, swell, back, kind, unit].
+  // seen edge-on it is thin): [depth, ax, ay, bx, by, wideA, wideB, swell, back, kind, unit, roots].
   // The parts of one finger are one unit: inked and painted together, so
-  // that no line crosses a finger at its joints.
-  var parts = [], unit = 0;
+  // that no line crosses a finger at its joints. "roots" are the places,
+  // [x, y, reach] as seen, where the part grows out of the hand: its thin
+  // line fades out within reach of them, so a finger or the thumb runs into
+  // the palm with no line where it begins (owner, 2026-10-27, after the
+  // wrist: "Do the same thing for finger / hands"). The palm's own line
+  // fades out toward the knuckles, where the fingers grow from all of it.
+  var parts = [], unit = 0, roots = [];
   function part(a, b, wideA, wideB, swell, slab, kind, normal) {
     var A = see(a[0], a[1], a[2]), B = see(b[0], b[1], b[2]);
     if (slab) {                                     // the slab's half-width across the bone, as seen: its width where it faces us, its thickness edge-on
@@ -2784,10 +2793,11 @@ function hand(x, y, angle, pose) {
     }
     parts.push([(A[2] + B[2]) / 2, A[0], A[1], B[0], B[1], wideA, wideB, swell, normal ? facing(normal[0], normal[1], normal[2]) : 0, kind, unit]);
   }
-  // the palm, and the heel of the hand below the thumb
+  // the palm, and the heel of the hand below the thumb: one unit, so no line
+  // rings the heel; every finger and the thumb grow out of it
   part([-13, 0, 0], [7, 0, 0], HAND.wrist, HAND.palm, 1.2, true, "palm", [0, 0, 1]);
-  unit++;
   part([-14, 3, -0.5], [-4, HAND.palm * 0.55, -0.5], 4, 5, 1.5, true, "heel");
+  parts[0][11] = parts[1][11] = [];                 // the thumb's root, when it is known
   // The fingers: each from its knuckle, fanned a little, and curled toward
   // the palm joint by joint, the second more than the first and the third
   // more still, so a closing finger rolls up. The first finger stands beside
@@ -2804,13 +2814,15 @@ function hand(x, y, angle, pose) {
     var bends = [mine * 0.62 - arches[n] * 0.6, mine * 0.7 - arches[n] * 0.3, mine * 0.5 - arches[n] * 0.1];   // a fist folds most at the knuckle, so from the back it shows knuckles, not fingers
     var lens = [long * 0.8, long * 0.62, long * 0.5];
     var wides = [[HAND.fat * 1.04, HAND.fat * 0.94, 0.12], [HAND.fat * 0.94, HAND.fat * 0.8, 0.18], [HAND.fat * 0.8, HAND.fat * 0.6, 0.09]];
-    var at = base, bent = 0, d;
+    var at = base, bent = 0, d, root = see(base[0], base[1], base[2]);
+    roots.push([root[0], root[1], HAND.fat * 2.8]);
     for (k = 0; k < 3; k++) {
       bent += bends[k];                             // the joints add up: each bends further than the one before it
       d = [dirX * Math.cos(bent), dirY * Math.cos(bent), -Math.sin(bent)];   // into the palm as it bends
       var next = [at[0] + d[0] * lens[k], at[1] + d[1] * lens[k], at[2] + d[2] * lens[k]];
       part(at, next, wides[k][0], wides[k][1], wides[k][2], false, k === 0 ? "knuckle" : k === 2 ? "tip" : "finger",
            [dirX * Math.sin(bent), dirY * Math.sin(bent), Math.cos(bent)]);   // the back of this joint
+      if (k === 0) { parts[parts.length - 1][11] = [roots[n]]; }   // only the bone that begins there: a curled finger lying over the palm keeps its line
       at = next;
     }
     tips.push([at, d, [dirX * Math.sin(bent), dirY * Math.sin(bent), Math.cos(bent)], [-dirY, dirX, 0]]);
@@ -2829,7 +2841,11 @@ function hand(x, y, angle, pose) {
     t2 = pinched[2];
   }
   unit++;
+  var thumbRoot = see(t0[0], t0[1], t0[2]);
+  roots.push([thumbRoot[0], thumbRoot[1], HAND.fat * 3.4]);
   part(t0, t1, HAND.fat * 1.2, HAND.fat * 1.05, 0.2, false, "thumb", [0, 0, 1]);
+  parts[parts.length - 1][11] = [roots[4]];
+  parts[0][11].push(roots[4]);
   part(t1, t2, HAND.fat * 1.05, HAND.fat * 0.85, 0.15, false, "thumbtip", [Math.sin(dip2) * Math.cos(tt2), Math.sin(dip2) * Math.sin(tt2), Math.cos(dip2)]);
   // The units, each with the depth of its parts' middle, the furthest
   // first. The palm goes after the fingers that lie level with it, so no
@@ -2851,16 +2867,60 @@ function hand(x, y, angle, pose) {
     pen.fillStyle = paint;
     pen.fill();
   }
+  var offRoot = roots.map(function (r) {            // everywhere but within reach of a root
+    var off = new Path2D();
+    off.rect(-1000, -1000, 2000, 2000);
+    off.arc(r[0], r[1], r[2], 0, 2 * Math.PI);
+    return off;
+  });
+  var hex = /^#[0-9a-f]{6}$/i.test(ink) ? parseInt(ink.slice(1), 16) : -1;
+  var clear = hex >= 0 ? "rgba(" + ((hex >> 16) & 255) + ", " + ((hex >> 8) & 255) + ", " + (hex & 255) + ", 0)"
+            : ink.replace(/^rgb\((.*)\)$/, "rgba($1, 0)");   // the ink, with nothing of it
+  var knuckles = [see(HAND.knuckle - 5, 0, 0), see(HAND.knuckle - 1.5, 0, 0)];
+  var toKnuckles = pen.createLinearGradient(knuckles[0][0], knuckles[0][1], knuckles[1][0], knuckles[1][1]);
+  toKnuckles.addColorStop(0, ink);                  // the palm's line, gone by the knuckles
+  toKnuckles.addColorStop(1, clear);
+  function thin(p) {                                // a part's thin line, fading out where it grows out of the hand
+    if (!p[11]) { fill(p, line * 0.55, ink); return; }
+    var mine = p[11].map(function (r) { return roots.indexOf(r); });
+    pen.save();
+    mine.forEach(function (m) { pen.clip(offRoot[m], "evenodd"); });
+    fill(p, line * 0.55, p[9] === "palm" || p[9] === "heel" ? toKnuckles : ink);
+    pen.restore();
+    mine.forEach(function (m, i) {                  // within reach of a root: nothing past its round end, then the line coming in to the whole of it at the edge
+      var r = roots[m], fade = pen.createRadialGradient(r[0], r[1], 0, r[0], r[1], r[2]);
+      fade.addColorStop(0.6, clear);
+      fade.addColorStop(1, ink);
+      pen.save();
+      pen.beginPath();
+      pen.arc(r[0], r[1], r[2], 0, 2 * Math.PI);
+      pen.clip();
+      for (var j = 0; j < i; j++) { pen.clip(offRoot[mine[j]], "evenodd"); }   // where two reaches meet, the first one's
+      fill(p, line * 0.55, fade);
+      pen.restore();
+    });
+  }
 
   pen.save();
   pen.translate(x, y);
   pen.rotate(angle);
+  var joined = pose.wrist;                          // a hand that runs into its forearm: one outline round the two
   var paint = function (some) {                     // 1. the hand in ink: its outline; 2. each unit, the furthest first: a thin line of ink round it, then its colour
     heavy(ink);
     some.forEach(function (one) { one.parts.forEach(function (q) { fill(q, line, ink); }); });
     light();
+    if (joined) {                                   // the wrist over the outline, as a limb paints its second bone: it narrows to the palm 4 past the wrist
+      var p = parts[0], u = 17 / 20, ax = p[3] - p[1], ay = p[4] - p[2], al = Math.hypot(ax, ay) || 1;
+      var half = (1 - u) * (1 - u) * p[5] + 2 * u * (1 - u) * ((p[5] + p[6]) / 2 + p[7]) + u * u * p[6];   // the palm's width there, as bone() bows it
+      var cx = p[1] + ax * u, cy = p[2] + ay * u, nx = -ay / al * half, ny = ax / al * half;
+      joined.under([[cx + nx, cy + ny], [cx - nx, cy - ny]]);
+      joined = null;
+    }
     some.forEach(function (one) {
-      for (k = 0; k < one.parts.length; k++) { fill(one.parts[k], line * 0.55, ink); }
+      pen.save();
+      if (pose.wrist) { pose.wrist.ahead(); }       // the thin lines only past the wrist: no line across the forearm
+      for (k = 0; k < one.parts.length; k++) { thin(one.parts[k]); }
+      pen.restore();
       for (k = 0; k < one.parts.length; k++) { fill(one.parts[k], 0, colour); }
     });
   };
@@ -3058,6 +3118,30 @@ function bone(ax, ay, bx, by, wideA, wideB, swell) {
   pen.quadraticCurveTo(middleX - nx * fat, middleY - ny * fat, ax - nx * wideA, ay - ny * wideA);
   pen.arc(ax, ay, wideA, angle - Math.PI / 2, angle + Math.PI / 2, true);
   pen.closePath();
+}
+
+// The outline drawn tight round some points, as a band stretched round
+// pins: the smallest shape with no dent in it that holds them all (a wrist
+// round the forearm's end and the palm, person()'s drawHand).
+// points: a list of [x, y], three or more. Returns a Path2D, closed, round the points that are its corners.
+// e.g. pen.fill(hull([[0, 0], [10, 0], [5, 8], [5, 2]]));
+function hull(points) {
+  var sorted = points.slice().sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+  function turn(o, a, b) { return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]); }
+  function side(list) {                             // one side of it, from the first point to the last (Andrew's chain)
+    var kept = [];
+    list.forEach(function (q) {
+      while (kept.length > 1 && turn(kept[kept.length - 2], kept[kept.length - 1], q) <= 0) { kept.pop(); }
+      kept.push(q);
+    });
+    kept.pop();
+    return kept;
+  }
+  var corners = side(sorted).concat(side(sorted.slice().reverse()));
+  var path = new Path2D();
+  corners.forEach(function (q, n) { if (n) { path.lineTo(q[0], q[1]); } else { path.moveTo(q[0], q[1]); } });
+  path.closePath();
+  return path;
 }
 
 // One bone, painted: its colour, and a shadow down the side that is away
@@ -5438,24 +5522,105 @@ function personReach(fig) {
   }
   function drawHand(which, wrist, pose) {
     var near = which === "A";
+    var forearm = Math.atan2(wrist[1] - wrist[3], wrist[0] - wrist[2]);   // the figure's own frame: forward is +x
+    // A bare hand runs into its wrist with no line (owner, 2026-10-27: "no
+    // line between hand and wrist ... connect seamlessly to the wrist"). The
+    // palm reaches back over the forearm, and its outline drew a ring there.
+    // Now the forearm's end is painted again as arm() painted it (its colour
+    // and shade, not its ink), from the wrist back past the palm's end: over
+    // the hand's outline before the hand's colours (so the two are one shape
+    // in one line, as a limb's two bones are), and once more after the hand,
+    // behind the wrist only (so the palm's colour does not lie on the arm).
+    // A glove keeps its cuff and a sleeve its edge.
+    var bare = sleeve === SKIN && !look.gloves;
+    var back = (13 + HAND.wrist + 2) * handSize + 2 * LINE;   // the palm starts 13 back from the wrist, round at its end, and its ink a line beyond
     pen.save();
     pen.translate(wrist[0], wrist[1]);
-    bangles(Math.atan2(wrist[1] - wrist[3], wrist[0] - wrist[2]), rings);   // on the forearm, from the elbow to the wrist, however the hand bends (owner, 2026-10-16: "the gold bangles on her wrists should stay pinned to the arm")
+    var atWrist = pen.getTransform(), wristShape;
+    function forearmEnd() {                         // the forearm from "back" behind the wrist to the wrist, as paintBone() paints it
+      pen.save();
+      pen.setTransform(atWrist);
+      pen.rotate(forearm);
+      pen.beginPath();
+      pen.rect(-back, -40, back, 80);
+      pen.clip();
+      pen.rotate(-forearm);                         // unturned again: the shade falls as arm()'s does
+      pen.scale(arms, arms);                        // as armOf() drew it: a child's arm smaller
+      var ex = (wrist[2] - wrist[0]) / arms, ey = (wrist[3] - wrist[1]) / arms, toLight = BODY.arm[1] * 0.4;
+      bone(ex, ey, 0, 0, BODY.arm[1], BODY.arm[2], 3);
+      pen.fillStyle = SKIN;
+      pen.fill();
+      pen.clip();
+      // The shade only where it shows, outside the bone moved toward the
+      // light: paintBone() shades all of it and paints the light back over,
+      // and two coats meeting the clip's soft edge leave a line at the wrist
+      bone(ex + toLight, ey - toLight * 0.6, toLight, -toLight * 0.6, BODY.arm[1], BODY.arm[2], 3);
+      pen.rect(-1000, -1000, 2000, 2000);
+      pen.fillStyle = "rgba(60, 30, 50, 0.18)";
+      pen.fill("evenodd");
+      pen.restore();
+    }
+    // on the forearm, from the elbow to the wrist, however the hand bends (owner, 2026-10-16: "the gold bangles on her
+    // wrists should stay pinned to the arm"): under the hand on a sleeve, and on a bare arm over the forearm painted again
+    if (!bare) { bangles(forearm, rings); }
+    pen.save();
     pen.scale(handSize, handSize);
     if (near && look.parasol) { gripHand(0, 0, pose.angle); }   // a hand closed round the parasol's handle, from the photograph
     else if (look.gloves || STYLE.hands === "flat") { glove(0, 0, pose.angle, pose.thumb, !look.gloves, pose.open, pose.nails, pose.curls); }
     else {
       var round = roundPose(pose);
+      if (bare) {
+        round.wrist = {under: function (palm) {      // the wrist: the forearm's round end and the palm 4 past it, one shape round both
+                         var seen = pen.getTransform(), mine = atWrist.inverse(), end = BODY.arm[2] * arms, dots = [], n;
+                         for (n = 0; n < 24; n++) { dots.push([Math.cos(n * Math.PI / 12) * end, Math.sin(n * Math.PI / 12) * end]); }
+                         palm.forEach(function (q) {
+                           var at = mine.transformPoint(seen.transformPoint(new DOMPoint(q[0], q[1])));
+                           dots.push([at.x, at.y]);
+                         });
+                         wristShape = hull(dots);
+                         pen.save();
+                         pen.setTransform(atWrist);
+                         heavy(inkFor(SKIN));        // its line, as a limb's: LINE outside the colour
+                         pen.lineWidth = 2 * LINE;
+                         pen.lineJoin = "round";
+                         pen.strokeStyle = inkFor(SKIN);
+                         pen.stroke(wristShape);
+                         light();
+                         pen.restore();
+                         forearmEnd();               // the forearm over the hand's line and the wrist's back edge
+                         pen.save();
+                         pen.setTransform(atWrist);
+                         pen.fillStyle = SKIN;
+                         pen.fill(wristShape);
+                         pen.restore();
+                       },
+                       ahead: function () {          // pen clipped to past the wrist and off the wrist's shape
+                         var keep = pen.getTransform(), off = new Path2D();
+                         off.rect(-1000, -1000, 2000, 2000);
+                         off.addPath(wristShape);
+                         pen.setTransform(atWrist);
+                         pen.clip(off, "evenodd");
+                         pen.rotate(forearm);
+                         pen.beginPath();
+                         pen.rect(1, -400, 400, 800);         // from just past the wrist, so its edge is not the forearm's
+                         pen.setTransform(keep);
+                         pen.clip();
+                       }};
+      }
       if (near && look.holding === "dap") {         // a Lanna sword in the fist: its hilt across the palm, the blade out the thumb's side
         round.held = function (gx, gy) {             // the blade square to the forearm, up from it, leaning DAP_TILT forward
           if (typeof dap !== "function") { warn("holding \"dap\" needs chiangsaen.js"); return; }
-          var forearm = Math.atan2(wrist[1] - wrist[3], wrist[0] - wrist[2]);   // the figure's own frame: forward is +x
           var way = forearm - Math.PI / 2 + DAP_TILT - pose.angle, bx = Math.cos(way), by = Math.sin(way);   // into the hand's frame
           var size = (look.dap || 0.55) / handSize, top = [gx + bx * 35 * size, gy + by * 35 * size];   // the hilt's middle in the fist
           dap(pen, top[0], top[1], size, {angle: Math.atan2(bx, -by)});
         };
       }
       hand(0, 0, pose.angle, round);
+    }
+    pen.restore();
+    if (bare) {
+      forearmEnd();
+      bangles(forearm, rings);
     }
     pen.restore();
   }
