@@ -137,7 +137,7 @@ nearest. It wraps `person()`, `drawByZ()`, `filmFrameOnce()` and `LIFE_KINDS` wh
 - **`render.py` looks first.** Before its first picture it runs `vanished()` over the part it renders and prints each
   as "warning: ... blinked out at ...", and again at the end; the video is made all the same, so stop it and mend the scene.
   The look takes a fraction of the render: a frame drawn, not photographed and encoded (the hero film's 85 s in about
-  6 minutes on the laptop, the village's 36 s in 1). `--no-vanish` leaves it out. `film.py render` and `scenes.py`
+  6 minutes on the laptop, the village's 36 s in 1). Since 2026-10-27 it is off unless asked for with `--vanish` (the owner: "Cancel the lookover until it is cleared of its suspicious behavior": 83 minutes without an end on the Spark, in software, for Chang Ngu's scene 18); `--no-vanish` is still taken. `film.py render` and `scenes.py`
   render through it, so the maker's films are looked at too.
 - **`checks/vanish_check.py PAGE`** runs the same look with no render; `--from`, `--to` for a part. Exit code 1 when
   something blinked out. Not in `kit_check.py`.

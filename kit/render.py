@@ -9,14 +9,16 @@ takes a picture of each, and hands the pictures to ffmpeg. Then it says
 what the page said: an error, or a warning from the kit (a name it does
 not know, which changes nothing).
 
-Before the first picture it draws the film's frames once more with no pictures (the kit's lookOver(),
-oldcartoon.js; seconds, not the minutes the pictures take) and tells anything that blinked out (drawn in
-one frame and gone in the next, while it could be seen, not gone off the edge, faded, shrunk away or
-taken by a fade to black) and anyone who popped (a joint that jumped in one frame further than a body
-moves). It tells them again at the end, and makes the video all the same: stop it and mend the scene.
---no-vanish leaves the look out.
+With --vanish, before the first picture it draws the film's frames once more with no pictures (the kit's
+lookOver(), oldcartoon.js) and tells anything that blinked out (drawn in one frame and gone in the next, while
+it could be seen, not gone off the edge, faded, shrunk away or taken by a fade to black) and anyone who popped
+(a joint that jumped in one frame further than a body moves). It tells them again at the end, and makes the
+video all the same: stop it and mend the scene. The look is OFF unless asked for, since 2026-10-27 (the owner:
+"Cancel the lookover until it is cleared of its suspicious behavior"): on the Spark, which draws in software,
+Chang Ngu's scene 18 looked over for 83 minutes without an end, where the laptop took 9 and the other scenes 5 to
+18. --no-vanish is still taken, and changes nothing.
 
-In the same look it listens: a sound the picture makes (a rooster's crow, the kit's heard()) is laid under
+In the same look (or alone, without it) it listens: a sound the picture makes (a rooster's crow, the kit's heard()) is laid under
 the film at its second, over the --audio sound or alone, from sounds.py's out/sounds/NAME.wav (made by
 sounds.py when it is not there yet; told and left out when it cannot be). A fetched sound's maker and
 licence are in sounds.py (FETCHED): a CC BY one is named in the film's credits.
@@ -90,13 +92,14 @@ def ffmpeg_command(video, audio, start=0, fast=False, sounds=()):
     return command
 
 
-def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=(), vanish=True):
+def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=(), vanish=False):
     """Render a kit page to a video file, frame by frame, in Chrome with no window: gives back nothing.
 
     page_file: the page (a path). video: the file to write. audio: a sound file, or None.
     start, end: the seconds to render from and to (default 0 to the page's LENGTH; end is held to LENGTH).
     fast: JPEG frames and the encoder's usual settings. sets: (name, value) pairs set on window before
-    the first frame (render.py --set). vanish: first look for what blinks out of the film (vanished()), and tell it.
+    the first frame (render.py --set). vanish: first look for what blinks out of the film (lookOver()), and tell it
+    (off unless asked for, since 2026-10-27).
     It prints what blinked out, the frames made, the time it took, the kit's warnings and the page's errors.
     It fails with SystemExit (a message) when ffmpeg stops, and SystemExit(1) when the page reported an
     error; then the video is written all the same. scenes.py calls it once for each scene.
@@ -191,8 +194,10 @@ def main():
     parser.add_argument("--fast", action="store_true", help="JPEG frames and the encoder's usual settings: quicker, softer")
     parser.add_argument("--set", action="append", default=[], metavar="NAME=VALUE",
                         help="give the page a value for this render: VALUE is JSON, or @file.json (sash.html: SLOW, LENGTH, WORDS)")
+    parser.add_argument("--vanish", dest="vanish", action="store_true", default=False,
+                        help="look first for what blinks out of the film and who pops (off unless asked for)")
     parser.add_argument("--no-vanish", dest="vanish", action="store_false",
-                        help="do not look first for what blinks out of the film")
+                        help="do not look first (the default since 2026-10-27; still taken)")
     args = parser.parse_args()
     if not shutil.which("ffmpeg"):
         raise SystemExit("ffmpeg is not installed, or not on the PATH")

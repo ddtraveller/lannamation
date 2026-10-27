@@ -10424,6 +10424,15 @@ darker line round it. Returns nothing: it draws with pen.
 e.g. thkLeaf(10, -40, 16, 0.4, "#5a9a48");
 ```
 
+### `thkFine(share, paint)`
+
+```
+The single blooms a bush can carry: each a function (x, y, r, turn, colour, seed) that draws one flower of radius
+about r with pen, by flora.js's own painters. A name here is a key of FLORA. The marigold and the jasmine are drawn
+with a finer pen than the bush's: a marigold's forty petals each inked at the bush's line, at the size of a bloom on
+a bush, came out brown, and jasmine's small stars grey (2026-10-27, the Maeng film's beauty pass).
+```
+
 ### `thkScaled(x, y, size, paint)`
 
 ```
@@ -10835,14 +10844,16 @@ takes a picture of each, and hands the pictures to ffmpeg. Then it says
 what the page said: an error, or a warning from the kit (a name it does
 not know, which changes nothing).
 
-Before the first picture it draws the film's frames once more with no pictures (the kit's lookOver(),
-oldcartoon.js; seconds, not the minutes the pictures take) and tells anything that blinked out (drawn in
-one frame and gone in the next, while it could be seen, not gone off the edge, faded, shrunk away or
-taken by a fade to black) and anyone who popped (a joint that jumped in one frame further than a body
-moves). It tells them again at the end, and makes the video all the same: stop it and mend the scene.
---no-vanish leaves the look out.
+With --vanish, before the first picture it draws the film's frames once more with no pictures (the kit's
+lookOver(), oldcartoon.js) and tells anything that blinked out (drawn in one frame and gone in the next, while
+it could be seen, not gone off the edge, faded, shrunk away or taken by a fade to black) and anyone who popped
+(a joint that jumped in one frame further than a body moves). It tells them again at the end, and makes the
+video all the same: stop it and mend the scene. The look is OFF unless asked for, since 2026-10-27 (the owner:
+"Cancel the lookover until it is cleared of its suspicious behavior"): on the Spark, which draws in software,
+Chang Ngu's scene 18 looked over for 83 minutes without an end, where the laptop took 9 and the other scenes 5 to
+18. --no-vanish is still taken, and changes nothing.
 
-In the same look it listens: a sound the picture makes (a rooster's crow, the kit's heard()) is laid under
+In the same look (or alone, without it) it listens: a sound the picture makes (a rooster's crow, the kit's heard()) is laid under
 the film at its second, over the --audio sound or alone, from sounds.py's out/sounds/NAME.wav (made by
 sounds.py when it is not there yet; told and left out when it cannot be). A fetched sound's maker and
 licence are in sounds.py (FETCHED): a CC BY one is named in the film's credits.
