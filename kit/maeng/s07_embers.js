@@ -88,6 +88,7 @@ function s07Here(point) {                          // a joint (the film's own pi
 // stick lies in its coals); and by night the ember in flight in "front", over them all, to the creature's mouth.
 // e.g. sceneEmbers(31);
 function sceneEmbers(t) {
+  maengSeason("harvest");                           // the cold season: the rice ripe and cut, straw stacks (sets.js; NATURE.md)
   var night = t >= S07_NIGHT ? 1 : 0, dark = Math.max(between(t, S07_NIGHT - 1.4, S07_NIGHT) * (t < S07_NIGHT ? 1 : 0),
                                                       t >= S07_NIGHT ? 1 - between(t, S07_NIGHT, S07_NIGHT + 1.4) : 0);
   pen.save();

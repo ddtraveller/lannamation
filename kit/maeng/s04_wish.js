@@ -205,10 +205,6 @@ function s04Night(t) {
   pen.strokeStyle = "rgba(120, 132, 180, 0.5)";
   pen.lineWidth = 2;
   pen.stroke();
-  // a few fireflies over the dark of the mountain, and night jasmine by the door, its white stars caught by the moon
-  // (the beauty pass, owner, 2026-10-27; quiet, for the father's dying: no butterflies, no birds)
-  sceneryFireflies(t, {far: [[[d[0], d[1] + 260, d[0] + d[2], d[1] + d[3] - 40], 14, 31]]});
-  maengNature(t, "door", 0.9);
   pen.strokeStyle = "#5a4630";                      // the ladder's top
   pen.lineWidth = 8;
   pen.beginPath(); pen.moveTo(1500, 700); pen.lineTo(1496, 640); pen.moveTo(1590, 700); pen.lineTo(1594, 640); pen.stroke();
@@ -266,6 +262,14 @@ function sceneWish(t) {
     warm.addColorStop(1, "rgba(255, 180, 90, 0)");
     pen.fillStyle = warm;
     pen.fillRect(0, 0, WIDE, 1080);
+  }
+  // a moth come in out of the night to the lamp, circling it while it burns, gone as it goes out (night.js; the beauty
+  // pass, owner, 2026-10-27: what is true on a cold night in the hut: no fireflies, no flowers at the door)
+  if (flame > 0.25) {
+    pen.save();
+    pen.globalAlpha = between(t, 6, 8) * between(flame, 0.25, 0.6);
+    atlasMoth(S04_LAMP[0] + 80 * Math.cos(t * 1.3), S04_LAMP[1] - 170 + 45 * Math.sin(t * 2.1), t, {size: 0.11, turn: -1.3 * Math.sin(t * 1.3), lit: 0.6 * flame});
+    pen.restore();
   }
   s04Night(t);                                      // the night through the doorway, which the lamp does not light
   if (t > 57.39) {                                     // and the scene goes to black

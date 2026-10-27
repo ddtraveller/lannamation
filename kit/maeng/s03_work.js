@@ -15,7 +15,18 @@ var S03_LIFT = [23.78, 24.38, 25.48];                  // he bends to the bound 
 var S03_LIFE = [
   {name: "blue magpie", kind: "magpie", z: "set", look: {size: 0.8},     // on the tree, then over the meadow: of the set
    course: [[0, 1520, 588], [27.48, 1520, 588], [34.48, -220, 260]]},
-  {name: "flock", kind: "flock", z: "sky", course: [[3.0, 2150, 230], [15.48, -150, 170]]}
+  {name: "flock", kind: "flock", z: "sky", course: [[3.0, 2150, 230], [15.48, -150, 170]]},
+  // The late rains' own (the beauty pass, owner, 2026-10-27: "be true and real"; nature_research.md): a cattle egret
+  // walking at the grazing buffalo's feet for what it stirs up; two grasshoppers in the grass, hopping from stop to
+  // stop; and a kwang, the rhinoceros beetle of the north, out most in September, creeping at the great tree's foot
+  {name: "cattle egret", kind: "egret", z: "people", look: {size: 0.9},
+   course: [[12, 600, 984, "peck"], [16, 600, 984], [19, 660, 990, "peck"], [24, 660, 990], [28, 560, 986, "peck"], [36.48, 560, 986]]},
+  {name: "grasshopper", kind: "grasshopper", look: {size: 0.7},
+   course: [[1, 260, 1046], [4, 260, 1046], [5, 340, 1040], [9, 340, 1040], [10, 430, 1048], [36.48, 430, 1048]]},
+  {name: "grasshopper, near the tree", kind: "grasshopper", look: {size: 0.6},
+   course: [[6, 1320, 1010], [12, 1320, 1010], [13, 1250, 1016], [20, 1250, 1016], [21, 1190, 1008], [36.48, 1190, 1008]]},
+  {name: "kwang", kind: "beetle", look: {size: 0.45},
+   course: [[0, 1650, 916], [8, 1630, 917, "lift"], [11, 1630, 917], [18, 1600, 918, "lift"], [21, 1600, 918], [36.48, 1580, 919]]}
 ];
 
 // Gives back an x in pixels of the sheet (left of the picture), from the kit's GAITS.buffalo and BEAT.
@@ -115,6 +126,7 @@ function s03Slack(wrist, nose, u) {
 }
 
 function sceneWork(t) {
+  maengSeason("heading");                           // the late rains: the rice green and heading (sets.js; NATURE.md)
   pen.drawImage(maengSky("day"), 0, 0);
   maengClouds(t + 40, "day");
   pen.drawImage(maengYard().back, 0, 0);

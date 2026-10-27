@@ -32,6 +32,10 @@ var S02_LIFE = [
   // a black-boned hen of the north (ไก่ดำ), pecking under the house (owner, 2026-10-20: "add a black chicken and rooster")
   {name: "black hen", kind: "hen", look: {black: true}, course: [[0, 430, 962, "peck"], [11.4, 430, 962], [15.79, 470, 966, "peck"], [32.24, 470, 966]]},
   {name: "flock", kind: "flock", z: "sky", course: [[2.0, -100, 270], [17.79, 2150, 210]]},
+  // a spotted dove on the hut's ridge in the morning, cooing, then resting in the sun (the beauty pass, owner,
+  // 2026-10-27: true of a northern yard: nature_research.md)
+  {name: "spotted dove", kind: "dove", z: "set", look: {size: 0.45},
+   course: [[0, 560, 300, "call"], [9.5, 560, 300, "call"], [11.5, 520, 301], [20, 520, 301, "rest"], [32.24, 520, 301, "rest"]]},
   // she pecks, walks a little, pecks, and walks back the other way (owner, 2026-10-21: "should switch between 3
   // behaviors like pecking walking pecking and then walking back the other way"; she only pecked on one spot)
   {name: "hen, alone", kind: "hen",
@@ -105,6 +109,7 @@ function s02Egrets(t) {
 }
 
 function sceneFamily(t) {
+  maengSeason("planting");                          // July: the rice being planted (sets.js; NATURE.md)
   if (t < 32.24) {                                   // morning: the three go to the city
     // the yard's clock a tenth slower, so its rice planters' step back to their start (every 30 s of it, sets.js) comes at
     // 33.3 s, after the fade at 30.74 s, not in view at 30 s (the pop check, 2026-10-24: 3 s back made it negative at

@@ -27,6 +27,7 @@ function s14Ease(u) { u = clamp(u); return u * u * (3 - 2 * u); }
 // Its z plan (oldcartoon.js, Z): the yard at dusk as painted first; then by drawByZ the flock in "sky" and Bua-kham in
 // "people". e.g. sceneGoodbye(10);
 function sceneGoodbye(t) {
+  maengSeason("ploughing");                         // the first rains: the fields ploughed, seedbeds (sets.js; NATURE.md)
   var dusk = 0.35;
   maengYardAt(t, dusk, 1, undefined, undefined, undefined, undefined, "sunset");   // the afterglow under the night
   sceneryLampLight(t, S14_LAMP[0], S14_LAMP[1], S14_LAMP[2], {reach: 260});        // the lamp's light on the veranda

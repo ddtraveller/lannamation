@@ -53,6 +53,7 @@ function s08Heavens(days) {
 // sprite, at its foot, MAENG_PEN), the lad, the hen (her feet nearer than the pen's; while the nights go by she is
 // drawn as dark as the yard), and the lad leading the buffalo. e.g. sceneGold(18);
 function sceneGold(t) {
+  maengSeason("stubble");                           // the dry months: stubble and a dry-season plot (sets.js; NATURE.md)
   var turning = between(t, S08_DAYS[0], S08_DAYS[1]), days = turning * 7;
   var night = turning > 0 && turning < 1 ? 0.5 - 0.5 * Math.cos(days * Math.PI * 2) : 0;   // the days and nights going by, fast
   var mounds = t < 20.1 ? 0 : t < S08_DAYS[0] ? between(t, 20.1, 22.78) : 1 + days * 1.6 + (turning >= 1 ? 6 : 0);

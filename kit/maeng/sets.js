@@ -76,11 +76,17 @@ function maengRange(base, tall, shape) {           // the ridge of hills(brush, 
 var MAENG_MOUNTAIN = null;
 // The flowers and fruit of the mountain's near slopes, a little colour in its green (owner, 2026-10-26: "Add some
 // flowers/fruits, etc. on the near part of the mountain"): for each band of bushes (hazy top, middle, near foot), three
-// mixes of THK_BLOOMS as the forests of the north have them: tiger's claw (phayasuea) and jasmine, the flame of the
+// mixes of THK_BLOOMS (since the beauty pass the cold season's turning leaves, MAENG_DOI_BLOOMS above; before it tiger's claw and jasmine, the flame of the
 // forest, the golden shower, longan in fruit, golden orchids.
-var MAENG_DOI_BLOOMS = [[[], [], []],
-                        [[["orchid", 3, 5, "#e8c23a"]], [], [["phayasuea", 3, 5, "#ec6c9c"]]],
-                        [[["phayasuea", 22, 8, "#f07aa8"], ["jasmine", 18, 6]], [["thongkwao", 24, 9]], [["ratchaphruek", 6, 20], ["longan", 6, 12]]]];
+// The mountain and the hillside in the cold season, when the story is there (scenes 1, 5 and 6: NATURE.md): no
+// flowers on a low dry hill then, but the deciduous trees turning, patches of yellow and russet among the green, more
+// on the nearer slopes (THK_BLOOMS.turning). The tiger's claw, the bua tong, the golden shower, the flame of the
+// forest, longan in fruit and the March orchid that were here are of the high doi, from the Americas, or of another
+// season (the beauty pass, owner, 2026-10-27: "be true and real more than anything").
+var MAENG_SLOPE_BLOOMS = [[[["turning", 8, 7, "#c9a03a"]], [["turning", 6, 7, "#b8662e"]], [["turning", 6, 7, "#d48a3a"]]],
+                          [[["turning", 22, 9, "#d4a83e"]], [["turning", 18, 9, "#b8562a"]], [["turning", 16, 9, "#e09a3a"]]],
+                          [[["turning", 40, 11, "#d4a83e"]], [["turning", 32, 11, "#b8562a"]], [["turning", 30, 11, "#e09a3a"], ["turning", 14, 11, "#9a3a22"]]]];
+var MAENG_DOI_BLOOMS = MAENG_SLOPE_BLOOMS;
 
 // Doi Khao Khwai on a sheet (brush), painted as the new places are (owner, 2026-10-26, of a still: "I like the
 // direction"): its body along its own ridge (maengPeak()) clothed in rows of small bushes as pinewoods.js
@@ -110,7 +116,8 @@ function maengForest(brush, ridge, look) {           // scenery.js's, since 2026
 var MAENG_BUSHES = {};
 function maengBush(x, y, r, seed, tint) {
   var key = seed % 6;
-  var b = MAENG_BUSHES[key] || (MAENG_BUSHES[key] = {sprite: natBush(200, 110, 700 + key, key % 2 ? THK_SHADE : THK_GREENS, [], PIX), tints: {}});
+  var blooms = [[["turning", 5, 7, "#d4a83e"]], [], [["turning", 4, 7, "#b8662e"]], [], [["turning", 4, 7, "#c98a3a"]], []][key];   // three turning (the beauty pass)
+  var b = MAENG_BUSHES[key] || (MAENG_BUSHES[key] = {sprite: natBush(200, 110, 700 + key, key % 2 ? THK_SHADE : THK_GREENS, blooms, PIX), tints: {}});
   var size = r * 2.4 / 200;
   thkPlace(b.sprite, x, y + r * 0.6, size, 0);
   if (tint && tint[1] > 0) {
@@ -147,7 +154,7 @@ function maengSnareBush(tint) {
 // Painted once. Gives back {day: [...], night: [...]} for sceneryBeds().
 function maengCaveBushesBuild() {
   var day = [{sprite: natBush(200, 110, 501, THK_SHADE, [], PIX), x: MAENG_CAVE[0] - 120, y: MAENG_CAVE[1] + 78, size: 0.9},
-             {sprite: natBush(200, 110, 502, THK_GREENS, [["phayasuea", 6, 5, "#ec6c9c"]], PIX), x: MAENG_CAVE[0] + 150, y: MAENG_CAVE[1] + 84, size: 0.95}];
+             {sprite: natBush(200, 110, 502, THK_GREENS, [["turning", 4, 6, "#d4a83e"]], PIX), x: MAENG_CAVE[0] + 150, y: MAENG_CAVE[1] + 84, size: 0.95}];
   return {day: day, dawn: day.map(function (it) { return Object.assign({}, it, {sprite: sceneryTinted(it.sprite, MAENG_DAWN[0])}); })};
 }
 // The film's far mountains (scenery.js farRange()): ridge behind ridge, rounded, no limestone peak, few pines; not the
@@ -289,6 +296,17 @@ var MAENG_NIGHT = ["#14183a", 0.55];
 // each again at night (backNight, frontNight).
 var MAENG_HUT = [470, 905, 2.6];
 var MAENG_YARD = null;
+// The season of the scene being drawn (NATURE.md, "The seasons of the story"): what the fields show, and so the yard's
+// sheets, painted and kept once a season (MAENG_YARDS). "planting" (Jul-Aug: flooded plots being planted, as the yard
+// was first painted), "heading" (Sep-Oct: all green and tall), "harvest" (Nov-Dec: ripe and cut, straw stacks),
+// "stubble" (Jan-Feb: cut, a dry-season plot), "dry" (Mar-Apr: bare), "ploughing" (May-Jun: mud and seedbeds).
+// A scene sets its own before it draws: maengSeason("harvest").
+var MAENG_SEASON = "planting", MAENG_YARDS = {};
+// kind: a season, as above. Gives back nothing. e.g. maengSeason("dry");
+function maengSeason(kind) {
+  MAENG_SEASON = kind;
+  MAENG_YARD = MAENG_YARDS[kind] || null;
+}
 
 // x in pixels of the sheet; gives back the y there. e.g. person(go.x, maengWay(go.x) + 12, go.look);
 function maengWay(x) {                             // where the path's middle is at x: from the hut's foot out to the right edge
@@ -377,7 +395,9 @@ function maengYard() {
   // poor family's yard, so the flowers of the hedgerow, tiger's claw, jasmine, the white dok kaew, not a garden's.
   // (the two further right, on their banks out over the fields, taken away: owner, 2026-10-26, "Get rid of the 2
   // hedgerows on mounds")
-  [[700, 900, 220, 80, 601, [["phayasuea", 14, 7, "#ec6c9c"], ["jasmine", 12, 6]]]].forEach(function (b) {
+  // (its tiger's claw, nang phaya suea khrong, a tree of the high doi, gone with the beauty pass: NATURE.md; its flowers
+  // now the season's, maengYardBlooms())
+  [[700, 900, 220, 80, 601, maengYardBlooms(1)]].forEach(function (b) {
     // each on a low bank of earth with grass on its top, as a hedgerow grows on a bund (owner, 2026-10-26: "Put the
     // hedgerows on the ground instead of floating")
     var half = b[2] * 0.56, bank = brush.createLinearGradient(0, b[1] - 8, 0, b[1] + 16);
@@ -397,8 +417,9 @@ function maengYard() {
     brush.fill();
     thkPlace(sceneryBush(b[2], b[3], b[4], THK_GREENS, b[5]), b[0], b[1], 1, 0);
   });
+  maengYardPlants(brush);
   pen = keep;
-  MAENG_YARD = {back: back, front: front, backNight: maengTinted(back, MAENG_NIGHT[0], MAENG_NIGHT[1] + 0.1),
+  MAENG_YARD = MAENG_YARDS[MAENG_SEASON] = {back: back, front: front, backNight: maengTinted(back, MAENG_NIGHT[0], MAENG_NIGHT[1] + 0.1),
                 frontNight: maengTinted(front, MAENG_NIGHT[0], MAENG_NIGHT[1])};
   return MAENG_YARD;
 }
@@ -461,40 +482,52 @@ function maengYardAt(t, night, glow, behind, away, fliers, heavens, sky) {   // 
   if (night > 0) { pen.globalAlpha = night; pen.drawImage(yard.frontNight, 0, 0); pen.globalAlpha = 1; }
   ruenPhuk(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2] * 0.92, {fine: true, ladder: "in", glow: glow || 0, tint: night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null});
   dress(t, MAENG_YARD_THINGS, "back", night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null);
-  maengNature(t, "yard", night);
 }
 
-// ---------- nature at its most beautiful ----------
-// The owner, 2026-10-27: "do a beautification pass for the meang video. Add flowers, butterflies, birds, animals, etc.
-// as appropriate. Simply try to make nature really beautiful in the video", after the hero film's garden and pond and
-// a reference whose frame is filled with flowering shrubs and a wall of grasses: flowers in clusters of many shades of
-// one colour, bushes speckled with small blossom, foliage painted, not inked, the nearest of it soft. Each place gets
-// its own beds, painted once (scenery.js's bushes, as the hero's garden is): the yard a bougainvillea in its corner by
-// the bamboo and a border of marigold, jasmine and dok kaew along the foot of the picture, low, below where the hens
-// peck and the family walks; at night they dim with the yard.
+// ---------- the yard's own plants, true to old Lanna and to the season ----------
+// What grew round a Lanna farmer's house (NATURE.md; nature_research.md, the yard): the coconut, the commonest tall
+// tree of the north's home gardens; areca palms with the betel vine on its stake, chewed together and offered to a
+// guest; a mango, the commonest fruit tree, in fruit from March to May; and by the house dok kaew, jasmine and the red
+// hibiscus. Not frangipani, bougainvillea or marigold, which came from the Americas. Painted once a season onto the
+// yard's front sheet (pen points at brush), so they dim with its night.
+// The flowers the yard's bushes carry in the season: in the rains and the hot months dok kaew, jasmine and hibiscus;
+// in the cold months the hibiscus alone (it flowers all year). share: how many, 1 for a bush of the yard's size.
+// Gives back a blooms list for sceneryBush(). e.g. sceneryBush(220, 80, 601, THK_GREENS, maengYardBlooms(1));
+function maengYardBlooms(share) {
+  var cool = MAENG_SEASON === "harvest" || MAENG_SEASON === "stubble";
+  function n(v) { return Math.max(1, Math.round(v * share)); }
+  return cool ? [["hibiscus", n(5), 12, "#d8323a"], ["jasmine", n(3), 6]]
+              : [["dokkaew", n(24), 7], ["jasmine", n(14), 6], ["hibiscus", n(4), 12, "#d8323a"]];
+}
+// brush: the yard's front sheet's 2D context (pen points at it). Gives back nothing. e.g. maengYardPlants(brush);
+function maengYardPlants(brush) {
+  palm(brush, 30, 902, 470);                        // the coconut behind the hut's left, its crown over the bamboo
+  areca(brush, 1610, 912, 0.95, 3);                 // two areca palms at the garden's back, and the betel on its stake
+  areca(brush, 1662, 916, 0.82, 5);
+  flora("phlu", 1586, 918, {size: 0.42, ground: false});
+  var fruit = MAENG_SEASON === "dry" ? [["mango", 26, 12]] : [];   // the mango at the right, its fruit hanging in the hot months
+  thkTreeOn(brush, 1868, 926, 0.62, 77, fruit);
+  [[-30, 1135, 300, 170, 641, 1.6], [1960, 1132, 280, 170, 642, 1.5], [170, 942, 300, 74, 643, 1]].forEach(function (b) {
+    thkPlace(sceneryBush(b[2], b[3], b[4], THK_GREENS, maengYardBlooms(b[5])), b[0], b[1], 1, 0);   // the two corners, and a bed before the bamboo
+  });
+}
+
+// ---------- frames of nature, soft, before the camera ----------
+// The beauty pass (owner, 2026-10-27: "make nature really beautiful", "use the pond scene [of the hero film] for a
+// template as to the level of beauty", "be true and real more than anything"; NATURE.md): what is nearest the eye,
+// soft at the picture's edges as the hero's pond has it, and true to the place and the season. Each part painted once.
+// "doi": Doi Khao Khwai before dawn in the cold season, the cogon grass of the hill's foot in its dry gold, its white
+// seed plumes out at the year's turn (pinewoods.js grassBank(), GRASS_DRY), at both bottom corners.
 function maengNatureBuild() {
-  var bush = sceneryBush;
+  function cogon(wide, high, seed, plumes) {
+    return thkSprite(wide + 80, high + 80, wide / 2 + 40, high + 40, function () { grassBank(wide, high, seed, GRASS_DRY, plumes); });
+  }
   return {
-    // the yard: a small frangipani in flower at its right, past the farmers, its foot on the fields' near edge; a bed of
-    // marigold and jasmine before the bamboo, behind where the hens peck (their feet at 950 and lower); and the two
-    // bottom corners in flower, bougainvillea, kept low and out of the subtitles' way
-    yard: [{sprite: thkSprite(380, 460, 190, 450, function () { thkTree(210, 22, 320, 200, 607, THK_GREENS, [["frangipani", 60, 11], ["frangipani", 18, 10, "#f3b6c8"]]); }),
-            x: 1850, y: 922},
-           {sprite: bush(300, 70, 602, THK_GREENS, [["marigold", 26, 8], ["jasmine", 16, 6], ["dokkaew", 10, 6]]), x: 170, y: 940},
-           {sprite: bush(300, 170, 601, THK_GREENS, [["bougainvillea", 60, 15, "#d8338a"], ["bougainvillea", 20, 13, "#ec6c9c"], ["jasmine", 16, 6]]), x: -30, y: 1135},
-           {sprite: bush(280, 170, 606, THK_GREENS, [["bougainvillea", 56, 14, "#d8338a"], ["bougainvillea", 16, 12, "#ec6c9c"]]), x: 1960, y: 1132}],
-    // Doi Khao Khwai before dawn, the frame (soft, before the camera): night-white jasmine and frangipani at the foot,
-    // grass at the right, and a spray of phayasuea hanging into the top right corner, more flower than leaf
-    doi: [{sprite: bush(520, 280, 611, THK_SHADE, [["jasmine", 70, 8], ["frangipani", 16, 13]]), x: -40, y: 1170},
-          {sprite: sceneryGrass(400, 14, 612), x: 1960, y: 1120},
-          {sprite: sceneryHanging(380, 160, 613, THK_SHADE, [["phayasuea", 90, 10, "#f3a6c0"], ["phayasuea", 30, 9, "#ec6c9c"]]), x: 1830, y: -30}],
-    // the hut's open door at night (scene 4): night jasmine outside it, below the ladder's top
-    door: [{sprite: bush(200, 120, 621, THK_SHADE, [["jasmine", 34, 7]]), x: 1470, y: 712},
-           {sprite: bush(150, 90, 622, THK_SHADE, [["jasmine", 20, 7]]), x: 1640, y: 714}]
+    doi: [{sprite: cogon(560, 230, 611, 9), x: 120, y: 1110}, {sprite: cogon(480, 200, 612, 7), x: 1820, y: 1104}]
   };
 }
-// The beds of place "part" (a key of maengNatureBuild()'s) at second t, swaying; night 0 to 1 dims them with the set's
-// own night, and blur (pixels) softens what is nearest. Gives back nothing: it draws with pen. e.g. maengNature(t, "yard", 0);
+// The frame of part "part" (a key of maengNatureBuild()'s) at second t, swaying; night 0 to 1 dims it with the set's
+// own night, and blur (pixels) softens what is nearest. Gives back nothing: it draws with pen. e.g. maengNature(t, "doi", 0.5, 4);
 function maengNature(t, part, night, blur) {
   var items = thkOnce("maeng-nature", maengNatureBuild)[part], dim = night || 0;
   pen.save();
@@ -539,7 +572,9 @@ function maengMeadow() {
   // flowers in it, the field flowers of the north (owner, 2026-10-26: "add some little flower, see if there is better
   // grass in the kit"), the nearer drawn after the further.
   var grass = [0, 1, 2].map(function (k) { return sceneryGrassBank(120 + 40 * dice(k + 61), 71 + k * 5); }), lawn = [];
-  var little = ["dokkaew", "jasmine", "buatong", "phayasuea", "marigold"];
+  // (since the beauty pass the late rains' own, NATURE.md: dok kaew and the white ginger lily of damp ground; the bua
+  // tong, tiger's claw and marigold that were here came from the Americas or the high doi)
+  var little = ["dokkaew", "tahern", "dokkaew", "tahern", "dokkaew"];
   for (n = 0; n < 70; n++) {
     var gy = 872 + dice(n * 3 + 2) * 205, near = (gy - 860) / 220;
     lawn.push({y: gy, draw: function (x, y, d) { return function () { thkPlace(grass[Math.floor(d * 3)], x, y, 0.1 + 0.26 * ((y - 860) / 220), 0); }; }(dice(n * 3 + 1) * WIDE, gy, dice(n * 3 + 3))});
@@ -550,10 +585,10 @@ function maengMeadow() {
       flora(name, x, y, {size: 0.16 + 0.16 * ((y - 860) / 220), ground: false});
     }; }(dice(n * 5 + 6) * WIDE, fy, little[n % little.length])});
   }
-  // and drifts of them (the beauty pass, owner, 2026-10-27: "make nature really beautiful"): flowers grow in patches of
-  // one kind, many together, as the reference's meadow is speckled, not one here and one there
-  var drifts = ["buatong", "phayasuea", "jasmine", "buatong", "dokkaew", "phayasuea"];
-  for (n = 0; n < 22; n++) {
+  // and the white ginger lily in patches where the ground stays wet in the rains (the beauty pass, owner, 2026-10-27:
+  // "make nature really beautiful", "be true and real"), many together, not one here and one there
+  var drifts = ["tahern"];
+  for (n = 0; n < 12; n++) {
     var dx0 = 60 + dice(n * 7 + 101) * (WIDE - 120), dy0 = 884 + dice(n * 7 + 102) * 170, kind = drifts[n % drifts.length];
     if (Math.abs(dx0 - MAENG_TREE[0]) < 90 && dy0 < 940) { continue; }   // not in the tree's foot
     for (var m = 0; m < 6 + Math.floor(dice(n * 7 + 103) * 6); m++) {
@@ -564,9 +599,9 @@ function maengMeadow() {
     }
   }
   lawn.sort(function (a, b) { return a.y - b.y; }).forEach(function (one) { one.draw(); });
-  // the great tree, painted as the hero film's trees are, and in flower: the golden shower's yellow racemes hanging
-  // from its crown (ratchaphruek, the beauty pass)
-  thkTreeOn(brush, MAENG_TREE[0], MAENG_TREE[1], 1.2, 31, [["ratchaphruek", 46, 17]]);
+  // the great tree, painted as the hero film's trees are, in full leaf in the late rains (the golden shower flowers in
+  // March to May: not now)
+  thkTreeOn(brush, MAENG_TREE[0], MAENG_TREE[1], 1.2, 31, []);
   // a limb out of its trunk's left side, for the magpie to sit on (S03_LIFE's course stands it at 1520, 588; owner,
   // 2026-10-26: "make a branch for the bird to sit on"), and a few leaves at its tip
   var limb = brush.createLinearGradient(0, 580, 0, 650);
@@ -587,7 +622,7 @@ function maengMeadow() {
   thkPlace(natBush(80, 40, 621, THK_GREENS, [], PIX), 1428, 594, 1, 0);
   // wild bushes in flower at the meadow's far edge, behind the buffalo and the boy (docs/kit/places.md, "Painting the
   // scenery", 4): the golden bua tong of the cool season's hills, tiger's claw
-  [[900, 866, 260, 90, 611, [["buatong", 16, 9]]], [1220, 870, 220, 80, 612, [["phayasuea", 12, 7, "#ec6c9c"]]]].forEach(function (b) {
+  [[900, 866, 260, 90, 611, [["dokkaew", 22, 7]]], [1220, 870, 220, 80, 612, [["dokkaew", 16, 7]]]].forEach(function (b) {   // dok kaew since the beauty pass
     thkPlace(sceneryBush(b[2], b[3], b[4], THK_GREENS, b[5]), b[0], b[1], 1, 0);
   });
   pen = keep;
@@ -629,7 +664,7 @@ function maengSlope() {
   }
   var back = sheet(), front = sheet(), fore = sheet(), b = back.getContext("2d"), x, n;
   b.drawImage(farRange("#a9cfc9", "226, 238, 240", 640, MAENG_FAR), 0, 0);   // the far mountains (scenery.js)
-  maengForest(b, maengHillside, {pines: 10, top: 200, seed: 40});   // the hillside, clothed as scene 1's mountain
+  maengForest(b, maengHillside, {pines: 10, top: 200, seed: 40, blooms: MAENG_SLOPE_BLOOMS});   // the hillside, clothed as scene 1's mountain
   b = front.getContext("2d");
   // The path: a band of worn earth up the slope, narrowing as it climbs away, and running in under the cave's
   // ledge (no end of it shows); its edges soft, a few stones on it.
@@ -667,9 +702,9 @@ function maengSlope() {
   pen = b;
   // the two bushes up the slope behind the rock, then the rock, then the two before it (owner, 2026-10-26: "Looks like a
   // bush and boulder have a z order issue": all four were drawn over it)
-  [[40, 930, 0.9, 42], [210, 905, 0.8, 43]].forEach(function (c) { thkPlace(natBush(200, 110, c[3], THK_SHADE, [], PIX), c[0], c[1], c[2], 0); });
+  [[40, 930, 0.9, 42, [["turning", 6, 9, "#d4a83e"]]], [210, 905, 0.8, 43, [["turning", 5, 8, "#b8662e"]]]].forEach(function (c) { thkPlace(natBush(200, 110, c[3], THK_SHADE, c[4], PIX), c[0], c[1], c[2], 0); });
   thkPlace(rockSprite(330, 230, 41, {stone: "#7a7468", moss: 0.45, jag: 0.5}, PIX), 140, 1100, 1, 0);
-  [[330, 1010, 1.0, 44], [420, 1090, 1.15, 45]].forEach(function (c) { thkPlace(natBush(200, 110, c[3], THK_SHADE, [], PIX), c[0], c[1], c[2], 0); });
+  [[330, 1010, 1.0, 44, [["turning", 6, 9, "#c98a3a"]]], [420, 1090, 1.15, 45, [["turning", 7, 9, "#d4a83e"]]]].forEach(function (c) { thkPlace(natBush(200, 110, c[3], THK_SHADE, c[4], PIX), c[0], c[1], c[2], 0); });   // turning in the cold season (the beauty pass)
   pen = keepPen;
   MAENG_SLOPE = {back: back, front: front, fore: fore,
                  backDusk: maengTinted(back, MAENG_DUSK[0], MAENG_DUSK[1]), frontDusk: maengTinted(front, MAENG_DUSK[0], MAENG_DUSK[1]),
@@ -1014,7 +1049,7 @@ function maengCity() {
 // MAENG_AIR: each scene's, as sceneryAir() takes it ("goodbye": fireflies, as sceneryFireflies() does).
 var MAENG_AIR = {
   work: {butterfly: {kind: "grassyellow", x: 1500, y: 620, vx: -70, weave: 50, seed: 4, size: 1.2, turn: -1.2, wing: 3},
-         petals: [8, "#f2e2a0", 5, 0.9], light: [0.55, 3],
+         light: [0.55, 3],                       // (no petals since the beauty pass: the tree is in leaf, not flower, in the late rains)
          more: [{kind: "grassyellow", x: 700, y: 900, vx: 30, weave: 70, seed: 14, size: 1.0, turn: 1.2, wing: 6},
                 {kind: "lacewing", x: 1100, y: 860, vx: -25, weave: 80, seed: 15, size: 1.1, turn: -1.2, wing: 7}]},
   creature: {butterfly: {kind: "lacewing", x: 260, y: 420, vx: 60, weave: 60, seed: 6, size: 1.3, turn: 1.2, wing: 2}, light: [0.6, 4]},
@@ -1213,14 +1248,28 @@ var FIELD_TURN = 3.5, FIELD_TURN_FIRST = 3;
 var FIELD_LED = [1, 1000, 5];                       // the led buffalo: its row, where it is at a scene's start, how fast it goes
 var FIELD_PLANTERS = [[3, 1060], [3, 1180], [3, 1320]];   // women planting rice in the flooded plot, bent over
 
-// The plots of FIELD_PLOTS and their bunds, painted with brush (a 2D context: the yard's far sheet); the flooded
-// plots' seedlings and glints on a sheet of their own (maengFieldOver()), their water drawn live (maengFieldWater()).
-// Gives back nothing. e.g. maengFields(back.getContext("2d"));
+// The plots of FIELD_PLOTS and their bunds, painted with brush (a 2D context: the yard's far sheet) as the season shows
+// them (MAENG_SEASON; NATURE.md and nature_research.md, the rice calendar round Chiang Rai: planted through July, green
+// and heading by October with cold foggy mornings, cut in November and December, the stubble then burnt or a dry-season
+// crop sown, bare and dry in March and April, ploughed when the rains come); the flooded plots' seedlings and glints on
+// a sheet of their own (maengFieldOver()), their water drawn live (maengFieldWater()). Gives back nothing.
+// e.g. maengFields(back.getContext("2d"));
+// What a plot of FIELD_PLOTS is in the season: "water", "mud" and "rice" as laid out (the planting); else as the season
+// has it. p: the plot; i: its index. Gives back a kind. e.g. var kind = fieldKind(FIELD_PLOTS[3], 3);
+function fieldKind(p, i) {
+  var kind = p[3], season = MAENG_SEASON;
+  if (season === "heading") { return "heading"; }
+  if (season === "harvest") { return i % 3 === 1 ? "ripe" : "stubble"; }
+  if (season === "stubble") { return i % 5 === 2 ? "crop" : "stubble"; }
+  if (season === "dry") { return "dry"; }
+  if (season === "ploughing") { return kind === "rice" ? (i % 4 === 0 ? "seedbed" : "mud") : kind; }
+  return kind;
+}
 function maengFields(brush) {
   var n, k;
   FIELD_PLOTS.forEach(function (p, i) {
-    var row = fieldRow(p[0]), top = row[0], deep = row[1], x0 = p[1], x1 = p[2];
-    if (p[3] === "water") {                         // the water is drawn live (maengFieldWater()); here its glints and seedlings,
+    var row = fieldRow(p[0]), top = row[0], deep = row[1], x0 = p[1], x1 = p[2], kind = fieldKind(p, i);
+    if (kind === "water") {                         // the water is drawn live (maengFieldWater()); here its glints and seedlings,
       var keepBrush = brush;                        // on their own sheet laid over it
       brush = maengFieldOver();
       brush.strokeStyle = "rgba(255, 255, 255, 0.55)";
@@ -1229,15 +1278,17 @@ function maengFields(brush) {
         var ry = top + 3 + dice(i * 7 + k) * (deep - 4), rx = x0 + dice(i * 11 + k) * (x1 - x0 - 60);
         brush.beginPath(); brush.moveTo(rx, ry); brush.lineTo(rx + 30 + 30 * dice(i + k), ry); brush.stroke();
       }
-      brush.strokeStyle = "rgba(100, 150, 60, 0.75)";   // rows of seedlings, short green ticks
-      brush.lineWidth = 1.4;
-      for (var sy = top + 4; sy < top + deep - 1; sy += 5 + p[0] * 1.4) {
-        for (var sx = x0 + 8 + (sy % 11); sx < x1 - 6; sx += 16 + p[0] * 3) {
-          brush.beginPath(); brush.moveTo(sx, sy + 2); brush.lineTo(sx + 0.6, sy - 1 - p[0] * 0.3); brush.stroke();
+      if (MAENG_SEASON === "planting") {            // rows of seedlings, short green ticks (the ploughing season's water is not planted yet)
+        brush.strokeStyle = "rgba(100, 150, 60, 0.75)";
+        brush.lineWidth = 1.4;
+        for (var sy = top + 4; sy < top + deep - 1; sy += 5 + p[0] * 1.4) {
+          for (var sx = x0 + 8 + (sy % 11); sx < x1 - 6; sx += 16 + p[0] * 3) {
+            brush.beginPath(); brush.moveTo(sx, sy + 2); brush.lineTo(sx + 0.6, sy - 1 - p[0] * 0.3); brush.stroke();
+          }
         }
       }
       brush = keepBrush;
-    } else if (p[3] === "mud") {                    // ploughed: wet earth, furrows along it
+    } else if (kind === "mud") {                    // ploughed: wet earth, furrows along it
       brush.fillStyle = "#8a6a48";
       brush.fillRect(x0, top, x1 - x0, deep + 2);
       brush.strokeStyle = "rgba(60, 40, 24, 0.45)";
@@ -1245,22 +1296,55 @@ function maengFields(brush) {
       for (k = top + 3; k < top + deep; k += 3) { brush.beginPath(); brush.moveTo(x0, k); brush.lineTo(x1, k + 1); brush.stroke(); }
       brush.fillStyle = "rgba(190, 215, 220, 0.5)";  // a little water lying in it
       brush.fillRect(x0 + (x1 - x0) * 0.6, top + 2, (x1 - x0) * 0.3, deep * 0.4);
-    } else {                                        // grown rice: green, in two shades, the blades catching the light
-      brush.fillStyle = i % 2 ? "#86b852" : "#78ac48";
+    } else if (kind === "rice" || kind === "heading" || kind === "seedbed" || kind === "ripe") {
+      // grown rice, the blades catching the light: green; in October taller and darker with pale heads; a seedbed thick
+      // and bright; ripe, gold with its heads bowed
+      var c = {rice: ["#86b852", "#78ac48", "#9ac862", "#6a9c3e"], heading: ["#6f9e40", "#669638", "#c2c86a", "#5a8a32"],
+               seedbed: ["#8ad052", "#80c84a", "#a8e06a", "#6cb03c"], ripe: ["#d6b04a", "#caa23e", "#ecd070", "#b08a2e"]}[kind];
+      brush.fillStyle = i % 2 ? c[0] : c[1];
       brush.fillRect(x0, top, x1 - x0, deep + 2);
-      brush.strokeStyle = i % 2 ? "#9ac862" : "#6a9c3e";
+      brush.strokeStyle = i % 2 ? c[2] : c[3];
       brush.lineWidth = 1.2;
-      for (k = x0 + 3; k < x1; k += 5 + p[0]) {
-        var h = 3 + p[0] * 0.8;
-        brush.beginPath(); brush.moveTo(k, top + deep); brush.lineTo(k + 1, top + deep - h); brush.stroke();
+      var tall = kind === "heading" || kind === "ripe" ? 1.6 : kind === "seedbed" ? 0.7 : 1;
+      for (k = x0 + 3; k < x1; k += (kind === "seedbed" ? 3 : 5) + p[0]) {
+        var h = (3 + p[0] * 0.8) * tall;
+        brush.beginPath(); brush.moveTo(k, top + deep);
+        brush.quadraticCurveTo(k + 1, top + deep - h * 0.7, k + (kind === "ripe" ? 2.5 : 1), top + deep - h); brush.stroke();
+      }
+    } else {                                        // cut, bare or sown in the dry season
+      var ground = {stubble: ["#c9ad74", "#bfa268"], crop: ["#9a7a52", "#927248"], dry: ["#cdb48a", "#c4aa7e"]}[kind];
+      brush.fillStyle = i % 2 ? ground[0] : ground[1];
+      brush.fillRect(x0, top, x1 - x0, deep + 2);
+      if (kind === "crop") {                        // a dry-season crop in rows, small and green, on the drained plot
+        brush.fillStyle = "#6f9a3e";
+        for (k = top + 3; k < top + deep; k += 3 + p[0] * 0.6) {
+          for (var cx = x0 + 4 + (k % 7); cx < x1 - 3; cx += 6 + p[0]) { brush.fillRect(cx, k, 1.6 + p[0] * 0.3, 1.2 + p[0] * 0.2); }
+        }
+      } else {                                      // the cut stalks in their rows; the dry plot's few left, and its cracks
+        brush.strokeStyle = kind === "dry" ? "rgba(150, 120, 80, 0.35)" : "rgba(150, 118, 64, 0.7)";
+        brush.lineWidth = 1;
+        for (k = top + 2; k < top + deep; k += 3 + p[0] * 0.7) {
+          for (var tx = x0 + 3 + (k % 5); tx < x1 - 2; tx += (kind === "dry" ? 11 : 5) + p[0]) {
+            brush.beginPath(); brush.moveTo(tx, k + 1.5); brush.lineTo(tx + 0.3, k - 0.5 - p[0] * 0.25); brush.stroke();
+          }
+        }
+        if (kind === "dry") {
+          brush.strokeStyle = "rgba(110, 84, 54, 0.35)";
+          brush.lineWidth = 0.8;
+          for (k = 0; k < (x1 - x0) / 40; k++) {
+            var cx0 = x0 + dice(i * 17 + k) * (x1 - x0), cy0 = top + dice(i * 19 + k) * deep;
+            brush.beginPath(); brush.moveTo(cx0, cy0); brush.lineTo(cx0 + 8 + p[0], cy0 + 1.5); brush.lineTo(cx0 + 12 + p[0] * 2, cy0 - 1); brush.stroke();
+          }
+        }
       }
     }
   });
+  var dryBund = MAENG_SEASON === "dry" || MAENG_SEASON === "stubble";
   for (n = 0; n < FIELD_ROWS; n++) {                // the bunds: a line of earth and grass along each row, and across it
     var row = fieldRow(n);
     brush.fillStyle = "#a08058";
     brush.fillRect(0, row[0] - 1, WIDE, 2.5 + n * 0.5);
-    brush.fillStyle = "#7f9a48";
+    brush.fillStyle = dryBund ? "#a89a5a" : "#7f9a48";   // their grass yellowed in the dry months
     brush.fillRect(0, row[0] - 2, WIDE, 1.2);
   }
   FIELD_PLOTS.forEach(function (p) {
@@ -1269,19 +1353,48 @@ function maengFields(brush) {
     brush.fillStyle = "#a08058";
     brush.fillRect(p[1] - 1, row[0], 2 + p[0] * 0.5, row[1] + 2);
   });
+  if (MAENG_SEASON === "harvest" || MAENG_SEASON === "stubble") {   // the straw stacked after the threshing, round a pole, here and there
+    [[1, 220], [2, 1240], [3, 640], [4, 1500], [2, 1760], [0, 1010]].forEach(function (st) {
+      var r = fieldRow(st[0]), base = r[0] + r[1] - 2, w = 9 + st[0] * 3.2, h = w * 1.05;
+      brush.fillStyle = "rgba(60, 40, 20, 0.25)";   // its shadow
+      brush.beginPath(); brush.ellipse(st[1] + w * 0.25, base + 1, w * 0.9, w * 0.18, 0, 0, 7); brush.fill();
+      var straw = brush.createLinearGradient(st[1] - w, 0, st[1] + w, 0);
+      straw.addColorStop(0, "#efd48a");
+      straw.addColorStop(1, "#b8964e");
+      brush.fillStyle = straw;
+      brush.beginPath();
+      brush.moveTo(st[1] - w, base);
+      brush.quadraticCurveTo(st[1] - w * 0.9, base - h * 0.9, st[1], base - h);
+      brush.quadraticCurveTo(st[1] + w * 0.9, base - h * 0.9, st[1] + w, base);
+      brush.closePath();
+      brush.fill();
+      brush.strokeStyle = "rgba(120, 90, 40, 0.5)";
+      brush.lineWidth = 0.8;
+      for (var band = 1; band < 4; band++) {        // the layers of straw, then the pole's tip out of its top
+        brush.beginPath();
+        brush.moveTo(st[1] - w * (1 - band * 0.18), base - h * band * 0.24);
+        brush.lineTo(st[1] + w * (1 - band * 0.18), base - h * band * 0.24);
+        brush.stroke();
+      }
+      brush.strokeStyle = "#6a4a2a";
+      brush.lineWidth = 1.2;
+      brush.beginPath(); brush.moveTo(st[1], base - h); brush.lineTo(st[1] + 0.5, base - h - 4 - st[0]); brush.stroke();
+    });
+  }
 }
 
 // The flooded plots' water as the hero film's pond (owner, 2026-10-26: "redo the water in scene 2 to look like the
 // pond scene water in the hero", then "Make the water reflective"): the hills, the sky and whatever flies over the
 // fields mirrored in it about the fields' far edge (pinewoods.js natReflect()), still, so the mirror holds, little of
 // the water's own colour over it and its light glinting; then the rows of seedlings and the glints over it
-// (MAENG_FIELD_OVER). Drawn live in each flooded plot, after the yard's far
-// sheet (by day or night: what it mirrors is already on the picture). t: the scene's second. Gives back nothing: it
-// draws with pen. e.g. maengFieldWater(t);
-var MAENG_FIELD_OVER = null;
+// (MAENG_FIELD_OVER, one a season). Drawn live in each flooded plot, after the yard's far sheet (by day or night: what
+// it mirrors is already on the picture); a season with no water has none. t: the scene's second. Gives back nothing:
+// it draws with pen. e.g. maengFieldWater(t);
+var MAENG_FIELD_OVER = null, MAENG_FIELD_OVERS = {};
 function maengFieldOver() {                         // the seedlings' sheet: a clear canvas WIDE by 1080, its 2D context
+  MAENG_FIELD_OVER = MAENG_FIELD_OVERS[MAENG_SEASON];
   if (!MAENG_FIELD_OVER) {
-    MAENG_FIELD_OVER = document.createElement("canvas");
+    MAENG_FIELD_OVER = MAENG_FIELD_OVERS[MAENG_SEASON] = document.createElement("canvas");
     MAENG_FIELD_OVER.width = WIDE;
     MAENG_FIELD_OVER.height = 1080;
   }
@@ -1289,17 +1402,20 @@ function maengFieldOver() {                         // the seedlings' sheet: a c
 }
 function maengFieldWater(t) {
   maengYard();                                      // the plots and their seedlings' sheet are painted with the yard
-  var foot = fieldRow(FIELD_ROWS - 1)[0] + fieldRow(FIELD_ROWS - 1)[1];
+  var foot = fieldRow(FIELD_ROWS - 1)[0] + fieldRow(FIELD_ROWS - 1)[1], any = false;
   pen.save();
   pen.beginPath();
-  FIELD_PLOTS.forEach(function (p) {
-    if (p[3] !== "water") { return; }
+  FIELD_PLOTS.forEach(function (p, i) {
+    if (fieldKind(p, i) !== "water") { return; }
+    any = true;
     var row = fieldRow(p[0]);
     pen.rect(p[1] + 1, row[0] + 2, p[2] - p[1] - 2, row[1]);
   });
-  pen.clip();
-  natReflect(t, FIELD_TOP, {left: 0, right: WIDE, foot: foot, ripple: 0.12, tint: "40, 78, 80", deep: 0.12, sheen: 80, line: 0});
-  pen.drawImage(MAENG_FIELD_OVER, 0, 0);
+  if (any) {
+    pen.clip();
+    natReflect(t, FIELD_TOP, {left: 0, right: WIDE, foot: foot, ripple: 0.12, tint: "40, 78, 80", deep: 0.12, sheen: 80, line: 0});
+    if (MAENG_FIELD_OVERS[MAENG_SEASON]) { pen.drawImage(MAENG_FIELD_OVERS[MAENG_SEASON], 0, 0); }
+  }
   pen.restore();
 }
 
@@ -1331,19 +1447,24 @@ function maengFieldLife(t) {
   var row = fieldRow(FIELD_PLOUGH[0]), y = row[0] + row[1] - 2, p = fieldPloughAt(t), bx = p.x, face = p.face;
   var round = Math.cos(Math.PI * fowlEase((p.turn - 0.45) / 0.55));   // which way its body faces through a turn: 1 as it was, -1 round
   buffalo(bx, y, {size: 0.055, face: face, step: t * 1.4, turn: p.turn});   // the buffalo, at its slow walk; it steps round as it turns
+  // The plough and the ploughman only when the fields are ploughed (MAENG_SEASON "planting", "ploughing"); in the other
+  // seasons the same buffalo grazes slowly through the fields, and the egrets follow its feet as they do the plough's.
+  var ploughing = MAENG_SEASON === "planting" || MAENG_SEASON === "ploughing";
   var fx = bx - face * round * 18;                  // the plough behind it, swinging round with it in a turn
-  pen.strokeStyle = "#5a3a22";
-  pen.lineWidth = 1.1;
-  pen.beginPath();
-  pen.moveTo(bx - face * round * 6, y - 9);
-  pen.lineTo(fx + face * round * 3, y - 5);
-  pen.lineTo(fx + face * round * 1, y);
-  pen.stroke();
-  // The ploughman: behind the plough; in a turn he walks round in front of the buffalo, a step nearer us, from behind
-  // it as it was to behind it as it will be.
-  var go = fowlEase(p.turn), mx = p.turn > 0 ? mix(bx - face * 21, bx + face * 21, go) : fx - face * 3;
-  person(mx, y + 1 + 5 * Math.sin(Math.PI * go), cast("farmer", {size: 0.085, face: face, id: "ploughman",
-         step: t * 1.6, turban: null, hat: false, shirt: "#2f3a5a", legs: "#2f3a5a", sarong: undefined}));   // in indigo cotton (the research)
+  if (ploughing) {
+    pen.strokeStyle = "#5a3a22";
+    pen.lineWidth = 1.1;
+    pen.beginPath();
+    pen.moveTo(bx - face * round * 6, y - 9);
+    pen.lineTo(fx + face * round * 3, y - 5);
+    pen.lineTo(fx + face * round * 1, y);
+    pen.stroke();
+    // The ploughman: behind the plough; in a turn he walks round in front of the buffalo, a step nearer us, from behind
+    // it as it was to behind it as it will be.
+    var go = fowlEase(p.turn), mx = p.turn > 0 ? mix(bx - face * 21, bx + face * 21, go) : fx - face * 3;
+    person(mx, y + 1 + 5 * Math.sin(Math.PI * go), cast("farmer", {size: 0.085, face: face, id: "ploughman",
+           step: t * 1.6, turban: null, hat: false, shirt: "#2f3a5a", legs: "#2f3a5a", sarong: undefined}));   // in indigo cotton (the research)
+  }
   // The egrets: behind the plough, pecking, until a turn; then up and away for 5 s, out past the picture's edge;
   // gone 4 s; and back in 5 s, gliding down to land where they would be walking now.
   [0, 1, 2].forEach(function (k) {
@@ -1379,9 +1500,13 @@ function maengFieldLife(t) {
   pen.stroke();
   person(lx + 29, ly + 1, cast("farmer", {size: 0.085, id: "leads the buffalo", step: t * 1.2 * 1.3, turban: "#c4654f", hat: false,
          shirt: "#c9b28a", legs: "#3d4f78", sarong: undefined, handB: [-30, 40]}));
-  FIELD_PLANTERS.forEach(function (w, k) {          // women planting rice, bent, stepping slowly back along the row
-    var r = fieldRow(w[0]), px = w[1] - (t * 2) % 60;
-    person(px, r[0] + r[1] - 1, cast("villager", {size: 0.095, face: -1, id: "planter" + k, bend: 0.7, bun: "low", lady: true, turban: null,
-                                                  shirt: "#2f3a5a", legs: "#3a3a5a", reachA: [px + 8, r[0] + r[1] - 1], late: k * 0.3}));
+  if (MAENG_SEASON !== "planting" && MAENG_SEASON !== "harvest") { return; }
+  // Women planting rice in July, bent, stepping slowly back along the row; at the harvest the same three reaping a ripe
+  // plot (row 3 from 380 to 980: ripe in fieldKind()), bent to the stalks, stepping on along it.
+  var reaping = MAENG_SEASON === "harvest";
+  FIELD_PLANTERS.forEach(function (w, k) {
+    var r = fieldRow(w[0]), px = reaping ? 520 + k * 130 + (t * 2) % 60 : w[1] - (t * 2) % 60;
+    person(px, r[0] + r[1] - 1, cast("villager", {size: 0.095, face: reaping ? 1 : -1, id: "planter" + k, bend: 0.7, bun: "low", lady: true, turban: null,
+                                                  shirt: "#2f3a5a", legs: "#3a3a5a", reachA: [px + 8, r[0] + r[1] - (reaping ? 6 : 1)], late: k * 0.3}));
   });
 }

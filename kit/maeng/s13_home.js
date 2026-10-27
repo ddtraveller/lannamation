@@ -105,6 +105,7 @@ function s13Sparkle(t, x, y) {
 // slope's foreground. On the mountain, all painted, the temple on its shoulder, then the flock in "sky".
 // e.g. sceneHome(20);
 function sceneHome(t) {
+  maengSeason("ploughing");                         // the first rains: the fields ploughed, seedbeds (sets.js; NATURE.md)
   var k = MAENG_PEN;
   if (t < S13_SHOTS[0]) {                            // the crowd at the pen
     pen.save();

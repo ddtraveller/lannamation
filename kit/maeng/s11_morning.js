@@ -34,6 +34,7 @@ var S11_LIFE = [
 // and the garden (see each). Its life is S11_LIFE; its words S11_LINES (M064 to M068), written under it by the page.
 // e.g. sceneMorning(10);
 function sceneMorning(t) {
+  maengSeason("dry");                               // the hot season: the fields bare and dry (sets.js; NATURE.md)
   if (t < S11_SHOTS[0]) { s11Palace(t); }
   else if (t < S11_SHOTS[1]) { s11Follow(t); }
   else { s11Garden(t); }

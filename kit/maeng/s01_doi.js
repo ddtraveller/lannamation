@@ -109,6 +109,7 @@ function sceneDoi(t) {
   pen.globalAlpha = 1;
   sceneryClouds(t + 30, {light: "night", count: 4, top: 120, bottom: 380, wide: [300, 560], seed: 4, alpha: 1 - light});   // soft clouds, moonlit,
   sceneryClouds(t + 30, {light: "dawn", count: 4, top: 120, bottom: 380, wide: [300, 560], seed: 4, alpha: light});       // then lit by the dawn
+  natRays(t, 1205, 360, 0.5 * between(t, 16, 30), "255, 214, 160", 3);   // the sun coming up behind the mountain: its rays in the sky, the mountain before them (wildplaces.js)
   pen.drawImage(mountain.backDawn, 0, 0);
   pen.globalAlpha = day;
   pen.drawImage(mountain.back, 0, 0);
@@ -121,6 +122,9 @@ function sceneDoi(t) {
   // stream rising from behind its peak into the sky (a second, crossing the far ridges from the right, went: owner,
   // 2026-10-26, of the render: "get rid of the second set of bats")
   batStream(t, {from: [1180, 560], to: [380, 120], start: 3, count: 26, size: 1.7, far: 0.55, spread: 90, colour: "#2c2638", long: 11});
+  // a barn owl going home to roost at the night's end, across the moon as the fog thins (night.js; the beauty pass,
+  // owner, 2026-10-27; the eastern barn owl hunts the fields by night: nature_research.md)
+  if (t > 5 && t < 14) { barnOwl(mix(1820, 1080, (t - 5) / 9), 205 + 18 * Math.sin(t * 0.9), t, {fly: "side", face: -1, size: 0.55, lit: 0.3}); }
   pen.drawImage(mountain.frontDawn, 0, 0);
   pen.globalAlpha = day;
   pen.drawImage(mountain.front, 0, 0);
@@ -134,9 +138,6 @@ function sceneDoi(t) {
   sceneryBeds(t, bushes.day, {sway: 0.2});
   pen.globalAlpha = dawn;
   sceneryBeds(t, bushes.dawn, {sway: 0.2});
-  pen.globalAlpha = 1 - light;                     // fireflies over the forest at the mountain's foot, going as the dawn comes
-  sceneryFireflies(t, {far: [[[200, 700, 1760, 1000], 240, 21], [[500, 600, 1500, 820], 90, 22], [[900, 560, 1700, 760], 60, 23]]});   // (the beauty pass, 2026-10-27)
-  pen.globalAlpha = 1;
   mistDrift(pen, t, {left: 0, right: WIDE, top: 880, bottom: 1000, count: 4, wide: 640, drift: 7, seed: 4, alpha: 0.65});
   var lifts = between(t, 1, 13.15);                    // the fog the film opens in: it sinks and thins, and the mountain comes out
   if (lifts < 1) {
@@ -149,8 +150,8 @@ function sceneDoi(t) {
                        seed: 11, glow: glow, alpha: 0.95 * (1 - lifts)});
   }
   pen.restore();
-  // the frame, soft and before the camera (the beauty pass, owner, 2026-10-27): it comes out of the fog with the
-  // mountain, dark at first and lit as the sun comes up
+  // the frame, soft and before the camera (the beauty pass, owner, 2026-10-27): the cogon grass of the cold season,
+  // its white plumes; it comes out of the fog with the mountain, dark at first and lit as the sun comes up
   pen.save();
   pen.globalAlpha = between(t, 3, 13.15);
   maengNature(t, "doi", 1 - 0.8 * light, 4);

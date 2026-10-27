@@ -98,6 +98,7 @@ function s10Sparks(x, y, u, seed) {                 // sparks off the gold where
 // the pen, the trough and the city (see each). Its life is S10_LIFE; its words S10_LINES (M057 to M063), written
 // under it by the page. Each shot's z plan is written above it. e.g. sceneTrough(40);
 function sceneTrough(t) {
+  maengSeason("dry");                               // the hot season: the fields bare and dry (sets.js; NATURE.md)
   if (t < S10_SHOTS[0]) { s10Garden(t); }
   else if (t < S10_SHOTS[1]) { s10Caravan(t); }
   else if (t < S10_SHOTS[2]) { s10Night(t); }

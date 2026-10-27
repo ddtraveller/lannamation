@@ -132,7 +132,15 @@ var THK_BLOOMS = {
   // a tree's flowers and fruit that hang: the golden shower's racemes, a bunch of longan, a mango on its stalk
   ratchaphruek: function (x, y, r, turn, colour, seed) { thkScaled(x, y, r / 30, function () { floraRaceme(0, 0, 80, seed); }); },
   longan: function (x, y, r, turn, colour, seed) { thkScaled(x, y, r / 40, function () { FLORA.longan.hang(seed); }); },
-  mango: function (x, y, r, turn, colour, seed) { thkScaled(x, y, r / 40, function () { FLORA.mango.hang(seed); }); }
+  mango: function (x, y, r, turn, colour, seed) { thkScaled(x, y, r / 40, function () { FLORA.mango.hang(seed); }); },
+  // not a flower: a few leaves turned yellow or russet, as the deciduous forest of the north turns in the cool, dry
+  // months before it drops them (2026-10-27, the Maeng film's beauty pass); colour the turn ("#d4a83e" when left out)
+  turning: function (x, y, r, turn, colour, seed) {
+    for (var n = 0; n < 5; n++) {
+      thkLeaf(x + (dice(seed * 3 + n) - 0.5) * r * 1.6, y + (dice(seed * 5 + n) - 0.5) * r, r * (0.9 + 0.5 * dice(seed + n)),
+              turn + (n - 2) * 0.5, blend(colour || "#d4a83e", "#7a5a24", 0.25 * dice(seed * 7 + n)));
+    }
+  }
 };
 
 // Draws paint() with the pen moved to (x, y) and scaled by "size". Returns nothing.
