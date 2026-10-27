@@ -891,6 +891,16 @@ nothing: it begins a new path on pen and closes it, but neither fills nor inks i
 e.g. bone(0, -100, 10, -40, 12, 9, 2); shape(SKIN);
 ```
 
+### `hull(points)`
+
+```
+The outline drawn tight round some points, as a band stretched round
+pins: the smallest shape with no dent in it that holds them all (a wrist
+round the forearm's end and the palm, person()'s drawHand).
+points: a list of [x, y], three or more. Returns a Path2D, closed, round the points that are its corners.
+e.g. pen.fill(hull([[0, 0], [10, 0], [5, 8], [5, 2]]));
+```
+
 ### `paintBone(ax, ay, bx, by, wideA, wideB, colour)`
 
 ```
