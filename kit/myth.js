@@ -1436,9 +1436,11 @@ var CHANG_NGU_KEYS = {};
 
 ["size", "face", "heads", "body", "belly", "bars", "crest", "trunk"].forEach(function (name) { CHANG_NGU_KEYS[name] = true; });
 
-// One of Chang Ngu's heads: the kit's elephant() drawn whole and cut to its head, the neck's top at the pen's
-// (0, 0). At size 1 the head of elephant(0, 0) runs from x 130 to 720 and y -820 to -40, and the back of its
-// head behind the ear, where the neck goes in, is at about (230, -560).
+// One of Chang Ngu's heads: the kit's elephant() with only its head drawn (only: "head"), the neck's top at the
+// pen's (0, 0). At size 1 the head of elephant(0, 0) runs from x 130 to 720 and y -820 to -40, and the back of its
+// head behind the ear, where the neck goes in, is at about (230, -560). Until 2026-10-27 the whole elephant was
+// drawn and cut to its head by a clip, whose corner cut a step into the jaw and whose top and side cut off a
+// lifted trunk (the owner: "a right angle cut out of them near the jaw", "the trunks get cut off").
 // skin: the colour; s: the size of the head (0.52 on Chang Ngu's necks); trunk: 0 to 1.
 // Returns nothing: it draws with pen, and leaves pen as it found it.
 // e.g. changNguHead("#efe6d6", 0.52, 0.3);
@@ -1446,12 +1448,7 @@ function changNguHead(skin, s, trunk) {
   pen.save();
   pen.scale(s, s);
   pen.translate(-230, 560);
-  pen.beginPath();
-  pen.moveTo(140, -830); pen.lineTo(760, -830); pen.lineTo(760, -30); pen.lineTo(330, -30);
-  pen.lineTo(330, -500); pen.lineTo(140, -500);
-  pen.closePath();
-  pen.clip();
-  elephant(0, 0, {size: 1, face: 1, colour: skin, trunk: trunk, ground: false});
+  elephant(0, 0, {size: 1, face: 1, colour: skin, trunk: trunk, ground: false, only: "head"});
   pen.restore();
 }
 

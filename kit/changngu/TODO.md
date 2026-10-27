@@ -369,3 +369,37 @@ kit check), step 9's render (the laptop and ONE Spark render job at a time, the 
 owner's rule since 2026-10-26; Maeng's renders first), step 10's sound, chain and the owner's look. A frame of s01
 and the river scenes is about 0.5 s on a loaded laptop (natReflect twice in some): render each in a run of its own.
 
+## v3 rendered and shipped, 2026-10-27
+
+All 26 scenes rendered from lannamation 9aabac1 by the laptop and the Spark from either end (the Spark in software,
+no `--gpus`: the GPU path hung at its first screenshot), scene 21 again from ad1a5df (the white elephant goes through
+the gate, faded on a layer of its own; 0 blinked out). The render's look found only the barb leaping and diving back
+in (scenes 13 and 18), which the blink check now lets pass (`VANISH.dives`, ad1a5df). v2's sound under it. Joined by
+`../chain.py` with `--fade 1,0.75`: the hero with the new beasts (`lanna_sash_maeng_beasts.mp4`, 122.5 s), the card
+12.0 s, the tale 1161.5 s = 1295.97 s, -14.0 LUFS, peak -1.7 dBFS. Shipped over v2 at
+krueng.ai/video/lanna_tales_changngu.mp4 at 07:04 (owner: "Go ahead and ship the videos and commit and push."),
+871,441,483 bytes, sha256 84165296..., the public copy read back and matched; `series.json`'s parts are unchanged.
+
+## v4: the owner's list of 2026-10-27 (after v3 went live)
+
+1. "redo the grassy area ahead of Wiang Si Tuang and make the flat grassy area rich with flowers and birds, and
+   animals" (after a clip of Spirited Away's meadow): `sceneryMeadow()` (scenery.js), a flat meadow in drifts of grass,
+   leafy clumps, tall grass in plume and wild flowers, where the valley's paddies were (`cngVillage()`, the village
+   standing in it); scene 3's life: egrets feeding, a barking deer and her fawn, doves, butterflies, a flock
+   (`cngFeeding()`; the pages load lannabirds.js and taleanimals.js).
+2. "look at Yonok from the front view and fix the grassy area there": the same meadow before the wall (`cngFields()`,
+   scenes 2, 19, 20, 21), egrets, butterflies and a flock in scene 2. The rampart's earth face is as it was.
+3. "When the queen gives rice to the monk the rice should go in the monk's bowl" (scene 6): her hand to over the bowl,
+   the rice dropped in, a mound of it in the bowl after.
+4. "the workers carrying items shouldn't be making hand gestures like they're laughing/mocking": `cngPorter()`'s near
+   arm swings free (its hand on the pole was before the face); scenes 3, 4 and 24.
+5. The statue's heads, "a right angle cut out of them near the jaw" and "the trunks get cut off when they raise up":
+   `changNguHead()` draws the elephant's head alone (`elephant(..., {only: "head"})`, beasts.js) where a clip cut it.
+6. "Add some vegetation to scene 24. make it grassy and wild but beautiful": Wiang Chai Prakan's land a meadow in
+   flower, the porters' track, bamboo, a flame of the forest; the near bank tall grass in plume, reeds, flowering
+   bushes; butterflies.
+
+To render: scenes 2, 3, 4, 5, 6, 8, 9, 11, 13, 17, 19, 20, 21, 24, 25, 26 (the village's and the fields' sets, the
+porters, the rice, the statue, the credits' statue); v3's clips of 1, 7, 10, 12, 14, 15, 16, 18, 22, 23 kept. v3's
+sound (the scenes' lengths are as they were). Then the join, the checks (1295.966 s, -14 LUFS, peak <= -1) and the
+owner's look; S3 only on the owner's word.

@@ -74,6 +74,152 @@ function sceneryBeds(t, items, look) {
   pen.restore();
 }
 
+// --- the meadow ---
+
+// The wild flowers of a meadow (sceneryMeadow()): small, in drifts, the colours of a painted meadow's sweet peas and
+// clover, pink and violet, white, yellow. Each [a THK_BLOOMS name, or "five" (five round petals and a heart), its
+// colour (null: the flower's own)].
+var SCENERY_MEADOW_FLOWERS = [["five", "#ec6c9c"], ["five", "#a879d8"], ["jasmine", null], ["five", "#f4cf3a"],
+                              ["five", "#f6b4cb"], ["five", "#fbf6ee"], ["five", "#e8508a"]];
+
+// A flat meadow painted on a sheet: the owner, 2026-10-27, of the grass before Wiang Si Tuang and before Yonok's
+// gate: "make the flat grassy area rich with flowers and birds, and animals", after a painted film's meadow (grass
+// in drifts of many greens, low leafy clumps, small flowers dotted through all of it). Its green deepens and grows
+// richer toward the near edge; drifts of lighter and darker grass lie across it; grass in short blades grows taller
+// near; low clumps of leaves and tall grass with white plumes stand here and there; wild flowers in drifts, dots far
+// off and open flowers on their stalks near. Its life (birds, deer, butterflies) is the scene's, on courses
+// (decorate.js). b: a canvas's context; left, right, top (far), bottom (near): its edges in the sheet's pixels;
+// look: {seed: a number, greens: seven colours (THK_SUN unless told), haze: the far air's colour ("#c4d6c8"),
+// flowers: [[name, colour], ...] (SCENERY_MEADOW_FLOWERS), many: how thick the flowers are, 0 to 2 (1), fade: [left,
+// right], pixels over which its left and its right edge fade into what is under it ([0, 0]), depth: [far, near], how
+// near its top and its bottom edge are, 0 (the far distance) to 1 (at our feet) ([0, 1]: a strip of meadow far off is
+// [0.1, 0.4], one at our feet [0.5, 1])}.
+// Returns nothing: it paints on b, once, with the set it is part of. e.g. sceneryMeadow(b, 0, 2400, 760, 1080, {seed: 7});
+function sceneryMeadow(b, left, right, top, bottom, look) {
+  look = look || {};
+  var seed = look.seed || 0, g = look.greens || THK_SUN, haze = look.haze || "#c4d6c8", flowers = look.flowers || SCENERY_MEADOW_FLOWERS;
+  var many = look.many === undefined ? 1 : look.many, wide = right - left, tall = bottom - top, keep = pen, n, k, x, y, d;
+  var fade = look.fade || [0, 0], sheet = b, layer = null;
+  if (fade[0] || fade[1]) {                                        // soft edges: painted on a layer of its own, its edges
+    layer = document.createElement("canvas");                      // faded, and laid on the sheet
+    layer.width = sheet.canvas.width;
+    layer.height = sheet.canvas.height;
+    b = layer.getContext("2d");
+    b.setTransform(sheet.getTransform());
+  }
+  var span = look.depth || [0, 1];
+  function depth(at) { return mix(span[0], span[1], clamp((at - top) / tall)); }   // 0 far, 1 near
+  function far(colour, at) { return blend(colour, haze, 0.55 * (1 - depth(at))); }
+  b.save();
+  b.beginPath(); b.rect(left, top, wide, tall); b.clip();
+  var ground = b.createLinearGradient(0, top, 0, bottom);         // the ground: hazy far, a deep rich green near
+  ground.addColorStop(0, far(g[4], top)); ground.addColorStop(0.45, g[3]); ground.addColorStop(1, blend(g[2], g[1], 0.5));
+  b.fillStyle = ground;
+  b.fillRect(left, top, wide, tall);
+  for (n = 0; n < Math.round(wide / 50); n++) {                   // drifts of lighter and darker grass, long and low far off
+    y = top + tall * Math.pow(dice(seed + n * 7.1), 1.3);
+    d = depth(y);
+    x = left + wide * dice(seed + n * 3.3);
+    var rx = (120 + 380 * dice(seed + n * 5.7)) * (0.5 + d), ry = (5 + 34 * d) * (0.6 + dice(seed + n * 9.1));
+    var tone = far(n % 3 === 0 ? g[2] : n % 3 === 1 ? g[5] : g[6], y), soft = b.createRadialGradient(x, y, 0, x, y, rx);
+    soft.addColorStop(0, tone + "99");
+    soft.addColorStop(1, tone + "00");
+    b.save();
+    b.translate(x, y); b.scale(1, ry / rx); b.translate(-x, -y);
+    b.fillStyle = soft;
+    b.beginPath(); b.arc(x, y, rx, 0, 7); b.fill();
+    b.restore();
+  }
+  b.lineCap = "round";                                             // blades, row by row from far to near, taller and
+  for (y = top + 2; y < bottom + 24; y += 2 + 7 * depth(y)) {      // further apart near
+    d = depth(y);
+    var high = 3 + 30 * d * d + 4 * d, gap = 3 + 6 * d;
+    b.lineWidth = 0.6 + 1.6 * d;
+    for (x = left - 10; x < right + 10; x += gap * (0.6 + 0.8 * dice(seed + x * 0.37 + y * 1.3))) {
+      var r = dice(x * 0.13 + y * 0.71 + seed), lean = (dice(x * 0.31 + y + seed) - 0.5) * high * 0.7;
+      b.strokeStyle = far(g[1 + Math.floor(r * 6)], y);
+      b.beginPath(); b.moveTo(x, y + 2); b.quadraticCurveTo(x + lean * 0.3, y - high * 0.5, x + lean, y - high * (0.7 + 0.5 * r)); b.stroke();
+    }
+  }
+  for (n = 0; n < Math.round(wide / 40); n++) {                   // the undergrowth: patches of small round leaves, clover
+    y = top + tall * (0.15 + 0.85 * Math.pow(dice(seed + n * 2.3 + 70), 0.8));   // and vetch, among the blades
+    d = depth(y);
+    x = left + wide * dice(seed + n * 5.9 + 70);
+    var patch = (30 + 90 * dice(seed + n + 70)) * (0.3 + d), leaves = Math.round(12 + 40 * d);
+    for (k = 0; k < leaves; k++) {
+      var lx = x + (dice(seed + n * 13 + k * 1.7) - 0.5) * patch * 2, ly = y + (dice(seed + n * 11 + k * 2.3) - 0.5) * patch * 0.35;
+      var lr = (1 + 5 * depth(ly)) * (0.7 + 0.6 * dice(n + k * 3.1));
+      b.fillStyle = far(g[[1, 2, 3, 4, 5][(n + k) % 5]], ly);
+      b.beginPath(); b.ellipse(lx, ly, lr * 1.3, lr, dice(n * 7 + k) * 3, 0, 7); b.fill();
+    }
+  }
+  pen = b;                                                         // what stands in it, far to near: low clumps of
+  var standing = [];                                               // leaves, tall grass in plume
+  for (n = 0; n < Math.round(wide / 260); n++) { standing.push([left + wide * dice(seed + n * 4.3 + 90), top + tall * (0.3 + 0.7 * dice(seed + n * 6.1 + 90)), n]); }
+  standing.sort(function (p, q) { return p[1] - q[1]; }).forEach(function (s) {
+    var at = depth(s[1]), size = 0.25 + 0.75 * at;
+    b.save();
+    b.translate(s[0], s[1]);
+    b.scale(size, size);
+    if (s[2] % 3 === 2) { grassBank(260, 90 + 40 * dice(s[2]), seed + s[2], GRASS_GREEN, 3); }
+    else { thkBush(150, 60, seed + s[2] * 3, g, [s[2] % 2 ? ["jasmine", 8, 5] : ["phayasuea", 8, 5, "#ec6c9c"]]); }
+    b.restore();
+  });
+  var bloom = [];                                                  // the wild flowers in drifts
+  for (n = 0; n < Math.round(wide / 45 * many); n++) {
+    var cy = top + tall * Math.pow(dice(seed + n * 1.7 + 50), 1.1), cx = left + wide * dice(seed + n * 2.9 + 50);
+    var kind = flowers[n % flowers.length], spread = (40 + 160 * dice(seed + n + 50)) * (0.4 + depth(cy));
+    var count = Math.round((8 + 20 * dice(seed + n * 4.4 + 50)) * (0.6 + depth(cy)));
+    for (k = 0; k < count; k++) {
+      bloom.push([cx + (dice(seed + n * 31 + k * 1.3) - 0.5) * spread * 2, cy + (dice(seed + n * 17 + k * 2.1) - 0.5) * spread * 0.25, kind, k + n * 40]);
+    }
+  }
+  bloom.sort(function (p, q) { return p[1] - q[1]; }).forEach(function (f) {
+    d = depth(f[1]);
+    var r = 2 + 3.5 * d + 4 * d * d;
+    if (d < 0.3) {                                                // far: a dot of its colour
+      b.fillStyle = blend(f[2][1] || "#fbf6ee", haze, 0.3 * (1 - d));
+      b.beginPath(); b.arc(f[0], f[1] - 1, r, 0, 7); b.fill();
+      return;
+    }
+    b.strokeStyle = g[2];                                          // near: a stalk, a leaf, an open flower
+    b.lineWidth = 0.8 + d;
+    b.beginPath(); b.moveTo(f[0], f[1] + 3); b.lineTo(f[0] + (dice(f[3]) - 0.5) * 4, f[1] - r); b.stroke();
+    b.fillStyle = g[3];
+    b.beginPath(); b.ellipse(f[0] + 3 * d, f[1] - 2, 4 * d, 1.6 * d + 0.5, -0.5, 0, 7); b.fill();
+    if (f[2][0] !== "five") {                                      // a flower of the kit's, its ink thin as a small one's
+      var line = LINE;
+      LINE = STYLE.line * Math.min(0.55, r / 24);
+      THK_BLOOMS[f[2][0]](f[0], f[1] - r * 1.5, r, dice(f[3] * 3) * 6, f[2][1] || undefined, f[3]);
+      LINE = line;
+      return;
+    }
+    var turn = dice(f[3] * 3) * 6;                                 // five round petals and a yellow heart
+    b.fillStyle = f[2][1];
+    for (k = 0; k < 5; k++) {
+      b.beginPath(); b.arc(f[0] + Math.cos(turn + k * 1.2566) * r * 0.55, f[1] - r * 1.5 + Math.sin(turn + k * 1.2566) * r * 0.55, r * 0.5, 0, 7); b.fill();
+    }
+    b.fillStyle = "#f6d24a";
+    b.beginPath(); b.arc(f[0], f[1] - r * 1.5, r * 0.25, 0, 7); b.fill();
+  });
+  pen = keep;
+  b.restore();
+  if (layer) {
+    var edge = b.createLinearGradient(left, 0, right, 0);
+    edge.addColorStop(0, "rgba(0, 0, 0, " + (fade[0] ? 0 : 1) + ")");
+    edge.addColorStop(fade[0] / wide, "rgba(0, 0, 0, 1)");
+    edge.addColorStop(1 - fade[1] / wide, "rgba(0, 0, 0, 1)");
+    edge.addColorStop(1, "rgba(0, 0, 0, " + (fade[1] ? 0 : 1) + ")");
+    b.globalCompositeOperation = "destination-in";
+    b.fillStyle = edge;
+    b.fillRect(left - 20, top - 80, wide + 40, tall + 160);
+    sheet.save();
+    sheet.setTransform(1, 0, 0, 1, 0, 0);
+    sheet.drawImage(layer, 0, 0);
+    sheet.restore();
+  }
+}
+
 // --- the air ---
 
 // The air of a day over a scene at second t, in front of everything: one butterfly at most, drifting across and away

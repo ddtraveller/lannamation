@@ -57,6 +57,8 @@
 //              fringe, a cloth on its brow, and bands of gold on its tusks
 //   howdah     true: a seat of wood on its back, with a cushion, a rail and a high
 //              back. The seat it gives back is then on the cushion
+//   only       "head": only its head is drawn, the legs, the body and the tail left out (Chang Ngu's
+//              heads on their necks, myth.js; a clip cut its jaw and its lifted trunk)
 // and for the buffalo only:
 //   rope       true: the nose rope, through the nose and looped back behind the horns, the lead
 //              tied on at the side, its end hanging
@@ -83,7 +85,7 @@
 //   mane       the colour of its mane, its tail and its lower legs
 var BEAST_KEYS = {};
 
-["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground", "feel", "pack", "mane", "graze", "turn", "tack"].forEach(function (name) { BEAST_KEYS[name] = true; });
+["size", "face", "step", "colour", "late", "front", "trunk", "tusks", "cloth", "rope", "sit", "mouth", "eyes", "points", "stripes", "tufts", "howdah", "slope", "ground", "feel", "pack", "mane", "graze", "turn", "tack", "only"].forEach(function (name) { BEAST_KEYS[name] = true; });
 
 // How much lower the body of the elephant and of the buffalo stands than it was first drawn, in pixels of
 // its own drawing: their legs are that much shorter (owner, 2026-10-26: "Compare them to real Northern Thai
@@ -687,6 +689,8 @@ function buffaloFront(look, colour) {
   return 323 - low + bob;
 }
 
+var ELEPHANT_UNSEEN = null;                         // the sheet the body goes on when only the head is drawn (only: "head")
+
 // An elephant, standing on (x, y). Everything about it is in "look" (see
 // BEAST_KEYS above). It gives back {seat, head}: where a rider sits on its
 // neck (or in its howdah), and the top of its head, in the scene.
@@ -741,6 +745,13 @@ function elephant(x, y, look) {
     FINE = 1;
     LINE = STYLE.line;
     return {seat: [x, y - (tall + (look.howdah ? 8 : -26)) * size], head: [x, y - tall * size]};   // in a howdah, one sits behind the head and is seen over it
+  }
+  var whole = pen;                                  // only "head": the legs, the body and the tail go on a sheet no one sees
+  if (look.only === "head") {
+    ELEPHANT_UNSEEN = ELEPHANT_UNSEEN || document.createElement("canvas");
+    ELEPHANT_UNSEEN.width = ELEPHANT_UNSEEN.height = 1;
+    pen = ELEPHANT_UNSEEN.getContext("2d");
+    pen.setTransform(whole.getTransform());
   }
   var legs = [[-168, -300 + low, 0, 1, false], [142, -300 + low, 0.25, 1, false], [-138, -306 + low, 0.5, 1, true], [172, -306 + low, 0.75, 1, true]];
   // On a slope the body pitches with the ground, about a point in its
@@ -945,6 +956,7 @@ function elephant(x, y, look) {
     }
     hose(-118, -604, 94, -598, -0.04, 6, wood);
   }
+  if (pen !== whole) { whole.setTransform(pen.getTransform()); pen = whole; }   // the head on the sheet again
   var nod = 0.03 * Math.sin(clock * 1.4 + seed) - 0.04 * beat - 0.14 * lift   // the head tips back as the trunk lifts,
             + (walk ? 0.025 * Math.sin(look.step * Math.PI * 4) : 0)         // and nods twice in a stride,
             + (e ? 0.5 * e.nod - 0.1 * e.raise + 0.04 * e.shake : 0);       // and a feeling lifts it or hangs it

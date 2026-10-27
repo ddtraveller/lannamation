@@ -8,6 +8,18 @@ var C02_SOUND = {calls: []};
 var C02_LINES = [[1.2, 7.8, "C005"], [13.2, 19.22, "C006"], [19.42, 24.92, "C007"], [27.4, 31.32, "C008"]];
 var C02_CUTS = [12, 26];                               // where the shots change, through black
 var C02_COLUMN = 9;                                    // the Khom soldiers in the column
+// The meadow before the gate (sets.js cngFields(), the owner, 2026-10-27), its life clear of the two columns' ways:
+// egrets feeding between the wall and the soldiers, butterflies near, a flock going over.
+var C02_LIFE = [
+  cngFeeding("egret 1", "egret", {size: 0.5, seed: 1}, 330, 912, 3, 12, 26, 120),
+  cngFeeding("egret 2", "egret", {size: 0.46, seed: 2}, 520, 900, 5, 12, 26, 90),
+  cngFeeding("egret 3", "egret", {size: 0.5, seed: 3}, 1560, 908, 7, 12, 26, 120),
+  {name: "butterfly", kind: "butterfly", layer: "back", look: {size: 0.8, seed: 3},
+   course: [[12, 60, 1050], [15, 300, 1040, "sip"], [18, 300, 1040], [26, 760, 1060]]},
+  {name: "butterfly, right", kind: "butterfly", layer: "back", look: {kind: "birdwing", size: 0.7, seed: 4},
+   course: [[12, 1880, 1030], [16, 1660, 1050, "sip"], [19, 1660, 1050], [26, 1300, 1040]]},
+  {name: "flock", kind: "flock", layer: "back", course: [[12.5, -320, 260], [20.5, 2150, 210]]}
+];
 
 // How dark the sheet is at second t from the cuts: 1 at a cut, 0 half a second either side. e.g. c02Dark(12.2)
 function c02Dark(t) {
@@ -45,6 +57,7 @@ function c02Gate(t) {
   pen.drawImage(cngFields(), 0, 0);
   cngGateWall(between(t, 12.5, 15.5), t);
   cngBeds(t, "fields", "back");
+  decorate(t, C02_LIFE, "back");                          // the meadow's egrets, butterflies and a flock
   var sprites = [];
   [1, -1].forEach(function (side) {                       // two columns, one from the near left and its mirror from the
     var late = side > 0 ? 0 : 0.55, tag = side > 0 ? "" : "r";   // near right (owner, 2026-10-25), a half step behind

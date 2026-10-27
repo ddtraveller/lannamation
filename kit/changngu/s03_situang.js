@@ -6,6 +6,23 @@ var C03_LONG = 35;
 var C03_SOUND = {calls: []};
 var C03_LINES = [[1.6, 7.96, "C009"], [8.16, 15.45, "C010"], [15.65, 19.11, "C011"], [25.6, 31.72, "C012"]];
 var C03_OFF = [24.0, 25.4];                            // he lifts the crown off: his hands up, then down
+// The meadow's life (sets.js cngVillage(): the valley a meadow in flower, the owner, 2026-10-27), in the two panels'
+// pixels: egrets feeding in it, a barking deer and her fawn grazing at the forest's edge, doves on the near
+// ground, butterflies over the flowers, a flock going over.
+var C03_LIFE = [
+  cngFeeding("egret 1", "egret", {size: 0.5, seed: 1}, 760, 836, 3, 0, 36, 160),
+  cngFeeding("egret 2", "egret", {size: 0.46, seed: 2}, 1060, 822, 5, 0, 36, 160),
+  cngFeeding("egret 3", "egret", {size: 0.55, seed: 3}, 1500, 850, 7, 0, 36, 200),
+  cngFeeding("barking deer", "deer", {size: 0.4}, 1840, 786, 9, 0, 36, 120),
+  cngFeeding("her fawn", "deer", {size: 0.4, fawn: true}, 1730, 790, 11, 0, 36, 90),
+  cngFeeding("dove 1", "dove", {size: 0.55}, 520, 1046, 13, 0, 36, 140),
+  cngFeeding("dove 2", "dove", {size: 0.55}, 640, 1052, 15, 0, 36, 140),
+  {name: "butterfly 1", kind: "butterfly", layer: "back", look: {size: 0.7, seed: 1},
+   course: [[0, 260, 1010], [3, 520, 990, "sip"], [5, 520, 990], [9, 900, 1020, "sip"], [12, 900, 1020], [16, 1300, 1000], [36, 2600, 980]]},
+  {name: "butterfly 2", kind: "butterfly", layer: "back", look: {kind: "birdwing", size: 0.6, seed: 2},
+   course: [[0, 1180, 980], [4, 980, 1000, "sip"], [7, 980, 1000], [12, 1400, 970, "sip"], [15, 1400, 970], [36, 2900, 990]]},
+  {name: "flock", kind: "flock", layer: "back", course: [[2.0, 2150, 240], [11.0, -320, 190]]}
+];
 
 // Where the walkers are at second t: the king's x (pixels of the village's two panels) and his step; they walk from the
 // valley's far left to before the headman's house, arriving at 23 s. e.g. var w = c03Walk(10);
@@ -15,7 +32,7 @@ function c03Walk(t) {
 }
 
 // Scene 3, the entry the film calls (SCENES): t, its own second, 0 to C03_LONG (35 s). Gives back nothing: it draws the
-// whole sheet with pen. From sets.js: cngSky("day"), cngClouds(), cngVillage(), CNG_HOUSE, CNG_GROUND, cngPerson()
+// whole sheet with pen. From sets.js: cngSky("day"), cngClouds(), cngVillage(), cngFeeding(), CNG_HOUSE, CNG_GROUND, cngPerson()
 // with CNG_KING, CNG_HEADMAN and CNG_QUEEN. Its words are C03_LINES (C009 to C012).
 // Its z plan: the sky and the village's back sheet painted first; then by drawByZ the walkers by their feet; then the
 // near ground's fences over them. e.g. cngSceneSituang(12);
@@ -31,6 +48,7 @@ function cngSceneSituang(t) {
   pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
   decorate(t, cngYard(CNG_HOUSE[0] + 300, CNG_GROUND - 24, 1), "back");                 // the yard's fowl (owner, 2026-10-25)
+  decorate(t, C03_LIFE, "back");                         // the meadow's birds, deer and butterflies
   var ground = CNG_GROUND;
   drawByZ([
     {name: "king", kind: "person", x: w.x, y: ground, draw: function () {

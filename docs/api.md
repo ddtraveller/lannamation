@@ -7877,9 +7877,11 @@ e.g. var m = maengSiHuHaTa(700, GROUND, {size: 0.9, glow: 0.6, wake: 3.5, feel: 
 ### `changNguHead(skin, s, trunk)`
 
 ```
-One of Chang Ngu's heads: the kit's elephant() drawn whole and cut to its head, the neck's top at the pen's
-(0, 0). At size 1 the head of elephant(0, 0) runs from x 130 to 720 and y -820 to -40, and the back of its
-head behind the ear, where the neck goes in, is at about (230, -560).
+One of Chang Ngu's heads: the kit's elephant() with only its head drawn (only: "head"), the neck's top at the
+pen's (0, 0). At size 1 the head of elephant(0, 0) runs from x 130 to 720 and y -820 to -40, and the back of its
+head behind the ear, where the neck goes in, is at about (230, -560). Until 2026-10-27 the whole elephant was
+drawn and cut to its head by a clip, whose corner cut a step into the jaw and whose top and side cut off a
+lifted trunk (the owner: "a right angle cut out of them near the jaw", "the trunks get cut off").
 skin: the colour; s: the size of the head (0.52 on Chang Ngu's necks); trunk: 0 to 1.
 Returns nothing: it draws with pen, and leaves pen as it found it.
 e.g. changNguHead("#efe6d6", 0.52, 0.3);
@@ -9909,6 +9911,24 @@ Places a list of pictures at second t, each swaying in the air: [{sprite, x, y, 
 look: {sway: how far they sway, 0 to 1 (0.35); blur: pixels, for what is so near it is out of focus (the soft
 blossom framing the picture: 5)}. Returns nothing: it draws with pen.
 e.g. sceneryBeds(t, [{sprite: bed, x: 40, y: 925}]);   sceneryBeds(t, frame, {sway: 0.4, blur: 5});
+```
+
+### `sceneryMeadow(b, left, right, top, bottom, look)`
+
+```
+A flat meadow painted on a sheet: the owner, 2026-10-27, of the grass before Wiang Si Tuang and before Yonok's
+gate: "make the flat grassy area rich with flowers and birds, and animals", after a painted film's meadow (grass
+in drifts of many greens, low leafy clumps, small flowers dotted through all of it). Its green deepens and grows
+richer toward the near edge; drifts of lighter and darker grass lie across it; grass in short blades grows taller
+near; low clumps of leaves and tall grass with white plumes stand here and there; wild flowers in drifts, dots far
+off and open flowers on their stalks near. Its life (birds, deer, butterflies) is the scene's, on courses
+(decorate.js). b: a canvas's context; left, right, top (far), bottom (near): its edges in the sheet's pixels;
+look: {seed: a number, greens: seven colours (THK_SUN unless told), haze: the far air's colour ("#c4d6c8"),
+flowers: [[name, colour], ...] (SCENERY_MEADOW_FLOWERS), many: how thick the flowers are, 0 to 2 (1), fade: [left,
+right], pixels over which its left and its right edge fade into what is under it ([0, 0]), depth: [far, near], how
+near its top and its bottom edge are, 0 (the far distance) to 1 (at our feet) ([0, 1]: a strip of meadow far off is
+[0.1, 0.4], one at our feet [0.5, 1])}.
+Returns nothing: it paints on b, once, with the set it is part of. e.g. sceneryMeadow(b, 0, 2400, 760, 1080, {seed: 7});
 ```
 
 ### `sceneryAir(t, look)`

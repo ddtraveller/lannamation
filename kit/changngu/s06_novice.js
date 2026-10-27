@@ -10,12 +10,18 @@ var C06_LINES = [[1.4, 9.1, "C021"], [9.3, 15.28, "C022"], [17.0, 23.16, "C023"]
 var C06_CUTS = [16.2];
 var C06_SPEAKS = [[23.36, 28.86], [29.46, 32.0]];         // the Khom king's words (the narrator says them over him)
 
-// The novice at (x, y) with his bowl at his waist, held in both hands; look: the scene's keys (face, step, feel).
-function c06Novice(x, y, look) {
+// The novice at (x, y) with his bowl at his waist, held in both hands; look: the scene's keys (face, step, feel);
+// rice: 0 to 1, how much of the rice given him shows in the bowl (left out, none).
+function c06Novice(x, y, look, rice) {
   var size = CNG_NOVICE.size, face = look.face || 1, bowl = [x + 34 * size * face, y - 236 * size];
   person(x, y, cngPerson("monk", CNG_NOVICE, Object.assign({id: "novice", reachA: [bowl[0] - 22 * size * face, bowl[1] + 10 * size],
                                                             reachB: [bowl[0] + 24 * size * face, bowl[1] + 10 * size]}, look)));
   almsBowl(pen, bowl[0], bowl[1], size * 0.8);
+  if (rice > 0) {                                     // the sticky rice in the bowl, a white mound over its rim
+    var s = size * 0.8;
+    pen.fillStyle = "#f6f0e2";
+    pen.beginPath(); pen.ellipse(bowl[0], bowl[1] + 2 * s, 20 * s, 12 * s * rice, 0, Math.PI, 0); pen.fill();
+  }
 }
 
 // The lane at dawn: the novice walks to a house where a woman waits with rice, stops, and she puts rice in his bowl.
@@ -24,20 +30,26 @@ function c06Lane(t) {
   cngClouds(t + 30, "dawn");
   pen.drawImage(cngLane("dawn"), 0, 0);
   softMist(t, 720, 60, 0.35, 23, "250, 232, 214");      // the dawn's mist lying low between the houses
-  var walk = between(t, 0.5, 8), x = mix(200, 900, walk), step = walk > 0 && walk < 1 ? (t - 0.5) / BEAT / 2 : 0;
+  var walk = between(t, 0.5, 8), x = mix(200, 930, walk), step = walk > 0 && walk < 1 ? (t - 0.5) / BEAT / 2 : 0;
   var giving = between(t, 9.5, 11) * (1 - between(t, 12.5, 13.5));   // her hand to his bowl and back
+  // the rice: in her hand until it is over the bowl (11 s), dropped into the bowl by 11.4 s, then in it (the owner,
+  // 2026-10-27: "the rice should go in the monk's bowl"; until then it stayed in her hand, beside the bowl)
+  var bowl = [930 + 34 * CNG_NOVICE.size, CNG_LANE_Y - 236 * CNG_NOVICE.size], drop = between(t, 11, 11.4);
+  var hand = [mix(1060, bowl[0] + 14, giving), mix(CNG_LANE_Y - 130, bowl[1] - 22, giving)];
   var leaves = between(t, 14, 16), xn = x + 500 * leaves;
   decorate(t, cngYard(1650, 905, 8), "back");                 // the yard's fowl (owner, 2026-10-25)
   drawByZ([
     {name: "novice", kind: "person", x: xn, y: CNG_LANE_Y, draw: function () {
-      c06Novice(xn, CNG_LANE_Y, {face: 1, step: leaves > 0 ? (t - 14) / BEAT / 2 : step});
+      c06Novice(xn, CNG_LANE_Y, {face: 1, step: leaves > 0 ? (t - 14) / BEAT / 2 : step}, drop >= 1 ? 1 : 0);
     }},
     {name: "woman", kind: "person", x: 1090, y: CNG_LANE_Y + 10, draw: function () {
       person(1090, CNG_LANE_Y + 10, cngPerson("weaver", {size: 0.72, id: "giver", face: -1, feel: "happy",
-                                                       reachA: [mix(1060, 960, giving), mix(CNG_LANE_Y - 130, CNG_LANE_Y - 165, giving)],   // from rest to his bowl and back: no jump (pop_check)
+                                                       reachA: hand,   // from rest to over his bowl and back: no jump (pop_check)
                                                        at: [x, CNG_LANE_Y - 200]}));
-      pen.fillStyle = "#f6f0e2";                           // a ball of sticky rice in her hand
-      pen.beginPath(); pen.arc(mix(1060, 960, giving), mix(CNG_LANE_Y - 132, CNG_LANE_Y - 168, giving), 8, 0, 7); pen.fill();
+      if (drop < 1) {                                      // a ball of sticky rice in her hand, then falling into the bowl
+        pen.fillStyle = "#f6f0e2";
+        pen.beginPath(); pen.arc(mix(hand[0], bowl[0], drop), mix(hand[1] - 2, bowl[1], drop * drop), 8, 0, 7); pen.fill();
+      }
     }}
   ]);
   cngBeds(t, "village", "frame");

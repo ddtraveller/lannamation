@@ -643,9 +643,9 @@ function cngFields() {
   var b = paper.getContext("2d");
   cngFar(b, 0, 560);                                     // the far range
   csBand(b, 0, 540, WIDE, 540, "#a9c97a", "#86a85a");    // the plain
-  // the paddies painted (owner, 2026-10-26, of scene 2: "yes", to the fields as the hero film's paddy), field behind
-  // field to the wall
-  cngPaddies(b, 560, 14, WIDE);
+  // a meadow in flower before the wall, where the paddies were (owner, 2026-10-26, of scene 2: "yes", to the fields as
+  // the hero film's paddy; then, 2026-10-27: "look at Yonok from the front view and fix the grassy area there")
+  sceneryMeadow(b, 0, WIDE, 560, 1080, {seed: 5, haze: "#b4cfa0", many: 1.5});
   b.fillStyle = "#c9b285";                               // the road from the near fields to the gate's bridge
   b.beginPath(); b.moveTo(CNG_GATE[0] - 50, 790); b.lineTo(CNG_GATE[0] + 50, 790);
   b.lineTo(CNG_GATE[0] + 260, 1080); b.lineTo(CNG_GATE[0] - 260, 1080); b.closePath(); b.fill();
@@ -703,7 +703,10 @@ function cngVillage() {
   b.save(); b.translate(WIDE, 0); cngFar(b, WIDE, 600); b.restore();
   sceneryForest(b, cngNangNon, {right: 2 * WIDE, blooms: CNG_FOREST_BLOOMS, pines: 22, top: 380, foot: 900, haze: "#b6c8c4", seed: 5});
   csBand(b, 0, 740, 2 * WIDE, 340, "#a9c97a", "#86a85a"); // the paddies and the village ground
-  cngPaddies(b, 748, 9, WIDE * 1.3);                      // the valley's paddies, to the village's edge
+  // the valley's flat ground a meadow in flower, where the paddies were (the owner, 2026-10-27:
+  // "redo the grassy area ahead of Wiang Si Tuang and make the flat grassy area rich with flowers and birds, and
+  // animals"; its birds and deer are scene 3's life), the village standing in it
+  sceneryMeadow(b, 0, 2 * WIDE, 740, 1080, {seed: 11, haze: "#b4cfa0", many: 1.5});
   cngStream(b);                                           // the Mae Sai, winding from the far hills to the near left
   b.fillStyle = "#d9c89a";                                // the path along it to the village
   b.beginPath(); b.moveTo(0, CNG_GROUND - 30); b.quadraticCurveTo(WIDE, CNG_GROUND - 50, 2 * WIDE, CNG_GROUND - 30);
@@ -756,7 +759,7 @@ var CNG_FOREST_BLOOMS = [[[], [], []],
 
 // Paddies on a sheet (brush), field behind field from the y "top" down, "rows" of them, each a little greener or paler,
 // its rice in rows, the bunds between them lit along their tops, all closer together far off; from x 0 to "right".
-// Scene 2's fields and the village's valley. e.g. cngPaddies(b, 748, 9, WIDE * 1.3);
+// The fields of scenes 23 and 25. e.g. cngPaddies(b, 748, 9, WIDE * 1.3);
 function cngPaddies(b, top, rows, right) {
   var lines = [], k;
   for (var n = 0; n <= rows; n++) { lines.push(top + n * 14 + n * n * 1.9); }
@@ -843,6 +846,26 @@ function cngYard(x, y, seed) {
   return [bird(0, "rooster", {}), bird(1, "hen", {}), bird(2, "hen", {})];
 }
 
+// One of a meadow's birds or deer, feeding about (x, y) from second "from" to "to": a stop to feed ("peck", or
+// "graze" for a deer), a few steps on, and again, never more than reach from x (the meadows of scenes 2 and 3, the
+// owner, 2026-10-27: "rich with flowers and birds, and animals"). name, kind, look as decorate() takes them; seed: a
+// number. Gives back one of a scene's life, in the layer "back".
+// e.g. cngFeeding("egret 1", "egret", {size: 0.5, seed: 1}, 900, 840, 3, 0, 36, 200);
+function cngFeeding(name, kind, look, x, y, seed, from, to, reach) {
+  var stops = [], at = from, px = x, py = y, feed = kind === "deer" ? "graze" : "peck";
+  for (var n = 0; ; n++) {
+    stops.push([at, px, py, feed]);
+    at = Math.min(to, at + 2.5 + 3 * dice(seed * 13 + n * 5));
+    stops.push([at, px, py]);
+    if (at >= to) { break; }
+    px = Math.max(x - reach, Math.min(x + reach, px + (dice(seed * 17 + n * 3) - 0.5) * reach));
+    py = y + (dice(seed * 23 + n) - 0.5) * 16;
+    at += 1.2 + dice(seed * 19 + n);
+    if (at >= to) { stops.push([to, px, py]); break; }
+  }
+  return {name: name, kind: kind, layer: "back", look: look, course: stops};
+}
+
 // ---------- a person measured, and a person carrying ----------
 // Where a person's joints are, without drawing them where they are seen (maeng/sets.js's maengMeasure, the kit's way):
 // on a scratch sheet, under an id of its own. x, y, look as person() takes them; gives back person()'s joints.
@@ -907,17 +930,19 @@ function cngMeasure(x, y, look) {
   return joints;
 }
 
-// Someone walking with a carrying pole on the far shoulder, a basket before and behind, the near hand on the pole in
-// front: the pole measured onto the shoulder (cngMeasure), drawn before them. look: person()'s, with its face; gold:
+// Someone walking with a carrying pole on the far shoulder, a basket before and behind, the near arm swinging free:
+// the pole measured onto the shoulder (cngMeasure), drawn before them. Until 2026-10-27 the near hand held the pole
+// in front, which put it before the face, a hand over the mouth as in a laugh (the owner: "shouldn't be making hand
+// gestures like they're laughing/mocking"). look: person()'s, with its face; gold:
 // the tribute's gold showing in the baskets. Gives back nothing: it draws with pen. e.g. cngPorter(600, 930, look, true);
 function cngPorter(x, y, look, gold) {
-  var face = look.face || 1, shoulder = cngMeasure(x, y, look).shoulderB, size = look.size || 1.3;
+  var shoulder = cngMeasure(x, y, look).shoulderB, size = look.size || 1.3;
   pen.save();
   pen.translate(shoulder[0], shoulder[1] - 6 * size);
   pen.rotate(Math.PI / 2 * 0);
   carryPole(pen, 0, 0, size * 0.85, {gold: gold});
   pen.restore();
-  person(x, y, Object.assign({}, look, {reachA: [shoulder[0] + 70 * size * face, shoulder[1] - 4 * size]}));
+  person(x, y, look);
 }
 
 // How dark the sheet is at second t from a scene's cuts between its shots: 1 at a cut, 0 half a second either side.

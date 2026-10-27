@@ -9,8 +9,13 @@
 var C24_LONG = 40;
 var C24_SOUND = {calls: []};
 var C24_LINES = [[1.4, 5.76, "C115"], [6.0, 10.44, "C116"], [10.64, 15.48, "C117"], [16.8, 20.78, "C118"], [25.0, 33.04, "C119"]];
-// Its life (decorate.js; owner, 2026-10-25): two egrets over the fields of the new city once the words are done.
+// Its life (decorate.js; owner, 2026-10-25): two egrets over the fields of the new city once the words are done; and
+// over the wild bank, butterflies (2026-10-27).
 var C24_LIFE = [
+  {name: "butterfly", kind: "butterfly", layer: "back", look: {size: 0.8, seed: 5},
+   course: [[24.2, 300, 990], [27, 520, 1000, "sip"], [30, 520, 1000], [35, 900, 980, "sip"], [37, 900, 980], [40, 1300, 990]]},
+  {name: "butterfly, right", kind: "butterfly", layer: "back", look: {kind: "birdwing", size: 0.7, seed: 6},
+   course: [[24.2, 1800, 960], [28, 1610, 990, "sip"], [31, 1610, 990], [40, 1100, 970]]},
   {name: "egret", kind: "egret", layer: "back", look: {fly: true, size: 0.8, seed: 1}, course: [[33.4, -150, 380], [40.5, 2100, 330]]},
   {name: "egret, behind", kind: "egret", layer: "back", look: {fly: true, size: 0.7, seed: 3}, course: [[34.0, -260, 430], [41.0, 2000, 360]]}
 ];
@@ -106,13 +111,36 @@ function c24TownSet() {
   var back = document.createElement("canvas"), near = document.createElement("canvas");
   back.width = near.width = WIDE;
   back.height = near.height = 1080;
-  var b = back.getContext("2d"), n = near.getContext("2d"), keep = pen, k;
+  var b = back.getContext("2d"), n = near.getContext("2d"), keep = pen, k, x;
   cngFar(b, 0, 600);
   csBand(b, 0, 560, WIDE, 520, "#a9c97a", "#86a85a");
   cityWall(b, -100, C24_WALL[0], WIDE + 200, C24_WALL[1], {plain: true, open: 1});
-  csBand(n, 0, C24_KOK[0] + C24_KOK[1], WIDE, 1080 - C24_KOK[0] - C24_KOK[1], "#b9a070", "#9a8058");   // the near bank
+  // The land about the new town grassy and wild (the owner, 2026-10-27: "Add some vegetation to scene 24. make it
+  // grassy and wild but beautiful"): from the outer rampart's crest to the Kok a meadow in flower, the porters' track
+  // worn through it to the gate, bamboo and a flame of the forest at its ends; the near bank tall grass in plume,
+  // reeds at the water, flowering bushes and wild flowers, a strip of sand left at the water's edge.
+  sceneryMeadow(b, 0, WIDE, 672, C24_KOK[0] + 2, {seed: 24, haze: "#b4cfa0", many: 1.6, depth: [0.15, 0.42]});
+  b.fillStyle = "rgba(196, 172, 122, 0.85)";            // the porters' track along the bank and up to the bridge
+  b.beginPath(); b.moveTo(-20, C24_WALL[0] + 100); b.quadraticCurveTo(600, C24_WALL[0] + 98, 900, C24_WALL[0] + 82);
+  b.lineTo(930, C24_WALL[0] + 50); b.lineTo(990, C24_WALL[0] + 50); b.lineTo(1000, C24_WALL[0] + 92);
+  b.quadraticCurveTo(600, C24_WALL[0] + 124, -20, C24_WALL[0] + 122); b.closePath(); b.fill();
+  bamboo(b, 120, C24_WALL[0] + 92, 0.5, 7);
+  bamboo(b, 1820, C24_WALL[0] + 96, 0.55, 9);
+  thkTreeOn(b, 1700, C24_WALL[0] + 104, 0.24, 77, [["thongkwao", 30, 14]]);
+  var foot = C24_KOK[0] + C24_KOK[1];
+  csBand(n, 0, foot, WIDE, 1080 - foot, "#b9a070", "#9a8058");   // the near bank: sand at the water's edge
+  sceneryMeadow(n, 0, WIDE, foot + 26, 1080, {seed: 241, haze: "#b4cfa0", many: 1.6, depth: [0.5, 1]});
   pen = n;
-  for (k = 0; k < 14; k++) { thkPlace(sceneryGrass(40 + 40 * dice(k), 9, 541 + k), 60 + k * 140 + 40 * dice(k + 3), C24_KOK[0] + C24_KOK[1] + 14, 1, 0); }
+  for (k = 0, x = 10; x < WIDE; k++) {                  // reeds and grass along the water, over the sand's edge, in clumps
+    thkPlace(sceneryGrass(40 + 90 * dice(k), 9 + Math.floor(6 * dice(k + 1)), 541 + k), x, foot + 28 + 10 * dice(k + 7), 0.8 + 0.5 * dice(k + 2), 0);
+    x += dice(k + 5) < 0.3 ? 150 + 120 * dice(k + 6) : 30 + 40 * dice(k + 6);
+  }
+  [[150, 1000, 1.5], [620, 1012, 1.3], [1020, 996, 1.2], [1380, 1006, 1.45], [1840, 1004, 1.4]].forEach(function (g, k) {   // tall grass in plume
+    thkPlace(sceneryGrassBank(170, 300 + k), g[0], g[1], g[2], 0);
+  });
+  [[430, 1050, ["phayasuea", 26, 9, "#ec6c9c"]], [1110, 1056, ["jasmine", 30, 7]], [1610, 1046, ["hibiscus", 10, 10, "#d93a2e"]]].forEach(function (bush, k) {
+    thkPlace(sceneryBush(220, 100, 611 + k, THK_GREENS, [bush[2]]), bush[0], bush[1], 1, 0);   // flowering bushes
+  });
   pen = keep;
   C24_TOWN = {back: back, near: near};
   return C24_TOWN;
