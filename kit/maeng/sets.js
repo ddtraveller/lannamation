@@ -461,6 +461,47 @@ function maengYardAt(t, night, glow, behind, away, fliers, heavens, sky) {   // 
   if (night > 0) { pen.globalAlpha = night; pen.drawImage(yard.frontNight, 0, 0); pen.globalAlpha = 1; }
   ruenPhuk(pen, MAENG_HUT[0], MAENG_HUT[1], MAENG_HUT[2] * 0.92, {fine: true, ladder: "in", glow: glow || 0, tint: night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null});
   dress(t, MAENG_YARD_THINGS, "back", night > 0 ? [MAENG_NIGHT[0], MAENG_NIGHT[1] * night] : null);
+  maengNature(t, "yard", night);
+}
+
+// ---------- nature at its most beautiful ----------
+// The owner, 2026-10-27: "do a beautification pass for the meang video. Add flowers, butterflies, birds, animals, etc.
+// as appropriate. Simply try to make nature really beautiful in the video", after the hero film's garden and pond and
+// a reference whose frame is filled with flowering shrubs and a wall of grasses: flowers in clusters of many shades of
+// one colour, bushes speckled with small blossom, foliage painted, not inked, the nearest of it soft. Each place gets
+// its own beds, painted once (scenery.js's bushes, as the hero's garden is): the yard a bougainvillea in its corner by
+// the bamboo and a border of marigold, jasmine and dok kaew along the foot of the picture, low, below where the hens
+// peck and the family walks; at night they dim with the yard.
+function maengNatureBuild() {
+  var bush = sceneryBush;
+  return {
+    // the yard: a small frangipani in flower at its right, past the farmers, its foot on the fields' near edge; a bed of
+    // marigold and jasmine before the bamboo, behind where the hens peck (their feet at 950 and lower); and the two
+    // bottom corners in flower, bougainvillea, kept low and out of the subtitles' way
+    yard: [{sprite: thkSprite(380, 460, 190, 450, function () { thkTree(210, 22, 320, 200, 607, THK_GREENS, [["frangipani", 60, 11], ["frangipani", 18, 10, "#f3b6c8"]]); }),
+            x: 1850, y: 922},
+           {sprite: bush(300, 70, 602, THK_GREENS, [["marigold", 26, 8], ["jasmine", 16, 6], ["dokkaew", 10, 6]]), x: 170, y: 940},
+           {sprite: bush(300, 170, 601, THK_GREENS, [["bougainvillea", 60, 15, "#d8338a"], ["bougainvillea", 20, 13, "#ec6c9c"], ["jasmine", 16, 6]]), x: -30, y: 1135},
+           {sprite: bush(280, 170, 606, THK_GREENS, [["bougainvillea", 56, 14, "#d8338a"], ["bougainvillea", 16, 12, "#ec6c9c"]]), x: 1960, y: 1132}],
+    // Doi Khao Khwai before dawn, the frame (soft, before the camera): night-white jasmine and frangipani at the foot,
+    // grass at the right, and a spray of phayasuea hanging into the top right corner, more flower than leaf
+    doi: [{sprite: bush(520, 280, 611, THK_SHADE, [["jasmine", 70, 8], ["frangipani", 16, 13]]), x: -40, y: 1170},
+          {sprite: sceneryGrass(400, 14, 612), x: 1960, y: 1120},
+          {sprite: sceneryHanging(380, 160, 613, THK_SHADE, [["phayasuea", 90, 10, "#f3a6c0"], ["phayasuea", 30, 9, "#ec6c9c"]]), x: 1830, y: -30}],
+    // the hut's open door at night (scene 4): night jasmine outside it, below the ladder's top
+    door: [{sprite: bush(200, 120, 621, THK_SHADE, [["jasmine", 34, 7]]), x: 1470, y: 712},
+           {sprite: bush(150, 90, 622, THK_SHADE, [["jasmine", 20, 7]]), x: 1640, y: 714}]
+  };
+}
+// The beds of place "part" (a key of maengNatureBuild()'s) at second t, swaying; night 0 to 1 dims them with the set's
+// own night, and blur (pixels) softens what is nearest. Gives back nothing: it draws with pen. e.g. maengNature(t, "yard", 0);
+function maengNature(t, part, night, blur) {
+  var items = thkOnce("maeng-nature", maengNatureBuild)[part], dim = night || 0;
+  pen.save();
+  pen.filter = ((blur ? "blur(" + blur + "px) " : "") + (dim > 0 ? "brightness(" + (1 - 0.55 * dim).toFixed(3) + ") saturate(" + (1 - 0.35 * dim).toFixed(3) + ")" : "")) || "none";
+  items.forEach(function (it) { thkPlace(it.sprite, it.x, it.y, it.size || 1, thkSway(t, it.x * 0.01, 0.3)); });
+  pen.filter = "none";
+  pen.restore();
 }
 
 // ---------- the meadow ----------
@@ -509,8 +550,23 @@ function maengMeadow() {
       flora(name, x, y, {size: 0.16 + 0.16 * ((y - 860) / 220), ground: false});
     }; }(dice(n * 5 + 6) * WIDE, fy, little[n % little.length])});
   }
+  // and drifts of them (the beauty pass, owner, 2026-10-27: "make nature really beautiful"): flowers grow in patches of
+  // one kind, many together, as the reference's meadow is speckled, not one here and one there
+  var drifts = ["buatong", "phayasuea", "jasmine", "buatong", "dokkaew", "phayasuea"];
+  for (n = 0; n < 22; n++) {
+    var dx0 = 60 + dice(n * 7 + 101) * (WIDE - 120), dy0 = 884 + dice(n * 7 + 102) * 170, kind = drifts[n % drifts.length];
+    if (Math.abs(dx0 - MAENG_TREE[0]) < 90 && dy0 < 940) { continue; }   // not in the tree's foot
+    for (var m = 0; m < 6 + Math.floor(dice(n * 7 + 103) * 6); m++) {
+      var px = dx0 + (dice(n * 31 + m * 3) - 0.5) * 110, py = dy0 + (dice(n * 31 + m * 3 + 1) - 0.5) * 34;
+      lawn.push({y: py + 0.5, draw: function (x, y, name) { return function () {
+        flora(name, x, y, {size: 0.15 + 0.17 * ((y - 860) / 220), ground: false});
+      }; }(px, py, kind)});
+    }
+  }
   lawn.sort(function (a, b) { return a.y - b.y; }).forEach(function (one) { one.draw(); });
-  thkTreeOn(brush, MAENG_TREE[0], MAENG_TREE[1], 1.2, 31, []);   // the great tree, painted as the hero film's trees are
+  // the great tree, painted as the hero film's trees are, and in flower: the golden shower's yellow racemes hanging
+  // from its crown (ratchaphruek, the beauty pass)
+  thkTreeOn(brush, MAENG_TREE[0], MAENG_TREE[1], 1.2, 31, [["ratchaphruek", 46, 17]]);
   // a limb out of its trunk's left side, for the magpie to sit on (S03_LIFE's course stands it at 1520, 588; owner,
   // 2026-10-26: "make a branch for the bird to sit on"), and a few leaves at its tip
   var limb = brush.createLinearGradient(0, 580, 0, 650);
@@ -958,7 +1014,9 @@ function maengCity() {
 // MAENG_AIR: each scene's, as sceneryAir() takes it ("goodbye": fireflies, as sceneryFireflies() does).
 var MAENG_AIR = {
   work: {butterfly: {kind: "grassyellow", x: 1500, y: 620, vx: -70, weave: 50, seed: 4, size: 1.2, turn: -1.2, wing: 3},
-         petals: [8, "#f2e2a0", 5, 0.9], light: [0.55, 3]},
+         petals: [8, "#f2e2a0", 5, 0.9], light: [0.55, 3],
+         more: [{kind: "grassyellow", x: 700, y: 900, vx: 30, weave: 70, seed: 14, size: 1.0, turn: 1.2, wing: 6},
+                {kind: "lacewing", x: 1100, y: 860, vx: -25, weave: 80, seed: 15, size: 1.1, turn: -1.2, wing: 7}]},
   creature: {butterfly: {kind: "lacewing", x: 260, y: 420, vx: 60, weave: 60, seed: 6, size: 1.3, turn: 1.2, wing: 2}, light: [0.6, 4]},
   decree: {petals: [14, "#f6b8cc", 7, 1.0], light: [0.5, 5]},
   morning: {butterfly: {kind: "bluebottle", x: 1600, y: 520, vx: -80, weave: 55, seed: 9, size: 1.2, turn: -1.2, wing: 4},
@@ -983,6 +1041,9 @@ function maengAir(t, kind, frame) {
   var air = MAENG_AIR[kind];
   if (air.far) { sceneryFireflies(t, air); return; }
   sceneryAir(t, air);
+  // more butterflies where a scene has them (air.more: sceneryAir()'s butterfly each; the beauty pass: none in some
+  // scenes, one in others, a few in the meadow)
+  (air.more || []).forEach(function (b) { sceneryAir(t, {butterfly: b}); });
 }
 
 // ---------- a fade, the pen, the Haw traders, the trough in the yard ----------

@@ -100,7 +100,7 @@ function s02Egrets(t) {
   for (var k = 0; k < 6; k++) {
     var x = WIDE + 120 + k * 70 - S02_EGRETS[1] * (t - S02_EGRETS[0]);
     if (x < -150 || x > WIDE + 150) { continue; }
-    egret(x, 735 + 16 * (k % 3) - 10 * Math.floor(k / 3) + 5 * Math.sin(t * 1.3 + k), t, {fly: true, face: -1, size: 0.5, seed: k});
+    egret(x, 735 + 16 * (k % 3) - 10 * Math.floor(k / 3) + 5 * Math.sin(t * 1.3 + k), t, {fly: true, face: -1, size: 0.3, seed: k});   // 0.5 until 2026-10-27 (owner: "make the egrets smaller")
   }
 }
 

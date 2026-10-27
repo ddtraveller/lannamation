@@ -205,6 +205,10 @@ function s04Night(t) {
   pen.strokeStyle = "rgba(120, 132, 180, 0.5)";
   pen.lineWidth = 2;
   pen.stroke();
+  // a few fireflies over the dark of the mountain, and night jasmine by the door, its white stars caught by the moon
+  // (the beauty pass, owner, 2026-10-27; quiet, for the father's dying: no butterflies, no birds)
+  sceneryFireflies(t, {far: [[[d[0], d[1] + 260, d[0] + d[2], d[1] + d[3] - 40], 14, 31]]});
+  maengNature(t, "door", 0.9);
   pen.strokeStyle = "#5a4630";                      // the ladder's top
   pen.lineWidth = 8;
   pen.beginPath(); pen.moveTo(1500, 700); pen.lineTo(1496, 640); pen.moveTo(1590, 700); pen.lineTo(1594, 640); pen.stroke();

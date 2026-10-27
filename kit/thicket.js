@@ -108,13 +108,16 @@ function thkLeaf(x, y, long, turn, colour) {
 }
 
 // The single blooms a bush can carry: each a function (x, y, r, turn, colour, seed) that draws one flower of radius
-// about r with pen, by flora.js's own painters. A name here is a key of FLORA.
+// about r with pen, by flora.js's own painters. A name here is a key of FLORA. The marigold and the jasmine are drawn
+// with a finer pen than the bush's: a marigold's forty petals each inked at the bush's line, at the size of a bloom on
+// a bush, came out brown, and jasmine's small stars grey (2026-10-27, the Maeng film's beauty pass).
+function thkFine(share, paint) { var keep = LINE; LINE = keep * share; paint(); LINE = keep; }
 var THK_BLOOMS = {
   hibiscus: function (x, y, r, turn, colour) { floraHibiscusBloom(x, y, r, colour || "#d93a2e", turn); },
   frangipani: function (x, y, r, turn, colour) { floraFrangipaniBloom(x, y, r, colour || FLORA_WHITE, turn); },
-  jasmine: function (x, y, r, turn) { floraJasmineBloom(x, y, r, turn); },
+  jasmine: function (x, y, r, turn) { thkFine(0.45, function () { floraJasmineBloom(x, y, r, turn); }); },
   orchid: function (x, y, r, turn, colour) { floraOrchidBloom(x, y, r, colour || "#b64fb3", turn); },
-  marigold: function (x, y, r, turn, colour) { floraPompom(x, y, r, colour || "#f08a1e", blend(colour || "#f08a1e", "#ffe27a", 0.45)); },
+  marigold: function (x, y, r, turn, colour) { thkFine(0.2, function () { floraPompom(x, y, r, colour || "#f08a1e", blend(colour || "#f08a1e", "#ffe27a", 0.45)); }); },
   bougainvillea: function (x, y, r, turn, colour, seed) { thkScaled(x, y, r / 18, function () { floraBractCluster(0, 0, colour || "#d8338a", seed); }); },
   thongkwao: function (x, y, r, turn, colour, seed) { thkScaled(x, y, r / 16, function () { floraFlameCluster(0, 0, colour || "#f0581e", seed); }); },
   sarapee: function (x, y, r, turn) { floraSarapeeBloom(x, y, r, turn); },

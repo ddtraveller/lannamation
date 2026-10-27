@@ -134,6 +134,8 @@ function sceneDoi(t) {
   sceneryBeds(t, bushes.day, {sway: 0.2});
   pen.globalAlpha = dawn;
   sceneryBeds(t, bushes.dawn, {sway: 0.2});
+  pen.globalAlpha = 1 - light;                     // fireflies over the forest at the mountain's foot, going as the dawn comes
+  sceneryFireflies(t, {far: [[[200, 700, 1760, 1000], 240, 21], [[500, 600, 1500, 820], 90, 22], [[900, 560, 1700, 760], 60, 23]]});   // (the beauty pass, 2026-10-27)
   pen.globalAlpha = 1;
   mistDrift(pen, t, {left: 0, right: WIDE, top: 880, bottom: 1000, count: 4, wide: 640, drift: 7, seed: 4, alpha: 0.65});
   var lifts = between(t, 1, 13.15);                    // the fog the film opens in: it sinks and thins, and the mountain comes out
@@ -146,6 +148,12 @@ function sceneDoi(t) {
     mistDrift(pen, t, {left: -200, right: WIDE + 200, top: mix(120, 860, lifts), bottom: 1080, count: 9, wide: 900, drift: 6,
                        seed: 11, glow: glow, alpha: 0.95 * (1 - lifts)});
   }
+  pen.restore();
+  // the frame, soft and before the camera (the beauty pass, owner, 2026-10-27): it comes out of the fog with the
+  // mountain, dark at first and lit as the sun comes up
+  pen.save();
+  pen.globalAlpha = between(t, 3, 13.15);
+  maengNature(t, "doi", 1 - 0.8 * light, 4);
   pen.restore();
   s01Title(t);
   if (t < 2) {                                      // out of the dark
