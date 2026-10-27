@@ -33,7 +33,11 @@ function s09TroughLine(n, x) {
 var S09_LIFE = [
   {name: "blue magpie", kind: "magpie", z: "set", look: {size: 0.6},     // on the palace's finial: of the set
    course: [[0, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [20.96, MAENG_FINIAL[0], MAENG_FINIAL[1] + 4], [28.79, 2160, 110]]},
-  {name: "flock", kind: "flock", z: "sky", course: [[12.19, -150, 230], [28.25, 2150, 170]]}
+  {name: "flock", kind: "flock", z: "sky", course: [[12.19, -150, 230], [28.25, 2150, 170]]},
+  // a peacock of the palace's garden, the green peafowl old Lanna had, walking the back of the court at the right, before the wall, and pecking (the
+  // beauty pass, owner, 2026-10-27; nature_research.md)
+  {name: "peacock", kind: "peafowl", z: "people", look: {size: 0.45},
+   course: [[0, 1880, 940, "peck"], [6, 1880, 940], [14, 1770, 944, "peck"], [22, 1770, 944], [32, 1860, 938, "peck"], [55.54, 1860, 938]]}
 ];
 
 // Scene 9, the entry the film calls (SCENES): t, its own second, 0 to S09_LONG (55.54 s): the princes come in from

@@ -240,7 +240,9 @@ function s10Night(t) {                              // all night under the lante
   pen.scale(c[3], c[3]);
   pen.translate(-mix(c[0], c[1], between(t, S10_SHOTS[1], S10_SHOTS[2])), -c[2]);
   maengYardAt(t, 1, 0.6);
-  sceneryFireflies(t, {far: [[[300, 790, 1900, 880], 40, 9]], near: 0});   // fireflies over the fields behind
+  // bats going out over the dry fields under the night sky (the fireflies that were here come only with the rains:
+  // the beauty pass, NATURE.md)
+  batStream(t, {from: [1760, 760], to: [240, 140], start: S10_SHOTS[1] + 1, count: 18, size: 1.4, far: 0.6, spread: 110, colour: "#1c1828", long: 12});
   var sprites = S10_HORSES.map(function (h, n) {
     return {name: "horse" + n, kind: "horse", z: "back", x: h[0], y: 836, draw: function () {
       horse(h[0], 836, {size: 0.5, colour: blend(h[1], tint[0], tint[1]), face: -1});

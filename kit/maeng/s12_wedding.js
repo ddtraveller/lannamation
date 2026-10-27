@@ -152,10 +152,12 @@ function sceneWedding(t) {
       }}
     ]));
     s12Glow(t, lit);                                // their light on the band, the guests and the court
-    pen.save();                                     // and fireflies coming out as the light goes
-    pen.globalAlpha = between(t, 6, 11);
-    sceneryFireflies(t, {far: [[[0, 640, WIDE, 900], 40, 7]], near: 0});
-    pen.restore();
+    // and egrets going home to their roost over the court as the light goes (the fireflies that were here come only
+    // with the rains: the beauty pass, NATURE.md)
+    for (var k = 0; k < 6; k++) {
+      var ex = WIDE + 140 + k * 80 - 150 * (t - 7 - k * 0.4);
+      if (ex > -150 && ex < WIDE + 150) { egret(ex, 230 + 22 * (k % 3) - 8 * k + 6 * Math.sin(t * 1.2 + k), t, {fly: true, face: -1, size: 0.26, seed: k}); }
+    }
   } else if (t < S12_SHOTS[1]) {                     // by day, at the palace's stair: rice for the poor
     s12City(t, null);
     var giver = MAENG_STAIR + 40, gave = 0;
@@ -184,7 +186,7 @@ function sceneWedding(t) {
         }};
       })));
   }
-  maengAir(t, "wedding", "palace");                // the wedding's air: petals, a birdwing, the light (sets.js)
+  maengAir(t, "wedding", "palace");                // the wedding's air: the golden shower's petals, the light (sets.js)
   maengDark(t, S12_SHOTS[0] - 1.2, S12_SHOTS[0]);
   maengDark(t, S12_SHOTS[1] - 1.2, S12_SHOTS[1]);
   maengDark(t, S12_LONG - 1.6, S12_LONG + 10);

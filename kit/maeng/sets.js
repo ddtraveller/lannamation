@@ -906,9 +906,10 @@ function maengPalace(t, part, tint, lit) {          // the palace hall, back or 
   }
 }
 // Pots of flowers at the foot of the palace's stair (owner, 2026-10-26: "yes", to flowers by the palace, so the court
-// is not bare): glazed jars of the north, jasmine and marigolds, each [x, y of its foot, flora's name, size].
-var MAENG_POTS = [[MAENG_PALACE[0] - 128, MAENG_PALACE[1] + 10, "jasmine", 0.62], [MAENG_PALACE[0] + 128, MAENG_PALACE[1] + 10, "marigold", 0.6],
-                  [MAENG_PALACE[0] - 330, MAENG_PALACE[1] + 8, "marigold", 0.56], [MAENG_PALACE[0] + 330, MAENG_PALACE[1] + 8, "jasmine", 0.58]];
+// is not bare): glazed jars of the north, jasmine and dok kaew (the marigolds that were here came from the Americas:
+// the beauty pass, NATURE.md), each [x, y of its foot, flora's name, size].
+var MAENG_POTS = [[MAENG_PALACE[0] - 128, MAENG_PALACE[1] + 10, "jasmine", 0.62], [MAENG_PALACE[0] + 128, MAENG_PALACE[1] + 10, "dokkaew", 0.6],
+                  [MAENG_PALACE[0] - 330, MAENG_PALACE[1] + 8, "dokkaew", 0.56], [MAENG_PALACE[0] + 330, MAENG_PALACE[1] + 8, "jasmine", 0.58]];
 // Gives back {pot0, pot1, ..., tints: {}}: each pot with its plant, a sprite whose point is the pot's foot.
 function maengPotsBuild() {
   var built = {tints: {}};
@@ -967,8 +968,10 @@ function maengCity() {
   pen = b;
   [[160, 0.55], [430, 0.5], [700, 0.58], [1750, 0.52]].forEach(function (h) { house(b, h[0], 790, h[1]); });
   // the city's trees painted as the hero film's are (thicket.js thkTreeOn()), in flower and fruit as a royal city's:
-  // the frangipani, the golden shower, a longan, the flame of the forest
-  [[300, 0.72, [["frangipani", 30, 14]]], [560, 0.8, [["ratchaphruek", 24, 28]]], [1650, 0.76, [["longan", 22, 14]]],
+  // in the hot season, when the story is at the palace (NATURE.md): a tree hung with the golden ueang phueng orchid that
+  // flowers in March and April, the golden shower, a mango in fruit, the flame of the forest (a frangipani from the
+  // Americas and a longan in fruit, of June to August, were here before the beauty pass)
+  [[300, 0.72, [["ueang", 30, 12]]], [560, 0.8, [["ratchaphruek", 24, 28]]], [1650, 0.76, [["mango", 22, 14]]],
    [1880, 0.68, [["thongkwao", 36, 14]]]].forEach(function (tr, k) { thkTreeOn(b, tr[0], 790, tr[1], 21 + k, tr[2]); });
   pen = keep;
   b.fillStyle = "#b5704e";                          // the wall of brick, its top stepped
@@ -1056,19 +1059,18 @@ var MAENG_AIR = {
          more: [{kind: "grassyellow", x: 700, y: 900, vx: 30, weave: 70, seed: 14, size: 1.0, turn: 1.2, wing: 6},
                 {kind: "lacewing", x: 1100, y: 860, vx: -25, weave: 80, seed: 15, size: 1.1, turn: -1.2, wing: 7}]},
   creature: {butterfly: {kind: "lacewing", x: 260, y: 420, vx: 60, weave: 60, seed: 6, size: 1.3, turn: 1.2, wing: 2}, light: [0.6, 4]},
-  decree: {petals: [14, "#f6b8cc", 7, 1.0], light: [0.5, 5]},
+  decree: {petals: [14, "#f2cf3a", 7, 1.0], light: [0.5, 5]},   // the golden shower's petals, in April (the beauty pass)
   morning: {butterfly: {kind: "bluebottle", x: 1600, y: 520, vx: -80, weave: 55, seed: 9, size: 1.2, turn: -1.2, wing: 4},
-            petals: [12, "#f6b8cc", 6, 1.0], light: [0.7, 6]},
+            petals: [12, "#f2cf3a", 6, 1.0], light: [0.7, 6]},
   gold: {butterfly: {kind: "grassyellow", x: 1420, y: 640, vx: 0, weave: 120, seed: 13, size: 1.1, turn: 0, wing: 8}, light: [0.45, 8]},
-  wedding: {butterfly: {kind: "birdwing", x: 200, y: 380, vx: 70, weave: 60, seed: 11, size: 1.3, turn: 1.2, wing: 5},
-            petals: [40, "#f6b8cc", 8, 1.1], light: [0.6, 7]},
+  wedding: {petals: [40, "#f2cf3a", 8, 1.1], light: [0.6, 7]},
   goodbye: {far: [[[0, 700, WIDE, 880], 50, 5]], near: 12}
 };
 // The picture's edges, soft: grass at the bottom corners, and over a royal place blossom hanging into a top corner.
 // Painted once. Returns {day: [...], palace: [...]} for sceneryBeds().
 function maengFrameBuild() {
   return {day: [{sprite: sceneryGrass(420, 14, 501), x: -20, y: 1120}, {sprite: sceneryGrass(380, 12, 502), x: 1950, y: 1120}],
-          palace: [{sprite: sceneryHanging(520, 240, 503, THK_SHADE, [["frangipani", 10, 14], ["jasmine", 20, 8]]), x: 140, y: -40},
+          palace: [{sprite: sceneryHanging(520, 240, 503, THK_SHADE, [["jasmine", 34, 8]]), x: 140, y: -40},   // jasmine (no frangipani: the Americas)
                    {sprite: sceneryGrass(380, 12, 504), x: 1950, y: 1120}]};
 }
 // The air of scene "kind" (a key of MAENG_AIR) and its frame ("day", "palace" or none) at second t, over everything and
