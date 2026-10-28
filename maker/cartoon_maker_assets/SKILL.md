@@ -65,7 +65,8 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
   ground covered, so the feet keep to the ground however fast a leg of the course
   is; so are the Mom's.
 - A person has a `feel` from the start: neutral, happy, laughing, sad, concerned,
-  angry, sleepy, satiated or surprised. It sets the face and how the body is
+  angry, sleepy, satiated, surprised or awe (the eyes lifted, still, to something
+  greater: a naga rising, a thewada). It sets the face and how the body is
   carried; a laughing person laughs in bursts, a sleepy one nods and yawns by
   themselves, and a satiated one shuts their eyes now and then. Left out, a
   person is happy. A key's sixth entry changes it from that key on,

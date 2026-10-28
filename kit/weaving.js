@@ -11,7 +11,8 @@
 // follows a chart and which was drawn from a source's description of its shape.
 //
 // The pieces:
-//   LAI             the motifs, each a grid of threads with its Thai name, meaning, town and source
+//   LAI             the motifs, each a grid of threads with its Thai name, shape, town and source, and what it
+//                   means where a source says (means, realm, meansFrom: LAI_MEANS, below the motifs)
 //   weaveGrid       one motif as woven cloth: each cell a float of the pattern weft over the ground weave
 //   clothSample     a swatch of one motif repeated, its warp ends loose at the top and bottom
 //   teenJok         the decorated hem of a sin, in its parts: the yellow nail stripe, the rows above, the main
@@ -177,7 +178,7 @@ LAI.buaLoy = {thai: "ลายบัวลอย", say: "lai bua loy", en: "the 
                 ".22.11",
                 "2.2111"
               ]))};
-LAI.kho = {thai: "ลายขอ", say: "lai kho", en: "the hook: a stepped scroll, holding fast to fortune", town: "Nan, Mae Chaem, khit",
+LAI.kho = {thai: "ลายขอ", say: "lai kho", en: "the hook: a stepped scroll", town: "Nan, Mae Chaem, khit",
            from: "Silpakorn thesis, Nan", how: "chart", grid: [
              ".111111..",
              ".1....1..",
@@ -236,7 +237,7 @@ LAI.nok = {thai: "ลายนก", say: "lai nok", en: "a crested bird", town: 
              "...1..1.....",
              "..11..11...."
            ]};
-LAI.nokKhu = {thai: "ลายนกคู่", say: "lai nok khu", en: "paired birds facing a flower: faithfulness", town: "Nan, Mae Chaem",
+LAI.nokKhu = {thai: "ลายนกคู่", say: "lai nok khu", en: "paired birds facing a flower", town: "Nan, Mae Chaem",
               from: "Silpakorn thesis, Nan; SACIT", how: "chart", grid: laiPair(LAI.nok.grid, [
                 "..2..", ".222.", "..2..", ".....", "..1..", ".111.", "11111", ".111.", "..1..", "..1..", ".111."
               ])};
@@ -244,7 +245,7 @@ LAI.nokKhuTon = {thai: "ลายนกคู่กินน้ำร่วม�
                  town: "Mueang Long", from: "SACIT (Kru Pranom Tapang)", how: "shape", grid: laiPair(LAI.nok.grid.map(function (r) {
                    return r.slice(0, 11) + ".";
                  }), [".1.1.", "..1..", "11111", "..1..", "1.1.1", ".111.", "..1..", "..1..", ".111.", "11111", ".111."])};
-LAI.nokKum = {thai: "ลายนกกูม", say: "lai nok kum", en: "the brooding quail: care of the home", town: "Mae Chaem",
+LAI.nokKum = {thai: "ลายนกกูม", say: "lai nok kum", en: "the brooding quail", town: "Mae Chaem",
               from: "ThaiJO larts 247740; SACIT", how: "shape", grid: [
                 "....11...",
                 "...1111..",
@@ -288,7 +289,7 @@ LAI.hongKhu = {thai: "ลายหงส์คู่", say: "lai hong khu", en: 
                  ".....", "..2..", ".222.", "..2..", ".....", ".....", "..1..", ".111.", "11111", "11111", ".111.", "..1..",
                  ".111.", "11111"
                ])};
-LAI.nak = {thai: "ลายนาค", say: "lai nak", en: "the naga, the water serpent: water, fertility, protection",
+LAI.nak = {thai: "ลายนาค", say: "lai nak", en: "the naga, the water serpent",
            town: "Nan, Mae Chaem, khit", from: "Silpakorn thesis, Nan; Department of Sericulture", how: "shape", grid: [
              "....................1.1.",
              "...................11111",
@@ -569,6 +570,86 @@ LAI.maiSin = {thai: "ลายหมายซิ่น", say: "lai mai sin", en:
                 for (var k = 0; k < 4; k++) { bird.forEach(function (r) { out.push(r + "..." + r); }); out.push("..........."); }
                 return out;
               })()};
+
+// ---------- what the motifs mean ----------
+// What a motif means, only where a source says so in its own words: from the NotebookLM notebook "Lanna Thai weaving
+// iconography: symbols, archetypes and patterns" (2026-10-28, 25 sources), each meaning then found in the source's
+// own text, which docs/sources/weaving_meanings.md quotes (owner, 2026-10-28: the kit carries what its symbols
+// mean). Three meanings the kit had before (the hook "holding fast to fortune", paired birds "faithfulness", the
+// quail "care of the home") are in none of the sources of either weaving notebook: they were taken out.
+// A meaning is said of a people or a town, and the source says which: a Tai Lue reading is not a Tai Yuan one.
+// Most of the motifs have none, and that is the sources' own word: the Nan thesis calls the units (the diamond, the
+// triangle, the hook, the zigzag) the base of the others, "which may carry no meaning" (อาจไม่มีความหมายใด ๆ); a
+// meaning comes with the figures made of them.
+//   means      what it stands for, in a sentence, or null
+//   realm      where Tai cosmology puts it, as the Tai Lue sources give it: "sky" above (the realm of birds), "earth"
+//              in the middle (the Mom, the lion), "underworld" below (snakes and naga); or null
+//   meansFrom  the sources of both
+var LAI_SOURCES = {
+  boSuak: "Silpakorn thesis, Nan: the meanings of the Bo Suak weavers' group",
+  lue: "Silpakorn thesis, Tai Lue (Warusa Uttara, 2567)",
+  chiangKham: "ThaiJO hspbru 277661: Tai Lue cloth of Chiang Kham, its semiotics",
+  maeChaem: "ThaiJO larts 247740 (Mae Chaem)",
+  thaiLao: "ThaiJO LiberalJ 1307: symbols of Thai and Lao cloth",
+  mueangNgoen: "CMU thesis: the Tai Lue cloth of Mueang Ngoen (ch. 4)",
+  banner: "The Buddhist Banner: the Tai Lue tung (ResearchGate 368320260)",
+  long: "Department of Sericulture: the jok of Mueang Long"
+};
+var LAI_MEANS = (function (S) {
+  var buddhist = "with the lantern, the bowl, the naga, the hong, the water jar and the ship, a Buddhist sign woven in " +
+                 "reverence: Mount Meru, the Sithandon ocean, the blessed beasts of the Himmaphan (Mae Chaem)";
+  var pairs = "paired birds: plenty, and worship (the Bo Suak weavers of Nan, of their paired birds and paired chickens)";
+  var hong = "the hong, the great bird: " + buddhist + "; with the naga, tied to the ancestors' spirits and the journey " +
+             "to the world after death (Tai Lue)";
+  var naga = "in the old local meaning a sign of male fertility, the bringer of rain and keeper of rivers; with Buddhism, " +
+             "the rainbow that joins the worlds (Thai and Lao cloth); the ancestors' spirits and nature that gives birth " +
+             "to all (Tai Lue)";
+  var ship = "the ship: " + buddhist + "; the boat carries the castle and the offerings to the world of spirits (Tai Lue)";
+  return {
+    kap: {means: "a bamboo sheath, some say; others, the gable of a house (Tai Lue)", realm: null, from: [S.lue]},
+    khruaKho: {means: "belonging to one's own people, and duty to one's family (the Tai Lue's khruea kho)", realm: null,
+               from: [S.chiangKham]},
+    buaLoy: {means: "the light of wisdom; flourishing", realm: null, from: [S.boSuak]},
+    chanPaetKleeb: {means: "a blessed flower (Nan); on a Tai Lue tung, the eight directions", realm: null,
+                    from: [S.boSuak, S.banner]},
+    dokKaeo: {means: "a blessed flower; like the ta laew, the woven bamboo sign that marks sacred ground and keeps evil " +
+                     "spirits out (Tai Lue)", realm: null, from: [S.boSuak, S.mueangNgoen]},
+    nok: {means: "nature, and plenty (the Tai Lue's small bird, often beside the horse)", realm: "sky", from: [S.lue]},
+    nokKhu: {means: pairs, realm: "sky", from: [S.boSuak, S.lue]},
+    nokKhuTon: {means: pairs, realm: "sky", from: [S.boSuak, S.lue]},
+    nokKum: {means: null, realm: "sky", from: [S.lue]},
+    hongPloi: {means: hong, realm: "sky", from: [S.maeChaem, S.lue, S.chiangKham]},
+    hongBi: {means: hong, realm: "sky", from: [S.maeChaem, S.lue, S.chiangKham]},
+    hongKhu: {means: hong, realm: "sky", from: [S.maeChaem, S.lue, S.chiangKham]},
+    nak: {means: naga, realm: "underworld", from: [S.thaiLao, S.lue]},
+    nakKum: {means: naga, realm: "underworld", from: [S.thaiLao, S.lue]},
+    chang: {means: "wisdom, leading, greatness, prosperity, and standing tied to wealth: \"elephants and horses under " +
+                   "three houses\" is to be rich (Tai Lue)", realm: null, from: [S.lue, S.chiangKham, S.mueangNgoen]},
+    ma: {means: "nature's plenty; with a rider or a bird on its back, a carrier, and endurance (Tai Lue)", realm: null,
+         from: [S.lue]},
+    khanSianSam: {means: "the bowl: " + buddhist, realm: null, from: [S.maeChaem]},
+    khanSamAew: {means: "the bowl: " + buddhist, realm: null, from: [S.maeChaem]},
+    khanAewOo: {means: "the bowl: " + buddhist, realm: null, from: [S.maeChaem]},
+    khanDok: {means: "the bowl: " + buddhist, realm: null, from: [S.maeChaem]},
+    komHupNok: {means: "the lantern: " + buddhist, realm: null, from: [S.maeChaem]},
+    komHuaMon: {means: "the lantern: " + buddhist, realm: null, from: [S.maeChaem]},
+    sapaoLoiNam: {means: ship, realm: null, from: [S.maeChaem, S.chiangKham]},
+    hangSapao: {means: ship, realm: null, from: [S.maeChaem, S.chiangKham]},
+    prasat: {means: "the castle at the heart of a Tai Lue tung, which the boat carries to the world of spirits with the " +
+                    "offerings", realm: null, from: [S.banner, S.chiangKham]},
+    phuKhao: {means: "obstacles, and how tangled things are (the Bo Suak weavers' mountains)", realm: null, from: [S.boSuak]},
+    namLai: {means: "the stream, and passing smoothly beyond obstacles (Nan); copied, it is thought, from the Nan river " +
+                    "when the Tai Lue were moved from Sipsongpanna", realm: null, from: [S.boSuak, S.lue]},
+    maiSin: {means: "the weaver's own mark, to show the cloth is hers or keep it from theft (Mueang Long)", realm: null,
+             from: [S.long]}
+  };
+})(LAI_SOURCES);
+Object.keys(LAI).forEach(function (key) {
+  var m = LAI_MEANS[key] || {means: null, realm: null, from: []};
+  LAI[key].means = m.means;
+  LAI[key].realm = m.realm;
+  LAI[key].meansFrom = m.from.join("; ") || null;
+});
 
 // The names, in an order to show them: the units of Nan, the bands, the figures, the lanterns and bowls, the hem.
 var LAI_ORDER = ["nuay", "nuayHollow", "nuayNested", "nuayCross", "nuayDots", "kap", "kapNested", "kapPair", "kanKho", "kho2",

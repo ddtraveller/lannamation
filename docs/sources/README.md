@@ -16,6 +16,10 @@ quotations and a link to the holder's copy, never its text.
 Both are public domain in Thailand as marked on Wikimedia Commons (PD-Thailand); each file's head links to the
 scan and says why.
 
+`weaving_meanings.md` is of another kind: what the weaving motifs of `kit/weaving.js` mean, each meaning with a short
+quotation from the thesis, paper or page it was found in, and a link to it (2026-10-28). Those are in copyright, so
+only the quotations are kept.
+
 ## What the OCR gets wrong
 
 The text is machine-read and **not corrected by hand**. Letters are sometimes swapped (ด for ค, ติ for ดิ), passage

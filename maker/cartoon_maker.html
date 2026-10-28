@@ -573,10 +573,11 @@ function styleCode(item) {              // the person's chosen face, hair and bo
   return out;
 }
 var PARASOLS = [["lai", "🌂 ลายไทย"], ["yantra", "🌂 ยันต์แปดทิศ"], ["buddha", "🌂 พระพุทธรูป"]];
-// How a person feels, the kit's nine names (feel: "happy" ...): each sets the face and how the body is carried, for the
+// How a person feels, ten of the kit's names (feel: "happy" ...): each sets the face and how the body is carried, for the
 // whole film. A sleepy one nods and yawns by themselves, a satiated one shuts their eyes now and then.
 var FEELS = [["neutral", "😐 เฉย ๆ"], ["happy", "😊 ดีใจ"], ["laughing", "😆 หัวเราะ"], ["sad", "😢 เศร้า"], ["concerned", "😟 กังวล"],
-             ["angry", "😠 โกรธ"], ["sleepy", "😪 ง่วง"], ["satiated", "😌 อิ่ม"], ["surprised", "😮 ประหลาดใจ"]];
+             ["angry", "😠 โกรธ"], ["sleepy", "😪 ง่วง"], ["satiated", "😌 อิ่ม"], ["surprised", "😮 ประหลาดใจ"],
+             ["awe", "😯 อัศจรรย์ใจ"]];   // awe: eyes lifted to what is greater (owner, 2026-10-28)
 // The creatures that have feelings too (the kit's creatureFeel(): the eyes, the brows, the mouth, the head, the ears
 // and the tail; owner, 2026-10-18: "start the creatures"), and whether an item has them.
 var FEELING_THINGS = {dog: true, rooster: true, naga: true, dragon: true, mom: true, luang: true, oxcart: true,   // the ox cart's: its buffalo's
@@ -3605,7 +3606,7 @@ function guidePut(x, y) {               // one of the picked thing, standing at 
 
 // chosen  the name lit; what  the data-g of each button ("feel" or "feelthere").
 // Returns the buttons as one string of HTML.
-function feelChoices(chosen, what) {    // the nine feelings (FEELS) as the guide's big buttons; "what" is what a tap on one does
+function feelChoices(chosen, what) {    // the ten feelings (FEELS) as the guide's big buttons; "what" is what a tap on one does
   return "<div class='choices'>" + FEELS.map(function (f, n) {
     return "<button data-g='" + what + "' data-n='" + n + "'" + (f[0] === chosen ? " class='on'" : "") + ">" + f[1] + "</button>";
   }).join("") + "</div>";

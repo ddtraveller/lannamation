@@ -678,6 +678,26 @@ explained, not drawn, so not in `LAI`); the inventories of Lampang, Lamphun and 
 the kit's `weaver` (an indigo blouse, a striped sin): for work at the loom the sources give a plain striped sin (sin
 ta), a breast cloth or the snug suea pat, the hair in a high bun.
 
+### What the motifs mean (2026-10-28)
+
+The owner asked for the iconography of the cloth (a second notebook, "Lanna Thai weaving iconography: symbols,
+archetypes and patterns", 25 sources) and then for the kit to carry what its symbols mean. Every motif of `LAI` now
+has `means` (a sentence, or null), `realm` (`"sky"`, `"earth"`, `"underworld"` or null) and `meansFrom`, from
+`LAI_MEANS` and its sources `LAI_SOURCES`. 27 of the 57 have a meaning and 9 a realm; the rest have none, as the Nan
+thesis says of the base units (the diamond, the triangle, the hook, the zigzag: "which may carry no meaning").
+Each meaning was found in its source's own words, quoted in `docs/sources/weaving_meanings.md`, and is said of the
+people or town the source names: the Bo Suak weavers of Nan, Mae Chaem, Mueang Long, the Tai Lue.
+
+Checking the notebooks' answers against the text took out three meanings the kit had (the hook "holding fast to
+fortune", paired birds "faithfulness", the quail "care of the home": in no source of either notebook) and put in one
+the new notebook said was not there (the lantern and the bowl: Buddhist signs of a Mae Chaem hem). A NotebookLM
+answer is a lead to look up, not a source.
+
+`realm` is the Tai cosmology two Tai Lue sources give: the sky above, the realm of birds; the Mom or the lion in the
+middle, on the ground; below, the underworld of snakes and naga. `checks/lai_check.py` fails a motif whose fields
+are missing or wrong, and lists the realms down each town's teen jok without failing on their order, since the
+order is said of Tai Lue cloth.
+
 ## The cooking pot (2026-10-25)
 
 The kit's sticky-rice steamer `huad()` already stands on a round clay pot over three hearth stones. With

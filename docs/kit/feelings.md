@@ -45,6 +45,7 @@ morning: "Add a laugh for each of the sprites, too": laughing is the ninth.
 | sleepy | sleepy 1; lean 0.04, head down 0.08 | the lids 0.55 shut and the brows up 2.5 against them; every 7 s the head sinks for 4 s (0.22 more) as the eyes close, and comes up in a quarter of a second with the eyes wide; every 11 s a yawn of 2.4 s: the mouth open tall and round, the eyes shut, the brows up 7.5, the head back 0.16. A yawn stops a nod |
 | satiated | full 1, smile 0.8; lean back 0.07, head up 0.06 | the lids 0.62 shut over an easy smile, the cheeks pinker (blush 0.2 + 0.22 on a lady, 0.42 + 0.2 on a fellow); every 6 s the eyes close for 1.5 s and the head tips back 0.04 more |
 | surprised | wonder 1, the mouth round 0.7; lean back 0.05 | the kit's first `surprise`, unchanged |
+| awe | rapt 1, wonder 0.5, the mouth round 0.2; lean back 0.05, head up 0.1 | before what is greater: a naga rising, a thewada, the creature at the cave (owner, 2026-10-28; the pick A of three, "hushed"). `rapt` is a number of its own: the eyes go still (the wandering glance 0.3 of itself) and the irises lift 6, so white shows under them; the lids 30% wider and the brows up 5 (a fellow's 6). Wonder, fear and a smile alone made only a smaller surprise or a fear: the lifted iris is what reads as awe. The maker's tenth button, 😯 อัศจรรย์ใจ |
 
 - **The first names still work.** `calm`, `joy`, `surprise` and `anger` are neutral, happy, surprised and
   angry (`FEELING_WAS`) with the same numbers; `fear` stays, a tenth.

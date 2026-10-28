@@ -919,11 +919,13 @@ function pieEye(x, y, shut) {
 // up and together with a fold between them, the outer lids down, the mouth
 // pressed small, the eyes open on what it fears) and laugh (the eyes
 // squeezed shut and bowed up, the mouth open wide and opening again on
-// each "ha", the head back and shaking with it). A scene gives them as
+// each "ha", the head back and shaking with it) and rapt (the eyes go still
+// and lift, white showing under the irises, the lids open and the brows
+// held up: looking up at what is greater). A scene gives them as
 // numbers (wonder: 0.5) or by name (feel: "surprised"), and a name also
 // gives the body a lean and the head a tilt, unless the scene sets its own.
 // The names: neutral, happy, laughing, sad, concerned, angry, sleepy,
-// satiated, surprised; and fear. A slanted lid (see eye()) carries anger, sadness
+// satiated, surprised; and fear, thinking and awe. A slanted lid (see eye()) carries anger, sadness
 // and worry where no brow can be seen, as under a head-cloth.
 var FEELINGS = {
   neutral: {},
@@ -936,7 +938,8 @@ var FEELINGS = {
   sleepy: {sleepy: 1, bend: 0.04, tilt: 0.08},
   satiated: {full: 1, smile: 0.8, bend: -0.07, tilt: -0.06},
   surprised: {wonder: 1, open: [0.7, 0, 1], bend: -0.05, tilt: -0.05},
-  fear: {fear: 1, wonder: 0.4, open: [0.6, 1, 0], bend: -0.08, tilt: 0.1}
+  fear: {fear: 1, wonder: 0.4, open: [0.6, 1, 0], bend: -0.08, tilt: 0.1},
+  awe: {rapt: 1, wonder: 0.5, open: [0.2, 0, 1], bend: -0.05, tilt: -0.1}   // before what is greater: a naga, a thewada, the creature at the cave (the owner's pick A, 2026-10-28)
 };
 var FEELING_WAS = {calm: "neutral", joy: "happy", surprise: "surprised", anger: "angry"};   // the names the kit had first, which still work
 
@@ -1004,7 +1007,7 @@ function feelingOverTime(f, at) {
 // feeling, and forget() clears them all, so a render and a still (settled() paints two seconds before a jump) show
 // the change as the film does.
 var FEEL_KEPT = {}, FEEL_KEPT_N = 0, FEEL_KEPT_AT = -1, FEEL_EASE = 0.4, FEEL_JUMP = 0.12;
-var FEEL_NUMBERS = ["wonder", "smile", "fear", "anger", "sad", "sleepy", "full", "worry", "laugh", "bend", "tilt"];
+var FEEL_NUMBERS = ["wonder", "smile", "fear", "anger", "sad", "sleepy", "full", "worry", "laugh", "rapt", "bend", "tilt"];
 
 // The numbers u of the way from feeling a to feeling b; a mouth a feeling opens (surprise, fear) opens and shuts by
 // degrees, and is gone when it is shut.
@@ -1046,11 +1049,11 @@ function easedFeeling(key, f) {
 // The feeling a look asks for, as the numbers the face and the body read.
 // "at" is the person's own time (ownTime() added to the clock).
 //   look   the look: it reads feel (a name of FEELINGS, or one of FEELING_WAS) and the numbers wonder, smile,
-//          fear, anger, sad, sleepy, full, worry, laugh (0 to 1, each beating the name's own), eyes and lips
+//          fear, anger, sad, sleepy, full, worry, laugh, rapt (0 to 1, each beating the name's own), eyes and lips
 //   at     the person's own time in seconds, default clock
 //   key    a name kept across frames (person() gives the person's id): with one, a change of feeling is eased
 //          over FEEL_EASE seconds (easedFeeling()); left out, the face shows the new feeling at once
-// Returns {wonder, smile, fear, anger, sad, sleepy, full, worry, laugh, open, bend, tilt, eyes, lips} and what
+// Returns {wonder, smile, fear, anger, sad, sleepy, full, worry, laugh, rapt, open, bend, tilt, eyes, lips} and what
 // feelingOverTime() adds (lids, browUp, ha). It warns once for a feeling's name it does not know.
 // e.g. var f = feelingOf({feel: "sleepy"}, clock + ownTime("yai"), "yai");
 function feelingOf(look, at, key) {
@@ -1064,7 +1067,7 @@ function feelingOf(look, at, key) {
   var f = {wonder: amount(look.wonder, "wonder"), smile: unhappy ? clamp(named.smile || 0) : amount(look.smile, "smile"),
            fear: amount(look.fear, "fear"), anger: amount(look.anger, "anger"), sad: amount(look.sad, "sad"),
            sleepy: amount(look.sleepy, "sleepy"), full: amount(look.full, "full"), worry: amount(look.worry, "worry"),
-           laugh: amount(look.laugh, "laugh"),
+           laugh: amount(look.laugh, "laugh"), rapt: amount(look.rapt, "rapt"),
            open: named.open, bend: named.bend || 0, tilt: named.tilt || 0,
            eyes: look.eyes || 1, lips: look.lips || 1};   // and the face's own measure: how large its eyes and its mouth are
   return feelingOverTime(key === undefined ? f : easedFeeling(key, f), at === undefined ? clock : at);
@@ -1877,8 +1880,9 @@ function northNose(V, lady) {
 // e.g. ladyFace(false, null, saccade(t), view(0.3, true, null), feelingOf({feel: "happy"}));
 function ladyFace(shut, mouth, glance, V, feel) {
   var lift = (mouth ? 5 * mouth.open : 0) + 7 * feel.wonder + 6 * feel.fear - 4 * feel.anger + feel.browUp + 2 * feel.worry
-           - 2 * (shut === true ? 1 : shut || 0);                 // the brows drop a little in a blink
-  var wide = 1 + 0.3 * feel.wonder - 0.12 * feel.smile + 0.45 * feel.fear - 0.15 * feel.anger - 0.3 * feel.sad + 0.1 * feel.worry;   // the lids
+           + 5 * feel.rapt - 2 * (shut === true ? 1 : shut || 0);   // the brows drop a little in a blink
+  var wide = 1 + 0.3 * feel.wonder - 0.12 * feel.smile + 0.45 * feel.fear - 0.15 * feel.anger - 0.3 * feel.sad + 0.1 * feel.worry
+           + 0.3 * feel.rapt;                                     // the lids
   var knit = 0.35 * feel.anger - 0.3 * feel.sad + 0.15 * feel.fear - 0.38 * feel.worry;   // the brows' inner ends: down in anger, up in sadness and worry
   var slant = 0.9 * feel.anger - 0.7 * feel.sad - 0.45 * feel.worry, close = 3 * feel.worry;   // the lids' slant (see eye()); worry draws the brows together
   // The face of the paintings (the hairline is at -316 and the chin at -229).
@@ -2048,8 +2052,9 @@ function ladyFace(shut, mouth, glance, V, feel) {
 // e.g. manFace(false, mouthAt(SUNG), 0, view(0, false, null), feelingOf({}));
 function manFace(shut, mouth, glance, V, feel) {
   var lift = (mouth ? 6 * mouth.open : 0) + 8 * feel.wonder + 7 * feel.fear - 5 * feel.anger + feel.browUp + 2 * feel.worry
-           - 2 * (shut === true ? 1 : shut || 0);                 // the brows drop a little in a blink
-  var wide = 1 + 0.3 * feel.wonder - 0.15 * feel.smile + 0.45 * feel.fear - 0.2 * feel.anger - 0.3 * feel.sad + 0.1 * feel.worry;
+           + 6 * feel.rapt - 2 * (shut === true ? 1 : shut || 0);   // the brows drop a little in a blink
+  var wide = 1 + 0.3 * feel.wonder - 0.15 * feel.smile + 0.45 * feel.fear - 0.2 * feel.anger - 0.3 * feel.sad + 0.1 * feel.worry
+           + 0.3 * feel.rapt;
   var knit = 0.4 * feel.anger - 0.3 * feel.sad + 0.15 * feel.fear - 0.4 * feel.worry;   // the brows' inner ends: down in anger, up in sadness and worry
   var slant = 0.9 * feel.anger - 0.7 * feel.sad - 0.6 * feel.worry, close = 3 * feel.worry;   // as the lady's, worry more: his brows are often under a head-cloth
   var side = V.side || 0;                           // how far his profile has taken over (see view())
@@ -4466,7 +4471,7 @@ var LOOK_KEYS = {};
 
 ["age", "anger", "at", "bangles", "bare", "beads", "beard", "bend", "blink", "body", "build", "bun", "buttons", "cap", "coat", "collar", "dance", "dap", "drum", "earplug", "earrings", "eyes", "face",
  "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
- "handB", "hat", "head", "hidden", "holding", "id", "late", "laugh", "lady", "legs", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "reachA", "reachB",
+ "handB", "hat", "head", "hidden", "holding", "id", "late", "laugh", "lady", "legs", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "rapt", "reachA", "reachB",
  "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt", "sleepy",
  "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tears", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wonder", "worn", "worry", "wrap", "wraps", "wristA", "wristB"
 ].forEach(function (name) { LOOK_KEYS[name] = true; });
@@ -4581,12 +4586,12 @@ var LOOK_KEYS = {};
 //                   about 8 degrees each way. At every turn a hanging far arm (A) is drawn behind
 //                   the body (see behindA in person())
 //   at              [x, y] in the scene: the eyes look at it
-//   wonder, smile, fear, anger, sad, sleepy, full, worry, laugh
+//   wonder, smile, fear, anger, sad, sleepy, full, worry, laugh, rapt
 //                   0 to 1 each: what the face feels (see FEELINGS); sleepy also nods and
 //                   yawns, full shuts its eyes now and then, and laugh laughs, each at the
-//                   person's own time
+//                   person's own time; rapt lifts the eyes, still, white showing under them
 //   feel            a feeling by name: "neutral", "happy", "laughing", "sad", "concerned", "thinking",
-//                   "angry", "sleepy", "satiated", "surprised", or "fear" ("calm", "joy", "surprise"
+//                   "angry", "sleepy", "satiated", "surprised", "fear" or "awe" ("calm", "joy", "surprise"
 //                   and "anger" still work); it also leans the body and tilts the head,
 //                   unless bend or tilt is given
 //   dance           true: a lifted hand takes the pose of Thai dance
@@ -6172,6 +6177,10 @@ function personHead(fig) {
     var headY = y - (330 + (look.skirt ? 190 : 216) * (leggy - 1)) * size;
     glance = [Math.max(-4, Math.min(4, (look.at[0] - x) / 120 * (look.face || 1))),
               Math.max(-3, Math.min(3, (look.at[1] - headY) / 120))];
+  }
+  if (feel.rapt > 0) {                                   // rapt: the eyes go still and lift, white showing under the irises
+    var r = feel.rapt, across = glance.length ? glance[0] : glance, down = glance.length ? glance[1] : 0;
+    glance = [across * (1 - 0.7 * r), down * (1 - r) - 6 * r];
   }
   if (lady) {
     ladyFace(shut, mouth, glance, V, feel);

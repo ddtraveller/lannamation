@@ -434,11 +434,11 @@ e.g. var shown = easedFeeling("lad", {wonder: 0, smile: 1, ...});
 The feeling a look asks for, as the numbers the face and the body read.
 "at" is the person's own time (ownTime() added to the clock).
   look   the look: it reads feel (a name of FEELINGS, or one of FEELING_WAS) and the numbers wonder, smile,
-         fear, anger, sad, sleepy, full, worry, laugh (0 to 1, each beating the name's own), eyes and lips
+         fear, anger, sad, sleepy, full, worry, laugh, rapt (0 to 1, each beating the name's own), eyes and lips
   at     the person's own time in seconds, default clock
   key    a name kept across frames (person() gives the person's id): with one, a change of feeling is eased
          over FEEL_EASE seconds (easedFeeling()); left out, the face shows the new feeling at once
-Returns {wonder, smile, fear, anger, sad, sleepy, full, worry, laugh, open, bend, tilt, eyes, lips} and what
+Returns {wonder, smile, fear, anger, sad, sleepy, full, worry, laugh, rapt, open, bend, tilt, eyes, lips} and what
 feelingOverTime() adds (lids, browUp, ha). It warns once for a feeling's name it does not know.
 e.g. var f = feelingOf({feel: "sleepy"}, clock + ownTime("yai"), "yai");
 ```
@@ -6678,7 +6678,7 @@ e.g. pen.save(); sabaiCamera(t, where, CLOTH, 6, 20); /* draw the scene */ pen.r
 
 ## weaving.js
 
-Weaving of the north for the Lanna cartoon kit: the patterns of Lanna and northern Thai cloth, drawn thread by thread, the cloths made of them, and the women who weave and spin. Load this file after oldcartoon.js.  Everything here follows the NotebookLM notebook "Lanna and Northern Thai weaving: looms, spinning, cloth and the women who weave" (2026-10-24, 16 sources): above all the Silpakorn University thesis on the teen jok of Nan (การจัดการความรู้ผ้าตีนจกเมืองน่าน, with its graph-paper charts), the study of Mae Chaem teen jok in ThaiJO (larts-journal 247740: the 11 master motifs), the Nan teen jok paper in ThaiJO (jica 94252: the parts of the hem), SACIT's archive of Kru Pranom Tapang's Khan Dok cloth of Mueang Long, the Lanna Folklife Museum of Chiang Mai (pa sin tin jok kham), the Department of Sericulture's page on khit, and the Textile Atlas on Tai Yuan teen jok. docs/kit/things.md, "Lanna weaving: the patterns, the cloths and the looms", says which grid follows a chart and which was drawn from a source's description of its shape.  The pieces: LAI             the motifs, each a grid of threads with its Thai name, meaning, town and source weaveGrid       one motif as woven clo
+Weaving of the north for the Lanna cartoon kit: the patterns of Lanna and northern Thai cloth, drawn thread by thread, the cloths made of them, and the women who weave and spin. Load this file after oldcartoon.js.  Everything here follows the NotebookLM notebook "Lanna and Northern Thai weaving: looms, spinning, cloth and the women who weave" (2026-10-24, 16 sources): above all the Silpakorn University thesis on the teen jok of Nan (การจัดการความรู้ผ้าตีนจกเมืองน่าน, with its graph-paper charts), the study of Mae Chaem teen jok in ThaiJO (larts-journal 247740: the 11 master motifs), the Nan teen jok paper in ThaiJO (jica 94252: the parts of the hem), SACIT's archive of Kru Pranom Tapang's Khan Dok cloth of Mueang Long, the Lanna Folklife Museum of Chiang Mai (pa sin tin jok kham), the Department of Sericulture's page on khit, and the Textile Atlas on Tai Yuan teen jok. docs/kit/things.md, "Lanna weaving: the patterns, the cloths and the looms", says which grid follows a chart and which was drawn from a source's description of its shape.  The pieces: LAI             the motifs, each a grid of threads with its Thai name, shape, town and source, and what it means where a source says (
 
 ### `laiMirror(half)`
 
@@ -11549,6 +11549,26 @@ may take to load is KIT_CHECK_LOAD_SECONDS from the environment (180 unless set)
 - `check(browser, page_file, quick, settle)`: One page: what was found, and a list of what failed.
 - `line_of(name, found)`: What was found on one page, as one line of the table.
 - `main()`: The command line (see this file's docstring): check the look keys and the names, then each page; write
+
+## kit/checks/lai_check.py
+
+```
+lai_check.py - what the weaving motifs mean (LAI's means, realm, meansFrom), and the realms down each teen jok.
+
+    python checks/lai_check.py
+
+Every motif of weaving.js must carry its meaning's fields (means, realm and meansFrom, each null where no source
+says), a realm of "sky", "earth" or "underworld", and a source for any meaning or realm it has: those are passed
+or failed. Then, for each town's hem (TEEN_JOK_ROWS), it lists the realm of each row from the top, and says where
+a lower row's realm stands above a higher one's: only reported, never failed, because the sources give that order
+(the birds above, the Mom in the middle, the naga below) for Tai Lue cloth, and a Tai Yuan hem may keep its own
+(Mueang Long weaves its paired birds in the main row, the middle of the hem).
+
+It needs Google Chrome (through Playwright) and weaving.html in the kit's folder. It writes out/checks/lai_check.txt
+and .json (report.py) and ends with exit code 1 when an item failed, else 0.
+```
+
+- `main()`: Read LAI and TEEN_JOK_ROWS from weaving.html, record each motif's fields, print the hems' realms.
 
 ## kit/checks/person_same.py
 

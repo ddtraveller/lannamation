@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>feelings - nine feelings on every face</title>
+<title>feelings - ten feelings on every face</title>
 <style>
   html, body { margin: 0; background: #111; }
   canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
@@ -13,12 +13,12 @@
 <script>window.FILM_STYLE = {hop: false};   // the faces held still, so that the feelings can be read</script>
 <script src="oldcartoon.js"></script>
 <script>
-// The "feelings" sheet: the nine feelings a person takes by name
+// The "feelings" sheet: the ten feelings a person takes by name
 // (feel: "happy" ...), in the order the cartoon maker offers them. Seven
 // parts of twelve seconds each. Six are one face close up, five feelings to
 // a row: a lady, a fellow, a girl and an elder in the three-quarter view the
 // kit is drawn in, then the lady and the fellow turned to full face. The
-// last is the lady and the fellow whole, all nine feelings in a row, to see
+// last is the lady and the fellow whole, all ten feelings in a row, to see
 // what a feeling does to the body (the lean, the tilt of the head, the
 // laugh's shake, the sleepy nod and yawn, the full one leaning back). A part
 // is twelve seconds so that every sleepy face nods and yawns in it, each at
@@ -28,7 +28,7 @@ var DURATION = 84;
 var BEAT = 0.5;
 
 var NAMES = [["neutral", "เฉย ๆ"], ["happy", "ดีใจ"], ["laughing", "หัวเราะ"], ["sad", "เศร้า"], ["concerned", "กังวล"],
-             ["angry", "โกรธ"], ["sleepy", "ง่วง"], ["satiated", "อิ่ม"], ["surprised", "ประหลาดใจ"]];
+             ["angry", "โกรธ"], ["sleepy", "ง่วง"], ["satiated", "อิ่ม"], ["surprised", "ประหลาดใจ"], ["awe", "อัศจรรย์ใจ"]];
 
 // Each part: its title, who ([cast member, changes to the look], one for a close-up and two for the whole), how large.
 var PARTS = [
