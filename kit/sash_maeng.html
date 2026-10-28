@@ -674,7 +674,7 @@ function gardenFront(kind, t, enter) {
     return;
   }
   // one butterfly to a scene, that drifts across and is gone (owner, 2026-10-26: "a bit too many butterflies"); the
-  // pond's flies low over the water (pondButterfly())
+  // pond's flies low over the water (pondButterfly()); none over the paddy, where the parasols are (owner, 2026-10-28)
   var petals = [kind === "paddy" ? 12 : 26, "#f6b8cc", 3, 1.1], light = [0.7, 2];
   if (kind === "pond") {
     var b = pondButterfly(t);
@@ -682,7 +682,8 @@ function gardenFront(kind, t, enter) {
     sceneryAir(t, {petals: petals, light: light});
     return;
   }
-  sceneryAir(t, {butterfly: {kind: kind === "paddy" ? "grassyellow" : "lacewing", x: 300, y: 520, vx: 90, weave: 60, seed: 3, size: 1.4, turn: 1.2, wing: 2},
+  if (kind === "paddy") { sceneryAir(t, {petals: petals, light: light}); return; }
+  sceneryAir(t, {butterfly: {kind: "lacewing", x: 300, y: 520, vx: 90, weave: 60, seed: 3, size: 1.4, turn: 1.2, wing: 2},
                  petals: petals, light: light});
 }
 

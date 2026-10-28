@@ -33,7 +33,7 @@ var S15_CREDITS = [
   ["line", "https://github.com/ddtraveller/lannamation"],
   ["line", "Claude AI (Anthropic)"],
   ["gap"],
-  ["head", "เสียงเล่าเรื่อง", "Narrator (AI voice)"],
+  ["head", "เสียงเล่าเรื่อง", "Narrator"],   // her own voice, every line (owner, 2026-10-28)
   ["line", "อมรรัตน์ ใจจา · Amornrat Jaijar"],
   ["gap"],
   // owner, 2026-10-21: "add Writer: Amornrat Jaijar because she is going to rewrite the text properly. Language

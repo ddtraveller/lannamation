@@ -263,14 +263,8 @@ function sceneWish(t) {
     pen.fillStyle = warm;
     pen.fillRect(0, 0, WIDE, 1080);
   }
-  // a moth come in out of the night to the lamp, circling it while it burns, gone as it goes out (night.js; the beauty
-  // pass, owner, 2026-10-27: what is true on a cold night in the hut: no fireflies, no flowers at the door)
-  if (flame > 0.25) {
-    pen.save();
-    pen.globalAlpha = between(t, 6, 8) * between(flame, 0.25, 0.6);
-    atlasMoth(S04_LAMP[0] + 80 * Math.cos(t * 1.3), S04_LAMP[1] - 170 + 45 * Math.sin(t * 2.1), t, {size: 0.11, turn: -1.3 * Math.sin(t * 1.3), lit: 0.6 * flame});
-    pen.restore();
-  }
+  // no moth at the lamp while the father speaks of his death (it circled the lamp from the beauty pass until the owner,
+  // 2026-10-28: "remove ... the butterfly from the scene where the father tells his son he is going to die")
   s04Night(t);                                      // the night through the doorway, which the lamp does not light
   if (t > 57.39) {                                     // and the scene goes to black
     pen.fillStyle = "rgba(0, 0, 0, " + between(t, 57.39, 61.39).toFixed(3) + ")";
