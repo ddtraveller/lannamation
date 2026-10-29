@@ -225,6 +225,17 @@ Python 3, `pip install playwright` with Chrome installed, and ffmpeg for video.
 - A person may take `"sabai": true`: a shoulder cloth woven with small figures of
   the kit that walk along it as the person moves (sabai.js). It costs a moment the
   first time it is drawn, while its tiles are made.
+- One who wears a sabai (a woman in a pha sin, or a man or child with a shoulder
+  cloth) may take `"weave"`: their own sabai woven thread by thread, the end hanging
+  in a breeze with its woven end and fringe at the foot (weaving.js `SABAI_WEAVES`,
+  23 shoulder cloths of the north from the sources: jok and khit cloths such as
+  `nan`, `ngoen`, `ngoenNow`, `khit`, `yuanChet`, `chiangKham`, `long`, `maeChaemPat`,
+  `lueBands`, `lueKhit`, `phuanHatSiao`, `dokLoi`; the bride's pink silk `haeOn`; the
+  plain and checked everyday wraps `sawaiLaeng`, `tuapDam`, `tuapDaeng`, `tuapSaeng`,
+  `taSaeng`, `taKongDaeng`, `taKongDam`, `tuapRim`, `thumKhram`, `thumKhanun`), and
+  `"weaveColours"`: `own`, or a town's dyes (`maechaem`, `maechaemRed`, `nan`,
+  `nanIndigo`, `long`, `lue`, `khit`). Each of the kit's people who wears a sabai
+  already has one of their own; give a weave to dress someone otherwise.
 - Colours are optional: a person's `shirt`, `legs`, `skin`; the naga's `body`,
   `belly`, `crest`, `fire`; the dragon's `body`, `spots`, `belly`, `flame`,
   `mane`, `pearl`; a player's `shirt`, `legs`, `skin`; a lantern's `colour`

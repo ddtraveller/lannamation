@@ -562,6 +562,16 @@ var STYLE_LABELS = {face: "หน้า <small>face</small>", hair: "ผม <sma
 //   item  a person of movie.items: reads item.style {face, hair, body} and, for a new hair, the cast's own bun (CAST).
 // Returns a list of strings, empty when nothing is chosen. Changes nothing.
 // e.g. styleCode({name: "inta", style: {face: "thai", body: "fat"}}) gives ['north: "thai"', 'body: "fat"']
+// The woven sabai of weaving.js that one who wears a sabai may take (SABAI_WEAVES, by their Thai names), and the
+// colours each may be woven in (SABAI_COLOURS): the weave's own, or the dyes of a town the sources give.
+var WEAVE_COLOUR_NAMES = {own: "สีเดิม · its own", maechaem: "แม่แจ่ม · Mae Chaem", maechaemRed: "แม่แจ่ม พื้นแดง · Mae Chaem, red",
+                          nan: "น่าน · Nan", nanIndigo: "น่าน พื้นคราม · Nan, indigo", long: "เมืองลอง · Mueang Long",
+                          lue: "ไทลื้อ · Tai Lue", khit: "ขิด · khit"};
+
+// Whether a cast member wears a sabai (a woman in a pha sin, or one whose look has a sabai): only they take a weave.
+// e.g. wearsSabai("lady") is true; wearsSabai("soldier") is false
+function wearsSabai(name) { var look = CAST[name]; return !!look && look.sabai !== false && !!(look.skirt || look.sabai); }
+
 function styleCode(item) {              // the person's chosen face, hair and body, as entries of their look
   var st = item.style || {}, out = [];
   if (st.face === "thai") { out.push('north: "thai"'); }
@@ -652,7 +662,8 @@ var BEAT = 0.5;                         // the kit reads this: how long one beat
 var rendering = false;                  // the kit's settled() looks for it
 
 // ---------- the film, as data ----------
-// item: {id, kind: "person" | "thing" | "piece", name, keys: [[second, x, y] ...], size, feel (one of FEELS), pose, sabai (a person in the woven cloth)}
+// item: {id, kind: "person" | "thing" | "piece", name, keys: [[second, x, y] ...], size, feel (one of FEELS), pose, sabai (a person in the woven cloth),
+//        weave and weaveColours (one who wears a sabai, in a weave of weaving.js and its colours: wearsSabai())}
 // text: {id, kind: "card" | "subtitle" | "say" | "think", big, small, from, to, who (a bubble's person: their id)}
 // movie, the film this page edits, saves and exports: plain data, JSON as it stands (saveJson writes it as it is).
 //   {duration   seconds, 3 to 90
@@ -975,6 +986,7 @@ function personCode(item, n) {
               "face: p" + n + "[3]", "step: p" + n + "[2] ? p" + n + "[6] / (112 * " + sizeValue(item) + ") : 0", "id: " + js("i" + item.id)];
   if (same) { look = look.concat(poseLook(poses[0], late, item.keys[0][0], item)); }
   if (AGED[item.name]) { look.push(AGED[item.name]); }
+  if (item.weave && !item.sabai && SABAI_WEAVES[item.weave]) { look.push("sabai: sabaiLook(" + js(item.weave) + ", " + js(item.weaveColours || "own") + ")"); }   // the weave, thread by thread
   var more = "{" + look.concat(colourCode(item), styleCode(item)).join(", ") + "}";
   if (!same) {                          // the pose changes along the course: the one of the key reached, p[7]
     more = "Object.assign(" + more + ", [" + poses.map(function (q, i) { return "{" + poseLook(q, late, item.keys[i][0], item).join(", ") + "}"; }).join(", ") + "][p" + n + "[7]])";
@@ -2308,6 +2320,14 @@ function panel() {
            "<label>ร่ม <small>which parasol, for the parasol poses</small></label><select id='parasolKind'>" + PARASOLS.map(function (q) { return "<option value='" + q[0] + "'" + (q[0] === (selected.parasol || "lai") ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + "</select>",
              "<label>สไบ <small>sabai: a shoulder cloth woven with figures that walk</small></label><div class='poses'>" +
              "<button id='sabaiBtn'" + (selected.sabai ? " class='on'" : "") + ">🧣 สไบทอ <small>woven sabai</small></button></div>");
+      if (wearsSabai(selected.name)) {     // their own sabai woven thread by thread: a weave of the north, in its colours or a town's
+        h.push("<label>ลายผ้าสไบ <small>sabai weave: woven thread by thread, the end hanging in a breeze</small></label><select id='weaveKind'>" +
+               [["", "สไบเดิม · the kit's own"]].concat(Object.keys(SABAI_WEAVES).map(function (k) { return [k, SABAI_WEAVES[k].thai]; })).map(function (q) {
+                 return "<option value='" + q[0] + "'" + (q[0] === (selected.weave || "") ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + "</select>",
+               "<label>สีผ้าสไบ <small>its colours</small></label><select id='weaveColours'" + (selected.weave ? "" : " disabled") + ">" +
+               SABAI_COLOURS.map(function (k) {
+                 return "<option value='" + k + "'" + (k === (selected.weaveColours || "own") ? " selected" : "") + ">" + (WEAVE_COLOUR_NAMES[k] || k) + "</option>"; }).join("") + "</select>");
+      }
     }
     if (CANDLES[selected.name]) {
       h.push("<label>เทียน <small>candle: off by day, on at dusk and night, unless you say</small></label><div class='poses'>" +
@@ -2438,7 +2458,21 @@ function panel() {
     b.onclick = function () { that.pose = b.getAttribute("data-pose"); rebuild(); show(); panel(); };
   });
   if (byId("parasolKind")) { byId("parasolKind").onchange = function () { that.parasol = byId("parasolKind").value; rebuild(); show(); }; }
-  if (byId("sabaiBtn")) { byId("sabaiBtn").onclick = function () { that.sabai = !that.sabai; rebuild(); show(); panel(); }; }
+  if (byId("sabaiBtn")) { byId("sabaiBtn").onclick = function () { that.sabai = !that.sabai; if (that.sabai) { delete that.weave; delete that.weaveColours; } rebuild(); show(); panel(); }; }
+  if (byId("weaveKind")) {                 // a weave takes the place of the cloth of walking figures, and the kit's own back again
+    byId("weaveKind").onchange = function () {
+      var v = byId("weaveKind").value;
+      if (v) { that.weave = v; delete that.sabai; } else { delete that.weave; delete that.weaveColours; }
+      rebuild(); show(); panel();
+    };
+  }
+  if (byId("weaveColours")) {
+    byId("weaveColours").onchange = function () {
+      var v = byId("weaveColours").value;
+      if (v && v !== "own") { that.weaveColours = v; } else { delete that.weaveColours; }
+      rebuild(); show(); panel();
+    };
+  }
   p.querySelectorAll("[data-style]").forEach(function (b) {   // a person's face, hair or body
     b.onclick = function () {
       var key = b.getAttribute("data-style"), value = b.getAttribute("data-value");
@@ -3187,7 +3221,7 @@ function filmPrompt() {
     "You write a short cartoon for a web page that draws it. Answer with ONE JSON object and nothing else.",
     "The stage is a sheet 1440 wide and 1080 high; x runs 0..1440 left to right, y runs 0..1080 top to bottom. The ground is y 880..1040 (feet stand there, 900 is typical); the sky is y 60..600.",
     "JSON shape: {\"duration\": seconds 5..60, \"backdrop\": one of " + JSON.stringify(BACKS.map(function (b) { return b[0]; })) + ",",
-    " \"items\": [ {\"kind\": \"person\", \"name\": one of " + JSON.stringify(people) + ", \"keys\": [[second, x, y], ...], \"size\": 0.7..1.7, \"feel\": one of " + JSON.stringify(FEELS.map(function (f) { return f[0]; })) + " (the face, and how the body is carried, from the start; a key may change it), \"pose\": one of " + JSON.stringify(POSES.map(function (p) { return p[0]; })) + ", \"parasol\": one of " + JSON.stringify(PARASOLS.map(function (p) { return p[0]; })) + " (which parasol a woman carries, with a parasol pose; optional), \"sabai\": true for a shoulder cloth woven with small figures that walk (optional), \"style\": {\"face\": \"thai\", \"hair\": \"high\"|\"low\"|\"wong\"|\"loose\", \"body\": \"fat\"} (the face, the hair and the body chosen apart, for a man or a woman alike; each optional), \"colours\": {\"shirt\"|\"legs\"|\"skin\": \"#rrggbb\"} },",
+    " \"items\": [ {\"kind\": \"person\", \"name\": one of " + JSON.stringify(people) + ", \"keys\": [[second, x, y], ...], \"size\": 0.7..1.7, \"feel\": one of " + JSON.stringify(FEELS.map(function (f) { return f[0]; })) + " (the face, and how the body is carried, from the start; a key may change it), \"pose\": one of " + JSON.stringify(POSES.map(function (p) { return p[0]; })) + ", \"parasol\": one of " + JSON.stringify(PARASOLS.map(function (p) { return p[0]; })) + " (which parasol a woman carries, with a parasol pose; optional), \"sabai\": true for a shoulder cloth woven with small figures that walk (optional), \"weave\": one of " + JSON.stringify(Object.keys(SABAI_WEAVES)) + " (their own sabai woven thread by thread, for " + JSON.stringify(people.filter(wearsSabai)) + "; optional), \"weaveColours\": one of " + JSON.stringify(SABAI_COLOURS) + " (the weave's colours: its own, or a town's dyes; optional), \"style\": {\"face\": \"thai\", \"hair\": \"high\"|\"low\"|\"wong\"|\"loose\", \"body\": \"fat\"} (the face, the hair and the body chosen apart, for a man or a woman alike; each optional), \"colours\": {\"shirt\"|\"legs\"|\"skin\": \"#rrggbb\"} },",
     "            {\"kind\": \"thing\", \"name\": one of " + JSON.stringify(THINGS.concat(FLORAS, FOODS_OFFERED).map(function (t) { return t[0]; })) + ", \"keys\": [[second, x, y], ...], \"size\": 0.5..2 (1.2 is as the kit draws it; optional), \"feel\": as a person's, for the dog, rooster, naga, dragon, mom, luang and the oxcart's buffalo (its eyes, brows, mouth, and how it carries its head, ears and tail; optional)},",
     "            {\"kind\": \"piece\", \"name\": one of " + JSON.stringify(PIECES.concat(TREES).map(function (p) { return p[0]; })) + ", \"keys\": [[0, x, y]]} ],",
     " \"texts\": [ {\"kind\": \"card\", \"big\": title, \"small\": second line, \"from\": second, \"to\": second}, {\"kind\": \"subtitle\", \"big\": words under the picture, \"small\": translation, \"from\": s, \"to\": s}, {\"kind\": \"say\" or \"think\", \"who\": the person's place in items (0 for the first), \"big\": what they say, or think, in a bubble over their head, \"small\": translation, \"from\": s, \"to\": s} ],",
@@ -3265,7 +3299,8 @@ function taken(list, what, dropped) {
 //               creature of FEELING_THINGS its sixth a feeling. With no key: one at 0, at (720, 920) on the ground or
 //               (720, 400) in the air. A piece keeps its first key only. size 0.5 to 2 (0.95 for the boy and the girl,
 //               else 1.2); feel a feeling (or the old smile, 0 to 1); pose of POSES ("walk"); and, kept only when the
-//               page knows them: sabai true, style (STYLES), parasol (PARASOLS), candle "on" or "off" (CANDLES),
+//               page knows them: sabai true, weave (SABAI_WEAVES, for one who wears a sabai: wearsSabai()) and its
+//               weaveColours (SABAI_COLOURS), style (STYLES), parasol (PARASOLS), candle "on" or "off" (CANDLES),
 //               colours "#rrggbb" for the parts of PARTS (written in small letters)
 //     texts     the first TAKE.texts: kind "card", "subtitle", "say" or "think" (another kind is passed over);
 //               big and small cut to 80 characters; from and to seconds held in the film (to missing: from + 3); a
@@ -3327,6 +3362,10 @@ function adoptFilm(data) {
       });
     }
     if (kind === "person" && PARASOLS.some(function (q) { return q[0] === raw.parasol; })) { item.parasol = raw.parasol; }
+    if (kind === "person" && !item.sabai && wearsSabai(name) && SABAI_WEAVES.hasOwnProperty(raw.weave)) {   // a weave, and its colours when the page knows them
+      item.weave = raw.weave;
+      if (SABAI_COLOURS.indexOf(raw.weaveColours) > 0) { item.weaveColours = raw.weaveColours; }
+    }
     if (CANDLES[name] && (raw.candle === "on" || raw.candle === "off")) { item.candle = raw.candle; }
     if (kind !== "piece" && (raw.z === "*" || (typeof raw.z === "string" && raw.z in Z))) { item.z = raw.z; }   // its band, a name of the kit's Z
     var parts = kind === "person" ? PARTS.person : PARTS[name];

@@ -6829,6 +6829,21 @@ of red between two bands. colours: the blocks' colours in turn; band: how many p
 e.g. namLaiWeft(40, 12, [WEAVE_DYES.indigo, WEAVE_DYES.white, WEAVE_DYES.yellow, WEAVE_DYES.green], 48)
 ```
 
+### `threadMesh(brush, P, look)`
+
+```
+A cloth's threads where they lie. P: its crossings, a row a pick from the top and in each row a point a warp, each
+[x, y, z] (z how far that crossing stands toward the viewer: the light comes from it). Every warp a line from top to
+foot; every pick a round yarn between two warps in its weft's colour, its edges a shade darker and its crown a shade
+lighter; the warp over the weft at every other crossing; each patch lit by how it faces the light. look: {gap (the
+warps' spacing, which sets every thread's width), weft (a function (i, j): the colour of pick j between warps i and
+i + 1), warp (its colour), fringe (true: the warp's ends hang below the foot, swinging with t and gust), soft (the
+light in a few steps over patches twice as wide, each step one path, a run of one colour in a pick one line, and
+the warp's crossings square-ended:
+faster, for a cloth drawn on every person of a frame)}.
+e.g. threadMesh(pen, P, {gap: 3, weft: function (i, j) { return "#9a1f24"; }, warp: "#d8ccb0"})
+```
+
 ### `threadCloth(brush, x, y, t, look)`
 
 ```
@@ -6841,6 +6856,74 @@ many threads each way), gap (pixels between threads), weft (a function (i, j) gi
 default the flowing water), warp (the warp's colour), wind (0 still, 1 a good breeze)}. Hung at (x, y), the
 middle of the pole. Gives back {w, h}, its size when still.
 e.g. threadCloth(pen, 960, 120, t, {warps: 150, picks: 240, gap: 4, wind: 1})
+```
+
+### `sabaiWeave(name, colours)`
+
+(no comment)
+
+### `sabaiLook(name, colours)`
+
+```
+A look's sabai for a weave: [its ground, the thread at its selvedge (or its warp), the weave's name, its colours], for person()
+(oldcartoon.js draws the band and the back of it thread by thread when its third name is a weave).
+e.g. person(500, 900, cast("lady", {sabai: sabaiLook("nan", "maechaem")}))
+```
+
+### `sabaiGrid(name, part, cells)`
+
+(no comment)
+
+### `sabaiColour(weave, ch)`
+
+```
+The colour of a cell of a weave's grid.
+```
+
+### `sabaiWeft(name, cells, picks, colours)`
+
+```
+The weft's colour at cell i of pick j, as threadCloth's look.weft, for a cloth of "picks" picks hung by one end: its
+end, the body repeated, and the end again, turned, at the foot.
+colours: one of SABAI_COLOURS (left out, the weave's own).
+e.g. threadCloth(pen, 900, 200, t, {warps: 41, picks: 220, warp: SABAI_WEAVES.nan.warp, weft: sabaiWeft("nan", 40, 220)})
+```
+
+### `sabaiAnchors(where, cells)`
+
+```
+A row of a worn cloth's crossings, 0 to cells: the body's map (where(i), the point of crossing i) asked at every
+fourth crossing only, and the three between laid on the straight line between those two: the map bends with the
+spine and the shoulders, but not within four threads, and asking it of every crossing was most of the time a worn
+sabai took.
+```
+
+### `sabaiThreads(brush, spot, from, to, half, name, t, colours)`
+
+```
+A worn sabai's band across the chest, thread by thread (threadMesh): its picks across the band and its warps along it,
+its body's rows woven in, lit by soft folds where it lies over the breast and gathers to the shoulder, which a
+breath stirs. Draw it clipped to the band. brush: the pen; spot(along, across): where a point of the band lies,
+along it from its lower end and across it from its middle line (positive toward its lower side); from, to: the
+stretch along it to weave; half: half its width; name: a key of SABAI_WEAVES; t: the second; colours: one of
+SABAI_COLOURS (left out, the weave's own). The picks are counted
+from the band's lower end, so the pattern stays where it is on the cloth as the person moves; they are 0.7 of the
+warps' spacing apart, as a float is wider than a pick is tall.
+e.g. sabaiThreads(pen, function (a, c) { return [a, c]; }, 0, 120, 30, "nan", clock)
+```
+
+### `sabaiBackThreads(brush, spot, long, half, name, t, colours, breeze)`
+
+```
+The end of a worn sabai that hangs from the shoulder down the back, thread by thread, in a breeze as threadCloth's
+cloth is in the wind: nothing moves at the shoulder, more toward the foot, and a gust swells and dies; its woven
+end at the foot and the warp's ends hanging from it. brush: the pen; spot(u, v, push): where the cloth's point u
+across (0 by the body, 1 its outer edge) and v down (0 at the shoulder, 1 at the foot) lies when the wind pushes it
+by push ([across, down], in the person's units); long: how long it hangs; half: half the cloth's width; name: a
+key of SABAI_WEAVES; t: the second; colours: one of SABAI_COLOURS (left out, the weave's own); breeze: how hard the
+wind (1, a light breeze; 0, still). Gives back its
+crossings (threadMesh's P), for a shade laid over it.
+e.g. sabaiBackThreads(pen, function (u, v, push) { return [u * 40 + push[0], v * 200 + push[1]]; }, 200, 30, "nan", clock)
 ```
 
 ### `weaveBeam(brush, x1, y1, x2, y2, w, colour)`

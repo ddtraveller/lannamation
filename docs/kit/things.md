@@ -698,6 +698,57 @@ middle, on the ground; below, the underworld of snakes and naga. `checks/lai_che
 are missing or wrong, and lists the realms down each town's teen jok without failing on their order, since the
 order is said of Tai Lue cloth.
 
+### The sabai, thread by thread (2026-10-28)
+
+The owner: "update the sabai that the women and men wear in the kit with the weavings information ... Look at the
+hero scene where a weaving blows in the breeze. Try considering each thread of a sabai and weaving in the icons",
+then "use code like that to make the sabai but use the patterns you have", and "people with a sabai can take any
+of the sabai you are making now with different color combos". The hero's yard cloth (`threadCloth`) draws every
+warp and every pick as a line, lights each patch by how it faces the light, and blows it in travelling waves. Its
+drawing is now `threadMesh(brush, P, look)`, which takes any cloth's crossings, so the same code draws three things:
+the cloth on a pole (`threadCloth`, as before, pixel for pixel), the band of a worn sabai across the chest
+(`sabaiThreads`: the kit's own band, `sabaiLine()`, as a mesh of warps along it and picks across it, lit by soft
+folds), and its end down the back (`sabaiBackThreads`: nothing moves at the shoulder, more toward the foot, a gust
+swells and dies, the woven end and the warp's fringe at the foot).
+
+A weave (`SABAI_WEAVES`) is rows of the kit's own motifs (`LAI`): a ground, pattern threads, the warps along each
+side, the rows of its body (repeated) and of its ends, each row a stripe, a gap or `LAI` figures side by side; one
+cell is one weft float between two warps, so a motif is woven in as jok is. Its `from` says what the sources say of
+it. A person takes one with `sabai: sabaiLook(name, colours)` (`[ground, edge, name, colours]`); the third name
+"check" and a plain pair of colours are as before (the cast's own sabai changed: see who wears which, below). `colours` is one of `SABAI_COLOURS`: `own`, or
+a palette of `WEAVE_PALETTES` (the dyes the sources give Mae Chaem, Nan, Mueang Long, the Tai Lue, khit), laid on
+the weave by `sabaiWeave(name, colours)`. The cartoon maker offers both to everyone who wears a sabai
+(`wearsSabai()`). Sheet: `sabai_weaves.html` (each weave hung and worn, then every weave in every colour).
+
+| Weave | What it is | The source |
+|---|---|---|
+| `nan` | ผ้าเช็ด (ผ้าพาดบ่า) of Nan: flowers between rows of twisted cord, the paired birds at one tree at the ends | Nan thesis: trees and flowers on the shoulder cloth, the plenty of nature |
+| `ngoen` | the Mueang Ngoen pha chet as it was: triangles, diamonds and hooks nearly all over, yellow above all, the colours in pairs, red and black zigzag bands | Mueang Ngoen thesis: at first a man's shoulder cloth alone |
+| `ngoenNow` | the same cloth today: its rows spaced apart, half the pattern | Mueang Ngoen thesis: a woman's sabai in a rite, a scarf in the cold |
+| `khit` | สไบขิด: indigo and red on white, nutmeg flowers, hooks, elephants, horses at the ends | SACIT: khit is woven for the sabai |
+| `haeOn` | ผ้าแห่ออน: plain pink Chinese silk | Mueang Ngoen thesis: the Tai Lue bride's, worn slanting like a sabai |
+| `yuanChet` | ผ้าเช็ด of the Tai Yuan: white cotton, jok of the elephant, horse, naga, bird and plants | Chiang Rai Database (MFU): to the temple, laid under the hands to bow; McIntosh; Damrong holds the Tai Yuan did not weave it of old |
+| `chiangKham` | the Chiang Kham Tai Lue men's pha chet: elephants and horses, the little bird with the horse | the Chiang Kham paper |
+| `long` | the Mueang Long jok sabai: the bowl of flowers, the eight-petalled flower, the pineapple, on indigo | Department of Sericulture: a sabai for the great days, a cloth a wife weaves her husband |
+| `maeChaemPat` | ผ้าป้าด of Mae Chaem: the bowl of flowers, the hong, horse and elephant in jok on black | Department of Sericulture, Mae Chaem jok |
+| `lueBands` | a Tai Lue pha chet of narrow geometric bands, bright and dark, on a coloured warp | Damrong Journal 2021 |
+| `lueKhit` | a Tai Lue pha chet of khit on white: the castle, the elephant and horse, rows of hooks | Damrong Journal 2021 |
+| `phuanHatSiao` | the Tai Phuan sabai of Hat Siao: elephants, horses, the naga, flowers, in green, black, indigo and red | the Hat Siao paper (Silpakorn 2016) |
+| `dokLoi` | the flowered cloth of the 19th-century Lanna murals: flowers scattered all over, a border | Damrong Journal 2021: printed cloth from abroad |
+| `sawaiLaeng` | ผ้าสะหว้ายแล่ง: narrow, long and white | Chiang Rai Database; Nan thesis: a woman's, slanting, to go into the temple |
+| `tuapDam` `tuapDaeng` | ผ้าตุ๊ม / ผ้าต้วบ: a plain wrap, black or red | Chiang Rai Database: one colour, white, black or red, for women and men |
+| `tuapSaeng` | ผ้าต้วบแซง: white, a thread of red, black or navy every two inches | Chiang Rai Database |
+| `taSaeng` `taKongDaeng` `taKongDam` | ผ้าต้วบตาแสง / ตาโก้ง: checks of black, red and white; red and white; black and white | Chiang Rai Database; the Nan text (nanidentity.com) |
+| `tuapRim` | white, a black warp stripe along each edge | the Nan text |
+| `thumKhram` `thumKhanun` | ผ้าทุ้ม: thick cotton dyed with indigo, or jackfruit heartwood | the Lanna dress paper (CMU Journal of Fine Arts): for cool mornings; the old wear it slanting to the temple |
+
+Where a source gives no colours (the Tai Yuan and Chiang Kham pha chet, the Tai Lue bands, the Hat Siao ground, the mural cloth), the kit's are said in the weave's `from`; so is every motif drawn as a near one of `LAI` (the little snake of Mueang Ngoen as the stepped zigzag). The sources and their words: `docs/sources/sabai_weaves.md`.
+
+**Who wears which (owner, 2026-10-28: "Assign one to each human in the kit with a sabai. Black Khom are an exception").** Each of the 15 people of `CAST` who wears a sabai has a weave of their own, set as their look's `sabai: [ground, edge, weave, "own"]`: lady `long`, maiden `khit`, buakham `nan`, dancer `haeOn`, devotee `sawaiLaeng` (the white a woman wears to the temple), fellow `chiangKham`, elder `yuanChet` (to the temple and the sermon), drummer `ngoen`, bunma `ngoenNow`, farmer `taSaeng`, villager `tuapSaeng`, oldfarmer `taKongDam`, boy `taKongDaeng`, child `tuapRim`, khammun `tuapDaeng`. The celestial keeps her gold, and the soldiers, the Black Khom and the Lua wear none. A page draws them thread by thread when it loads `weaving.js` (the maker, the sheets, the hero film); without it the band is plain, in the weave's ground and edge, so a film that does not load it changes only in those two colours.
+
+A woven sabai costs about 1 to 2 ms a person a frame (the plain one about 1): the body's map is asked at every fourth
+warp (`sabaiAnchors`), and a worn cloth is drawn "soft" (a run of one colour one line, the light in a few steps).
+
 ## The cooking pot (2026-10-25)
 
 The kit's sticky-rice steamer `huad()` already stands on a round clay pot over three hearth stones. With

@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>sabai weaves - the shoulder cloths of the north thread by thread, hung in the wind and worn, in every colour</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script src="weaving.js"></script>
+<script>
+// First the kit's cast, every one who wears a sabai in their own weave (CAST, as person() draws them by default);
+// then every weave hung in a row; then one weave in each of SABAI_COLOURS. Then the sabai weaves of weaving.js
+// (SABAI_WEAVES), a part of six seconds each: the cloth hung by one end in the wind,
+// every thread a line (threadCloth, sabaiWeft), its two ends woven with their rows and its body between; the same
+// weave worn by a woman and a man (sabai: sabaiLook(name)), close, where the end down the back hangs in a breeze, and
+// at a film's size; and what the sources say of it.
+var PART = 6;
+var NAMES = Object.keys(SABAI_WEAVES);
+var WEARERS = Object.keys(CAST).filter(function (k) { var c = CAST[k].sabai; return c && sabaiWeave(c[2]); });   // the cast in woven sabai
+var DURATION = (NAMES.length + 3) * PART;
+var BEAT = 0.5;
+var PAPER = "#f3ead8", INKED = "#4a3a28";
+
+function caption(text, x, y, size) {
+  pen.fillStyle = INKED;
+  pen.textAlign = "center";
+  pen.font = (size || 22) + "px 'Leelawadee UI', 'Noto Sans Thai', Tahoma, sans-serif";
+  pen.fillText(text, x, y);
+}
+
+function close(x, top, wide, who, name, size) {   // a figure from the chest up, clipped to its box
+  pen.save();
+  pen.beginPath();
+  pen.rect(x - wide / 2, top, wide, 900);
+  pen.clip();
+  pen.fillStyle = "#e9dcc2";
+  pen.fillRect(x - wide / 2, top, wide, 900);
+  person(x, top + 1180, cast(who, {size: size, id: who + " close " + name, sabai: sabaiLook(name)}));
+  pen.restore();
+}
+
+function partWeave(t, name) {
+  var weave = SABAI_WEAVES[name], picks = 210;
+  caption(weave.thai + " · " + weave.en, 960, 44, 30);
+  threadCloth(pen, 220, 120, t, {warps: SABAI_WARPS + 1, picks: picks, gap: 4, wind: 0.7, warp: weave.warp, weft: sabaiWeft(name, SABAI_WARPS, picks)});
+  caption("hung in the wind", 220, 1040, 20);
+  close(720, 80, 560, "lady", name, 3.4);
+  close(1290, 80, 560, "fellow", name, 3.0);
+  caption("worn, close", 1005, 1000, 20);
+  person(1700, 900, cast("lady", {id: "lady small " + name, sabai: sabaiLook(name)}));
+  person(1840, 900, cast("fellow", {id: "fellow small " + name, sabai: sabaiLook(name)}));
+  caption("at a film's size", 1770, 1000, 20);
+  caption(weave.from.length > 230 ? weave.from.slice(0, 228) + "…" : weave.from, 960, 1070, 15);
+}
+
+function partCast(t) {                              // the cast in their own sabai, two rows
+  caption("the kit's people, each in their own sabai (CAST)", 960, 40, 28);
+  var per = Math.ceil(WEARERS.length / 2);
+  pen.save();
+  pen.scale(0.82, 0.82);
+  WEARERS.forEach(function (name, k) {
+    var x = 160 + (k % per) * (2100 / per), y = k < per ? 640 : 1240;
+    person(x, y, cast(name, {id: name + " cast"}));
+    caption(name + " · " + CAST[name].sabai[2], x, y + 40, 20);
+  });
+  pen.restore();
+}
+
+function partAll(t) {                               // every weave hung by one end, two rows
+  caption("every weave (SABAI_WEAVES), in its own colours", 960, 40, 28);
+  var per = Math.ceil(NAMES.length / 2), step = 1840 / per, picks = 300;
+  NAMES.forEach(function (name, k) {
+    var x = 80 + step / 2 + (k % per) * step, top = k < per ? 90 : 590, weave = SABAI_WEAVES[name];
+    threadCloth(pen, x, top, t + k, {warps: SABAI_WARPS + 1, picks: picks, gap: 1.6, wind: 0.5, warp: weave.warp, weft: sabaiWeft(name, SABAI_WARPS, picks)});
+    caption(name, x, top + 380, 15);
+  });
+}
+
+function partColours(t, name) {                     // one weave in every colour
+  caption(SABAI_WEAVES[name].thai + " in every colour: its own, and the dyes of the towns (SABAI_COLOURS)", 960, 40, 28);
+  var step = 1700 / SABAI_COLOURS.length, picks = 560;
+  SABAI_COLOURS.forEach(function (colours, k) {
+    var weave = sabaiWeave(name, colours);
+    threadCloth(pen, 300 + k * step, 110, t + k, {warps: SABAI_WARPS + 1, picks: picks, gap: 2.4, wind: 0.5, warp: weave.warp,
+                                                  weft: sabaiWeft(name, SABAI_WARPS, picks, colours)});
+    caption(colours, 300 + k * step, 80, 18);
+  });
+}
+
+function sheet(t) {
+  var p = Math.min(NAMES.length + 2, Math.floor(t / PART));
+  pen.fillStyle = PAPER;
+  pen.fillRect(0, 0, WIDE, 1080);
+  if (p === 0) { partCast(t); } else if (p === 1) { partAll(t); } else if (p === 2) { partColours(t, "nan"); } else { partWeave(t, NAMES[p - 3]); }
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    sheet(at);
+  });
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+function play(now) { if (!rendering) { draw((now / 1000) % DURATION); } requestAnimationFrame(play); }
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

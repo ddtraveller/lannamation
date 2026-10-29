@@ -3772,27 +3772,27 @@ var LUA_SIN = [[0.18, "#c8385a", 3], [0.28, "#2a4a8a", 4, "diamonds"], [0.36, "#
 var LUA_BEADS = ["#c8282a", "#e8742a", "#e8b828", "#d8dbe0", "#c8282a", "#e8742a"];   // red, orange, yellow glass, and silver
 
 var CAST = {
-  lady: {skirt: true, bun: true, dance: true, shirt: "#f2ead8", legs: "#b2455a", size: 1.3,
+  lady: {skirt: true, sabai: ["#24335e", "#d79a2a", "long", "own"], bun: true, dance: true, shirt: "#f2ead8", legs: "#b2455a", size: 1.3,
          flower: "#f28fa8", garland: true, pins: true},
   // The men, from the owner's reference picture (a Chiang Mai costume studio's revival of the old dress, 2026-10-14): the hair in
   // a knot on top under a red head-cloth, the chest bare and tattooed, a cord round each arm, a checked cloth over the shoulder,
   // a brown cloth hitched high over tattooed thighs, a bright sash hanging from the waist, bare feet
-  fellow: {bare: true, turban: "#b8294a", sabai: ["#6fae5a", "#c8486e", "check"], sarong: "#5a3f32", patoi: 0.75, tattoo: true,
+  fellow: {bare: true, turban: "#b8294a", sabai: ["#f2ead6", "#9a1f24", "chiangKham", "own"], sarong: "#5a3f32", patoi: 0.75, tattoo: true,
            shirt: "#4a6797", legs: "#3d4f78", size: 1.3, skin: "#e6bd95", lips: 1.1},
-  child: {bare: true, turban: "#b8294a", sabai: ["#6fae5a", "#c8486e", "check"], sarong: "#5a3f32", patoi: 0.75,
+  child: {bare: true, turban: "#b8294a", sabai: ["#f2ead6", "#1d1712", "tuapRim", "own"], sarong: "#5a3f32", patoi: 0.75,
           shirt: "#e9c45c", legs: "#3d4f78", size: 0.95, wonder: 0.5, smile: 1, skin: "#f1cda8", eyes: 1.12},
   scientist: {coat: true, shirt: "#ffffff", legs: "#3d4f78", size: 1.25},
-  drummer: {bare: true, turban: "#b8294a", sabai: ["#6fae5a", "#c8486e", "check"], sarong: "#5a3f32", patoi: 0.75, tattoo: true,
+  drummer: {bare: true, turban: "#b8294a", sabai: ["#f2ead6", "#b8323a", "ngoen", "own"], sarong: "#5a3f32", patoi: 0.75, tattoo: true,
             drum: true, shirt: "#4a6797", legs: "#3d4f78", size: 1.35, smile: 1},
   // models from the paintings and the thangkas
   celestial: {skirt: true, bun: true, dance: true, shirt: "#e9c45c", legs: "#8a2a3a", size: 1.3, weave: 1,
               sabai: ["#e0b23a", "#8a2a3a"], halo: true, holding: "lotus", pins: true, smile: 1},
   dancer: {skirt: true, bun: true, dance: true, shirt: "#d9573a", legs: "#1f1a1a", size: 1.3, weave: 1,
-           sabai: ["#3f8f5a", "#e0b23a"], tail: true, pins: true, nails: "long", fan: true, bangles: 6,
+           sabai: ["#e58aa6", "#d97a98", "haeOn", "own"], tail: true, pins: true, nails: "long", fan: true, bangles: 6,
            collar: ["#b23a2a", "#e0b23a"], skin: "#f6e2d0", eyes: 1.06, lips: 0.9},
   // the head-cloth is Tai Yai, Tai Lue or Burmese wear, not Tai Yuan (Manop Manasaem; 2026-10-13): he is a man of those
   // peoples, as the north's villages held them, and not a Chiang Mai farmer
-  villager: {bare: true, turban: "#b8294a", sabai: ["#8a5aa0", "#c8486e", "check"], sarong: "#5a3f32", patoi: 0.75, tattoo: true,
+  villager: {bare: true, turban: "#b8294a", sabai: ["#f2ead6", "#e8dcc0", "tuapSaeng", "own"], sarong: "#5a3f32", patoi: 0.75, tattoo: true,
              shirt: "#4a6797", legs: "#3d4f78", size: 1.3, smile: 1, skin: "#d9a878", eyes: 0.94},
   // The soldiers of the tale of Chang Ngu (owner's pick, 2026-10-22): a Tai soldier as the villager, bare, a red head-cloth,
   // no shoulder cloth, a spear; and a soldier of the Khom Dam, told apart from him by dress only (black cloth, a pointed
@@ -3804,7 +3804,7 @@ var CAST = {
   // A man of Chiang Mai as the travellers saw him (Holt Hallett, 1890: no head-cloth, the hair a brush at the crown, "tattooed from
   // the waist downwards"; Lillian Curtis, 1903: the pa toi "should fall to the knee", plain or plaid, "the feet are always bare, and
   // the head uncovered"): a round-necked shirt of undyed cotton, the checked ta kong hitched to the knee, the tattoo showing beneath
-  farmer: {bare: true, turban: "#b8294a", sabai: ["#6fae5a", "#c8486e", "check"], sarong: ["#efe6d2", takong(9, 112)], patoi: 0.75,
+  farmer: {bare: true, turban: "#b8294a", sabai: ["#f2ead6", "#1d1712", "taSaeng", "own"], sarong: ["#efe6d2", takong(9, 112)], patoi: 0.75,
            tattoo: true, shirt: "#efe6d2", legs: "#3d4f78", size: 1.3, smile: 1, skin: "#d9a878", eyes: 0.94},
   // A noble, from the owner's second picture: the knot set with gold flowers under a patterned red head-cloth, gold earrings, a
   // broad gold collar, gold armbands and bracelets, a jewelled sash across the chest and a jewelled belt, a brocade cloth to the ankle
@@ -3819,14 +3819,14 @@ var CAST = {
             beads: LUA_BEADS.concat(["#d8dbe0", "#c8282a"]), earrings: "#c8282a", wraps: "#1e1a20", size: 1.25, smile: 0.5, age: 0.15, skin: "#d9a878"},
   luaman: {lady: false, shirt: "#f4efe4", legs: "#f0ebe0", turban: "#d8507a", plain: true, size: 1.3, smile: 0.5, skin: "#d9a878"},
   // a girl of the village paintings: a white blouse, a shoulder cloth, an indigo sin with a red foot
-  maiden: {bun: true, dance: true, shirt: "#f4efe2", sin: 0, sabai: ["#8fc0cf", "#2f4a7a"], size: 1.3, earplug: "#d9b24a",
+  maiden: {bun: true, dance: true, shirt: "#f4efe2", sin: 0, sabai: ["#f2ead6", "#24335e", "khit", "own"], size: 1.3, earplug: "#d9b24a",
            flower: "#fff6ea", collar: ["#2f4a7a", "#e0b23a"], bangles: 4, skin: "#f3d2b0", smile: 1, eyes: 1.08},
   // an older woman: an indigo blouse buttoned down the front, a green and black sin, a pin in her bun
   weaver: {bun: true, shirt: "#34507a", sin: 1, size: 1.25, plain: true, bangles: 2, skin: "#e2b68e", smile: 1, eyes: 0.9, lips: 1.12,
            earplug: "#b8a060"},                     // a village woman's ear plug was a rolled palm leaf; a well-off one's gold
   // a little boy and a little girl: small, with a child's build (a large round head on shorter legs) and large eyes.
   // He wears an indigo shirt and trousers; she a white blouse, a red sin, and a flower in her hair
-  boy: {bare: true, turban: "#b8294a", sabai: ["#6fae5a", "#c8486e", "check"], sarong: "#5a3f32", patoi: 0.75,
+  boy: {bare: true, turban: "#b8294a", sabai: ["#f2ead6", "#9a1f24", "taKongDaeng", "own"], sarong: "#5a3f32", patoi: 0.75,
         shirt: "#3f6a8a", legs: "#34496b", size: 0.8, build: -1, head: 1.06, skin: "#f0c9a2", eyes: 1.3, smile: 1, wonder: 0.3},
   girl: {bun: true, shirt: "#f4efe2", sin: 2, size: 0.78, build: -1, head: 1.08, flower: "#f28fa8", skin: "#f4d3b4", eyes: 1.4,
          lips: 0.85, smile: 1, bangles: 2},
@@ -3835,15 +3835,15 @@ var CAST = {
   // a grandmother, small and bent, in a plum blouse; and an old woman dressed in white for the temple
   // The old men in the same dress (the owner, 2026-10-14: "redo the kids and old people but give the old man a shirt"): the
   // elder keeps a round-necked indigo shirt over the hitched cloth, his white hair in the knot under the head-cloth
-  elder: {turban: "#b8294a", sabai: ["#6fae5a", "#c8486e", "check"], sarong: "#5a3f32", patoi: 0.75, tattoo: true,
+  elder: {turban: "#b8294a", sabai: ["#f2ead6", "#9a1f24", "yuanChet", "own"], sarong: "#5a3f32", patoi: 0.75, tattoo: true,
           shirt: "#2f4a6a", legs: "#3d4f78", size: 1.2, hair: "#ece7dd", beard: "#f4f0e6", age: 1, bend: 0.16,
           holding: "stick", skin: "#d9a87c", eyes: 0.9, smile: 1},
-  oldfarmer: {hat: true, bare: true, sabai: ["#6fae5a", "#c8486e", "check"], sarong: "#5a3f32", patoi: 0.75, tattoo: true,
+  oldfarmer: {hat: true, bare: true, sabai: ["#f2ead6", "#1d1712", "taKongDam", "own"], sarong: "#5a3f32", patoi: 0.75, tattoo: true,
               shirt: "#6f8fa8", legs: "#4f4a3a", size: 1.25, hair: "#b8b2a8", age: 0.8, bend: 0.1, skin: "#c98f62",
               eyes: 0.92, lips: 1.15, smile: 1},
   grandmother: {bun: true, shirt: "#6a3f52", sin: 2, size: 1.1, plain: true, hair: "#e8e3da", age: 1, bend: 0.2, skin: "#e0b48c",
                 eyes: 0.85, lips: 0.95, smile: 1, bangles: 2},
-  devotee: {bun: true, shirt: "#f6f1e6", sin: 0, sabai: ["#f6f1e6", "#cfc7b4"], size: 1.2, hair: "#a9a39a", age: 0.7, bend: 0.06, earplug: "#d9b24a",
+  devotee: {bun: true, shirt: "#f6f1e6", sin: 0, sabai: ["#f2ead6", "#e8dcc0", "sawaiLaeng", "own"], size: 1.2, hair: "#a9a39a", age: 0.7, bend: 0.06, earplug: "#d9b24a",
             skin: "#ecc8a2", eyes: 0.9, smile: 1, holding: "lotus", flower: "#fff6ea"},
   // Six people with faces of the north (look.north, from the photograph of about 1909; owner, 2026-10-18: "Add 2 men
   // and women and 1 child of each gender with a Northern style face shape"), each face its own shape, each named as
@@ -3855,13 +3855,13 @@ var CAST = {
   // the girl Dok-kham in a pale yellow blouse, an indigo sin, a flower in her hair.
   inta: {shirt: "#34507a", sarong: "#3a4660", patoi: 0.75, tattoo: true, legs: "#3d4f78", size: 1.3, skin: "#d6a272",
          north: "square", smile: 1},
-  khammun: {bare: true, turban: "#efe9dc", sabai: ["#c8486e", "#2f4a7a", "check"], sarong: "#6a3a2a", patoi: 0.75, tattoo: true,
+  khammun: {bare: true, turban: "#efe9dc", sabai: ["#9a1f24", "#9a1f24", "tuapDaeng", "own"], sarong: "#6a3a2a", patoi: 0.75, tattoo: true,
             shirt: "#4a6797", legs: "#3d4f78", size: 1.3, skin: "#c99668", north: "broad", smile: 1},
-  buakham: {bun: "low", shirt: "#f4efe2", sin: 1, sabai: ["#e6a7b6", "#a8435a"], size: 1.25, earplug: "#d9b24a", flower: "#fff6ea",
+  buakham: {bun: "low", shirt: "#f4efe2", sin: 1, sabai: ["#24335e", "#d8b04a", "nan", "own"], size: 1.25, earplug: "#d9b24a", flower: "#fff6ea",
             bangles: 3, skin: "#e8bf98", north: "soft", smile: 1},
   sinuan: {bun: "wong", shirt: "#2e2f3e", sin: 2, size: 1.25, flower: "#f28fa8", bangles: 4, earplug: "#d9b24a", skin: "#dcae84",
            north: "round", smile: 1},
-  bunma: {bare: true, sabai: ["#e0b23a", "#8a5a2a", "check"], sarong: "#34496b", patoi: 0.75, shirt: "#3f6a8a", legs: "#34496b", size: 0.8, build: -1, head: 1.09,
+  bunma: {bare: true, sabai: ["#f2ead6", "#b8323a", "ngoenNow", "own"], sarong: "#34496b", patoi: 0.75, shirt: "#3f6a8a", legs: "#34496b", size: 0.8, build: -1, head: 1.09,
           skin: "#e2b088", eyes: 1.25, north: "full", smile: 1, wonder: 0.3},
   dokkham: {bun: true, shirt: "#f6e3a1", sin: 0, size: 0.78, build: -1, head: 1.1, flower: "#f28fa8", skin: "#eebf96", eyes: 1.3,
             lips: 0.9, north: "round", smile: 1, bangles: 2}
@@ -4490,7 +4490,12 @@ var LOOK_KEYS = {};
 //                   from beside the neck on the side the figure faces down across the chest,
 //                   rounded over the shoulder, cut on a slant under the other arm and tucked
 //                   in at the waist, with the back of it hanging behind the shoulder, fringed:
-//                   the shape of the sash film's cloth (sabai.js); a third name "check" bars it
+//                   the shape of the sash film's cloth (sabai.js); a third name "check" bars it.
+//                   A third name that is a weave of weaving.js (SABAI_WEAVES: "nan", "ngoen",
+//                   "khit" ...) weaves it thread by thread, its back hanging in a breeze with
+//                   its woven end and fringe at the foot, and a fourth names its colours (one
+//                   of SABAI_COLOURS: "own", or a town's dyes, "maechaem", "long" ...):
+//                   sabai: sabaiLook("nan", "long") makes the list
 //   worn            a painter the kit calls after the body and the head and before the arms,
 //                   with the pen in the person's own frame: a cloth that goes under the arms,
 //                   as the kit's own sabai does (sabaiWorn() in sabai.js); in a wai the kit
@@ -5289,6 +5294,25 @@ function personTrunk(fig) {
     }
     pen.save();
     pen.transform(1, -hipTip, 0, 1, 0, 0);       // the skirt is drawn under the hips' tilt; chest() has it already
+    var weave = typeof sabaiWeave === "function" && look.sabai && sabaiWeave(look.sabai[2], look.sabai[3]);
+    if (weave) {                                    // a weave of weaving.js: the end hangs thread by thread, its woven end and fringe at the foot, a breeze in it
+      var top = corner[1] + 13;
+      var P = sabaiBackThreads(pen, function (u, v, push) {   // between the inner edge (20 past the middle) and the outer, leaning out 27 by the foot; the hem bowed 8
+        var x = 20 + (corner[0] + 27 * v - 20) * u, y = top + (foot - 7 - top) * v + (corner[1] - top + (top + 7 - corner[1]) * v) * u;
+        return chest(x + push[0], y + push[1] + Math.sin((1 - u) * Math.PI) * 8 * Math.pow(v, 6));
+      }, foot - corner[1], L.half, look.sabai[2], clock, look.sabai[3]);
+      var rim = P.map(function (r) { return r[0]; }).concat(P[P.length - 1], P.map(function (r) { return r[r.length - 1]; }).reverse());
+      pen.beginPath();
+      rim.forEach(function (q, k) { if (k) { pen.lineTo(q[0], q[1]); } else { pen.moveTo(q[0], q[1]); } });
+      pen.closePath();
+      var dark = pen.createLinearGradient(P[0][0][0], 0, P[P.length >> 1][P[0].length - 1][0], 0);   // darker toward the body, as the back of a cloth is
+      dark.addColorStop(0, "rgba(20, 0, 10, 0.38)");
+      dark.addColorStop(1, "rgba(20, 0, 10, 0.06)");
+      pen.fillStyle = dark;
+      pen.fill();
+      pen.restore();
+      return;
+    }
     var inner = chest(20, corner[1] + 13), on = outer.map(function (q) { return chest(q[0], q[1]); }), hm = hem.map(function (q) { return chest(q[0], q[1]); });
     pen.save();
     pen.beginPath();
@@ -5760,6 +5784,7 @@ function bodySabai(b) {
   var look = b.look, chest = b.chest, sabaiLine = b.sabaiLine;
   var sabaiFront;
   var sabaiOf = look.sabai || ["#f6e3a1", "#8a2a3a"], L = sabaiLine(), half = L.half;
+  var woven = typeof sabaiWeave === "function" && sabaiWeave(sabaiOf[2], sabaiOf[3]);   // a third name that is a weave of weaving.js, a fourth its colours
   var sabaiCorner = function (a) { return L.side(L.start - L.slant * (a + half) / (2 * half), a); };   // where the slanted end meets the edge "a" across
   var sabaiPath = function (inner, outer) {       // the band between two offsets, from the slanted end up to the rounded top and back, through chest()
     var n, p, s, v, q0 = L.side(L.length, -half), q1 = L.side(L.length, half), tip = L.at(L.length);
@@ -5795,9 +5820,18 @@ function bodySabai(b) {
   pen.rect(-1e4, -1e4, 2e4, 1e4 + 7);             // tucked into the skirt at the waist: nothing below it
   pen.clip();
   sabaiPath(-half, half);
-  pen.fillStyle = sabaiOf[0];                     // the cloth
+  pen.fillStyle = woven ? woven.ground : sabaiOf[0];   // the cloth
   pen.fill();
   pen.clip();
+  if (woven) {                                    // a weave of weaving.js: the band drawn a thread at a time, past its rounded top
+    var tip = L.at(L.length);
+    sabaiThreads(pen, function (along, across) {
+      var p = L.side(Math.min(along, L.length), across), past = Math.max(0, along - L.length);
+      return chest(p[0] + Math.cos(tip[2]) * past, p[1] + Math.sin(tip[2]) * past);
+    }, L.start - L.slant, L.length + 26, half, sabaiOf[2], clock, sabaiOf[3]);
+    pen.restore();
+    return;
+  }
   pen.fillStyle = sabaiOf[1];                     // the woven border along each long side
   sabaiPath(-half + 2, -half + 8);
   pen.fill();

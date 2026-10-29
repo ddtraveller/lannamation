@@ -18,7 +18,9 @@ scan and says why.
 
 `weaving_meanings.md` is of another kind: what the weaving motifs of `kit/weaving.js` mean, each meaning with a short
 quotation from the thesis, paper or page it was found in, and a link to it (2026-10-28). Those are in copyright, so
-only the quotations are kept.
+only the quotations are kept. `sabai_weaves.md` is the same for the shoulder cloths of `SABAI_WEAVES`: each weave
+with the words of the source that describes it, what the kit adds where the source is silent, and the cloths found
+and left out.
 
 ## What the OCR gets wrong
 

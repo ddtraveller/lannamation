@@ -593,7 +593,14 @@ var LAI_SOURCES = {
   thaiLao: "ThaiJO LiberalJ 1307: symbols of Thai and Lao cloth",
   mueangNgoen: "CMU thesis: the Tai Lue cloth of Mueang Ngoen (ch. 4)",
   banner: "The Buddhist Banner: the Tai Lue tung (ResearchGate 368320260)",
-  long: "Department of Sericulture: the jok of Mueang Long"
+  long: "Department of Sericulture: the jok of Mueang Long",
+  chiangRai: "Chiang Rai Database, Mae Fah Luang University: the cloth and dress of the Tai Yuan",
+  nanCheck: "Nan identity (nanidentity.com): the cloths of Nan, the ta saeng and ta kong wrap",
+  fineArts: "CMU Journal of Fine Arts 1(1): the dress of the Lanna Tai Yuan (Manop Manasaem)",
+  damrong: "Damrong Journal 20(2), Silpakorn: the tung jai and the pha chet (Natchanoke Taengtabtim, 2021)",
+  hatSiao: "Silpakorn architecture proceedings 2016: the Tai Phuan weaving of Ban Hat Siao",
+  mcintosh: "Textiles Asia 4(1), 2012: Tai Yuan textiles of Thailand (Linda S. McIntosh)",
+  maeChaemJok: "Department of Sericulture: the jok of Mae Chaem (qsds k_21)"
 };
 var LAI_MEANS = (function (S) {
   var buddhist = "with the lantern, the bowl, the naga, the hong, the water jar and the ship, a Buddhist sign woven in " +
@@ -927,6 +934,100 @@ function namLaiWeft(i, j, colours, band) {
   return colours[Math.floor(q / width)];
 }
 
+// A cloth's threads where they lie. P: its crossings, a row a pick from the top and in each row a point a warp, each
+// [x, y, z] (z how far that crossing stands toward the viewer: the light comes from it). Every warp a line from top to
+// foot; every pick a round yarn between two warps in its weft's colour, its edges a shade darker and its crown a shade
+// lighter; the warp over the weft at every other crossing; each patch lit by how it faces the light. look: {gap (the
+// warps' spacing, which sets every thread's width), weft (a function (i, j): the colour of pick j between warps i and
+// i + 1), warp (its colour), fringe (true: the warp's ends hang below the foot, swinging with t and gust), soft (the
+// light in a few steps over patches twice as wide, each step one path, a run of one colour in a pick one line, and
+// the warp's crossings square-ended:
+// faster, for a cloth drawn on every person of a frame)}.
+// e.g. threadMesh(pen, P, {gap: 3, weft: function (i, j) { return "#9a1f24"; }, warp: "#d8ccb0"})
+function threadMesh(brush, P, look) {
+  var np = P.length, nw = P[0].length, gap = look.gap, weft = look.weft, warpColour = look.warp;
+  brush.save();
+  brush.lineCap = "round";
+  brush.strokeStyle = weaveShade(warpColour, -0.25);                        // the warp: one line each, top to hem
+  brush.lineWidth = gap * 0.42;
+  brush.beginPath();
+  for (var i2 = 0; i2 < nw; i2++) {
+    brush.moveTo(P[0][i2][0], P[0][i2][1]);
+    for (var j2 = 1; j2 < np; j2++) { brush.lineTo(P[j2][i2][0], P[j2][i2][1]); }
+  }
+  brush.stroke();
+  var paths = {};                                                           // the weft: a line a pick, a path a colour
+  for (var j3 = 0; j3 < np; j3++) {
+    for (var i3 = 0, was = null; i3 < nw - 1; i3++) {
+      var c = weft(i3, j3);
+      var p = paths[c] || (paths[c] = new Path2D());
+      if (!look.soft || c !== was) { p.moveTo(P[j3][i3][0], P[j3][i3][1]); }   // soft: a run of one colour is one line
+      p.lineTo(P[j3][i3 + 1][0], P[j3][i3 + 1][1]);
+      was = c;
+    }
+  }
+  Object.keys(paths).forEach(function (c) {                              // each pick a round yarn: its edges a shade
+    brush.lineWidth = gap * 0.86;                                           // darker, its crown a shade lighter
+    brush.strokeStyle = weaveShade(c, -0.22);
+    brush.stroke(paths[c]);
+    brush.lineWidth = gap * 0.42;
+    brush.strokeStyle = weaveShade(c, 0.1);
+    brush.stroke(paths[c]);
+  });
+  brush.strokeStyle = warpColour;                                           // and the warp over the weft at every other crossing
+  brush.lineWidth = gap * 0.3;
+  if (look.soft) { brush.lineCap = "butt"; }                                // (soft: square ends, too small to see)
+  brush.beginPath();
+  for (var j4 = 0; j4 < np - 1; j4++) {
+    for (var i4 = (j4 % 2); i4 < nw; i4 += 2) {
+      var a = P[j4][i4], b = P[j4 + 1][i4];
+      brush.moveTo(a[0] + (b[0] - a[0]) * 0.25, a[1] + (b[1] - a[1]) * 0.25);
+      brush.lineTo(a[0] + (b[0] - a[0]) * 0.5, a[1] + (b[1] - a[1]) * 0.5);
+    }
+  }
+  brush.globalAlpha = 0.38;
+  brush.stroke();
+  brush.globalAlpha = 1;
+  var step = 2, wide = look.soft ? 4 : 2, steps = {};                      // the light on each patch, by its slope (soft: patches 4 warps wide)
+  for (var j5 = 0; j5 < np - step; j5 += step) {
+    for (var i5 = 0; i5 < nw - wide; i5 += wide) {
+      var p00 = P[j5][i5], p10 = P[j5][i5 + wide], p01 = P[j5 + step][i5], p11 = P[j5 + step][i5 + wide];
+      var slope = ((p10[2] - p00[2]) * 0.7 * step / wide - (p01[2] - p00[2]) * 0.5) / (step * gap);
+      var light = Math.max(-1, Math.min(1, slope * 3.2));
+      if (look.soft) {                                                      // a few steps of light, a path each
+        var level = Math.round(light * 5);
+        if (!level) { continue; }
+        var patch = steps[level] || (steps[level] = new Path2D());
+        patch.moveTo(p00[0], p00[1]); patch.lineTo(p10[0], p10[1]); patch.lineTo(p11[0], p11[1]); patch.lineTo(p01[0], p01[1]);
+        patch.closePath();
+        continue;
+      }
+      brush.fillStyle = light > 0 ? "rgba(255, 246, 225, " + (light * 0.28).toFixed(3) + ")" : "rgba(20, 12, 30, " + (-light * 0.3).toFixed(3) + ")";
+      brush.beginPath();
+      brush.moveTo(p00[0], p00[1]); brush.lineTo(p10[0], p10[1]); brush.lineTo(p11[0], p11[1]); brush.lineTo(p01[0], p01[1]);
+      brush.closePath();
+      brush.fill();
+    }
+  }
+  Object.keys(steps).forEach(function (level) {
+    var light = level / 5;
+    brush.fillStyle = light > 0 ? "rgba(255, 246, 225, " + (light * 0.28).toFixed(3) + ")" : "rgba(20, 12, 30, " + (-light * 0.3).toFixed(3) + ")";
+    brush.fill(steps[level]);
+  });
+  if (look.fringe) {
+    brush.strokeStyle = weaveShade(warpColour, 0.1);                        // the warp's ends hanging below the hem
+    brush.lineWidth = gap * 0.35;
+    brush.beginPath();
+    for (var i6 = 0; i6 < nw; i6 += 2) {
+      var e = P[np - 1][i6], dangle = gap * (5 + 3 * weaveHash(i6, 17));
+      brush.moveTo(e[0], e[1]);
+      brush.lineTo(e[0] + Math.sin(look.t * 3 + i6 * 0.3) * gap * look.gust, e[1] + dangle);
+    }
+    brush.stroke();
+  }
+  brush.restore();
+}
+
 // A length of cloth hung from a pole, every warp and every weft drawn as a line, the weft going over and under the
 // warp as plain weave does, and the wind going through it. The wind is travelling waves, each a sum of sines of
 // where a thread is on the cloth and of the second t (the same picture for the same second, whatever came before:
@@ -956,72 +1057,377 @@ function threadCloth(brush, x, y, t, look) {
     P.push(row);
   }
   brush.save();
-  brush.lineCap = "round";
-  brush.strokeStyle = weaveShade(warpColour, -0.25);                        // the warp: one line each, top to hem
-  brush.lineWidth = gap * 0.42;
-  brush.beginPath();
-  for (var i2 = 0; i2 < nw; i2++) {
-    brush.moveTo(P[0][i2][0], P[0][i2][1]);
-    for (var j2 = 1; j2 < np; j2++) { brush.lineTo(P[j2][i2][0], P[j2][i2][1]); }
-  }
-  brush.stroke();
-  var paths = {};                                                           // the weft: a line a pick, a path a colour
-  for (var j3 = 0; j3 < np; j3++) {
-    for (var i3 = 0; i3 < nw - 1; i3++) {
-      var c = weft(i3, j3);
-      var p = paths[c] || (paths[c] = new Path2D());
-      p.moveTo(P[j3][i3][0], P[j3][i3][1]);
-      p.lineTo(P[j3][i3 + 1][0], P[j3][i3 + 1][1]);
-    }
-  }
-  Object.keys(paths).forEach(function (c) {                              // each pick a round yarn: its edges a shade
-    brush.lineWidth = gap * 0.86;                                           // darker, its crown a shade lighter
-    brush.strokeStyle = weaveShade(c, -0.22);
-    brush.stroke(paths[c]);
-    brush.lineWidth = gap * 0.42;
-    brush.strokeStyle = weaveShade(c, 0.1);
-    brush.stroke(paths[c]);
-  });
-  brush.strokeStyle = warpColour;                                           // and the warp over the weft at every other crossing
-  brush.lineWidth = gap * 0.3;
-  brush.beginPath();
-  for (var j4 = 0; j4 < np - 1; j4++) {
-    for (var i4 = (j4 % 2); i4 < nw; i4 += 2) {
-      var a = P[j4][i4], b = P[j4 + 1][i4];
-      brush.moveTo(a[0] + (b[0] - a[0]) * 0.25, a[1] + (b[1] - a[1]) * 0.25);
-      brush.lineTo(a[0] + (b[0] - a[0]) * 0.5, a[1] + (b[1] - a[1]) * 0.5);
-    }
-  }
-  brush.globalAlpha = 0.38;
-  brush.stroke();
-  brush.globalAlpha = 1;
-  var step = 2;                                                             // the light on each patch, by its slope
-  for (var j5 = 0; j5 < np - step; j5 += step) {
-    for (var i5 = 0; i5 < nw - step; i5 += step) {
-      var p00 = P[j5][i5], p10 = P[j5][i5 + step], p01 = P[j5 + step][i5], p11 = P[j5 + step][i5 + step];
-      var slope = ((p10[2] - p00[2]) * 0.7 - (p01[2] - p00[2]) * 0.5) / (step * gap);
-      var light = Math.max(-1, Math.min(1, slope * 3.2));
-      brush.fillStyle = light > 0 ? "rgba(255, 246, 225, " + (light * 0.28).toFixed(3) + ")" : "rgba(20, 12, 30, " + (-light * 0.3).toFixed(3) + ")";
-      brush.beginPath();
-      brush.moveTo(p00[0], p00[1]); brush.lineTo(p10[0], p10[1]); brush.lineTo(p11[0], p11[1]); brush.lineTo(p01[0], p01[1]);
-      brush.closePath();
-      brush.fill();
-    }
-  }
-  brush.strokeStyle = weaveShade(warpColour, 0.1);                          // the warp's ends hanging below the hem
-  brush.lineWidth = gap * 0.35;
-  brush.beginPath();
-  for (var i6 = 0; i6 < nw; i6 += 2) {
-    var e = P[np - 1][i6], dangle = gap * (5 + 3 * weaveHash(i6, 17));
-    brush.moveTo(e[0], e[1]);
-    brush.lineTo(e[0] + Math.sin(t * 3 + i6 * 0.3) * gap * gust, e[1] + dangle);
-  }
-  brush.stroke();
+  threadMesh(brush, P, {gap: gap, weft: weft, warp: warpColour, fringe: true, t: t, gust: gust});
   weaveBeam(brush, left - 40, y - 4, left + W + 40, y - 4, 12, "#8a6a3a");   // the bamboo pole
   brush.fillStyle = "#6a5028";
   for (var k6 = 0; k6 < 9; k6++) { var lx = left + (k6 / 8) * W; brush.beginPath(); brush.ellipse(lx, y - 1, 5, 9, 0, 0, Math.PI * 2); brush.fill(); }   // the loops it hangs by
   brush.restore();
   return {w: W, h: H};
+}
+
+// ---------- a sabai, thread by thread ----------
+// The shoulder cloths the sources name, as weaves the kit draws a thread at a time: hung in the wind (threadCloth with
+// sabaiWeft) or worn (a look's sabai: [cloth, border, a name of SABAI_WEAVES]: the kit's band across the chest drawn
+// as its warps and picks by sabaiThreads). Each weave:
+//   thai, en   its name
+//   ground     the ground weft's colour; warp, the warp's
+//   threads    the pattern threads: a grid's "1" is the first
+//   edge       the warps along each side, from the selvedge in: a thread's number, or "." the ground
+//   body       the rows of its length, repeated: ["gap", picks], ["stripe", picks, thread], or ["lai", figure, ...]: the
+//              figures side by side, centred and repeated across, each [a key of LAI, as, mirrored]: "as" the threads
+//              the grid's "1", "2", "3" are woven in ("41": its 1 in thread 4, its 2 in thread 1; left out, as the grid
+//              has them), mirrored true to face the other way
+//              (a last string, a thread's number: the ground of that row is woven in that thread, not the weave's)
+//   stripes    left out, or for each warp across the cloth inside its edges in turn a thread's number, or "." the
+//              ground: warp stripes, which make a check of the weft's stripes
+//   end        the rows of each end, from the end in: the hung cloth has one at its head and one at its foot
+//   from       what the sources say of it (by the keys of LAI_SOURCES), and what is the kit's own
+var SABAI_WEAVES = {
+  nan: {thai: "ผ้าเช็ด (ผ้าพาดบ่า) เมืองน่าน", en: "the shoulder cloth of Nan: trees and flowers, nature's plenty",
+        ground: WEAVE_DYES.indigo, warp: WEAVE_DYES.deepIndigo,
+        threads: [WEAVE_DYES.gold, WEAVE_DYES.white, WEAVE_DYES.pink, WEAVE_DYES.green], edge: "1.3",
+        body: [["gap", 3], ["lai", ["kai", "13"]], ["gap", 3], ["lai", ["dokKaeo", "2"], ["chanPaetKleeb", "31"]], ["gap", 3],
+               ["lai", ["kai", "13"]], ["gap", 3], ["lai", ["maliLueai", "41"]], ["gap", 3],
+               ["lai", ["kai", "13"]], ["gap", 3], ["lai", ["chanPaetKleeb", "31"], ["dokKaeo", "2"]], ["gap", 3],
+               ["lai", ["kai", "13"]], ["gap", 3], ["lai", ["maliLueai", "41", true]]],
+        end: [["stripe", 3, 1], ["gap", 2], ["lai", ["nokKhuTon", "1"]], ["gap", 2], ["stripe", 1, 3], ["gap", 2],
+              ["lai", ["khruaDok", "412"]], ["gap", 2], ["stripe", 3, 1], ["gap", 3]],
+        from: "the Nan thesis (boSuak): woven trees and flowers on the pha chet, the shoulder cloth, show the plenty of " +
+              "nature; the birds at the tree are the Bo Suak weavers' paired birds, plenty and worship. Its indigo and " +
+              "its threads are the kit's"},
+  ngoen: {thai: "ผ้าเช็ด ไทลื้อเมืองเงิน (แบบเดิม)", en: "the Tai Lue shoulder cloth of Mueang Ngoen, as it was: once a man's alone",
+          ground: WEAVE_DYES.white, warp: WEAVE_DYES.white,
+          threads: [WEAVE_DYES.yellow, WEAVE_DYES.green, WEAVE_DYES.pink, WEAVE_DYES.purple, WEAVE_DYES.lac, WEAVE_DYES.black,
+                    WEAVE_DYES.orange], edge: "5.5",
+          body: [["lai", ["kap", "2"], ["kap", "2", true], "1"], ["gap", 1], ["lai", ["fanPla", "6"], "5"], ["gap", 1],
+                 ["lai", ["nuay", "4"], ["nuay", "4"], ["nuay", "4"], "3"], ["gap", 1],
+                 ["lai", ["kho", "7"], ["kho", "7", true], ["kho", "7"], "2"], ["gap", 1], ["lai", ["fanPla", "5"], "6"], ["gap", 1],
+                 ["lai", ["nuayHollow", "5"], ["nuay", "1"], ["nuayHollow", "5"], "4"], ["gap", 1]],
+          end: [["stripe", 2, 5], ["gap", 2], ["lai", ["kho", "5"], ["nuay", "5"], ["kho", "5", true]], ["gap", 2],
+                ["lai", ["fanPla", "5"]], ["gap", 3]],
+          from: "the Mueang Ngoen thesis (mueangNgoen): silk of green, pink, purple and yellow, yellow above all, picked " +
+                "in jok nearly over the whole cloth, red cotton in diamonds; rows of triangles (dok kap, dok bang), " +
+                "diamonds (dok hap) and hooks (dok kho) between white lines or bands of the little snake (ngu noi) in " +
+                "black and red, the colours in pairs (black and red, yellow and green, green and orange, purple and " +
+                "pink, purple and yellow); small hooks and diamonds on white at the two ends, a zigzag (soi sa) to mark " +
+                "them. At first a man's shoulder cloth alone. The little snake and the soi sa are drawn as the kit's " +
+                "stepped zigzag: the source does not draw them"},
+  ngoenNow: {thai: "ผ้าเช็ด ไทลื้อเมืองเงิน (ปัจจุบัน)", en: "the Mueang Ngoen shoulder cloth of today, its rows spaced apart",
+             ground: WEAVE_DYES.white, warp: WEAVE_DYES.white,
+             threads: [WEAVE_DYES.yellow, WEAVE_DYES.green, WEAVE_DYES.pink, WEAVE_DYES.purple, WEAVE_DYES.lac, WEAVE_DYES.black,
+                       WEAVE_DYES.orange], edge: "5.",
+             body: [["gap", 5], ["lai", ["kap", "2"], ["kap", "2", true], "1"], ["gap", 5], ["lai", ["nuay", "4"], ["nuay", "4"], ["nuay", "4"]],
+                    ["gap", 5], ["lai", ["kho", "7"], ["kho", "7", true], ["kho", "7"]], ["gap", 5], ["lai", ["fanPla", "5"]]],
+             end: [["stripe", 2, 5], ["gap", 3], ["lai", ["nuay", "5"], ["nuay", "5"]], ["gap", 3]],
+             from: "the Mueang Ngoen thesis (mueangNgoen): today a woman's sabai in a rite and a scarf in the cold; its " +
+                   "patterns spaced apart and plainer than of old, about half the patterned cloth it had, woven of " +
+                   "factory cotton or tore yarn"},
+  khit: {thai: "สไบขิด", en: "a khit sabai: indigo raised on white",
+         ground: WEAVE_DYES.white, warp: WEAVE_DYES.cream, threads: [WEAVE_DYES.indigo, WEAVE_DYES.deepIndigo, WEAVE_DYES.red],
+         edge: "1.3",
+         body: [["gap", 3], ["lai", ["dokChan", "13"], ["kho", "1"], ["dokChan", "13"]], ["gap", 3], ["stripe", 1, 3],
+                ["gap", 3], ["lai", ["chang", "1"], ["chang", "1", true]], ["gap", 3], ["stripe", 1, 3]],
+         end: [["stripe", 2, 1], ["gap", 2], ["lai", ["ma", "1"], ["ma", "1", true]], ["gap", 2], ["stripe", 1, 3], ["gap", 2],
+               ["lai", ["makNat", "13"]], ["gap", 2], ["stripe", 2, 1], ["gap", 3]],
+         from: "SACIT: khit is woven for the sabai, the bag, the tung and the pillow; the elephant (wisdom, leading, " +
+               "wealth) and the horse (plenty) are the Tai Lue's (lue)"},
+  haeOn: {thai: "ผ้าแห่ออน", en: "pha hae on: the Tai Lue bride's sabai of pink Chinese silk",
+          ground: "#e58aa6", warp: "#d97a98", threads: ["#f2b3c6"], edge: "",
+          body: [["gap", 6]], end: [["gap", 3]],
+          from: "the Mueang Ngoen thesis (mueangNgoen): at a wedding the bride wears pink Chinese silk (ผ้าแพรจีนสีชมพู) " +
+                "slanting like a sabai, the pha hae on, mostly handed down from her mother or grandparents; on is the " +
+                "Tai Lue word for pink"},
+  yuanChet: {thai: "ผ้าเช็ด ไทยวน", en: "the Tai Yuan pha chet: white cotton, jok of the blessed beasts and plants",
+             ground: WEAVE_DYES.white, warp: WEAVE_DYES.cream,
+             threads: [WEAVE_DYES.yellow, WEAVE_DYES.red, WEAVE_DYES.green, WEAVE_DYES.black], edge: "2.",
+             body: [["gap", 4], ["lai", ["chang", "2"], ["chang", "2", true]], ["gap", 4], ["lai", ["khruaDok", "413"]], ["gap", 4],
+                    ["lai", ["ma", "1"], ["ma", "1", true]], ["gap", 4], ["lai", ["nak", "2"]], ["gap", 4],
+                    ["lai", ["nok", "3"], ["nok", "3", true]]],
+             end: [["stripe", 2, 2], ["gap", 2], ["lai", ["maliLueai", "31"]], ["gap", 2], ["stripe", 1, 1], ["gap", 3]],
+             from: "the Chiang Rai Database of Mae Fah Luang University (chiangRai): a cloth of white cotton about a hand's " +
+                   "span wide and two cubits long, jok of the Tai Yuan's blessed beasts, the elephant, the horse, the naga " +
+                   "and the bird, and of plants, over the left shoulder or the right, to the temple and to hear a sermon, " +
+                   "and laid under the hands when one bows; McIntosh (mcintosh): a short narrow shoulder cloth a man adds for a " +
+                   "great day, cotton, patterned in many colours. The Damrong paper (damrong) holds that the Tai Yuan did " +
+                   "not, of old, weave the pha chet worn over the shoulder. Its jok colours are the kit's (the Mae Chaem threads)"},
+  chiangKham: {thai: "ผ้าเช็ดพาดบ่าผู้ชาย ไทลื้อเชียงคำ", en: "the Tai Lue men's shoulder cloth of Chiang Kham: elephants and horses",
+               ground: WEAVE_DYES.white, warp: WEAVE_DYES.cream, threads: [WEAVE_DYES.red, WEAVE_DYES.black, WEAVE_DYES.yellow],
+               edge: "1.2",
+               body: [["gap", 3], ["lai", ["chang", "1"], ["chang", "2", true]], ["gap", 3], ["stripe", 1, 2], ["gap", 3],
+                      ["lai", ["nok", "3"], ["ma", "1"]], ["gap", 3], ["stripe", 1, 1]],
+               end: [["stripe", 3, 1], ["gap", 2], ["lai", ["fanPla", "2"]], ["gap", 2], ["stripe", 1, 2], ["gap", 3]],
+               from: "the Chiang Kham paper (chiangKham): the elephant and the horse, 'elephants and horses, three under the " +
+                     "house', are often woven on a man's shoulder cloth, and the little bird goes with the horse. Its white, " +
+                     "red and black are the kit's, the colours the same paper gives the Chiang Kham pha chet luang"},
+  long: {thai: "ผ้าสไบจก เมืองลอง", en: "the jok sabai of Mueang Long, for the great days",
+         ground: WEAVE_DYES.indigo, warp: WEAVE_DYES.deepIndigo,
+         threads: [WEAVE_DYES.jackfruit, WEAVE_DYES.lac, WEAVE_DYES.green, WEAVE_DYES.white], edge: "1.2",
+         body: [["gap", 3], ["lai", ["khanDok", "12"], ["chanPaetKleeb", "24"]], ["gap", 3], ["lai", ["makNat", "14"]], ["gap", 3],
+                ["lai", ["chanPaetKleeb", "24"], ["khanDok", "13"]], ["gap", 3], ["lai", ["kai", "12"]]],
+         end: [["stripe", 3, 1], ["gap", 2], ["lai", ["khruaKho", "1"]], ["gap", 2], ["stripe", 2, 2], ["gap", 3]],
+         from: "the Department of Sericulture (long): the women of Mueang Long weave jok for their own wedding, or as a " +
+               "sabai for the great days, and a jok cloth a wife weaves her husband, or a girl her sweetheart, to wear " +
+               "over the shoulder. Its motifs and dyes are Mueang Long's own jok (the bowl of flowers, the eight-petalled " +
+               "flower, the pineapple): the source does not say which a sabai has"},
+  sawaiLaeng: {thai: "ผ้าสะหว้ายแล่ง", en: "pha sawai laeng: the narrow white cloth a woman wraps slanting to go to the temple",
+               ground: WEAVE_DYES.white, warp: WEAVE_DYES.cream, threads: [WEAVE_DYES.cream], edge: "",
+               body: [["gap", 6]], end: [["gap", 3]],
+               from: "the Chiang Rai Database (chiangRai): a white cloth, narrow but long, wrapped about the upper body; the " +
+                     "Nan thesis (boSuak): worn slanting (sawai laeng, biang bai) to go into the temple"},
+  tuapDam: {thai: "ผ้าตุ๊ม (ผ้าต้วบ) สีดำ", en: "pha tum: a plain black wrap over the shoulders", ground: WEAVE_DYES.black,
+            warp: WEAVE_DYES.black, threads: [WEAVE_DYES.black], edge: "", body: [["gap", 6]], end: [["gap", 3]],
+            from: "the Chiang Rai Database (chiangRai): women and men of the Tai Yuan lay a large cloth over the shoulders, " +
+                  "the pha tum or pha tuap, woven of cotton in one colour, white, black or red"},
+  tuapDaeng: {thai: "ผ้าตุ๊ม (ผ้าต้วบ) สีแดง", en: "pha tum: a plain red wrap over the shoulders", ground: WEAVE_DYES.red,
+              warp: WEAVE_DYES.red, threads: [WEAVE_DYES.red], edge: "", body: [["gap", 6]], end: [["gap", 3]],
+              from: "the Chiang Rai Database (chiangRai): the pha tum or pha tuap, of cotton in one colour, white, black or red"},
+  tuapSaeng: {thai: "ผ้าต้วบแซง", en: "pha tuap saeng: white, with a thread of colour every two inches",
+              ground: WEAVE_DYES.white, warp: WEAVE_DYES.cream, threads: [WEAVE_DYES.red, WEAVE_DYES.black, WEAVE_DYES.deepIndigo],
+              edge: "", body: [["stripe", 1, 1], ["gap", 12], ["stripe", 1, 2], ["gap", 12], ["stripe", 1, 3], ["gap", 12]],
+              end: [["gap", 3]],
+              from: "the Chiang Rai Database (chiangRai): plain white cotton with stripes about two inches apart, now red, " +
+                    "now black, now navy, the pha tuap saeng (which way the stripes run it does not say)"},
+  taSaeng: {thai: "ผ้าต้วบตาแสง", en: "pha tuap ta saeng: a check of black, red and white, big squares and small",
+            ground: WEAVE_DYES.white, warp: WEAVE_DYES.white, threads: [WEAVE_DYES.black, WEAVE_DYES.red], edge: "",
+            stripes: "111111..22..", body: [["stripe", 8, 1], ["gap", 3], ["stripe", 3, 2], ["gap", 3]], end: [["gap", 3]],
+            from: "the Chiang Rai Database (chiangRai): a wrap of squares big and small, ta saeng (lai di at Mae Chaem, ta " +
+                  "kong at Nan); the Nan text (nanCheck): black, red and white, the colours changing in both the weft and " +
+                  "the warp to make squares"},
+  taKongDaeng: {thai: "ผ้าต้วบตาโก้ง แดงขาว", en: "pha tuap ta kong: a check of red and white (Nan)",
+                ground: WEAVE_DYES.white, warp: WEAVE_DYES.white, threads: [WEAVE_DYES.red], edge: "",
+                stripes: "11111.....", body: [["stripe", 7, 1], ["gap", 7]], end: [["gap", 3]],
+                from: "the Nan text (nanCheck): some ta kong cloths only red and white"},
+  taKongDam: {thai: "ผ้าต้วบตาโก้ง ดำขาว", en: "pha tuap ta kong: a check of black and white (Nan)",
+              ground: WEAVE_DYES.white, warp: WEAVE_DYES.white, threads: [WEAVE_DYES.black], edge: "",
+              stripes: "1111....", body: [["stripe", 6, 1], ["gap", 6]], end: [["gap", 3]],
+              from: "the Nan text (nanCheck): some ta kong cloths black and white"},
+  tuapRim: {thai: "ผ้าต้วบ ขาวริมดำ", en: "a white wrap, a black stripe of warp along each edge (Nan)",
+            ground: WEAVE_DYES.white, warp: WEAVE_DYES.cream, threads: [WEAVE_DYES.black], edge: "11.1.", body: [["gap", 6]],
+            end: [["gap", 3]],
+            from: "the Nan text (nanCheck): or all white, black stripes only in the warp along its two edges"},
+  thumKhram: {thai: "ผ้าทุ้ม (ผ้าตุ๊ม) ย้อมคราม", en: "pha thum: a thick cotton wrap dyed with indigo, for the cool mornings",
+              ground: WEAVE_DYES.indigo, warp: WEAVE_DYES.deepIndigo, threads: [WEAVE_DYES.deepIndigo], edge: "", body: [["gap", 6]],
+              end: [["gap", 3]],
+              from: "the Lanna dress paper (fineArts): in the cool season women and men wear the pha thum, thick handwoven " +
+                    "cotton about two metres long, dyed with plants, indigo, ebony or jackfruit heartwood; the old wear it " +
+                    "slanting over the shoulder to the temple"},
+  thumKhanun: {thai: "ผ้าทุ้ม (ผ้าตุ๊ม) ย้อมแก่นขนุน", en: "pha thum: a thick cotton wrap dyed with jackfruit heartwood",
+               ground: WEAVE_DYES.jackfruit, warp: "#b9801f", threads: ["#b9801f"], edge: "", body: [["gap", 6]], end: [["gap", 3]],
+               from: "the Lanna dress paper (fineArts): the pha thum dyed with plants, indigo, ebony or jackfruit heartwood"},
+  maeChaemPat: {thai: "ผ้าป้าด (ผ้าพาดบ่า) แม่แจ่ม", en: "the jok shoulder cloth of Mae Chaem: the bowl of flowers, the hong, horse and elephant",
+                ground: WEAVE_DYES.black, warp: WEAVE_DYES.black,
+                threads: [WEAVE_DYES.yellow, WEAVE_DYES.red, WEAVE_DYES.green, WEAVE_DYES.white], edge: "2.",
+                body: [["gap", 3], ["lai", ["khanDok", "12"], ["khanDok", "13"]], ["gap", 3], ["lai", ["hongKhu", "14"]], ["gap", 3],
+                       ["lai", ["ma", "1"], ["chang", "2", true]], ["gap", 3], ["lai", ["fanPla", "4"]]],
+                end: [["stripe", 2, 2], ["gap", 2], ["lai", ["fanPla", "1"]], ["gap", 2], ["stripe", 1, 2], ["gap", 3]],
+                from: "the Department of Sericulture on Mae Chaem jok (maeChaemJok): the pha chet and the pha pat (ผ้าป้าด, " +
+                      "a shoulder cloth) are worked in jok, the bowl of flowers and the hong on the pha pat; horses, " +
+                      "elephants, chickens, donkeys, the dog's tooth, the fish's teeth and people mostly on the sleeping mat " +
+                      "and the pha pat. Its black ground and its threads are Mae Chaem's palette"},
+  lueBands: {thai: "ผ้าเช็ดไตลื้อ (จก แถบเรขาคณิต)", en: "a Tai Lue pha chet of jok: narrow bands of small shapes, bright and dark",
+             ground: WEAVE_DYES.purple, warp: WEAVE_DYES.purple,
+             threads: [WEAVE_DYES.yellow, WEAVE_DYES.green, WEAVE_DYES.white, WEAVE_DYES.black, WEAVE_DYES.orange, WEAVE_DYES.lac],
+             edge: "6.",
+             body: [["lai", ["kai", "16"]], ["gap", 1], ["lai", ["fanPla", "3"], "4"], ["gap", 1],
+                    ["lai", ["nuay", "1"], ["nuay", "5"], ["nuay", "1"]], ["gap", 1], ["lai", ["kai", "23"]], ["gap", 1],
+                    ["lai", ["kap", "5"], ["kap", "5", true], "2"], ["gap", 1], ["lai", ["fanPla", "1"]], ["gap", 1]],
+             end: [["stripe", 3, 6], ["gap", 2], ["lai", ["kai", "13"]], ["gap", 3]],
+             from: "the Damrong paper (damrong): one group of Tai Lue pha chet, of Si Don Chai in Chiang Khong and of Mueang " +
+                   "Ngoen, is jok, some with tapestry, of small geometric figures repeated and mirrored into narrow bands " +
+                   "one above another, in bright and dark colours on a coloured warp, and no figure on its own. Its purple " +
+                   "and its threads are the kit's"},
+  lueKhit: {thai: "ผ้าเช็ดไตลื้อ (ขิด แม่ลายเอกเทศ)", en: "a Tai Lue pha chet of khit: the castle, the elephant and the horse on white",
+            ground: WEAVE_DYES.white, warp: WEAVE_DYES.cream, threads: [WEAVE_DYES.red, WEAVE_DYES.deepIndigo], edge: "2.",
+            body: [["gap", 3], ["lai", ["prasat", "1"], ["prasat", "2", true]], ["gap", 3], ["lai", ["chang", "1"], ["ma", "2", true]],
+                   ["gap", 3], ["lai", ["khoS", "1"], ["khoS", "2"], ["khoS", "1"]], ["gap", 2], ["lai", ["khoS", "2"], ["khoS", "1"], ["khoS", "2"]]],
+            end: [["stripe", 2, 1], ["gap", 4], ["stripe", 1, 2], ["gap", 3]],
+            from: "the Damrong paper (damrong): the other group is khit on a white or raw-cotton warp, figures standing " +
+                  "alone, the castle and the beasts, mirrored at the middle of the cloth, the middle sometimes left plain; " +
+                  "one repeat a castle lantern, a lion, an elephant, a horse and two rows of hooks; a girl weaves a fine " +
+                  "one for her sweetheart to wear over the shoulder to the temple. Its red and blue are the colours the " +
+                  "paper gives the Tai Lue tung; the lion the kit does not weave"},
+  phuanHatSiao: {thai: "ผ้าสไบ ไทพวนหาดเสี้ยว", en: "the Tai Phuan sabai of Hat Siao: elephants, horses, the naga and flowers",
+                 ground: WEAVE_DYES.cream, warp: WEAVE_DYES.white,
+                 threads: [WEAVE_DYES.green, WEAVE_DYES.black, WEAVE_DYES.indigo, WEAVE_DYES.red], edge: "4.",
+                 body: [["gap", 3], ["lai", ["chang", "1"], ["chang", "1", true]], ["gap", 3],
+                        ["lai", ["dokKaeo", "4"], ["dokChan", "34"], ["dokKaeo", "4"]], ["gap", 3], ["lai", ["ma", "2"], ["ma", "2", true]],
+                        ["gap", 3], ["lai", ["nak", "3"]]],
+                 end: [["stripe", 2, 4], ["gap", 2], ["lai", ["fanPla", "1"]], ["gap", 3]],
+                 from: "the Hat Siao paper (hatSiao): the elephant, the horse, the naga, people and flowers of the ritual " +
+                       "cloths are woven, plainer, into the sabai too, and the sabai is also worked in yok muk, in green, " +
+                       "nil black, indigo and red. Its cream ground is the kit's; the people it does not weave"},
+  dokLoi: {thai: "ผ้าลายดอกลอย (จิตรกรรมล้านนา)", en: "the flowered cloth of the Lanna murals: flowers scattered all over, a border",
+           ground: WEAVE_DYES.red, warp: WEAVE_DYES.red, threads: [WEAVE_DYES.yellow, WEAVE_DYES.white, WEAVE_DYES.green], edge: "1.3",
+           body: [["gap", 5], ["lai", ["dokChan", "12"]], ["gap", 5], ["lai", ["dokKaeo", "2"], ["dokKaeo", "1"]]],
+           end: [["stripe", 2, 1], ["gap", 2], ["stripe", 1, 3], ["gap", 3]],
+           from: "the Damrong paper (damrong): the shoulder cloths of the Lanna murals of the 19th century (Wat Phra Singh, " +
+                 "Wat Buak Khrok Luang, Wat Nong Bua, Wat Phumin) are plain cloths of many colours and mostly flowers " +
+                 "printed all over, flowers floating (dok loi), with a border or without: cloth from abroad, not of " +
+                 "Lanna's own weave. Its red and its flowers are the kit's"}
+};
+var SABAI_WARPS = 40;                   // the cells across a sabai between its warps, worn or hung
+
+// The colours a weave may be woven in: its own, or the dyes of a town or people the sources give (WEAVE_PALETTES).
+var SABAI_COLOURS = ["own"].concat(Object.keys(WEAVE_PALETTES));
+
+// A weave in a palette's colours: the palette's ground for its ground and its warp, the palette's threads for its
+// pattern threads in turn; a weave with more threads than the palette keeps its own after them, made white or black
+// where one would be lost on the new ground. name: a key of SABAI_WEAVES; colours: one of SABAI_COLOURS ("own", or
+// left out, the weave as the sources give it). Returns the weave to draw (its rows and its colours), made once; null
+// for a name that is no weave.
+// e.g. sabaiWeave("nan", "long").ground is WEAVE_DYES.indigo
+var SABAI_COLOURED = {};
+function sabaiWeave(name, colours) {
+  var weave = SABAI_WEAVES[name], key = name + "|" + (colours || "own");
+  if (!weave) { return null; }
+  if (SABAI_COLOURED[key]) { return SABAI_COLOURED[key]; }
+  var palette = colours && colours !== "own" ? WEAVE_PALETTES[colours] : null;
+  if (colours && colours !== "own" && !palette && typeof warn === "function") { warn("sabai colours: " + colours + " is none of " + SABAI_COLOURS.join(", ")); }
+  function apart(a, b) {                                                     // how far two colours are, 0 to 441
+    var x = parseInt(a.slice(1), 16), y = parseInt(b.slice(1), 16);
+    return Math.hypot((x >> 16) - (y >> 16), ((x >> 8) & 255) - ((y >> 8) & 255), (x & 255) - (y & 255));
+  }
+  SABAI_COLOURED[key] = !palette ? weave : Object.assign({}, weave, {ground: palette.ground, warp: palette.ground,
+    threads: weave.threads.map(function (c, k) {
+      if (k < palette.threads.length) { return palette.threads[k]; }
+      return apart(c, palette.ground) > 90 ? c : (apart(WEAVE_DYES.white, palette.ground) > 200 ? WEAVE_DYES.white : WEAVE_DYES.black);
+    })});
+  return SABAI_COLOURED[key];
+}
+
+// A look's sabai for a weave: [its ground, the thread at its selvedge (or its warp), the weave's name, its colours], for person()
+// (oldcartoon.js draws the band and the back of it thread by thread when its third name is a weave).
+// e.g. person(500, 900, cast("lady", {sabai: sabaiLook("nan", "maechaem")}))
+function sabaiLook(name, colours) {
+  var weave = sabaiWeave(name, colours), edge = weave.edge.charAt(0) || (weave.stripes || ".").charAt(0);   // a check's first stripe, where it has no edge
+  return [weave.ground, edge === "." ? weave.warp : weave.threads[parseInt(edge, 10) - 1], name, colours || "own"];
+}
+
+// A part of a weave (its "body" or an "end") as a grid "cells" across: each row a pick, each character the weft
+// between two warps, "." the ground, "1" to "9" a thread of the weave's threads. Made once and kept.
+// e.g. sabaiGrid("nan", "body", 40)
+var SABAI_GRIDS = {};
+function sabaiGrid(name, part, cells) {
+  var key = [name, part, cells].join("|");
+  if (SABAI_GRIDS[key]) { return SABAI_GRIDS[key]; }
+  var weave = SABAI_WEAVES[name], edge = weave.edge, far = edge.split("").reverse().join(""), inner = cells - 2 * edge.length;
+  var rows = [], plain = function (ch) { return new Array(inner + 1).join(ch); };
+  weave[part].forEach(function (r) {
+    var k;
+    if (r[0] === "gap") { for (k = 0; k < r[1]; k++) { rows.push(plain(".")); } return; }
+    if (r[0] === "stripe") { for (k = 0; k < r[1]; k++) { rows.push(plain(String(r[2]))); } return; }
+    var parts = r.slice(1), on = typeof parts[parts.length - 1] === "string" ? parts.pop() : null;   // a row's own ground thread
+    var figures = parts.map(function (f) {                            // each figure in its threads, and turned if it is
+      return LAI[f[0]].grid.map(function (row) {
+        var out = row.split("").map(function (ch) { return ch === "." || !f[1] ? ch : f[1].charAt(parseInt(ch, 10) - 1) || ch; });
+        return (f[2] ? out.reverse() : out).join("");
+      });
+    });
+    var tall = Math.max.apply(null, figures.map(function (g) { return g.length; })), unit = [];
+    for (k = 0; k < tall; k++) {                                      // side by side, a ground thread between, each centred up and down
+      unit.push(figures.map(function (g) {
+        var row = g[k - Math.floor((tall - g.length) / 2)];
+        return row === undefined ? new Array(g[0].length + 1).join(".") : row;
+      }).join("."));
+    }
+    if (unit[0].length > inner && typeof warn === "function") { warn("sabai " + name + ": a row " + unit[0].length + " wide in " + inner); }
+    weaveAcross(unit, inner, 2).forEach(function (row) { rows.push(on ? row.replace(/\./g, on) : row); });
+  });
+  if (weave.stripes) {                                                // the warp's stripes, where the weft is the ground
+    rows = rows.map(function (row) {
+      return row.split("").map(function (ch, c) { return ch === "." ? weave.stripes.charAt(c % weave.stripes.length) : ch; }).join("");
+    });
+  }
+  SABAI_GRIDS[key] = rows.map(function (row) { return edge + row + far; });
+  return SABAI_GRIDS[key];
+}
+
+// The colour of a cell of a weave's grid.
+function sabaiColour(weave, ch) { return ch === "." || ch === "" ? weave.ground : weave.threads[(parseInt(ch, 10) - 1) % weave.threads.length]; }
+
+// The weft's colour at cell i of pick j, as threadCloth's look.weft, for a cloth of "picks" picks hung by one end: its
+// end, the body repeated, and the end again, turned, at the foot.
+// colours: one of SABAI_COLOURS (left out, the weave's own).
+// e.g. threadCloth(pen, 900, 200, t, {warps: 41, picks: 220, warp: SABAI_WEAVES.nan.warp, weft: sabaiWeft("nan", 40, 220)})
+function sabaiWeft(name, cells, picks, colours) {
+  var weave = sabaiWeave(name, colours), end = sabaiGrid(name, "end", cells), body = sabaiGrid(name, "body", cells);
+  return function (i, j) {
+    var back = picks - 1 - j, row = j < end.length ? end[j] : back < end.length ? end[back] : body[(j - end.length) % body.length];
+    return sabaiColour(weave, row.charAt(i));
+  };
+}
+
+// A row of a worn cloth's crossings, 0 to cells: the body's map (where(i), the point of crossing i) asked at every
+// fourth crossing only, and the three between laid on the straight line between those two: the map bends with the
+// spine and the shoulders, but not within four threads, and asking it of every crossing was most of the time a worn
+// sabai took.
+function sabaiAnchors(where, cells) {
+  var out = [], a = where(0);
+  for (var i = 4; i <= cells; i += 4) {
+    var b = where(i);
+    for (var k = 0; k < 4; k++) { out.push([a[0] + (b[0] - a[0]) * k / 4, a[1] + (b[1] - a[1]) * k / 4]); }
+    a = b;
+  }
+  out.push(a);
+  return out;
+}
+
+// A worn sabai's band across the chest, thread by thread (threadMesh): its picks across the band and its warps along it,
+// its body's rows woven in, lit by soft folds where it lies over the breast and gathers to the shoulder, which a
+// breath stirs. Draw it clipped to the band. brush: the pen; spot(along, across): where a point of the band lies,
+// along it from its lower end and across it from its middle line (positive toward its lower side); from, to: the
+// stretch along it to weave; half: half its width; name: a key of SABAI_WEAVES; t: the second; colours: one of
+// SABAI_COLOURS (left out, the weave's own). The picks are counted
+// from the band's lower end, so the pattern stays where it is on the cloth as the person moves; they are 0.7 of the
+// warps' spacing apart, as a float is wider than a pick is tall.
+// e.g. sabaiThreads(pen, function (a, c) { return [a, c]; }, 0, 120, 30, "nan", clock)
+function sabaiThreads(brush, spot, from, to, half, name, t, colours) {
+  var weave = sabaiWeave(name, colours), cells = SABAI_WARPS, gap = 2 * half / cells, pick = gap * 0.7;
+  var body = sabaiGrid(name, "body", cells), first = Math.floor(from / pick), P = [];
+  for (var j = first; j <= Math.ceil(to / pick); j++) {
+    var along = j * pick, row = [], at = sabaiAnchors(function (i) { return spot(along, -half + i * gap); }, cells);
+    for (var i = 0; i <= cells; i++) {
+      var across = -half + i * gap;
+      row.push([at[i][0], at[i][1], 1.6 * Math.sin(along / 11 - across / 26) + 0.9 * Math.sin(along / 6.5 + across / 40 + (t || 0) * 0.9)]);
+    }
+    P.push(row);
+  }
+  threadMesh(brush, P, {gap: gap, warp: weave.warp, soft: true, weft: function (i, k) {
+    return sabaiColour(weave, body[(((first + k) % body.length) + body.length) % body.length].charAt(i));
+  }});
+}
+
+// The end of a worn sabai that hangs from the shoulder down the back, thread by thread, in a breeze as threadCloth's
+// cloth is in the wind: nothing moves at the shoulder, more toward the foot, and a gust swells and dies; its woven
+// end at the foot and the warp's ends hanging from it. brush: the pen; spot(u, v, push): where the cloth's point u
+// across (0 by the body, 1 its outer edge) and v down (0 at the shoulder, 1 at the foot) lies when the wind pushes it
+// by push ([across, down], in the person's units); long: how long it hangs; half: half the cloth's width; name: a
+// key of SABAI_WEAVES; t: the second; colours: one of SABAI_COLOURS (left out, the weave's own); breeze: how hard the
+// wind (1, a light breeze; 0, still). Gives back its
+// crossings (threadMesh's P), for a shade laid over it.
+// e.g. sabaiBackThreads(pen, function (u, v, push) { return [u * 40 + push[0], v * 200 + push[1]]; }, 200, 30, "nan", clock)
+function sabaiBackThreads(brush, spot, long, half, name, t, colours, breeze) {
+  var weave = sabaiWeave(name, colours), cells = SABAI_WARPS, gap = 2 * half / cells, np = Math.max(8, Math.round(long / (gap * 0.7)));
+  var end = sabaiGrid(name, "end", cells), body = sabaiGrid(name, "body", cells), P = [];
+  var gust = (breeze === undefined ? 1 : breeze) * (0.65 + 0.35 * Math.sin(t * 0.7) * Math.sin(t * 0.23 + 1));
+  for (var j = 0; j < np; j++) {
+    var v = j / (np - 1), free = Math.pow(v, 1.25), row = [], zs = [];
+    for (var i = 0; i <= cells; i++) {
+      var u = i / cells;
+      zs.push(free * gust * (9 * Math.sin(2 * Math.PI * (u * 0.6 - v * 0.9) - t * 2.2) + 4 * Math.sin(2 * Math.PI * (u * 1.3 + v * 0.4) - t * 3.4 + 1.3)
+                             + 2 * Math.sin(2 * Math.PI * v * 2.2 - t * 2.9)));
+    }
+    var at = sabaiAnchors(function (i) {
+      return spot(i / cells, v, [zs[i] * 0.45 + free * gust * 6 + v * v * gust * 5 * Math.sin(t * 1.1 + 0.4), -Math.abs(zs[i]) * 0.16 * v]);
+    }, cells);
+    for (i = 0; i <= cells; i++) { row.push([at[i][0], at[i][1], zs[i]]); }
+    P.push(row);
+  }
+  threadMesh(brush, P, {gap: gap, warp: weave.warp, fringe: true, t: t, gust: gust, soft: true, weft: function (i, k) {
+    var back = np - 1 - k;
+    return sabaiColour(weave, (back < end.length ? end[back] : body[k % body.length]).charAt(i));
+  }});
+  return P;
 }
 
 // ---------- the women at work ----------
