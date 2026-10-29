@@ -693,12 +693,22 @@ Returns nothing: it draws with pen, in the head's pixels.
 e.g. NORTH_FACE = northFace({north: "round"}); northNose(view(0.3, true, NORTH_FACE), true);
 ```
 
-### `soft(units)`
+### `softSpot(x, y, rx, ry, rgb, alpha)`
 
 ```
-A blur of "units" in the head's own pixels, at whatever size the head is drawn; 0 ends it.
-Returns nothing: it sets pen.filter.
-e.g. soft(2); pen.fill(); soft(0);
+A soft spot of colour, strongest at its middle and gone at its edge: an ellipse of radii rx and ry at (x, y), in
+"rgb" ("150, 85, 65") at "alpha" in the middle. It is a gradient, not a blur: a blur (pen.filter) on a sheet that
+Chrome draws in software, as kit_check and the Spark's renders do, made a face 12 to 14 times as slow (2026-10-29).
+Returns nothing: it draws with pen.
+e.g. softSpot(30, -280, 10, 6, "150, 85, 65", 0.1);
+```
+
+### `softStroke(width, rgb, alpha)`
+
+```
+A soft line where a blur would have been: the path pen holds, stroked three times, wide and faint to narrow and
+stronger. width: the middle stroke's width; rgb and alpha as softSpot() takes them. Returns nothing.
+e.g. pen.beginPath(); pen.moveTo(0, -280); pen.lineTo(4, -260); softStroke(5, "150, 75, 55", 0.26);
 ```
 
 ### `cubicAt(p0, p1, p2, p3, u)`
@@ -11040,14 +11050,16 @@ licence are in sounds.py (FETCHED): a CC BY one is named in the film's credits.
 
 It needs Google Chrome (Playwright drives it: channel "chrome") and ffmpeg on the PATH. The page must
 have draw(t), the switch rendering, and LENGTH or DURATION (the film's seconds), as every kit page does.
-It writes the video where it is named, 1920 x 1080 at 30 frames a second (H.264; AAC sound with --audio),
+It writes the video where it is named, 1920 x 1080 at 30 frames a second (H.264; AAC sound with --audio;
+--height 1440 for 2560 x 1440, the page's own picture taken at that size, not one made larger after: a page drawn at
+two device pixels, as the hero film is, has the detail for it),
 and prints how many frames it made and how long that took. It ends with exit code 0; 1 when the page
 reported an error (the video is made all the same) or when ffmpeg stopped (no video); 2 for arguments
 argparse does not take. From Python: render.render(page, video, audio, start, end, fast, sets, vanish).
 ```
 
-- `ffmpeg_command(video, audio, start, fast, sounds)`: The ffmpeg command that reads frames on its stdin and encodes them as render.py does: a list of words.
-- `render(page_file, video, audio, start, end, fast, sets, vanish)`: Render a kit page to a video file, frame by frame, in Chrome with no window: gives back nothing.
+- `ffmpeg_command(video, audio, start, fast, sounds, height)`: The ffmpeg command that reads frames on its stdin and encodes them as render.py does: a list of words.
+- `render(page_file, video, audio, start, end, fast, sets, vanish, height)`: Render a kit page to a video file, frame by frame, in Chrome with no window: gives back nothing.
 - `main()`: The command line: read the arguments, check that ffmpeg and the sound file are there, render.
 
 ## kit/sash_music.py
@@ -11556,7 +11568,7 @@ exit code 1 when a film is not clean (a flip, an inward or a folded arm) or the 
 ```
 
 - `turn_of(ex, ey, outward)`: the upper arm's angle: 0 straight down, 90 out to its own side, 180 up, below 0 in toward the spine
-- `measure(page, start, end)`: Draw an open page from "start" to "end" (its whole length unless told) and count its arms' faults.
+- `measure(page, start, end, painted)`: Draw an open page from "start" to "end" (its whole length unless told) and count its arms' faults.
 - `report(name, found, errors)`: Print what measure() found on one page: the counts, the faults by second, and the first three of each.
 - `main()`: The command line: arms_check.py PAGE [FROM TO]: open the page, measure its arms, print what was found.
 
@@ -11677,6 +11689,7 @@ kit_check.py [page.html ...] [--quick]  - one check of the kit: every page that 
     python checks/kit_check.py --quick         # without the arms, which take the longest
     python checks/kit_check.py model.html --quick --settle 30     # "same" as it would be with a pre-roll of 30 frames
     python checks/kit_check.py --changed       # only the pages that something they load has changed since they passed
+    python checks/kit_check.py --jobs 1        # one page at a time (4 at once unless told, each in a Chrome of its own)
 
 It says how it is getting on as it goes, a line at each stage, at once even when its output goes to a file (owner,
 2026-10-25: "make it so it outputs something after each major stage"): how many pages it will check; for each page
@@ -11705,6 +11718,7 @@ for each page, in Chrome with no window:
             not use it shows what hangs at rest, and fails here.
   arms      what arms_check.py counts over the whole page: elbows that flip, upper arms that point in toward the
             spine, forearms folded past 150 degrees. A page passes with none, or with no more than KNOWN allows.
+            Its frames are drawn unpainted (arms_check.py): only where the arms are is wanted.
   ms        how long one frame takes to draw, after a warm-up (whatever is timed first comes out about five times
             too slow)
   cues      only for a page with a cue sheet (CUES): every line of the song is sung inside one scene (a cut
@@ -11713,6 +11727,12 @@ for each page, in Chrome with no window:
             entry. One more line is printed under the page's.
 A page that needs a file which is not on this computer (a page's pictures are not kept in git) is left out, and said
 so. It prints one line a page, then what failed, and ends with exit code 1 if anything did.
+
+Pages are checked JOBS (4) at once, each in a Chrome of its own (--jobs; a page's answer is the same either way, and its
+ms/frame is measured while the others draw, so it reads higher). Owner, 2026-10-29: "fix the check so it runs in a
+reasonable amount of time": a whole run was heading for 7 to 8 hours, most of it the faces' blurs of that day (since
+replaced by gradients), then the arms, which painted every frame only to read where the arms are (arms_check.py now
+draws them unpainted), then one page at a time.
 
 It needs Google Chrome (through Playwright). Pages are named from the kit's folder (kit/). The time a page
 may take to load is KIT_CHECK_LOAD_SECONDS from the environment (180 unless set).
@@ -11727,6 +11747,8 @@ may take to load is KIT_CHECK_LOAD_SECONDS from the environment (180 unless set)
 - `missing_of(page_file)`: The script files a page asks for that are not on this computer.
 - `say(text)`: Prints a line of how the check is getting on, at once (a file it is written to gets it now, not at the end).
 - `check(browser, page_file, quick, settle)`: One page: what was found, and a list of what failed.
+- `worker(tasks, results, quick, settle)`: One worker of --jobs: its own Chrome, kept for every page it takes from "tasks" until a None, each page's
+- `checked(files, quick, settle, jobs)`: Each page checked, as (path, found, failed), in the order they are done: in this process with one Chrome for
 - `line_of(name, found)`: What was found on one page, as one line of the table.
 - `main()`: The command line (see this file's docstring): check the look keys and the names, then each page; write
 

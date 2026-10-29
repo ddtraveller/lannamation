@@ -5,6 +5,7 @@
     python checks/kit_check.py --quick         # without the arms, which take the longest
     python checks/kit_check.py model.html --quick --settle 30     # "same" as it would be with a pre-roll of 30 frames
     python checks/kit_check.py --changed       # only the pages that something they load has changed since they passed
+    python checks/kit_check.py --jobs 1        # one page at a time (4 at once unless told, each in a Chrome of its own)
 
 It says how it is getting on as it goes, a line at each stage, at once even when its output goes to a file (owner,
 2026-10-25: "make it so it outputs something after each major stage"): how many pages it will check; for each page
@@ -33,6 +34,7 @@ for each page, in Chrome with no window:
             not use it shows what hangs at rest, and fails here.
   arms      what arms_check.py counts over the whole page: elbows that flip, upper arms that point in toward the
             spine, forearms folded past 150 degrees. A page passes with none, or with no more than KNOWN allows.
+            Its frames are drawn unpainted (arms_check.py): only where the arms are is wanted.
   ms        how long one frame takes to draw, after a warm-up (whatever is timed first comes out about five times
             too slow)
   cues      only for a page with a cue sheet (CUES): every line of the song is sung inside one scene (a cut
@@ -42,12 +44,21 @@ for each page, in Chrome with no window:
 A page that needs a file which is not on this computer (a page's pictures are not kept in git) is left out, and said
 so. It prints one line a page, then what failed, and ends with exit code 1 if anything did.
 
+Pages are checked JOBS (4) at once, each in a Chrome of its own (--jobs; a page's answer is the same either way, and its
+ms/frame is measured while the others draw, so it reads higher). Owner, 2026-10-29: "fix the check so it runs in a
+reasonable amount of time": a whole run was heading for 7 to 8 hours, most of it the faces' blurs of that day (since
+replaced by gradients), then the arms, which painted every frame only to read where the arms are (arms_check.py now
+draws them unpainted), then one page at a time.
+
 It needs Google Chrome (through Playwright). Pages are named from the kit's folder (kit/). The time a page
-may take to load is KIT_CHECK_LOAD_SECONDS from the environment (180 unless set).
+may take to load is KIT_CHECK_LOAD_SECONDS from the environment (180 unless set), times the pages loading at once
+(--jobs): four at once, the hero film took longer than 180 s to load (2026-10-29).
 """
 import argparse
 import hashlib
+import multiprocessing
 import os
+import queue
 import re
 import sys
 import time
@@ -68,6 +79,7 @@ KNOWN = {
 
 PLACES = (0.4, 0.78)      # where in a page "same" is measured, as parts of its length
 RUN = 120                 # the frames of the run a jump is compared with
+JOBS = 4                  # pages checked at once (--jobs): a Chrome each, 0.5 to 1 GB; the laptop has 16 cores
 SAME_LIMIT = 50           # pixels of the 1440 x 1080 sheet that a shift of one pixel does not explain
 # how long a page may take to load: the hero film paints its forests as it loads, 42 s on a laptop on battery and
 # more than 180 s on GitHub's two cores with no GPU, where the check is given KIT_CHECK_LOAD_SECONDS
@@ -257,11 +269,11 @@ def say(text):
     print(text, flush=True)
 
 
-def check(browser, page_file, quick, settle=None):
+def check(browser, page_file, quick, settle=None, load=LOAD_SECONDS):
     """One page: what was found, and a list of what failed.
 
     browser: a Playwright browser (with --allow-file-access-from-files). page_file: the page, a Path.
-    quick: True to leave out the arms. settle: frames painted before a jump (sets the page's SETTLE), or None
+    quick: True to leave out the arms. load: the seconds it may take to load. settle: frames painted before a jump (sets the page's SETTLE), or None
     for the kit's own. Gives back (found, failed): found has long, draws, warnings, differ, past, ms, cues and
     arms as each was measured, or "skipped" for a page that needs a file not here; failed is a list of lines.
     It says each stage that takes time as it ends (say()), with its seconds.
@@ -274,7 +286,7 @@ def check(browser, page_file, quick, settle=None):
     page.on("pageerror", lambda error: own.append(str(error)))
     began = time.time()
     try:
-        page.goto(page_file.as_uri(), timeout=LOAD_SECONDS * 1000)
+        page.goto(page_file.as_uri(), timeout=load * 1000)
         page.evaluate("rendering = true")
         if settle is not None:
             page.evaluate("SETTLE = %d" % settle)
@@ -311,6 +323,60 @@ def check(browser, page_file, quick, settle=None):
     return found, failed
 
 
+def worker(tasks, results, quick, settle, load):
+    """One worker of --jobs: its own Chrome, kept for every page it takes from "tasks" until a None, each page's
+    (path, found, failed) put on "results"; then Chrome is closed. A failure of the check itself is that page's.
+    tasks, results: multiprocessing queues. quick, settle, load: as check() takes them. Gives back nothing."""
+    sys.stdout.reconfigure(line_buffering=True)
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(channel="chrome", args=["--allow-file-access-from-files"])
+        while True:
+            page_file = tasks.get()
+            if page_file is None:
+                break
+            try:
+                found, failed = check(browser, Path(page_file), quick, settle, load)
+            except Exception as error:                     # noqa: BLE001 - one page's crash, said, not the run's
+                found, failed = {}, ["the check itself failed: %s" % str(error).splitlines()[0]]
+            results.put((page_file, found, failed))
+        browser.close()
+
+
+def checked(files, quick, settle, jobs):
+    """Each page checked, as (path, found, failed), in the order they are done: in this process with one Chrome for
+    jobs 1, else by "jobs" workers at once, each with its own Chrome (a page's answer is the same either way).
+    files: the pages (Paths). Gives back a generator."""
+    if jobs <= 1 or len(files) <= 1:
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(channel="chrome", args=["--allow-file-access-from-files"])
+            for page_file in files:
+                found, failed = check(browser, page_file, quick, settle)
+                yield page_file, found, failed
+            browser.close()
+        return
+    tasks, results = multiprocessing.Queue(), multiprocessing.Queue()
+    for page_file in files:
+        tasks.put(str(page_file))
+    count = min(jobs, len(files))
+    for _ in range(count):
+        tasks.put(None)
+    workers = [multiprocessing.Process(target=worker, args=(tasks, results, quick, settle, LOAD_SECONDS * count))
+               for _ in range(count)]   # a page loads slower with others loading beside it
+    for one in workers:
+        one.start()
+    for _ in files:
+        while True:
+            try:
+                page_file, found, failed = results.get(timeout=30)
+                break
+            except queue.Empty:                            # a page can take minutes; workers all gone is the end
+                if not any(one.is_alive() for one in workers):
+                    raise RuntimeError("every worker of --jobs stopped with pages left unchecked")
+        yield Path(page_file), found, failed
+    for one in workers:
+        one.join()
+
+
 def line_of(name, found):
     """What was found on one page, as one line of the table.
 
@@ -334,6 +400,7 @@ def main():
     parser.add_argument("--quick", action="store_true", help="leave out the arms, which take the longest")
     parser.add_argument("--settle", type=int, help="measure with this many frames painted before a jump, not the kit's SETTLE")
     parser.add_argument("--changed", action="store_true", help="only what something it loads has changed since it last passed")
+    parser.add_argument("--jobs", type=int, default=JOBS, help="pages checked at once, each in a Chrome of its own (%d unless told; 1: one at a time)" % JOBS)
     args = parser.parse_args()
     sys.stdout.reconfigure(line_buffering=True)     # each line goes out as it is printed, to a file as to a screen
     files = pages_of(args.pages)
@@ -371,52 +438,55 @@ def main():
         if not drift and not shared:
             passed["__scripts__"] = scripts
     bad = len(drift) + len(shared)
-    with sync_playwright() as playwright:
-        # a sheet that has drawn a picture from a file cannot be read back pixel by pixel unless Chrome is told
-        # that files may read files; nothing else about the drawing changes
-        browser = playwright.chromium.launch(channel="chrome", args=["--allow-file-access-from-files"])
-        print("%-16s %6s  %-7s %14s %9s  %s" % ("page", "length", "draws", "same (px)", "ms/frame", "arms: flips, inward, folded"))
-        for done, page_file in enumerate(files):
-            name = page_file.relative_to(HERE).as_posix() if HERE in page_file.parents else page_file.name
-            mark = fingerprint(page_file, args.quick)
-            full = fingerprint(page_file, False)
-            if args.changed and (passed.get(name) == mark or (args.quick and passed.get(name) == full)):
-                report.skip(name, "nothing it loads has changed since it passed")
-                print("%-16s left out: nothing it loads has changed since it passed" % page_file.name)
-                continue
-            found, failed = check(browser, page_file, args.quick, args.settle)
-            print("%-16s %s" % (page_file.name, found["skipped"]) if "skipped" in found else line_of(page_file.name, found))
-            if found.get("cues"):
-                print("    cues: %d lines of the song, %s" % (found["cues"]["lines"], "%d of them cut or overlapping"
-                      % len(found["cues"]["bad"]) if found["cues"]["bad"] else "each sung inside one scene"))
-            for line in failed:
-                print("    FAILED: %s" % line)
-            bad += len(failed)
-            spent = time.time() - start
-            say("    [%d/%d pages, %d failures so far, %d:%02d gone, about %d min left]"
-                % (done + 1, len(files), bad, spent // 60, spent % 60, round(spent / (done + 1) * (len(files) - done - 1) / 60)))
-            if "skipped" in found:
-                report.skip(name, found["skipped"])
-                continue
-            same_bad = [line for line in failed if line.startswith("a still does not")]
-            arms_bad = [line for line in failed if " arm " in line and "(allowed" in line]
-            report.record(name + ": draws", found.get("draws", False),
-                          "%.1f s, 24 frames spread over it" % found["long"] if found.get("draws") else "it did not draw")
-            if "past" in found:
-                report.record(name + ": same", not same_bad, "%d pixels differ, %d past a pixel's shift (limit %d)"
-                              % (found["differ"], found["past"], SAME_LIMIT))
-            if found.get("arms") is not None:
-                arms = found["arms"]
-                report.record(name + ": arms", not arms_bad, "%d flips, %d inward, %d folded"
-                              % (len(arms["flips"]), len(arms["inward"]), len(arms["folded"])))
-            if found.get("cues"):
-                report.record(name + ": cues", not found["cues"]["bad"], "%d lines of the song" % found["cues"]["lines"])
-            others = [line for line in failed if line not in same_bad and line not in arms_bad]
-            if others:
-                report.record(name + ": other", False, "; ".join(others))
-            if not failed:
-                passed[name] = mark
-        browser.close()
+    # Chrome is told that files may read files: a sheet that has drawn a picture from a file cannot be read back pixel
+    # by pixel otherwise; nothing else about the drawing changes (checked() and worker() launch it so)
+    print("%-16s %6s  %-7s %14s %9s  %s" % ("page", "length", "draws", "same (px)", "ms/frame", "arms: flips, inward, folded"))
+    names, marks, todo = {}, {}, []
+    for page_file in files:
+        name = page_file.relative_to(HERE).as_posix() if HERE in page_file.parents else page_file.name
+        mark = fingerprint(page_file, args.quick)
+        full = fingerprint(page_file, False)
+        if args.changed and (passed.get(name) == mark or (args.quick and passed.get(name) == full)):
+            report.skip(name, "nothing it loads has changed since it passed")
+            print("%-16s left out: nothing it loads has changed since it passed" % page_file.name)
+            continue
+        names[str(page_file)], marks[str(page_file)] = name, mark
+        todo.append(page_file)
+    if args.jobs > 1 and len(todo) > 1:
+        say("    %d pages at once, each in a Chrome of its own (--jobs %d)" % (min(args.jobs, len(todo)), args.jobs))
+    for done, (page_file, found, failed) in enumerate(checked(todo, args.quick, args.settle, args.jobs)):
+        name, mark = names[str(page_file)], marks[str(page_file)]
+        print("%-16s %s" % (page_file.name, found["skipped"]) if "skipped" in found else line_of(page_file.name, found))
+        if found.get("cues"):
+            print("    cues: %d lines of the song, %s" % (found["cues"]["lines"], "%d of them cut or overlapping"
+                  % len(found["cues"]["bad"]) if found["cues"]["bad"] else "each sung inside one scene"))
+        for line in failed:
+            print("    FAILED: %s" % line)
+        bad += len(failed)
+        spent = time.time() - start
+        say("    [%d/%d pages, %d failures so far, %d:%02d gone, about %d min left]"
+            % (done + 1, len(todo), bad, spent // 60, spent % 60, round(spent / (done + 1) * (len(todo) - done - 1) / 60)))
+        if "skipped" in found:
+            report.skip(name, found["skipped"])
+            continue
+        same_bad = [line for line in failed if line.startswith("a still does not")]
+        arms_bad = [line for line in failed if " arm " in line and "(allowed" in line]
+        report.record(name + ": draws", found.get("draws", False),
+                      "%.1f s, 24 frames spread over it" % found["long"] if found.get("draws") else "it did not draw")
+        if "past" in found:
+            report.record(name + ": same", not same_bad, "%d pixels differ, %d past a pixel's shift (limit %d)"
+                          % (found["differ"], found["past"], SAME_LIMIT))
+        if found.get("arms") is not None:
+            arms = found["arms"]
+            report.record(name + ": arms", not arms_bad, "%d flips, %d inward, %d folded"
+                          % (len(arms["flips"]), len(arms["inward"]), len(arms["folded"])))
+        if found.get("cues"):
+            report.record(name + ": cues", not found["cues"]["bad"], "%d lines of the song" % found["cues"]["lines"])
+        others = [line for line in failed if line not in same_bad and line not in arms_bad]
+        if others:
+            report.record(name + ": other", False, "; ".join(others))
+        if not failed:
+            passed[name] = mark
     spent = time.time() - start
     print("%d pages, %d failures, in %d:%02d" % (len(files), bad, spent // 60, spent % 60))
     report.finish()

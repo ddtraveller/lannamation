@@ -811,10 +811,12 @@ of turns and feelings with each kit, the lady's 0 pixels apart, the fellow's onl
 `realfaces.html`, six of the cast painted above real, three turning from profile to full face, and a lady's and a
 fellow's feelings and mouths.
 
-**What it costs** (`checks/frame_time.py` on the laptop, the kit before and after, one after the other): `northfaces.html`,
-fourteen figures a frame, 18.5 ms a frame before and 28.3 after (the figures 16.0 and 24.8): the soft shade and the
-lid's shadow are blurs; `lanna.html`, the figures 10.4 and 12.3 ms of a frame. A render's frame is about 130 ms of
-screenshot besides, so a film renders a little slower, not much.
+**What it costs.** The first version blurred its soft shade (`pen.filter`): on a sheet Chrome draws in software, as
+kit_check does once it has read a sheet back, and as the Spark renders, a face was 12 to 14 times as slow
+(`northfaces.html` 1,698 ms a frame against 121; `apsara.html` 470 against 40), and a whole kit_check was heading for
+7 to 8 hours. Painted with gradients and layered strokes instead (`softSpot`, `softStroke`), it costs what the
+painted faces did: 211 against 220 ms, 48 against 95, measured one after the other the same way; the faces look as
+the owner chose them. In a window (Chrome on the GPU) the figures of `lanna.html` take 10.4 and 12.3 ms a frame.
 
 **Found and mended**: a fellow's comb lines ran out of his hair and down his brow (seen on In-ta in the kit's own column);
 they are clipped to the hair and to the space above it, where they rise into the knot (a first clip to the hair alone

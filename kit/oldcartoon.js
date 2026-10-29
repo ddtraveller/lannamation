@@ -1913,12 +1913,34 @@ function northNose(V, lady) {
 // iris and each person's own lid; the nose shorter and the lower face longer; a fine lac-brown line round the face;
 // soft bands of shade; a modelled nose; lips of the skin's own rose; brows of fine hairs.
 
-// A blur of "units" in the head's own pixels, at whatever size the head is drawn; 0 ends it.
-// Returns nothing: it sets pen.filter.
-// e.g. soft(2); pen.fill(); soft(0);
-function soft(units) {
-  var m = pen.getTransform();
-  pen.filter = units > 0 ? "blur(" + (units * Math.hypot(m.a, m.b)).toFixed(2) + "px)" : "none";
+// A soft spot of colour, strongest at its middle and gone at its edge: an ellipse of radii rx and ry at (x, y), in
+// "rgb" ("150, 85, 65") at "alpha" in the middle. It is a gradient, not a blur: a blur (pen.filter) on a sheet that
+// Chrome draws in software, as kit_check and the Spark's renders do, made a face 12 to 14 times as slow (2026-10-29).
+// Returns nothing: it draws with pen.
+// e.g. softSpot(30, -280, 10, 6, "150, 85, 65", 0.1);
+function softSpot(x, y, rx, ry, rgb, alpha) {
+  pen.save();
+  pen.translate(x, y);
+  pen.scale(1, ry / rx);
+  var spot = pen.createRadialGradient(0, 0, 0, 0, 0, rx);
+  spot.addColorStop(0, "rgba(" + rgb + ", " + alpha + ")");
+  spot.addColorStop(1, "rgba(" + rgb + ", 0)");
+  pen.fillStyle = spot;
+  pen.beginPath();
+  pen.arc(0, 0, rx, 0, 7);
+  pen.fill();
+  pen.restore();
+}
+
+// A soft line where a blur would have been: the path pen holds, stroked three times, wide and faint to narrow and
+// stronger. width: the middle stroke's width; rgb and alpha as softSpot() takes them. Returns nothing.
+// e.g. pen.beginPath(); pen.moveTo(0, -280); pen.lineTo(4, -260); softStroke(5, "150, 75, 55", 0.26);
+function softStroke(width, rgb, alpha) {
+  [[2, 0.3], [1.3, 0.35], [0.7, 0.45]].forEach(function (pass) {
+    pen.lineWidth = width * pass[0];
+    pen.strokeStyle = "rgba(" + rgb + ", " + alpha * pass[1] + ")";
+    pen.stroke();
+  });
 }
 
 // The point a fraction u along a cubic curve from p0 to p3 with controls p1, p2 (each [x, y]). Returns [x, y].
@@ -1973,13 +1995,7 @@ function realEye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed) {
   pen.translate(x, y);
   pen.rotate(-0.08 * outer);                        // the outer corner lifts a little
   pen.translate(-x, -y);
-  pen.save();                                       // the hollow of the eye under the brow, very soft
-  soft(wide * 0.35);
-  pen.fillStyle = "rgba(140, 80, 60, 0.08)";
-  pen.beginPath();
-  pen.ellipse(x + dir * wide * 0.15, y - tall * 1.3, wide * 1.1, wide * 0.55, 0, 0, 7);
-  pen.fill();
-  pen.restore();
+  softSpot(x + dir * wide * 0.15, y - tall * 1.3, wide * 1.45, wide * 0.8, "140, 80, 60", 0.1);   // the hollow of the eye under the brow
   if (closed > 0.9) {                               // shut: the lid's line where the lids meet, bowed up in a laugh
     var sag = bowed ? -wide * 0.35 : wide * 0.12;
     lidLine(I, [I[0] + d * 0.3, y + sag * 1.3], [I[0] + d * 0.7, y + sag * 1.3], O, lady, dir, wide);
@@ -2018,15 +2034,10 @@ function realEye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed) {
     pen.beginPath();
     pen.arc(ix, iy, r * 0.4, 0, 7);
     pen.fill();
-    pen.save();                                     // the upper lid's shadow over the white and the iris
-    soft(wide * 0.08);
-    pen.strokeStyle = "rgba(70, 35, 25, 0.38)";
-    pen.lineWidth = U * 0.75;
-    pen.beginPath();
+    pen.beginPath();                                // the upper lid's shadow over the white and the iris
     pen.moveTo(I[0], I[1] + U * 0.2);
     pen.bezierCurveTo(up1[0], up1[1] + U * 0.2, up2[0], up2[1] + U * 0.2, O[0], O[1] + U * 0.2);
-    pen.stroke();
-    pen.restore();
+    softStroke(U * 0.75, "70, 35, 25", 0.38);
     pen.fillStyle = "rgba(255, 255, 255, 0.92)";    // one light, up toward the light
     pen.beginPath();
     pen.arc(ix + r * 0.3, iy - r * 0.32, r * 0.19, 0, 7);
@@ -2083,15 +2094,13 @@ function featherBrow(x, y, wide, arch, heavy, tilt, inner) {
   pen.translate(x, y);
   pen.rotate(tilt || 0);
   pen.translate(-x, -y);
-  soft(0.5);
   pen.beginPath();
   pen.moveTo(x - wide, y + 2);
   pen.quadraticCurveTo(x, y - arch, x + wide, y);
   pen.quadraticCurveTo(x, y - arch + heavy, x - wide, y + 2 + heavy * 0.4);
   pen.closePath();
-  pen.fillStyle = "rgba(48, 30, 22, 0.5)";
+  pen.fillStyle = "rgba(48, 30, 22, 0.45)";
   pen.fill();
-  soft(0);
   pen.strokeStyle = "rgba(34, 20, 14, 0.62)";
   pen.lineWidth = 0.45;
   pen.lineCap = "round";
@@ -2119,32 +2128,15 @@ function skinBands(V, eyes) {
   pen.save();
   pen.clip(V.skin);
   eyes.forEach(function (e) {
-    soft(e[2] * 0.4);
-    pen.fillStyle = "rgba(150, 85, 65, 0.1)";
-    pen.beginPath();
-    pen.ellipse(e[0] + e[3] * e[2] * 0.3, e[1] - e[2] * 0.15, e[2] * 1.05, e[2] * 0.6, 0, 0, 7);
-    pen.fill();
+    softSpot(e[0] + e[3] * e[2] * 0.3, e[1] - e[2] * 0.15, e[2] * 1.4, e[2] * 0.85, "150, 85, 65", 0.13);
   });
-  if (mid > 0) {
-    soft(5);
-    var far = pen.createLinearGradient(60, 0, 40, 0);
-    far.addColorStop(0, "rgba(150, 80, 60, " + 0.2 * mid + ")");
-    far.addColorStop(1, "rgba(150, 80, 60, 0)");
-    pen.fillStyle = far;
-    pen.fillRect(30, -295, 40, 75);
-  }
-  soft(3);
+  if (mid > 0) { softSpot(60, -262, 22, 40, "150, 80, 60", 0.2 * mid); }   // the far cheek turning away
   var jaw = pen.createLinearGradient(0, -226, 0, -238);
   jaw.addColorStop(0, "rgba(150, 80, 60, 0.12)");
   jaw.addColorStop(1, "rgba(150, 80, 60, 0)");
   pen.fillStyle = jaw;
   pen.fillRect(-60, -240, 120, 16);
-  soft(6);
-  pen.fillStyle = "rgba(255, 238, 224, 0.16)";
-  pen.beginPath();
-  pen.ellipse(V.cheek + 8, -264, 13, 8, 0, 0, 7);
-  pen.fill();
-  soft(0);
+  softSpot(V.cheek + 8, -264, 18, 11, "255, 238, 224", 0.2);   // the light on the near cheekbone
   pen.restore();
 }
 
@@ -2162,43 +2154,27 @@ function realNose(V, lady) {
   if (V.face) { pen.clip(V.face); }                 // its soft shade stays on the face as the nose turns to the edge
   pen.globalAlpha = 1 - V.toProfile;
   pen.lineCap = "round";
-  soft(2);
-  pen.strokeStyle = "rgba(150, 75, 55, 0.26)";
-  pen.lineWidth = 5;
-  pen.beginPath();
+  pen.beginPath();                                  // the shadow down the near side of the bridge
   pen.moveTo(V.nose + (V.tip - V.nose) * 0.25 - 3 * back, -281);
   pen.quadraticCurveTo(V.tip - bw * 0.6 - 1, -270, V.tip - bw * 0.95, base - 2);
-  pen.stroke();
+  softStroke(5, "150, 75, 55", 0.26);
   if (fr > 0) {
-    pen.strokeStyle = "rgba(150, 75, 55, " + 0.12 * fr + ")";
     pen.beginPath();
     pen.moveTo(V.tip + 3, -281);
     pen.quadraticCurveTo(V.tip + bw * 0.6 + 1, -270, V.tip + bw * 0.95, base - 2);
-    pen.stroke();
+    softStroke(5, "150, 75, 55", 0.12 * fr);
   }
-  soft(1);
-  pen.strokeStyle = "rgba(255, 242, 230, 0.3)";
-  pen.lineWidth = 2.2;
-  pen.beginPath();
+  pen.beginPath();                                  // the light down the bridge, and on the tip
   pen.moveTo(V.nose + (V.tip - V.nose) * 0.3, -279);
   pen.lineTo(V.tip + 0.5, tipY - 1.5);
-  pen.stroke();
-  pen.fillStyle = "rgba(255, 240, 228, 0.32)";
-  pen.beginPath();
-  pen.arc(V.tip + 0.5, tipY, 2.6, 0, 7);
-  pen.fill();
-  soft(1.2);
-  pen.fillStyle = "rgba(140, 65, 50, 0.32)";
-  pen.beginPath();
-  pen.ellipse(V.tip - back, base + 1.8, bw * 1.15, 2.4, 0, 0, 7);
-  pen.fill();
-  soft(0.3);
+  softStroke(2.2, "255, 242, 230", 0.3);
+  softSpot(V.tip + 0.5, tipY, 3.4, 3.4, "255, 240, 228", 0.32);
+  softSpot(V.tip - back, base + 1.8, bw * 1.45, 3.2, "140, 65, 50", 0.34);   // the shadow under the base
   pen.globalAlpha = Math.min(1, 1 - V.toProfile + side);   // the near nostril stays in profile
   pen.fillStyle = "rgba(70, 30, 24, 0.82)";
   pen.beginPath();
   pen.ellipse(V.tip - bw * 0.42 - 3 * side, base - 0.6, bw * 0.3, 1.15, 0.15, 0, 7);
   pen.fill();
-  soft(0);
   pen.strokeStyle = "rgba(120, 58, 42, 0.72)";
   pen.lineWidth = LINE * 0.5;
   pen.beginPath();
@@ -2206,11 +2182,9 @@ function realNose(V, lady) {
   pen.quadraticCurveTo(V.tip - bw * 1.2 - 3 * side, base - 3.5, V.tip - bw * 0.82 - 3 * side, base - 0.1);
   pen.stroke();
   pen.globalAlpha = (1 - V.toProfile) * (0.4 + 0.6 * fr);   // the far nostril, and its wing
-  soft(0.3);
   pen.beginPath();
   pen.ellipse(V.tip + bw * 0.42 * (0.35 + 0.65 * fr), base - 0.6, bw * 0.3 * (0.5 + 0.5 * fr), 1.15, -0.15, 0, 7);
   pen.fill();
-  soft(0);
   pen.globalAlpha = (1 - V.toProfile) * (0.25 + 0.75 * fr);
   pen.beginPath();
   pen.moveTo(V.tip + bw * 0.55, base - 5.5);
@@ -2243,21 +2217,14 @@ function realShutMouth(V, lady, feel, frown) {
   var Lc = [cx - hn, my - up], Rc = [cx + hf, my - up], lip = realLip(lady);
   pen.save();
   if (V.face) { pen.clip(V.face); }
-  soft(0.8);                                        // the groove above the upper lip
-  pen.strokeStyle = "rgba(150, 80, 60, 0.18)";
-  pen.lineWidth = 1.4;
-  pen.beginPath();
+  pen.lineCap = "round";
+  pen.beginPath();                                  // the groove above the upper lip
   pen.moveTo(cx - 1.6, my - 9);
   pen.lineTo(cx - hw * 0.22, my - hU - 0.3);
   pen.moveTo(cx + 1.6, my - 9);
   pen.lineTo(cx + hw * 0.2, my - hU - 0.3);
-  pen.stroke();
-  soft(1.5);                                        // the shadow under the lower lip
-  pen.fillStyle = "rgba(150, 80, 60, 0.22)";
-  pen.beginPath();
-  pen.ellipse(cx, my + hL + 3.2, hw * 0.5, 1.8, 0, 0, 7);
-  pen.fill();
-  soft(0.25);
+  softStroke(1.2, "150, 80, 60", 0.18);
+  softSpot(cx, my + hL + 3.2, hw * 0.65, 2.6, "150, 80, 60", 0.26);   // the shadow under the lower lip
   pen.beginPath();                                  // the lower lip
   pen.moveTo(Lc[0], Lc[1]);
   pen.quadraticCurveTo(cx, my + 0.9, Rc[0], Rc[1]);
@@ -2278,18 +2245,13 @@ function realShutMouth(V, lady, feel, frown) {
   pen.quadraticCurveTo(cx, my + 0.9, Lc[0], Lc[1]);
   pen.fillStyle = blend(lip, "#5a2020", 0.2);
   pen.fill();
-  soft(0);
   pen.strokeStyle = "rgba(80, 30, 28, 0.78)";       // where the lips meet
   pen.lineWidth = LINE * 0.48;
-  pen.lineCap = "round";
   pen.beginPath();
   pen.moveTo(Lc[0] - 0.5, Lc[1] - 0.2);
   pen.quadraticCurveTo(cx, my + 0.9, Rc[0] + 0.5, Rc[1] - 0.2);
   pen.stroke();
-  soft(0.8);
-  pen.fillStyle = "rgba(90, 40, 35, 0.35)";         // the corners
-  [Lc, Rc].forEach(function (c) { pen.beginPath(); pen.arc(c[0], c[1], 1.3, 0, 7); pen.fill(); });
-  soft(0);
+  [Lc, Rc].forEach(function (c) { softSpot(c[0], c[1], 1.9, 1.9, "90, 40, 35", 0.42); });   // the corners
   pen.restore();
 }
 

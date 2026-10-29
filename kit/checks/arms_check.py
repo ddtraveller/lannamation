@@ -38,12 +38,21 @@ WRAP = """() => {
 
 # The first frame of a part of a film is come to by a jump, and the kit then paints the frames before it too
 # (settled): only the arms of the frame asked for are kept, which are the ones drawn at the clock's last time.
-DRAW = """([from, to]) => {
-  var out = [];
-  for (var n = Math.round(from * 30); n < Math.round(to * 30); n++) {
-    window.ARMS.length = 0;
-    draw(n / 30);
-    out.push(window.ARMS.filter(function (a) { return a[8] === clock; }));
+# Only where the arms are is wanted, not the picture: unless told to paint, the frames are drawn with the film's pen
+# clipped to nothing, so the kit works out every joint, spring and turn as it always does and Chrome paints none of
+# it. On a sheet Chrome draws in software (once a check has read its pixels back) the painting was most of a frame's
+# time: 300 frames of apsara.html took 233 s (2026-10-29). Nothing is drawn after the arms, so the clip may stay.
+DRAW = """([from, to, painted]) => {
+  var film = pen, out = [];
+  if (!painted) { film.save(); film.beginPath(); film.rect(0, 0, 0, 0); film.clip(); }
+  try {
+    for (var n = Math.round(from * 30); n < Math.round(to * 30); n++) {
+      window.ARMS.length = 0;
+      draw(n / 30);
+      out.push(window.ARMS.filter(function (a) { return a[8] === clock; }));
+    }
+  } finally {
+    if (!painted) { film.restore(); }
   }
   return out;
 }"""
@@ -57,18 +66,19 @@ def turn_of(ex, ey, outward):
     return math.degrees(math.atan2(ex * outward, ey))
 
 
-def measure(page, start=0.0, end=None):
+def measure(page, start=0.0, end=None, painted=False):
     """Draw an open page from "start" to "end" (its whole length unless told) and count its arms' faults.
 
     page: a Playwright page with a kit page loaded and rendering on. start, end: seconds (end: the page's
-    DURATION when left out). It wraps the page's arm() to note each arm (it stays wrapped) and draws every
-    frame at 30 a second. Gives back a dict: start, end, frames, arms (how many drawn), flips, inward, folded
-    (lists of (second, arm, ...)) and sweep (degrees, second, arm).
+    DURATION when left out). painted: True to paint the frames as well (the arms come out the same; it is only
+    slower). It wraps the page's arm() to note each arm (it stays wrapped) and draws every frame at 30 a second,
+    unpainted unless told (DRAW). Gives back a dict: start, end, frames, arms (how many drawn), flips, inward,
+    folded (lists of (second, arm, ...)) and sweep (degrees, second, arm).
     e.g. found = measure(page, 0.0, 10.0)"""
     page.evaluate(WRAP)
     if end is None:
         end = page.evaluate("DURATION")
-    frames = page.evaluate(DRAW, [start, end])
+    frames = page.evaluate(DRAW, [start, end, painted])
     flips, inward, folded, arms, sweep = [], [], [], 0, (0.0, 0.0, 0)
     for n, now in enumerate(frames):
         t = start + n / 30
