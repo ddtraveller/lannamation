@@ -21,7 +21,9 @@ Chang Ngu's scene 18 looked over for 83 minutes without an end, where the laptop
 In the same look (or alone, without it) it listens: a sound the picture makes (a rooster's crow, the kit's heard()) is laid under
 the film at its second, over the --audio sound or alone, from sounds.py's out/sounds/NAME.wav (made by
 sounds.py when it is not there yet; told and left out when it cannot be). A fetched sound's maker and
-licence are in sounds.py (FETCHED): a CC BY one is named in the film's credits.
+licence are in sounds.py (FETCHED): a CC BY one is named in the film's credits. --sound NAME@SECOND (once for each,
+as a render's "heard:" lines told them) lays those in without listening: listening draws every frame of the film once
+before the first picture (2026-10-29: the hero at 1440 with the real faces, over 2 1/2 hours for one rooster's crow).
 
 It needs Google Chrome (Playwright drives it: channel "chrome") and ffmpeg on the PATH. The page must
 have draw(t), the switch rendering, and LENGTH or DURATION (the film's seconds), as every kit page does.
@@ -30,7 +32,7 @@ It writes the video where it is named, 1920 x 1080 at 30 frames a second (H.264;
 two device pixels, as the hero film is, has the detail for it),
 and prints how many frames it made and how long that took. It ends with exit code 0; 1 when the page
 reported an error (the video is made all the same) or when ffmpeg stopped (no video); 2 for arguments
-argparse does not take. From Python: render.render(page, video, audio, start, end, fast, sets, vanish).
+argparse does not take. From Python: render.render(page, video, audio, start, end, fast, sets, vanish, height, heard).
 """
 import argparse
 import base64
@@ -96,7 +98,7 @@ def ffmpeg_command(video, audio, start=0, fast=False, sounds=(), height=HEIGHT):
     return command
 
 
-def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=(), vanish=False, height=HEIGHT):
+def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=(), vanish=False, height=HEIGHT, heard=None):
     """Render a kit page to a video file, frame by frame, in Chrome with no window: gives back nothing.
 
     page_file: the page (a path). video: the file to write. audio: a sound file, or None.
@@ -105,7 +107,8 @@ def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=(), va
     start, end: the seconds to render from and to (default 0 to the page's LENGTH; end is held to LENGTH).
     fast: JPEG frames and the encoder's usual settings. sets: (name, value) pairs set on window before
     the first frame (render.py --set). vanish: first look for what blinks out of the film (lookOver()), and tell it
-    (off unless asked for, since 2026-10-27).
+    (off unless asked for, since 2026-10-27). heard: [(name, second), ...], the picture's sounds, laid in without
+    listening for them (render.py --sound); None listens (the kit's heard()).
     It prints what blinked out, the frames made, the time it took, the kit's warnings and the page's errors.
     It fails with SystemExit (a message) when ffmpeg stops, and SystemExit(1) when the page reported an
     error; then the video is written all the same. scenes.py calls it once for each scene.
@@ -142,9 +145,13 @@ def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=(), va
                 print("warning:", blink, flush=True)
             print("looked over the film in %.0f seconds: %d blinked out, %d popped"
                   % (time.time() - looked, len(seen["blinks"]), len(seen["pops"])), flush=True)
-        else:
+        elif heard is None:
             calls = page.evaluate("([a, b, fps]) => typeof heard === 'function' ? heard(a, b, fps) : []",
                                   [first / FPS, last / FPS, FPS])
+        if heard is not None:             # --sound: told, not listened for; as loud as the kit's heardCalls() makes it
+            calls = [[at, sound, page.evaluate("(n) => typeof HEARD_SOUNDS !== 'undefined' && HEARD_SOUNDS[n] && "
+                                               "HEARD_SOUNDS[n].loud || 0.3", sound)]
+                     for sound, at in heard if first / FPS <= at < last / FPS]
         sounds = []
         for at, sound, loud in calls:     # the picture's own sounds, laid under it
             file = SOUNDS / (sound + ".wav")
@@ -212,6 +219,8 @@ def main():
                         help="look first for what blinks out of the film and who pops (off unless asked for)")
     parser.add_argument("--no-vanish", dest="vanish", action="store_false",
                         help="do not look first (the default since 2026-10-27; still taken)")
+    parser.add_argument("--sound", action="append", metavar="NAME@SECOND",
+                        help="a sound of the picture's, laid in without listening for them all (e.g. rooster-crow@26.87)")
     args = parser.parse_args()
     if not shutil.which("ffmpeg"):
         raise SystemExit("ffmpeg is not installed, or not on the PATH")
@@ -223,7 +232,15 @@ def main():
     for one in args.set:
         name, _, value = one.partition("=")
         sets.append((name, json.loads(Path(value[1:]).read_text(encoding="utf-8") if value.startswith("@") else value)))
-    render(args.page, args.video, args.audio, args.start, args.end, args.fast, sets, args.vanish, args.height)
+    heard = None
+    if args.sound is not None:
+        heard = []
+        for one in args.sound:
+            name, _, at = one.rpartition("@")
+            if not name:
+                raise SystemExit("--sound takes NAME@SECOND, e.g. rooster-crow@26.87: " + one)
+            heard.append((name, float(at)))
+    render(args.page, args.video, args.audio, args.start, args.end, args.fast, sets, args.vanish, args.height, heard)
 
 
 if __name__ == "__main__":
