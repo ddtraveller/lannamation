@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>mural - the figure as the Lanna murals paint it: its makeup and jewellery matched to its clothes</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920, figure: "mural"};</script>
+<script src="oldcartoon.js"></script>
+<script src="weaving.js"></script>
+<script src="mural.js"></script>
+<script src="mural_luxe.js"></script>
+<script src="mural_thangka.js"></script>
+<script>
+// The "mural" sheet: STYLE.figure "mural", the figure as the Lanna murals paint it (mural.js), drawn by person() as
+// any page draws its people. From 0 s, the women of the cast, each under the makeup and the jewellery that go with her
+// clothes (muMakeup, muJewels). From 4 s, one woman in five outfits: her lipstick, rouge, eye shadow, metal and stones
+// change with her clothes. From 8 s, her face in each feeling (the kit's FEELINGS): a young face shows it by its brows,
+// lids and mouth; from 12 s, the grandmother's, with the lines of her age. From 16 s, the men.
+var DURATION = 20;
+
+var BEAT = 0.5;
+
+function caption(text, x, y, size) {
+  pen.fillStyle = "#f3ead8";
+  pen.textAlign = "center";
+  pen.font = (size || 20) + "px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+// what the matching chose for a look, in words
+function chosen(look) {
+  var paint = muMakeup(look), jewels = muJewels(look), family = "no makeup";
+  for (var name in MU_MAKEUP) { if (MU_MAKEUP[name] === paint) { family = name + " lips"; } }
+  return family + ", " + jewels.metal;
+}
+
+var WOMEN = ["lady", "maiden", "dancer", "weaver", "grandmother", "sinuan"];
+
+var OUTFITS = [
+  {say: "her own", more: {}},
+  {say: "a red scarf", more: {scarf: ["#a82a34", "#e0b23a"]}},
+  {say: "a dark blouse, a brick sin", more: {shirt: "#2e2f3e", sin: 2, sabai: undefined, flower: "#f28fa8"}},
+  {say: "a dancer's pink sabai", more: {shirt: "#d9573a", sin: 0, sabai: ["#e58aa6", "#d97a98", "haeOn", "own"], dance: true}},
+  {say: "everyday indigo", more: {shirt: "#34507a", sin: 1, sabai: undefined, flower: undefined, plain: true}}
+];
+
+var FEELS = ["neutral", "happy", "laughing", "sad", "concerned", "thinking", "angry", "sleepy", "satiated", "surprised", "fear", "awe"];
+
+var MEN = ["inta", "khammun", "farmer", "oldfarmer", "bunma"];
+
+function sheetCast(t) {
+  thGround(0, 0, WIDE, 1080);
+  WOMEN.forEach(function (name, n) {
+    var x = WIDE * (n + 0.5) / WOMEN.length, look = cast(name, {size: 2, id: "cast-" + name});
+    person(x, 1000, look);
+    caption(name + ": " + chosen(look), x, 1050);
+  });
+}
+
+function sheetOutfits(t) {
+  thGround(0, 0, WIDE, 1080);
+  OUTFITS.forEach(function (o, n) {
+    var x = WIDE * (n + 0.5) / OUTFITS.length, look = cast("buakham", Object.assign({size: 2.1, id: "outfit-" + n}, o.more));
+    person(x, 1000, look);
+    caption(o.say, x, 1036);
+    caption(chosen(look), x, 1064, 18);
+  });
+}
+
+// a head alone, large, as person() would dress it
+function head(look, x, y, scale) {
+  var lady = !!look.bun, skin = look.skin || STYLE.skin;
+  if (lady) { skin = blend(skin, "#f6ead8", MU.skinLady); }
+  TH_SKINS[muColour(skin)] = true;
+  muDress(look);
+  MU_PX = scale;
+  pen.save(); pen.translate(x, y); pen.scale(scale, scale);
+  muHead(look, lady, skin);
+  pen.restore();
+}
+
+function sheetFeelings(who) {
+  thGround(0, 0, WIDE, 1080);
+  FEELS.forEach(function (feel, n) {
+    var x = WIDE * ((n % 6) + 0.5) / 6, y = 420 + Math.floor(n / 6) * 520;
+    head(cast(who, feel === "neutral" ? {} : {feel: feel}), x + 30, y, 2.8);
+    caption(feel, x, y + 70, 22);
+  });
+}
+
+function sheetMen(t) {
+  thGround(0, 0, WIDE, 1080);
+  MEN.forEach(function (name, n) {
+    var x = WIDE * (n + 0.5) / MEN.length;
+    person(x, 1000, cast(name, {size: 2, id: "man-" + name}));
+    caption(name, x, 1050);
+  });
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    if (at < 4) { sheetCast(at); }
+    else if (at < 8) { sheetOutfits(at); }
+    else if (at < 12) { sheetFeelings("buakham"); }
+    else if (at < 16) { sheetFeelings("grandmother"); }
+    else { sheetMen(at); }
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

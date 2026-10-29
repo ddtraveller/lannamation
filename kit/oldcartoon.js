@@ -195,6 +195,7 @@ var STYLE = {
   hop: true,                            // everyone hops on the beat, as in the 1930s; false: they stand still and walk evenly
   lids: "lanna",                        // the eye as Lanna painting draws it, flat, with each person's own lid (look.lid) (owner, 2026-10-29: "A for everyone", then candidate G, "Make the style like that"); "folded" for the folded eye of 2026-10-20 ("fix the eyes in all the models with a folded lid eye"), "kit" for the creased eye the kit drew before that
   face: "lanna",                        // the face as Lanna painting draws it: flat paint in a fine dark line, a long eye with a tail, thin high brows, a fine-line nose, a small red mouth, rosy cheeks, the face in nearer three equal parts, a grown woman ivory and long-necked (owner, 2026-10-29, candidate G: "Yes, as drawn", in place of the realism of that morning); "painted" for the faces of the murals the kit drew before
+  figure: "kit",                        // who draws a person: "kit", person()'s own figure; "mural", the figure as the Lanna murals paint it, at the references' finish (mural.js: the page loads weaving.js, mural.js, mural_luxe.js and mural_thangka.js), its makeup and jewellery matched to the clothes (owner, 2026-10-30: the old figure to go, in time)
   hands: "round",                       // a bare hand drawn in the round (hand()), which can show its edge or its palm; "flat" is the flat hand the kit drew until 2026-10-15 (glove)
   gold: "#e0b23a",
   hair: "#2a1a12",
@@ -5111,6 +5112,7 @@ var WAI_LAYER = null;
 // hair and body, and her layers with nothing left open on them. A page that keeps drawing after an error, as the
 // cartoon maker does, then draws its next frame as it would have.
 function person(x, y, look) {
+  if (STYLE.figure === "mural") { return muralFigure(x, y, look); }
   var sheetPen = pen;
   try {
     return personDrawn(x, y, look);
@@ -5121,6 +5123,18 @@ function person(x, y, look) {
     personDone();
     throw error;
   }
+}
+
+// person() with STYLE.figure "mural": the figure of mural.js (muralPerson()), as tall at a size as the kit's own (the
+// kit's is 416 pixels at size 1, the mural's 7 heads: a head of 59 pixels). It reads the look as person() does, and
+// the keys only the mural figure has (MURAL_LOOK_KEYS, mural.js), and warns of a key it does not know; it stands, three-quarter to the right, and moves only its face and its jewellery.
+// x, y: where it stands; look: as person()'s. Returns {}: the mural figure has no joints to give yet (no hands to hold
+// with). e.g. STYLE.figure = "mural"; muralFigure(700, GROUND, cast("buakham"));
+function muralFigure(x, y, look) {
+  if (typeof muralPerson !== "function") { warn("STYLE.figure \"mural\" needs mural.js, mural_luxe.js and mural_thangka.js on the page"); return {}; }
+  checkNames("The look's name", look, Object.assign({}, LOOK_KEYS, MURAL_LOOK_KEYS));
+  muralPerson(x, y, look, {head: 59 * (look.size || 1)});
+  return {};
 }
 
 // What person() sets for one person, back as it is for whatever is drawn next.
