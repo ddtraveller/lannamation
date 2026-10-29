@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>realfaces - the faces with more realism, beside the painted ones</title>
+<title>realfaces - the Lanna faces, beside the painted ones</title>
 <style>
   html, body { margin: 0; background: #111; }
   canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
@@ -15,9 +15,9 @@ window.FILM_STYLE = {hop: false, wide: 1920};        // they stand still, so the
 </script>
 <script src="oldcartoon.js"></script>
 <script>
-// The "realfaces" sheet: the faces as the thangka and the photographs have them (STYLE.lids and STYLE.face "real",
-// the kit's own since 2026-10-29; docs/kit/figures.md, "Faces with more realism"). 0 to 4 s: six of the cast,
-// the painted face (STYLE "folded" and "painted", the kit's before) above the real one. 4 to 8 s: three of them
+// The "realfaces" sheet: the faces as Lanna painting draws them (STYLE.lids and STYLE.face "lanna",
+// the kit's own since 2026-10-29; docs/kit/figures.md, "The Lanna face"). 0 to 4 s: six of the cast,
+// the painted face (STYLE "folded" and "painted", the kit's before) above the Lanna one. 4 to 8 s: three of them
 // turning from profile to full face. 8 to 12 s: a lady's feelings and mouths; 12 to 16 s: a fellow's.
 var DURATION = 16;
 var BEAT = 0.5;
@@ -35,10 +35,10 @@ function caption(text, x, y, size) {
   pen.fillText(text, x, y);
 }
 
-// One person's head and shoulders in a box, the chin a little above its foot, in the face given ("real" or "painted").
+// One person's head and shoulders in a box, the chin a little above its foot, in the face given ("lanna" or "painted").
 var CHIN = {};
 function face(name, more, left, top, wide, tall, size, label, look) {
-  STYLE.lids = look === "painted" ? "folded" : "real";
+  STYLE.lids = look === "painted" ? "folded" : "lanna";
   STYLE.face = look;
   var key = name + size + look;
   if (CHIN[key] === undefined) { CHIN[key] = -person(-9999, 0, cast(name, {size: size, id: "measure-" + key})).chin[1]; }
@@ -49,8 +49,8 @@ function face(name, more, left, top, wide, tall, size, label, look) {
   person(left + wide / 2 + 8, top + tall - (tall > 400 ? 110 : 45) + CHIN[key], cast(name, Object.assign({size: size, id: label + name + look,
                                                                                      late: 0, glance: [0, 0], blink: 0}, more)));
   pen.restore();
-  STYLE.lids = "real";
-  STYLE.face = "real";
+  STYLE.lids = "lanna";
+  STYLE.face = "lanna";
   caption(label, left + wide / 2, top + 24, 16);
 }
 
@@ -60,15 +60,15 @@ function sheet(t) {
   if (t < 4) {
     SIX.forEach(function (row, n) {
       face(row[0], {turn: 0.2}, n * 320, 20, 320, 520, row[1], row[0] + ", painted", "painted");
-      face(row[0], {turn: 0.2}, n * 320, 550, 320, 520, row[1], row[0] + ", real", "real");
+      face(row[0], {turn: 0.2}, n * 320, 550, 320, 520, row[1], row[0] + ", lanna", "lanna");
     });
   } else if (t < 8) {
     ["buakham", "inta", "girl"].forEach(function (name, r) {
-      TURNS.forEach(function (turn, c) { face(name, {turn: turn}, c * 320, r * 360, 320, 360, name === "girl" ? 1.9 : 2.1, "turn " + turn, "real"); });
+      TURNS.forEach(function (turn, c) { face(name, {turn: turn}, c * 320, r * 360, 320, 360, name === "girl" ? 1.9 : 2.1, "turn " + turn, "lanna"); });
     });
   } else {
     var name = t < 12 ? "buakham" : "inta";
-    FEELS.forEach(function (f, n) { face(name, Object.assign({turn: 0}, f[1]), (n % 6) * 320, Math.floor(n / 6) * 540, 320, 540, 2.5, f[0], "real"); });
+    FEELS.forEach(function (f, n) { face(name, Object.assign({turn: 0}, f[1]), (n % 6) * 320, Math.floor(n / 6) * 540, 320, 540, 2.5, f[0], "lanna"); });
   }
 }
 

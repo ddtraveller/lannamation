@@ -722,116 +722,79 @@ e.g. cubicAt([0, 0], [10, -8], [20, -8], [30, 0], 0.5);
 
 ```
 A lid's line along a cubic curve from the inner corner I to the outer corner O (controls c1, c2): thin at the
-inner corner and full at the outer, as a thangka's lid line is drawn; a lady's carries on a little past the
-corner, where the lashes are. dir: 1 when the inner corner is at the right. Returns nothing: it fills with pen.
-e.g. lidLine([10, -277], [5, -283], [-4, -283], [-10, -278], true, 1, 10);
+inner corner and full at the outer, as a painter's lid line is drawn. dir: 1 when the inner corner is at the right;
+lady and wide are kept for a line that carries on past the corner (lannaEye draws its own tail). Returns nothing:
+it fills with pen.
+e.g. lidLine([10, -277], [5, -283], [-4, -283], [-10, -278], false, 1, 10);
 ```
 
-### `realEye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed)`
+### `lannaEye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed)`
 
 ```
-One eye, as eye() takes it, while EYE_LIDS is a real eye (STYLE.lids "real"; person() sets it): the upper lid
-peaks nearer the nose and the lower lid is lowest nearer the outer corner, the inner corner a little the lower;
-white on both sides of the iris; the iris brown with a lighter ring, 0.43 of the eye's half-width, its top under
-the lid and its foot on the lower lid, never further across than 0.3 of the half-width; one light; a pink inner
-corner; the lid line thin at the inner corner and full at the outer; above it the person's own lid (EYE_LIDS.lid):
-a crease, a hooded lid (the fold low over the outer half) or none. "tall" is the height of the upper lid's arch.
-Shut, a laugh, a slanted lid and tears as eye() has them. Returns nothing: it draws with pen.
-e.g. EYE_LIDS = {eyes: "real", lid: "crease"}; realEye(30, -277, 9, 4.1, false, [0, 0], -1, 1, 0, false);
+One eye, as eye() takes it, while EYE_LIDS is a Lanna eye (STYLE.lids "lanna"; person() sets it), painted flat:
+the upper lid peaks nearer the nose and the lower lid is lowest nearer the outer corner; flat white on both sides of
+a flat dark iris (0.44 of the half-width, never further across than 0.3 of it) with a darker pupil and one light;
+the lid line thin at the inner corner and full at the outer, and its tail running on and up past the outer corner
+(a lady's 0.75 of the half-width, a fellow's 0.32); the outer corner lifted 0.13 rad (a fellow's 0.07); a lady's eye
+1.1 as long; above it the person's own lid (EYE_LIDS.lid): a fine crease, a hooded fold low over the outer half, or
+none; the lower lid barely there. "tall" is the height of the upper lid's arch. Shut, a laugh, a slanted lid and
+tears as eye() has them. Returns nothing: it draws with pen.
+e.g. EYE_LIDS = {eyes: "lanna", lid: "crease"}; lannaEye(30, -277, 9, 4.1, false, [0, 0], -1, 1, 0, false);
 ```
 
-### `featherBrow(x, y, wide, arch, heavy, tilt, inner)`
+### `lannaBrow(x, y, wide, arch, heavy, tilt, man)`
 
 ```
-A brow of hairs (STYLE.face "real"): a soft mass and fine hairs over it, standing up at the inner end and lying
-along the brow toward its tail. x, y, wide, arch, heavy, tilt: as brow() takes them; inner: 1 when the brow's
-inner end is at its right, -1 at its left. Returns nothing: it draws with pen.
-e.g. featherBrow(30, -294, 12, 9, 1.1, 0, 1);
+A brow as the paintings draw it (STYLE.face "lanna"): one smooth dark arc, a lady's thin, long and high, a
+fellow's straighter and stronger. x, y, wide, arch, heavy, tilt: as brow() takes them; man: true for a fellow's.
+Returns nothing: it draws with brow().
+e.g. lannaBrow(30, -294, 12, 9, 1.1, 0, false);
 ```
 
-### `skinBands(V, eyes)`
+### `lannaNose(V, lady)`
 
 ```
-The skin modelled in the thangka's way (STYLE.face "real"): very soft bands where the form turns away, the
-hollow of each eye toward the nose, the far cheek in three-quarter, under the jaw; a light on the near cheekbone;
-the forehead and the cheeks left flat. V: the head's view; eyes: [x, y, half-width, 1 toward the nose at the
-right or -1] for each eye. Before the features. Returns nothing: it draws with pen inside V.skin.
-e.g. skinBands(V, [[6, -277, 11, 1], [40, -277, 9, -1]]);
+A nose as the paintings draw it (STYLE.face "lanna"): a fine line down its near side to the tip, the tip rounding
+under, a small curl round the nostril, the far nostril's as the face comes round; a fellow's 1.2 as broad. Its base 5
+above the painted face's (the nose shorter, the lower face longer), back to the painted profile's place as the head
+turns, where the nostril's curl is all of the nose that is not outline. V: the head's view; lady: true for her
+measure. Returns nothing: it draws with pen.
+e.g. lannaNose(view(0, true, null), true);
 ```
 
-### `realNose(V, lady)`
+### `lannaLip(lady)`
 
 ```
-A nose modelled, not drawn round (STYLE.face "real"): a shadow down the near side of the bridge (both sides from
-the front), a light down the bridge and on the tip, a shadow under the base, the nostrils (the far one smaller in
-three-quarter) and the wing round each. Its base is 5 above the painted face's, so the nose is shorter and the
-lower face longer, coming back to the painted profile's place as the head turns to profile, where the nostril and
-its wing are all of the nose that is not outline. A face of the north's is broader (noseWide).
-V: the head's view; lady: true for her measure. Reads NORTH_FACE. Returns nothing: it draws with pen.
-e.g. realNose(view(0, true, null), true);
+The lips' colour (STYLE.face "lanna"): a lady's painted red, a child's or an old woman's softer, a fellow's a muted
+red. lady: true for hers. Reads PAINTED. Returns "#rrggbb".
+e.g. var lip = lannaLip(true);
 ```
 
-### `realLip(lady)`
+### `lannaMouth(V, lady, feel, frown)`
 
 ```
-The lips' colour (STYLE.face "real"): the skin's own rose, a lady's deeper than a fellow's, a child's or an old
-woman's lighter than a grown lady's. lady: true for hers. Reads SKIN and PAINTED. Returns "#rrggbb".
-e.g. var lip = realLip(true);
-```
-
-### `realShutMouth(V, lady, feel, frown)`
-
-```
-A shut mouth as the lips are (STYLE.face "real"): the upper lip darker (it faces down, away from the light) with
-its bow, the lower fuller with a gleam, a dark line where they meet, deepest at the corners, the groove above and
-the shadow under the lower lip. Its corners go up with a smile and down with a frown; worry presses it small. Its
-middle is 4 above the painted face's (the lower face longer), coming back to the painted profile's as the head
-turns. V: the head's view; lady: true for her measure; feel: feelingOf()'s numbers; frown: 0 to 1.
-Reads NORTH_FACE. Returns nothing: it draws with pen inside V.face.
-e.g. realShutMouth(view(0, true, null), true, feelingOf({}), 0);
-```
-
-### `quadAt(p, c, q, u)`
-
-```
-The point a fraction u along a quadratic curve from p to q with control c (each [x, y]). Returns [x, y].
-e.g. quadAt([0, 0], [10, -8], [20, 0], 0.5);
-```
-
-### `softHairline(P, toward, short, skin)`
-
-```
-A soft hairline (STYLE.face "real"; owner, 2026-10-29, of candidate D: "Yes, as drawn"): the hard line along it
-painted over in the hair's own colour, a feathered edge laid onto the skin (the hair's colour, faint, two widths),
-fine strands rising from just on the skin into the hair toward where it is drawn back to, and baby hairs at the
-temple; all of it inside the head. P: the hair's points (V.hairLady or V.hairMan: 6 to 11 and 0 are the hairline);
-toward: [x, y], where the hair is drawn back to (a lady's knot; above the crown for a fellow); short: true for a
-fellow's cropped hair; skin: the head's Path2D (V.skin). Reads HAIR. Returns nothing: it draws with pen.
-e.g. softHairline(V.hairLady, [-28, -354], false, V.skin);
+A shut mouth as the paintings draw it (STYLE.face "lanna"): a small bow painted red (lannaLip), a fine dark line
+where the lips meet, a small light on the lower lip; its corners up a little with a smile and down with a frown;
+worry presses it small. Its middle is 4 above the painted face's (the lower face longer), back to the painted
+profile's as the head turns. V: the head's view; lady: true for her measure; feel: feelingOf()'s numbers; frown: 0
+to 1. Reads NORTH_FACE. Returns nothing: it draws with pen inside V.face.
+e.g. lannaMouth(view(0, true, null), true, feelingOf({}), 0);
 ```
 
 ### `manJaw(V)`
 
 ```
-A grown man's jaw (STYLE.face "real", V.man; owner, 2026-10-29, of candidate E: "Yes, as drawn"): squarer and
+A grown man's jaw (STYLE.face "lanna", V.man; owner, 2026-10-29, of candidate E: "Yes, as drawn"): squarer and
 deeper, its corner by the chin out and down, the far corner out, the back of the jaw lower; less of it toward
 profile, where the painted profile's jaw stands. V: the head's view (view()); it moves V.head's points.
 Returns nothing.
 e.g. var V = view(0.2, false, null); manJaw(V);
 ```
 
-### `browRidge(V)`
-
-```
-A grown man's brow ridge (STYLE.face "real", V.man): a light along it, and the hollow under it, over each eye,
-deeper. V: the head's view. Before the features. Returns nothing: it draws with pen inside V.skin.
-e.g. browRidge(view(0.2, false, null));
-```
-
 ### `ageFall(age, V)`
 
 ```
-Age by the face's fall, not by lines (STYLE.face "real"; owner, 2026-10-29, of candidate F: "Yes, as drawn"; the
+Age by the face's fall, not by lines (STYLE.face "lanna"; owner, 2026-10-29, of candidate F: "Yes, as drawn"; the
 research of 2026-10-26: Southeast Asian faces wrinkle 10 to 20 years later, and age shows as the fat's descent): the
 lines fainter and fewer, two across the brow and the crow's feet; bags under the eyes; the fold from beside the
 nose a soft shade with a fine line; the jowls at the jaw; a hollow temple. age: 0 to 1; V: the head's view.
@@ -11094,7 +11057,9 @@ Chang Ngu's scene 18 looked over for 83 minutes without an end, where the laptop
 In the same look (or alone, without it) it listens: a sound the picture makes (a rooster's crow, the kit's heard()) is laid under
 the film at its second, over the --audio sound or alone, from sounds.py's out/sounds/NAME.wav (made by
 sounds.py when it is not there yet; told and left out when it cannot be). A fetched sound's maker and
-licence are in sounds.py (FETCHED): a CC BY one is named in the film's credits.
+licence are in sounds.py (FETCHED): a CC BY one is named in the film's credits. --sound NAME@SECOND (once for each,
+as a render's "heard:" lines told them) lays those in without listening: listening draws every frame of the film once
+before the first picture (2026-10-29: the hero at 1440 with the real faces, over 2 1/2 hours for one rooster's crow).
 
 It needs Google Chrome (Playwright drives it: channel "chrome") and ffmpeg on the PATH. The page must
 have draw(t), the switch rendering, and LENGTH or DURATION (the film's seconds), as every kit page does.
@@ -11103,11 +11068,11 @@ It writes the video where it is named, 1920 x 1080 at 30 frames a second (H.264;
 two device pixels, as the hero film is, has the detail for it),
 and prints how many frames it made and how long that took. It ends with exit code 0; 1 when the page
 reported an error (the video is made all the same) or when ffmpeg stopped (no video); 2 for arguments
-argparse does not take. From Python: render.render(page, video, audio, start, end, fast, sets, vanish).
+argparse does not take. From Python: render.render(page, video, audio, start, end, fast, sets, vanish, height, heard).
 ```
 
 - `ffmpeg_command(video, audio, start, fast, sounds, height)`: The ffmpeg command that reads frames on its stdin and encodes them as render.py does: a list of words.
-- `render(page_file, video, audio, start, end, fast, sets, vanish, height)`: Render a kit page to a video file, frame by frame, in Chrome with no window: gives back nothing.
+- `render(page_file, video, audio, start, end, fast, sets, vanish, height, heard)`: Render a kit page to a video file, frame by frame, in Chrome with no window: gives back nothing.
 - `main()`: The command line: read the arguments, check that ffmpeg and the sound file are there, render.
 
 ## kit/sash_music.py

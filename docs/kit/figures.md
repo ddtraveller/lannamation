@@ -828,3 +828,19 @@ and deeper jaw, a brow ridge, heavier and lower brows, a broader nose (boys keep
 and fainter lines with bags, jowls, the fold shaded and a hollow temple. The numbers are in STYLE.md, "The hairline, a
 man's own face, age by the fall". The painted face (`STYLE.face "painted"`) is drawn as before, 0 pixels apart. The Lue
 ear plug of wrapped gold, the last suggestion, the kit had already: `look.earplug`.
+
+## The Lanna face, from the owner's model paintings (2026-10-29)
+
+The owner gave two image searches of Lanna painting, "thangka painting lanna thai woman" and "... man" (Royal Thai Art's
+Lanna ladies and dancers, Lanna line art, Wat Phumin's murals, Lanna warriors): "use these images as models", then "Make
+the style like that". Looked at, not copied: what they share is flat paint inside a fine dark line and no modelled shade;
+long eyes whose crisp lid line runs on into a tail, the iris dark; thin high arched brows, straighter and stronger on a man;
+a fine line for the nose with a curl at the nostril; a small red bow of a mouth; a pink flush on the cheeks; a crisp
+hairline; the women ivory-pale and long-necked, the men warm-skinned with a clean jaw.
+
+Candidate G, beside the kit on women, men, children and an elder: then "more like them" (the women paler, their necks
+longer, the lid tails longer, the cheeks rosier), then "Yes, as drawn", with a child's own skin and neck, and "Replace
+it": the morning's realism (soft shade bands, a modelled nose, brows of hairs, lips of the skin's rose, the soft
+hairline, the brow ridge) is gone from the kit. Kept from it: the eye's white on both sides and each person's lid, the
+face's measure, a man's jaw, age by the fall. `STYLE.face` and `STYLE.lids` are `"lanna"`; the murals' faces of before
+are still `{lids: "folded", face: "painted"}`, 0 pixels apart. Numbers: STYLE.md, "The Lanna face".
