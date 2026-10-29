@@ -1522,6 +1522,7 @@ function northFace(look) {
 // with pen, in the head's pixels.
 // e.g. ageLines(0.7, view(0.2, false, null));
 function ageLines(age, V) {
+  if (STYLE.face === "real") { return ageFall(age, V); }    // the real face shows age by its fall
   var n, middle = (V.near + V.far) / 2, corner = V.near - V.nearW - 3;
   pen.save();
   if (V.face) { pen.clip(V.face); }
@@ -2148,7 +2149,7 @@ function skinBands(V, eyes) {
 // V: the head's view; lady: true for her measure. Reads NORTH_FACE. Returns nothing: it draws with pen.
 // e.g. realNose(view(0, true, null), true);
 function realNose(V, lady) {
-  var north = NORTH_FACE, broad = north ? north.noseWide : 1, side = V.side || 0;
+  var north = NORTH_FACE, broad = (north ? north.noseWide : 1) * (V.man ? 1.22 : 1), side = V.side || 0;   // a grown man's broader
   var base = -258 + (lady ? 4 : 2.4) * side, tipY = base - 5.5, bw = (lady ? 5.6 : 7) * broad, fr = V.toFront, back = 1 - fr;
   pen.save();
   if (V.face) { pen.clip(V.face); }                 // its soft shade stays on the face as the nose turns to the edge
@@ -2252,6 +2253,139 @@ function realShutMouth(V, lady, feel, frown) {
   pen.quadraticCurveTo(cx, my + 0.9, Rc[0] + 0.5, Rc[1] - 0.2);
   pen.stroke();
   [Lc, Rc].forEach(function (c) { softSpot(c[0], c[1], 1.9, 1.9, "90, 40, 35", 0.42); });   // the corners
+  pen.restore();
+}
+
+// The point a fraction u along a quadratic curve from p to q with control c (each [x, y]). Returns [x, y].
+// e.g. quadAt([0, 0], [10, -8], [20, 0], 0.5);
+function quadAt(p, c, q, u) {
+  var a = 1 - u;
+  return [a * a * p[0] + 2 * a * u * c[0] + u * u * q[0], a * a * p[1] + 2 * a * u * c[1] + u * u * q[1]];
+}
+
+// A soft hairline (STYLE.face "real"; owner, 2026-10-29, of candidate D: "Yes, as drawn"): the hard line along it
+// painted over in the hair's own colour, a feathered edge laid onto the skin (the hair's colour, faint, two widths),
+// fine strands rising from just on the skin into the hair toward where it is drawn back to, and baby hairs at the
+// temple; all of it inside the head. P: the hair's points (V.hairLady or V.hairMan: 6 to 11 and 0 are the hairline);
+// toward: [x, y], where the hair is drawn back to (a lady's knot; above the crown for a fellow); short: true for a
+// fellow's cropped hair; skin: the head's Path2D (V.skin). Reads HAIR. Returns nothing: it draws with pen.
+// e.g. softHairline(V.hairLady, [-28, -354], false, V.skin);
+function softHairline(P, toward, short, skin) {
+  var segs = [[P[6], P[7], P[8]], [P[8], P[9], P[10]], [P[10], P[11], P[0]]], pts = [], n, m;
+  segs.forEach(function (s) { for (var k = 0; k < 30; k++) { pts.push(quadAt(s[0], s[1], s[2], k / 30)); } });
+  pts.push(P[0]);
+  pen.save();
+  if (skin) { pen.clip(skin); }                     // the hairline lies on the skull
+  pen.lineCap = "round";
+  pen.lineJoin = "round";
+  pen.beginPath();
+  pen.moveTo(P[6][0], P[6][1]);
+  segs.forEach(function (s) { pen.quadraticCurveTo(s[1][0], s[1][1], s[2][0], s[2][1]); });
+  pen.strokeStyle = HAIR;                           // the hard line along the hairline, gone
+  pen.lineWidth = 3.4 * FINE;
+  pen.stroke();
+  pen.globalAlpha = 0.16;                           // a feathered edge onto the skin
+  pen.lineWidth = 7;
+  pen.stroke();
+  pen.globalAlpha = 0.3;
+  pen.lineWidth = 3.5;
+  pen.stroke();
+  pen.lineWidth = 0.55;
+  pen.beginPath();
+  for (n = 0; n < pts.length; n++) {                // strands from just on the skin into the hair
+    for (m = 0; m < 2; m++) {
+      var p = pts[n], d = [toward[0] - p[0], toward[1] - p[1]], len = Math.hypot(d[0], d[1]) || 1;
+      d = [d[0] / len, d[1] / len];
+      var turn = (dice(n * 13 + m * 7) - 0.5) * 0.5, c = Math.cos(turn), s = Math.sin(turn);
+      var dir = [d[0] * c - d[1] * s, d[0] * s + d[1] * c];
+      var out = 0.6 + 1.6 * dice(n * 3 + m + 11), long = (short ? 3 : 5) + (short ? 3 : 6) * dice(n * 5 + m * 17);
+      pen.moveTo(p[0] - dir[0] * out, p[1] - dir[1] * out);
+      pen.lineTo(p[0] + dir[0] * long, p[1] + dir[1] * long);
+    }
+  }
+  pen.globalAlpha = 0.55;
+  pen.stroke();
+  pen.beginPath();                                  // baby hairs at the temple, before the ear
+  for (n = 0; n < 9; n++) {
+    var q = quadAt(P[10], P[11], P[0], 0.25 + 0.6 * n / 9);
+    pen.moveTo(q[0], q[1]);
+    pen.quadraticCurveTo(q[0] - 2 - 2 * dice(n + 40), q[1] + 2, q[0] - 1 + 2 * dice(n + 50), q[1] + 4 + 3 * dice(n + 60));
+  }
+  pen.globalAlpha = 0.4;
+  pen.lineWidth = 0.45;
+  pen.stroke();
+  pen.restore();
+}
+
+// A grown man's jaw (STYLE.face "real", V.man; owner, 2026-10-29, of candidate E: "Yes, as drawn"): squarer and
+// deeper, its corner by the chin out and down, the far corner out, the back of the jaw lower; less of it toward
+// profile, where the painted profile's jaw stands. V: the head's view (view()); it moves V.head's points.
+// Returns nothing.
+// e.g. var V = view(0.2, false, null); manJaw(V);
+function manJaw(V) {
+  var front = Math.max(0, V.t), keep = 1 - V.side;
+  V.head[9][0] += 4 * keep;
+  V.head[9][1] += 2 * keep;
+  V.head[8][0] += 2 * keep;
+  V.head[12][0] -= 4 * keep * (0.5 + 0.5 * front);
+  V.head[12][1] += 2 * keep;
+  V.head[13][1] += 5 * keep;
+}
+
+// A grown man's brow ridge (STYLE.face "real", V.man): a light along it, and the hollow under it, over each eye,
+// deeper. V: the head's view. Before the features. Returns nothing: it draws with pen inside V.skin.
+// e.g. browRidge(view(0.2, false, null));
+function browRidge(V) {
+  pen.save();
+  if (V.skin) { pen.clip(V.skin); }
+  softSpot((V.near + V.far) / 2, -296, 40, 6, "255, 238, 222", 0.16);
+  softSpot(V.near, -287, 16, 5, "140, 75, 55", 0.14);
+  if (V.farW > 2) { softSpot(V.far, -288, 13, 5, "140, 75, 55", 0.12); }
+  pen.restore();
+}
+
+// Age by the face's fall, not by lines (STYLE.face "real"; owner, 2026-10-29, of candidate F: "Yes, as drawn"; the
+// research of 2026-10-26: Southeast Asian faces wrinkle 10 to 20 years later, and age shows as the fat's descent): the
+// lines fainter and fewer, two across the brow and the crow's feet; bags under the eyes; the fold from beside the
+// nose a soft shade with a fine line; the jowls at the jaw; a hollow temple. age: 0 to 1; V: the head's view.
+// Returns nothing: it draws with pen, in the head's pixels, inside the face.
+// e.g. ageFall(0.8, view(0.2, true, null));
+function ageFall(age, V) {
+  var corner = V.near - V.nearW - 3, n;
+  pen.save();
+  if (V.face) { pen.clip(V.face); } else if (V.skin) { pen.clip(V.skin); }
+  softSpot(V.near - V.nearW * 1.3, -290, 9, 12, "140, 80, 60", 0.12 * age);          // the hollow temple
+  [[V.near, V.nearW], [V.far, V.farW]].forEach(function (e) {                          // bags under the eyes
+    if (e[1] < 3) { return; }
+    softSpot(e[0], -268, e[1] * 0.85, 3.2, "140, 75, 60", 0.2 * age);
+    pen.strokeStyle = "rgba(120, 66, 48, " + 0.3 * age + ")";
+    pen.lineWidth = 0.9 * FINE;
+    pen.beginPath();
+    pen.moveTo(e[0] - e[1] * 0.75, -268);
+    pen.quadraticCurveTo(e[0], -263, e[0] + e[1] * 0.75, -268);
+    pen.stroke();
+  });
+  pen.beginPath();                                    // the fold from beside the nose
+  pen.moveTo(V.nose - 10, -262);
+  pen.quadraticCurveTo(V.mouth - 23, -252, V.mouth - 18, -238);
+  softStroke(3.2, "140, 75, 55", 0.22 * age);
+  pen.strokeStyle = "rgba(120, 66, 48, " + 0.32 * age + ")";
+  pen.lineWidth = FINE;
+  pen.stroke();
+  softSpot(V.mouth - 22, -233, 9, 6, "140, 75, 55", 0.18 * age);                      // the jowls
+  if (V.farW > 6) { softSpot(V.mouth + 20, -234, 7, 6, "140, 75, 55", 0.14 * age); }
+  pen.strokeStyle = "rgba(120, 66, 48, " + (0.18 + 0.2 * age) + ")";                   // the lines, few and faint
+  pen.lineWidth = 1.1 * FINE;
+  pen.beginPath();
+  for (n = 0; n < 2; n++) {
+    pen.moveTo(V.near - V.nearW * 0.7, -321 - n * 7);
+    pen.quadraticCurveTo((V.near + V.far) / 2, -325 - n * 8, V.far + V.farW * 0.6, -321 - n * 7);
+  }
+  for (n = 0; n < 2; n++) {
+    pen.moveTo(corner, -281 + n * 4);
+    pen.lineTo(corner - 6, -281 + n * 6);
+  }
+  pen.stroke();
   pen.restore();
 }
 
@@ -2473,18 +2607,20 @@ function manFace(shut, mouth, glance, V, feel) {
   var realFace = STYLE.face === "real", realEyes = EYE_LIDS && EYE_LIDS.eyes === "real";
   var nearW = V.nearW * (realEyes ? 0.76 : 0.93) * feel.eyes, farW = V.farW * (realEyes ? 0.79 : 0.96) * feel.eyes;
   var nearTall = realEyes ? 0.46 * nearW * wide : 8.5 * small * wide * feel.eyes, farTall = realEyes ? 0.46 * farW * wide : 8 * small * wide * feel.eyes;
-  var browY = realFace ? eyeY - 20 - lift : -312 - lift + browDown;
+  var browY = realFace ? eyeY - 20 - lift + (V.man ? 2 : 0) : -312 - lift + browDown;   // a grown man's a little lower
+  var ridge = V.man ? [1.05, 0.8, 1.3] : [1, 1, 1];   // and longer, flatter and heavier: his brow width, arch, weight
+  if (V.man) { browRidge(V); }
   if (realFace) { skinBands(V, [[V.near + 1 - apart, eyeY, nearW, 1], [V.far + 1 + apart * 0.7, eyeY - 1, farW, -1]].filter(function (e) { return e[2] > 2; })); }
   if (V.nearW > 2) { eye(V.near + 1 - apart, eyeY, nearW, nearTall, shut, look, -1, 0, slant, feel.laugh > 0.5); }   // long, narrow eyes
   if (V.nearW > 2) {
-    if (realFace) { featherBrow(V.near + 1 - apart + close, browY, V.nearW * 0.93, 6 * arch, 2.6 * weight, knit, 1); }
+    if (realFace) { featherBrow(V.near + 1 - apart + close, browY, V.nearW * 0.93 * ridge[0], 6 * arch * ridge[1], 2.6 * weight * ridge[2], knit, 1); }
     else { brow(V.near + 1 - apart + close, browY, V.nearW * 0.93, 10 * arch, 2.8 * weight, knit); }
   }
   if (V.farW > 2) {                                 // the far eye and its brow: toward profile they go round the edge of the face, and it cuts them
     pen.save();
     if (V.face) { pen.clip(V.face); }
     eye(V.far + 1 + apart * 0.7, eyeY - 1, farW, farTall, shut, look, 1, 0, slant, feel.laugh > 0.5);
-    if (realFace) { featherBrow(V.far + 1 + apart * 0.7 - close, browY - 1, V.farW * 0.96, 5.5 * arch, 2.4 * weight, -knit, -1); }
+    if (realFace) { featherBrow(V.far + 1 + apart * 0.7 - close, browY - 1, V.farW * 0.96 * ridge[0], 5.5 * arch * ridge[1], 2.4 * weight * ridge[2], -knit, -1); }
     else { brow(V.far + 1 + apart * 0.7 - close, browY - 1, V.farW * 0.96, 9 * arch, 2.5 * weight, -knit); }
     pen.restore();
   }
@@ -6593,6 +6729,8 @@ function personHead(fig) {
   if (!mouth && feel.open) { mouth = {open: feel.open[0], wide: feel.open[1], round: feel.open[2]}; }   // a feeling that opens the mouth
   var drop = mouth ? (lady ? 5 : 11) * mouth.open : 0;
   var turn = Math.max(-1, Math.min(1, look.turn !== undefined ? look.turn : bodyTurn)), V = view(turn, lady, NORTH_FACE);   // where the turn puts every feature: the head turns with the body unless told its own turn
+  V.man = STYLE.face === "real" && !lady && !((look.build || 0) < 0);   // a grown man's own face (manJaw, browRidge; a boy keeps his)
+  if (V.man) { manJaw(V); }
   // Hair moves a little after the head does. On the way up it floats and
   // spreads; on the beat it drops again.
   var late = phase - 0.9;
@@ -7217,6 +7355,7 @@ function headLadyHair(h) {
     headKnotFlowers(h, bunX, bunY);
     headKnotDress(h, bunX, bunY, knotR);
   }
+  if (STYLE.face === "real") { softHairline(HL, knot, false, V.skin); }   // the real face's hairline, soft
 }
 
 // A man's hair, gathered up into a knot on the top of the head (his hair shown, no hat, not shaved). // h: personHead()'s head (what it has worked out: see there).
@@ -7276,6 +7415,7 @@ function headManHair(h) {
       oval(knotX + at[0], knotY + at[1], 1.4, 1.4, "#d9533a");
     });
   }
+  if (STYLE.face === "real") { softHairline(HM, [crownX, -400], true, V.skin); }   // the real face's hairline, soft
 }
 
 // A hat (look.hat), loose: it lags the head and floats up as the body springs; on one who stands still (STYLE.hop

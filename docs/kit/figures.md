@@ -822,6 +822,9 @@ the owner chose them. In a window (Chrome on the GPU) the figures of `lanna.html
 they are clipped to the hair and to the space above it, where they rise into the knot (a first clip to the hair alone
 cut those off too).
 
-**Not done**, of the suggestions: a softer hairline (baby hairs, the temples set back; the traced-face experiment of
-2026-10-26 has one); a fellow's own face beyond his brows (a heavier brow ridge, a broader nose base, a squarer jaw); age
-shown by the face's fall more than by lines; the Lue ear plug of wrapped gold.
+**The second round** (owner: "continue", then of candidates D, E and F drawn beside the kit on Bua-kham, In-ta and the
+devotee, "Yes, as drawn" to each): D, a soft hairline for everyone whose hair shows; E, a grown man's own face, a squarer
+and deeper jaw, a brow ridge, heavier and lower brows, a broader nose (boys keep theirs); F, age by the face's fall, fewer
+and fainter lines with bags, jowls, the fold shaded and a hollow temple. The numbers are in STYLE.md, "The hairline, a
+man's own face, age by the fall". The painted face (`STYLE.face "painted"`) is drawn as before, 0 pixels apart. The Lue
+ear plug of wrapped gold, the last suggestion, the kit had already: `look.earplug`.

@@ -791,6 +791,54 @@ Reads NORTH_FACE. Returns nothing: it draws with pen inside V.face.
 e.g. realShutMouth(view(0, true, null), true, feelingOf({}), 0);
 ```
 
+### `quadAt(p, c, q, u)`
+
+```
+The point a fraction u along a quadratic curve from p to q with control c (each [x, y]). Returns [x, y].
+e.g. quadAt([0, 0], [10, -8], [20, 0], 0.5);
+```
+
+### `softHairline(P, toward, short, skin)`
+
+```
+A soft hairline (STYLE.face "real"; owner, 2026-10-29, of candidate D: "Yes, as drawn"): the hard line along it
+painted over in the hair's own colour, a feathered edge laid onto the skin (the hair's colour, faint, two widths),
+fine strands rising from just on the skin into the hair toward where it is drawn back to, and baby hairs at the
+temple; all of it inside the head. P: the hair's points (V.hairLady or V.hairMan: 6 to 11 and 0 are the hairline);
+toward: [x, y], where the hair is drawn back to (a lady's knot; above the crown for a fellow); short: true for a
+fellow's cropped hair; skin: the head's Path2D (V.skin). Reads HAIR. Returns nothing: it draws with pen.
+e.g. softHairline(V.hairLady, [-28, -354], false, V.skin);
+```
+
+### `manJaw(V)`
+
+```
+A grown man's jaw (STYLE.face "real", V.man; owner, 2026-10-29, of candidate E: "Yes, as drawn"): squarer and
+deeper, its corner by the chin out and down, the far corner out, the back of the jaw lower; less of it toward
+profile, where the painted profile's jaw stands. V: the head's view (view()); it moves V.head's points.
+Returns nothing.
+e.g. var V = view(0.2, false, null); manJaw(V);
+```
+
+### `browRidge(V)`
+
+```
+A grown man's brow ridge (STYLE.face "real", V.man): a light along it, and the hollow under it, over each eye,
+deeper. V: the head's view. Before the features. Returns nothing: it draws with pen inside V.skin.
+e.g. browRidge(view(0.2, false, null));
+```
+
+### `ageFall(age, V)`
+
+```
+Age by the face's fall, not by lines (STYLE.face "real"; owner, 2026-10-29, of candidate F: "Yes, as drawn"; the
+research of 2026-10-26: Southeast Asian faces wrinkle 10 to 20 years later, and age shows as the fat's descent): the
+lines fainter and fewer, two across the brow and the crow's feet; bags under the eyes; the fold from beside the
+nose a soft shade with a fine line; the jowls at the jaw; a hollow temple. age: 0 to 1; V: the head's view.
+Returns nothing: it draws with pen, in the head's pixels, inside the face.
+e.g. ageFall(0.8, view(0.2, true, null));
+```
+
 ### `ladyFace(shut, mouth, glance, V, feel)`
 
 ```
@@ -11735,7 +11783,8 @@ replaced by gradients), then the arms, which painted every frame only to read wh
 draws them unpainted), then one page at a time.
 
 It needs Google Chrome (through Playwright). Pages are named from the kit's folder (kit/). The time a page
-may take to load is KIT_CHECK_LOAD_SECONDS from the environment (180 unless set).
+may take to load is KIT_CHECK_LOAD_SECONDS from the environment (180 unless set), times the pages loading at once
+(--jobs): four at once, the hero film took longer than 180 s to load (2026-10-29).
 ```
 
 - `fingerprint(page_file, quick)`: What a page's check depends on: the page, every script it loads, and this check's own code; and whether the
@@ -11746,8 +11795,8 @@ may take to load is KIT_CHECK_LOAD_SECONDS from the environment (180 unless set)
 - `shared_names()`: Top-level names that two script files beside the kit both define. The files share one page, so the one loaded
 - `missing_of(page_file)`: The script files a page asks for that are not on this computer.
 - `say(text)`: Prints a line of how the check is getting on, at once (a file it is written to gets it now, not at the end).
-- `check(browser, page_file, quick, settle)`: One page: what was found, and a list of what failed.
-- `worker(tasks, results, quick, settle)`: One worker of --jobs: its own Chrome, kept for every page it takes from "tasks" until a None, each page's
+- `check(browser, page_file, quick, settle, load)`: One page: what was found, and a list of what failed.
+- `worker(tasks, results, quick, settle, load)`: One worker of --jobs: its own Chrome, kept for every page it takes from "tasks" until a None, each page's
 - `checked(files, quick, settle, jobs)`: Each page checked, as (path, found, failed), in the order they are done: in this process with one Chrome for
 - `line_of(name, found)`: What was found on one page, as one line of the table.
 - `main()`: The command line (see this file's docstring): check the look keys and the names, then each page; write
