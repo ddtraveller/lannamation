@@ -12,10 +12,11 @@
 <canvas id="stage" width="1920" height="1080"></canvas>
 <script>
 // The film's style, read by the kit as it loads: nobody hops (the dance turns
-// it on for its own scene), the old print shows at six tenths, the light comes
-// from the upper left and throws a shadow to the right, and the sheet is drawn
+// it on for its own scene), the old print does not show (0.6 until 2026-10-29, owner: "remove the gate shake and grit
+// so the individual stills can mostly be reused frame to frame"; the lens, soft and a little brown, stays), the light
+// comes from the upper left and throws a shadow to the right, and the sheet is drawn
 // at two device pixels per film pixel and smoothed down to the picture.
-window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6, 0.5]};
+window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0, light: [-0.6, 0.5]};
 // The film was staged on the kit's 1440 sheet. On the 1920 one, the sets are
 // painted across the whole width with what stands on them moved in by SIDE,
 // the old bar's width, and each scene draws its figures under a translation
@@ -502,11 +503,13 @@ function sashYardFrame(x, base, tall, wide) {     // a drying frame of bamboo: t
 }
 
 function sashYard(t) {                           // t: the scene's second. Gives back the sprites for drawByZ
+  // each in a woven sabai of her own (owner, 2026-10-29: "replace the sabai for the 2 weavers in the first scene"):
+  // the one at the loom, weaving the Mae Chaem cloth, in Mae Chaem's pha pat; the spinner in the Nan pha chet
   function loom(name, x, y, work, cloth) {
-    return {name: name, kind: "person", x: x, y: y, draw: function () { frameLoom(pen, x, y, 0.5, t, {id: name, work: work, cloth: cloth}); }};
+    return {name: name, kind: "person", x: x, y: y, draw: function () { frameLoom(pen, x, y, 0.5, t, {id: name, work: work, cloth: cloth, weaver: {sabai: sabaiLook("maeChaemPat")}}); }};
   }
   return [loom("weaver-yard-1", 1545, 940, null, "maechaem"),
-          {name: "spinner-yard", kind: "person", x: 360, y: 946, draw: function () { spinningWheel(pen, 360, 946, 0.5, t, {id: "spinner-yard"}); }},
+          {name: "spinner-yard", kind: "person", x: 360, y: 946, draw: function () { spinningWheel(pen, 360, 946, 0.5, t, {id: "spinner-yard", weaver: {sabai: sabaiLook("nan")}}); }},
           {name: "yard-cloth", kind: "tung", x: 912, y: 902, draw: function () {
             sashYardFrame(912, 902, 300, 116);
             threadCloth(pen, 912, 902 - 294, t, {warps: 40, picks: 80, gap: 2.6, wind: 0.8});
@@ -1045,7 +1048,8 @@ function scenePond(t) {                 // 42.59-69.94 on its own clock, shown 4
 // the frame. The same scene, on its own, is parasol_rain.html.
 var PADDY_WOMEN = [
   {name: "lady", kind: "lai", from: 60, to: 400, start: 0, late: 0, hair: {bun: "ipun", malai: true}},
-  {name: "maiden", kind: "yantra", from: 360, to: 720, start: 0.3, late: 0.3, hair: {bun: "wong", turban: "#f2b8c6"}},   // a Tai Lue maiden: her knot on the crown, a pink head-cloth
+  {name: "maiden", kind: "yantra", from: 360, to: 720, start: 0.3, late: 0.3, hair: {bun: "wong", turban: "#f2b8c6"},   // a Tai Lue maiden: her knot on the crown, a pink head-cloth,
+   wears: {sabai: sabaiLook("lueKhit")}},   // and a Tai Lue sabai, not the khit of the maiden at the pond (every sabai in the film its own)
   {name: "weaver", kind: "buddha", from: 680, to: 1040, start: 0.6, late: 0.6, hair: HAIR_OF.weaver}
 ];
 var PADDY_TWIRL = 4.52;                 // the spin begins, each woman a little after the one before
@@ -1258,7 +1262,7 @@ function paddyWoman(t, w) {
   var umbrella = t < PADDY_TWIRL + w.late ? w.kind
                : t < PADDY_FOLD + w.late ? parasolAt(t, PADDY_TWIRL + w.late, w.kind, undefined, "spin")
                : parasolAt(t, PADDY_FOLD + w.late, w.kind, undefined, "fold");
-  var look = cast(w.name, Object.assign({size: 1.3, smile: 1, id: w.name + "-paddy", parasol: umbrella}, w.hair, FACE(6 + n)));
+  var look = cast(w.name, Object.assign({size: 1.3, smile: 1, id: w.name + "-paddy", parasol: umbrella}, w.hair, w.wears, FACE(6 + n)));
   go = t < PADDY_WALK + w.late ? stroll(t, w.from, w.to, w.start, look) : stroll(t, w.to, w.to + 1400, PADDY_WALK + w.late, look);
   joints = person(go.x, 1000, go.look);
   pen.restore();                            // the drops are in the film's own pixels, as the joints are
@@ -1387,7 +1391,7 @@ function spinningLantern(t) {            // the khom phat on its arm, and the th
   child(235, 975, cast("girl", Object.assign({id: "phat-girl-2", face: -1, shirt: "#e9c45c", flower: "#f6c445"}, girlGaze, {late: 0.7}, FACE(12))), [175, 540], [225, 935], -1, 60);   // she reaches up to it
   child(55, 975, cast("girl", Object.assign({id: "phat-girl"}, girlGaze, {late: 0.2}, FACE(13))), [115, 540], [70, 935], 1, 60);   // and so does she
   var wrist = where(BOY_DOWN, t);
-  person(140, 980, cast("boy", Object.assign({id: "phat-boy", reachA: [wrist[0], wrist[1]], fingersA: pointing}, gaze, FACE(14))));   // he points up at it, drawn last so his hand shows
+  person(140, 980, cast("boy", Object.assign({id: "phat-boy", reachA: [wrist[0], wrist[1]], fingersA: pointing, sabai: sabaiLook("thumKhanun")}, gaze, FACE(14))));   // he points up at it, drawn last so his hand shows; his sabai not the boy's of the paddy (owner, 2026-10-29)
 }
 
 function sceneDance(t) {                // 70-79: a night of dancing: a dancer, a drummer, a celestial; the khom phat at the left
@@ -1421,7 +1425,9 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
   function onGround(x, y, look) { sprites.push({name: look.id, kind: "person", x: x, y: y, draw: onOldSheet(function () { person(x, y, look); })}); }
   // More dancers, a step behind the three and a little smaller, each in her own colours and a beat apart (owner,
   // 2026-10-20: "Add a few more dancers to the night scene")
-  [[560, "#6a3f8f", "#2a1a3a", 0.15, 1, {sabai: ["#e0b23a", "#8a2a3a"], bun: "wong", flower: "#f6c445"}], [890, "#2a6a8a", "#1f2a3a", 0.4, -1], [1230, "#b8457a", "#5a1e2a", 0.65, 1]].forEach(function (d, k) {   // the third pink, not the gold of the celestial before her (owner, 2026-10-21)
+  // Each in a woven sabai of her own, none the haeOn of the dancer in front or the celestial's gold (owner, 2026-10-29)
+  [[560, "#6a3f8f", "#2a1a3a", 0.15, 1, {sabai: sabaiLook("dokLoi"), bun: "wong", flower: "#f6c445"}], [890, "#2a6a8a", "#1f2a3a", 0.4, -1, {sabai: sabaiLook("ngoenNow")}],
+   [1230, "#b8457a", "#5a1e2a", 0.65, 1, {sabai: sabaiLook("lueBands")}]].forEach(function (d, k) {   // the third pink, not the gold of the celestial before her (owner, 2026-10-21)
     onGround(d[0], 962, cast("dancer", Object.assign({size: 0.86, late: d[3], spring: 0.7, smile: 1, dance: true, face: d[4], shirt: d[1], legs: d[2],
                                      id: "night-dancer" + k, at: [720, 520],
                                      handA: [64 + Math.sin(t * 3 + k) * 18, -126 - hop(t, d[3]) * 26], handB: [-56, -104 + Math.cos(t * 3 + k) * 18]}, d[5] || {}, FACE(k))));
@@ -1444,8 +1450,10 @@ function sceneDance(t) {                // 70-79: a night of dancing: a dancer, 
   // dancers, facing them, each on the beat (owner, 2026-10-16: "Add the band members to the night scene"): the
   // pi chum, the salo (its bow across the piper's empty lap), the sueng (its neck behind the next player) and the
   // phin phia, as far right as the words under the picture allow.
-  [["pichum", "elder", 1420, 0.31], ["salo", "fellow", 1570, 0], ["sueng", "farmer", 1715, 0.13], ["phinphia", "fellow", 1850, 0.07]].forEach(function (b, k) {
-    var player = cast(b[1], Object.assign({size: 1.0, face: -1, smile: 1, id: "band-" + b[0]}, FACE(k ? 8 + k : 17)));
+  // The players are the cast's elder, fellow and farmer again, each in a sabai of his own, not theirs (owner,
+  // 2026-10-29); the phin phia's is played on the bare chest, with none.
+  [["pichum", "elder", 1420, 0.31, "thumKhram"], ["salo", "fellow", 1570, 0, "tuapDaeng"], ["sueng", "farmer", 1715, 0.13, "taKongDam"], ["phinphia", "fellow", 1850, 0.07]].forEach(function (b, k) {
+    var player = cast(b[1], Object.assign({size: 1.0, face: -1, smile: 1, id: "band-" + b[0]}, b[4] ? {sabai: sabaiLook(b[4])} : {}, FACE(k ? 8 + k : 17)));
     sprites.push({name: player.id, kind: "person", x: b[2], y: 1005, draw: onOldSheet(function () { musician(b[2], 1005, b[0], player, b[3]); })});
   });
   gardenBack("dance", t);

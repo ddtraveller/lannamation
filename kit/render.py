@@ -25,12 +25,15 @@ licence are in sounds.py (FETCHED): a CC BY one is named in the film's credits.
 
 It needs Google Chrome (Playwright drives it: channel "chrome") and ffmpeg on the PATH. The page must
 have draw(t), the switch rendering, and LENGTH or DURATION (the film's seconds), as every kit page does.
-It writes the video where it is named, 1920 x 1080 at 30 frames a second (H.264; AAC sound with --audio),
+It writes the video where it is named, 1920 x 1080 at 30 frames a second (H.264; AAC sound with --audio;
+--height 1440 for 2560 x 1440, the page's own picture taken at that size, not one made larger after: a page drawn at
+two device pixels, as the hero film is, has the detail for it),
 and prints how many frames it made and how long that took. It ends with exit code 0; 1 when the page
 reported an error (the video is made all the same) or when ffmpeg stopped (no video); 2 for arguments
 argparse does not take. From Python: render.render(page, video, audio, start, end, fast, sets, vanish).
 """
 import argparse
+import base64
 import json
 import shutil
 import subprocess
@@ -47,7 +50,7 @@ HEIGHT = 1080
 SOUNDS = Path(__file__).resolve().parent / "out" / "sounds"   # sounds.py's, NAME.wav
 
 
-def ffmpeg_command(video, audio, start=0, fast=False, sounds=()):
+def ffmpeg_command(video, audio, start=0, fast=False, sounds=(), height=HEIGHT):
     """The ffmpeg command that reads frames on its stdin and encodes them as render.py does: a list of words.
 
     video: the file to write. audio: a sound file to lay under the pictures, or None for none.
@@ -55,6 +58,7 @@ def ffmpeg_command(video, audio, start=0, fast=False, sounds=()):
     fast: True for the encoder's usual settings (quicker, softer); False (the default) for clean ink lines.
     sounds: [(second, file, loudness), ...]: sounds laid in at those seconds of the video, over the sound
     file or over silence (the picture's own: heard()); one before the video's start loses that much of its head.
+    height: the picture's height, for the H.264 level that size needs (4.0 to 1080, 5.1 above).
     Changes nothing; chain.py takes its picture settings from it as well.
     e.g. ffmpeg_command("hello.mp4", None, sounds=[(1.5, "out/sounds/rooster-crow.wav", 0.28)])"""
     # ffmpeg reads the pictures from this program, one after another
@@ -81,7 +85,7 @@ def ffmpeg_command(video, audio, start=0, fast=False, sounds=()):
     command += ["-vf", "scale=out_range=tv:out_color_matrix=bt709,format=yuv420p",
                 "-colorspace", "bt709", "-color_primaries", "bt709",
                 "-color_trc", "bt709",
-                "-c:v", "libx264", "-profile:v", "high", "-level", "4.0"]
+                "-c:v", "libx264", "-profile:v", "high", "-level", "4.0" if height <= HEIGHT else "5.1"]
     if not fast:
         # A drawn film is flat colour and ink lines, which the encoder's
         # usual settings smear: a lower rate factor keeps the lines clean,
@@ -92,10 +96,12 @@ def ffmpeg_command(video, audio, start=0, fast=False, sounds=()):
     return command
 
 
-def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=(), vanish=False):
+def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=(), vanish=False, height=HEIGHT):
     """Render a kit page to a video file, frame by frame, in Chrome with no window: gives back nothing.
 
     page_file: the page (a path). video: the file to write. audio: a sound file, or None.
+    height: the video's height (1080, or 1440 for 2560 x 1440): the page is laid out at 1920 x 1080 as ever, and its
+    picture taken at height / 1080 device pixels to each.
     start, end: the seconds to render from and to (default 0 to the page's LENGTH; end is held to LENGTH).
     fast: JPEG frames and the encoder's usual settings. sets: (name, value) pairs set on window before
     the first frame (render.py --set). vanish: first look for what blinks out of the film (lookOver()), and tell it
@@ -108,7 +114,7 @@ def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=(), va
     errors = []
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome")
-        page = browser.new_page(viewport={"width": WIDTH, "height": HEIGHT})
+        page = browser.new_page(viewport={"width": WIDTH, "height": HEIGHT}, device_scale_factor=height / HEIGHT)
         page.on("pageerror", lambda error: errors.append(str(error)))
         # the hero film paints its forests as it loads: 42 s on a laptop on battery
         page.goto(Path(page_file).resolve().as_uri(), timeout=180000)
@@ -150,14 +156,21 @@ def render(page_file, video, audio, start=0.0, end=None, fast=False, sets=(), va
             else:
                 print("warning: the picture calls %s at %.2f s, and there is no %s (sounds.py makes it): left out" % (sound, at, file), flush=True)
 
-        ffmpeg = subprocess.Popen(ffmpeg_command(video, audio, first / FPS, fast, sounds),
+        # the picture taken by Chrome itself, its PNG made by its quicker encoder (optimizeForSpeed): the same pixels as
+        # Playwright's screenshot, at 1080 and, with the clip's scale, at 1440, in half the time (2026-10-29: the hero's
+        # dance, 2.3 s a picture against 4.6; the picture was four fifths of a frame, the drawing one fifth)
+        chrome = page.context.new_cdp_session(page)
+        shot = {"format": "png", "optimizeForSpeed": True,
+                "clip": {"x": 0, "y": 0, "width": WIDTH, "height": HEIGHT, "scale": height / HEIGHT}}
+        ffmpeg = subprocess.Popen(ffmpeg_command(video, audio, first / FPS, fast, sounds, height),
                                   stdin=subprocess.PIPE)
         try:
             for number in range(first, last):
                 page.evaluate("draw(%f)" % (number / FPS))
                 # each picture goes to ffmpeg as it was drawn: a JPEG, even at quality 95,
                 # softens every ink line before the encoder sees it. --fast keeps the JPEG.
-                ffmpeg.stdin.write(page.screenshot(type="jpeg", quality=95) if fast else page.screenshot(type="png"))
+                ffmpeg.stdin.write(page.screenshot(type="jpeg", quality=95) if fast
+                                   else base64.b64decode(chrome.send("Page.captureScreenshot", shot)["data"]))
             ffmpeg.stdin.close()
         except BrokenPipeError:
             pass                          # ffmpeg stopped part-way, and has said why above: told below
@@ -192,6 +205,7 @@ def main():
     parser.add_argument("--from", dest="start", type=float, default=0.0, help="the second to start at")
     parser.add_argument("--to", dest="end", type=float, help="the second to stop at")
     parser.add_argument("--fast", action="store_true", help="JPEG frames and the encoder's usual settings: quicker, softer")
+    parser.add_argument("--height", type=int, default=HEIGHT, help="the video's height: 1080 (1920 x 1080), or 1440 (2560 x 1440)")
     parser.add_argument("--set", action="append", default=[], metavar="NAME=VALUE",
                         help="give the page a value for this render: VALUE is JSON, or @file.json (sash.html: SLOW, LENGTH, WORDS)")
     parser.add_argument("--vanish", dest="vanish", action="store_true", default=False,
@@ -209,7 +223,7 @@ def main():
     for one in args.set:
         name, _, value = one.partition("=")
         sets.append((name, json.loads(Path(value[1:]).read_text(encoding="utf-8") if value.startswith("@") else value)))
-    render(args.page, args.video, args.audio, args.start, args.end, args.fast, sets, args.vanish)
+    render(args.page, args.video, args.audio, args.start, args.end, args.fast, sets, args.vanish, args.height)
 
 
 if __name__ == "__main__":
