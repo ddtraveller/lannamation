@@ -559,6 +559,15 @@ toFront, side: 0 to 1).
 e.g. var V = view(0.5, true, null);
 ```
 
+### `lidOf(look, lady)`
+
+```
+The lid a person has when the look names none: an old person's hooded, a child's without a crease, a lady's
+creased and a fellow's hooded. look: the figure's look (it reads age and build); lady: true for a lady.
+Returns a name of LIDS.
+e.g. lidOf({build: -1}, true);
+```
+
 ### `northFace(look)`
 
 ```
@@ -682,6 +691,94 @@ profile it all fades, as the kit's noses do, because there the nose is the outli
 V: the head's view (view()); lady: true for her measure. Reads NORTH_FACE, which must be set (person() sets it).
 Returns nothing: it draws with pen, in the head's pixels.
 e.g. NORTH_FACE = northFace({north: "round"}); northNose(view(0.3, true, NORTH_FACE), true);
+```
+
+### `soft(units)`
+
+```
+A blur of "units" in the head's own pixels, at whatever size the head is drawn; 0 ends it.
+Returns nothing: it sets pen.filter.
+e.g. soft(2); pen.fill(); soft(0);
+```
+
+### `cubicAt(p0, p1, p2, p3, u)`
+
+```
+The point a fraction u along a cubic curve from p0 to p3 with controls p1, p2 (each [x, y]). Returns [x, y].
+e.g. cubicAt([0, 0], [10, -8], [20, -8], [30, 0], 0.5);
+```
+
+### `lidLine(I, c1, c2, O, lady, dir, wide)`
+
+```
+A lid's line along a cubic curve from the inner corner I to the outer corner O (controls c1, c2): thin at the
+inner corner and full at the outer, as a thangka's lid line is drawn; a lady's carries on a little past the
+corner, where the lashes are. dir: 1 when the inner corner is at the right. Returns nothing: it fills with pen.
+e.g. lidLine([10, -277], [5, -283], [-4, -283], [-10, -278], true, 1, 10);
+```
+
+### `realEye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed)`
+
+```
+One eye, as eye() takes it, while EYE_LIDS is a real eye (STYLE.lids "real"; person() sets it): the upper lid
+peaks nearer the nose and the lower lid is lowest nearer the outer corner, the inner corner a little the lower;
+white on both sides of the iris; the iris brown with a lighter ring, 0.43 of the eye's half-width, its top under
+the lid and its foot on the lower lid, never further across than 0.3 of the half-width; one light; a pink inner
+corner; the lid line thin at the inner corner and full at the outer; above it the person's own lid (EYE_LIDS.lid):
+a crease, a hooded lid (the fold low over the outer half) or none. "tall" is the height of the upper lid's arch.
+Shut, a laugh, a slanted lid and tears as eye() has them. Returns nothing: it draws with pen.
+e.g. EYE_LIDS = {eyes: "real", lid: "crease"}; realEye(30, -277, 9, 4.1, false, [0, 0], -1, 1, 0, false);
+```
+
+### `featherBrow(x, y, wide, arch, heavy, tilt, inner)`
+
+```
+A brow of hairs (STYLE.face "real"): a soft mass and fine hairs over it, standing up at the inner end and lying
+along the brow toward its tail. x, y, wide, arch, heavy, tilt: as brow() takes them; inner: 1 when the brow's
+inner end is at its right, -1 at its left. Returns nothing: it draws with pen.
+e.g. featherBrow(30, -294, 12, 9, 1.1, 0, 1);
+```
+
+### `skinBands(V, eyes)`
+
+```
+The skin modelled in the thangka's way (STYLE.face "real"): very soft bands where the form turns away, the
+hollow of each eye toward the nose, the far cheek in three-quarter, under the jaw; a light on the near cheekbone;
+the forehead and the cheeks left flat. V: the head's view; eyes: [x, y, half-width, 1 toward the nose at the
+right or -1] for each eye. Before the features. Returns nothing: it draws with pen inside V.skin.
+e.g. skinBands(V, [[6, -277, 11, 1], [40, -277, 9, -1]]);
+```
+
+### `realNose(V, lady)`
+
+```
+A nose modelled, not drawn round (STYLE.face "real"): a shadow down the near side of the bridge (both sides from
+the front), a light down the bridge and on the tip, a shadow under the base, the nostrils (the far one smaller in
+three-quarter) and the wing round each. Its base is 5 above the painted face's, so the nose is shorter and the
+lower face longer, coming back to the painted profile's place as the head turns to profile, where the nostril and
+its wing are all of the nose that is not outline. A face of the north's is broader (noseWide).
+V: the head's view; lady: true for her measure. Reads NORTH_FACE. Returns nothing: it draws with pen.
+e.g. realNose(view(0, true, null), true);
+```
+
+### `realLip(lady)`
+
+```
+The lips' colour (STYLE.face "real"): the skin's own rose, a lady's deeper than a fellow's, a child's or an old
+woman's lighter than a grown lady's. lady: true for hers. Reads SKIN and PAINTED. Returns "#rrggbb".
+e.g. var lip = realLip(true);
+```
+
+### `realShutMouth(V, lady, feel, frown)`
+
+```
+A shut mouth as the lips are (STYLE.face "real"): the upper lip darker (it faces down, away from the light) with
+its bow, the lower fuller with a gleam, a dark line where they meet, deepest at the corners, the groove above and
+the shadow under the lower lip. Its corners go up with a smile and down with a frown; worry presses it small. Its
+middle is 4 above the painted face's (the lower face longer), coming back to the painted profile's as the head
+turns. V: the head's view; lady: true for her measure; feel: feelingOf()'s numbers; frown: 0 to 1.
+Reads NORTH_FACE. Returns nothing: it draws with pen inside V.face.
+e.g. realShutMouth(view(0, true, null), true, feelingOf({}), 0);
 ```
 
 ### `ladyFace(shut, mouth, glance, V, feel)`

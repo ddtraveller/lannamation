@@ -767,3 +767,59 @@ gold spire crown, the kit's temple-gate `yak()` alive), `"forest"` (dark, wild-h
 (red, crowned, in gold); the rest of the look is `person()`'s (size, face, step, at, feel, reachA) and wins over the
 kind's own (`OGRE_LOOKS`). It gives back the person's joints. `ogreHead(j, kind, face, t)` is the head alone, over a
 person a scene draws itself. The owner's picks, all three. Sheet: `ogre.html`.
+
+## Faces with more realism, from thangka, Khmer and Lanna art (2026-10-29)
+
+The owner: "give me some suggestions for redrawing the humans, particularly the faces to give more realism. Use
+notebooklm to research Buddhist thangka paintings, Khmer and Lanna culture art and the way they drew or painted faces
+and people". Then "go for it", for candidates beside the kit's face.
+
+**The research.** NotebookLM, "Faces and figures in thangka, Khmer and Lanna art, for the Lanna cartoon kit"
+(`58d81455-b88b-4129-83fe-865dc1de523d`, 46 sources from five searches; each question asked of one tradition's sources
+only). Checked against the sources' own words: a thangka face is one *xie*, twelve finger-widths long (SHS Web of
+Conferences, "Thang-ga's Painting Techniques"), in three equal parts, forehead, nose and lower face; thangka painters
+shade and outline in indigo and lac dye, organic dyes laid in bands along the borders of the form, not in black
+(mandalas.life); the eyes long and tapering, "the upper lid drawn in a continuous, confident line", the iris "often
+slightly lowered" (Tibet Echo, a seller's page: weak); a Chiang Saen Buddha's face round and smiling, with high curving
+brows, a hooked nose and mostly narrow lips ("Buddha Images in the Style of Chiang Saen (Lanna), Thailand"); in murals
+the comic commoner men have wide
+nostrils and big lips while the women keep the classical face (the "Chinese Rabbit Seller" paper, mostly of central
+Thai murals); Tai Lue earlobe plugs of wrapped gold and tattoos at Wat Phumin. As the notebook gave it and not checked
+word for word: Khmer faces by period, the Angkor Wat brows straight and close, the Bayon's broad face, heavy lowered
+lids, broad nose and full lips. A Lanna "knotted chin", which the notebook also gave, was in neither source checked for
+it, and is left out.
+
+**The kit, measured.** By STYLE.md's numbers, a lady's three-quarter face was 0.28 forehead, 0.45 nose and 0.28
+lower face, where the thangka's are a third each, and her eyes 0.59 of the way down the head; `eye()` moved the iris by
+the glance with no limit, so in three-quarter it sat in the outer corner under a heavy lid (a sly look on every face);
+the folded eye's iris was near black and filled the opening (the boys looked to wear dark glasses); the nose ended in a
+curl like a 3, a fellow's mouth was a U; a heavy dark line ran round every face.
+
+**Three candidates**, drawn in scratch over the kit as it was (a script that replaced its functions), beside the
+kit's face, for Bua-kham, In-ta, the girl, the boy and the grandmother: A, the eye; B, A and the face's measure; C, B
+and the line, the skin, the nose, the lips and brows of hairs. Owner: "A for everyone", "Yes, take B", and all of C
+(which takes back "flat skin" and the owner's "no shadow on the chin" of 2026-10-12 on the jaw). C's first brows read as
+toothbrushes (the hairs long and upright) and its nose was too faint at a film's size; both were mended before the
+owner saw them.
+
+**In the kit**: `STYLE.lids = "real"` and `STYLE.face = "real"`, the numbers in STYLE.md, "Faces with more realism";
+`look.lid` (`LIDS`, `lidOf`); the girl's lid is a crease, as on the sheet the owner chose. The new eye does all the old
+one did: a blink, the laugh's bowed shut eye, the slanted lids of anger, sadness and worry, tears; the nose and the
+mouth slide back to the painted profile as the head turns; an open mouth keeps the kit's shapes, teeth and tongue,
+with lips of the skin's rose. `FILM_STYLE = {lids: "folded", face: "painted"}` gives the faces of before: drawn on a sheet
+of turns and feelings with each kit, the lady's 0 pixels apart, the fellow's only in his hair (below). Sheet:
+`realfaces.html`, six of the cast painted above real, three turning from profile to full face, and a lady's and a
+fellow's feelings and mouths.
+
+**What it costs** (`checks/frame_time.py` on the laptop, the kit before and after, one after the other): `northfaces.html`,
+fourteen figures a frame, 18.5 ms a frame before and 28.3 after (the figures 16.0 and 24.8): the soft shade and the
+lid's shadow are blurs; `lanna.html`, the figures 10.4 and 12.3 ms of a frame. A render's frame is about 130 ms of
+screenshot besides, so a film renders a little slower, not much.
+
+**Found and mended**: a fellow's comb lines ran out of his hair and down his brow (seen on In-ta in the kit's own column);
+they are clipped to the hair and to the space above it, where they rise into the knot (a first clip to the hair alone
+cut those off too).
+
+**Not done**, of the suggestions: a softer hairline (baby hairs, the temples set back; the traced-face experiment of
+2026-10-26 has one); a fellow's own face beyond his brows (a heavier brow ridge, a broader nose base, a squarer jaw); age
+shown by the face's fall more than by lines; the Lue ear plug of wrapped gold.

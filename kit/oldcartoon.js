@@ -193,7 +193,8 @@ var STYLE = {
   hold: 0.06,                           // of a beat: the pause at the bottom of a hop
   sway: 1,                              // how much the spine sways: 0 for none, 2 for twice as much
   hop: true,                            // everyone hops on the beat, as in the 1930s; false: they stand still and walk evenly
-  lids: "folded",                       // every person's eye folded at the lid, as the Thai face's (owner, 2026-10-20: "fix the eyes in all the models with a folded lid eye"); "kit" for the creased eye the kit drew before
+  lids: "real",                         // the eye as the thangka and the photographs draw it, with each person's own lid (look.lid) (owner, 2026-10-29: "A for everyone"); "folded" for the folded eye of 2026-10-20 ("fix the eyes in all the models with a folded lid eye"), "kit" for the creased eye the kit drew before that
+  face: "real",                         // the face's measure and paint as the thangka and the photographs have them: the nose shorter, the lower face longer, a fine lac-brown line, soft shade, lips of the skin's rose, brows of hairs (owner, 2026-10-29: "take B" and all of C); "painted" for the faces of the murals the kit drew before
   hands: "round",                       // a bare hand drawn in the round (hand()), which can show its edge or its palm; "flat" is the flat hand the kit drew until 2026-10-15 (glove)
   gold: "#e0b23a",
   hair: "#2a1a12",
@@ -1367,7 +1368,7 @@ function view(turn, lady, north) {
     head[10][1] += chin * 0.25;
     head[11][1] += chin * 0.15;
   }
-  return {
+  var V = {
     t: t, toProfile: away, toFront: Math.max(0, t), side: side,
     near: b(30, 2, -19, 37, 36), nearW: b(9, 15, 15, 15.5, 13),   // the near eye: in profile it sits just behind the nose
     far: b(40, 37, 19), farW: b(0, 12.5, 15),       // the far eye: gone behind the nose in profile
@@ -1383,7 +1384,24 @@ function view(turn, lady, north) {
     hairLady: points(HAIR_LADY_P, HAIR_LADY_Q, HAIR_LADY_F, HAIR_LADY_SIDE),
     hairMan: points(HAIR_MAN_P, HAIR_MAN_Q, HAIR_MAN_F, HAIR_MAN_SIDE)
   };
+  if (STYLE.face === "real") {                      // the head less of a dome, the forehead a third of the face (REAL_HEAD)
+    REAL_HEAD.skull.forEach(function (k) { V.head[k[0]][1] += k[1]; });
+    REAL_HEAD.hairLady.forEach(function (k) { V.hairLady[k[0]][1] += k[1]; });
+    REAL_HEAD.hairMan.forEach(function (k) { V.hairMan[k[0]][1] += k[1]; });
+    V.bun[1] += REAL_HEAD.down;
+    V.crown[1] += REAL_HEAD.down;
+  }
+  return V;
 }
+
+// The head's measure for the real face (STYLE.face "real"), from the thangka's three equal parts of a face: the
+// top of the skull lower and the hairline higher, so the head is less of a dome over the face and the forehead
+// nearer a third of it. [point, how far down] for the skull's and the hair's points (HEAD_Q's order, HAIR_LADY_Q's,
+// HAIR_MAN_Q's), at every turn; "down" for a knot on the head (the bun, the crown's knot, a fellow's knot).
+var REAL_HEAD = {down: 8,
+                 skull: [[1, 4], [2, 8], [3, 9], [4, 8], [5, 4]],
+                 hairLady: [[2, 6], [3, 8], [4, 9], [5, 6], [7, -3], [8, -5], [9, -6], [10, -4]],
+                 hairMan: [[2, 6], [3, 8], [4, 9], [5, 6], [7, -5], [8, -5], [9, -6], [10, -4]]};
 
 // ---------- faces of the north ----------
 // The faces of Northern Thai people as a photograph shows them: Princess Dara
@@ -1446,6 +1464,20 @@ var NORTH_FACE = null;                              // the face of the north bei
 // an animal's eye (drawn outside person()) keeps its own.
 var FOLDED_EYE = {lid: 0.1, lidMan: 0.08, fold: 0, tilt: 0.13, eyes: "folded"};
 var EYE_LIDS = null;
+// The lids of the real eye (STYLE.lids "real"; look.lid). Most Thais have a crease over the upper lid, often hooded,
+// and some none (the research of 2026-10-26, NotebookLM d25d9cfe): a crease, a hooded lid (the fold hangs low over
+// the outer half), or no crease at all.
+var LIDS = {crease: "a crease over the lid", hooded: "the fold hanging low over the outer half", none: "no crease"};
+
+// The lid a person has when the look names none: an old person's hooded, a child's without a crease, a lady's
+// creased and a fellow's hooded. look: the figure's look (it reads age and build); lady: true for a lady.
+// Returns a name of LIDS.
+// e.g. lidOf({build: -1}, true);
+function lidOf(look, lady) {
+  if ((look.age || 0) > 0.5) { return "hooded"; }
+  if ((look.build || 0) < 0) { return "none"; }
+  return lady ? "crease" : "hooded";
+}
 // Tears (look.tears, 0 to 1: how much one cries), drawn by eye() from the lower lid: person() sets EYE_TEARS as it
 // sets EYE_LIDS. The eyes brim, and a drop gathers at the corner and falls (owner, 2026-10-20: "Add some tears for
 // when the boy cries"; of three ways drawn, a stream, falling drops and this, "C welling").
@@ -1530,6 +1562,8 @@ function ageLines(age, V) {
 // Returns nothing: it draws with pen, in the head's pixels.
 // e.g. beard("#d8d0c4", view(0.2, false, null), 0);
 function beard(colour, V, drop) {
+  pen.save();
+  if (STYLE.face === "real") { pen.translate(0, -4 * (1 - V.side)); }   // with the real face's mouth, 4 higher
   for (var half = -1; half <= 1; half += 2) {       // the two halves of the moustache, the far one first
     var out = half < 0 ? 15 : -21;                  // how far its end is from the middle of the mouth
     pen.beginPath();
@@ -1545,6 +1579,7 @@ function beard(colour, V, drop) {
   pen.quadraticCurveTo(V.mouth + 8, -212 + drop, V.mouth + 10, -231 + drop);
   pen.closePath();
   shape(colour, 1.4 * FINE);
+  pen.restore();
 }
 
 // One eye. It is an almond: the upper lid is a high arch, the lower lid is
@@ -1567,6 +1602,7 @@ function beard(colour, V, drop) {
 // outside person() they are as the last figure left them. Returns nothing: it draws with pen.
 // e.g. eye(30, -277, 9, 4.6, false, [1, 0], -1, 1, 0, false);
 function eye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed) {
+  if (EYE_LIDS && EYE_LIDS.eyes === "real") { return realEye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed); }
   var gx = glance.length ? glance[0] : glance, gy = glance.length ? glance[1] : 0;
   // "shut" may be 0 to 1: the upper lid comes down that far, and past 0.9 the eye is shut.
   // A face of the north (NORTH_FACE) has a heavy upper lid: open, it hangs at least that far.
@@ -1867,6 +1903,396 @@ function northNose(V, lady) {
   pen.restore();
 }
 
+// ---------- the face as the thangka and the photographs have it (STYLE.lids and STYLE.face "real") ----------
+// Owner, 2026-10-29: "suggestions for redrawing the humans, particularly the faces to give more realism", from
+// research on thangka, Khmer and Lanna faces (NotebookLM; docs/kit/figures.md, "Faces with more realism"); of
+// candidates drawn beside the kit's face, "A for everyone", "Yes, take B" and all of C. A thangka lays the face out
+// in three equal parts (forehead, nose, lower face, 4 of its 12 finger-widths each), opens the eyes with one sure lid
+// line, models the skin in thin washes with darker bands only where the form turns (along the nose, under the lower
+// lip, along the jaw), and outlines it in indigo or lac, not black. So: an eye with white on both sides of a brown
+// iris and each person's own lid; the nose shorter and the lower face longer; a fine lac-brown line round the face;
+// soft bands of shade; a modelled nose; lips of the skin's own rose; brows of fine hairs.
+
+// A blur of "units" in the head's own pixels, at whatever size the head is drawn; 0 ends it.
+// Returns nothing: it sets pen.filter.
+// e.g. soft(2); pen.fill(); soft(0);
+function soft(units) {
+  var m = pen.getTransform();
+  pen.filter = units > 0 ? "blur(" + (units * Math.hypot(m.a, m.b)).toFixed(2) + "px)" : "none";
+}
+
+// The point a fraction u along a cubic curve from p0 to p3 with controls p1, p2 (each [x, y]). Returns [x, y].
+// e.g. cubicAt([0, 0], [10, -8], [20, -8], [30, 0], 0.5);
+function cubicAt(p0, p1, p2, p3, u) {
+  var a = 1 - u;
+  return [a * a * a * p0[0] + 3 * a * a * u * p1[0] + 3 * a * u * u * p2[0] + u * u * u * p3[0],
+          a * a * a * p0[1] + 3 * a * a * u * p1[1] + 3 * a * u * u * p2[1] + u * u * u * p3[1]];
+}
+
+// A lid's line along a cubic curve from the inner corner I to the outer corner O (controls c1, c2): thin at the
+// inner corner and full at the outer, as a thangka's lid line is drawn; a lady's carries on a little past the
+// corner, where the lashes are. dir: 1 when the inner corner is at the right. Returns nothing: it fills with pen.
+// e.g. lidLine([10, -277], [5, -283], [-4, -283], [-10, -278], true, 1, 10);
+function lidLine(I, c1, c2, O, lady, dir, wide) {
+  var top = [], under = [], N = 24;
+  for (var n = 0; n <= N; n++) {
+    var u = n / N, p = cubicAt(I, c1, c2, O, u);
+    var q = cubicAt(I, c1, c2, O, Math.min(1, u + 0.01)), s = cubicAt(I, c1, c2, O, Math.max(0, u - 0.01));
+    var tx = q[0] - s[0], ty = q[1] - s[1], len = Math.hypot(tx, ty) || 1, nx = ty / len, ny = -tx / len;
+    if (ny > 0) { nx = -nx; ny = -ny; }             // the side away from the eye
+    var thick = LINE * (0.3 + (lady ? 1.45 : 1.15) * Math.pow(u, 1.2)) * (u > 0.9 ? 1 - (u - 0.9) * 4 : 1);
+    top.push([p[0] + nx * thick * 0.8, p[1] + ny * thick * 0.8]);
+    under.unshift([p[0] - nx * thick * 0.2, p[1] - ny * thick * 0.2]);
+  }
+  pen.beginPath();
+  pen.moveTo(top[0][0], top[0][1]);
+  top.forEach(function (p) { pen.lineTo(p[0], p[1]); });
+  if (lady) { pen.lineTo(O[0] - dir * wide * 0.14, O[1] - wide * 0.07); }
+  under.forEach(function (p) { pen.lineTo(p[0], p[1]); });
+  pen.closePath();
+  pen.fillStyle = "#26160e";
+  pen.fill();
+}
+
+// One eye, as eye() takes it, while EYE_LIDS is a real eye (STYLE.lids "real"; person() sets it): the upper lid
+// peaks nearer the nose and the lower lid is lowest nearer the outer corner, the inner corner a little the lower;
+// white on both sides of the iris; the iris brown with a lighter ring, 0.43 of the eye's half-width, its top under
+// the lid and its foot on the lower lid, never further across than 0.3 of the half-width; one light; a pink inner
+// corner; the lid line thin at the inner corner and full at the outer; above it the person's own lid (EYE_LIDS.lid):
+// a crease, a hooded lid (the fold low over the outer half) or none. "tall" is the height of the upper lid's arch.
+// Shut, a laugh, a slanted lid and tears as eye() has them. Returns nothing: it draws with pen.
+// e.g. EYE_LIDS = {eyes: "real", lid: "crease"}; realEye(30, -277, 9, 4.1, false, [0, 0], -1, 1, 0, false);
+function realEye(x, y, wide, tall, shut, glance, outer, lashes, slant, bowed) {
+  var gx = glance.length ? glance[0] : glance, gy = glance.length ? glance[1] : 0;
+  var closed = shut === true ? 1 : shut ? shut : 0, lady = !!lashes, lidType = EYE_LIDS.lid;
+  var U = tall * (1 - 0.85 * Math.min(1, closed)), L = wide * 0.17, dir = -outer;
+  var I = [x + dir * wide, y + wide * 0.05], O = [x - dir * wide, y - wide * 0.02], d = O[0] - I[0];
+  var up1 = [I[0] + d * 0.15, y - U * 1.3], up2 = [I[0] + d * 0.6, y - U * 1.33];
+  var lo1 = [I[0] + d * 0.35, y + L * 1.33], lo2 = [I[0] + d * 0.8, y + L * 1.33];
+  pen.save();
+  pen.translate(x, y);
+  pen.rotate(-0.08 * outer);                        // the outer corner lifts a little
+  pen.translate(-x, -y);
+  pen.save();                                       // the hollow of the eye under the brow, very soft
+  soft(wide * 0.35);
+  pen.fillStyle = "rgba(140, 80, 60, 0.08)";
+  pen.beginPath();
+  pen.ellipse(x + dir * wide * 0.15, y - tall * 1.3, wide * 1.1, wide * 0.55, 0, 0, 7);
+  pen.fill();
+  pen.restore();
+  if (closed > 0.9) {                               // shut: the lid's line where the lids meet, bowed up in a laugh
+    var sag = bowed ? -wide * 0.35 : wide * 0.12;
+    lidLine(I, [I[0] + d * 0.3, y + sag * 1.3], [I[0] + d * 0.7, y + sag * 1.3], O, lady, dir, wide);
+  } else {
+    var opening = new Path2D();
+    opening.moveTo(I[0], I[1]);
+    opening.bezierCurveTo(up1[0], up1[1], up2[0], up2[1], O[0], O[1]);
+    opening.bezierCurveTo(lo2[0], lo2[1], lo1[0], lo1[1], I[0], I[1]);
+    var below = slant ? slantedLid(x, y, wide, U * 0.8, outer, slant) : null;
+    pen.save();
+    if (below) { pen.clip(below.open); }            // a slanted lid: nothing of the eye shows above its line
+    pen.fillStyle = "#f2e9df";
+    pen.fill(opening);
+    pen.clip(opening);
+    var corners = pen.createRadialGradient(x, y - U * 0.2, wide * 0.25, x, y, wide * 1.05);   // the white greys toward the corners
+    corners.addColorStop(0, "rgba(120, 80, 70, 0)");
+    corners.addColorStop(1, "rgba(120, 80, 70, 0.38)");
+    pen.fillStyle = corners;
+    pen.fillRect(x - wide * 1.2, y - wide, wide * 2.4, wide * 2);
+    var r = wide * 0.43, ix = x + Math.max(-0.3 * wide, Math.min(0.3 * wide, gx)), iy = y + L - 0.9 * r + gy;
+    var iris = pen.createRadialGradient(ix, iy, r * 0.3, ix, iy, r);
+    iris.addColorStop(0, "#7c5434");
+    iris.addColorStop(0.55, "#4e2f18");
+    iris.addColorStop(0.88, "#2e1a0c");
+    iris.addColorStop(1, "#160c05");
+    pen.fillStyle = iris;
+    pen.beginPath();
+    pen.arc(ix, iy, r, 0, 7);
+    pen.fill();
+    var foot = pen.createLinearGradient(ix, iy - r, ix, iy + r);   // the light comes in from above and shows on the iris's foot
+    foot.addColorStop(0, "rgba(0, 0, 0, 0.2)");
+    foot.addColorStop(1, "rgba(200, 140, 80, 0.28)");
+    pen.fillStyle = foot;
+    pen.fill();
+    pen.fillStyle = "#0d0704";
+    pen.beginPath();
+    pen.arc(ix, iy, r * 0.4, 0, 7);
+    pen.fill();
+    pen.save();                                     // the upper lid's shadow over the white and the iris
+    soft(wide * 0.08);
+    pen.strokeStyle = "rgba(70, 35, 25, 0.38)";
+    pen.lineWidth = U * 0.75;
+    pen.beginPath();
+    pen.moveTo(I[0], I[1] + U * 0.2);
+    pen.bezierCurveTo(up1[0], up1[1] + U * 0.2, up2[0], up2[1] + U * 0.2, O[0], O[1] + U * 0.2);
+    pen.stroke();
+    pen.restore();
+    pen.fillStyle = "rgba(255, 255, 255, 0.92)";    // one light, up toward the light
+    pen.beginPath();
+    pen.arc(ix + r * 0.3, iy - r * 0.32, r * 0.19, 0, 7);
+    pen.fill();
+    pen.fillStyle = "rgba(214, 138, 128, 0.75)";    // the pink at the inner corner
+    pen.beginPath();
+    pen.ellipse(I[0] - dir * wide * 0.1, I[1] - wide * 0.02, wide * 0.08, wide * 0.07, 0, 0, 7);
+    pen.fill();
+    pen.restore();
+    lidLine(I, up1, up2, O, lady, dir, wide);
+    if (below) {                                    // the slanted lid's own line, inside the eye
+      pen.save();
+      pen.clip(opening);
+      pen.beginPath();
+      pen.moveTo(below.line[0], below.line[1]);
+      pen.lineTo(below.line[2], below.line[3]);
+      pen.strokeStyle = "#26160e";
+      pen.lineWidth = 2 * LINE * 0.9;
+      pen.stroke();
+      pen.restore();
+    }
+    pen.strokeStyle = "rgba(110, 62, 48, 0.45)";    // the lower lid: light, the outer two thirds
+    pen.lineWidth = LINE * 0.42;
+    pen.lineCap = "round";
+    pen.beginPath();
+    for (var n = 0; n <= 14; n++) {
+      var w = cubicAt(O, lo2, lo1, I, n / 20);
+      if (n) { pen.lineTo(w[0], w[1]); } else { pen.moveTo(w[0], w[1]); }
+    }
+    pen.stroke();
+    if (lidType !== "none") {                       // the crease over the lid, or the fold of a hooded lid
+      var hooded = lidType === "hooded", from = hooded ? 0.35 : 0.2, rise = U * (hooded ? 0.32 : 0.62);
+      pen.strokeStyle = "rgba(115, 62, 46, " + (hooded ? 0.5 : 0.38) + ")";
+      pen.lineWidth = LINE * (hooded ? 0.5 : 0.4);
+      pen.beginPath();
+      for (n = 0; n <= 16; n++) {
+        var v = from + (1.02 - from) * n / 16, c = cubicAt(I, up1, up2, O, Math.min(1, v));
+        var lift = rise * Math.sin(Math.PI * Math.min(1, (v - from) / (1.05 - from))) * (hooded ? 0.6 + 0.4 * v : 1);
+        if (n) { pen.lineTo(c[0], c[1] - lift); } else { pen.moveTo(c[0], c[1] - lift); }
+      }
+      pen.stroke();
+    }
+  }
+  if (EYE_TEARS > 0) { tearsFrom(x, y, wide, U * 0.8, outer, closed > 0.9); }
+  pen.restore();
+}
+
+// A brow of hairs (STYLE.face "real"): a soft mass and fine hairs over it, standing up at the inner end and lying
+// along the brow toward its tail. x, y, wide, arch, heavy, tilt: as brow() takes them; inner: 1 when the brow's
+// inner end is at its right, -1 at its left. Returns nothing: it draws with pen.
+// e.g. featherBrow(30, -294, 12, 9, 1.1, 0, 1);
+function featherBrow(x, y, wide, arch, heavy, tilt, inner) {
+  pen.save();
+  pen.translate(x, y);
+  pen.rotate(tilt || 0);
+  pen.translate(-x, -y);
+  soft(0.5);
+  pen.beginPath();
+  pen.moveTo(x - wide, y + 2);
+  pen.quadraticCurveTo(x, y - arch, x + wide, y);
+  pen.quadraticCurveTo(x, y - arch + heavy, x - wide, y + 2 + heavy * 0.4);
+  pen.closePath();
+  pen.fillStyle = "rgba(48, 30, 22, 0.5)";
+  pen.fill();
+  soft(0);
+  pen.strokeStyle = "rgba(34, 20, 14, 0.62)";
+  pen.lineWidth = 0.45;
+  pen.lineCap = "round";
+  pen.beginPath();
+  for (var n = 0; n < 44; n++) {
+    var u = (n + dice(n * 7 + 3)) / 45, px = x - wide + 2 * wide * u;
+    var py = (1 - u) * (1 - u) * (y + 2) + 2 * (1 - u) * u * (y - arch) + u * u * y + heavy * (0.25 + 0.6 * dice(n * 13 + 1));
+    var toInner = inner > 0 ? u : 1 - u;            // 1 at the inner end, where the hairs stand up
+    var a = mix(inner > 0 ? -Math.PI + 0.35 : -0.35, -Math.PI / 2 - inner * 0.25, toInner);
+    var len = 0.9 + heavy * 0.55 * (0.5 + 0.5 * toInner);
+    pen.moveTo(px, py);
+    pen.lineTo(px + Math.cos(a) * len, py + Math.sin(a) * len);
+  }
+  pen.stroke();
+  pen.restore();
+}
+
+// The skin modelled in the thangka's way (STYLE.face "real"): very soft bands where the form turns away, the
+// hollow of each eye toward the nose, the far cheek in three-quarter, under the jaw; a light on the near cheekbone;
+// the forehead and the cheeks left flat. V: the head's view; eyes: [x, y, half-width, 1 toward the nose at the
+// right or -1] for each eye. Before the features. Returns nothing: it draws with pen inside V.skin.
+// e.g. skinBands(V, [[6, -277, 11, 1], [40, -277, 9, -1]]);
+function skinBands(V, eyes) {
+  var mid = 1 - Math.abs(V.t);
+  pen.save();
+  pen.clip(V.skin);
+  eyes.forEach(function (e) {
+    soft(e[2] * 0.4);
+    pen.fillStyle = "rgba(150, 85, 65, 0.1)";
+    pen.beginPath();
+    pen.ellipse(e[0] + e[3] * e[2] * 0.3, e[1] - e[2] * 0.15, e[2] * 1.05, e[2] * 0.6, 0, 0, 7);
+    pen.fill();
+  });
+  if (mid > 0) {
+    soft(5);
+    var far = pen.createLinearGradient(60, 0, 40, 0);
+    far.addColorStop(0, "rgba(150, 80, 60, " + 0.2 * mid + ")");
+    far.addColorStop(1, "rgba(150, 80, 60, 0)");
+    pen.fillStyle = far;
+    pen.fillRect(30, -295, 40, 75);
+  }
+  soft(3);
+  var jaw = pen.createLinearGradient(0, -226, 0, -238);
+  jaw.addColorStop(0, "rgba(150, 80, 60, 0.12)");
+  jaw.addColorStop(1, "rgba(150, 80, 60, 0)");
+  pen.fillStyle = jaw;
+  pen.fillRect(-60, -240, 120, 16);
+  soft(6);
+  pen.fillStyle = "rgba(255, 238, 224, 0.16)";
+  pen.beginPath();
+  pen.ellipse(V.cheek + 8, -264, 13, 8, 0, 0, 7);
+  pen.fill();
+  soft(0);
+  pen.restore();
+}
+
+// A nose modelled, not drawn round (STYLE.face "real"): a shadow down the near side of the bridge (both sides from
+// the front), a light down the bridge and on the tip, a shadow under the base, the nostrils (the far one smaller in
+// three-quarter) and the wing round each. Its base is 5 above the painted face's, so the nose is shorter and the
+// lower face longer, coming back to the painted profile's place as the head turns to profile, where the nostril and
+// its wing are all of the nose that is not outline. A face of the north's is broader (noseWide).
+// V: the head's view; lady: true for her measure. Reads NORTH_FACE. Returns nothing: it draws with pen.
+// e.g. realNose(view(0, true, null), true);
+function realNose(V, lady) {
+  var north = NORTH_FACE, broad = north ? north.noseWide : 1, side = V.side || 0;
+  var base = -258 + (lady ? 4 : 2.4) * side, tipY = base - 5.5, bw = (lady ? 5.6 : 7) * broad, fr = V.toFront, back = 1 - fr;
+  pen.save();
+  if (V.face) { pen.clip(V.face); }                 // its soft shade stays on the face as the nose turns to the edge
+  pen.globalAlpha = 1 - V.toProfile;
+  pen.lineCap = "round";
+  soft(2);
+  pen.strokeStyle = "rgba(150, 75, 55, 0.26)";
+  pen.lineWidth = 5;
+  pen.beginPath();
+  pen.moveTo(V.nose + (V.tip - V.nose) * 0.25 - 3 * back, -281);
+  pen.quadraticCurveTo(V.tip - bw * 0.6 - 1, -270, V.tip - bw * 0.95, base - 2);
+  pen.stroke();
+  if (fr > 0) {
+    pen.strokeStyle = "rgba(150, 75, 55, " + 0.12 * fr + ")";
+    pen.beginPath();
+    pen.moveTo(V.tip + 3, -281);
+    pen.quadraticCurveTo(V.tip + bw * 0.6 + 1, -270, V.tip + bw * 0.95, base - 2);
+    pen.stroke();
+  }
+  soft(1);
+  pen.strokeStyle = "rgba(255, 242, 230, 0.3)";
+  pen.lineWidth = 2.2;
+  pen.beginPath();
+  pen.moveTo(V.nose + (V.tip - V.nose) * 0.3, -279);
+  pen.lineTo(V.tip + 0.5, tipY - 1.5);
+  pen.stroke();
+  pen.fillStyle = "rgba(255, 240, 228, 0.32)";
+  pen.beginPath();
+  pen.arc(V.tip + 0.5, tipY, 2.6, 0, 7);
+  pen.fill();
+  soft(1.2);
+  pen.fillStyle = "rgba(140, 65, 50, 0.32)";
+  pen.beginPath();
+  pen.ellipse(V.tip - back, base + 1.8, bw * 1.15, 2.4, 0, 0, 7);
+  pen.fill();
+  soft(0.3);
+  pen.globalAlpha = Math.min(1, 1 - V.toProfile + side);   // the near nostril stays in profile
+  pen.fillStyle = "rgba(70, 30, 24, 0.82)";
+  pen.beginPath();
+  pen.ellipse(V.tip - bw * 0.42 - 3 * side, base - 0.6, bw * 0.3, 1.15, 0.15, 0, 7);
+  pen.fill();
+  soft(0);
+  pen.strokeStyle = "rgba(120, 58, 42, 0.72)";
+  pen.lineWidth = LINE * 0.5;
+  pen.beginPath();
+  pen.moveTo(V.tip - bw * 0.55 - 3 * side, base - 5.5);
+  pen.quadraticCurveTo(V.tip - bw * 1.2 - 3 * side, base - 3.5, V.tip - bw * 0.82 - 3 * side, base - 0.1);
+  pen.stroke();
+  pen.globalAlpha = (1 - V.toProfile) * (0.4 + 0.6 * fr);   // the far nostril, and its wing
+  soft(0.3);
+  pen.beginPath();
+  pen.ellipse(V.tip + bw * 0.42 * (0.35 + 0.65 * fr), base - 0.6, bw * 0.3 * (0.5 + 0.5 * fr), 1.15, -0.15, 0, 7);
+  pen.fill();
+  soft(0);
+  pen.globalAlpha = (1 - V.toProfile) * (0.25 + 0.75 * fr);
+  pen.beginPath();
+  pen.moveTo(V.tip + bw * 0.55, base - 5.5);
+  pen.quadraticCurveTo(V.tip + bw * 1.2, base - 3.5, V.tip + bw * 0.82, base - 0.1);
+  pen.stroke();
+  pen.restore();
+}
+
+// The lips' colour (STYLE.face "real"): the skin's own rose, a lady's deeper than a fellow's, a child's or an old
+// woman's lighter than a grown lady's. lady: true for hers. Reads SKIN and PAINTED. Returns "#rrggbb".
+// e.g. var lip = realLip(true);
+function realLip(lady) {
+  return blend(SKIN, lady ? "#b9525c" : "#a85a56", lady ? (PAINTED ? 0.68 : 0.45) : 0.42);
+}
+
+// A shut mouth as the lips are (STYLE.face "real"): the upper lip darker (it faces down, away from the light) with
+// its bow, the lower fuller with a gleam, a dark line where they meet, deepest at the corners, the groove above and
+// the shadow under the lower lip. Its corners go up with a smile and down with a frown; worry presses it small. Its
+// middle is 4 above the painted face's (the lower face longer), coming back to the painted profile's as the head
+// turns. V: the head's view; lady: true for her measure; feel: feelingOf()'s numbers; frown: 0 to 1.
+// Reads NORTH_FACE. Returns nothing: it draws with pen inside V.face.
+// e.g. realShutMouth(view(0, true, null), true, feelingOf({}), 0);
+function realShutMouth(V, lady, feel, frown) {
+  var north = NORTH_FACE, wideK = north ? north.lipsWide : 1, full = north ? north.lipsFull : 1;
+  var mid = 1 - Math.abs(V.t), side = V.side || 0;
+  var cx = V.mouth + (lady ? 0 : 1), my = (lady ? -248 : -247.5) + (lady ? 4 : 1.9) * side;
+  var hw = (lady ? 9 : 10.5) * V.mouthW * feel.lips * wideK * (1 - 0.18 * feel.worry);
+  var hn = hw * (1 + 0.12 * mid), hf = hw * (1 - 0.22 * mid);
+  var up = 1.1 * feel.smile - 2.5 * frown, hU = (lady ? 2.6 : 1.8) * full, hL = (lady ? 3.9 : 3) * full;
+  var Lc = [cx - hn, my - up], Rc = [cx + hf, my - up], lip = realLip(lady);
+  pen.save();
+  if (V.face) { pen.clip(V.face); }
+  soft(0.8);                                        // the groove above the upper lip
+  pen.strokeStyle = "rgba(150, 80, 60, 0.18)";
+  pen.lineWidth = 1.4;
+  pen.beginPath();
+  pen.moveTo(cx - 1.6, my - 9);
+  pen.lineTo(cx - hw * 0.22, my - hU - 0.3);
+  pen.moveTo(cx + 1.6, my - 9);
+  pen.lineTo(cx + hw * 0.2, my - hU - 0.3);
+  pen.stroke();
+  soft(1.5);                                        // the shadow under the lower lip
+  pen.fillStyle = "rgba(150, 80, 60, 0.22)";
+  pen.beginPath();
+  pen.ellipse(cx, my + hL + 3.2, hw * 0.5, 1.8, 0, 0, 7);
+  pen.fill();
+  soft(0.25);
+  pen.beginPath();                                  // the lower lip
+  pen.moveTo(Lc[0], Lc[1]);
+  pen.quadraticCurveTo(cx, my + 0.9, Rc[0], Rc[1]);
+  pen.bezierCurveTo(cx + hf * 0.6, my + hL * 1.25, cx - hn * 0.6, my + hL * 1.25, Lc[0], Lc[1]);
+  pen.fillStyle = lip;
+  pen.fill();
+  var gleam = pen.createRadialGradient(cx + 1, my + hL * 0.5, 0, cx + 1, my + hL * 0.5, hw * 0.45);
+  gleam.addColorStop(0, "rgba(255, 228, 218, 0.4)");
+  gleam.addColorStop(1, "rgba(255, 228, 218, 0)");
+  pen.fillStyle = gleam;
+  pen.fill();
+  pen.beginPath();                                  // the upper lip
+  pen.moveTo(Lc[0], Lc[1]);
+  pen.quadraticCurveTo(cx - hw * 0.65, my - hU * 0.5, cx - hw * 0.24, my - hU);
+  pen.quadraticCurveTo(cx - hw * 0.08, my - hU * 0.95, cx, my - hU * 0.66);
+  pen.quadraticCurveTo(cx + hw * 0.08, my - hU * 0.95, cx + hw * 0.2, my - hU);
+  pen.quadraticCurveTo(cx + hf * 0.62, my - hU * 0.5, Rc[0], Rc[1]);
+  pen.quadraticCurveTo(cx, my + 0.9, Lc[0], Lc[1]);
+  pen.fillStyle = blend(lip, "#5a2020", 0.2);
+  pen.fill();
+  soft(0);
+  pen.strokeStyle = "rgba(80, 30, 28, 0.78)";       // where the lips meet
+  pen.lineWidth = LINE * 0.48;
+  pen.lineCap = "round";
+  pen.beginPath();
+  pen.moveTo(Lc[0] - 0.5, Lc[1] - 0.2);
+  pen.quadraticCurveTo(cx, my + 0.9, Rc[0] + 0.5, Rc[1] - 0.2);
+  pen.stroke();
+  soft(0.8);
+  pen.fillStyle = "rgba(90, 40, 35, 0.35)";         // the corners
+  [Lc, Rc].forEach(function (c) { pen.beginPath(); pen.arc(c[0], c[1], 1.3, 0, 7); pen.fill(); });
+  soft(0);
+  pen.restore();
+}
+
 // A lady's face, drawn in the head's pixels (middle (0, -286)): eyes, brows, nose, rouge, mouth.
 //   V      the view of the head for its turn (see view()): where each feature sits
 //   feel   {wonder, smile}, each 0 to 1
@@ -1899,16 +2325,26 @@ function ladyFace(shut, mouth, glance, V, feel) {
   var side = V.side || 0;                           // how far her painted profile has taken over (see view())
   var look = [(glance.length ? glance[0] : glance) * 0.7 + 2.2 * side,   // a small eye's iris has less room to move; in profile it sits in the front half
               (glance.length ? glance[1] : 0) * 0.6];
-  if (V.nearW > 2) { eye(nearX, -277, nearW, 4.6 * wide * feel.eyes, shut, look, -1, 1, slant, feel.laugh > 0.5); }
-  if (V.nearW > 2) { brow(nearX + close, -292 - lift + 3 * side + browDown, nearW * 1.3, 9 * arch, 1.1 * weight, knit); }   // in profile the brow lies nearer the eye
+  // The real face (STYLE.face "real"): the brows 2 higher, soft shade where the form turns, then the features. The
+  // real eye (STYLE.lids "real") is given the height of its upper lid's arch, 0.46 of its half-width.
+  var realFace = STYLE.face === "real", realEyes = EYE_LIDS && EYE_LIDS.eyes === "real", browUp = realFace ? 2 * (1 - side) : 0;
+  var browWide = realFace ? 1.3 / Math.max(1, feel.eyes) : 1.3;   // a real brow does not grow with a child's large eyes (they met over the nose)
+  var nearTall = realEyes ? 0.46 * nearW * wide : 4.6 * wide * feel.eyes, farTall = realEyes ? 0.46 * farW * wide : 4.4 * wide * feel.eyes;
+  if (realFace) { skinBands(V, [[nearX, -277, nearW, 1], [farX, -277.5, farW, -1]].filter(function (e) { return e[2] > 2; })); }
+  if (V.nearW > 2) { eye(nearX, -277, nearW, nearTall, shut, look, -1, 1, slant, feel.laugh > 0.5); }
+  if (V.nearW > 2) {                                // in profile the brow lies nearer the eye
+    if (realFace) { featherBrow(nearX + close, -292 - lift + 3 * side + browDown - browUp, nearW * browWide, 9 * arch, 1.1 * weight, knit, 1); }
+    else { brow(nearX + close, -292 - lift + 3 * side + browDown, nearW * 1.3, 9 * arch, 1.1 * weight, knit); }
+  }
   if (V.farW > 2) {                                 // the far eye and its brow: toward profile they go round the edge of the face, and it cuts them
     pen.save();
     if (V.face) { pen.clip(V.face); }
-    eye(farX, -277.5, farW, 4.4 * wide * feel.eyes, shut, look, 1, 1, slant, feel.laugh > 0.5);
-    brow(farX - close, -292.5 - lift + browDown, farW * 1.3, 8.5 * arch, 1.05 * weight, -knit);
+    eye(farX, -277.5, farW, farTall, shut, look, 1, 1, slant, feel.laugh > 0.5);
+    if (realFace) { featherBrow(farX - close, -292.5 - lift + browDown - browUp, farW * browWide, 8.5 * arch, 1.05 * weight, -knit, -1); }
+    else { brow(farX - close, -292.5 - lift + browDown, farW * 1.3, 8.5 * arch, 1.05 * weight, -knit); }
     pen.restore();
   }
-  frownFold(V.nose + (V.tip - V.nose) * 0.1, -293 - lift + browDown, feel, V);
+  frownFold(V.nose + (V.tip - V.nose) * 0.1, -293 - lift + browDown - browUp, feel, V);
   var frown = clamp(feel.sad + 0.6 * feel.anger + 0.45 * feel.worry);  // the corners of a shut mouth go down
   // A nose as the paintings draw one: a single fine line down from the inner
   // end of the brow to the tip, three quarters of the way down the face, and
@@ -1916,7 +2352,7 @@ function ladyFace(shut, mouth, glance, V, feel) {
   // the line fades and there is a nostril each side; turned to profile it
   // all fades, because there the nose is the face's outline. (A face of the
   // north has its own: northNose.)
-  if (north) { northNose(V, true); } else {
+  if (realFace) { realNose(V, true); } else if (north) { northNose(V, true); } else {
   pen.save();
   pen.lineCap = "round";
   pen.globalAlpha = (1 - V.toProfile) * (1 - 0.6 * V.toFront);
@@ -1955,7 +2391,11 @@ function ladyFace(shut, mouth, glance, V, feel) {
   pen.save();                                       // the rouge stays on the face: the far cheek's lies by its edge, and spilled past it (owner, 2026-10-18)
   if (V.skin) { pen.clip(V.skin); }
   var rouge = 0.2 + 0.22 * feel.full + 0.15 * feel.laugh;
-  if (north) {                                      // full cheeks: the wash a little larger and higher, out with the eyes
+  if (realFace) {                                   // the real face: fainter, and up on the cheekbone
+    rouge = 0.13 + 0.15 * feel.full + 0.1 * feel.laugh;
+    blush(V.cheek + 6 - apart, -258, 17, rouge);
+    if (V.farCheekR > 1) { blush(V.farCheek - 2 + apart, -260, V.farCheekR * 1.1, rouge); }
+  } else if (north) {                               // full cheeks: the wash a little larger and higher, out with the eyes
     blush(V.cheek + 6 - apart, -252, 17, rouge);
     if (V.farCheekR > 1) { blush(V.farCheek - 2 + apart, -254, V.farCheekR * 1.1, rouge); }
   } else {
@@ -1963,9 +2403,10 @@ function ladyFace(shut, mouth, glance, V, feel) {
     if (V.farCheekR > 1) { blush(V.farCheek - 2, -252, V.farCheekR, rouge); }
   }
   pen.restore();
+  if (realFace && !mouth) { realShutMouth(V, true, feel, frown); return; }
   pen.save();                                       // the mouth is drawn about (24, -244), then put where the turn has it,
   if (V.face) { pen.clip(V.face); }                 // (toward profile its middle is on the face's edge, and only the near half of it is on the face)
-  pen.translate(V.mouth, -244);                     // three quarters the size: a small bow, 0.3 of the face across (wider and fuller on a face of the north)
+  pen.translate(V.mouth, -244 - (realFace ? 4 * (1 - side) : 0));   // three quarters the size: a small bow, 0.3 of the face across (wider and fuller on a face of the north); the real face's 4 higher
   pen.scale(V.mouthW * feel.lips * 0.76 * (north ? north.lipsWide : 1) * (1 - 0.18 * feel.worry),
             0.82 * (north ? north.lipsFull : 1) * (1 - 0.25 * feel.worry));   // worry presses it small
   pen.translate(-24, 244);
@@ -2001,8 +2442,8 @@ function ladyFace(shut, mouth, glance, V, feel) {
     pen.fillStyle = "#e8727c";
     pen.fill(tongue);
     pen.restore();
-    pen.strokeStyle = lipOf("#d2283a");
-    pen.lineWidth = 4 + mouth.round * 1.5;
+    pen.strokeStyle = realFace ? blend(realLip(true), "#5a2020", 0.1) : lipOf("#d2283a");   // the real face's lips are the skin's rose
+    pen.lineWidth = (realFace ? 3.2 : 4) + mouth.round * 1.5;
     pen.stroke();
   } else if (feel.smile > 0.5) {                    // a smile: the lips thin, the corners go up
     pen.beginPath();
@@ -2064,18 +2505,38 @@ function manFace(shut, mouth, glance, V, feel) {
   var north = NORTH_FACE, apart = north ? north.apart : 0, small = north ? north.eyeSmall : 1;
   var browDown = north ? north.browLowMan : 0, arch = north ? north.browArch : 1, weight = north ? north.browHeavy : 1;
   var eyeY = -282 + 8 * (1 - small);
-  if (V.nearW > 2) { eye(V.near + 1 - apart, eyeY, V.nearW * 0.93 * feel.eyes, 8.5 * small * wide * feel.eyes, shut, look, -1, 0, slant, feel.laugh > 0.5); }   // long, narrow eyes
-  if (V.nearW > 2) { brow(V.near + 1 - apart + close, -312 - lift + browDown, V.nearW * 0.93, 10 * arch, 2.8 * weight, knit); }
+  // The real face (STYLE.face "real"): his brows down by his eyes, 20 above them (not set high for a head-cloth),
+  // drawn as hairs; soft shade where the form turns. The real eye (STYLE.lids "real") is narrower than the comic
+  // fellow's, as wide as a lady's, and is given the height of its upper lid's arch, 0.46 of its half-width.
+  var realFace = STYLE.face === "real", realEyes = EYE_LIDS && EYE_LIDS.eyes === "real";
+  var nearW = V.nearW * (realEyes ? 0.76 : 0.93) * feel.eyes, farW = V.farW * (realEyes ? 0.79 : 0.96) * feel.eyes;
+  var nearTall = realEyes ? 0.46 * nearW * wide : 8.5 * small * wide * feel.eyes, farTall = realEyes ? 0.46 * farW * wide : 8 * small * wide * feel.eyes;
+  var browY = realFace ? eyeY - 20 - lift : -312 - lift + browDown;
+  if (realFace) { skinBands(V, [[V.near + 1 - apart, eyeY, nearW, 1], [V.far + 1 + apart * 0.7, eyeY - 1, farW, -1]].filter(function (e) { return e[2] > 2; })); }
+  if (V.nearW > 2) { eye(V.near + 1 - apart, eyeY, nearW, nearTall, shut, look, -1, 0, slant, feel.laugh > 0.5); }   // long, narrow eyes
+  if (V.nearW > 2) {
+    if (realFace) { featherBrow(V.near + 1 - apart + close, browY, V.nearW * 0.93, 6 * arch, 2.6 * weight, knit, 1); }
+    else { brow(V.near + 1 - apart + close, browY, V.nearW * 0.93, 10 * arch, 2.8 * weight, knit); }
+  }
   if (V.farW > 2) {                                 // the far eye and its brow: toward profile they go round the edge of the face, and it cuts them
     pen.save();
     if (V.face) { pen.clip(V.face); }
-    eye(V.far + 1 + apart * 0.7, eyeY - 1, V.farW * 0.96 * feel.eyes, 8 * small * wide * feel.eyes, shut, look, 1, 0, slant, feel.laugh > 0.5);
-    brow(V.far + 1 + apart * 0.7 - close, -313 - lift + browDown, V.farW * 0.96, 9 * arch, 2.5 * weight, -knit);
+    eye(V.far + 1 + apart * 0.7, eyeY - 1, farW, farTall, shut, look, 1, 0, slant, feel.laugh > 0.5);
+    if (realFace) { featherBrow(V.far + 1 + apart * 0.7 - close, browY - 1, V.farW * 0.96, 5.5 * arch, 2.4 * weight, -knit, -1); }
+    else { brow(V.far + 1 + apart * 0.7 - close, browY - 1, V.farW * 0.96, 9 * arch, 2.5 * weight, -knit); }
     pen.restore();
   }
-  frownFold(V.nose + (V.tip - V.nose) * 0.1, -313 - lift + browDown, feel, V);
+  frownFold(V.nose + (V.tip - V.nose) * 0.1, browY - 1, feel, V);
   var frown = clamp(feel.sad + 0.6 * feel.anger + 0.45 * feel.worry);  // the corners of a shut mouth go down
-  if (north) { blush(V.cheek - apart, -256, 18, 0.3 + 0.2 * feel.full + 0.12 * feel.laugh); }   // a softer, larger wash on the full cheek
+  if (realFace) {                                   // the real face: faint, up on the cheekbone, both cheeks
+    var rouge = 0.13 + 0.15 * feel.full + 0.1 * feel.laugh;
+    pen.save();
+    if (V.skin) { pen.clip(V.skin); }               // the rouge stays on the face
+    blush(V.cheek + 6 - apart, -258, 17, rouge);
+    if (V.farCheekR > 1) { blush(V.farCheek - 2 + apart, -260, V.farCheekR * 1.1, rouge); }
+    pen.restore();
+  }
+  else if (north) { blush(V.cheek - apart, -256, 18, 0.3 + 0.2 * feel.full + 0.12 * feel.laugh); }   // a softer, larger wash on the full cheek
   else { blush(V.cheek, -254, 16, 0.42 + 0.2 * feel.full + 0.12 * feel.laugh); }
   // A fellow's mouth. Shut, it is a smile: one line that turns up at the
   // corners, and a short line under it for the lower lip. Singing, it opens
@@ -2084,9 +2545,11 @@ function manFace(shut, mouth, glance, V, feel) {
   // put where the turn has it.
   var open = mouth ? 5 + 13 * mouth.open : 0;
   var half = mouth ? 13 + 3 * mouth.wide - 5 * mouth.round : 13;
+  if (realFace && !open) { realShutMouth(V, false, feel, frown); }
+  else {
   pen.save();
   if (V.face) { pen.clip(V.face); }                 // (toward profile its middle is on the face's edge, and only the near half of it is on the face)
-  pen.translate(V.mouth + 1, 0);
+  pen.translate(V.mouth + 1, realFace ? -4 * (1 - V.side) : 0);   // the real face's mouth 4 higher
   pen.scale(V.mouthW * feel.lips * (north ? north.lipsWide : 1) * (1 - 0.18 * feel.worry), 1);   // worry presses it small; a face of the north's is wider
   pen.translate(-25, 0);
   pen.lineCap = "round";
@@ -2109,8 +2572,8 @@ function manFace(shut, mouth, glance, V, feel) {
     pen.fillStyle = "#e8727c";
     pen.fill(tongue);
     pen.restore();
-    pen.strokeStyle = INK;
-    pen.lineWidth = LINE;
+    pen.strokeStyle = realFace ? realLip(false) : INK;   // the real face's lips are the skin's rose
+    pen.lineWidth = realFace ? 2.8 : LINE;
     pen.stroke();
   } else {
     var grin = 4 * feel.smile - 6 * frown;          // a bigger smile: the corners go higher; a frown: down
@@ -2142,10 +2605,12 @@ function manFace(shut, mouth, glance, V, feel) {
   pen.quadraticCurveTo(26, -235 + open * 0.95 + 2 * plump, 34 + 4 * plump, -239 + open * 0.95 - 1.5 * plump);
   pen.stroke();
   pen.restore();
+  }                                                 // (the end of the painted shut mouth and the open one)
   // A fellow's nose is the lady's nose, drawn bigger and broader: a bridge
   // down from between the eyes, a blunt tip, and the wing of one nostril.
   // It is a line on the face, not a ball stuck to it; in profile it fades,
-  // because there the nose is the outline. (A face of the north has its own: northNose.)
+  // because there the nose is the outline. (A face of the north has its own: northNose; the real face, realNose.)
+  if (realFace) { realNose(V, false); return; }
   if (north) { northNose(V, false); return; }
   pen.save();
   pen.globalAlpha = 1 - V.toProfile;
@@ -3828,7 +4293,7 @@ var CAST = {
   // He wears an indigo shirt and trousers; she a white blouse, a red sin, and a flower in her hair
   boy: {bare: true, turban: "#b8294a", sabai: ["#f2ead6", "#9a1f24", "taKongDaeng", "own"], sarong: "#5a3f32", patoi: 0.75,
         shirt: "#3f6a8a", legs: "#34496b", size: 0.8, build: -1, head: 1.06, skin: "#f0c9a2", eyes: 1.3, smile: 1, wonder: 0.3},
-  girl: {bun: true, shirt: "#f4efe2", sin: 2, size: 0.78, build: -1, head: 1.08, flower: "#f28fa8", skin: "#f4d3b4", eyes: 1.4,
+  girl: {bun: true, shirt: "#f4efe2", sin: 2, size: 0.78, build: -1, head: 1.08, flower: "#f28fa8", skin: "#f4d3b4", eyes: 1.4, lid: "crease",
          lips: 0.85, smile: 1, bangles: 2},
   // Four old people, each of a different style: white or grey hair, the lines of age, and a stoop.
   // An elder of the village, with a white beard and a stick; an old farmer under his hat;
@@ -4471,7 +4936,7 @@ var LOOK_KEYS = {};
 
 ["age", "anger", "at", "bangles", "bare", "beads", "beard", "bend", "blink", "body", "build", "bun", "buttons", "cap", "coat", "collar", "dance", "dap", "drum", "earplug", "earrings", "eyes", "face",
  "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
- "handB", "hat", "head", "hidden", "holding", "id", "late", "laugh", "lady", "legs", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "rapt", "reachA", "reachB",
+ "handB", "hat", "head", "hidden", "holding", "id", "late", "laugh", "lady", "legs", "lid", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "rapt", "reachA", "reachB",
  "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt", "sleepy",
  "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tears", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wonder", "worn", "worry", "wrap", "wraps", "wristA", "wristB"
 ].forEach(function (name) { LOOK_KEYS[name] = true; });
@@ -4539,6 +5004,8 @@ var LOOK_KEYS = {};
 //   bangles         how many rings on each wrist (a lady has 3 unless told, anyone else 2, one in a coat none)
 //   skin            this figure's own skin colour ("#rrggbb"); otherwise STYLE.skin
 //   eyes, lips      the face's own measure: how large its eyes and how wide its mouth are (1 is the kit's)
+//   lid             the upper lid of the real eye (STYLE.lids "real"): "crease", "hooded" or "none" (LIDS);
+//                   unless told, a lady's creased, a fellow's and an old person's hooded, a child's none
 //   head            how wide the head is: 0.9 for a lady unless told (a longer oval, lifted on
 //                   a neck), 1 for a fellow or a child (the round head of the cartoon), and for a
 //                   face of the north its shape's own width
@@ -4816,6 +5283,10 @@ function personLook(fig) {
   var folds = STYLE.lids === "folded";
   EYE_LIDS = NORTH_FACE ? (folds && NORTH_FACE.eyes !== "folded" ? Object.assign({}, NORTH_FACE, {eyes: "folded", fold: 0}) : NORTH_FACE)
                         : folds ? FOLDED_EYE : null;
+  if (STYLE.lids === "real") {                    // the real eye, with this person's own lid (LIDS)
+    if (look.lid !== undefined) { checkName("A lid", look.lid, LIDS); }
+    EYE_LIDS = {eyes: "real", lid: LIDS[look.lid] ? look.lid : lidOf(look, lady)};
+  }
   EYE_TEARS = clamp(look.tears || 0);
   if (look.body !== undefined) { checkName("A body", look.body, BODIES); }
   BODY = BODIES[look.body] || BODIES.slim;        // the body (BODIES): its chest, its measures, its cloth                   // a face of the north, or none
@@ -6130,7 +6601,7 @@ function personHead(fig) {
   pen.scale(headWide * small, headTall * small);
   LINE = LINE / small;                              // on a smaller head the pen keeps the weight it has on the body
   pen.translate(0, 286);
-  joints.crown = spot(0, -348);                     // the top of the skull, and the point of the chin
+  joints.crown = spot(0, STYLE.face === "real" ? -348 + REAL_HEAD.down : -348);   // the top of the skull, and the point of the chin
   // The crown as it would be with the hop taken out: in the figure's own frame
   // the hips' dip and the head sunk into the shoulders put back, and none of
   // the lift or the squash. A bubble's box keeps to it, so it does not hop.
@@ -6675,14 +7146,16 @@ function headSkull(h) {
   // face draws the tip of the nose (V.tip), so while that is still inside
   // the face the piece is hidden, and the nose is the first of it to show.
   var piece = V.side > 0 ? profilePiece(V.tip, V.side, drop, lady) : null;
-  var skinInk = inkFor(SKIN);
+  // The real face (STYLE.face "real") is lined as a thangka lines a face, in lac, not ink: a brown of the skin's
+  // own, finer, with no heavier side.
+  var realFace = STYLE.face === "real", skinInk = realFace ? blend(SKIN, "#6b3022", 0.7) : inkFor(SKIN);
   pen.fillStyle = SKIN;
   pen.fill(skull);
   if (piece) { pen.fill(piece); }
   pen.strokeStyle = skinInk;
-  pen.lineWidth = LINE;
+  pen.lineWidth = realFace ? LINE * 0.85 : LINE;
   pen.lineJoin = "round";
-  heavy(skinInk);
+  if (!realFace) { heavy(skinInk); }
   if (piece) {                                                   // one line round the two
     strokeOutside(skull, piece);
     strokeOutside(piece, skull);
@@ -6795,22 +7268,26 @@ function headManHair(h) {
   // places from the turn; the knot leans a little with the sway. (Until
   // this day the kit drew Hallett's Chiang Mai man, the sides and back
   // shaved and a brush at the crown; the record is in the style doc.)
-  var HM = V.hairMan, crownX = (HM[2][0] + HM[5][0]) / 2 + sway * 0.3, knotX = crownX + sway * 0.8, knotY = -386;
-  pen.beginPath();
-  pen.moveTo(HM[0][0], HM[0][1]);
-  pen.bezierCurveTo(HM[1][0], HM[1][1], HM[2][0], HM[2][1], HM[3][0] + sway * 0.3, HM[3][1]);
-  pen.bezierCurveTo(HM[4][0] + sway * 0.3, HM[4][1], HM[5][0], HM[5][1], HM[6][0], HM[6][1]);   // over the top, to the brow
-  pen.quadraticCurveTo(HM[7][0], HM[7][1], HM[8][0], HM[8][1]);                    // the hairline
-  pen.quadraticCurveTo(HM[9][0], HM[9][1], HM[10][0], HM[10][1]);
-  pen.quadraticCurveTo(HM[11][0], HM[11][1], HM[0][0], HM[0][1]);
-  pen.closePath();
+  var HM = V.hairMan, crownX = (HM[2][0] + HM[5][0]) / 2 + sway * 0.3, knotX = crownX + sway * 0.8;
+  var knotY = -386 + (STYLE.face === "real" ? REAL_HEAD.down : 0);   // (the real face's head is less of a dome)
+  var mass = new Path2D();
+  mass.moveTo(HM[0][0], HM[0][1]);
+  mass.bezierCurveTo(HM[1][0], HM[1][1], HM[2][0], HM[2][1], HM[3][0] + sway * 0.3, HM[3][1]);
+  mass.bezierCurveTo(HM[4][0] + sway * 0.3, HM[4][1], HM[5][0], HM[5][1], HM[6][0], HM[6][1]);   // over the top, to the brow
+  mass.quadraticCurveTo(HM[7][0], HM[7][1], HM[8][0], HM[8][1]);                    // the hairline
+  mass.quadraticCurveTo(HM[9][0], HM[9][1], HM[10][0], HM[10][1]);
+  mass.quadraticCurveTo(HM[11][0], HM[11][1], HM[0][0], HM[0][1]);
+  mass.closePath();
   pen.fillStyle = HAIR;
-  pen.fill();
+  pen.fill(mass);
   pen.strokeStyle = HAIR_LINE;
   pen.lineWidth = 3 * FINE;
   pen.lineJoin = "round";
-  pen.stroke();
-  pen.save();
+  pen.stroke(mass);
+  pen.save();                                                  // the comb lines stay in the hair and rise above it to the knot
+  var combedIn = new Path2D(mass);                             // (they ran out onto the brow until 2026-10-29)
+  combedIn.rect(-120, -480, 240, 484 + Math.max(HM[3][1], HM[4][1]));
+  pen.clip(combedIn);
   pen.translate(crownX, 0);
   combed([[-46, -316, -34, -350, -10, -368], [-12, -304, -2, -344, 4, -370], [38, -320, 26, -352, 12, -368]]);   // combed up to the crown
   pen.restore();
