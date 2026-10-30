@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>sabai finish - the woven sabai finished: figures woven in thread, light, borders, a fringed end, the breeze</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="naga.js"></script>
+<script src="dragon.js"></script>
+<script src="beasts.js"></script>
+<script src="khom.js"></script>
+<script src="myth.js"></script>
+<script src="flora.js"></script>
+<script src="pieces.js"></script>
+<script src="band.js"></script>
+<script src="northbirds.js"></script>
+<script src="weaving.js"></script>
+<script src="sabai.js"></script>
+<script src="sabai_finish.js"></script>
+<script>
+// The "sabai finish" sheet: the woven cloth of sabai.js finished (sabai_finish.js), on the kit's lady. From 0 s, the
+// camera on one of its woven figures, pulling back off the cloth until she is seen whole: the figures woven in thread,
+// the light over the cloth, its woven borders, its end with a knotted fringe moving in the breeze, and, as the cloth
+// grows small, broad bands of pattern in place of the small figures. From 9 s, the cloth as it was (sabai.js alone) and
+// the cloth finished, side by side, and the finished cloth on a lady seen from across the yard.
+var DURATION = 15;
+
+var BEAT = 0.5;
+
+function lady(id, size) {                            // sabai: false: the woven cloth is the sabai, the kit draws no band of its own
+  return cast("lady", {size: size, shirt: "#f2ead8", legs: "#2f3f6e", sin: 0, sabai: false, weave: 1, flower: "#f28fa8", pins: true, smile: 1, id: id});
+}
+var NEAR = lady("lady", 1.45), BEFORE = lady("before", 1.3), AFTER = lady("after", 1.3), FAR = lady("far", 0.55);
+
+var FINISHED = {finish: true, cloth: SABAI_FINISH_GROUND, from: 1};   // the twelve rows, finished, flowing from the first second
+var AS_IT_WAS = {from: 1};                                             // the twelve rows of sabai.js alone
+var FINISHED_TOO = {finish: true, cloth: SABAI_FINISH_GROUND, from: 1};
+var FINISHED_FAR = {finish: true, cloth: SABAI_FINISH_GROUND, from: 1};
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "19px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function ground() {
+  var sky = pen.createLinearGradient(0, 0, 0, 900);
+  sky.addColorStop(0, "#8ccfc6");
+  sky.addColorStop(1, "#f4ecd2");
+  pen.fillStyle = sky;
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.fillStyle = "#8fc47a";
+  pen.fillRect(0, 880, WIDE, 200);
+}
+
+function wearing(t, x, y, look, cloth) {             // a lady wearing a cloth: its end behind her shoulder, then her with it across her
+  var where = sabaiOf(t, x, y, look);
+  sabai(t, where, cloth, "back");
+  person(x, y, sabaiWorn(look, t, where, cloth));
+}
+
+function sheetOpening(t) {
+  var where = sabaiOf(t, 720, 1010, NEAR);
+  pen.save();
+  sabaiCamera(t, where, FINISHED, 1, 8);
+  ground();
+  sabai(t, where, FINISHED, "back");
+  person(720, 1010, sabaiWorn(NEAR, t, where, FINISHED));
+  pen.restore();
+}
+
+function panel(n, zoom, draw) {                     // a third of the sheet, the lady standing at its middle seen "zoom" times near, about her chest
+  var w = WIDE / 3, cx = w * (n + 0.5);
+  pen.save();
+  pen.beginPath(); pen.rect(w * n + 4, 0, w - 8, 1080); pen.clip();
+  ground();
+  pen.translate(cx, 540); pen.scale(zoom, zoom); pen.translate(-cx, zoom > 1 ? -760 : -540);
+  draw(cx);
+  pen.restore();
+}
+
+function sheetSide(t) {
+  pen.fillStyle = "#111"; pen.fillRect(0, 0, WIDE, 1080);
+  panel(0, 5, function (x) { wearing(t, x, 1010, BEFORE, AS_IT_WAS); });
+  panel(1, 5, function (x) { wearing(t, x, 1010, AFTER, FINISHED_TOO); });
+  panel(2, 1, function (x) { wearing(t, x, 1010, FAR, FINISHED_FAR); });
+  [["as it was (sabai.js)", 0], ["finished (sabai_finish.js)", 1], ["finished, from across the yard", 2]].forEach(function (c) {
+    pen.fillStyle = "rgba(244, 236, 210, 0.85)"; pen.fillRect(WIDE / 3 * c[1] + 40, 1036, WIDE / 3 - 80, 36);
+    caption(c[0], WIDE / 3 * (c[1] + 0.5), 1062);
+  });
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    if (at < 9) { sheetOpening(at); } else { sheetSide(at); }
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

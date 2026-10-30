@@ -68,6 +68,28 @@ the soldiers and their spears (figures.md).
   dusk and the night sets is farRange() (a far ridge, a limestone peak, a forested range). Still to do: the rice
   fields' mountains (paddySet(), drawn on the paddy backdrop), the middle range (its ridge is where the elephants
   walk and the terraces stand), and the mist between them
+- the first scene with the new sprites (owner, 2026-10-30: "redo the first scene of the hero video with the new
+  sprites"; "The idea for the video is to start focused on a woman and then everything starts moving and then as it
+  pulls back the viewer realizes it's the exact same woman that was started with"): drawn beside the kit, not in the
+  film yet: the woman as the mural maiden wearing the cloth laid on her own body all the way across it, the woven figure
+  the camera opens on the same maiden, the two weavers seated (mural_seated.js). Into the film and its render on the
+  owner's word
+- the woven cloth made better (owner, 2026-10-30: "Write down 4-7 as next steps after 1-3 and then begin on 1-3").
+  First, begun the same day: (1) its figures woven, not painted: each tile laid as floats of the cloth's few thread
+  colours on a grid, the warp showing between them, as a teen jok is woven; (2) light and folds: a shade along its
+  lower edge and a sheen along its upper, darker where it turns over the shoulder with a crease at the fold, a soft
+  shadow on her blouse, its gold catching the light as she sways; (3) a finished end: the tail behind her shoulder a
+  decorated end panel and a knotted fringe that swings. Then (4), (5) and (7), and all of them into the kit on
+  2026-10-31 (owner: "yes to the kit"): `sabai_finish.js`, a cloth with `finish: true` (docs/kit/things.md, "The sabai
+  finished"); (6) is met by (1) for now (every figure woven), unless the owner would rather the mural figure. Still to
+  do: the hero film itself wearing it (`sash_maeng.html` and its render), on the owner's word:
+  - (4) woven borders: in place of the flat gold lines, selvedge borders of small teeth or diamonds in gold thread, as
+    the teen jok's borders are
+  - (5) moving as cloth: the tail lagging her sway, small ripples running down to its end, the same breeze as the tung
+    on its pole, the fringe trailing last
+  - (6) one style: every woven figure drawn as the new sprites are (the mural figure), or all as woven figures (1)
+  - (7) less at a distance: as the camera pulls back, the twelve rows of small figures giving way to broader bands of
+    pattern, as a cloth is seen from across a yard
 
 ## The films' scenery (docs/kit/places.md, "Painting the scenery"; scenery.js)
 

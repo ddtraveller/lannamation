@@ -181,6 +181,37 @@ now calls for a man's sabai ends (it fails the same at HEAD).
 Not done: the tail behind the arm is not in this shape; the old reading of the shoulder's outline is
 gone with it (in git before this day's commits).
 
+## The sabai finished (2026-10-31)
+
+The owner, of the hero film's first scene redrawn with the mural women (2026-10-30): "Give me some ideas for making the
+cloth look better?", then "Write down 4-7 as next steps after 1-3 and then begin on 1-3"; of the first look, "There
+looks like a lighter shade box around the sabai ... make the color scheme a bit different so the woven icons stand out
+against the sash a little better"; then (2026-10-31), of the cloth with 4, 5 and 7 too, "yes to the kit". It is
+`sabai_finish.js` and its sheet `sabai_finish.html`, loaded after `sabai.js` and `weaving.js`. A cloth whose names have
+`finish: true` is drawn so; every other cloth, and every page without the file, as before:
+
+```
+var CLOTH = {rows: SABAI_ROWS, from: 3, finish: true, cloth: SABAI_FINISH_GROUND};
+```
+
+| What | How |
+|---|---|
+| (1) The figures woven, not painted | each frame of a tile (`sabaiTile`) is read again on a grid of floats 72 high and 48 across, a float wider than it is tall as supplementary weft lies, each pick half a float along from the last; each float is the thread of `SABAI_FINISH_THREADS` nearest the colour under it (gold, yellow, cream, white, a light green, pink, sky blue, orange, silver, an indigo for what is dark: the reds that sank into a red ground are left out), where the picture covers 0.42 of it; rounded, lit along its top, shaded along its foot. Woven once, when the cloth's tiles are made |
+| The ground | `SABAI_FINISH_GROUND`, `#46101c`: a deep red near black, so that the threads stand out (the owner's colour note) |
+| (2) Light and folds | a sheen on the upper part of the band, a shade toward its lower edge and over the last of it where it turns over the shoulder, a soft glow of the silk that moves along it (with a mural woman's sway, `WM_TILT`, where there is one), two creases at the turn, the gold edge catching the light; a soft shadow on the blouse below the band. The light is a smooth field with no edge (strokes had laid "a lighter shade box", and patches laid see-through showed their seams): painted on two small sheets in the pen's frame, the shade on white and the light on black, in strips along the cloth each filled across with a gradient, a few of the screen's pixels long however near the camera is, and laid on the cloth whole, multiplied and screened, cut by the band's own edges. The sheets are a pixel to about 24 across the cloth (sheets of the screen's size took 170 ms a cloth), and only the part of the screen the cloth covers is cleared and laid |
+| No facets | the edges and rows in 97 points, not 25, and the heading of the cloth's middle line taken through each point (`sfSmooth`), not segment by segment: up close both showed as small straight steps |
+| (3) A finished end | the end behind the shoulder ("back") gets a woven end panel above its foot (`teenJok`'s rows of Nan, in the cloth's own ground with gold, cream, green and black), a gold line above it, and a knotted fringe of 23 strands, every third gold |
+| (4) Woven borders | in place of the flat gold hem along each long edge, a thin gold selvedge and inside it a row of small diamonds woven in gold thread, each three floats (short, long, short), as a teen jok's borders are |
+| (5) Moving as cloth | the end hanging behind her moves in the tung's breeze (`tung()` of oldcartoon.js), less, a heavier cloth against her: more toward its foot, the foot after the top in time, a faint ripple running down it, the fringe trailing after the foot |
+| (7) Less at a distance | as the cloth grows small on the screen its rows of small figures give way to broad bands, as a cloth is seen from across a yard: gold lozenges down its middle with hearts of green and small cream ones between, fine gold lines and cream stripes. None of it while the cloth is more than 340 of the screen's pixels across, all of it under 230: a short crossfade, as the two together looked muddy |
+
+(6), one style, is met by (1) for now: every figure on the cloth is woven in the same threads. The hero film's first
+scene with the mural woman wearing the finished cloth is drawn beside the kit; it goes into `sash_maeng.html` on the
+owner's word.
+
+**Cost**: weaving the tiles is a few seconds when a page loads; the light about 0.1 s a frame for a cloth near the
+camera.
+
 ## The flowers and fruits of Thailand
 
 The owner (2026-10-13): "Add flowers and fruits local to Thailand to the framework." `flora.js` is a
