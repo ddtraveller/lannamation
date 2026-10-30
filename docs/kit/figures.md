@@ -844,3 +844,57 @@ it": the morning's realism (soft shade bands, a modelled nose, brows of hairs, l
 hairline, the brow ridge) is gone from the kit. Kept from it: the eye's white on both sides and each person's lid, the
 face's measure, a man's jaw, age by the fall. `STYLE.face` and `STYLE.lids` are `"lanna"`; the murals' faces of before
 are still `{lids: "folded", face: "painted"}`, 0 pixels apart. Numbers: STYLE.md, "The Lanna face".
+
+## The mural women (2026-10-30)
+
+The owner gave five Royal Thai Art paintings of women (a celestial with a ribbon, a kinnari with a lotus, a dancer in
+red, a dancer with yellow strands, a maiden in gold), kept outside the repository: "Use each of those as a reference
+for a sprite in the kit but localize it for the project", and of the jewellery, the beads in the hair, the dress and the
+scarf, "I'd like each sprite to have that high a level of quality and uniqueness." Drawn beside the kit first and picked
+round by round: the five; "now on to the unique faces"; "give the gems some transparency and sparkle", "make the gold
+flash in the light as the models move"; "Add more faces and hair styles. There are already models of Lanna hair styles
+in the old kit you can convert"; "Give them poses and outfits and new foot bands"; "All good. Keep them all."; "do it".
+They are `mural_women.js` (over `mural.js`, `mural_luxe.js` and `mural_thangka.js`) and its sheet `mural_women.html`.
+
+**Localized** by the Lanna royal dress notebook: Lanna women wore no tall spired crowns and no bands on the upper arm
+(both central Thai), so the court women have neither; they dressed their own knot with fresh flowers (jasmine, gardenia,
+dok ueang sae), dok mai wai (gold sprays on springs), yong (a spiral pin); dok hu drop earrings and lan hu ear tubes,
+bangles (kamlai), pearls, the cross-body chains of rank (sai sangwan), the link belt and its buckle (pan neng); long
+brass nails to dance. Only the celestial keeps a crown: she is of the murals' heaven. The reference's gold leaf fan is
+dok mai wai; its yellow strands, dok ueang sae; its pearls, jasmine.
+
+| Who (`MURAL_WOMEN`) | Her face | Her hair | What she wears and holds | Her teen jok |
+|---|---|---|---|---|
+| `celestial` | a long oval, a long chin, long eyes lowered with no crease | the wong knot under a crown | a cloud-scrolled blouse, armlets, a dark scarf from the raised hand to the ground | Mueang Long's |
+| `maiden` | round, full cheeks, big eyes looking down and away, a lock before the ear (jon) | the mural's knot, a ring and strands of jasmine, a gardenia | silver, pearls, a lotus bud held to her face | Nan's, gold on indigo |
+| `dancer` | a heart, almond eyes winged, sharp brows, a beauty spot, looking up at her hand | the mural's knot, a gold fan, jasmine strands | brass nails, a pendant, a green and red cloth | Mae Chaem's |
+| `orchid` | rounder and squarer, smiling at whoever watches, a dimple | gold sprays, orchid sprays | nails, chains with drops under the belt, both arms up | Mae Chaem's, on red |
+| `princess` | long and composed, a high brow, level long brows, heavy lids | gold sprays, a gardenia, a spiral pin | the sai sangwan, the pan neng, a jasmine garland | Nan's, silver on black |
+| `grandmother` | lines of age, heavy lids, falling brows, lips stained with betel | the low knot (kao phom), an ivory comb | ear tubes, a silver bowl of flowers with two candles | Mueang Long's, indigo on white |
+| `weaver` | broad, a wide smile and a dimple | the high knot, its comb, a tail | a length of her own weaving held up between her hands | Mueang Long's, on red |
+| `lue` | high cheekbones, long eyes with no crease | the wong knot under the Tai Lue head-cloth | the crossover jacket (suea pat), ear tubes, a Bo Sang parasol over her shoulder | Nan's, Tai Lue colours |
+| `court` | a narrow oval, thin high brows, a small mouth | klao i-pun, its jewelled pin | a lace blouse, pearls, a red lacquer fan | Nan's, on black |
+| `festival` | round and young, big bright eyes looking up | klao wit wong, gold pins, a jasmine loop | a lit paper lantern (khom) on a bamboo stick | Mae Chaem's, silver on black |
+
+**How**: a look with `woman` is drawn by `wmWoman()`, which sets her settings for the time she is drawn and calls
+`mural.js`'s figure; the painters it changes (`muHead`, `muArm`, `muHand`, `muBunGold`, `muEarring`, `muCollar3q`,
+`thGoldWork`, `muBelt`, `muTinJok`, `muGold`, `muBead`, `muJewel`, `sabaiThreads`, `sabaiBackThreads`) act only then,
+and each hands any other person back to the kit's own: with the file loaded, `mural.html` draws as without it (no pixel
+of five frames more than 20 apart, as it is with itself from one run to the next). Her face is `muHead` and `muEye` drawn
+with numbers (`wmHead`, `wmEye`): the outline's cheek, jaw corner and chin; the hairline; the brows' lift, arch, length,
+fall and weight; the eyes' length, tilt, opening, crease, where they look, the iris, the lash's flick and a painted wing;
+the lips' size; a resting look in the kit's feeling numbers. The hairdos are the old kit's (`BUN_STYLES`) moved onto the
+mural head (`WM_KNOTS`); from a knot on the crown, what hangs, hangs down the back. The light on metal: each piece's
+phase is how far it has turned (the canvas's rotation where it is drawn: an earring swinging, the body's sway) and where
+it is, so a flash rolls along a chain; a band of light crosses it and near the peak a star flares. A stone is
+foil-backed: the bright foil under a colour 0.86 opaque, the cut (a table and lines to the girdle), the light out of its
+far side, a twinkle. The sabai: `wmTexture` weaves its end and body once onto a sheet (`weaveGrid`, as `sabaiGrid` gives
+them), and the sheet is laid along the band in slices bent to it. The teen jok: `teenJok` weaves her town's rows in her
+palette once; the sheet is laid round her in upright strips bowed as `muSin` bows its stripes, its floats 0.72 as wide
+(more of the pattern round her), the thin bands that crossed the foot left off (`wmJokSin`). Nothing moves by a spring:
+what sways, sways by the clock, and a still is the frame of the film.
+
+**Tried first**: the faces by scaling the head a few percent (unseen) before the outline was drawn with numbers; the
+parasol drawn over her, floating, before it went behind her head, drawn before her body; the hems at their charts' own
+width (a figure and a half across); the rubies milky until the foil was toned down and the colour made more opaque.
+

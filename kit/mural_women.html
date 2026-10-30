@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>mural women - ten Lanna women of the mural figure, each her own face, hair, dress and jewellery</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920, figure: "mural"};</script>
+<script src="oldcartoon.js"></script>
+<script src="weaving.js"></script>
+<script src="mural.js"></script>
+<script src="mural_luxe.js"></script>
+<script src="mural_thangka.js"></script>
+<script src="mural_women.js"></script>
+<script>
+// The "mural women" sheet: the ten women of mural_women.js (MURAL_WOMEN), drawn by person() as any page draws its
+// people (castWoman). From 0 s the first five, after the owner's reference paintings; from 4 s the five in the old kit's
+// Lanna ways with the hair; from 8 s all ten as portraits; from 12 s their woven hems (teen jok); from 15 s the 23 woven
+// sabai, each painted once and worn; from 18 s two at a time, large. Nothing here moves by a spring: what sways, sways by
+// the clock, so draw() needs no settled().
+var DURATION = 28;
+var BEAT = 0.5;
+
+function caption(text, x, y, size, colour) {
+  pen.fillStyle = colour || "#f6eedc";
+  pen.textAlign = "center";
+  pen.font = (size || 20) + "px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+var FIRST = ["celestial", "maiden", "dancer", "orchid", "princess"], MORE = ["grandmother", "weaver", "lue", "court", "festival"];
+var ALL = FIRST.concat(MORE);
+var HAIRDO = {celestial: "a crown over the wong knot", maiden: "the mural's knot, jasmine", dancer: "the mural's knot, a gold fan",
+              orchid: "the mural's knot, orchids", princess: "the mural's knot, gold sprays", grandmother: "the low knot, an ivory comb",
+              weaver: "the high knot, a silver comb, a tail", lue: "the wong knot under her head-cloth", court: "klao i-pun, Dara Rasami's",
+              festival: "klao wit wong, gold pins"};
+var TOWNS = {maechaem: "Mae Chaem", nan: "Nan", long: "Mueang Long"};
+var THREADS = {maechaem: "on black", maechaemRed: "on red", nan: "silver on black", nanIndigo: "gold on indigo",
+               long: "jackfruit and lac on indigo", lue: "Tai Lue colours on red", khit: "indigo on white"};
+
+function sheetStanding(names) {
+  thGround(0, 0, WIDE, 1080);
+  names.forEach(function (name, n) {
+    var x = WIDE * (n + 0.5) / names.length;
+    pen.fillStyle = "rgba(30, 20, 10, 0.18)"; pen.beginPath(); pen.ellipse(x, 1002, 90, 14, 0, 0, 7); pen.fill();
+    person(x - 10, 1000, castWoman(name, {size: 1.55, id: "s-" + name}));
+    caption(MURAL_WOMEN[name].say, x, 1040, 21);
+    caption(HAIRDO[name], x, 1066, 15, "#d8ccb4");
+  });
+}
+
+// ten cards: each woman drawn at "size" with her feet at "feet" below the card's top, the card's lower line of words
+function sheetCards(size, feet, words) {
+  thGround(0, 0, WIDE, 1080);
+  ALL.forEach(function (name, n) {
+    var col = n % 5, row = Math.floor(n / 5), cw = WIDE / 5, cx = cw * (col + 0.5), top = 14 + row * 533, ch = 520;
+    pen.save();
+    pen.beginPath(); pen.rect(cw * col + 8, top, cw - 16, ch); pen.clip();
+    pen.fillStyle = "rgba(246, 236, 214, 0.16)"; pen.fillRect(cw * col + 8, top, cw - 16, ch);
+    person(cx - 14, top + feet, castWoman(name, {size: size, id: "c-" + name}));
+    pen.fillStyle = "rgba(20, 16, 12, 0.55)"; pen.fillRect(cw * col + 8, top + ch - 56, cw - 16, 56);
+    pen.restore();
+    caption(MURAL_WOMEN[name].say, cx, top + ch - 32, 19);
+    caption(words(name), cx, top + ch - 11, 14, "#d8ccb4");
+  });
+}
+
+function sheetWeaves(t) {
+  thGround(0, 0, WIDE, 1080);
+  var names = Object.keys(SABAI_WEAVES), per = 12;
+  names.forEach(function (name, n) {
+    var row = Math.floor(n / per), col = n % per, x = WIDE * (col + 0.5) / per + (row ? WIDE / per / 2 : 0), y = row ? 1030 : 500;
+    person(x - 6, y, cast("maiden", {shirt: "#f1e6d6", sin: n % 3, sabai: sabaiLook(name), jewels: "gold", size: 0.62, id: "w-" + n,
+                                     woman: {hair: ["jasmine"], earring: "pearl", neck: "pearls", chain: false}}));
+    caption(name, x, y + 26, 15);
+  });
+  caption("the 23 woven sabai, each painted once and worn", WIDE / 2, 36, 24);
+}
+
+function sheetTwo(pair) {
+  thGround(0, 0, WIDE, 1080);
+  pair.forEach(function (name, k) {
+    var x = WIDE * (k + 0.5) / pair.length;
+    person(x - 30, 1900, castWoman(name, {size: 4.2, id: "t-" + name}));
+    caption(MURAL_WOMEN[name].say, x, 1060, 22);
+  });
+}
+
+function draw(t) {
+  clock = t;
+  if (t < 4) { sheetStanding(FIRST); }
+  else if (t < 8) { sheetStanding(MORE); }
+  else if (t < 12) { sheetCards(3.6, 245 + 650 * 2.12, function (name) { return HAIRDO[name]; }); }
+  else if (t < 15) {
+    sheetCards(3.2, 456, function (name) { var j = MURAL_WOMEN[name].woman.jok; return "teen jok of " + TOWNS[j[0]] + ", " + THREADS[j[1]]; });
+  }
+  else if (t < 18) { sheetWeaves(t); }
+  else { var k = Math.min(4, Math.floor((t - 18) / 2)); sheetTwo(ALL.slice(k * 2, k * 2 + 2)); }
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

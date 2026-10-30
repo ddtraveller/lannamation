@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>mural mix - the kit's pieces on people, mixed at random</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; cursor: pointer; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920, figure: "mural"};</script>
+<script src="oldcartoon.js"></script>
+<script src="weaving.js"></script>
+<script src="mural.js"></script>
+<script src="mural_luxe.js"></script>
+<script src="mural_thangka.js"></script>
+<script src="mural_women.js"></script>
+<script>
+// The "mural mix" sheet (owner, 2026-10-30: "Make a web page that shows random different combos of the kit on
+// people"): every four seconds five women, each mixed from the kit's pieces (mural_women.js): a face from the ten's,
+// changed a little; one of the ways with the hair and what is set in it; earrings, a necklace, a belt; a blouse's
+// finish; one of the 23 woven sabai; a sin and a woven teen jok at its foot; what she holds, and the pose that goes
+// with it; her skin, her hair, her lipstick and her metal. The mix comes from a seeded draw (seeded()), not Math.random:
+// the same second always shows the same five, so a still is the frame of the film. A click on the page shows the next
+// five at once (in a window only; a render follows the clock).
+var DURATION = 40, EVERY = 4;
+var BEAT = 0.5;
+var SKIP = 0;                                       // the fives a click has moved on by
+
+function caption(text, x, y, size, colour) {
+  pen.fillStyle = colour || "#f6eedc";
+  pen.textAlign = "center";
+  pen.font = (size || 20) + "px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+// a seeded draw (not "mix": that is the kit's own, which blend() uses): rnd() 0 to 1, pick(list), chance(p), between(a, b), the same for the same seed (mulberry32)
+function seeded(seed) {
+  var s = seed >>> 0;
+  function rnd() {
+    s = (s + 0x6D2B79F5) >>> 0;
+    var t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+  return {rnd: rnd, pick: function (list) { return list[Math.floor(rnd() * list.length)]; },
+          chance: function (p) { return rnd() < p; }, between: function (a, b) { return a + (b - a) * rnd(); }};
+}
+
+var NAMES = Object.keys(MURAL_WOMEN);
+var HAIRDOS = ["mural", "high", "wong", "low", "ipun", "lue"];
+var ORNAMENTS = Object.keys(WM_HAIR);
+// what she holds, and whose pose goes with it (null: her hands free, a pose of the dancers' or none)
+var HOLDS = {lotus: "maiden", garland: "princess", khan: "grandmother", fan: "court", lantern: "festival", parasol: "lue", cloth: "weaver"};
+var FREE = [null, null, "dancer", "orchid"];
+var SHIRTS = ["#f4ecdc", "#f1d3cf", "#d4502e", "#f0c75a", "#f2e2c4", "#34507a", "#2e3448", "#fbf7ef", "#2e2f3e", "#6a3f52", "#3f6a4a", "#8a2a3a"];
+var SKINS = ["#e8bf80", "#eec2a4", "#c98a5e", "#d9a06c", "#e6bd96", "#d4a07a", "#d29a6c", "#dcae84", "#ecc8a4"];
+var HAIRS = ["#17110e", "#1d1410", "#24150e", "#120e14", "#1a1214"];
+var WRAPS = [["#f6f1e6", "#e07a98"], ["#f2b8c6", "#f6f1e6"], ["#b8294a", "#e0b23a"], ["#f6f1e6", "#3f6a4a"]];
+var PARASOLS = [["#c8402e", "#f2c36a"], ["#2f6a8a", "#f6f1e6"], ["#e0b23a", "#c8402e"], ["#3f7a46", "#f2c36a"]];
+var CASTS = ["lady", "maiden", "dancer", "weaver", "sinuan"];
+var SINS_ALL = [0, 1, 2, WM_SIN.braid, WM_SIN.gold, WM_SIN.zigzag];
+
+// one woman, mixed: {look, words}; m: a seeded()
+function mixedWoman(m, id) {
+  var base = WM_FACES[m.pick(NAMES)], face = JSON.parse(JSON.stringify(base));   // her face: one of the ten's, changed a little
+  face.jaw = {cheek: m.between(-2.5, 3), corner: [m.between(-3, 3.5), m.between(-1.5, 2.5)], chin: [m.between(-1, 2.5), m.between(-1.5, 4)], far: m.between(-1, 1.5)};
+  face.brows = Object.assign({}, face.brows, {lift: m.between(-1.5, 2.5), arch: m.between(-1.5, 3), long: m.between(-2, 5), thick: m.between(0.8, 1.3)});
+  face.eyes = Object.assign({}, face.eyes, {gaze: [m.between(-2.4, 1.4), m.between(-1.6, 1.4)], tilt: m.between(-0.02, 0.2), open: m.between(-0.8, 1.2),
+                                            liner: m.chance(0.3) ? m.between(0.4, 1) : 0});
+  face.mu = Object.assign({}, face.mu, {nose: m.pick(["exact", "lanna", "rosy", "between", "thaisoft", "button", "low"]), tara: m.between(0.15, 0.95),
+                                        cheek: m.pick(["swept", "dancer", "soft"])});
+  face.feel = {smile: m.between(0, 0.8), lids: m.chance(0.3) ? m.between(0.1, 0.45) : 0, wonder: m.chance(0.2) ? 0.25 : 0};
+  face.dimple = m.chance(0.25); face.jon = m.chance(0.2); face.mole = m.chance(0.15) ? [m.between(3, 8), m.between(-24, -18)] : undefined;
+  face.hairdo = m.pick(HAIRDOS); face.tail = face.hairdo !== "lue" && face.hairdo !== "wong" && m.chance(0.2);
+  face.wrap = m.pick(WRAPS);
+  var hair = [];
+  if (face.hairdo !== "lue") { var k = Math.floor(m.between(0, 3.4)); while (hair.length < k) { var o = m.pick(ORNAMENTS); if (hair.indexOf(o) < 0) { hair.push(o); } } }
+  var holds = m.chance(0.7) ? m.pick(Object.keys(HOLDS)) : null, poseOf = holds ? HOLDS[holds] : m.pick(FREE);
+  var woman = {face: face, hair: hair, earring: m.pick(["dokhu", "pearl", "tube"]), neck: m.pick([undefined, "pendant", "pearls", "sangwan"]),
+               belt: m.pick([undefined, "panneng", "chains"]), chain: false, nails: !holds && m.chance(0.4),
+               blouse: m.pick(["flowers", "clouds", "plain", "lue", ["dots", "#fbf3ee"], ["lace", "#d8ccb8"]]),
+               jok: [m.pick(["maechaem", "nan", "long"]), m.pick(Object.keys(WEAVE_PALETTES)), m.between(1.3, 1.7)],
+               holds: holds || undefined, cloth: m.pick(Object.keys(SABAI_WEAVES)), parasol: m.pick(PARASOLS),
+               pose: poseOf ? MURAL_WOMEN[poseOf].woman.pose : undefined};
+  var old = m.chance(0.12), sabai = m.pick(Object.keys(SABAI_WEAVES));
+  var look = cast(m.pick(CASTS), {shirt: m.pick(SHIRTS), sin: m.pick(SINS_ALL), sabai: sabaiLook(sabai), jewels: m.pick(["gold", "silver"]),
+                                  bangles: Math.floor(m.between(2, 6)), skin: m.pick(SKINS), hair: old ? "#d8d2c8" : m.pick(HAIRS),
+                                  makeup: old ? "betel" : m.pick(Object.keys(MU_MAKEUP)), age: old ? 0.65 : 0, woman: woman, id: id});
+  var words = [face.hairdo === "mural" ? "the mural's knot" : face.hairdo, sabai, (holds || "hands free")];
+  return {look: look, words: words.join(", "), jok: woman.jok};
+}
+
+var TOWNS = {maechaem: "Mae Chaem", nan: "Nan", long: "Mueang Long"};
+var THREADS = {maechaem: "on black", maechaemRed: "on red", nan: "silver on black", nanIndigo: "gold on indigo",
+               long: "jackfruit and lac on indigo", lue: "Tai Lue colours on red", khit: "indigo on white"};
+
+function sheetMix(slot) {
+  thGround(0, 0, WIDE, 1080);
+  var m = seeded(1000 + slot * 7919);
+  for (var n = 0; n < 5; n++) {
+    var x = WIDE * (n + 0.5) / 5, w = mixedWoman(m, "mix-" + slot + "-" + n);
+    w.look.size = 1.55;
+    pen.fillStyle = "rgba(30, 20, 10, 0.18)"; pen.beginPath(); pen.ellipse(x, 1002, 90, 14, 0, 0, 7); pen.fill();
+    person(x - 10, 1000, w.look);
+    caption(w.words, x, 1040, 17);
+    caption("teen jok of " + TOWNS[w.jok[0]] + ", " + THREADS[w.jok[1]], x, 1064, 14, "#d8ccb4");
+  }
+  caption("the kit's pieces, mixed: five more every " + EVERY + " seconds (click for the next five)", WIDE / 2, 36, 22);
+}
+
+function draw(t) {
+  clock = t;
+  sheetMix(Math.floor(t / EVERY) + SKIP);
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+document.getElementById("stage").addEventListener("click", function () { SKIP += 1; });
+requestAnimationFrame(play);
+</script>
+</body>
+</html>
