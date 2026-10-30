@@ -53,7 +53,9 @@
 //           of it, since the camera is far out before they fill the screen. Left out, every row is full size
 //   follow  which figure of "row" (its place in the row's list) sabaiCamera() holds in the middle until it pulls back:
 //           the film opens on that figure and keeps it as the row moves. Left out, a fixed place on the chest
-var SABAI_KEYS = {wide: true, rows: true, tiles: true, cloth: true, flow: true, from: true, row: true, fine: true, follow: true};
+//   steady  true: the figures walk and the rows flow, but no figure bobs or rocks on the beat (owner, 2026-10-31: "keep
+//           it from rocking or shaking": up close a bobbing figure shook the screen by 20 pixels a frame)
+var SABAI_KEYS = {wide: true, rows: true, tiles: true, cloth: true, flow: true, from: true, row: true, fine: true, follow: true, steady: true};
 
 var SABAI_TILE = 384;                   // a tile's side: large enough for a camera that shows one row close up
 var SABAI_FRAMES = 6;                   // moments of a walk in one tile's cycle
@@ -816,8 +818,8 @@ function sabai(t, where, cloth, part) {
       var count = cycles.length * Math.max(1, Math.round(round / (step * cycles.length))), gap = round / count;
       for (var k = 0; k < count; k++) {
         var first = sabaiAlong(where, cloth, row, k, t);
-        var bob = dancing ? hop(t, row * 0.1 + k * 0.05) * size * 0.16 : 0;
-        var rock = dancing ? Math.sin(t * 2 * Math.PI / BEAT / 2 + row + k) * 0.14 : 0;
+        var bob = dancing && !cloth.steady ? hop(t, row * 0.1 + k * 0.05) * size * 0.16 : 0;   // steady: the figures neither bob
+        var rock = dancing && !cloth.steady ? Math.sin(t * 2 * Math.PI / BEAT / 2 + row + k) * 0.14 : 0;   // nor rock on the beat
         var cycle = cycles[((k % cycles.length) + cycles.length) % cycles.length];
         var frame = dancing ? (((Math.floor(t * 7.5) + k * 2) % cycle.length) + cycle.length) % cycle.length : 0;   // six frames in 0.8 s: a walking pace (k may be negative)
         for (var copy = -1; copy <= 1; copy++) {

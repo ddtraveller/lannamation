@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>mural sabai - the woven sabai worn by the mural women, steady, the women standing still</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="naga.js"></script>
+<script src="dragon.js"></script>
+<script src="beasts.js"></script>
+<script src="khom.js"></script>
+<script src="myth.js"></script>
+<script src="flora.js"></script>
+<script src="pieces.js"></script>
+<script src="band.js"></script>
+<script src="northbirds.js"></script>
+<script src="weaving.js"></script>
+<script src="mural.js"></script>
+<script src="mural_luxe.js"></script>
+<script src="mural_thangka.js"></script>
+<script src="mural_women.js"></script>
+<script src="sabai.js"></script>
+<script src="sabai_finish.js"></script>
+<script src="mural_sabai.js"></script>
+<script>
+// The "mural sabai" sheet: the woven sabai (sabai.js, finished by sabai_finish.js) worn by women of the mural figure
+// (mural_sabai.js). From 0 s, the camera on a woven figure of the maiden's cloth, pulling back until she is seen whole:
+// the cloth steady (its figures walk and its rows flow, but none bobs or rocks) and she standing still (no sway). From
+// 9 s, the maiden, the princess and the lady of the court, each in the cloth. The cloth's own figures are drawn by the
+// kit's figure, as they are woven (the page leaves STYLE.figure alone and draws the women with muralPerson()).
+var DURATION = 15;
+
+var BEAT = 0.5;
+
+function wearer(name, size, x) {                     // a mural woman ready for the cloth: her own band off, still, her near arm over it
+  var look = castWoman(name, {size: size, sabai: false, id: "sabai-" + name});
+  look.woman = Object.assign({}, MURAL_WOMEN[name].woman, {sway: false, holds: undefined, pose: SABAI_MURAL_ARMS});
+  return {look: look, x: x, cloth: {finish: true, steady: true, cloth: SABAI_FINISH_GROUND, from: 1}};
+}
+var MAIDEN = wearer("maiden", 1.45, 720);
+var THREE = [wearer("maiden", 1.1, 300), wearer("princess", 1.1, 720), wearer("court", 1.1, 1140)];
+
+function ground() {
+  var sky = pen.createLinearGradient(0, 0, 0, 900);
+  sky.addColorStop(0, "#8ccfc6");
+  sky.addColorStop(1, "#f4ecd2");
+  pen.fillStyle = sky;
+  pen.fillRect(0, 0, WIDE, 1080);
+  pen.fillStyle = "#8fc47a";
+  pen.fillRect(0, 880, WIDE, 200);
+}
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "19px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function wearing(t, w, where) {                      // the cloth's back, then her wearing its front
+  sabai(t, where, w.cloth, "back");
+  muralPerson(w.x, 1010, sabaiWorn(w.look, t, where, w.cloth), {head: 59 * w.look.size});
+}
+
+function sheetOpening(t) {
+  var where = sabaiOfMural(t, MAIDEN.x, 1010, MAIDEN.look);
+  pen.save();
+  sabaiCamera(t, where, MAIDEN.cloth, 1, 8);
+  ground();
+  wearing(t, MAIDEN, where);
+  pen.restore();
+}
+
+function sheetThree(t) {
+  ground();
+  THREE.forEach(function (w) { wearing(t, w, sabaiOfMural(t, w.x, 1010, w.look)); });
+  caption("the maiden", 300, 1062);
+  caption("the princess", 720, 1062);
+  caption("the lady of the court", 1140, 1062);
+}
+
+function draw(t) {
+  settled(t, function (at) {                         // so that a still shows what hangs as the moving sheet has it
+    clock = at;
+    if (at < 9) { sheetOpening(at); } else { sheetThree(at); }
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

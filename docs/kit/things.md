@@ -212,6 +212,31 @@ owner's word.
 **Cost**: weaving the tiles is a few seconds when a page loads; the light about 0.1 s a frame for a cloth near the
 camera.
 
+## The sabai on a mural woman (2026-10-31)
+
+The owner: "Can you put the sabai on one of the new model sprites and keep it from rocking or shaking?", then "Use one
+of the new models and stop the sway if possible". It is `mural_sabai.js` and its sheet `mural_sabai.html` (the maiden,
+then the maiden, the princess and the lady of the court), loaded after `sabai.js` and `mural_women.js`:
+
+```
+var look = castWoman("maiden", {size: 1.45, sabai: false, id: "maiden"});        // her own painted band left off
+look.woman = Object.assign({}, MURAL_WOMEN.maiden.woman, {sway: false, holds: undefined, pose: SABAI_MURAL_ARMS});
+var cloth = {finish: true, steady: true, cloth: SABAI_FINISH_GROUND, from: 1};
+var where = sabaiOfMural(t, 720, 1010, look);
+sabai(t, where, cloth, "back");
+muralPerson(720, 1010, sabaiWorn(look, t, where, cloth), {head: 59 * look.size});  // or person() with STYLE.figure "mural"
+```
+
+| What | How |
+|---|---|
+| Where the cloth lies | `sabaiOfMural(t, x, y, look)`: sabai.js's `sabaiOf()` on her own body instead of the kit figure's joints, read in her units as mural.js draws a lady (59 * size / 100 pixels; the upper body sheared by `muUpper(-0.028, 0.07, -430)`): from the right of her neck's foot across her to the left of her body at the lower ribs (owner, 2026-10-30: "the sabai should extend all the way across the sprites body", and the gold edge "all the way to the left side of the woman's body"), bowed to her front, its lower end slanted and tucked in at the waist, its back hanging behind the shoulder past the hip. The middle line is a quadratic in 97 points, its heading the curve's tangent |
+| Worn | `sabaiWorn()`'s `worn`, which the mural figure did not call: a woman with it has the cloth's front drawn as her belt is about to be, after her body and before an arm drawn late and the belt (after her, if she has no belt). `SABAI_MURAL_ARMS` hangs her near arm (late) over the cloth's lower end |
+| No shaking | a cloth's `steady: true` (sabai.js): its figures walk and its rows flow, but none bobs or rocks on the beat. Up close, in the camera's opening, one figure fills the screen, and its bob on the beat shook the picture by up to 20 pixels a frame, its rock tipped it 8 degrees either way |
+| No rocking | a woman's `sway: false` (mural_women.js): she does not sway about her feet, so the cloth, laid on her as she stands, never slides on her. Her gold still catches the light in time with the sway she would have |
+
+The hero film's first scene, redrawn in scratch with the mural maiden, wears it so; it goes into `sash_maeng.html` on
+the owner's word.
+
 ## The flowers and fruits of Thailand
 
 The owner (2026-10-13): "Add flowers and fruits local to Thailand to the framework." `flora.js` is a

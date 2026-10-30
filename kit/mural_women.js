@@ -24,6 +24,8 @@
 //   earring  "dokhu", "pearl" or "tube"; neck: "pendant", "pearls", "sangwan"; belt: "panneng", "chains"
 //   nails    true: gold nails; armlet: true to keep the armlets; chain: false to leave off the long chain
 //   hands    "normal": an ordinary hand (wmHandNormal), not the mural's dancer's
+//   sway     false: she stands still, not swaying about her feet (the woven sabai of sabai_finish.js lies on her so); her
+//            gold still catches the light in time with the sway she would have
 //   blouse   its finish: "flowers" (mural_thangka.js's), "clouds", "plain", "lue" (the Tai Lue jacket), ["dots", colour],
 //            ["lace", colour]
 //   scarf    [outside, lining, curve, width]: a long cloth from the far hand to the near hand and on (curve(farW, nearW)
@@ -1012,10 +1014,10 @@ function wmWoman(x, y, look, wm, opts) {
   var px = (opts && opts.head || 70) / 100;
   if (wm.jok && look.sin !== undefined) { look = Object.assign({}, look, {sin: wmJokSin(look.sin)}); }
   WM = wm; WM_W = {}; WM_LATE = null;
-  // her sway: slow, about her feet, in her own time; the gold follows it (WM_TILT)
+  // her sway: slow, about her feet, in her own time; the gold follows it (WM_TILT), also when she stands still (sway false)
   var own = ownTime(look.id || "w");
   WM_TILT = 0.006 * Math.sin(2 * Math.PI * (clock + own) / 4.6) + 0.002 * Math.sin(2 * Math.PI * (clock + own) / 1.9);
-  pen.save(); pen.translate(x, y); pen.rotate(WM_TILT); pen.translate(-x, -y);
+  pen.save(); pen.translate(x, y); pen.rotate(wm.sway === false ? 0 : WM_TILT); pen.translate(-x, -y);
   if (wm.holds === "parasol" && wm.pose && wm.pose.near) {
     pen.save(); pen.translate(x, y); pen.scale(px, px); muUpper(WM_A, WM_B, WM_Y0);
     wmParasol(wm.pose.near.w, wm.parasol || ["#c8402e", "#f2c36a"]); pen.restore();
@@ -1162,7 +1164,7 @@ function castWoman(name, more) {
 
 // ---------- the look's "woman" ----------
 var WOMAN_KEYS = {face: true, pose: true, hair: true, crown: true, earring: true, neck: true, belt: true, nails: true, armlet: true,
-                  chain: true, blouse: true, scarf: true, holds: true, cloth: true, parasol: true, jok: true, hands: true};
+                  chain: true, blouse: true, scarf: true, holds: true, cloth: true, parasol: true, jok: true, hands: true, sway: true};
 var WM_FACE_KEYS = {mu: true, jaw: true, forehead: true, brows: true, eyes: true, mouth: true, feel: true, jon: true, dimple: true,
                     mole: true, hairdo: true, tail: true, wrap: true};
 MURAL_LOOK_KEYS.woman = true;
