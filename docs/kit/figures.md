@@ -945,3 +945,26 @@ feet, above it scaled about the waist and set on the shorter legs, the head larg
 waist and no seam shows. The trousers: `mural.js` draws each leg as its foot and then its tube; after the tube, a wide
 trouser leg to the calf. With the file loaded, `mural.html` draws as without it (five frames: no pixel more than 6 apart).
 
+## The mural figure seated (2026-10-30)
+
+The owner, of the hero film's first scene redrawn with the mural women (the woman, the cloth's woven figure the camera
+opens on, and the yard's two weavers): "yes" to seated mural figures for the weavers, then "go ahead and put them in".
+They are `mural_seated.js` and its sheet `mural_seated.html`. The mural figure stood always; the kit's own figure sits
+by `floor` (true or "side": a woman folds both legs to one side, phap phiap; "cross"; "astride"), and the loom and the
+spinning wheel of `weaving.js` seat their weavers so (the loom "astride" its bench, the wheel's spinner on the floor),
+their hands given by `reachA` and `reachB`.
+
+**How**: `muralSeated()` draws the mural figure's own upper body, clipped at the waist (`SIT_WAIST`, 52 of her units
+above the seat) and set down onto what she sits on, and below it a seated shape of her sin (`sitLower`): on a bench the
+thighs forward to the knee, the shins down to the feet on the floor 190 units below (a seat at the height of the knee,
+as the loom's bench is); on the floor the thighs forward along the floor, the lower legs folded back and a foot showing
+behind her. The sin is her own: its colour, its fine stripes along the legs, its broad bands round the thighs, its foot
+band along the hem. Her hands go to `reachB` (near) and `reachA` (far): each point is turned back through the lady's
+upper frame (`muUpper(-0.028, 0.07, -430)`) into the wrist of a pose of `mural_women.js` (`sitWrist`), and with her hands
+given she holds nothing else. The look is drawn once seated: its `floor` and reaches are taken off for the figure drawn
+standing above the waist. A woman's settings (`woman`, a name or her own) come with her. A man with `floor` stands as
+before; a page without the file draws everyone standing, as before.
+
+**Not yet**: a seated man; her legs drawn as limbs (they are one shape of cloth); the woven teen jok on a seated sin;
+hands that move with the beater and the wheel.
+

@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>mural seated - the mural figure's women seated, on a bench and on the floor, at the loom and the wheel</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920, figure: "mural"};</script>
+<script src="oldcartoon.js"></script>
+<script src="weaving.js"></script>
+<script src="mural.js"></script>
+<script src="mural_luxe.js"></script>
+<script src="mural_thangka.js"></script>
+<script src="mural_women.js"></script>
+<script src="mural_men.js"></script>
+<script src="mural_seated.js"></script>
+<script>
+// The "mural seated" sheet: women of the mural figure seated (mural_seated.js), drawn by person() with the look's
+// "floor" as the kit's own figure is. From 0 s, four women on a bench ("astride") and on the floor (true: the legs
+// folded to one side); from 4 s, the frame loom and the spinning wheel of weaving.js drawn with the mural figure, so
+// their weavers sit at them with their hands where the loom and the wheel put them; from 8 s, the same, large. Nothing
+// here moves by a spring, so draw() needs no settled().
+var DURATION = 12;
+var BEAT = 0.5;
+
+function caption(text, x, y, size, colour) {
+  pen.fillStyle = colour || "#f6eedc";
+  pen.textAlign = "center";
+  pen.font = (size || 20) + "px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+// a plain bench of bamboo, its seat "high" above the ground at (x, y), "wide" long
+function bench(x, y, high, wide) {
+  weaveBeam(pen, x - wide / 2 + 10, y, x - wide / 2 + 10, y - high + 4, 8);
+  weaveBeam(pen, x + wide / 2 - 10, y, x + wide / 2 - 10, y - high + 4, 8);
+  weaveBeam(pen, x - wide / 2, y - high, x + wide / 2, y - high, 11);
+}
+
+var SEATED = [
+  {say: "the weaver on a bench", name: "weaver", floor: "astride"},
+  {say: "the grandmother on the floor", name: "grandmother", floor: true},
+  {say: "the lady of the court on a bench", name: "court", floor: "astride"},
+  {say: "the girl at the festival on the floor", name: "festival", floor: true}
+];
+
+function sheetSeated() {
+  thGround(0, 0, WIDE, 1080);
+  SEATED.forEach(function (s, n) {
+    var x = WIDE * (n + 0.5) / SEATED.length - 60, size = 1.45, high = 190 * 0.59 * size;
+    if (s.floor === "astride") { bench(x, 960, high, 170 * size); }
+    person(x, s.floor === "astride" ? 960 - high : 960, castWoman(s.name, {floor: s.floor, size: size, id: "s-" + s.name}));
+    caption(s.say, x + 60, 1030, 20);
+  });
+}
+
+function sheetWork(t, size, base, places) {
+  thGround(0, 0, WIDE, 1080);
+  spinningWheel(pen, places[0], base, size, t, {id: "wheel", weaver: Object.assign({}, MURAL_WOMEN.grandmother.look, {woman: "grandmother"})});
+  frameLoom(pen, places[1], base, size, t, {id: "loom", weaver: Object.assign({}, MURAL_WOMEN.weaver.look, {woman: "weaver"}), cloth: "maechaem"});
+  caption("at the spinning wheel, on the floor", places[0] + 60 * size, base + 50, 22);
+  caption("at the frame loom, on its bench", places[1] + 140 * size, base + 50, 22);
+}
+
+function draw(t) {
+  clock = t;
+  if (t < 4) { sheetSeated(); }
+  else if (t < 8) { sheetWork(t, 1, 900, [300, 1100]); }
+  else { sheetWork(t, 2, 1000, [180, 1000]); }
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>
