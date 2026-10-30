@@ -906,3 +906,42 @@ have it; the dancers, the celestial, the maiden, the princess and the lady of th
 parasol drawn over her, floating, before it went behind her head, drawn before her body; the hems at their charts' own
 width (a figure and a half across); the rubies milky until the foil was toned down and the colour made more opaque.
 
+## The mural men and children (2026-10-30)
+
+The owner: "start on men and children updates to the kit", then of the first round, "Change the hands to be like normal
+hands", "Keep all the characters though", and "do it". They are `mural_men.js` (over `mural_women.js`) and its sheet
+`mural_men.html`. Before them the mural figure's men shared one face and one body with the arms hanging, and its
+children were grown people drawn small.
+
+**Sources.** A NotebookLM notebook, "Lanna men and children: dress, hair, tattoo, ornaments and play", made by a deep web
+search and then asked with only its strongest sources chosen (shop pages and stock photographs left out): Thai Style
+Studio 1984 on Lanna's era apparel; the Nation on the rites of passage; The Bamboo Rooms on the Lanna leg tattoo; the
+Chiang Mai tour blog on the mo hom and tieo sado; FolkCostume&Embroidery's overview of the Tai peoples' costumes; Chiang
+Mai a la carte on the Tai Lue of Chiang Mai; Naresuan University's cultural office on the topknot, the plait and the
+tonsure in Thailand; the Thai Wikipedia on the tonsure (kon juk); Wikipedia on the mo hom, Thai traditional clothing
+and Poy Sang Long; and a Poy Sang Long photo essay. What they say, as drawn:
+
+| | The sources | In the code |
+|---|---|---|
+| A Tai Yuan man | the pha toi of plain cotton or the ta kong check, gathered at the waist and tucked like a jong kraben; the chest bare, a cloth over the shoulders in the cold; the white cotton hadook shirt before the indigo mo hom ("short-sleeved and round-necked with no collar or lapel, usually dark blue or black"); the pha khao ma check as belt, scarf and head-cloth; the tattoo from the waist to below the knee, animals in square or rounded frames; ear cylinders (lan) | the kit's own record of the north (above, "The dress of the north, by the record") for the bare man; `trousers` for the tieo sado; the elder's white shirt; the bag |
+| A Tai Lue man | "a short jacket, that is usually blue, indigo or black", "blue or black bell-bottomed trousers", "the red, white or pink turban", a pha chet over the shoulder for the temple | the Tai Lue man: indigo jacket, wide trousers, `hairdo: "lue"`, the lue weave over his shoulder |
+| A child's hair | the topknot (juk) on the crown with the rest of the head shaven, the crown spared (the soft fontanelle); the stray hairs round it plucked; pinned with silver, gold or ivory by those who could; also the plait (pia), the side tufts (kae) and the top lock (ko), for boys and girls | `juk` (and `pin`), `kae`, `pia`; the head a shade of hair, one shape with the face and no line between |
+| The tonsure (kon juk) | girls at about 11, boys at 13 to 15, at an odd age; a crown of holy thread, then white clothes, the knot in three tufts, a ring of grass over it | not drawn yet |
+| Poy Sang Long | Shan boys of 7 to 14 are ordained novices; before, "dressed like princes", made up, in tall headdresses with flowers, carried on relatives' shoulders | the prince: `hairdo: "poy"`, `makeup`; his carrying not drawn yet |
+| A girl over the chest | the sources say nothing | the kit's girl's blouse made a child's (no bust): a choice, not a record |
+
+**The ten** (`MURAL_MEN`, `MURAL_CHILDREN`): `farmer` (the knot under a red head-cloth with fringed ends, the ta kong
+hitched, the leg tattoo, a carrying pole with a basket before and one behind him, drawn before his body), `drummer` (bare,
+tattooed, the long drum on its strap), `swordsman` (a sword in each hand, the blade on along the forearm, a thin
+moustache), `townsman` (the mo hom, the tieo sado, a short standing cut, the bag), `elder` (the white hadook shirt, his
+white knot and moustache, a stick, his bag), `lue`; `boy` (the juk pinned in silver), `tufts` (kae), `plait` (pia, a lotus),
+`prince` (Poy Sang Long). A child is drawn at the cast's measure of a child to a man (`mural_men.html`: a boy 0.8 to 1.3).
+
+**How**: `man` and `child` are given to `mural_women.js` as its settings (`mnSettings`), so a man has a woman's face numbers,
+poses, holds, light and hands; `wmHead` draws a man's head (`mnHead`: `muHead` as it draws a man, jaw 4, the brows 2.4 wide
+and lower, the lash's flick 0.58) or a child's hair on any child; poses use the man's shoulders' slant and arm bones
+(`MN_MAN`). A child's measure (`mnChild`): the figure drawn twice through clips, below the waist line squashed about the
+feet, above it scaled about the waist and set on the shorter legs, the head larger about the chin; the two meet at the
+waist and no seam shows. The trousers: `mural.js` draws each leg as its foot and then its tube; after the tube, a wide
+trouser leg to the calf. With the file loaded, `mural.html` draws as without it (five frames: no pixel more than 6 apart).
+
