@@ -23,6 +23,7 @@
 //   crown    true: a celestial's crown
 //   earring  "dokhu", "pearl" or "tube"; neck: "pendant", "pearls", "sangwan"; belt: "panneng", "chains"
 //   nails    true: gold nails; armlet: true to keep the armlets; chain: false to leave off the long chain
+//   hands    "normal": an ordinary hand (wmHandNormal), not the mural's dancer's
 //   blouse   its finish: "flowers" (mural_thangka.js's), "clouds", "plain", "lue" (the Tai Lue jacket), ["dots", colour],
 //            ["lace", colour]
 //   scarf    [outside, lining, curve, width]: a long cloth from the far hand to the near hand and on (curve(farW, nearW)
@@ -149,9 +150,46 @@ muArm = function (S, E, W, wide, sleeve, skin, look, outward, bend, lady) {
 muHand = function (x, y, angle, back, bend, skin, lady) {
   var p = WM_ARM;
   if (p && p.wrist) { angle += p.wrist * back; }
-  WM_KIT.muHand(x, y, angle, back, bend, skin, lady);
+  if (WM && WM.hands === "normal") { wmHandNormal(x, y, angle, back, bend, skin, lady); }
+  else { WM_KIT.muHand(x, y, angle, back, bend, skin, lady); }
   if (WM && WM.nails) { wmNails(x, y, angle, back, bend); }
 };
+// ---------- ordinary hands ----------
+// The owner (2026-10-30, of the men and children): "Change the hands to be like normal hands", then of the women who do
+// not dance, "Yes, normal". mural.js draws every hand as a Thai dancer holds hers: fingers 36 to 48 long on a palm of
+// 35, slender, sweeping back from the knuckles. wm.hands "normal": fingers 0.62 as long (a little shorter than the palm,
+// as a real hand's are), thicker, the palm broader; each finger an arc turning toward the palm and the thumb, a little
+// at rest and round in a grip (bend 0 to 1: at rest to a fist). Drawn in mural.js's way: one shape in one line, a fine
+// line between the fingers, the thumb over the palm. Arguments as muHand's.
+function wmHandNormal(x, y, angle, back, bend, skin, lady) {
+  pen.save();
+  pen.translate(x, y);
+  pen.rotate(angle - Math.PI / 2);
+  pen.scale(back, 1);
+  var parts = [], gaps = new MPath(), turn = 0.3 + 2.45 * Math.pow(Math.max(0, Math.min(1, bend)), 1.6), wide = lady ? 0.9 : 1;   // bend 0 to 1: at rest to a fist
+  [[22, 1.1, 2.2, 28.5], [27, 1.04, 0.9, 30], [29, 1, 0, 30.5], [26, 0.96, -1.2, 30]].forEach(function (f, i) {   // little, ring, middle, first
+    // each finger an arc turning toward the palm and the thumb (-x): a little at rest, round in a grip
+    var th = Math.max(0.05, turn * f[1]), root = [f[2] * wide, f[3]], L = f[0] * (lady ? 0.94 : 1), R = L / th;
+    function on(u) { var a = th * u; return [root[0] - R * (1 - Math.cos(a)) + i * 0.3 * u, root[1] + R * Math.sin(a)]; }
+    var at = muBent(root, on(0.5), on(1));
+    parts.push(muTube(at, function (t) { return (3.7 - 0.9 * t) * wide; }));
+    if (i > 0) { var g0 = at(0.4), g1 = at(0.95); gaps.M(g0[0] + 1.9, g0[1]).Q(at(0.7)[0] + 2.4, at(0.7)[1], g1[0] + 1.6, g1[1]); }
+  });
+  parts.push(new MPath().M(6 * wide, -4).C(8 * wide, 8, 8.4 * wide, 20, 6.6 * wide, 31).C(3.6, 35.5, -5, 35.5, -7.4 * wide, 31)
+    .C(-12 * wide, 22, -11.4 * wide, 8, -7 * wide, -4).Z());
+  var cl = Math.min(1, turn / 2.75);                // the thumb comes round over the fingers as they close
+  parts.push(muTube(muBent([-6.5 * wide, 6], [-12.5 * wide, 14 + 3 * cl], [-11.5 * wide + 7 * cl, 22 + 5 * cl]), function (t) { return (3.3 - 0.9 * t) * wide; }));
+  var ink = muInk(muColour(skin));
+  parts.forEach(function (part) { mBrush(part, ink, 1.1); });
+  parts.forEach(function (part) { mFill(part, skin, 1.5); });
+  mBrush(new MPath().poly(parts[parts.length - 1].subs[0].pts.slice(0, 30), false), ink, 0.9);
+  mLine(gaps, ink, 0.7);
+  mLine(new MPath().M(-6, 14).Q(-2, 21, -4, 28), muShade(muColour(skin)), 0.7);
+  var knuckles = new MPath();                       // the knuckles' small creases
+  [[-1, 31], [1, 31.5], [2.6, 30]].forEach(function (k) { knuckles.M(k[0] - 1.2, k[1] - 1).Q(k[0], k[1] + 0.6, k[0] + 1.2, k[1] - 1); });
+  mLine(knuckles, muShade(muColour(skin)), 0.5);
+  pen.restore();
+}
 // the long curved brass nails of the fingernail dance (leb fon), on the four fingers, as muHand lays them
 function wmNails(x, y, angle, back, bend) {
   pen.save();
@@ -1095,15 +1133,15 @@ var MURAL_WOMEN = {
                      belt: "panneng", chain: false, holds: "garland", pose: {near: {w: [6, -472], elbow: [-0.6, 1], wrist: 0.5, fingers: 0.5, late: true}}}},
   grandmother: {cast: "grandmother", say: "a grandmother",
                 look: {shirt: "#f3efe6", sin: 2, sabai: sabaiLook("maeChaemPat"), jewels: "silver", bangles: 2, skin: "#d4a07a", hair: "#d8d2c8", makeup: "betel", age: 0.7},
-                woman: {face: WM_FACES.grandmother, jok: ["long", "khit", 1.3], blouse: "plain", hair: [], earring: "tube", chain: false, holds: "khan",
+                woman: {face: WM_FACES.grandmother, hands: "normal", jok: ["long", "khit", 1.3], blouse: "plain", hair: [], earring: "tube", chain: false, holds: "khan",
                         pose: {near: {w: [34, -468], elbow: [-0.4, 1], wrist: -1, fingers: 0.3, late: true}}}},
   weaver: {cast: "weaver", say: "a weaver",
            look: {shirt: "#34507a", sin: 1, sabai: sabaiLook("khit"), jewels: "silver", bangles: 2, skin: "#d29a6c", hair: "#1d1410", makeup: "coral"},
-           woman: {face: WM_FACES.weaver, jok: ["long", "maechaemRed", 1.7], blouse: "plain", hair: ["flower"], earring: "dokhu", chain: false, holds: "cloth", cloth: "dokLoi",
+           woman: {face: WM_FACES.weaver, hands: "normal", jok: ["long", "maechaemRed", 1.7], blouse: "plain", hair: ["flower"], earring: "dokhu", chain: false, holds: "cloth", cloth: "dokLoi",
                    pose: {near: {w: [-30, -540], elbow: [-1, 0.6], wrist: -0.2, fingers: 1, late: true}, far: {w: [120, -560], elbow: [1, 0.6], wrist: 0.9, fingers: 1}}}},
   lue: {cast: "maiden", say: "a Tai Lue woman",
         look: {shirt: "#2e3448", sin: WM_SIN.zigzag, sabai: sabaiLook("lueKhit"), jewels: "silver", bangles: 3, skin: "#dcae84", hair: "#1a1214", makeup: "red"},
-        woman: {face: WM_FACES.lue, jok: ["nan", "lue", 1.6], blouse: "lue", hair: [], earring: "tube", neck: "pendant", chain: false, holds: "parasol", parasol: ["#c8402e", "#f2c36a"],
+        woman: {face: WM_FACES.lue, hands: "normal", jok: ["nan", "lue", 1.6], blouse: "lue", hair: [], earring: "tube", neck: "pendant", chain: false, holds: "parasol", parasol: ["#c8402e", "#f2c36a"],
                 pose: {near: {w: [-20, -600], elbow: [-0.3, 1], wrist: -0.6, fingers: 1, late: true}}}},
   court: {cast: "lady", say: "a lady of the court, 1914",
           look: {shirt: "#fbf7ef", sin: WM_SIN.gold, sabai: sabaiLook("yuanChet"), jewels: "gold", bangles: 3, skin: "#ecc8a4", hair: "#141014", makeup: "rose"},
@@ -1111,7 +1149,7 @@ var MURAL_WOMEN = {
                   holds: "fan", pose: {near: {w: [20, -520], elbow: [-0.5, 1], wrist: 0.2, fingers: 0.6, late: true}}}},
   festival: {cast: "sinuan", say: "a girl at the festival",
              look: {shirt: "#2e2f3e", sin: 2, sabai: sabaiLook("taSaeng"), jewels: "gold", bangles: 4, skin: "#dcae84", hair: "#1d1410", makeup: "rose"},
-             woman: {face: WM_FACES.festival, jok: ["maechaem", "nan", 1.6], blouse: "flowers", hair: ["pins", "flower", "loop"], earring: "dokhu", neck: "pendant", chain: false,
+             woman: {face: WM_FACES.festival, hands: "normal", jok: ["maechaem", "nan", 1.6], blouse: "flowers", hair: ["pins", "flower", "loop"], earring: "dokhu", neck: "pendant", chain: false,
                      holds: "lantern", pose: {near: {w: [50, -470], elbow: [-0.3, 1], wrist: -0.2, fingers: 1, late: true}}}}
 };
 // The look of one of MURAL_WOMEN, as cast() gives the cast's: name, and more to change or add to it.
@@ -1124,7 +1162,7 @@ function castWoman(name, more) {
 
 // ---------- the look's "woman" ----------
 var WOMAN_KEYS = {face: true, pose: true, hair: true, crown: true, earring: true, neck: true, belt: true, nails: true, armlet: true,
-                  chain: true, blouse: true, scarf: true, holds: true, cloth: true, parasol: true, jok: true};
+                  chain: true, blouse: true, scarf: true, holds: true, cloth: true, parasol: true, jok: true, hands: true};
 var WM_FACE_KEYS = {mu: true, jaw: true, forehead: true, brows: true, eyes: true, mouth: true, feel: true, jon: true, dimple: true,
                     mole: true, hairdo: true, tail: true, wrap: true};
 MURAL_LOOK_KEYS.woman = true;

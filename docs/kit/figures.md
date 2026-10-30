@@ -894,6 +894,14 @@ palette once; the sheet is laid round her in upright strips bowed as `muSin` bow
 (more of the pattern round her), the thin bands that crossed the foot left off (`wmJokSin`). Nothing moves by a spring:
 what sways, sways by the clock, and a still is the frame of the film.
 
+**Ordinary hands** (owner, of the men and children: "Change the hands to be like normal hands", then of the women who
+do not dance, "Yes, normal"): `hands: "normal"` draws `wmHandNormal()` in place of `mural.js`'s dancer's hand (fingers 36
+to 48 long on a palm of 35, sweeping back): fingers 0.62 as long, thicker, the palm broader, each finger an arc turning
+toward the palm and the thumb, `0.3 + 2.45 · bend^1.6` radians, so a hand at rest curls a little and a grip (bend 1)
+closes into a fist round what it holds. The grandmother, the weaver, the Tai Lue woman and the girl at the festival
+have it; the dancers, the celestial, the maiden, the princess and the lady of the court keep the dancer's hand; on
+`mural_mix.html` every woman not in a dancer's pose or wearing the brass nails has it.
+
 **Tried first**: the faces by scaling the head a few percent (unseen) before the outline was drawn with numbers; the
 parasol drawn over her, floating, before it went behind her head, drawn before her body; the hems at their charts' own
 width (a figure and a half across); the rubies milky until the foil was toned down and the colour made more opaque.
