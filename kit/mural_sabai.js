@@ -3,13 +3,14 @@
 // (2026-10-31): "Can you put the sabai on one of the new model sprites and keep it from rocking or shaking?", then "Use
 // one of the new models and stop the sway if possible". Notes: docs/kit/things.md, "The sabai on a mural woman".
 //
-// As for the kit's figure: the cloth's back before her, then her wearing its front. Her own band is left off
-// (sabai: false); she stands still (woman: sway false), so the cloth lies on her as she is; SABAI_MURAL_ARMS lays her
-// near arm hanging over the cloth's lower end. A steady cloth's figures do not bob or rock.
+// She wears the cloth whole (sabaiWorn()): its back hanging from her shoulder over her far arm (owner, 2026-10-31:
+// "Have the woman's left arm be below the sabai"), her body, then its front. Her own band is left off (sabai: false);
+// she stands still (woman: sway false), so the cloth lies on her as she is; SABAI_MURAL_ARMS lays her near arm hanging
+// over the cloth's lower end. A steady cloth's figures do not bob or rock.
 // e.g. var look = castWoman("maiden", {sabai: false, id: "maiden"});
 //      look.woman = Object.assign({}, MURAL_WOMEN.maiden.woman, {sway: false, holds: undefined, pose: SABAI_MURAL_ARMS});
 //      var where = sabaiOfMural(t, 720, 1010, look), cloth = {finish: true, steady: true, cloth: SABAI_FINISH_GROUND};
-//      sabai(t, where, cloth, "back"); person(720, 1010, sabaiWorn(look, t, where, cloth));
+//      person(720, 1010, sabaiWorn(look, t, where, cloth));
 
 // Her near arm hanging at her side, drawn after the cloth's front so it lies over its lower end; the far arm as hers.
 var SABAI_MURAL_ARMS = {near: {w: [-48, -374], elbow: [-1, 0.1], late: true}};
@@ -89,16 +90,48 @@ var MS_TORSO = "M -13.13 -586 C -30 -582 -50 -578 -60 -562 C -68 -548 -66 -520 -
 // belt (with the late arm, mural_women.js draws it there) waits until the cloth is on. The chains of rank (neck
 // "sangwan") are worn over the cloth: below the choker they are drawn again after it. For one with neither, after her.
 // It is cut along her torso's line (MS_TORSO).
-var MURAL_SABAI_KIT = {muralPerson: muralPerson, muBelt: muBelt, muCollar3q: muCollar3q}, MS_WORN = null;
+// The cloth's back (worn.back) is drawn after her far arm, which mural.js draws first of her: it hangs over that arm,
+// under all the rest of her. An arm drawn late (in a wai) is drawn over her, but not over the back: it comes out from
+// under the cloth (as the kit's own figure's upper arm stays under it in a wai, owner 2026-10-16).
+var MURAL_SABAI_KIT = {muralPerson: muralPerson, muBelt: muBelt, muCollar3q: muCollar3q, muArm: muArm}, MS_WORN = null;
 muralPerson = function (x, y, look, opts) {
   if (!look.worn || !look.woman) { return MURAL_SABAI_KIT.muralPerson(x, y, look, opts); }
   var keep = MS_WORN;
-  MS_WORN = {worn: look.worn, frame: pen.getTransform(), x: x, y: y, px: (opts.head || 70) / 100, done: false, belt: null};
+  MS_WORN = {worn: look.worn, frame: pen.getTransform(), x: x, y: y, px: (opts.head || 70) / 100, done: false, belt: null, back: !look.worn.back};
   try {
     MURAL_SABAI_KIT.muralPerson(x, y, look, opts);
+    msBack();
     msWear();
     msBelt();
   } finally { MS_WORN = keep; }
+};
+function msBack() {                                  // the cloth's back, once
+  var wear = MS_WORN;
+  if (wear.back) { return; }
+  wear.back = true;
+  pen.save();
+  try { wear.worn.back(); } finally { pen.restore(); }
+}
+function msOffBack() {                               // a clip: all but the cloth's back (in the frame the cloth was laid in)
+  var T = MS_WORN.worn.where.tail, p = new Path2D();
+  if (!T) { return; }
+  pen.setTransform(MS_WORN.worn.frame);
+  p.rect(-20000, -20000, 40000, 40000);
+  p.moveTo(T.inner[0], T.inner[1]);
+  T.outer.concat(T.hem).forEach(function (q) { p.lineTo(q[0], q[1]); });
+  p.closePath();
+  pen.clip(p, "evenodd");
+}
+muArm = function (S, E, W, wide, sleeve, skin, look, outward, bend, lady) {
+  var wear = MS_WORN;
+  if (!wear || wear.back || outward <= 0) { return MURAL_SABAI_KIT.muArm(S, E, W, wide, sleeve, skin, look, outward, bend, lady); }
+  var late = WM_LATE ? WM_LATE.length : 0;
+  MURAL_SABAI_KIT.muArm(S, E, W, wide, sleeve, skin, look, outward, bend, lady);   // her far arm, now or late
+  if (WM_LATE && WM_LATE.length > late) {            // late: over her, still under the back
+    var go = WM_LATE[late];
+    WM_LATE[late] = function () { pen.save(); try { msOffBack(); go(); } finally { pen.restore(); } };
+  }
+  msBack();
 };
 function msWear() {                                  // the cloth's front, once
   var wear = MS_WORN;
