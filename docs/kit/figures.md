@@ -968,3 +968,41 @@ before; a page without the file draws everyone standing, as before.
 **Not yet**: a seated man; her legs drawn as limbs (they are one shape of cloth); the woven teen jok on a seated sin;
 hands that move with the beater and the wheel.
 
+## The twenty painted people on person() (2026-11-01)
+
+The owner: "Some new sprites were created. I want them moved to the old model system and to get rid of the new system";
+then, of a first try that only moved their dress onto the cartoon body, "you're looking at the wrong stuff to pull in":
+what is to come across is the figure itself, its faces, hair and hands, and the system that generates such women;
+and of how, "Paint on the rig". They are `people.js` and its sheet `people.html`. The separate figure's files are
+still loaded for their painters; they are to go into the one module when the old way of calling them goes.
+
+| `cast()` name | Who | | `cast()` name | Who |
+|---|---|---|---|---|
+| `heavenly` | a celestial of the murals | | `polefarmer` | a farmer with his baskets |
+| `lotusmaiden` | a maiden with a lotus bud | | `longdrummer` | a long-drum player |
+| `naildancer` | a fingernail dancer | | `swordsman` | the sword dance (fon dap) |
+| `orchiddancer` | a dancer with orchids | | `townsman` | a man of the town |
+| `princess` | a princess of the north | | `whiteelder` | an elder |
+| `khangran` | a grandmother | | `lueman` | a Tai Lue man |
+| `clothweaver` | a weaver | | `jukboy` | a boy, his topknot pinned in silver |
+| `luewoman` | a Tai Lue woman | | `kaegirl` | a girl, her side tufts (kae) |
+| `courtlady` | a lady of the court, 1914 | | `piagirl` | a girl, her plait (pia) |
+| `festivalgirl` | a girl at the festival | | `poyprince` | a Poy Sang Long boy, dressed as a prince |
+
+New names, because the films' own cast already has a `celestial`, `dancer`, `maiden`, `weaver`, `grandmother`, `drummer`,
+`farmer`, `elder` and `boy`, and those must draw as they did. `castMix(seed, more)` is the generator: the same seed, the
+same woman; a face from the ten's changed a little, hair and what is set in it, jewels, blouse, woven sabai and teen jok,
+what she holds and the pose that goes with it.
+
+**How**: `person()` sends a look with `woman`, `man` or `child` to `peoplePainted()`, and any other look to its own figure,
+so both can share a scene. `handA`, `handB`, `reachA` and `reachB` go through the rig on a sheet nobody sees, and the
+painted arm takes that place, no further than the arm is long (the rig's arm A is the painted figure's "far" arm, the
+shoulder in front). `step`, `stride` (so `stroll()`), `wai`, `floor` and `at` are the figure's own; `face: -1` mirrors it. It
+returns joints as `person()` does, where the painted figure has them. A man's legs walk too (`muManLegs()`).
+
+**Measured**: drawn standing, `person()` against the mural figure: at most 4 pixels past 24 of 255 on any of the twenty (the
+gold's flash). `checks/frame_time.py people.html`: 1818 ms a frame on this laptop's headless Chrome, about 100 ms a woman, so
+a scene of ten is about a second a frame to render. The old figure takes 3 to 17 ms a whole frame.
+
+**Not yet**: turn, twist, the hop and a lean (`bend`) are not read: always three-quarter. A seated man stands (as before), and
+a seated woman returns only `stand` among her joints. The speed above.

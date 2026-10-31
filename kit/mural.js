@@ -1090,6 +1090,18 @@ function muLower(A) { pen.transform(1, 0, A, 1, 0, 0); }
 function muUpper(A, B, Y0) { pen.transform(1, 0, B, 1, (A - B) * Y0, 0); }
 
 var NECK_DROP = [2, 16];                              // where the chin sits below "chin": a lady's, a man's (was -4, 8)
+// A man's two legs now, each [hip x, y, knee x, y, ankle x, y]: standing, or in the walk of mural_women.js (wmWalk): each foot goes
+// 40 before and behind him, lifted as it comes through, the knee ahead of it. Returns the list.
+// e.g. muManLegs()[0][4];   // 36 at rest
+function muManLegs() {
+  var legs = [[24, -376, 30, -198, 36, -36], [-26, -380, -24, -200, -16, -34]], walk = typeof wmWalk === "function" ? wmWalk() : null;
+  if (walk === null) { return legs; }
+  return legs.map(function (L, n) {
+    var at = walk + (n ? Math.PI : 0), out = Math.sin(at), lift = Math.max(0, Math.cos(at));
+    return [L[0] + 4 * out, L[1], L[2] + 18 * out + 12 * lift, L[3] - 10 * lift, L[4] + 40 * out, L[5] - 26 * lift];
+  });
+}
+
 function muralPerson(x, y, look, opts) {
   var lady = look.lady !== undefined ? !!look.lady : !!look.bun;
   MU_PX = (opts.head || 70) / 100;
@@ -1184,7 +1196,7 @@ function muralPerson(x, y, look, opts) {
   } else {
     var legsOut = look.patoi ? -262 : -60, legW = [24, 15, 8.5];
     pen.save(); muLower(A);
-    [[24, -376, 30, -198, 36, -36], [-26, -380, -24, -200, -16, -34]].forEach(function (L) {
+    muManLegs().forEach(function (L) {
       var leg = muTube(muBent([L[0], L[1]], [L[2], L[3]], [L[4], L[5]]), muLimbWide(legW, [1.5, 5]));
       muFoot(L[4] - 10, -2, 62, skin);
       mFill(leg, skin, 8);

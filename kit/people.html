@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>people - the twenty painted people on person(), and new women from the generator</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script src="weaving.js"></script>
+<script src="mural.js"></script>
+<script src="mural_luxe.js"></script>
+<script src="mural_thangka.js"></script>
+<script src="mural_women.js"></script>
+<script src="mural_men.js"></script>
+<script src="mural_seated.js"></script>
+<script src="people.js"></script>
+<script>
+// The "people" sheet: the twenty of people.js by their names in cast(), drawn by person(). From 0 s the ten women; from 8 s the
+// six men; from 12 s the four children; from 16 s all twenty walking in place; from 28 s new women from the generator, five every four seconds (castMix).
+var DURATION = 48;
+var BEAT = 0.5;
+var WOMEN = ["heavenly", "lotusmaiden", "naildancer", "orchiddancer", "princess", "khangran", "clothweaver", "luewoman", "courtlady", "festivalgirl"];
+var MEN = ["polefarmer", "longdrummer", "swordsman", "townsman", "whiteelder", "lueman"];
+var CHILDREN = ["jukboy", "kaegirl", "piagirl", "poyprince"];
+var ALL = WOMEN.concat(MEN, CHILDREN);
+
+function caption(text, x, y) {
+  pen.fillStyle = "#f6eedc";
+  pen.textAlign = "center";
+  pen.font = "21px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function row(names, size) {
+  names.forEach(function (name, n) {
+    var x = WIDE * (n + 0.5) / names.length;
+    person(x, 1000, cast(name, {size: size, id: "r-" + name}));
+    caption(name, x, 1040);
+  });
+}
+
+// everyone walking in place, two rows, the second row facing left
+function parade(t) {
+  ALL.forEach(function (name, n) {
+    var far = n >= 10, x = WIDE * ((far ? n - 10 : n) + 0.5) / 10;
+    person(x, far ? 1040 : 520, cast(name, {size: 1.05, id: "w-" + name, step: t * 0.8, stride: 1, face: far ? -1 : 1}));
+  });
+}
+
+function draw(t) {
+  clock = t;
+  thGround(0, 0, WIDE, 1080);
+  if (t < 4) { row(WOMEN.slice(0, 5), 1.55); }
+  else if (t < 8) { row(WOMEN.slice(5), 1.55); }
+  else if (t < 12) { row(MEN, 1.45); }
+  else if (t < 16) { row(CHILDREN, 1.2); }
+  else if (t < 28) {
+    parade(t);
+  } else {
+    var slot = Math.floor((t - 28) / 4);
+    for (var n = 0; n < 5; n++) {
+      var x = WIDE * (n + 0.5) / 5;
+      person(x, 1000, castMix(1000 + slot * 7 + n, {size: 1.55, id: "m-" + slot + "-" + n}));
+      caption("castMix(" + (1000 + slot * 7 + n) + ")", x, 1040);
+    }
+  }
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

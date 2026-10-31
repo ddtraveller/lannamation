@@ -29,6 +29,11 @@
 //   alive    true, or 0 to 1: she is never quite still: in her own time her head drifts and tips a very little about
 //            her chin, and she blinks now and then (owner, 2026-10-31: "animate the face and body so it looks like she
 //            is moving ever so slightly"); a breath of the whole body is the scene's to give, with what she wears
+//   front    0 to 1: how far her face has turned from the mural's three-quarter to straight on, looking at whoever
+//            watches; her body stays as it is (owner, 2026-10-31: "have her turn to face the camera straight on before
+//            she winks"); change it over the frames for the turn
+//   swish    true, or 0 to 1: her sin sways ever so gently about her waist, in her own time, her feet still (owner,
+//            2026-10-31: "Can you have her dress sway ever so gently?")
 //   wink     0 to 1: how far her near eye is shut, the other open (1: shut as a laughing eye is, bowed); change it over
 //            the frames for a wink (owner, 2026-10-31: "she smiles and winks before giving a wai"; her smile is the
 //            look's own smile, 0 to 1, as for any of the kit's faces)
@@ -41,7 +46,9 @@
 //   jok      [town, palette, taller]: her sin's foot a woven teen jok (weaving.js teenJok: "maechaem", "nan" or "long";
 //            one of WEAVE_PALETTES), "taller" times the sin's own foot band
 // Her woven sabai is painted once and laid along the band (not thread by thread); she sways slowly about her feet,
-// and her gold and her stones catch the light as she does.
+// and her gold and her stones catch the light as she does. Standing, she walks with the kit's own look.step (a stride a 1, as
+// person() takes it): her feet step under her sin, its foot swinging with them, her arms swinging the other way (owner,
+// 2026-10-31: "animate the main icon of the woman so it looks like she is walking like the other icons").
 
 var WM = null, WM_W = {};                           // the woman being drawn, and where her wrists went
 var WM_A = -0.028, WM_B = 0.07, WM_Y0 = -430, WM_CHIN = -600;   // mural.js's lady: her shear and her chin
@@ -49,7 +56,8 @@ var WM_UPPER = 95, WM_FORE = 86;                    // the lady's arm bones, mea
 
 var WM_KIT = {muralPerson: muralPerson, muArm: muArm, muHand: muHand, muBunGold: muBunGold, muEarring: muEarring,
               muCollar3q: muCollar3q, muArmlet: muArmlet, muBelt: muBelt, thLongChain: thLongChain, thGoldWork: thGoldWork,
-              muGold: muGold, muBead: muBead, muJewel: muJewel, sabaiThreads: sabaiThreads, sabaiBackThreads: sabaiBackThreads};
+              muGold: muGold, muBead: muBead, muJewel: muJewel, sabaiThreads: sabaiThreads, sabaiBackThreads: sabaiBackThreads,
+              muSin: muSin, muFoot: muFoot};
 
 // ---------- the woven sabai, painted once (not thread by thread) ----------
 // The owner: "Make sure the version of the sabai isn't the animate every thread version." A weave is woven once on a
@@ -166,8 +174,13 @@ function wmWaiArm(S, E, W, p, side, lady, e) {       // her arm's pose on the wa
 var WM_ARM = null, WM_LATE = null, WM_OWN = 0;   // WM_OWN: her own time's offset, while she is drawn                   // WM_LATE: the arms drawn late, in turn (over the sabai, under the belt)
 muArm = function (S, E, W, wide, sleeve, skin, look, outward, bend, lady) {
   var side = outward > 0 ? "far" : "near", p = WM && WM.pose && WM.pose[side];
-  var wai = WM ? wmWaiOf(look) : 0;
+  var wai = WM ? wmWaiOf(look) : 0, walk = WM ? wmWalk() : null;
   if (wai > 0) { p = wmWaiArm(S, E, W, p, side, lady, wai); }
+  else if (walk !== null) {                         // walking: the near arm forward as the far foot is, the far arm back
+    var swing = 30 * Math.sin(walk + (side === "near" ? 0 : Math.PI)), from = p ? p.w : W;
+    p = Object.assign({}, p || {}, {w: [from[0] + swing, from[1] - Math.abs(swing) * 0.3],
+                                    elbow: p && p.elbow || [E[0] - (S[0] + W[0]) / 2, E[1] - (S[1] + W[1]) / 2]});
+  }
   if (!p) { WM_W[side] = W; return WM_KIT.muArm(S, E, W, wide, sleeve, skin, look, outward, bend, lady); }
   var w = p.w, e = wmElbow(S, w, p.elbow);
   WM_W[side] = w;
@@ -186,10 +199,49 @@ muHand = function (x, y, angle, back, bend, skin, lady) {
   var p = WM_ARM;
   if (p && p.wrist) { angle += p.wrist * back; }
   if (p && p.aim !== undefined) { var turn = p.aim - angle; angle += Math.atan2(Math.sin(turn), Math.cos(turn)) * p.aimBy; }   // a wai's hand: fingers up
-  if (WM && WM.hands === "normal") { wmHandNormal(x, y, angle, back, bend, skin, lady); }
+  if (p && p.aim !== undefined && p.aimBy >= 0.5) { wmHandWai(x, y, angle, skin, lady, WM && WM.hands === "normal" ? 1 : 1.45); }
+  else if (WM && WM.hands === "normal") { wmHandNormal(x, y, angle, back, bend, skin, lady); }
   else { WM_KIT.muHand(x, y, angle, back, bend, skin, lady); }
-  if (WM && WM.nails) { wmNails(x, y, angle, back, bend); }
+  if (WM && WM.nails && !(p && p.aim !== undefined && p.aimBy >= 0.5)) { wmNails(x, y, angle, back, bend); }
 };
+// ---------- the hands of a wai ----------
+// The owner (2026-10-31, of her wai): "The woman puts the backs of her hands together. Review the hand, finger model the
+// old kit uses and see if you can implement something like that to bring the palms together." The old kit's hand in
+// the round (hand() in oldcartoon.js) stands upright in a wai, the four fingers straight and together (WAI), each
+// thumb lying along them on the chest's side, the near hand turned to show its back a little from the side (palm 0.25),
+// the far hand behind it, palm to palm, its fingers showing past the near ones. muHand draws a hand from the thumb's
+// edge, mirrored on the far arm, so pressed together the two fanned apart, back to back. From halfway into a wai (where
+// the old kit's fingers go to WAI), both hands are drawn the old kit's way: from the back, a little turned, the fingers
+// side by side and straight, the thumb on the chest's side; the far hand a little forward of the near one (WM_WAI).
+// Arguments as muHand's, less back and bend; long: the fingers' length (1 a normal hand's, more a dancer's).
+var WM_WAI_FINGERS = [[-6.3, 25], [-2.1, 28], [2.1, 26], [6.1, 21]];   // first, middle, ring, little: across the back, and long
+function wmHandWai(x, y, angle, skin, lady, long) {
+  pen.save();
+  pen.translate(x, y);
+  pen.rotate(angle - Math.PI / 2);
+  pen.scale(-0.8, 1);                               // the thumb toward her chest (as the near hand's is); seen a little from the side
+  var wide = lady ? 0.92 : 1, ink = muInk(muColour(skin)), parts = [], gaps = new MPath(), knuckles = new MPath(), tips = [];
+  parts.push(muTube(muBent([-7.5 * wide, 5], [-11.5 * wide, 16], [-9.8 * wide, 27]), function (t) { return (3.3 - 0.9 * t) * wide; }));   // the thumb, along the first finger
+  parts.push(new MPath().M(-7 * wide, -4).C(-10 * wide, 8, -10.5 * wide, 20, -8.8 * wide, 31).L(8.4 * wide, 31)
+    .C(9.6 * wide, 20, 8.6 * wide, 8, 6.4 * wide, -4).Z());   // the back of the hand
+  WM_WAI_FINGERS.forEach(function (f, i) {
+    var L = f[1] * long * (lady ? 0.94 : 1), root = [f[0] * wide, 28], tip = [f[0] * wide * 0.8, 28 + L];   // together, a little closer at the tips
+    parts.push(muTube(muBent(root, [mix(root[0], tip[0], 0.5) + 0.3, 28 + L * 0.5], tip), function (t) { return (2.45 - 0.45 * t) * wide; }));
+    tips.push(tip);
+    knuckles.M(root[0] - 1.3 * wide, 31.5).Q(root[0], 33.3, root[0] + 1.3 * wide, 31.5);
+  });
+  for (var i = 0; i < 3; i++) {                     // the fine line between two fingers, to the shorter one's tip
+    var a = WM_WAI_FINGERS[i], b = WM_WAI_FINGERS[i + 1], top = 28 + Math.min(a[1], b[1]) * long * (lady ? 0.94 : 1) - 2.5;
+    gaps.M((a[0] + b[0]) / 2 * wide, 34).L((a[0] + b[0]) / 2 * wide * 0.8, top);
+  }
+  parts.forEach(function (part) { mBrush(part, ink, 1.1); });
+  parts.forEach(function (part) { mFill(part, skin, 1.5); });
+  mLine(gaps, ink, 0.7);
+  mLine(knuckles, muShade(muColour(skin)), 0.5);
+  mLine(new MPath().M(-7.6 * wide, 8).Q(-8.6 * wide, 18, -7.4 * wide, 27), muShade(muColour(skin)), 0.7);   // where the thumb lies along the hand
+  if (WM && WM.nails) { tips.forEach(function (tip, k) { wmNail(tip, 0, 1, k); }); }
+  pen.restore();
+}
 // ---------- ordinary hands ----------
 // The owner (2026-10-30, of the men and children): "Change the hands to be like normal hands", then of the women who do
 // not dance, "Yes, normal". mural.js draws every hand as a Thai dancer holds hers: fingers 36 to 48 long on a palm of
@@ -233,15 +285,18 @@ function wmNails(x, y, angle, back, bend) {
   [[36, 1.08, 1.6, 28.5], [45, 1.04, 0.8, 30], [48, 1, 0, 30.5], [44, 0.96, -1, 30]].forEach(function (f, i) {
     var b = bend * f[1], L = f[0], tip = [f[2] + L * Math.sin(b) * 0.8 + i * 0.3, f[3] + L * Math.cos(b * 0.8)];
     var mid = [f[2] + L * Math.sin(b * 0.25) * 0.3, f[3] + L * 0.52], dx = tip[0] - mid[0], dy = tip[1] - mid[1], l = Math.hypot(dx, dy) || 1;
-    dx /= l; dy /= l;
-    var long = 30 + i * 2, curl = -9 - 3 * i;       // each nail runs on from the tip and curls back, as brass does
-    var end = [tip[0] + dx * long - dy * curl, tip[1] + dy * long + dx * curl];
-    var c1 = [tip[0] + dx * long * 0.55, tip[1] + dy * long * 0.55];
-    var nail = new MPath().M(tip[0] - dy * 2.4, tip[1] + dx * 2.4).Q(c1[0] - dy * 1.4, c1[1] + dx * 1.4, end[0], end[1])
-      .Q(c1[0] + dy * 1.2, c1[1] - dx * 1.2, tip[0] + dy * 2.4, tip[1] - dx * 2.4).Z();
-    muInGold(function () { muGold(nail); });
+    wmNail(tip, dx / l, dy / l, i);
   });
   pen.restore();
+}
+// one brass nail of finger i, from its tip on the way (dx, dy) the finger points
+function wmNail(tip, dx, dy, i) {
+  var long = 30 + i * 2, curl = -9 - 3 * i;         // each nail runs on from the tip and curls back, as brass does
+  var end = [tip[0] + dx * long - dy * curl, tip[1] + dy * long + dx * curl];
+  var c1 = [tip[0] + dx * long * 0.55, tip[1] + dy * long * 0.55];
+  var nail = new MPath().M(tip[0] - dy * 2.4, tip[1] + dx * 2.4).Q(c1[0] - dy * 1.4, c1[1] + dx * 1.4, end[0], end[1])
+    .Q(c1[0] + dy * 1.2, c1[1] - dx * 1.2, tip[0] + dy * 2.4, tip[1] - dx * 2.4).Z();
+  muInGold(function () { muGold(nail); });
 }
 
 // ---------- the long cloth over the arms ----------
@@ -703,13 +758,84 @@ muLipsPainted = function (lady, skin, at, paint, f) {
   pen.restore();
 };
 
+// ---------- her face turned to us ----------
+// front (her settings, 0 to 1): her face turns from the mural's three-quarter, to the right, to straight on, looking at
+// whoever watches (owner, 2026-10-31: "As the camera pulls out have her turn to face the camera straight on before she
+// winks"; the head and face only, her body as it was). Her face's outline and hair go over to an oval about the middle
+// line WM_FRONT_X (over her neck), her eyes to the same length either side of it, the iris to the middle of the eye;
+// her nose and mouth to that line, her brows and her cheeks' colour with her eyes, her far ear and its earring (and her
+// lock, jon) come out from behind her cheek. Her own jaw's numbers (wm.face.jaw) go with her into the oval.
+var WM_FRONT_X = 0;
+function wmFront() {
+  var v = WM && WM.front ? (WM.front === true ? 1 : clamp(WM.front)) : 0;
+  return v * v * (3 - 2 * v);
+}
+// a closed path of one piece in three-quarter (pts) on the way to straight on (front(p, i): where point i goes), e of the way
+function wmToward(pts, front, e) {
+  return new MPath().poly(pts.map(function (p, i) { var q = front(p, i); return [mix(p[0], q[0], e), mix(p[1], q[1], e)]; }), true);
+}
+// the face's outline straight on: the point of the three-quarter outline (about its own middle) at the same turn on an oval,
+// narrowing below to the chin
+function wmFaceFront(p) {
+  var a = Math.atan2((p[1] + 46) / 49, (p[0] - 2) / 35), c = Math.cos(a), s = Math.sin(a);
+  return s < 0 ? [WM_FRONT_X + 31 * c, -47 + 50 * s] : [WM_FRONT_X + 31 * c * (1 - 0.36 * s * s), -47 + 49 * s];
+}
+// the hair's mass straight on: over the crown and down both sides to the ears
+function wmHairFront(p) {
+  var a = Math.atan2((p[1] + 58) / 46, (p[0] + 8) / 45), c = Math.cos(a), s = Math.sin(a);
+  return s < 0 ? [WM_FRONT_X + 35 * c, -57 + 49 * s] : [WM_FRONT_X + 35 * c * (1 - 0.15 * s), -57 + 24 * s];
+}
+// the hair over the brow straight on, point for point as the three-quarter edge is drawn (45 points: its line over the
+// brow from the near temple, its outer edge back over the crown, and the short way down and back at the near temple)
+function wmEdgeFront(fh) {
+  var x = WM_FRONT_X, out = [[x - 29, -62]], k;
+  for (k = 1; k <= 14; k++) { var a = Math.PI * (1 + k / 14); out.push([x + 29 * Math.cos(a), -62 + (24 + fh) * Math.sin(a)]); }
+  for (k = 1; k <= 14; k++) { var b = -Math.PI * k / 14; out.push([x + 35 * Math.cos(b), -56 + 50 * Math.sin(b)]); }
+  out.push([x - 34, -58], [x - 31, -60]);
+  for (k = 1; k <= 14; k++) { out.push([x - 31 + 2 * k / 14, -60 - 2 * k / 14]); }
+  return out;
+}
+// the colour of her cheeks straight on: the near cheek's, either side
+function wmCheeksFront(lady, paint, f) {
+  var lift = f ? Math.max(f.smile || 0, f.laugh || 0, 0.8 * (f.full || 0)) : 0, x = WM_FRONT_X;
+  [-1, 1].forEach(function (side) {
+    muGlow(x + side * 31, -58, 9, 24, "80, 40, 30", 0.1);   // the temple, under the hair
+    pen.save(); pen.translate(0, -2.5 * lift);
+    if (!lady || !paint || MU.cheek === "soft") { muGlow(x + side * 15, -31, 11, 9, "200, 90, 80", (lady ? 0.2 : 0.14) * (1 + 0.3 * lift)); }
+    else {
+      muGlow(x + side * 17, -35, 12, 8, paint.rouge, 0.22, -side * 0.35);
+      muGlow(x + side * 12, -31, 7, 5.5, paint.rouge, 0.12 + 0.12 * lift);
+    }
+    pen.restore();
+  });
+}
+// the head's own lines, built for her jaw (cw, co, ch, fw) and k (MU.tara)
+function wmFaceLine(k, cw, co, ch, fw) {
+  return new MPath().M(-26, -73)
+    .C(-33 - 3 * k - cw, -52, -32 - 3 * k - cw, -20 + co[1] * 0.5, -14 - 2 * k + co[0], -6 + k + co[1])
+    .C(-5 + ch[0] * 0.4, 1 + 1.5 * k + ch[1], 11 + ch[0] * 0.8, 2.5 + 1.5 * k + ch[1], 19.5 + k + ch[0], -2 + k + ch[1])
+    .C(29 + 2 * k + fw, -7 + ch[1] * 0.5, 35.5 + 2 * k + fw, -22, 36 + 1.2 * k + fw * 0.5, -38)
+    .C(37, -46, 34, -52, 35.5, -59)
+    .C(38.5, -70, 37, -86, 27, -92)
+    .C(12, -98, -14, -94, -26, -73).Z();
+}
+// draw(), moved as a feature at "from" goes to "to" straight on, its width times "wide" there, e of the way
+function wmMoved(from, to, wide, e, draw) {
+  if (!e) { return draw(); }
+  pen.save();
+  pen.translate(mix(from[0], to[0], e), mix(from[1], to[1], e)); pen.scale(mix(1, wide, e), 1); pen.translate(-from[0], -from[1]);
+  try { draw(); } finally { pen.restore(); }
+}
+
 // muHead (mural.js), a lady's, with her own outline, hairline, brows and eyes; chin at (0, 0), crown at (0, -100)
 function wmHead(look, lady, skin, fc) {
-  var hair = look.hair || MU.hair;
+  var hair = look.hair || MU.hair, e = wmFront(), X = WM_FRONT_X;
   var hd = fc.hairdo || (look.bun === "wong" ? "wong" : "mural"), K = WM_KNOTS[hd];
+  if (e) { K = [K[1] < -80 ? mix(K[0], X, e) : K[0] + 6 * e, K[1], K[2]]; }   // a knot on the crown to her middle; one at the nape just behind
   if (fc.tail) { wmTail(K, hair); }                 // behind everything of the head
   if (hd === "wong" || hd === "lue") { if (!WM.crown) { wmWongLoop(K, hair); } muBun(K[0], K[1], K[2], hair, look); }
   var mass = new MPath().M(30, -88).C(14, -106, -32, -108, -48, -80).C(-58, -60, -54, -34, -38, -18).C(-30, -12, -20, -14, -14, -22).L(30, -60).Z();
+  if (e) { mass = wmToward(mass.subs[0].pts, wmHairFront, e); }
   mShape(mass, hair, 5, 1.3);
   if (hd !== "wong" && hd !== "lue") {
     muBun(K[0], K[1], K[2], hair, look);
@@ -717,29 +843,43 @@ function wmHead(look, lady, skin, fc) {
     if (hd === "low") { wmComb(K, "ivory"); }
     muBunGold(K[0], K[1], K[2]);
   }
+  if (e) {                                          // her far ear, its earring and her lock, coming out from behind her cheek
+    pen.save(); pen.translate(2 * X - 14 * (1 - e), 0); pen.scale(-1, 1);
+    var far = MU.ear !== null ? muEarPainted(skin, MU.ear) : [-25, -34];
+    muEarring(far[0], far[1]);
+    if (fc.jon) { wmJon(hair); }
+    pen.restore();
+  }
   var k = MU.tara || 0, J = fc.jaw || {}, cw = J.cheek || 0, co = J.corner || [0, 0], ch = J.chin || [0, 0], fw = J.far || 0;
-  var face = new MPath().M(-26, -73)
-    .C(-33 - 3 * k - cw, -52, -32 - 3 * k - cw, -20 + co[1] * 0.5, -14 - 2 * k + co[0], -6 + k + co[1])
-    .C(-5 + ch[0] * 0.4, 1 + 1.5 * k + ch[1], 11 + ch[0] * 0.8, 2.5 + 1.5 * k + ch[1], 19.5 + k + ch[0], -2 + k + ch[1])
-    .C(29 + 2 * k + fw, -7 + ch[1] * 0.5, 35.5 + 2 * k + fw, -22, 36 + 1.2 * k + fw * 0.5, -38)
-    .C(37, -46, 34, -52, 35.5, -59)
-    .C(38.5, -70, 37, -86, 27, -92)
-    .C(12, -98, -14, -94, -26, -73).Z();
+  var face = wmFaceLine(k, cw, co, ch, fw);
+  if (e) {                                          // her own jaw kept: each point as far from the plain head's as it was
+    var plain = wmFaceLine(k, 0, [0, 0], [0, 0], 0).subs[0].pts, own = face.subs[0].pts;
+    face = wmToward(own, function (p, i) { var q = wmFaceFront(plain[i]); return [q[0] + p[0] - plain[i][0], q[1] + p[1] - plain[i][1]]; }, e);
+  }
   mFill(face, skin, 7);
   pen.save(); pen.clip(face.path);
   var paint = lady ? muMakeup(look) : null, feel = muFeelOf(look);
-  muCheeks(lady, paint, feel);
-  muFaceLines(look, feel);
-  if (fc.dimple) {                                  // the dimple: a short soft crease beside the near corner
-    var up = 1.6 * Math.max(feel.smile || 0, feel.laugh || 0);
-    muGlow(7.6, -15.6 - up, 2.2, 3, "150, 70, 55", 0.18);
-    mLine(new MPath().M(8.6, -18.4 - up).Q(7.4, -16.2 - up, 8.2, -13.8 - up), "rgba(130, 60, 48, 0.45)", 0.55);
+  if (e < 1) {
+    pen.globalAlpha = 1 - e;
+    muCheeks(lady, paint, feel);
+    wmMoved([0, 0], [X - 6, 0], 1, e, function () { muFaceLines(look, feel); });
+    pen.globalAlpha = 1;
   }
-  if (fc.mole) { muGlow(fc.mole[0], fc.mole[1], 1.1, 1.1, "60, 30, 22", 0.85); }
+  if (e > 0) { pen.globalAlpha = e; wmCheeksFront(lady, paint, feel); pen.globalAlpha = 1; }
+  var mouthAt = [19.7, -24], mouthTo = [X, -24];   // the middle of her lips, and of her mouth straight on
+  wmMoved(mouthAt, mouthTo, 1, e, function () {
+    if (fc.dimple) {                                // the dimple: a short soft crease beside the near corner
+      var up = 1.6 * Math.max(feel.smile || 0, feel.laugh || 0);
+      muGlow(7.6, -15.6 - up, 2.2, 3, "150, 70, 55", 0.18);
+      mLine(new MPath().M(8.6, -18.4 - up).Q(7.4, -16.2 - up, 8.2, -13.8 - up), "rgba(130, 60, 48, 0.45)", 0.55);
+    }
+    if (fc.mole) { muGlow(fc.mole[0], fc.mole[1], 1.1, 1.1, "60, 30, 22", 0.85); }
+  });
   pen.restore();
   mBrush(face, muInk(muColour(skin)), 1.3);
   var fh = Math.max(-3, Math.min(2, fc.forehead || 0));   // the hairline: up or down in its middle, its ends where they were
   var edge = new MPath().M(-28, -70).C(-18, -89 - fh, 8, -97 - fh, 28, -91).C(16, -104, -24, -106, -40, -86).L(-42, -50).L(-28, -47).C(-31, -56, -31, -64, -28, -70).Z();
+  if (e) { var front = wmEdgeFront(fh); edge = wmToward(edge.subs[0].pts, function (p, i) { return front[i]; }, e); }
   mShape(edge, hair, 3, 1.2);
   var strands = new MPath(), sheen = muColour(blend(hair, MU.sheen, 0.4));
   for (var s = 0; s < 12; s++) {
@@ -753,25 +893,36 @@ function wmHead(look, lady, skin, fc) {
   if (fc.jon) { wmJon(hair); }
   var lobe = MU.ear !== null ? muEarPainted(skin, MU.ear) : [-25, -34];
   muEarring(lobe[0], lobe[1]);
-  var E = fc.eyes || {};
-  wmEye([-4, -50 + (E.y || 0)], 16 * (E.long || 1), -1, lady, paint, feel, E);
-  wmEye([25, -51 + (E.y || 0)], 10.5 * (E.long || 1), 1, lady, paint, feel, E);
-  // the brows: her own arch, length and fall, then the feeling's turn as mural.js gives it
+  var E = fc.eyes || {}, ey = E.y || 0, el = E.long || 1;
+  var nearEye = [mix(-4, X - 14.5, e), -50 + ey - 0.5 * e], farEye = [mix(25, X + 14.5, e), -51 + ey + 0.5 * e];
+  wmEye(nearEye, mix(16, 14, e) * el, -1, lady, paint, feel, E);
+  wmEye(farEye, mix(10.5, 14, e) * el, 1, lady, paint, feel, E);
+  // the brows: her own arch, length and fall, then the feeling's turn as mural.js gives it; straight on, each over its
+  // eye, the two as long
   var B = fc.brows || {}, bl = B.lift || 0, ba = B.arch || 0, bo = B.long || 0, bf = B.fall || 0;
   var painted = MU.nose === "exact" || MU.nose === "exactink";
-  pen.save(); muBrowTurn(feel, -7, -67 - bl, 1);
-  mLine(new MPath().M(8, -62 - bl).Q(-4, -71 - bl - ba, -22 - bo, -65 - bl + bf), muColour(hair), 1.6 * (B.thick || 1));
-  pen.restore();
-  pen.save(); muBrowTurn(feel, 28.4, -62.2 - bl, -1);
-  if (painted) { pen.translate(0, -bl); muInkLine(NOSE_LANNA.brow, NOSE_PAINT.brow); }
-  else { mLine(new MPath().M(17, -62 - bl).Q(26, -69 - bl - ba * 0.7, 35 + bo * 0.4, -65 - bl + bf * 0.7), muColour(hair), 1.6 * (B.thick || 1)); }
-  pen.restore();
-  muNose(MU.nose || "now", skin, lady);
-  if (MU.tara) {
-    muGlow(21.5, -27.6, 5, 2.4, "140, 70, 60", 0.14 * MU.tara);
-    muInkLine([[18.6, -31.2, 0.25], [19.6, -29.4, 0.35], [21.4, -28.6, 0.4], [23.2, -29.2, 0.35], [24.2, -30.8, 0.25]].map(function (q) { return [q[0], q[1], q[2] * MU.tara]; }), NOSE_PAINT.nostril);
-  }
-  muLipsPainted(lady, skin, MU.mouth, paint, feel);
+  wmMoved([-7, -66], [X - 14.5, -66], 0.82, e, function () {
+    pen.save(); muBrowTurn(feel, -7, -67 - bl, 1);
+    mLine(new MPath().M(8, -62 - bl).Q(-4, -71 - bl - ba, -22 - bo, -65 - bl + bf), muColour(hair), 1.6 * (B.thick || 1));
+    pen.restore();
+  });
+  wmMoved([26, -64], [X + 14.5, -66], painted ? 2.3 : 1.38, e, function () {
+    pen.save(); muBrowTurn(feel, 28.4, -62.2 - bl, -1);
+    if (painted) { pen.translate(0, -bl); muInkLine(NOSE_LANNA.brow, NOSE_PAINT.brow); }
+    else { mLine(new MPath().M(17, -62 - bl).Q(26, -69 - bl - ba * 0.7, 35 + bo * 0.4, -65 - bl + bf * 0.7), muColour(hair), 1.6 * (B.thick || 1)); }
+    pen.restore();
+  });
+  // the nose to her middle: a nose of lines (drawn three-quarter) gives way halfway to the small round tip that reads
+  // straight on ("between")
+  var kind = MU.nose || "now", round = {rosy: true, between: true, ref: true, button: true, low: true};
+  wmMoved([22, -31], [X, -31], 1, e, function () {
+    muNose(e > 0.5 && !round[kind] ? "between" : kind, skin, lady);
+    if (MU.tara) {
+      muGlow(21.5, -27.6, 5, 2.4, "140, 70, 60", 0.14 * MU.tara);
+      muInkLine([[18.6, -31.2, 0.25], [19.6, -29.4, 0.35], [21.4, -28.6, 0.4], [23.2, -29.2, 0.35], [24.2, -30.8, 0.25]].map(function (q) { return [q[0], q[1], q[2] * MU.tara]; }), NOSE_PAINT.nostril);
+    }
+  });
+  wmMoved(mouthAt, mouthTo, 1.1, e, function () { muLipsPainted(lady, skin, MU.mouth, paint, feel); });
 }
 
 // muEye (mural.js) with her own eye (E: wm.face.eyes): its tilt, its opening, its crease, where it looks, its wing
@@ -787,7 +938,8 @@ function wmEye(c, long, way, lady, paint, f, E) {
   var upIn = Math.max(-0.6, 4 + open + 1.8 * wide - 4.4 * down - 2.6 * v("anger") - 0.4 * v("worry"));
   var upOut = Math.max(-0.6, 4 + open + 1.8 * wide - 4.4 * down - 1.2 * v("anger") - 1.8 * v("sad") - 1.2 * v("worry"));
   var low = 2.6 + 0.9 * wide - 2.4 * Math.max(0.7 * v("smile"), 0.6 * v("full"), wink), gaze = -1.6 * v("rapt") + 0.9 * v("sad");
-  var g = E.gaze || [0, 0], flick = E.flick === undefined ? 1 : E.flick;
+  var g = E.gaze || [0, 0], flick = E.flick === undefined ? 1 : E.flick, ahead = 1 - wmFront();   // straight on, she looks at us
+  g = [g[0] * ahead, g[1] * ahead]; gaze *= ahead;
   if (paint && MU.cheek === "dancer") {
     muGlow(c[0] + way * long * 0.1, c[1] - 4.5, long * 0.62, 5.5, paint.lid, 0.34);
     muGlow(outer[0], outer[1] - 2.5, long * 0.3, 3.4, paint.lidDeep, 0.32, -way * 0.35);
@@ -804,7 +956,7 @@ function wmEye(c, long, way, lady, paint, f, E) {
   pen.fillStyle = muColour("#f6efe2");
   pen.fill(white.path);
   pen.save(); pen.clip(white.path);
-  var ix = c[0] + long * 0.22 + g[0], iy = c[1] - 1.2 + gaze + g[1], ir = (long * 0.15 + 0.9) * (E.iris || 1);
+  var ix = c[0] + long * 0.22 * ahead + g[0], iy = c[1] - 1.2 + gaze + g[1], ir = (long * 0.15 + 0.9) * (E.iris || 1);
   pen.fillStyle = E.irisColour || "#2a1a12"; pen.beginPath(); pen.arc(ix, iy, ir, 0, 7); pen.fill();
   pen.fillStyle = "#0e0806"; pen.beginPath(); pen.arc(ix, iy, ir * 0.5, 0, 7); pen.fill();
   pen.fillStyle = "rgba(255, 250, 240, 0.85)"; pen.beginPath(); pen.arc(ix + ir * 0.35, iy - ir * 0.35, ir * 0.18, 0, 7); pen.fill();   // the light in it
@@ -1050,6 +1202,29 @@ muJewel = function (x, y, r, colour) {
   wmStar(x - r * 0.3, y - r * 0.35, r * (1.4 + 2.6 * tw), tw, 0.25);
 };
 
+// ---------- her walk, and her sin's sway ----------
+// WM_STEP: the look's step while she is drawn (null standing); WM_FEET: her feet drawn so far (the far one, then the near)
+var WM_STEP = null, WM_FEET = 0;
+function wmWalk() { return WM_STEP === null ? null : WM_STEP * Math.PI * 2; }
+function wmSinSway() {                              // how far her sin leans now about her waist: its sway (swish), her walk
+  var k = 0, w = wmWalk(), t = clock + WM_OWN;
+  if (WM && WM.swish) { k += (WM.swish === true ? 1 : clamp(WM.swish)) * (0.009 * Math.sin(2 * Math.PI * t / 3.7) + 0.004 * Math.sin(2 * Math.PI * t / 1.7 + 2)); }
+  if (w !== null) { k += 0.03 * Math.sin(w); }      // its foot after the far foot
+  return k;
+}
+muSin = function (top, hem, waistX, hipX, hemX, design) {
+  var k = WM ? wmSinSway() : 0;
+  if (!k) { return WM_KIT.muSin(top, hem, waistX, hipX, hemX, design); }
+  pen.save(); pen.transform(1, 0, k, 1, -k * top, 0);   // leaning about its top: x by k for each unit down
+  try { return WM_KIT.muSin(top, hem, waistX, hipX, hemX, design); } finally { pen.restore(); }
+};
+muFoot = function (x, y, long, skin) {
+  var w = WM ? wmWalk() : null;
+  if (w === null) { return WM_KIT.muFoot(x, y, long, skin); }
+  var at = w + Math.PI * (WM_FEET++ % 2);           // a foot forward as it lifts, back as it pushes off
+  return WM_KIT.muFoot(x + 22 * Math.sin(at), y - 12 * Math.max(0, Math.cos(at)), long, skin);
+};
+
 // ---------- the woman ----------
 // her sin with a woven foot: the design without the thin bands that cross its foot (the woven hem is their place)
 var WM_JOK_SIN = {};
@@ -1066,12 +1241,15 @@ function wmJokSin(n) {
 function wmWoman(x, y, look, wm, opts) {
   var px = (opts && opts.head || 70) / 100;
   if (wm.jok && look.sin !== undefined) { look = Object.assign({}, look, {sin: wmJokSin(look.sin)}); }
-  WM = wm; WM_W = {}; WM_LATE = null;
+  WM = wm; WM_W = {}; WM_LATE = null; WM_FEET = 0;
+  var lady = look.lady !== undefined ? !!look.lady : !!look.bun;   // a woman standing walks (a man's legs and one seated, not yet)
+  WM_STEP = !look.floor && typeof look.step === "number" ? look.step : null;
   // her sway: slow, about her feet, in her own time; the gold follows it (WM_TILT), also when she stands still (sway false)
   var own = ownTime(look.id || "w");
   WM_OWN = own;
   WM_TILT = 0.006 * Math.sin(2 * Math.PI * (clock + own) / 4.6) + 0.002 * Math.sin(2 * Math.PI * (clock + own) / 1.9);
   pen.save(); pen.translate(x, y); pen.rotate(wm.sway === false ? 0 : WM_TILT); pen.translate(-x, -y);
+  if (WM_STEP !== null) { pen.translate(0, -3 * px * (1 + Math.cos(4 * Math.PI * WM_STEP))); }   // walking, she rises as each foot passes under her
   if (wm.holds === "parasol" && wm.pose && wm.pose.near) {
     pen.save(); pen.translate(x, y); pen.scale(px, px); muUpper(WM_A, WM_B, WM_Y0);
     wmParasol(wm.pose.near.w, wm.parasol || ["#c8402e", "#f2c36a"]); pen.restore();
@@ -1087,7 +1265,7 @@ function wmWoman(x, y, look, wm, opts) {
       pen.save(); pen.translate(8 + neckX, WM_CHIN + NECK_DROP[0]); pen.rotate(-0.05); wmCrown(); pen.restore();
     }
     pen.restore();
-  } finally { pen.restore(); WM = null; WM_LATE = null; WM_TILT = 0; }
+  } finally { pen.restore(); WM = null; WM_LATE = null; WM_TILT = 0; WM_STEP = null; }
 }
 
 // ---------- three more sin ----------
@@ -1220,7 +1398,7 @@ function castWoman(name, more) {
 // ---------- the look's "woman" ----------
 var WOMAN_KEYS = {face: true, pose: true, hair: true, crown: true, earring: true, neck: true, belt: true, nails: true, armlet: true,
                   chain: true, blouse: true, scarf: true, holds: true, cloth: true, parasol: true, jok: true, hands: true, sway: true,
-                  wink: true, alive: true};
+                  wink: true, alive: true, front: true, swish: true};
 var WM_FACE_KEYS = {mu: true, jaw: true, forehead: true, brows: true, eyes: true, mouth: true, feel: true, jon: true, dimple: true,
                     mole: true, hairdo: true, tail: true, wrap: true};
 MURAL_LOOK_KEYS.woman = true;

@@ -63,8 +63,7 @@ function caption(text, x, y) {
   pen.fillText(text, x, y);
 }
 
-function wearing(t, w, where) {                      // the cloth's back, then her wearing its front
-  sabai(t, where, w.cloth, "back");
+function wearing(t, w, where) {                      // she wears it whole: its back over her far arm, her, its front
   muralPerson(w.x, 1010, sabaiWorn(w.look, t, where, w.cloth), {head: 59 * w.look.size});
 }
 
