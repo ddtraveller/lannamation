@@ -104,7 +104,7 @@ sabai = function (t, where, cloth, part) {
   if (part === "front") { sfShadow(where, half); }
   sabaiEdge = sfEdge;
   try { SABAI_FINISH_KIT.sabai(t, where, cloth, part); } finally { sabaiEdge = SABAI_FINISH_KIT.edge; }
-  if (part === "front") { sfFar(where, half, cloth); sfBorder(where, half, cloth); sfLight(where, half); }
+  if (part === "front") { sfFar(t, where, half, cloth); sfBorder(where, half, cloth); sfLight(where, half); }
   else { sfEnd(where, cloth); }
 };
 
@@ -113,12 +113,31 @@ function sfLine(where, from, to, across, steps) {   // a line along the band at 
   for (var k = 0; k <= steps; k++) { var q = sabaiAt(where, from + (to - from) * k / steps, across); if (k) { p.lineTo(q[0], q[1]); } else { p.moveTo(q[0], q[1]); } }
   return p;
 }
-function sfBand(where, half) {                       // the band's outline, from its cut end to its top
-  var from = where.start || 0, to = where.length, p = new Path2D(), k, q;
-  for (k = 0; k <= 96; k++) { q = sabaiAt(where, from + (to - from) * k / 96, -half); if (k) { p.lineTo(q[0], q[1]); } else { p.moveTo(q[0], q[1]); } }
+// The band's outline, from its cut end to its top, its ends cut as sabai() cuts them (where.startCap, where.endCap):
+// cut square at "start" it left out the slanted cut's corner, which then had no light, and up close showed as a square
+// with a hard edge (owner, 2026-10-31: "There is a clear/white square around the sabai").
+function sfBand(where, half) {
+  var from = where.start || 0, to = where.length, p = new Path2D(), k, q, sc = where.startCap, ec = where.endCap;
+  if (sc && sc.N) { q = sfCorner(sc, -half, where.squeeze(from)); p.moveTo(q[0], q[1]); }
+  for (k = 0; k <= 96; k++) { q = sabaiAt(where, from + (to - from) * k / 96, -half); if (k || (sc && sc.N)) { p.lineTo(q[0], q[1]); } else { p.moveTo(q[0], q[1]); } }
+  if (ec && ec.N) { [-half, half].forEach(function (c) { q = sfCorner(ec, c, where.squeeze(to)); p.lineTo(q[0], q[1]); }); }
+  else if (ec && ec.bulge) { sfBow(where, ec, to, half).forEach(function (r) { p.lineTo(r[0], r[1]); }); }
   for (k = 96; k >= 0; k--) { q = sabaiAt(where, from + (to - from) * k / 96, half); p.lineTo(q[0], q[1]); }
+  if (sc && sc.N) { q = sfCorner(sc, half, where.squeeze(from)); p.lineTo(q[0], q[1]); }
+  else if (sc && sc.bulge) { sfBow(where, sc, from, half).reverse().forEach(function (r) { p.lineTo(r[0], r[1]); }); }
   p.closePath();
   return p;
+}
+function sfCorner(cap, across, sq) {                 // where the band's edge at an offset "across" meets a cap's line (sabai()'s corner)
+  var ex = cap.N[0] - cap.s * across * sq, ey = cap.N[1] + cap.c * across * sq;
+  var denom = cap.c * cap.kx + cap.s * cap.ky, u = Math.abs(denom) < 1e-6 ? 0 : -((ex - cap.N[0]) * cap.kx + (ey - cap.N[1]) * cap.ky) / denom;
+  return [ex + cap.c * u, ey + cap.s * u];
+}
+function sfBow(where, cap, along, half) {            // a rounded end's points, from -half to half (sabai()'s bow)
+  var ang = where.angle(where.uAt(along)), q0 = sabaiAt(where, along, -half), q1 = sabaiAt(where, along, half), sq = where.squeeze(along);
+  var cx = (q0[0] + q1[0]) / 2 + Math.cos(ang) * cap.bulge * sq, cy = (q0[1] + q1[1]) / 2 + Math.sin(ang) * cap.bulge * sq, list = [];
+  for (var k = 0; k <= 6; k++) { var s = k / 6, v = 1 - s; list.push([v * v * q0[0] + 2 * v * s * cx + s * s * q1[0], v * v * q0[1] + 2 * v * s * cy + s * s * q1[1]]); }
+  return list;
 }
 function sfTuck(where) {                             // nothing below the waist's line, where the cloth is tucked in
   if (where.tuck !== undefined) { pen.beginPath(); pen.rect(-1e5, -1e5, 2e5, 1e5 + where.tuck); pen.clip(); }
@@ -177,12 +196,12 @@ function sfLight(where, half) {
     var X = qs.map(function (q) { return toScreen(q)[0]; }), Y = qs.map(function (q) { return toScreen(q)[1]; });
     return Math.max.apply(null, X) > 0 && Math.min.apply(null, X) < W && Math.max.apply(null, Y) > 0 && Math.min.apply(null, Y) < H;
   }
-  for (var a = from - 24; a < to + 24; a += da) {
+  for (var a = from - 24; a < to + 30; a += da) {   // on past the top, into its rounded end (sabaiOn: the line runs on straight)
     var turn = Math.max(0, Math.min(1, (a - (to - 70)) / 60));               // over the shoulder
     var glowA = Math.exp(-Math.pow((a - glowAt + da / 2) / (half * 1.1), 2));
-    var p0 = sabaiAt(where, a - over, -half - 4), p1 = sabaiAt(where, a + da + over, -half - 4), p2 = sabaiAt(where, a + da + over, half + 4), p3 = sabaiAt(where, a - over, half + 4);
+    var p0 = sabaiOn(where, a - over, -half - 4), p1 = sabaiOn(where, a + da + over, -half - 4), p2 = sabaiOn(where, a + da + over, half + 4), p3 = sabaiOn(where, a - over, half + 4);
     if (!onScreen([p0, p1, p2, p3])) { continue; }
-    var top = sabaiAt(where, a + da / 2, -half), foot = sabaiAt(where, a + da / 2, half);
+    var top = sabaiOn(where, a + da / 2, -half), foot = sabaiOn(where, a + da / 2, half);
     var gs = sh.createLinearGradient(top[0], top[1], foot[0], foot[1]), gl = li.createLinearGradient(top[0], top[1], foot[0], foot[1]);
     for (var k = 0; k <= 12; k++) {
       var v = -1 + k / 6;                                                   // -1 its upper edge, 1 its lower
@@ -257,17 +276,21 @@ function sfSway(T) {
 // each with a heart of green, between fine gold lines and cream stripes. Seen from near (the cloth more than 340 of the
 // screen's pixels across) none of it; from far (less than 230) all of it: a short crossfade, as the two together look
 // muddy.
-function sfFar(where, half, cloth) {
+function sfFar(t, where, half, cloth) {
   var f = pen.getTransform(), across = 2 * half * Math.hypot(f.a, f.b), a = Math.max(0, Math.min(1, (340 - across) / 110));
   if (a <= 0) { return; }
   var from = where.start || 0, to = where.length, ground = cloth.cloth || "#8a2a3a";
   pen.save(); sfTuck(where); pen.clip(sfBand(where, half));
   pen.globalAlpha = a;
   pen.fillStyle = ground; pen.fill(sfBand(where, half));
+  // The pattern runs on past both ends (sabaiOn: the line goes on straight), into the slanted cut and up to the top of
+  // the rounded end over the shoulder, which the band's outline clips (owner, 2026-10-31: "Continue the pattern all the
+  // way to the top of the curve in the shoulder"; it had stopped where the rounded end begins).
+  var on0 = from - 30, on1 = to + 30;
   function stripe(v0, v1, colour) {                  // a stripe along the whole cloth, from v0 to v1 (-1 its upper edge, 1 its lower)
     var p = new Path2D(), k, q;
-    for (k = 0; k <= 96; k++) { q = sabaiAt(where, from + (to - from) * k / 96, v0 * half); if (k) { p.lineTo(q[0], q[1]); } else { p.moveTo(q[0], q[1]); } }
-    for (k = 96; k >= 0; k--) { q = sabaiAt(where, from + (to - from) * k / 96, v1 * half); p.lineTo(q[0], q[1]); }
+    for (k = 0; k <= 96; k++) { q = sabaiOn(where, on0 + (on1 - on0) * k / 96, v0 * half); if (k) { p.lineTo(q[0], q[1]); } else { p.moveTo(q[0], q[1]); } }
+    for (k = 96; k >= 0; k--) { q = sabaiOn(where, on0 + (on1 - on0) * k / 96, v1 * half); p.lineTo(q[0], q[1]); }
     p.closePath(); pen.fillStyle = colour; pen.fill(p);
   }
   stripe(-0.66, -0.56, WEAVE_DYES.cream); stripe(0.56, 0.66, WEAVE_DYES.cream);
@@ -275,11 +298,15 @@ function sfFar(where, half, cloth) {
   stripe(-0.84, -0.8, WEAVE_DYES.gold); stripe(0.8, 0.84, WEAVE_DYES.gold);
   var tall = 0.36 * half, long = tall * 1.25, step = long * 2.5;
   function lozenge(c, l, h, colour) {
-    var q = [sabaiAt(where, c - l, 0), sabaiAt(where, c, -h), sabaiAt(where, c + l, 0), sabaiAt(where, c, h)];
+    var q = [sabaiOn(where, c - l, 0), sabaiOn(where, c, -h), sabaiOn(where, c + l, 0), sabaiOn(where, c, h)];
     pen.beginPath(); pen.moveTo(q[0][0], q[0][1]); q.slice(1).forEach(function (r) { pen.lineTo(r[0], r[1]); }); pen.closePath();
     pen.fillStyle = colour; pen.fill();
   }
-  for (var c = from + step / 2; c < to + step; c += step) {
+  // the lozenges travel as the rows flow, the way of the row at the middle (owner, 2026-10-31: "The center row should
+  // move as well"), so the cloth's middle never stands still while its figures walk
+  var rows = sabaiTiles(cloth).length, flow = cloth.flow === undefined ? 2.5 : cloth.flow;
+  var slide = (Math.floor(rows / 2) % 2 ? 1 : -1) * flow * Math.max(0, t - (cloth.from || 0));
+  for (var c = on0 - step + ((from + step / 2 + slide - on0) % step + step) % step; c < on1 + step; c += step) {
     lozenge(c, long, tall, WEAVE_DYES.gold);
     lozenge(c, long * 0.62, tall * 0.62, ground);
     lozenge(c, long * 0.36, tall * 0.36, WEAVE_DYES.green);

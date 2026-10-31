@@ -55,7 +55,11 @@
 //           the film opens on that figure and keeps it as the row moves. Left out, a fixed place on the chest
 //   steady  true: the figures walk and the rows flow, but no figure bobs or rocks on the beat (owner, 2026-10-31: "keep
 //           it from rocking or shaking": up close a bobbing figure shook the screen by 20 pixels a frame)
-var SABAI_KEYS = {wide: true, rows: true, tiles: true, cloth: true, flow: true, from: true, row: true, fine: true, follow: true, steady: true};
+//   stay    true: sabaiCamera() stays on the place of the cloth where the "follow" figure stood when the rows began to
+//           flow, and the figure walks on with its row (owner, 2026-10-31: "The central row of woven icons on the sabai
+//           doesn't move while all the others are 'walking' ... The center row should move as well": the camera had
+//           ridden along with that row, so it stood still on the screen)
+var SABAI_KEYS = {wide: true, rows: true, tiles: true, cloth: true, flow: true, from: true, row: true, fine: true, follow: true, steady: true, stay: true};
 
 var SABAI_TILE = 384;                   // a tile's side: large enough for a camera that shows one row close up
 var SABAI_FRAMES = 6;                   // moments of a walk in one tile's cycle
@@ -946,7 +950,8 @@ function sabaiCamera(t, where, cloth, start, end) {
   var zoom = Math.exp(mix(Math.log(rowZoom), 0, u));   // the same share of the way out every second: steady to the eye
   var turn = mix(-where.tilt, 0, u);
   var rowAcross = -wide / 2 + 3 + (row + 0.5) * rowTall;
-  var along = cloth.follow === undefined ? where.top * 0.4 : sabaiAlong(where, cloth, row, cloth.follow, t);   // the figure it follows, or the chest
+  var held = cloth.stay ? Math.min(t, cloth.from || 0) : t;   // stay: where the figure stood when the rows began to flow
+  var along = cloth.follow === undefined ? where.top * 0.4 : sabaiAlong(where, cloth, row, cloth.follow, held);   // the figure it follows, or the chest
   var point = sabaiAt(where, along, mix(rowAcross, 0, Math.min(1, u * 3)));   // from the row to the cloth's middle line (on the chest, 0.4 of the way to the shoulder, "tilt" is read)
   var slow = u * u * u;                          // the cloth stays in the middle until the view is wide
   var cx = mix(point[0], WIDE / 2, slow), cy = mix(point[1], 540, slow);

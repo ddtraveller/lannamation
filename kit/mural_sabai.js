@@ -16,12 +16,13 @@ var SABAI_MURAL_ARMS = {near: {w: [-48, -374], elbow: [-1, 0.1], late: true}};
 
 // Where the cloth lies on a mural woman standing at (x, y): sabai.js's sabaiOf() on her own body, not the kit figure's
 // joints. Over the shoulder on the right of the picture and across her to the left: from the right side of her neck's
-// foot (her neck ring) down to the left of her body at the lower ribs, under her near arm (owner, 2026-10-30: "the sabai
-// should extend all the way across the sprites body"; "make sure the gold line at the left side of the sabai extends all
-// the way to the left side of the woman's body"), bowed toward her front, its lower end cut on a slant and tucked in at
-// the waist; its back hanging behind the shoulder past the hip. Her points are read in her own units as mural.js draws a
-// lady: a unit is 59 * size / 100 pixels (person()'s head), her upper body sheared by muUpper(-0.028, 0.07, -430). The
-// middle line is a quadratic in 97 points, its heading the curve's own tangent (smooth, no facets up close).
+// foot (her neck ring) down to her belt on the left, under her near arm, tucked in at the waist (owner, 2026-10-30: "the
+// sabai should extend all the way across the sprites body"; 2026-10-31: "From her belt, up to the point where the sabai
+// extends to the point of her torso should all be covered by the sabai"); past her side there it is cut along her
+// torso's line (MS_TORSO), so her outline keeps its curve in the cloth's colour; its back hanging behind the shoulder
+// past the hip. Her points are read in her own units as mural.js draws a lady: a unit is 59 * size / 100 pixels
+// (person()'s head), her upper body sheared by muUpper(-0.028, 0.07, -430). The middle line is a quadratic in 97
+// points, its heading the curve's own tangent (smooth, no facets up close).
 // t: seconds (the back's edge waves with it); look: hers (its size). Returns what sabaiOf() returns, for sabai(),
 // sabaiWorn() and sabaiCamera().
 // e.g. var where = sabaiOfMural(t, 720, 1010, look);
@@ -29,16 +30,12 @@ function sabaiOfMural(t, x, y, look) {
   var px = 59 * (look.size || 1) / 100, n, k;
   function onHer(u, v, upper) { return [x + (u + (upper ? 0.07 * v + 42.14 : -0.028 * v)) * px, y + v * px]; }
   var neck = onHer(18.3, -583, true), hip = onHer(-6, -380, false), waistY = onHer(0, -430, false)[1];
-  var low = onHer(-64, -486, true);                  // the band's lower end: the left of her body at the lower ribs
-  var half = 36, bow = 20;                           // half the band's width; how far its middle line bows to her front
-  var slope = Math.atan2(neck[1] - low[1], neck[0] - low[0]);   // the band's heading: from her left side up to her neck
-  var dx = Math.cos(slope), dy = Math.sin(slope), nx = -Math.sin(slope), ny = Math.cos(slope);
-  var top = [neck[0] + nx * half, neck[1] + ny * half];         // the middle of its upper end: its upper corner beside the neck
-  var reach = Math.abs((top[0] - (low[0] - 4)) / (dx || 1e-6));
-  var end = [top[0] - dx * reach, top[1] - dy * reach];         // its lower end, 4 outside her side
-  var start = (16 + half * Math.SQRT1_2) * Math.SQRT2;          // the band begins this far along: its upper corner under the arm
-  var slant = 10 * Math.SQRT2;                                  // its lower corner further along the lower edge: the end slants
-  var mid = [(top[0] + end[0]) / 2 + bow * 2, (top[1] + end[1]) / 2];
+  var half = 36;                                     // half the band's width
+  var end = onHer(-58, -404, true);                  // the middle of its lower end: under the belt, left of her middle
+  var mid = onHer(-6, -490, true);                   // the curve's pull, a little to her front
+  var slope = Math.atan2(neck[1] - mid[1], neck[0] - mid[0]);   // its heading at the top: up to her neck
+  var top = [neck[0] - Math.sin(slope) * half, neck[1] + Math.cos(slope) * half];   // the middle of its upper end: its upper corner beside the neck
+  var start = 0;                                     // cut square at its lower end, under the belt (the tuck and her torso's line hide it)
   var points = [], marks = [0], length = 0;
   for (n = 0; n <= 96; n++) {
     var s = n / 96, v = 1 - s;
@@ -63,8 +60,8 @@ function sabaiOfMural(t, x, y, look) {
     var q = pointAt(along), g = headingAt(along);
     return [q[0] - Math.sin(g) * across, q[1] + Math.cos(g) * across];
   }
-  var upper = side(start, -half), lower = side(start - slant, half);
-  var vx = lower[0] - upper[0], vy = lower[1] - upper[1], vl = Math.hypot(vx, vy) || 1, g = headingAt(start - slant / 2);
+  var upper = side(start, -half), lower = side(start, half);
+  var vx = lower[0] - upper[0], vy = lower[1] - upper[1], vl = Math.hypot(vx, vy) || 1, g = headingAt(start);
   var startCap = {N: [(upper[0] + lower[0]) / 2, (upper[1] + lower[1]) / 2], c: Math.cos(g), s: Math.sin(g), kx: -vy / vl, ky: vx / vl};
   // the back, from the top end's corner at the shoulder down past the hip: its outer edge leaning out 32 by the foot and
   // waving 5 either way, its hem curving to the inner edge
@@ -80,26 +77,58 @@ function sabaiOfMural(t, x, y, look) {
           startCap: startCap, endCap: {bulge: 26}, tuck: waistY + 8, tail: {outer: outer, hem: hem, inner: [innerX, corner[1] + 16]}};
 }
 
-// A mural woman wearing the cloth (sabaiWorn()'s "worn"): its front is drawn as her belt is about to be, after her
-// body and before an arm drawn late (so her hanging near arm lies over it) and the belt (which holds it at the waist);
-// for one with no belt, after her.
-var MURAL_SABAI_KIT = {muralPerson: muralPerson, muBelt: muBelt}, MS_WORN = null;
+// Her torso's line on the left, as mural.js draws her blouse (her upper units): from her neck ring's left edge round her
+// side down to the belt, then straight down. The cloth's front is cut along it (owner, 2026-10-31: "recut the woman's
+// torso line as before so it has the same curve as before but it's just the sabai color"): it keeps to the right of it.
+var MS_TORSO = "M -13.13 -586 C -30 -582 -50 -578 -60 -562 C -68 -548 -66 -520 -60 -498 C -54 -476 -42 -458 -40 -436 " +
+               "L -40 -300 L 2000 -300 L 2000 -2000 L -13.13 -2000 Z";
+
+// A mural woman wearing the cloth (sabaiWorn()'s "worn"): its front is drawn after her body and her necklace (owner,
+// 2026-10-31: "It should probably go over the necklace"), before an arm drawn late (so her hanging near arm lies over
+// it) and the belt (which holds it at the waist). mural.js draws the belt and then the necklace (muCollar3q), so the
+// belt (with the late arm, mural_women.js draws it there) waits until the cloth is on. The chains of rank (neck
+// "sangwan") are worn over the cloth: below the choker they are drawn again after it. For one with neither, after her.
+// It is cut along her torso's line (MS_TORSO).
+var MURAL_SABAI_KIT = {muralPerson: muralPerson, muBelt: muBelt, muCollar3q: muCollar3q}, MS_WORN = null;
 muralPerson = function (x, y, look, opts) {
   if (!look.worn || !look.woman) { return MURAL_SABAI_KIT.muralPerson(x, y, look, opts); }
   var keep = MS_WORN;
-  MS_WORN = look.worn;
+  MS_WORN = {worn: look.worn, frame: pen.getTransform(), x: x, y: y, px: (opts.head || 70) / 100, done: false, belt: null};
   try {
     MURAL_SABAI_KIT.muralPerson(x, y, look, opts);
-    if (MS_WORN) { msWear(); }
+    msWear();
+    msBelt();
   } finally { MS_WORN = keep; }
 };
-function msWear() {
-  var worn = MS_WORN;
-  MS_WORN = null;
+function msWear() {                                  // the cloth's front, once
+  var wear = MS_WORN;
+  if (wear.done) { return; }
+  wear.done = true;
   pen.save();
-  try { worn(); } finally { pen.restore(); }
+  try {
+    pen.setTransform(wear.frame); pen.translate(wear.x, wear.y); pen.scale(wear.px, wear.px); muUpper(-0.028, 0.07, -430);
+    pen.clip(new Path2D(MS_TORSO));                  // in her upper units, as mural.js draws her blouse
+    wear.worn();
+  } finally { pen.restore(); }
+}
+function msBelt() {                                  // the belt that waited for the cloth, where it was to be drawn
+  var belt = MS_WORN.belt;
+  if (!belt) { return; }
+  MS_WORN.belt = null;
+  pen.save();
+  try { pen.setTransform(belt.at); MURAL_SABAI_KIT.muBelt.apply(null, belt.args); } finally { pen.restore(); }
 }
 muBelt = function (y, x0, x1, buckleX) {
-  if (MS_WORN) { msWear(); }
+  if (MS_WORN && !MS_WORN.done) { MS_WORN.belt = {at: pen.getTransform(), args: [y, x0, x1, buckleX]}; return; }
   return MURAL_SABAI_KIT.muBelt(y, x0, x1, buckleX);
+};
+muCollar3q = function (c, y0, r, wide, drop) {
+  if (!MS_WORN || MS_WORN.done) { return MURAL_SABAI_KIT.muCollar3q(c, y0, r, wide, drop); }
+  MURAL_SABAI_KIT.muCollar3q(c, y0, r, wide, drop);  // the necklace
+  msWear();                                          // the cloth over it
+  if (WM && WM.neck === "sangwan") {                 // the chains of rank over the cloth, below the choker
+    pen.save(); pen.beginPath(); pen.rect(-1000, y0 + 18, 2000, 2000); pen.clip();
+    try { MURAL_SABAI_KIT.muCollar3q(c, y0, r, wide, drop); } finally { pen.restore(); }
+  }
+  msBelt();
 };
