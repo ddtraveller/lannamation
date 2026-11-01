@@ -103,6 +103,7 @@ function sheetHeads(names, size, feet) {
 
 function sheetHands() {
   var skin = "#c48a5c";
+  MU_PX = 9;                                         // the painter reads it: not whatever the last figure left
   [["the dancer's hand", false, 0.55], ["an ordinary hand, at rest", true, 0.4], ["an ordinary hand, gripping", true, 1]].forEach(function (h, n) {
     var x = 320 + n * 640;
     pen.save(); pen.translate(x, 260); pen.scale(9, 9);
