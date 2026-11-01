@@ -13,17 +13,13 @@
 <script>window.FILM_STYLE = {hop: false, wide: 1920};</script>
 <script src="oldcartoon.js"></script>
 <script src="weaving.js"></script>
-<script src="mural.js"></script>
-<script src="mural_luxe.js"></script>
-<script src="mural_thangka.js"></script>
-<script src="mural_women.js"></script>
-<script src="mural_men.js"></script>
-<script src="mural_seated.js"></script>
 <script src="people.js"></script>
 <script>
 // The "people" sheet: the twenty of people.js by their names in cast(), drawn by person(). From 0 s the ten women; from 8 s the
-// six men; from 12 s the four children; from 16 s all twenty walking in place; from 28 s new women from the generator, five every four seconds (castMix).
-var DURATION = 48;
+// six men; from 12 s the four children; from 16 s all twenty walking in place; from 28 s new women from the generator, five every four seconds (castMix);
+// from 48 s the women large, from 52 s their woven hems (teen jok), from 55 s the 23 woven sabai, from 58 s the men's heads, from 61 s the children's, from 64 s the
+// hands, from 67 s a face in each feeling, from 70 s an old face in each, from 73 s women seated, from 77 s at the wheel and the loom, from 81 s the same, large.
+var DURATION = 85;
 var BEAT = 0.5;
 var WOMEN = ["heavenly", "lotusmaiden", "naildancer", "orchiddancer", "princess", "khangran", "clothweaver", "luewoman", "courtlady", "festivalgirl"];
 var MEN = ["polefarmer", "longdrummer", "swordsman", "townsman", "whiteelder", "lueman"];
@@ -53,6 +49,112 @@ function parade(t) {
   });
 }
 
+// ---- what the sheets of the separate figure showed ----
+var TOWNS = {maechaem: "Mae Chaem", nan: "Nan", long: "Mueang Long"};
+var THREADS = {maechaem: "on black", maechaemRed: "on red", nan: "silver on black", nanIndigo: "gold on indigo",
+               long: "jackfruit and lac on indigo", lue: "Tai Lue colours on red", khit: "indigo on white"};
+var FEELS = ["neutral", "happy", "laughing", "sad", "concerned", "thinking", "angry", "sleepy", "satiated", "surprised", "fear", "awe"];
+
+function words(text, x, y, size, colour) {
+  pen.fillStyle = colour || "#f6eedc";
+  pen.textAlign = "center";
+  pen.font = size + "px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+// the settings a name of the twenty's was made from
+function made(name) { var who = PEOPLE_CAST[name]; return (who[0] === "woman" ? MURAL_WOMEN : who[0] === "man" ? MURAL_MEN : MURAL_CHILDREN)[who[1]]; }
+
+// the ten women on cards: drawn at "size", feet at "feet" below the card's top; under each, the words of say(name)
+function sheetCards(size, feet, say) {
+  WOMEN.forEach(function (name, n) {
+    var col = n % 5, line = Math.floor(n / 5), cw = WIDE / 5, cx = cw * (col + 0.5), top = 14 + line * 533, ch = 520;
+    pen.save();
+    pen.beginPath(); pen.rect(cw * col + 8, top, cw - 16, ch); pen.clip();
+    pen.fillStyle = "rgba(246, 236, 214, 0.16)"; pen.fillRect(cw * col + 8, top, cw - 16, ch);
+    person(cx - 14, top + feet, cast(name, {size: size, id: "c-" + name}));
+    pen.fillStyle = "rgba(20, 16, 12, 0.55)"; pen.fillRect(cw * col + 8, top + ch - 56, cw - 16, 56);
+    pen.restore();
+    words(name, cx, top + ch - 32, 19);
+    words(say(name), cx, top + ch - 11, 14, "#d8ccb4");
+  });
+}
+
+function sheetWeaves() {
+  var names = Object.keys(SABAI_WEAVES), per = 12;
+  names.forEach(function (name, n) {
+    var line = Math.floor(n / per), col = n % per, x = WIDE * (col + 0.5) / per + (line ? WIDE / per / 2 : 0), y = line ? 1030 : 500;
+    person(x - 6, y, cast("maiden", {shirt: "#f1e6d6", sin: n % 3, sabai: sabaiLook(name), jewels: "gold", size: 0.62, id: "w-" + n,
+                                     woman: {hair: ["jasmine"], earring: "pearl", neck: "pearls", chain: false}}));
+    words(name, x, y + 26, 15);
+  });
+  words("the 23 woven sabai, each painted once and worn", WIDE / 2, 36, 24);
+}
+
+function sheetHeads(names, size, feet) {
+  names.forEach(function (name, n) {
+    var cw = WIDE / names.length, x = cw * (n + 0.5);
+    pen.save(); pen.beginPath(); pen.rect(cw * n + 6, 14, cw - 12, 990); pen.clip();
+    person(x - 20, feet, cast(name, {size: size, id: "h-" + name}));
+    pen.restore();
+    words(made(name).say, x, 1040, 17);
+  });
+}
+
+function sheetHands() {
+  var skin = "#c48a5c";
+  [["the dancer's hand", false, 0.55], ["an ordinary hand, at rest", true, 0.4], ["an ordinary hand, gripping", true, 1]].forEach(function (h, n) {
+    var x = 320 + n * 640;
+    pen.save(); pen.translate(x, 260); pen.scale(9, 9);
+    if (h[1]) { wmHandNormal(0, 0, Math.PI / 2, 1, h[2], skin, false); } else { WM_KIT.muHand(0, 0, Math.PI / 2, 1, h[2], skin, false); }
+    pen.restore();
+    words(h[0], x, 1000, 26);
+  });
+}
+
+// a head alone, large, as person() would dress it
+function head(look, x, y, scale) {
+  var lady = !!look.bun, skin = look.skin || STYLE.skin;
+  if (lady) { skin = blend(skin, "#f6ead8", MU.skinLady); }
+  TH_SKINS[muColour(skin)] = true;
+  muDress(look);
+  MU_PX = scale;
+  pen.save(); pen.translate(x, y); pen.scale(scale, scale);
+  muHead(look, lady, skin);
+  pen.restore();
+}
+
+function sheetFeelings(who) {
+  FEELS.forEach(function (feel, n) {
+    var x = WIDE * ((n % 6) + 0.5) / 6, y = 420 + Math.floor(n / 6) * 520;
+    head(cast(who, feel === "neutral" ? {} : {feel: feel}), x + 30, y, 2.8);
+    words(feel, x, y + 70, 22);
+  });
+}
+
+// a plain bench of bamboo, its seat "high" above the ground at (x, y), "wide" long
+function bench(x, y, high, wide) {
+  weaveBeam(pen, x - wide / 2 + 10, y, x - wide / 2 + 10, y - high + 4, 8);
+  weaveBeam(pen, x + wide / 2 - 10, y, x + wide / 2 - 10, y - high + 4, 8);
+  weaveBeam(pen, x - wide / 2, y - high, x + wide / 2, y - high, 11);
+}
+
+function sheetSeated() {
+  [["clothweaver", "astride"], ["khangran", true], ["courtlady", "astride"], ["festivalgirl", true]].forEach(function (s, n) {
+    var x = WIDE * (n + 0.5) / 4 - 60, size = 1.45, high = 190 * 0.59 * size;
+    if (s[1] === "astride") { bench(x, 960, high, 170 * size); }
+    person(x, s[1] === "astride" ? 960 - high : 960, cast(s[0], {floor: s[1], size: size, id: "s-" + s[0]}));
+    words(s[0], x + 60, 1030, 20);
+  });
+}
+
+function sheetWork(t, size, base, places) {
+  spinningWheel(pen, places[0], base, size, t, {id: "wheel", weaver: Object.assign({}, MURAL_WOMEN.grandmother.look, {woman: "grandmother"})});
+  frameLoom(pen, places[1], base, size, t, {id: "loom", weaver: Object.assign({}, MURAL_WOMEN.weaver.look, {woman: "weaver"}), cloth: "maechaem"});
+  words("at the spinning wheel, on the floor", places[0] + 60 * size, base + 50, 22);
+  words("at the frame loom, on its bench", places[1] + 140 * size, base + 50, 22);
+}
+
 function draw(t) {
   clock = t;
   thGround(0, 0, WIDE, 1080);
@@ -62,7 +164,7 @@ function draw(t) {
   else if (t < 16) { row(CHILDREN, 1.2); }
   else if (t < 28) {
     parade(t);
-  } else {
+  } else if (t < 48) {
     var slot = Math.floor((t - 28) / 4);
     for (var n = 0; n < 5; n++) {
       var x = WIDE * (n + 0.5) / 5;
@@ -70,6 +172,17 @@ function draw(t) {
       caption("castMix(" + (1000 + slot * 7 + n) + ")", x, 1040);
     }
   }
+  else if (t < 52) { sheetCards(3.6, 245 + 650 * 2.12, function (name) { return made(name).say; }); }
+  else if (t < 55) { sheetCards(3.2, 456, function (name) { var j = made(name).woman.jok; return "teen jok of " + TOWNS[j[0]] + ", " + THREADS[j[1]]; }); }
+  else if (t < 58) { sheetWeaves(); }
+  else if (t < 61) { sheetHeads(MEN, 3.2, 1690); }
+  else if (t < 64) { sheetHeads(CHILDREN, 3.2, 1520); }
+  else if (t < 67) { sheetHands(); }
+  else if (t < 70) { sheetFeelings("buakham"); }
+  else if (t < 73) { sheetFeelings("grandmother"); }
+  else if (t < 77) { sheetSeated(); }
+  else if (t < 81) { sheetWork(t, 1, 900, [300, 1100]); }
+  else { sheetWork(t, 2, 1000, [180, 1000]); }
   screen.fillStyle = "#111";
   screen.fillRect(0, 0, 1920, 1080);
   screen.drawImage(FILM, 0, 0);

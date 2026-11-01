@@ -650,7 +650,7 @@ function sabaiOf(t, x, y, look) {
 //   cloth   the cloth's names (SABAI_KEYS, at the top of this file), as sabai() takes them
 // Returns a new look for person(); it reads pen's frame now, when it is called.
 // The painter carries the cloth's back too (worn.back, the same frame) and where it lies (worn.where), for a figure
-// that lays an arm under the back (mural_sabai.js).
+// that lays an arm under the back (people.js).
 // e.g. person(720, 1010, sabaiWorn(look, t, where, {from: 3}));
 function sabaiWorn(look, t, where, cloth) {
   var frame = pen.getTransform();

@@ -167,7 +167,7 @@ function sfLayer(k, w, h) {
 // light on black, in strips along the cloth each filled across with a smooth gradient, and laid on the cloth whole, the
 // shade multiplied and the light screened. Across it, a sheen on its upper part and shade toward its lower edge as it
 // turns away; along it, darker over the last of it where it turns over the shoulder, and a soft glow of the silk that
-// moves along it (with a mural woman's sway, WM_TILT of mural_women.js, where there is one). Then two creases at the
+// moves along it (with a mural woman's sway, WM_TILT of people.js, where there is one). Then two creases at the
 // turn, and the gold edge catching the light.
 function sfLight(where, half) {
   var from = where.start || 0, to = where.length, frame = pen.getTransform();

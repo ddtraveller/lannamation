@@ -72,7 +72,7 @@ the soldiers and their spears (figures.md).
   sprites"; "The idea for the video is to start focused on a woman and then everything starts moving and then as it
   pulls back the viewer realizes it's the exact same woman that was started with"): drawn beside the kit, not in the
   film yet: the woman as the mural maiden wearing the cloth laid on her own body all the way across it, the woven figure
-  the camera opens on the same maiden, the two weavers seated (mural_seated.js). Into the film and its render on the
+  the camera opens on the same maiden, the two weavers seated (people.js). Into the film and its render on the
   owner's word
 - the woven cloth made better (owner, 2026-10-30: "Write down 4-7 as next steps after 1-3 and then begin on 1-3").
   First, begun the same day: (1) its figures woven, not painted: each tile laid as floats of the cloth's few thread

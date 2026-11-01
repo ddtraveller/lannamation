@@ -214,6 +214,9 @@ camera.
 
 ## The sabai on a mural woman (2026-10-31)
 
+**Since 2026-11-01** (owner: "get rid of the new system") this section's files are parts of one file, `people.js`, each part
+headed with its old name, and its sheets are sections of `people.html` (`people_sabai.html` for the worn cloth). `STYLE.figure` and `muralFigure()` are gone; these people are drawn by `person()`. See "The twenty painted people on person()" below. The sections keep the old names as they were written.
+
 The owner: "Can you put the sabai on one of the new model sprites and keep it from rocking or shaking?", then "Use one
 of the new models and stop the sway if possible". It is `mural_sabai.js` and its sheet `mural_sabai.html` (the maiden,
 then the maiden, the princess and the lady of the court), loaded after `sabai.js` and `mural_women.js`:
@@ -223,7 +226,7 @@ var look = castWoman("maiden", {size: 1.45, sabai: false, id: "maiden"});       
 look.woman = Object.assign({}, MURAL_WOMEN.maiden.woman, {sway: false, holds: undefined, pose: SABAI_MURAL_ARMS});
 var cloth = {finish: true, steady: true, cloth: SABAI_FINISH_GROUND, from: 1};
 var where = sabaiOfMural(t, 720, 1010, look);
-muralPerson(720, 1010, sabaiWorn(look, t, where, cloth), {head: 59 * look.size});  // or person() with STYLE.figure "mural"
+person(720, 1010, sabaiWorn(look, t, where, cloth));
 ```
 
 | What | How |

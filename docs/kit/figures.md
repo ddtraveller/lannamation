@@ -847,6 +847,9 @@ are still `{lids: "folded", face: "painted"}`, 0 pixels apart. Numbers: STYLE.md
 
 ## The mural women (2026-10-30)
 
+**Since 2026-11-01** (owner: "get rid of the new system") this section's files are parts of one file, `people.js`, each part
+headed with its old name, and its sheets are sections of `people.html` (`people_sabai.html` for the worn cloth). `STYLE.figure` and `muralFigure()` are gone; these people are drawn by `person()`. See "The twenty painted people on person()" below. The sections keep the old names as they were written.
+
 The owner gave five Royal Thai Art paintings of women (a celestial with a ribbon, a kinnari with a lotus, a dancer in
 red, a dancer with yellow strands, a maiden in gold), kept outside the repository: "Use each of those as a reference
 for a sprite in the kit but localize it for the project", and of the jewellery, the beads in the hair, the dress and the
@@ -908,6 +911,9 @@ width (a figure and a half across); the rubies milky until the foil was toned do
 
 ## The mural men and children (2026-10-30)
 
+**Since 2026-11-01** (owner: "get rid of the new system") this section's files are parts of one file, `people.js`, each part
+headed with its old name, and its sheets are sections of `people.html` (`people_sabai.html` for the worn cloth). `STYLE.figure` and `muralFigure()` are gone; these people are drawn by `person()`. See "The twenty painted people on person()" below. The sections keep the old names as they were written.
+
 The owner: "start on men and children updates to the kit", then of the first round, "Change the hands to be like normal
 hands", "Keep all the characters though", and "do it". They are `mural_men.js` (over `mural_women.js`) and its sheet
 `mural_men.html`. Before them the mural figure's men shared one face and one body with the arms hanging, and its
@@ -947,6 +953,9 @@ trouser leg to the calf. With the file loaded, `mural.html` draws as without it 
 
 ## The mural figure seated (2026-10-30)
 
+**Since 2026-11-01** (owner: "get rid of the new system") this section's files are parts of one file, `people.js`, each part
+headed with its old name, and its sheets are sections of `people.html` (`people_sabai.html` for the worn cloth). `STYLE.figure` and `muralFigure()` are gone; these people are drawn by `person()`. See "The twenty painted people on person()" below. The sections keep the old names as they were written.
+
 The owner, of the hero film's first scene redrawn with the mural women (the woman, the cloth's woven figure the camera
 opens on, and the yard's two weavers): "yes" to seated mural figures for the weavers, then "go ahead and put them in".
 They are `mural_seated.js` and its sheet `mural_seated.html`. The mural figure stood always; the kit's own figure sits
@@ -973,8 +982,12 @@ hands that move with the beater and the wheel.
 The owner: "Some new sprites were created. I want them moved to the old model system and to get rid of the new system";
 then, of a first try that only moved their dress onto the cartoon body, "you're looking at the wrong stuff to pull in":
 what is to come across is the figure itself, its faces, hair and hands, and the system that generates such women;
-and of how, "Paint on the rig". They are `people.js` and its sheet `people.html`. The separate figure's files are
-still loaded for their painters; they are to go into the one module when the old way of calling them goes.
+and of how, "Paint on the rig". They are `people.js` and its sheet `people.html`, with `people_sabai.html` for the worn cloth. The same day the separate
+figure went: `STYLE.figure`, `muralFigure()` and the `mural*.html` sheets are gone, what the sheets showed is in `people.html`, and the
+painters are parts of `people.js`, in the order they used to load, each headed with its old file's name. A look with no `woman`, `man` or
+`child` can no longer be painted: it is always `person()`'s own figure. The names `muralPerson`, `MURAL_WOMEN` and `castWoman` stay, as
+the painters' inside names. Folded, the sheet draws as before (seven stills against the same code before it: no more pixels apart than
+that code is from itself on a second run, 3 past 24 of 255).
 
 | `cast()` name | Who | | `cast()` name | Who |
 |---|---|---|---|---|
