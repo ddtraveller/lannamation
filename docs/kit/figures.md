@@ -1013,6 +1013,12 @@ painted arm takes that place, no further than the arm is long (the rig's arm A i
 shoulder in front). `step`, `stride` (so `stroll()`), `wai`, `floor` and `at` are the figure's own; `face: -1` mirrors it. It
 returns joints as `person()` does, where the painted figure has them. A man's legs walk too (`muManLegs()`).
 
+**A walk painted once** (`look.poses`, 2026-11-02). Painting a figure live costs about 100 to 200 ms on Chrome's GPU canvas, and being small does not make it cheaper. `poses: 8` paints one stride
+8 times onto sheets on first asking and stamps them after: ten walking at size 0.8 took 1159 ms live and 15 ms stamped, on the owner's laptop, one woman's sheets shared. The owner compared 8 poses, 16 and live in a clip and saw no
+difference, so use 8. A set takes 1.4 to 4.4 MB and about 2.5 s; `peoplePoses(look)` paints it before a film starts. The clock is held on the sheets, so the stride closes: her gold repeats with it, and her cloth and
+earrings move only with her walk, not with time. Parts alone did not pay (a cached head saved 4 to 9 ms), nor did ImageBitmaps for the cloth (0). Anyone standing, reaching, holding a hand out, looking at something, seated, in the wai,
+winking, turning or alive is painted as ever; so is any look past 64 sets (it warns: something in it is changing every frame). Her own sway goes by her `id` when live, and all who share a set share one sway.
+
 **Measured**: drawn standing, `person()` against the mural figure: at most 4 pixels past 24 of 255 on any of the twenty (the
 gold's flash). `checks/frame_time.py people.html`: 1818 ms a frame on this laptop's headless Chrome, about 100 ms a woman, so
 a scene of ten is about a second a frame to render. The old figure takes 3 to 17 ms a whole frame.

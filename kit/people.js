@@ -3654,6 +3654,7 @@ function mnSettings(look) {
 }
 MURAL_LOOK_KEYS.man = true;
 MURAL_LOOK_KEYS.child = true;
+MURAL_LOOK_KEYS.poses = true;
 
 // ========== seated (until 2026-11-01, mural_seated.js) ==========
 // mural_seated.js - the mural figure seated (2026-10-30), over the women above. The owner, of the hero film's yard redrawn
@@ -4061,8 +4062,89 @@ function wmElbowOf(S, W, toward, measure) {
   try { return wmElbow(S, W, toward); } finally { WM_UPPER = upper; WM_FORE = fore; }
 }
 
+// ---------- a walk painted once ----------
+// look.poses: N, for a painted figure walking in a crowd or far off: one stride of hers is painted N times onto sheets the first
+// time it is asked for (8 is plenty: the owner saw no difference from 16, or from painting her live, 2026-11-02), and stamped after,
+// about 2 ms a figure against 100 to 200. Her gold repeats with the stride and her cloth moves only with her walk: the clock is held
+// on the sheets, or the stride would not close. Painted as ever: one standing, reaching, holding a hand out, looking at something,
+// seated, in the wai, winking, turning or alive. Another size, or anything else about the look, is another set of sheets: 8 poses
+// take about 2 to 7 MB and a second or more, so call peoplePoses(look) before the film begins. bend goes by twentieths.
+// e.g. person(x, GROUND, cast("princess", {poses: 8, step: t, stride: 1, size: 0.8, id: "p1"}));
+var PEOPLE_POSES = {}, PEOPLE_POSES_MADE = 0, PEOPLE_POSES_MOST = 64, PEOPLE_POSES_PEN = null;
+var PEOPLE_POSES_LIVE = ["wai", "wink", "front", "alive"], PEOPLE_POSES_HELD = 1.1;
+
+function peopleBendOf(look) { return Math.round((look.bend || 0) * 20) / 20 || undefined; }
+
+function peopleCanStamp(look, wm) {
+  if (!look.poses || !look.step || look.reachA || look.reachB || look.handA || look.handB || look.at || look.floor) { return false; }
+  return PEOPLE_POSES_LIVE.every(function (k) { return !look[k] && !wm[k]; });
+}
+
+// The sheets of this look: [{canvas, x, y, w, h, joints}, ...], painted if they are not yet; null past PEOPLE_POSES_MOST sets
+// (a look that changes every frame would make a set a frame: that one is painted live).
+// e.g. peoplePoses(cast("princess", {poses: 8, size: 0.8, stride: 1}));
+function peoplePoses(look) {
+  var key = JSON.stringify(look, function (k, v) { return k === "id" || k === "step" || k === "face" || k === "bend" ? undefined : v; }) + "|" + peopleBendOf(look) + "|" + PIX;
+  if (PEOPLE_POSES[key]) { return PEOPLE_POSES[key]; }
+  if (PEOPLE_POSES_MADE >= PEOPLE_POSES_MOST) { warn("More than " + PEOPLE_POSES_MOST + " sets of poses: is something in the look changing every frame? Painting her live."); return null; }
+  var size = look.size || 1, wide = FILM.width, high = Math.max(FILM.height, Math.ceil((size * 480 + 200) * PIX));
+  var foot = high / PIX - 120, mid = wide / PIX / 2, poses = [], real = pen, held = clock, seen = SIGHTS.on;
+  if (!PEOPLE_POSES_PEN) { PEOPLE_POSES_PEN = document.createElement("canvas").getContext("2d"); }
+  var sheet = PEOPLE_POSES_PEN.canvas, small = document.createElement("canvas").getContext("2d", {willReadFrequently: true}), SHRINK = 4;
+  sheet.width = wide; sheet.height = high;           // as wide as the film's: the gold's light goes by it
+  small.canvas.width = Math.ceil(wide / SHRINK); small.canvas.height = Math.ceil(high / SHRINK);
+  pen = PEOPLE_POSES_PEN; clock = PEOPLE_POSES_HELD; SIGHTS.on = false;
+  try {
+    for (var i = 0; i < look.poses; i++) {
+      pen.setTransform(1, 0, 0, 1, 0, 0);
+      pen.clearRect(0, 0, wide, high);
+      pen.setTransform(PIX, 0, 0, PIX, 0, 0);
+      var joints = peoplePainted(mid, foot, Object.assign({}, look, {poses: undefined, face: undefined, bend: peopleBendOf(look), id: "poses/" + PEOPLE_POSES_MADE, step: 1 + i / look.poses}), peopleSettings(look));
+      small.clearRect(0, 0, small.canvas.width, small.canvas.height);
+      small.drawImage(sheet, 0, 0, small.canvas.width, small.canvas.height);
+      var a = small.getImageData(0, 0, small.canvas.width, small.canvas.height), x0 = wide, x1 = 0, y0 = high, y1 = 0;
+      for (var n = 3, at = 0; n < a.data.length; n += 4, at++) {
+        if (a.data[n]) {
+          var px = at % a.width, py = (at - px) / a.width;
+          x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py);
+        }
+      }
+      x0 = Math.max(0, (x0 - 4) * SHRINK); y0 = Math.max(0, (y0 - 4) * SHRINK);
+      var w = Math.min(wide - x0, (x1 + 5) * SHRINK - x0), h = Math.min(high - y0, (y1 + 5) * SHRINK - y0), crop = document.createElement("canvas");
+      crop.width = w; crop.height = h;
+      crop.getContext("2d").drawImage(sheet, x0, y0, w, h, 0, 0, w, h);
+      var rel = {};
+      Object.keys(joints).forEach(function (k) { rel[k] = Array.isArray(joints[k]) ? [joints[k][0] / PIX - mid, joints[k][1] / PIX - foot] : joints[k]; });
+      poses.push({canvas: crop, x: x0 / PIX - mid, y: y0 / PIX - foot, w: w / PIX, h: h / PIX, joints: rel});
+    }
+  } finally { pen = real; clock = held; SIGHTS.on = seen; }
+  PEOPLE_POSES_MADE++;
+  PEOPLE_POSES[key] = poses;
+  return poses;
+}
+
+// The pose for this step, stamped with her feet at (x, y). Returns her joints, as peoplePainted() does.
+function peopleStamp(x, y, look, poses) {
+  var n = poses.length, pose = poses[((Math.round(look.step * n) % n) + n) % n], way = look.face || 1, out = {};
+  pen.save();
+  if (way < 0) { pen.translate(x, 0); pen.scale(-1, 1); pen.translate(-x, 0); }
+  pen.drawImage(pose.canvas, x + pose.x, y + pose.y, pose.w, pose.h);
+  Object.keys(pose.joints).forEach(function (k) {
+    var j = pose.joints[k];
+    out[k] = Array.isArray(j) ? spotOf(x + j[0], y + j[1]) : j;
+  });
+  pen.restore();
+  out.face = way;
+  sighted((out.crown[0] + out.chin[0]) / 2, (out.crown[1] + out.chin[1]) / 2);
+  return out;
+}
+
 person = function (x, y, look) {
   var wm = peopleSettings(look);
+  if (wm && peopleCanStamp(look, wm)) {
+    var poses = peoplePoses(look);
+    if (poses) { return peopleStamp(x, y, look, poses); }
+  }
   return wm ? peoplePainted(x, y, look, wm) : PEOPLE_PERSON(x, y, look);
 };
 

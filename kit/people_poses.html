@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>people_poses - the twenty walking, each stride painted once and stamped</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {hop: false, wide: 1920};</script>
+<script src="oldcartoon.js"></script>
+<script src="weaving.js"></script>
+<script src="people.js"></script>
+<script>
+// look.poses of people.js: the twenty walking as in people.html's parade, on eight poses each, the first row walking across and the
+// second, facing left, the other way; from 8 s a crowd of forty, small, on the same sheets of the five women in it.
+var DURATION = 14;
+var BEAT = 0.5;
+var ALL = ["heavenly", "lotusmaiden", "naildancer", "orchiddancer", "princess", "khangran", "clothweaver", "luewoman", "courtlady", "festivalgirl",
+           "polefarmer", "longdrummer", "swordsman", "townsman", "whiteelder", "lueman", "jukboy", "kaegirl", "piagirl", "poyprince"];
+var CROWD = ["princess", "courtlady", "festivalgirl", "luewoman", "clothweaver"];
+
+function parade(t) {
+  ALL.forEach(function (name, n) {
+    var far = n >= 10, x = WIDE * ((far ? n - 10 : n) + 0.5) / 10 + (far ? -1 : 1) * 12 * t;
+    person(x, far ? 1040 : 520, cast(name, {size: 1.05, id: "w-" + name, step: 1 + t * 0.8, stride: 1, face: far ? -1 : 1, poses: 8}));
+  });
+}
+
+function crowd40(t) {
+  for (var n = 0; n < 40; n++) {
+    var line = n % 4, x = (((n - line) / 4 * 212 + line * 53 + 40 * t) % (WIDE + 200)) - 100, y = 860 + line * 60;
+    person(x, y, cast(CROWD[n % 5], {size: line < 2 ? 0.55 : 0.75, id: "c-" + n, step: 1 + t * 0.8 + n * 0.37, stride: 1, poses: 8}));
+  }
+}
+
+function draw(t) {
+  clock = t;
+  thGround(0, 0, WIDE, 1080);
+  if (t < 8) { parade(t); } else { crowd40(t); }
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 0, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+
+requestAnimationFrame(play);
+</script>
+</body>
+</html>
