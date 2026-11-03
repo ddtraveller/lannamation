@@ -2000,6 +2000,7 @@ function wmWaiArm(S, E, W, p, side, lady, e) {       // her arm's pose on the wa
           wrist: (p && p.wrist || 0) * (1 - e), fingers: mix(p && p.fingers !== undefined ? p.fingers : 0.55, k.fingers, e),
           aim: WM_WAI.aim, aimBy: e, late: true};
 }
+var WM_OVER = null;                               // what is drawn over all of her, before what she holds (the far forearm in a sabai)
 var WM_ARM = null, WM_LATE = null, WM_OWN = 0;   // WM_OWN: her own time's offset, while she is drawn                   // WM_LATE: the arms drawn late, in turn (over the sabai, under the belt)
 muArm = function (S, E, W, wide, sleeve, skin, look, outward, bend, lady) {
   var side = outward > 0 ? "far" : "near", p = WM && WM.pose && WM.pose[side];
@@ -3070,7 +3071,7 @@ function wmJokSin(n) {
 function wmWoman(x, y, look, wm, opts) {
   var px = (opts && opts.head || 70) / 100;
   if (wm.jok && look.sin !== undefined) { look = Object.assign({}, look, {sin: wmJokSin(look.sin)}); }
-  WM = wm; WM_W = {}; WM_LATE = null; WM_FEET = 0;
+  WM = wm; WM_W = {}; WM_LATE = null; WM_OVER = null; WM_FEET = 0;
   var lady = look.lady !== undefined ? !!look.lady : !!look.bun;   // a woman standing walks (a man's legs and one seated, not yet)
   WM_STEP = !look.floor && typeof look.step === "number" ? look.step : null;
   // her sway: slow, about her feet, in her own time; the gold follows it (WM_TILT), also when she stands still (sway false)
@@ -3086,6 +3087,7 @@ function wmWoman(x, y, look, wm, opts) {
   try {
     WM_KIT.muralPerson(x, y, look, opts);
     if (WM_LATE) { var gos = WM_LATE; WM_LATE = null; gos.forEach(function (go) { go(); }); }   // arms still to draw (no belt drew them)
+    if (WM_OVER) { var overs = WM_OVER; WM_OVER = null; overs.forEach(function (go) { go(); }); }
     pen.save();                                     // the figure's frame again, for what is over everything
     pen.translate(x, y); pen.scale(MU_PX, MU_PX);
     pen.save(); muUpper(WM_A, WM_B, WM_Y0); wmHolds(look); pen.restore();
@@ -3094,7 +3096,7 @@ function wmWoman(x, y, look, wm, opts) {
       pen.save(); pen.translate(8 + neckX, WM_CHIN + NECK_DROP[0]); pen.rotate(-0.05); wmCrown(); pen.restore();
     }
     pen.restore();
-  } finally { pen.restore(); WM = null; WM_LATE = null; WM_TILT = 0; WM_STEP = null; }
+  } finally { pen.restore(); WM = null; WM_LATE = null; WM_OVER = null; WM_TILT = 0; WM_STEP = null; }
 }
 
 // ---------- three more sin ----------
@@ -3760,8 +3762,8 @@ muralPerson = function (x, y, look, opts) {
 // (2026-10-31): "Can you put the sabai on one of the new model sprites and keep it from rocking or shaking?", then "Use
 // one of the new models and stop the sway if possible". Notes: docs/kit/things.md, "The sabai on a mural woman".
 //
-// She wears the cloth whole (sabaiWorn()): its back hanging from her shoulder over her far arm (owner, 2026-10-31:
-// "Have the woman's left arm be below the sabai"), her body, then its front. Her own band is left off (sabai: false);
+// She wears the cloth whole (sabaiWorn()): its back hanging from her shoulder, her far arm (her left) over it, her body,
+// then its front over her shoulder and upper arm, and her left forearm and hand over everything (owner, 2026-11-03). Her own band is left off (sabai: false);
 // she stands still (woman: sway false), so the cloth lies on her as she is; SABAI_MURAL_ARMS lays her near arm hanging
 // over the cloth's lower end. A steady cloth's figures do not bob or rock.
 // e.g. var look = castWoman("maiden", {sabai: false, id: "maiden"});
@@ -3847,9 +3849,13 @@ var MS_TORSO = "M -13.13 -586 C -30 -582 -50 -578 -60 -562 C -68 -548 -66 -520 -
 // belt (with the late arm, mural_women.js draws it there) waits until the cloth is on. The chains of rank (neck
 // "sangwan") are worn over the cloth: below the choker they are drawn again after it. For one with neither, after her.
 // It is cut along her torso's line (MS_TORSO).
-// The cloth's back (worn.back) is drawn after her far arm, which mural.js draws first of her: it hangs over that arm,
-// under all the rest of her. An arm drawn late (in a wai) is drawn over her, but not over the back: it comes out from
-// under the cloth (as the kit's own figure's upper arm stays under it in a wai, owner 2026-10-16).
+// Her far arm, her left, the cloth's shoulder (owner, 2026-11-03: "Fix the woman's left arm. It should be in front of the
+// back part of the sabai and her forearm and hand should be in front of everything. Her bicep and shoulder should be
+// behind the front side of the sabai"; until then the back hung over the whole arm, owner 2026-10-31): the cloth's back
+// is drawn first, then that arm, which mural.js draws first of her, so her body and the cloth's front lie over its
+// shoulder and upper arm; then the same arm again from the elbow down (cut along the elbow's bisector), over all of her
+// (WM_OVER). Never late: in a wai its forearm goes where the late arms go (over the cloth, before her near arm, so her
+// near hand stays in front of it, as the far hand is seen in three-quarter view).
 var MURAL_SABAI_KIT = {muralPerson: muralPerson, muBelt: muBelt, muCollar3q: muCollar3q, muArm: muArm}, MS_WORN = null;
 muralPerson = function (x, y, look, opts) {
   if (!look.worn || !look.woman) { return MURAL_SABAI_KIT.muralPerson(x, y, look, opts); }
@@ -3869,27 +3875,41 @@ function msBack() {                                  // the cloth's back, once
   pen.save();
   try { wear.worn.back(); } finally { pen.restore(); }
 }
-function msOffBack() {                               // a clip: all but the cloth's back (in the frame the cloth was laid in)
-  var T = MS_WORN.worn.where.tail, p = new Path2D();
-  if (!T) { return; }
-  pen.setTransform(MS_WORN.worn.frame);
-  p.rect(-20000, -20000, 40000, 40000);
-  p.moveTo(T.inner[0], T.inner[1]);
-  T.outer.concat(T.hem).forEach(function (q) { p.lineTo(q[0], q[1]); });
-  p.closePath();
-  pen.clip(p, "evenodd");
-}
 muArm = function (S, E, W, wide, sleeve, skin, look, outward, bend, lady) {
   var wear = MS_WORN;
-  if (!wear || wear.back || outward <= 0) { return MURAL_SABAI_KIT.muArm(S, E, W, wide, sleeve, skin, look, outward, bend, lady); }
-  var late = WM_LATE ? WM_LATE.length : 0;
-  MURAL_SABAI_KIT.muArm(S, E, W, wide, sleeve, skin, look, outward, bend, lady);   // her far arm, now or late
-  if (WM_LATE && WM_LATE.length > late) {            // late: over her, still under the back
-    var go = WM_LATE[late];
-    WM_LATE[late] = function () { pen.save(); try { msOffBack(); go(); } finally { pen.restore(); } };
-  }
-  msBack();
+  if (!wear || wear.far || outward <= 0) { return MURAL_SABAI_KIT.muArm(S, E, W, wide, sleeve, skin, look, outward, bend, lady); }
+  wear.far = true;
+  msBack();                                          // the cloth's back under the arm
+  var late = WM_LATE ? WM_LATE.length : 0, base = WM_KIT.muArm, seen = null;
+  WM_KIT.muArm = function () { seen = {args: arguments, frame: pen.getTransform(), arm: WM_ARM}; return base.apply(null, arguments); };
+  try {
+    MURAL_SABAI_KIT.muArm(S, E, W, wide, sleeve, skin, look, outward, bend, lady);
+    if (WM_LATE && WM_LATE.length > late) { WM_LATE.splice(late, 1)[0](); }   // now, not late: under her body and the cloth's front
+  } finally { WM_KIT.muArm = base; }
+  if (!seen) { return; }
+  var fore = function () { msForearm(seen, base); };
+  if (seen.arm && seen.arm.aim !== undefined) { WM_LATE = WM_LATE || []; WM_LATE.splice(late, 0, fore); }   // a wai: before her near arm
+  else { (WM_OVER = WM_OVER || []).push(fore); }
 };
+// The far arm drawn again from the elbow down: clipped to the side of the elbow's bisector that holds the wrist.
+function msForearm(seen, base) {
+  var S = seen.args[0], E = seen.args[1], W = seen.args[2];
+  var lu = Math.hypot(S[0] - E[0], S[1] - E[1]) || 1, lv = Math.hypot(W[0] - E[0], W[1] - E[1]) || 1;
+  var b = [(S[0] - E[0]) / lu + (W[0] - E[0]) / lv, (S[1] - E[1]) / lu + (W[1] - E[1]) / lv], lb = Math.hypot(b[0], b[1]);
+  b = lb < 1e-3 ? [-(S[1] - E[1]) / lu, (S[0] - E[0]) / lu] : [b[0] / lb, b[1] / lb];   // a straight arm: across it
+  var n = [-b[1], b[0]], L = 5000;
+  if (n[0] * (W[0] - E[0]) + n[1] * (W[1] - E[1]) < 0) { n = [-n[0], -n[1]]; }
+  pen.save();
+  try {
+    pen.setTransform(seen.frame);
+    pen.beginPath();
+    pen.moveTo(E[0] + b[0] * L, E[1] + b[1] * L); pen.lineTo(E[0] - b[0] * L, E[1] - b[1] * L);
+    pen.lineTo(E[0] - b[0] * L + n[0] * L, E[1] - b[1] * L + n[1] * L); pen.lineTo(E[0] + b[0] * L + n[0] * L, E[1] + b[1] * L + n[1] * L);
+    pen.closePath(); pen.clip();
+    WM_ARM = seen.arm;
+    base.apply(null, seen.args);
+  } finally { WM_ARM = null; pen.restore(); }
+}
 function msWear() {                                  // the cloth's front, once
   var wear = MS_WORN;
   if (wear.done) { return; }
