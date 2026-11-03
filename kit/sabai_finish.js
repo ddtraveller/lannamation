@@ -154,6 +154,7 @@ function sfShadow(where, half) {
   pen.restore();
 }
 
+var SABAI_FINISH_SHEEN = 0.4;                        // how strong the light laid over the cloth is (1 = as it was until 2026-11-03)
 var SF_LAYERS = null;                                // two small sheets for the light: made once, grown when a cloth needs more
 function sfLayer(k, w, h) {
   if (!SF_LAYERS) { SF_LAYERS = [document.createElement("canvas"), document.createElement("canvas")]; }
@@ -206,7 +207,9 @@ function sfLight(where, half) {
     for (var k = 0; k <= 12; k++) {
       var v = -1 + k / 6;                                                   // -1 its upper edge, 1 its lower
       var dark = Math.min(0.5, 0.2 * Math.pow(Math.max(0, v), 1.6) + 0.16 * turn * turn);
-      var light = 0.1 * Math.exp(-Math.pow((v + 0.5) / 0.35, 2)) + 0.12 * glowA * Math.exp(-Math.pow((v + 0.3) / 0.5, 2));
+      // the sheen and the glow at 0.4 of what they were (owner, 2026-11-03: "take some of the sheen off the sabai. It looks
+      // like a color change with a white overlay. Tone it down")
+      var light = SABAI_FINISH_SHEEN * (0.1 * Math.exp(-Math.pow((v + 0.5) / 0.35, 2)) + 0.12 * glowA * Math.exp(-Math.pow((v + 0.3) / 0.5, 2)));
       var d = Math.round(255 * (1 - dark)), lv = Math.round(255 * light);
       gs.addColorStop(k / 12, "rgb(" + d + "," + Math.round(d * 0.97) + "," + Math.round(d * 0.98) + ")");
       gl.addColorStop(k / 12, "rgb(" + lv + "," + Math.round(lv * 0.94) + "," + Math.round(lv * 0.85) + ")");
