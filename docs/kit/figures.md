@@ -1019,9 +1019,20 @@ difference, so use 8. A set takes 1.4 to 4.4 MB and about 2.5 s; `peoplePoses(lo
 earrings move only with her walk, not with time. Parts alone did not pay (a cached head saved 4 to 9 ms), nor did ImageBitmaps for the cloth (0). Anyone standing, reaching, holding a hand out, looking at something, seated, in the wai,
 winking, turning or alive is painted as ever; so is any look past 64 sets (it warns: something in it is changing every frame). Her own sway goes by her `id` when live, and all who share a set share one sway.
 
+**Her face turned to us** (a woman's setting `front`, 0 to 1; the hero film's scene). Straight on, her head is the owner's
+pick of 2026-11-04, "T3", after an oil portrait of a Thai woman in gold silk the owner sent: the jaw traced from it ear to
+ear through the chin (`WM_FRONT_TRACE`: the cheeks fall almost straight to the tip of the nose, then come in steadily to
+a rounded chin, rounder than traced at the owner's word), at the width her face had (`WM_FRONT_HEAD`); the hair down over
+both temples to the tops of the ears, framing the face, combed up to a taller crown, a knot at the nape behind the head;
+the eyes the painting's (level, open, no flick or wing, a larger iris, the fold of the lid); the nose with no line, a
+shade down one side, a lit round tip, soft wings and two dark rounded nostrils (`wmNoseFront`); the lips wider, a bowed
+upper and a fuller lower (`wmLipsFront`, painted by `muLipsPainted`, so smiles and paint work on them). Her own jaw
+numbers go on both sides alike. As she turns, the three-quarter nose and mouth slide to the middle and hand over to these
+over the middle of the turn, so the two are never seen apart.
+
 **Measured**: drawn standing, `person()` against the mural figure: at most 4 pixels past 24 of 255 on any of the twenty (the
 gold's flash). `checks/frame_time.py people.html`: 1818 ms a frame on this laptop's headless Chrome, about 100 ms a woman, so
 a scene of ten is about a second a frame to render. The old figure takes 3 to 17 ms a whole frame.
 
-**Not yet**: turn, twist, the hop and a lean (`bend`) are not read: always three-quarter. A seated man stands (as before), and
+**Not yet**: turn, twist, the hop and a lean (`bend`) are not read: always three-quarter (but a woman's face, by `front`). A seated man stands (as before), and
 a seated woman returns only `stand` among her joints. The speed above.

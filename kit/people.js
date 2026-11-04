@@ -2604,40 +2604,117 @@ function wmFront() {
 function wmToward(pts, front, e) {
   return new MPath().poly(pts.map(function (p, i) { var q = front(p, i); return [mix(p[0], q[0], e), mix(p[1], q[1], e)]; }), true);
 }
-// the face's outline straight on: the point of the three-quarter outline (about its own middle) at the same turn on an oval,
-// narrowing below to the chin
-function wmFaceFront(p) {
-  var a = Math.atan2((p[1] + 46) / 49, (p[0] - 2) / 35), c = Math.cos(a), s = Math.sin(a);
-  return s < 0 ? [WM_FRONT_X + 31 * c, -47 + 50 * s] : [WM_FRONT_X + 31 * c * (1 - 0.36 * s * s), -47 + 49 * s];
+// The head straight on (owner, 2026-11-04: "redraw the shape of the face for the frontal view of the woman. Her jaw and
+// the shape of her head look a little off", then "Trace the first reference image from ear to ear passing through the
+// chin ... Take inspiration from that shape"). The jaw is traced from that painting (an oil portrait of a Thai woman in
+// gold silk, facing us): WM_FRONT_TRACE, from her cheekbones (1: their height above the chin, their width) to her chin
+// (0), each row how high above the chin as a share of the cheekbones' height, and how wide as a share of their width:
+// her cheeks fall almost straight to the tip of her nose, then come in steadily to a narrow, rounded chin. Ours is
+// "wide" across at "at" (her cheekbones), the chin at "chin"; above, the forehead a dome up to "top" under the hair,
+// narrowing at the temples by "temples"; the hair's dome "temple" wide and up to "crown"; her eyes "eyes" either side of
+// her middle (the painting's nearly reach the edge of her face).
+// (the owner, of the traced face at today's width: "Round T3's chin a little more": its last three rows fuller)
+var WM_FRONT_TRACE = [[1, 1], [0.69, 0.93], [0.51, 0.85], [0.33, 0.7], [0.19, 0.56], [0.08, 0.4], [0.03, 0.26], [0, 0]];
+// The owner picked the traced face at the width hers had been ("T3"), 2026-11-04. Her eyes straight on go over to the
+// painting's (eye: wmEye's own numbers, as far as she has turned): level, more open, no flick at the corner, no
+// wing, longer and a larger iris, the fold of the lid showing ("redo the nostrils and eyes to be more like the reference image").
+var WM_FRONT_HEAD = {wide: 30.5, at: -47, top: -97, temples: 0.12, chin: 1, temple: 35.5, crown: -112, brow: [27.5, -55, -84], nape: -38,
+  eyes: 14.5, eye: {tilt: 0, open: 2.2, flick: 0, liner: 0, iris: 1.15, crease: 1, long: 1.1},
+  nose: -33.5, mouth: {y: -21.5, half: 13.5, upper: 3.2, lower: 4.8}};
+var WM_FRONT_JAW = {key: null, pts: null, run: null};
+function wmJawFront(W, chin) {                       // the traced jaw at this width and chin, sampled evenly along its length
+  var H = WM_FRONT_HEAD, key = [W, chin, H.at].join(" ");
+  if (WM_FRONT_JAW.key === key) { return WM_FRONT_JAW; }
+  var T = WM_FRONT_TRACE.map(function (r) { return [W * r[1], chin + (H.at - chin) * r[0]]; }), pts = [], run = [0];
+  for (var i = 0; i < T.length - 1; i++) {           // through each row smoothly (Catmull-Rom), the chin met flat
+    var p0 = T[Math.max(0, i - 1)], p1 = T[i], p2 = T[i + 1], p3 = i + 2 < T.length ? T[i + 2] : [-T[i][0], T[i][1]];
+    for (var k = 0; k < 12; k++) {
+      var t = k / 12, t2 = t * t, t3 = t2 * t;
+      pts.push([0, 1].map(function (d) {
+        return 0.5 * (2 * p1[d] + (p2[d] - p0[d]) * t + (2 * p0[d] - 5 * p1[d] + 4 * p2[d] - p3[d]) * t2 + (3 * p1[d] - p0[d] - 3 * p2[d] + p3[d]) * t3);
+      }));
+    }
+  }
+  pts.push(T[T.length - 1]);
+  for (i = 1; i < pts.length; i++) { run.push(run[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])); }
+  WM_FRONT_JAW = {key: key, pts: pts, run: run};
+  return WM_FRONT_JAW;
+}
+// the face's outline straight on: the point of the three-quarter outline (about its own middle) at the same turn on it.
+// Her own jaw (J: wm.face.jaw) goes on both sides alike: her cheek fuller or leaner, her chin longer or shorter
+function wmFaceFront(p, J) {
+  var H = WM_FRONT_HEAD, a = Math.atan2((p[1] + 46) / 49, (p[0] - 2) / 35), c = Math.cos(a), s = Math.sin(a);
+  J = J || {};
+  var ch = J.chin || [0, 0], W = H.wide + 0.5 * (J.cheek || 0);
+  if (s < 0) { return [WM_FRONT_X + W * c * (1 - H.temples * s * s), H.at + (H.at - H.top) * s]; }
+  var jaw = wmJawFront(W, H.chin + 0.6 * ch[1]), want = Math.acos(Math.min(1, Math.abs(c))) / (Math.PI / 2) * jaw.run[jaw.run.length - 1];
+  var i = 1;
+  while (i < jaw.run.length - 1 && jaw.run[i] < want) { i++; }
+  var f = (want - jaw.run[i - 1]) / ((jaw.run[i] - jaw.run[i - 1]) || 1), q = [mix(jaw.pts[i - 1][0], jaw.pts[i][0], f), mix(jaw.pts[i - 1][1], jaw.pts[i][1], f)];
+  return [WM_FRONT_X + (c < 0 ? -1 : 1) * q[0], q[1]];
 }
 // the hair's mass straight on: over the crown and down both sides to the ears
 function wmHairFront(p) {
-  var a = Math.atan2((p[1] + 58) / 46, (p[0] + 8) / 45), c = Math.cos(a), s = Math.sin(a);
-  return s < 0 ? [WM_FRONT_X + 35 * c, -57 + 49 * s] : [WM_FRONT_X + 35 * c * (1 - 0.15 * s), -57 + 24 * s];
+  var H = WM_FRONT_HEAD, a = Math.atan2((p[1] + 58) / 46, (p[0] + 8) / 45), c = Math.cos(a), s = Math.sin(a);
+  return s < 0 ? [WM_FRONT_X + H.temple * c, -57 + (-57 - H.crown) * s] : [WM_FRONT_X + H.temple * c * (1 - 0.15 * s), -57 + 24 * s];
 }
 // the hair over the brow straight on, point for point as the three-quarter edge is drawn (45 points: its line over the
-// brow from the near temple, its outer edge back over the crown, and the short way down and back at the near temple)
+// brow from the near temple, its outer edge back over the crown, and the short way down and back at the near temple).
+// Its line comes down over both temples alike to the tops of her ears (WM_FRONT_HEAD.brow: [half its width there, how
+// low, its middle]), so the hair frames her face as an oval, as the references the owner sent have it
 function wmEdgeFront(fh) {
-  var x = WM_FRONT_X, out = [[x - 29, -62]], k;
-  for (k = 1; k <= 14; k++) { var a = Math.PI * (1 + k / 14); out.push([x + 29 * Math.cos(a), -62 + (24 + fh) * Math.sin(a)]); }
-  for (k = 1; k <= 14; k++) { var b = -Math.PI * k / 14; out.push([x + 35 * Math.cos(b), -56 + 50 * Math.sin(b)]); }
-  out.push([x - 34, -58], [x - 31, -60]);
-  for (k = 1; k <= 14; k++) { out.push([x - 31 + 2 * k / 14, -60 - 2 * k / 14]); }
+  var H = WM_FRONT_HEAD, x = WM_FRONT_X, S = H.brow[0], sy = H.brow[1], mid = H.brow[2] - fh, out = [[x - S, sy]], k;
+  for (k = 1; k <= 14; k++) { var a = Math.PI * (1 + k / 14); out.push([x + S * Math.cos(a), sy + (sy - mid) * Math.sin(a)]); }
+  for (k = 1; k <= 14; k++) { var b = -Math.PI * (k - 1) / 13; out.push([x + H.temple * Math.cos(b), sy + 6 + (sy + 6 - H.crown) * Math.sin(b)]); }
+  out.push([x - H.temple + 1, sy + 4], [x - S - 2, sy + 2]);
+  for (k = 1; k <= 14; k++) { out.push([x - S - 2 + 2 * k / 14, sy + 2 - 2 * k / 14]); }
   return out;
 }
 // the colour of her cheeks straight on: the near cheek's, either side
 function wmCheeksFront(lady, paint, f) {
-  var lift = f ? Math.max(f.smile || 0, f.laugh || 0, 0.8 * (f.full || 0)) : 0, x = WM_FRONT_X;
+  var lift = f ? Math.max(f.smile || 0, f.laugh || 0, 0.8 * (f.full || 0)) : 0, x = WM_FRONT_X, k = WM_FRONT_HEAD.wide / 31;
   [-1, 1].forEach(function (side) {
-    muGlow(x + side * 31, -58, 9, 24, "80, 40, 30", 0.1);   // the temple, under the hair
+    muGlow(x + k * side * 31, -58, 9, 24, "80, 40, 30", 0.1);   // the temple, under the hair
     pen.save(); pen.translate(0, -2.5 * lift);
-    if (!lady || !paint || MU.cheek === "soft") { muGlow(x + side * 15, -31, 11, 9, "200, 90, 80", (lady ? 0.2 : 0.14) * (1 + 0.3 * lift)); }
+    if (!lady || !paint || MU.cheek === "soft") { muGlow(x + k * side * 15, -31, 11, 9, "200, 90, 80", (lady ? 0.2 : 0.14) * (1 + 0.3 * lift)); }
     else {
-      muGlow(x + side * 17, -35, 12, 8, paint.rouge, 0.22, -side * 0.35);
-      muGlow(x + side * 12, -31, 7, 5.5, paint.rouge, 0.12 + 0.12 * lift);
+      muGlow(x + k * side * 17, -35, 12, 8, paint.rouge, 0.22, -side * 0.35);
+      muGlow(x + k * side * 12, -31, 7, 5.5, paint.rouge, 0.12 + 0.12 * lift);
     }
     pen.restore();
   });
+}
+// The nose straight on, after the same painting: no line down the bridge, only a shade down one side of it and light
+// down its middle; a small round tip, lit, with a soft shadow under it; each wing a soft curve, and the nostrils two short
+// dark strokes under the tip (WM_FRONT_HEAD.nose: how high its tip is)
+function wmNoseFront(skin) {
+  var X = WM_FRONT_X, y = WM_FRONT_HEAD.nose;
+  muGlow(X - 4.2, y - 8, 2.6, 9.5, "170, 80, 70", 0.15);         // the shade down the bridge's side, from the inner eye
+  muGlow(X + 0.3, y - 7, 1.5, 7.5, "255, 246, 232", 0.3);        // the light down the bridge
+  muGlow(X, y + 2, 7.5, 2.2, "130, 60, 48", 0.2);                // the shadow under the nose
+  muGlow(X, y - 0.8, 2.6, 1.8, "255, 246, 232", 0.38);           // the light on the round tip
+  [-1, 1].forEach(function (side) {
+    muGlow(X + side * 2.7, y + 1.1, 1.8, 1.1, "110, 50, 50", 0.38);   // a nostril: a soft dark round under the tip
+    muInkLine([[X + side * 5.6, y - 2.6, 0.2], [X + side * 6.3, y - 1, 0.6], [X + side * 5.8, y + 0.8, 0.75], [X + side * 4.2, y + 1.7, 0.6], [X + side * 2.6, y + 1.9, 0.45], [X + side * 1.2, y + 1.5, 0.2]], NOSE_PAINT.wing);
+  });
+}
+// The lips straight on, after the same painting, shaped as LIPS_LANNA is so that muLipsPainted paints them, smiles them
+// and opens them: wider than the three-quarter mouth slid to the middle had been, the upper lip a bow with its two peaks
+// either side of the middle, the lower fuller (WM_FRONT_HEAD.mouth: where the seam is, half its width, how high the upper
+// lip is and how deep the lower)
+function wmLipsFront() {
+  var M = WM_FRONT_HEAD.mouth, X = WM_FRONT_X, y0 = M.y, w = M.half, n = 25, seam = [], top = [], bottom = [], rim = [], k;
+  function bow(u) { return u < 0.25 ? 0.8 + 0.2 * u / 0.25 : 1 - Math.pow((u - 0.25) / 0.75, 1.7); }
+  for (k = 0; k < n; k++) {
+    var x = w * (1 - 2 * k / (n - 1)), u = Math.abs(x) / w;
+    seam.push([X + x, y0 - 0.2 + 0.6 * (1 - u * u)]);
+    top.push([X + x, y0 - 0.2 - M.upper * bow(u)]);
+    bottom.unshift([X + x, y0 - 0.2 + M.lower * Math.pow(1 - u * u, 0.7)]);
+    if (u < 0.78) { rim.unshift([X + x, y0 - 0.2 + M.lower * Math.pow(1 - u * u, 0.7) - 1.1]); }
+  }
+  return {upper: top.concat(seam.slice().reverse()), lower: seam.concat(bottom), seam: seam, rim: rim,
+          tickL: [[X + w + 0.9, y0 - 0.7], [X + w, y0 - 0.2], [X + w - 0.9, y0 + 0.1]],
+          tickR: [[X - w - 0.9, y0 - 0.7], [X - w, y0 - 0.2], [X - w + 0.9, y0 + 0.1]], px: LIPS_LANNA.px};
 }
 // the head's own lines, built for her jaw (cw, co, ch, fw) and k (MU.tara)
 function wmFaceLine(k, cw, co, ch, fw) {
@@ -2661,20 +2738,28 @@ function wmMoved(from, to, wide, e, draw) {
 function wmHead(look, lady, skin, fc) {
   var hair = look.hair || MU.hair, e = wmFront(), X = WM_FRONT_X;
   var hd = fc.hairdo || (look.bun === "wong" ? "wong" : "mural"), K = WM_KNOTS[hd];
-  if (e) { K = [K[1] < -80 ? mix(K[0], X, e) : K[0] + 6 * e, K[1], K[2]]; }   // a knot on the crown to her middle; one at the nape just behind
+  // a knot on the crown to her middle; one at the nape behind her head, out past her cheek on its own side (WM_FRONT_HEAD.nape)
+  var nape = e > 0 && hd !== "wong" && hd !== "lue" && K[1] >= -80;
+  if (e) { K = [K[1] < -80 ? mix(K[0], X, e) : mix(K[0], X + WM_FRONT_HEAD.nape, e), K[1], K[2]]; }
   if (fc.tail) { wmTail(K, hair); }                 // behind everything of the head
   if (hd === "wong" || hd === "lue") { if (!WM.crown) { wmWongLoop(K, hair); } muBun(K[0], K[1], K[2], hair, look); }
-  var mass = new MPath().M(30, -88).C(14, -106, -32, -108, -48, -80).C(-58, -60, -54, -34, -38, -18).C(-30, -12, -20, -14, -14, -22).L(30, -60).Z();
-  if (e) { mass = wmToward(mass.subs[0].pts, wmHairFront, e); }
-  mShape(mass, hair, 5, 1.3);
-  if (hd !== "wong" && hd !== "lue") {
+  var knot = function () {
     muBun(K[0], K[1], K[2], hair, look);
     if (hd === "high") { wmComb(K, "gold"); }
     if (hd === "low") { wmComb(K, "ivory"); }
     muBunGold(K[0], K[1], K[2]);
+  };
+  if (nape) { knot(); }                             // straight on, a knot at the nape is behind her head
+  var mass = new MPath().M(30, -88).C(14, -106, -32, -108, -48, -80).C(-58, -60, -54, -34, -38, -18).C(-30, -12, -20, -14, -14, -22).L(30, -60).Z();
+  if (e) { mass = wmToward(mass.subs[0].pts, wmHairFront, e); }
+  mShape(mass, hair, 5, 1.3);
+  if (hd !== "wong" && hd !== "lue") {
+    if (!nape) { knot(); }
+    else if (e < 1) { pen.save(); pen.globalAlpha *= 1 - e; knot(); pen.restore(); }   // over the hair as it was, fading as she turns
   }
+  var inEar = e * (31 - WM_FRONT_HEAD.wide - 0.5 * ((fc.jaw || {}).cheek || 0));   // straight on, her ears in with her cheeks
   if (e) {                                          // her far ear, its earring and her lock, coming out from behind her cheek
-    pen.save(); pen.translate(2 * X - 14 * (1 - e), 0); pen.scale(-1, 1);
+    pen.save(); pen.translate(2 * X - 14 * (1 - e) - inEar, 0); pen.scale(-1, 1);
     var far = MU.ear !== null ? muEarPainted(skin, MU.ear) : [-25, -34];
     muEarring(far[0], far[1]);
     if (fc.jon) { wmJon(hair); }
@@ -2682,9 +2767,9 @@ function wmHead(look, lady, skin, fc) {
   }
   var k = MU.tara || 0, J = fc.jaw || {}, cw = J.cheek || 0, co = J.corner || [0, 0], ch = J.chin || [0, 0], fw = J.far || 0;
   var face = wmFaceLine(k, cw, co, ch, fw);
-  if (e) {                                          // her own jaw kept: each point as far from the plain head's as it was
-    var plain = wmFaceLine(k, 0, [0, 0], [0, 0], 0).subs[0].pts, own = face.subs[0].pts;
-    face = wmToward(own, function (p, i) { var q = wmFaceFront(plain[i]); return [q[0] + p[0] - plain[i][0], q[1] + p[1] - plain[i][1]]; }, e);
+  if (e) {                                          // each point of the plain head's to where it is straight on, her own jaw on both sides
+    var plain = wmFaceLine(k, 0, [0, 0], [0, 0], 0).subs[0].pts;
+    face = wmToward(face.subs[0].pts, function (p, i) { return wmFaceFront(plain[i], J); }, e);
   }
   mFill(face, skin, 7);
   pen.save(); pen.clip(face.path);
@@ -2716,43 +2801,75 @@ function wmHead(look, lady, skin, fc) {
     var u = s / 11;
     strands.M(24 - u * 40, -92 + u * 8).C(4 - u * 30, -100 + u * 2, -30 - u * 10, -94 + u * 14, -46 - u * 2, -70 + u * 26);
   }
-  pen.save(); pen.clip(mass.path); mLine(strands, sheen, 1.1); pen.restore();
+  pen.save(); pen.clip(mass.path);
+  if (e < 1) { pen.globalAlpha = 1 - e; mLine(strands, sheen, 1.1); }
+  if (e > 0) {                                      // straight on, combed up from her hairline on both sides to the crown
+    var FB = WM_FRONT_HEAD.brow, up = new MPath(), mid = FB[2] - fh;
+    for (s = 0; s < 9; s++) {
+      var ang = Math.PI * (1.08 + 0.84 * s / 8), hx = X + FB[0] * Math.cos(ang), hy = FB[1] + (FB[1] - mid) * Math.sin(ang) - 3;
+      up.M(hx, hy).Q(X + 1.25 * (hx - X), mix(hy, WM_FRONT_HEAD.crown, 0.8), X + 0.25 * (hx - X), WM_FRONT_HEAD.crown + 5);
+    }
+    pen.globalAlpha = 0.5 * e; mLine(up, sheen, 1.1);
+  }
+  pen.restore();
   if (hd === "ipun") { wmIpun(hair); }
   if (hd === "wong") { muBunGold(K[0], K[1], K[2]); }   // a knot on the crown: what hangs from it hangs down the back, over the hair
   if (hd === "lue") { wmLueWrap(fc.wrap || ["#f4f0e6", "#e88aa8"]); }
   if (fc.jon) { wmJon(hair); }
+  pen.save(); pen.translate(inEar, 0);
   var lobe = MU.ear !== null ? muEarPainted(skin, MU.ear) : [-25, -34];
   muEarring(lobe[0], lobe[1]);
-  var E = fc.eyes || {}, ey = E.y || 0, el = E.long || 1;
-  var nearEye = [mix(-4, X - 14.5, e), -50 + ey - 0.5 * e], farEye = [mix(25, X + 14.5, e), -51 + ey + 0.5 * e];
+  pen.restore();
+  var E = fc.eyes || {};
+  if (e) {                                          // straight on, the painting's eyes (WM_FRONT_HEAD.eye)
+    var FE = WM_FRONT_HEAD.eye, own = {tilt: 0, open: 0, flick: 1, liner: 0, iris: 1, crease: 1, long: 1};
+    E = Object.assign({}, E);
+    Object.keys(FE).forEach(function (key) { E[key] = mix(E[key] === undefined ? own[key] : E[key], FE[key], e); });
+  }
+  var ey = E.y || 0, el = E.long || 1;
+  var EX = WM_FRONT_HEAD.eyes, nearEye = [mix(-4, X - EX, e), -50 + ey - 0.5 * e], farEye = [mix(25, X + EX, e), -51 + ey + 0.5 * e];
   wmEye(nearEye, mix(16, 14, e) * el, -1, lady, paint, feel, E);
   wmEye(farEye, mix(10.5, 14, e) * el, 1, lady, paint, feel, E);
   // the brows: her own arch, length and fall, then the feeling's turn as mural.js gives it; straight on, each over its
   // eye, the two as long
   var B = fc.brows || {}, bl = B.lift || 0, ba = B.arch || 0, bo = B.long || 0, bf = B.fall || 0;
   var painted = MU.nose === "exact" || MU.nose === "exactink";
-  wmMoved([-7, -66], [X - 14.5, -66], 0.82, e, function () {
+  wmMoved([-7, -66], [X - EX, -66], 0.82, e, function () {
     pen.save(); muBrowTurn(feel, -7, -67 - bl, 1);
     mLine(new MPath().M(8, -62 - bl).Q(-4, -71 - bl - ba, -22 - bo, -65 - bl + bf), muColour(hair), 1.6 * (B.thick || 1));
     pen.restore();
   });
-  wmMoved([26, -64], [X + 14.5, -66], painted ? 2.3 : 1.38, e, function () {
+  wmMoved([26, -64], [X + EX, -66], painted ? 2.3 : 1.38, e, function () {
     pen.save(); muBrowTurn(feel, 28.4, -62.2 - bl, -1);
     if (painted) { pen.translate(0, -bl); muInkLine(NOSE_LANNA.brow, NOSE_PAINT.brow); }
     else { mLine(new MPath().M(17, -62 - bl).Q(26, -69 - bl - ba * 0.7, 35 + bo * 0.4, -65 - bl + bf * 0.7), muColour(hair), 1.6 * (B.thick || 1)); }
     pen.restore();
   });
-  // the nose to her middle: a nose of lines (drawn three-quarter) gives way halfway to the small round tip that reads
-  // straight on ("between")
-  var kind = MU.nose || "now", round = {rosy: true, between: true, ref: true, button: true, low: true};
-  wmMoved([22, -31], [X, -31], 1, e, function () {
-    muNose(e > 0.5 && !round[kind] ? "between" : kind, skin, lady);
-    if (MU.tara) {
-      muGlow(21.5, -27.6, 5, 2.4, "140, 70, 60", 0.14 * MU.tara);
-      muInkLine([[18.6, -31.2, 0.25], [19.6, -29.4, 0.35], [21.4, -28.6, 0.4], [23.2, -29.2, 0.35], [24.2, -30.8, 0.25]].map(function (q) { return [q[0], q[1], q[2] * MU.tara]; }), NOSE_PAINT.nostril);
-    }
-  });
-  wmMoved(mouthAt, mouthTo, 1.1, e, function () { muLipsPainted(lady, skin, MU.mouth, paint, feel); });
+  // the nose and the mouth: as drawn three-quarter, sliding to her middle as she turns; straight on, the painting's
+  // (wmNoseFront, wmLipsFront), sliding with them from where the three-quarter ones were, taking over from them over the
+  // middle of the turn (so the two are never seen apart)
+  var kind = MU.nose || "now", FH = WM_FRONT_HEAD, fe = clamp((e - 0.3) / 0.4);
+  fe = fe * fe * (3 - 2 * fe);
+  if (fe < 1) {
+    pen.save(); pen.globalAlpha *= 1 - fe;
+    wmMoved([22, -31], [X, -31], 1, e, function () {
+      muNose(kind, skin, lady);
+      if (MU.tara) {
+        muGlow(21.5, -27.6, 5, 2.4, "140, 70, 60", 0.14 * MU.tara);
+        muInkLine([[18.6, -31.2, 0.25], [19.6, -29.4, 0.35], [21.4, -28.6, 0.4], [23.2, -29.2, 0.35], [24.2, -30.8, 0.25]].map(function (q) { return [q[0], q[1], q[2] * MU.tara]; }), NOSE_PAINT.nostril);
+      }
+    });
+    wmMoved(mouthAt, mouthTo, 1.1, e, function () { muLipsPainted(lady, skin, MU.mouth, paint, feel); });
+    pen.restore();
+  }
+  if (fe > 0) {
+    pen.save(); pen.globalAlpha *= fe;
+    pen.save(); pen.translate((1 - e) * (22 - X), (1 - e) * (-29 - FH.nose)); wmNoseFront(skin); pen.restore();
+    pen.translate((1 - e) * (mouthAt[0] - X), (1 - e) * (mouthAt[1] - FH.mouth.y));
+    var three = LIPS_LANNA; LIPS_LANNA = wmLipsFront();
+    try { muLipsPainted(lady, skin, null, paint, feel); } finally { LIPS_LANNA = three; }
+    pen.restore();
+  }
 }
 
 // muEye (mural.js) with her own eye (E: wm.face.eyes): its tilt, its opening, its crease, where it looks, its wing
