@@ -1025,9 +1025,9 @@ ear through the chin (`WM_FRONT_TRACE`: the cheeks fall almost straight to the t
 a rounded chin, rounder than traced at the owner's word), at the width her face had (`WM_FRONT_HEAD`); the hair down over
 both temples to the tops of the ears, framing the face, combed up to a taller crown, a knot at the nape behind the head;
 the eyes the painting's (level, open, no flick or wing, a larger iris, the fold of the lid); the nose the owner's pick
-"N4" of the same day, lit from one side as the painting's is: no line down the bridge, a shade down its far side from
-the inner eye deepening to a broad wing, light down the near side, a broad lit tip over a dark band, and two dark
-nostrils angled in, the shaded one darker (`wmNoseFront`); the lips wider, a bowed
+"N2" of the same day with its nostrils flattened ("F3"): no line down the bridge, a soft shade down either side and
+light down the middle, a round lit tip, each wing round and drawn by a line running level under it, the nostrils two
+long, thin, nearly level dark slots (`wmNoseFront`); the lips wider, a bowed
 upper and a fuller lower (`wmLipsFront`, painted by `muLipsPainted`, so smiles and paint work on them). Her own jaw
 numbers go on both sides alike. As she turns, the three-quarter nose and mouth slide to the middle and hand over to these
 over the middle of the turn, so the two are never seen apart.
