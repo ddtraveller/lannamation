@@ -2684,19 +2684,23 @@ function wmCheeksFront(lady, paint, f) {
     pen.restore();
   });
 }
-// The nose straight on, after the same painting: no line down the bridge, only a shade down one side of it and light
-// down its middle; a small round tip, lit, with a soft shadow under it; each wing a soft curve, and the nostrils two short
-// dark strokes under the tip (WM_FRONT_HEAD.nose: how high its tip is)
+// The nose straight on, after the same painting, lit from one side: no line down the bridge but a shade down its far
+// side from the inner eye, deepening and widening to that wing, and light down the near side; a broad lit tip with a
+// dark band under it; the nostrils dark rounds angled in, the shaded one the darker; each wing a soft curve, the shaded
+// one drawn the stronger (WM_FRONT_HEAD.nose: how high its tip is)
 function wmNoseFront(skin) {
-  var X = WM_FRONT_X, y = WM_FRONT_HEAD.nose;
-  muGlow(X - 4.2, y - 8, 2.6, 9.5, "170, 80, 70", 0.15);         // the shade down the bridge's side, from the inner eye
-  muGlow(X + 0.3, y - 7, 1.5, 7.5, "255, 246, 232", 0.3);        // the light down the bridge
-  muGlow(X, y + 2, 7.5, 2.2, "130, 60, 48", 0.2);                // the shadow under the nose
-  muGlow(X, y - 0.8, 2.6, 1.8, "255, 246, 232", 0.38);           // the light on the round tip
-  [-1, 1].forEach(function (side) {
-    muGlow(X + side * 2.7, y + 1.1, 1.8, 1.1, "110, 50, 50", 0.38);   // a nostril: a soft dark round under the tip
-    muInkLine([[X + side * 5.6, y - 2.6, 0.2], [X + side * 6.3, y - 1, 0.6], [X + side * 5.8, y + 0.8, 0.75], [X + side * 4.2, y + 1.7, 0.6], [X + side * 2.6, y + 1.9, 0.45], [X + side * 1.2, y + 1.5, 0.2]], NOSE_PAINT.wing);
-  });
+  var X = WM_FRONT_X, y = WM_FRONT_HEAD.nose, w = 1.18, i, u;
+  var DARK = "95, 38, 42", SHADE = "165, 82, 72", LIGHT = "255, 246, 232", INK = "140, 105, 110";
+  for (i = 0; i <= 7; i++) { u = i / 7; muGlow(X - 4.4 - 1.6 * u, y - 20 + 17 * u, 2.4 + 2 * u, 3.6, SHADE, 0.2 + 0.14 * u); }
+  muGlow(X - 6.4 * w, y - 0.2, 3.2, 2.9, SHADE, 0.42);          // the shaded wing
+  muGlow(X + 1.8, y - 9, 2.1, 9, LIGHT, 0.36);                   // the light down the near side of the bridge
+  muGlow(X + 5.8 * w, y - 1, 2.6, 2.4, LIGHT, 0.24);             // the lit wing
+  muGlow(X, y + 2.5, 8.5, 1.9, SHADE, 0.42);                     // the band under the nose
+  muGlow(X + 0.6, y - 1.5, 3.8, 2.9, LIGHT, 0.55);               // the broad lit tip
+  muGlow(X - 3.2, y + 1.4, 2.6, 1.3, DARK, 0.85, 0.3);           // the nostrils, angled in
+  muGlow(X + 3.2, y + 1.4, 2.4, 1.2, DARK, 0.62, -0.3);
+  muInkLine([[X - 5.8 * w, y - 3.2, 0.2], [X - 6.7 * w, y - 1, 0.8], [X - 6.2 * w, y + 1.1, 0.9], [X - 4.5 * w, y + 2, 0.65], [X - 2.8, y + 2.1, 0.3]], INK);
+  muInkLine([[X + 6.4 * w, y - 1.2, 0.15], [X + 6.1 * w, y + 0.9, 0.5], [X + 4.5 * w, y + 1.9, 0.4], [X + 3.1, y + 2.1, 0.15]], NOSE_PAINT.wing);
 }
 // The lips straight on, after the same painting, shaped as LIPS_LANNA is so that muLipsPainted paints them, smiles them
 // and opens them: wider than the three-quarter mouth slid to the middle had been, the upper lip a bow with its two peaks
