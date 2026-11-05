@@ -27,6 +27,8 @@ seventeen tales; this list says, tale by tale, what the kit has and what it lack
    in white warns her to stay in; in the night three quakes come, and by morning the city lies under a lake with
    her hut alone on an island. The end of Chang Ngu's city. *Old text:* the Singhanawat chronicle (ประชุมพงศาวดาร
    ๖๑, already read for Chang Ngu). *Soften:* a whole city drowns. Perhaps ten minutes of story.
+   *Chosen* by the narrator, 4 Nov 2026. *Proposed script:* `whiteeel/story.py` (plan.html), 5 Nov: the white eel
+   (the chronicle has a white barb), and the young man a mystery with a hint that he could be a naga (the owner).
 3. **Hong Hin, the stone swan** (หงส์หิน). Set in Varanasi in the telling. Six jealous queens swap Queen Vimala's
    baby for a puppy and cast them out; devas raise the boy and give him a golden stone swan to fly. He wins the
    princes' saba game, kills the ogre that eats the city's people, flies over a river to free his grandmother from a
