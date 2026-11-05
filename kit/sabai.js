@@ -694,6 +694,10 @@ function sabaiEdge(where, across, from, to, joined) {   // one edge of the cloth
   }
 }
 
+// sabaiGround(where, half, from, to) paints over the cloth's colour, clipped to one band of it from distance from to
+// distance to, before its rows and figures are laid: here nothing (sabai_finish.js weaves threads into it). Returns nothing.
+function sabaiGround(where, half, from, to) {}
+
 // sabaiBand(where, inner, outer, from, to) sets pen's path to the closed shape between offsets inner
 // and outer, from distance from to distance to (pixels of the sheet). Returns nothing; fill or
 // stroke it after.
@@ -799,6 +803,7 @@ function sabai(t, where, cloth, part) {
     pen.fillStyle = cloth.cloth || "#8a2a3a";        // the cloth
     pen.fill();
     pen.clip();
+    sabaiGround(where, half, from, to);
     for (var row = 0; row < rows; row++) {
       var across = -half + 3 + (row + 0.5) * rowTall;
       shape(across - rowTall / 2, across + rowTall / 2, from, to, endCap, startCap);

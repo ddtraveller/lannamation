@@ -2935,3 +2935,108 @@ function ruenPhuk(brush, x, base, size, look) {
   brush.restore();
 }
 PIECES_KIT.push("ruenPhuk");
+
+// ---------- the cushion and the betel set ----------
+// After a painting of a Lanna couple the owner sent (2026-11-05), seated on a mat: behind them the triangular cushion
+// (mon khit), its end woven with khit triangles round a diamond, and before them a lacquer bowl of betel (khan mak).
+// The owner picked every candidate, so each comes in kinds. Both stand on (x, base), with a size (1: the kit's scale,
+// the cushion about 35 cm, the bowl about 25 cm across) and look.tint as the hut's.
+//   monKhit(brush, x, base, size, look)   the triangular cushion lying on its long side, its woven end toward us:
+//                                          a triangle of small woven triangles, each coloured by how far it lies
+//                                          from the edge, and the cloth of its long side with the seams of its
+//                                          tubes; about 84 wide at its foot and 70 tall at size 1. look.kind:
+//                                          "rim" (the painting's: a navy rim dotted white, red round a red diamond
+//                                          on white), "white" (a black rim, red on white), "red" (a black rim, gold
+//                                          on red), "indigo" (indigo khit on white)
+//   khanMak(brush, x, base, size, look)   the betel set: a lacquer bowl on a low foot, a band at its lip, heaped
+//                                          with rolled betel leaves round a tall cone of them, areca nuts and a
+//                                          small silver lime box; about 72 wide and 66 tall at size 1. look.kind:
+//                                          "red" (red lacquer, a gold band: the painting's), "black" (black
+//                                          lacquer, a gold band and gold flowers), "khoen" (Chiang Mai khoen: red
+//                                          lacquer over woven bamboo, its fine lines and black bands showing)
+// e.g. monKhit(pen, 700, 880, 1.5, {kind: "rim"}); khanMak(pen, 800, 880, 1.6, {kind: "black"});
+var MON_KHIT = {
+  rim: {ground: "#f2ead6", a: "#1d2a4a", b: "#b8323a", side: "#a8302a", dots: true},
+  white: {ground: "#f2ead6", a: "#1d1712", b: "#b8323a", side: "#a8302a"},
+  red: {ground: "#b8323a", a: "#1d1712", b: "#e2b52f", side: "#8a2a24"},
+  indigo: {ground: "#f2ead6", a: "#24335e", b: "#24335e", side: "#24335e"}
+};
+function monKhit(brush, x, base, size, look) {
+  var s = size || 1, L = MON_KHIT[(look && look.kind) || "rim"], tone = thingTone(look), n = 8;
+  var A = [-66, 0], B = [18, 0], C = [-24, -70], D = [54, -15];          // the end's corners, and how far back the far end lies
+  brush.save(); brush.translate(x, base); brush.scale(s, s);
+  brush.lineJoin = "round"; brush.lineWidth = 1.6; brush.strokeStyle = tone("#3a2418");
+  // the long side we see: from the end's right edge back to the far end, the seams of its tubes along it
+  brush.beginPath(); brush.moveTo(B[0], B[1]); brush.lineTo(B[0] + D[0], B[1] + D[1]); brush.lineTo(C[0] + D[0], C[1] + D[1]); brush.lineTo(C[0], C[1]); brush.closePath();
+  brush.fillStyle = tone(L.side); brush.fill();
+  var g = brush.createLinearGradient(B[0], B[1], C[0], C[1]); g.addColorStop(0, "rgba(0, 0, 0, 0.25)"); g.addColorStop(1, "rgba(255, 240, 220, 0.18)");
+  brush.fillStyle = g; brush.fill(); brush.stroke();
+  brush.beginPath();
+  for (var k = 1; k < 4; k++) { var u = k / 4, p = [B[0] + (C[0] - B[0]) * u, B[1] + (C[1] - B[1]) * u]; brush.moveTo(p[0], p[1]); brush.lineTo(p[0] + D[0], p[1] + D[1]); }
+  brush.strokeStyle = "rgba(40, 20, 10, 0.45)"; brush.lineWidth = 1; brush.stroke();
+  // the end: rows of small triangles from the top, up and down by turns, each coloured by its ring from the edge
+  function at(r, c) { return [C[0] + (A[0] - C[0]) * r / n + (B[0] - A[0]) * c / n, C[1] + (A[1] - C[1]) * r / n]; }   // row r, step c
+  for (var r = 0; r < n; r++) {
+    for (var c = 0; c <= 2 * r; c++) {
+      var up = c % 2 === 0, j = Math.floor(c / 2), ring, P;
+      if (up) { ring = Math.min(j, r - j, n - 1 - r); P = [at(r, j), at(r + 1, j), at(r + 1, j + 1)]; }
+      else { ring = Math.min(j, r - 1 - j, n - 1 - r) + 0.5; P = [at(r, j), at(r, j + 1), at(r + 1, j + 1)]; }
+      var colour = ring < 1 ? L.a : ring < 1.5 ? L.ground : ring < 2.5 ? L.b : ring < 3 ? L.ground : L.b;
+      brush.beginPath(); brush.moveTo(P[0][0], P[0][1]); brush.lineTo(P[1][0], P[1][1]); brush.lineTo(P[2][0], P[2][1]); brush.closePath();
+      brush.fillStyle = tone(colour); brush.fill();
+      brush.strokeStyle = "rgba(0, 0, 0, 0.12)"; brush.lineWidth = 0.5; brush.stroke();
+      if (L.dots && ring < 1) {                                   // a white dot in each triangle of the rim
+        brush.beginPath(); brush.arc((P[0][0] + P[1][0] + P[2][0]) / 3, (P[0][1] + P[1][1] + P[2][1]) / 3, 1.3, 0, Math.PI * 2);
+        brush.fillStyle = tone("#f6f0e2"); brush.fill();
+      }
+    }
+  }
+  brush.beginPath(); brush.moveTo(A[0], A[1]); brush.lineTo(B[0], B[1]); brush.lineTo(C[0], C[1]); brush.closePath();
+  brush.strokeStyle = tone("#3a2418"); brush.lineWidth = 1.8; brush.stroke();
+  brush.restore();
+}
+var KHAN_MAK = {
+  red: {lacquer: "#a8231e", band: "#d8b04a"},
+  black: {lacquer: "#1d1712", band: "#d8b04a", flowers: true},
+  khoen: {lacquer: "#b8322a", band: "#1d1712", khoen: true}
+};
+function khanMak(brush, x, base, size, look) {
+  var s = size || 1, L = KHAN_MAK[(look && look.kind) || "red"], tone = thingTone(look), leaf = tone("#5a8a3a");
+  brush.save(); brush.translate(x, base); brush.scale(s, s);
+  brush.lineJoin = "round"; brush.strokeStyle = tone("#2a160e"); brush.lineWidth = 1.4;
+  // the foot, the body narrowing to it
+  brush.beginPath(); brush.ellipse(0, -3, 26, 5, 0, 0, Math.PI * 2); brush.fillStyle = tone(L.lacquer); brush.fill(); brush.stroke();
+  brush.beginPath(); brush.moveTo(-36, -36); brush.bezierCurveTo(-34, -20, -24, -10, -22, -6); brush.lineTo(22, -6); brush.bezierCurveTo(24, -10, 34, -20, 36, -36); brush.closePath();
+  brush.fillStyle = tone(L.lacquer); brush.fill();
+  var g = brush.createLinearGradient(-36, 0, 36, 0); g.addColorStop(0, "rgba(0,0,0,0.25)"); g.addColorStop(0.35, "rgba(255,230,210,0.22)"); g.addColorStop(1, "rgba(0,0,0,0.3)");
+  brush.fillStyle = g; brush.fill(); brush.stroke();
+  brush.save(); brush.clip();
+  if (L.khoen) {                                                  // woven bamboo under the lacquer: its fine lines, black bands
+    brush.strokeStyle = "rgba(0,0,0,0.22)"; brush.lineWidth = 0.6; brush.beginPath();
+    for (var vx = -36; vx <= 36; vx += 2.6) { brush.moveTo(vx, -38); brush.lineTo(vx * 0.66, -4); }
+    brush.stroke();
+    brush.fillStyle = tone(L.band); brush.fillRect(-40, -24, 80, 2.2); brush.fillRect(-40, -14, 80, 2.2);
+  }
+  brush.fillStyle = tone(L.band); brush.fillRect(-40, -34, 80, 5);                // the band under the lip
+  if (L.flowers) { for (var fx = -30; fx <= 30; fx += 10) { brush.beginPath(); brush.arc(fx, -22, 2.4, 0, Math.PI * 2); brush.fill(); } }
+  brush.restore();
+  // what is heaped in it: rolled leaves standing in a ring, a tall cone of them in the middle, the nuts, the lime box
+  function cone(cx, cy, h, w, lean, col) {
+    brush.beginPath(); brush.moveTo(cx - w, cy); brush.quadraticCurveTo(cx - w * 0.4 + lean * 0.5, cy - h * 0.6, cx + lean, cy - h);
+    brush.quadraticCurveTo(cx + w * 0.4 + lean * 0.5, cy - h * 0.6, cx + w, cy); brush.closePath();
+    brush.fillStyle = col; brush.fill(); brush.strokeStyle = tone("#24361a"); brush.lineWidth = 0.9; brush.stroke();
+    brush.beginPath(); brush.moveTo(cx - w * 0.3, cy - 1); brush.quadraticCurveTo(cx + lean * 0.3, cy - h * 0.5, cx + lean, cy - h + 2); brush.strokeStyle = "rgba(220, 240, 180, 0.5)"; brush.stroke();
+  }
+  [[-24, -38, 14, 5, -3], [-12, -40, 17, 5.5, -1], [14, -40, 17, 5.5, 1], [26, -38, 14, 5, 3]].forEach(function (c) { cone(c[0], c[1], c[2], c[3], c[4], leaf); });
+  cone(0, -40, 26, 8, 0, tone("#4f7a32"));
+  [[-6, -40], [7, -41], [-17, -38], [19, -38]].forEach(function (p, i) {          // areca nuts: orange to gold
+    brush.beginPath(); brush.ellipse(p[0], p[1], 4.4, 3.6, i * 0.5, 0, Math.PI * 2); brush.fillStyle = tone(i % 2 ? "#d9822e" : "#c8682a"); brush.fill();
+    brush.strokeStyle = tone("#5a2e10"); brush.lineWidth = 0.8; brush.stroke();
+  });
+  brush.beginPath(); brush.ellipse(30, -42, 6, 4.5, 0, 0, Math.PI * 2); brush.fillStyle = tone("#c9cdd2"); brush.fill(); brush.strokeStyle = tone("#4a4a50"); brush.stroke();   // the lime box
+  brush.beginPath(); brush.ellipse(30, -45, 5, 2, 0, 0, Math.PI * 2); brush.fillStyle = tone("#e8eaee"); brush.fill(); brush.stroke();
+  brush.beginPath(); brush.ellipse(0, -36, 36, 7, 0, 0, Math.PI); brush.strokeStyle = tone(L.band); brush.lineWidth = 2.4; brush.stroke();   // the lip at the front
+  brush.restore();
+}
+PIECES_KIT.push("monKhit", "khanMak");
+

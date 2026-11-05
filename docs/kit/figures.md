@@ -894,7 +894,11 @@ foil-backed: the bright foil under a colour 0.86 opaque, the cut (a table and li
 far side, a twinkle. The sabai: `wmTexture` weaves its end and body once onto a sheet (`weaveGrid`, as `sabaiGrid` gives
 them), and the sheet is laid along the band in slices bent to it. The teen jok: `teenJok` weaves her town's rows in her
 palette once; the sheet is laid round her in upright strips bowed as `muSin` bows its stripes, its floats 0.72 as wide
-(more of the pattern round her), the thin bands that crossed the foot left off (`wmJokSin`). Nothing moves by a spring:
+(more of the pattern round her), the thin bands that crossed the foot left off (`wmJokSin`). The whole sheet: until
+2026-11-05 `wmJokSheet` took the sheet's size as `teenJok` gives it, half the size its canvas is woven at, so only its
+top-left quarter was laid round her at twice the size; the owner chose the fix ("Fix it"), and every hem now shows all
+its rows down to the foot. A sin woven from waist to foot (`WM_SIN.chevron`, `.teal`, `.namLai`, with `jok` of the same
+rows, taller 1) is laid the same way over one broad band from under the waist to the hem. Nothing moves by a spring:
 what sways, sways by the clock, and a still is the frame of the film.
 
 **Ordinary hands** (owner, of the men and children: "Change the hands to be like normal hands", then of the women who
@@ -904,6 +908,16 @@ toward the palm and the thumb, `0.3 + 2.45 · bend^1.6` radians, so a hand at re
 closes into a fist round what it holds. The grandmother, the weaver, the Tai Lue woman and the girl at the festival
 have it; the dancers, the celestial, the maiden, the princess and the lady of the court keep the dancer's hand; on
 `mural_mix.html` every woman not in a dancer's pose or wearing the brass nails has it.
+
+**The water carrier** (owner, 2026-11-05, after a photograph of a woman carrying water pots and the mural beside it;
+of three pots, black, terracotta and pale clay: "W1 but cut the pot off at the bottom so it looks more like the image
+and is smaller"): `holds: "pots"` with `hands: "normal"` and `pose: {near: WM_POTS.hand}` lays a bamboo pole on her
+near shoulder (`wmPole`: a cane of even width, lit along its top, three nodes; the kit's ink brush tapers, so a pole
+drawn with it read as a wire), her near hand closed on it before her, and hangs a black clay pot on cords from each end
+(`wmPot`: round, wide-mouthed with a rolled lip, cut off flat below its widest, the shine of fired clay, the cords tied
+under the lip; no net, as the photograph has none), the pot behind her drawn before her body as the parasol is, the
+pole and the pot before her over it; each swings a little in its own time. `people.html` shows her in the teal sin, at
+55 s.
 
 **Tried first**: the faces by scaling the head a few percent (unseen) before the outline was drawn with numbers; the
 parasol drawn over her, floating, before it went behind her head, drawn before her body; the hems at their charts' own
@@ -950,6 +964,20 @@ and lower, the lash's flick 0.58) or a child's hair on any child; poses use the 
 feet, above it scaled about the waist and set on the shorter legs, the head larger about the chin; the two meet at the
 waist and no seam shows. The trousers: `mural.js` draws each leg as its foot and then its tube; after the tube, a wide
 trouser leg to the calf. With the file loaded, `mural.html` draws as without it (five frames: no pixel more than 6 apart).
+
+**The mural's men** (owner, 2026-11-05, from a Lanna temple painting of a procession the owner sent): `face.hairdo:
+"flattop"` (`mnFlatTop`): the sides shaven, a short flat top over them, the line where the hair comes out of the head,
+and from it along the side of the head short strokes up, about 9 units, none over the forehead. It came after five
+tries, each the owner's word on the last: two upturned points ("wings"); those turned down, the sides shaven ("Turn the
+wings upside down and show a shaved head on the sides"); a round cap with short ends ("D2"), then its edge flared ("D2
+... with a little flare out at the top"); combed up from a root line ("so it looks like a flat top kind of"); parted
+("Don't show the lines going up in the front. Show a part"); then no part and no lines on top, only "up lines that start
+from around the temple and go up maybe 10 pixels", "along the sides and not along the forehead". `trousers: [cloth,
+flowers]` (`mnPrint`): knee trousers printed with small five-petalled flowers, a yellow and a red band at the knee; with
+`patoi: true` the cloth hitched over his hips takes the same cloth and print, and `tattoo: false` (the tattoo is drawn
+after the leg). A colour alone is the calf trousers as before, pixel for pixel. `khaoma: [ground, lines]`
+(`mnKhaoMa`): a check slung round his neck, its two ends down his chest with a short fringe ("Round the neck"; the knot
+at the waist was the other candidate). `people.html` shows two, pink with red flowers and blue with ivory, at 61 s.
 
 ## The mural figure seated (2026-10-30)
 
@@ -1019,9 +1047,22 @@ difference, so use 8. A set takes 1.4 to 4.4 MB and about 2.5 s; `peoplePoses(lo
 earrings move only with her walk, not with time. Parts alone did not pay (a cached head saved 4 to 9 ms), nor did ImageBitmaps for the cloth (0). Anyone standing, reaching, holding a hand out, looking at something, seated, in the wai,
 winking, turning or alive is painted as ever; so is any look past 64 sets (it warns: something in it is changing every frame). Her own sway goes by her `id` when live, and all who share a set share one sway.
 
+**Her face turned to us** (a woman's setting `front`, 0 to 1; the hero film's scene). Straight on, her head is the owner's
+pick of 2026-11-04, "T3", after an oil portrait of a Thai woman in gold silk the owner sent: the jaw traced from it ear to
+ear through the chin (`WM_FRONT_TRACE`: the cheeks fall almost straight to the tip of the nose, then come in steadily to
+a rounded chin, rounder than traced at the owner's word), at the width her face had (`WM_FRONT_HEAD`); the hair down over
+both temples to the tops of the ears, framing the face, combed up to a taller crown, a knot at the nape behind the head;
+the eyes the painting's (level, open, no flick or wing, a larger iris, the fold of the lid); the nose the owner's pick
+"N2" of the same day with its nostrils flattened ("F3"): no line down the bridge, a soft shade down either side and
+light down the middle, a round lit tip, each wing round and drawn by a line running level under it, the nostrils two
+long, thin, nearly level dark slots (`wmNoseFront`); the lips wider, a bowed
+upper and a fuller lower (`wmLipsFront`, painted by `muLipsPainted`, so smiles and paint work on them). Her own jaw
+numbers go on both sides alike. As she turns, the three-quarter nose and mouth slide to the middle and hand over to these
+over the middle of the turn, so the two are never seen apart.
+
 **Measured**: drawn standing, `person()` against the mural figure: at most 4 pixels past 24 of 255 on any of the twenty (the
 gold's flash). `checks/frame_time.py people.html`: 1818 ms a frame on this laptop's headless Chrome, about 100 ms a woman, so
 a scene of ten is about a second a frame to render. The old figure takes 3 to 17 ms a whole frame.
 
-**Not yet**: turn, twist, the hop and a lean (`bend`) are not read: always three-quarter. A seated man stands (as before), and
+**Not yet**: turn, twist, the hop and a lean (`bend`) are not read: always three-quarter (but a woman's face, by `front`). A seated man stands (as before), and
 a seated woman returns only `stand` among her joints. The speed above.

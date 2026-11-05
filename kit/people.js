@@ -1241,8 +1241,9 @@ function muralPerson(x, y, look, opts) {
     });
     var cloth2 = new MPath().M(-50, -442).C(-62, -410, -64, -330, -62, legsOut + 6).Q(-30, legsOut + 14, -4, legsOut - 6)
       .L(2, legsOut - 26).L(8, legsOut - 6).Q(36, legsOut + 14, 60, legsOut + 4).C(62, -330, 58, -410, 44, -442).Z();
-    var sarong = look.sarong || "#3a4660";
+    var printed = WM && Array.isArray(WM.trousers), sarong = printed ? WM.trousers[0] : look.sarong || "#3a4660";
     mFill(cloth2, sarong, 12);
+    if (printed) { mnPrint(cloth2, WM.trousers); }   // the cloth over his hips, printed as his knee trousers
     pen.save(); pen.clip(cloth2.path);
     var stripes = new MPath();
     for (var sy = -432; sy < legsOut + 10; sy += 9) { stripes.M(-80, sy).Q(0, sy + 12, 80, sy); }
@@ -1871,9 +1872,11 @@ function thAnklet(x, y) {
 //   scarf    [outside, lining, curve, width]: a long cloth from the far hand to the near hand and on (curve(farW, nearW)
 //            gives [[a, c1, c2, b, width, turn], ...] cubic pieces)
 //   holds    in the near hand: "lotus", "garland", "khan" (a bowl of flowers), "fan", "lantern", "parasol" (parasol:
-//            [paper, flowers]); between both: "cloth" (cloth: a SABAI_WEAVES name)
+//            [paper, flowers]); between both: "cloth" (cloth: a SABAI_WEAVES name); on her shoulder: "pots", a carrying
+//            pole with a water pot at each end (with hands: "normal" and pose: {near: WM_POTS.hand})
 //   jok      [town, palette, taller]: her sin's foot a woven teen jok (weaving.js teenJok: "maechaem", "nan" or "long";
-//            one of WEAVE_PALETTES), "taller" times the sin's own foot band
+//            one of WEAVE_PALETTES), "taller" times the sin's own foot band; or her whole sin woven, with sin
+//            WM_SIN.chevron, .teal or .namLai: ["chevron", "chevron", 1], ["teal", "teal", 1], ["namLai", "lueLac", 1]
 // Her woven sabai is painted once and laid along the band (not thread by thread); she sways slowly about her feet,
 // and her gold and her stones catch the light as she does. Standing, she walks with the kit's own look.step (a stride a 1, as
 // person() takes it): her feet step under her sin, its foot swinging with them, her arms swinging the other way (owner,
@@ -2000,6 +2003,7 @@ function wmWaiArm(S, E, W, p, side, lady, e) {       // her arm's pose on the wa
           wrist: (p && p.wrist || 0) * (1 - e), fingers: mix(p && p.fingers !== undefined ? p.fingers : 0.55, k.fingers, e),
           aim: WM_WAI.aim, aimBy: e, late: true};
 }
+var WM_OVER = null;                               // what is drawn over all of her, before what she holds (the far forearm in a sabai)
 var WM_ARM = null, WM_LATE = null, WM_OWN = 0;   // WM_OWN: her own time's offset, while she is drawn                   // WM_LATE: the arms drawn late, in turn (over the sabai, under the belt)
 muArm = function (S, E, W, wide, sleeve, skin, look, outward, bend, lady) {
   var side = outward > 0 ? "far" : "near", p = WM && WM.pose && WM.pose[side];
@@ -2360,8 +2364,8 @@ function wmJokSheet(town, palette, w) {
   var key = town + "|" + palette + "|" + Math.round(w);
   if (!WM_JOK[key]) {
     var got = null, brush = {drawImage: function (img) { got = img; }};
-    var size = teenJok(brush, 0, 0, w, {town: town, palette: WEAVE_PALETTES[palette], cell: 7});
-    WM_JOK[key] = {canvas: got, w: size.w, h: size.h};
+    teenJok(brush, 0, 0, w / 2, {town: town, palette: WEAVE_PALETTES[palette], cell: 7});
+    WM_JOK[key] = {canvas: got, w: got.width, h: got.height};     // its size as the sheet is: weaveKept weaves at twice
   }
   return WM_JOK[key];
 }
@@ -2383,13 +2387,56 @@ muTinJok = function (y0, y1, x0, x1, ground) {
   pen.fillStyle = round; pen.fillRect(x0, top, x1 - x0, tall + 10);
 };
 
+// ---------- the water carrier ----------
+// holds "pots" (owner, 2026-11-05, after a photograph of a woman carrying water and the mural beside it: "W1 but cut the
+// pot off at the bottom so it looks more like the image and is smaller"): a bamboo carrying pole on her near shoulder,
+// her near hand on it before her (pose near: WM_POTS.hand, with hands "normal"), and a black clay water pot hung on
+// cords from each end, round and wide-mouthed, cut off flat below its widest; the pot behind her is drawn before her
+// body (wmWoman), the pole and the pot before her over it (wmHolds). The pots swing a little, each in its own time.
+var WM_POTS = {back: [-215, -536], front: [150, -590], drop: 205, r: 40,
+               hand: {w: [62, -566], elbow: [-0.2, 1], wrist: -0.6, fingers: 0.9, late: true}};
+// the pole from "from" to "to": a cane of even width, lit along its top, three nodes
+function wmPole(from, to) {
+  var dx = to[0] - from[0], dy = to[1] - from[1], l = Math.hypot(dx, dy), nx = -dy / l * 5.5, ny = dx / l * 5.5;
+  var cane = new MPath().M(from[0] + nx, from[1] + ny).L(to[0] + nx, to[1] + ny).Q(to[0] + dx / l * 4, to[1] + dy / l * 4, to[0] - nx, to[1] - ny)
+    .L(from[0] - nx, from[1] - ny).Q(from[0] - dx / l * 4, from[1] - dy / l * 4, from[0] + nx, from[1] + ny).Z();
+  mShape(cane, "#b08a4a", 3, 1.1);
+  pen.save(); pen.clip(cane.path);
+  pen.strokeStyle = "rgba(240, 214, 160, 0.8)"; pen.lineWidth = 2.6; pen.beginPath();
+  pen.moveTo(from[0] - nx * 0.45, from[1] - ny * 0.45); pen.lineTo(to[0] - nx * 0.45, to[1] - ny * 0.45); pen.stroke();
+  pen.restore();
+  var nodes = new MPath();
+  [0.2, 0.48, 0.76].forEach(function (u) { var x = from[0] + dx * u, y = from[1] + dy * u; nodes.M(x + nx, y + ny).L(x - nx, y - ny); });
+  mLine(nodes, "#6a4a24", 1.2);
+}
+// a pot hung from the pole's end P: way 1 before her, -1 behind
+function wmPot(P, way) {
+  var r = WM_POTS.r, h = r * 0.92, sway = Math.sin(clock * 1.3 + (way > 0 ? 0 : 1.7)) * 5, c = [P[0] + sway, P[1] + WM_POTS.drop];
+  var top = c[1] - h, mouth = r * 0.7, rim = top - r * 0.08, foot = c[1] + h * 0.6;
+  mLine(new MPath().M(P[0], P[1]).L(c[0] - mouth - 2, rim + 4).M(P[0], P[1]).L(c[0] + mouth + 2, rim + 4).M(P[0], P[1]).L(c[0] - 2, rim + 2), "#c9a46a", 1.1);
+  var body = new MPath().M(c[0] - mouth, top).C(c[0] - r * 1.08, top + h * 0.15, c[0] - r * 1.18, c[1] + h * 0.3, c[0] - r * 0.72, foot)
+    .Q(c[0], foot + 2.5, c[0] + r * 0.72, foot).C(c[0] + r * 1.18, c[1] + h * 0.3, c[0] + r * 1.08, top + h * 0.15, c[0] + mouth, top).Z();
+  mShape(body, "#2a2220", 8, 1.3);
+  pen.save(); pen.clip(body.path);
+  var g = pen.createRadialGradient(c[0] + r * 0.35, c[1] - h * 0.35, 2, c[0] + r * 0.3, c[1] - h * 0.3, r * 0.9);   // the shine of fired clay
+  g.addColorStop(0, "rgba(122, 106, 98, 0.85)"); g.addColorStop(0.5, "rgba(122, 106, 98, 0)");
+  pen.fillStyle = g; pen.fillRect(c[0] - r * 1.2, top, r * 2.4, h * 2.2);
+  pen.restore();
+  mShape(new MPath().M(c[0] - mouth, top + 1).L(c[0] - mouth * 0.85, rim + 3).L(c[0] + mouth * 0.85, rim + 3).L(c[0] + mouth, top + 1).Z(), "#2a2220", 4, 1);
+  mShape(new MPath().E(c[0], rim + 2, mouth * 1.05, 4.5), "#3a302c", 3, 1.1);       // the rolled lip
+  mShape(new MPath().E(c[0], rim + 1.5, mouth * 0.7, 2.4), "#141010", 1, 0.6);      // the mouth
+  mLine(new MPath().M(c[0] - mouth * 0.8, rim + 6).L(c[0] + mouth * 0.8, rim + 6), "#c9a46a", 2);   // the cord tied under the lip
+}
+
 // ---------- what she holds, over everything ----------
 // lotus, garland, khan: a bowl of flowers (the near hand); cloth: a length of her own weaving hung from
 // both hands (wm.cloth, a SABAI_WEAVES name); parasol: a Bo Sang paper parasol over her shoulder (wm.parasol colours);
-// fan: a red lacquer fan with gold; lantern: a paper lantern (khom) hung from a stick, lit
+// fan: a red lacquer fan with gold; lantern: a paper lantern (khom) hung from a stick, lit; pots: a carrying pole and
+// water pots (above)
 function wmHolds(look) {
   var h = WM.holds, w = WM_W.near, f = WM_W.far;
   if (!h || !w) { return; }
+  if (h === "pots") { wmPole(WM_POTS.back, WM_POTS.front); wmPot(WM_POTS.front, 1); }
   if (h === "khan") { wmKhan([w[0] + 4, w[1] - 16]); }
   if (h === "cloth" && f) { wmCloth(w, f, WM.cloth); }
   if (h === "fan") { wmFan(w); }
@@ -2603,40 +2650,120 @@ function wmFront() {
 function wmToward(pts, front, e) {
   return new MPath().poly(pts.map(function (p, i) { var q = front(p, i); return [mix(p[0], q[0], e), mix(p[1], q[1], e)]; }), true);
 }
-// the face's outline straight on: the point of the three-quarter outline (about its own middle) at the same turn on an oval,
-// narrowing below to the chin
-function wmFaceFront(p) {
-  var a = Math.atan2((p[1] + 46) / 49, (p[0] - 2) / 35), c = Math.cos(a), s = Math.sin(a);
-  return s < 0 ? [WM_FRONT_X + 31 * c, -47 + 50 * s] : [WM_FRONT_X + 31 * c * (1 - 0.36 * s * s), -47 + 49 * s];
+// The head straight on (owner, 2026-11-04: "redraw the shape of the face for the frontal view of the woman. Her jaw and
+// the shape of her head look a little off", then "Trace the first reference image from ear to ear passing through the
+// chin ... Take inspiration from that shape"). The jaw is traced from that painting (an oil portrait of a Thai woman in
+// gold silk, facing us): WM_FRONT_TRACE, from her cheekbones (1: their height above the chin, their width) to her chin
+// (0), each row how high above the chin as a share of the cheekbones' height, and how wide as a share of their width:
+// her cheeks fall almost straight to the tip of her nose, then come in steadily to a narrow, rounded chin. Ours is
+// "wide" across at "at" (her cheekbones), the chin at "chin"; above, the forehead a dome up to "top" under the hair,
+// narrowing at the temples by "temples"; the hair's dome "temple" wide and up to "crown"; her eyes "eyes" either side of
+// her middle (the painting's nearly reach the edge of her face).
+// (the owner, of the traced face at today's width: "Round T3's chin a little more": its last three rows fuller)
+var WM_FRONT_TRACE = [[1, 1], [0.69, 0.93], [0.51, 0.85], [0.33, 0.7], [0.19, 0.56], [0.08, 0.4], [0.03, 0.26], [0, 0]];
+// The owner picked the traced face at the width hers had been ("T3"), 2026-11-04. Her eyes straight on go over to the
+// painting's (eye: wmEye's own numbers, as far as she has turned): level, more open, no flick at the corner, no
+// wing, longer and a larger iris, the fold of the lid showing ("redo the nostrils and eyes to be more like the reference image").
+var WM_FRONT_HEAD = {wide: 30.5, at: -47, top: -97, temples: 0.12, chin: 1, temple: 35.5, crown: -112, brow: [27.5, -55, -84], nape: -38,
+  eyes: 14.5, eye: {tilt: 0, open: 2.2, flick: 0, liner: 0, iris: 1.15, crease: 1, long: 1.1},
+  nose: -33.5, mouth: {y: -21.5, half: 13.5, upper: 3.2, lower: 4.8}};
+var WM_FRONT_JAW = {key: null, pts: null, run: null};
+function wmJawFront(W, chin) {                       // the traced jaw at this width and chin, sampled evenly along its length
+  var H = WM_FRONT_HEAD, key = [W, chin, H.at].join(" ");
+  if (WM_FRONT_JAW.key === key) { return WM_FRONT_JAW; }
+  var T = WM_FRONT_TRACE.map(function (r) { return [W * r[1], chin + (H.at - chin) * r[0]]; }), pts = [], run = [0];
+  for (var i = 0; i < T.length - 1; i++) {           // through each row smoothly (Catmull-Rom), the chin met flat
+    var p0 = T[Math.max(0, i - 1)], p1 = T[i], p2 = T[i + 1], p3 = i + 2 < T.length ? T[i + 2] : [-T[i][0], T[i][1]];
+    for (var k = 0; k < 12; k++) {
+      var t = k / 12, t2 = t * t, t3 = t2 * t;
+      pts.push([0, 1].map(function (d) {
+        return 0.5 * (2 * p1[d] + (p2[d] - p0[d]) * t + (2 * p0[d] - 5 * p1[d] + 4 * p2[d] - p3[d]) * t2 + (3 * p1[d] - p0[d] - 3 * p2[d] + p3[d]) * t3);
+      }));
+    }
+  }
+  pts.push(T[T.length - 1]);
+  for (i = 1; i < pts.length; i++) { run.push(run[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])); }
+  WM_FRONT_JAW = {key: key, pts: pts, run: run};
+  return WM_FRONT_JAW;
+}
+// the face's outline straight on: the point of the three-quarter outline (about its own middle) at the same turn on it.
+// Her own jaw (J: wm.face.jaw) goes on both sides alike: her cheek fuller or leaner, her chin longer or shorter
+function wmFaceFront(p, J) {
+  var H = WM_FRONT_HEAD, a = Math.atan2((p[1] + 46) / 49, (p[0] - 2) / 35), c = Math.cos(a), s = Math.sin(a);
+  J = J || {};
+  var ch = J.chin || [0, 0], W = H.wide + 0.5 * (J.cheek || 0);
+  if (s < 0) { return [WM_FRONT_X + W * c * (1 - H.temples * s * s), H.at + (H.at - H.top) * s]; }
+  var jaw = wmJawFront(W, H.chin + 0.6 * ch[1]), want = Math.acos(Math.min(1, Math.abs(c))) / (Math.PI / 2) * jaw.run[jaw.run.length - 1];
+  var i = 1;
+  while (i < jaw.run.length - 1 && jaw.run[i] < want) { i++; }
+  var f = (want - jaw.run[i - 1]) / ((jaw.run[i] - jaw.run[i - 1]) || 1), q = [mix(jaw.pts[i - 1][0], jaw.pts[i][0], f), mix(jaw.pts[i - 1][1], jaw.pts[i][1], f)];
+  return [WM_FRONT_X + (c < 0 ? -1 : 1) * q[0], q[1]];
 }
 // the hair's mass straight on: over the crown and down both sides to the ears
 function wmHairFront(p) {
-  var a = Math.atan2((p[1] + 58) / 46, (p[0] + 8) / 45), c = Math.cos(a), s = Math.sin(a);
-  return s < 0 ? [WM_FRONT_X + 35 * c, -57 + 49 * s] : [WM_FRONT_X + 35 * c * (1 - 0.15 * s), -57 + 24 * s];
+  var H = WM_FRONT_HEAD, a = Math.atan2((p[1] + 58) / 46, (p[0] + 8) / 45), c = Math.cos(a), s = Math.sin(a);
+  return s < 0 ? [WM_FRONT_X + H.temple * c, -57 + (-57 - H.crown) * s] : [WM_FRONT_X + H.temple * c * (1 - 0.15 * s), -57 + 24 * s];
 }
 // the hair over the brow straight on, point for point as the three-quarter edge is drawn (45 points: its line over the
-// brow from the near temple, its outer edge back over the crown, and the short way down and back at the near temple)
+// brow from the near temple, its outer edge back over the crown, and the short way down and back at the near temple).
+// Its line comes down over both temples alike to the tops of her ears (WM_FRONT_HEAD.brow: [half its width there, how
+// low, its middle]), so the hair frames her face as an oval, as the references the owner sent have it
 function wmEdgeFront(fh) {
-  var x = WM_FRONT_X, out = [[x - 29, -62]], k;
-  for (k = 1; k <= 14; k++) { var a = Math.PI * (1 + k / 14); out.push([x + 29 * Math.cos(a), -62 + (24 + fh) * Math.sin(a)]); }
-  for (k = 1; k <= 14; k++) { var b = -Math.PI * k / 14; out.push([x + 35 * Math.cos(b), -56 + 50 * Math.sin(b)]); }
-  out.push([x - 34, -58], [x - 31, -60]);
-  for (k = 1; k <= 14; k++) { out.push([x - 31 + 2 * k / 14, -60 - 2 * k / 14]); }
+  var H = WM_FRONT_HEAD, x = WM_FRONT_X, S = H.brow[0], sy = H.brow[1], mid = H.brow[2] - fh, out = [[x - S, sy]], k;
+  for (k = 1; k <= 14; k++) { var a = Math.PI * (1 + k / 14); out.push([x + S * Math.cos(a), sy + (sy - mid) * Math.sin(a)]); }
+  for (k = 1; k <= 14; k++) { var b = -Math.PI * (k - 1) / 13; out.push([x + H.temple * Math.cos(b), sy + 6 + (sy + 6 - H.crown) * Math.sin(b)]); }
+  out.push([x - H.temple + 1, sy + 4], [x - S - 2, sy + 2]);
+  for (k = 1; k <= 14; k++) { out.push([x - S - 2 + 2 * k / 14, sy + 2 - 2 * k / 14]); }
   return out;
 }
 // the colour of her cheeks straight on: the near cheek's, either side
 function wmCheeksFront(lady, paint, f) {
-  var lift = f ? Math.max(f.smile || 0, f.laugh || 0, 0.8 * (f.full || 0)) : 0, x = WM_FRONT_X;
+  var lift = f ? Math.max(f.smile || 0, f.laugh || 0, 0.8 * (f.full || 0)) : 0, x = WM_FRONT_X, k = WM_FRONT_HEAD.wide / 31;
   [-1, 1].forEach(function (side) {
-    muGlow(x + side * 31, -58, 9, 24, "80, 40, 30", 0.1);   // the temple, under the hair
+    muGlow(x + k * side * 31, -58, 9, 24, "80, 40, 30", 0.1);   // the temple, under the hair
     pen.save(); pen.translate(0, -2.5 * lift);
-    if (!lady || !paint || MU.cheek === "soft") { muGlow(x + side * 15, -31, 11, 9, "200, 90, 80", (lady ? 0.2 : 0.14) * (1 + 0.3 * lift)); }
+    if (!lady || !paint || MU.cheek === "soft") { muGlow(x + k * side * 15, -31, 11, 9, "200, 90, 80", (lady ? 0.2 : 0.14) * (1 + 0.3 * lift)); }
     else {
-      muGlow(x + side * 17, -35, 12, 8, paint.rouge, 0.22, -side * 0.35);
-      muGlow(x + side * 12, -31, 7, 5.5, paint.rouge, 0.12 + 0.12 * lift);
+      muGlow(x + k * side * 17, -35, 12, 8, paint.rouge, 0.22, -side * 0.35);
+      muGlow(x + k * side * 12, -31, 7, 5.5, paint.rouge, 0.12 + 0.12 * lift);
     }
     pen.restore();
   });
+}
+// The nose straight on, after the same painting: no line down the bridge but a soft shade down either side of it and
+// light down its middle; a round lit tip with a soft shadow under it; each wing a round, drawn by a line that comes
+// round its side and runs level under the nostril; the nostrils two dark slots, long, thin and nearly level
+// (WM_FRONT_HEAD.nose: how high its tip is)
+function wmNoseFront(skin) {
+  var X = WM_FRONT_X, y = WM_FRONT_HEAD.nose;
+  var DARK = "95, 38, 42", SHADE = "165, 82, 72", LIGHT = "255, 246, 232", INK = "140, 105, 110";
+  muGlow(X - 3.6, y - 9, 1.8, 9, SHADE, 0.15); muGlow(X + 3.6, y - 9, 1.8, 9, SHADE, 0.13);   // the bridge's sides
+  muGlow(X, y - 8, 1.6, 8, LIGHT, 0.32);                                                    // the light down its middle
+  muGlow(X, y + 1.8, 7.5, 1.8, SHADE, 0.24);                                                // the shadow under the nose
+  [-1, 1].forEach(function (s) {
+    muGlow(X + s * 5.3, y - 0.2, 2.4, 2.2, SHADE, 0.3);                                     // the wing's round
+    muGlow(X + s * 3.1, y + 1.1, 2.6, 0.5, DARK, 0.72, -s * 0.045);                         // the nostril
+    muInkLine([[X + s * 5.4, y - 2.4, 0.15], [X + s * 6.6, y - 0.6, 0.7], [X + s * 6.2, y + 0.9, 0.8], [X + s * 4.6, y + 1.35, 0.6], [X + s * 2.8, y + 1.45, 0.3]], INK);
+  });
+  muGlow(X, y - 1.2, 3.2, 2.6, LIGHT, 0.5);                                                 // the tip
+}
+// The lips straight on, after the same painting, shaped as LIPS_LANNA is so that muLipsPainted paints them, smiles them
+// and opens them: wider than the three-quarter mouth slid to the middle had been, the upper lip a bow with its two peaks
+// either side of the middle, the lower fuller (WM_FRONT_HEAD.mouth: where the seam is, half its width, how high the upper
+// lip is and how deep the lower)
+function wmLipsFront() {
+  var M = WM_FRONT_HEAD.mouth, X = WM_FRONT_X, y0 = M.y, w = M.half, n = 25, seam = [], top = [], bottom = [], rim = [], k;
+  function bow(u) { return u < 0.25 ? 0.8 + 0.2 * u / 0.25 : 1 - Math.pow((u - 0.25) / 0.75, 1.7); }
+  for (k = 0; k < n; k++) {
+    var x = w * (1 - 2 * k / (n - 1)), u = Math.abs(x) / w;
+    seam.push([X + x, y0 - 0.2 + 0.6 * (1 - u * u)]);
+    top.push([X + x, y0 - 0.2 - M.upper * bow(u)]);
+    bottom.unshift([X + x, y0 - 0.2 + M.lower * Math.pow(1 - u * u, 0.7)]);
+    if (u < 0.78) { rim.unshift([X + x, y0 - 0.2 + M.lower * Math.pow(1 - u * u, 0.7) - 1.1]); }
+  }
+  return {upper: top.concat(seam.slice().reverse()), lower: seam.concat(bottom), seam: seam, rim: rim,
+          tickL: [[X + w + 0.9, y0 - 0.7], [X + w, y0 - 0.2], [X + w - 0.9, y0 + 0.1]],
+          tickR: [[X - w - 0.9, y0 - 0.7], [X - w, y0 - 0.2], [X - w + 0.9, y0 + 0.1]], px: LIPS_LANNA.px};
 }
 // the head's own lines, built for her jaw (cw, co, ch, fw) and k (MU.tara)
 function wmFaceLine(k, cw, co, ch, fw) {
@@ -2660,20 +2787,28 @@ function wmMoved(from, to, wide, e, draw) {
 function wmHead(look, lady, skin, fc) {
   var hair = look.hair || MU.hair, e = wmFront(), X = WM_FRONT_X;
   var hd = fc.hairdo || (look.bun === "wong" ? "wong" : "mural"), K = WM_KNOTS[hd];
-  if (e) { K = [K[1] < -80 ? mix(K[0], X, e) : K[0] + 6 * e, K[1], K[2]]; }   // a knot on the crown to her middle; one at the nape just behind
+  // a knot on the crown to her middle; one at the nape behind her head, out past her cheek on its own side (WM_FRONT_HEAD.nape)
+  var nape = e > 0 && hd !== "wong" && hd !== "lue" && K[1] >= -80;
+  if (e) { K = [K[1] < -80 ? mix(K[0], X, e) : mix(K[0], X + WM_FRONT_HEAD.nape, e), K[1], K[2]]; }
   if (fc.tail) { wmTail(K, hair); }                 // behind everything of the head
   if (hd === "wong" || hd === "lue") { if (!WM.crown) { wmWongLoop(K, hair); } muBun(K[0], K[1], K[2], hair, look); }
-  var mass = new MPath().M(30, -88).C(14, -106, -32, -108, -48, -80).C(-58, -60, -54, -34, -38, -18).C(-30, -12, -20, -14, -14, -22).L(30, -60).Z();
-  if (e) { mass = wmToward(mass.subs[0].pts, wmHairFront, e); }
-  mShape(mass, hair, 5, 1.3);
-  if (hd !== "wong" && hd !== "lue") {
+  var knot = function () {
     muBun(K[0], K[1], K[2], hair, look);
     if (hd === "high") { wmComb(K, "gold"); }
     if (hd === "low") { wmComb(K, "ivory"); }
     muBunGold(K[0], K[1], K[2]);
+  };
+  if (nape) { knot(); }                             // straight on, a knot at the nape is behind her head
+  var mass = new MPath().M(30, -88).C(14, -106, -32, -108, -48, -80).C(-58, -60, -54, -34, -38, -18).C(-30, -12, -20, -14, -14, -22).L(30, -60).Z();
+  if (e) { mass = wmToward(mass.subs[0].pts, wmHairFront, e); }
+  mShape(mass, hair, 5, 1.3);
+  if (hd !== "wong" && hd !== "lue") {
+    if (!nape) { knot(); }
+    else if (e < 1) { pen.save(); pen.globalAlpha *= 1 - e; knot(); pen.restore(); }   // over the hair as it was, fading as she turns
   }
+  var inEar = e * (31 - WM_FRONT_HEAD.wide - 0.5 * ((fc.jaw || {}).cheek || 0));   // straight on, her ears in with her cheeks
   if (e) {                                          // her far ear, its earring and her lock, coming out from behind her cheek
-    pen.save(); pen.translate(2 * X - 14 * (1 - e), 0); pen.scale(-1, 1);
+    pen.save(); pen.translate(2 * X - 14 * (1 - e) - inEar, 0); pen.scale(-1, 1);
     var far = MU.ear !== null ? muEarPainted(skin, MU.ear) : [-25, -34];
     muEarring(far[0], far[1]);
     if (fc.jon) { wmJon(hair); }
@@ -2681,9 +2816,9 @@ function wmHead(look, lady, skin, fc) {
   }
   var k = MU.tara || 0, J = fc.jaw || {}, cw = J.cheek || 0, co = J.corner || [0, 0], ch = J.chin || [0, 0], fw = J.far || 0;
   var face = wmFaceLine(k, cw, co, ch, fw);
-  if (e) {                                          // her own jaw kept: each point as far from the plain head's as it was
-    var plain = wmFaceLine(k, 0, [0, 0], [0, 0], 0).subs[0].pts, own = face.subs[0].pts;
-    face = wmToward(own, function (p, i) { var q = wmFaceFront(plain[i]); return [q[0] + p[0] - plain[i][0], q[1] + p[1] - plain[i][1]]; }, e);
+  if (e) {                                          // each point of the plain head's to where it is straight on, her own jaw on both sides
+    var plain = wmFaceLine(k, 0, [0, 0], [0, 0], 0).subs[0].pts;
+    face = wmToward(face.subs[0].pts, function (p, i) { return wmFaceFront(plain[i], J); }, e);
   }
   mFill(face, skin, 7);
   pen.save(); pen.clip(face.path);
@@ -2715,43 +2850,75 @@ function wmHead(look, lady, skin, fc) {
     var u = s / 11;
     strands.M(24 - u * 40, -92 + u * 8).C(4 - u * 30, -100 + u * 2, -30 - u * 10, -94 + u * 14, -46 - u * 2, -70 + u * 26);
   }
-  pen.save(); pen.clip(mass.path); mLine(strands, sheen, 1.1); pen.restore();
+  pen.save(); pen.clip(mass.path);
+  if (e < 1) { pen.globalAlpha = 1 - e; mLine(strands, sheen, 1.1); }
+  if (e > 0) {                                      // straight on, combed up from her hairline on both sides to the crown
+    var FB = WM_FRONT_HEAD.brow, up = new MPath(), mid = FB[2] - fh;
+    for (s = 0; s < 9; s++) {
+      var ang = Math.PI * (1.08 + 0.84 * s / 8), hx = X + FB[0] * Math.cos(ang), hy = FB[1] + (FB[1] - mid) * Math.sin(ang) - 3;
+      up.M(hx, hy).Q(X + 1.25 * (hx - X), mix(hy, WM_FRONT_HEAD.crown, 0.8), X + 0.25 * (hx - X), WM_FRONT_HEAD.crown + 5);
+    }
+    pen.globalAlpha = 0.5 * e; mLine(up, sheen, 1.1);
+  }
+  pen.restore();
   if (hd === "ipun") { wmIpun(hair); }
   if (hd === "wong") { muBunGold(K[0], K[1], K[2]); }   // a knot on the crown: what hangs from it hangs down the back, over the hair
   if (hd === "lue") { wmLueWrap(fc.wrap || ["#f4f0e6", "#e88aa8"]); }
   if (fc.jon) { wmJon(hair); }
+  pen.save(); pen.translate(inEar, 0);
   var lobe = MU.ear !== null ? muEarPainted(skin, MU.ear) : [-25, -34];
   muEarring(lobe[0], lobe[1]);
-  var E = fc.eyes || {}, ey = E.y || 0, el = E.long || 1;
-  var nearEye = [mix(-4, X - 14.5, e), -50 + ey - 0.5 * e], farEye = [mix(25, X + 14.5, e), -51 + ey + 0.5 * e];
+  pen.restore();
+  var E = fc.eyes || {};
+  if (e) {                                          // straight on, the painting's eyes (WM_FRONT_HEAD.eye)
+    var FE = WM_FRONT_HEAD.eye, own = {tilt: 0, open: 0, flick: 1, liner: 0, iris: 1, crease: 1, long: 1};
+    E = Object.assign({}, E);
+    Object.keys(FE).forEach(function (key) { E[key] = mix(E[key] === undefined ? own[key] : E[key], FE[key], e); });
+  }
+  var ey = E.y || 0, el = E.long || 1;
+  var EX = WM_FRONT_HEAD.eyes, nearEye = [mix(-4, X - EX, e), -50 + ey - 0.5 * e], farEye = [mix(25, X + EX, e), -51 + ey + 0.5 * e];
   wmEye(nearEye, mix(16, 14, e) * el, -1, lady, paint, feel, E);
   wmEye(farEye, mix(10.5, 14, e) * el, 1, lady, paint, feel, E);
   // the brows: her own arch, length and fall, then the feeling's turn as mural.js gives it; straight on, each over its
   // eye, the two as long
   var B = fc.brows || {}, bl = B.lift || 0, ba = B.arch || 0, bo = B.long || 0, bf = B.fall || 0;
   var painted = MU.nose === "exact" || MU.nose === "exactink";
-  wmMoved([-7, -66], [X - 14.5, -66], 0.82, e, function () {
+  wmMoved([-7, -66], [X - EX, -66], 0.82, e, function () {
     pen.save(); muBrowTurn(feel, -7, -67 - bl, 1);
     mLine(new MPath().M(8, -62 - bl).Q(-4, -71 - bl - ba, -22 - bo, -65 - bl + bf), muColour(hair), 1.6 * (B.thick || 1));
     pen.restore();
   });
-  wmMoved([26, -64], [X + 14.5, -66], painted ? 2.3 : 1.38, e, function () {
+  wmMoved([26, -64], [X + EX, -66], painted ? 2.3 : 1.38, e, function () {
     pen.save(); muBrowTurn(feel, 28.4, -62.2 - bl, -1);
     if (painted) { pen.translate(0, -bl); muInkLine(NOSE_LANNA.brow, NOSE_PAINT.brow); }
     else { mLine(new MPath().M(17, -62 - bl).Q(26, -69 - bl - ba * 0.7, 35 + bo * 0.4, -65 - bl + bf * 0.7), muColour(hair), 1.6 * (B.thick || 1)); }
     pen.restore();
   });
-  // the nose to her middle: a nose of lines (drawn three-quarter) gives way halfway to the small round tip that reads
-  // straight on ("between")
-  var kind = MU.nose || "now", round = {rosy: true, between: true, ref: true, button: true, low: true};
-  wmMoved([22, -31], [X, -31], 1, e, function () {
-    muNose(e > 0.5 && !round[kind] ? "between" : kind, skin, lady);
-    if (MU.tara) {
-      muGlow(21.5, -27.6, 5, 2.4, "140, 70, 60", 0.14 * MU.tara);
-      muInkLine([[18.6, -31.2, 0.25], [19.6, -29.4, 0.35], [21.4, -28.6, 0.4], [23.2, -29.2, 0.35], [24.2, -30.8, 0.25]].map(function (q) { return [q[0], q[1], q[2] * MU.tara]; }), NOSE_PAINT.nostril);
-    }
-  });
-  wmMoved(mouthAt, mouthTo, 1.1, e, function () { muLipsPainted(lady, skin, MU.mouth, paint, feel); });
+  // the nose and the mouth: as drawn three-quarter, sliding to her middle as she turns; straight on, the painting's
+  // (wmNoseFront, wmLipsFront), sliding with them from where the three-quarter ones were, taking over from them over the
+  // middle of the turn (so the two are never seen apart)
+  var kind = MU.nose || "now", FH = WM_FRONT_HEAD, fe = clamp((e - 0.3) / 0.4);
+  fe = fe * fe * (3 - 2 * fe);
+  if (fe < 1) {
+    pen.save(); pen.globalAlpha *= 1 - fe;
+    wmMoved([22, -31], [X, -31], 1, e, function () {
+      muNose(kind, skin, lady);
+      if (MU.tara) {
+        muGlow(21.5, -27.6, 5, 2.4, "140, 70, 60", 0.14 * MU.tara);
+        muInkLine([[18.6, -31.2, 0.25], [19.6, -29.4, 0.35], [21.4, -28.6, 0.4], [23.2, -29.2, 0.35], [24.2, -30.8, 0.25]].map(function (q) { return [q[0], q[1], q[2] * MU.tara]; }), NOSE_PAINT.nostril);
+      }
+    });
+    wmMoved(mouthAt, mouthTo, 1.1, e, function () { muLipsPainted(lady, skin, MU.mouth, paint, feel); });
+    pen.restore();
+  }
+  if (fe > 0) {
+    pen.save(); pen.globalAlpha *= fe;
+    pen.save(); pen.translate((1 - e) * (22 - X), (1 - e) * (-29 - FH.nose)); wmNoseFront(skin); pen.restore();
+    pen.translate((1 - e) * (mouthAt[0] - X), (1 - e) * (mouthAt[1] - FH.mouth.y));
+    var three = LIPS_LANNA; LIPS_LANNA = wmLipsFront();
+    try { muLipsPainted(lady, skin, null, paint, feel); } finally { LIPS_LANNA = three; }
+    pen.restore();
+  }
 }
 
 // muEye (mural.js) with her own eye (E: wm.face.eyes): its tilt, its opening, its crease, where it looks, its wing
@@ -3070,7 +3237,7 @@ function wmJokSin(n) {
 function wmWoman(x, y, look, wm, opts) {
   var px = (opts && opts.head || 70) / 100;
   if (wm.jok && look.sin !== undefined) { look = Object.assign({}, look, {sin: wmJokSin(look.sin)}); }
-  WM = wm; WM_W = {}; WM_LATE = null; WM_FEET = 0;
+  WM = wm; WM_W = {}; WM_LATE = null; WM_OVER = null; WM_FEET = 0;
   var lady = look.lady !== undefined ? !!look.lady : !!look.bun;   // a woman standing walks (a man's legs and one seated, not yet)
   WM_STEP = !look.floor && typeof look.step === "number" ? look.step : null;
   // her sway: slow, about her feet, in her own time; the gold follows it (WM_TILT), also when she stands still (sway false)
@@ -3083,9 +3250,13 @@ function wmWoman(x, y, look, wm, opts) {
     pen.save(); pen.translate(x, y); pen.scale(px, px); muUpper(WM_A, WM_B, WM_Y0);
     wmParasol(wm.pose.near.w, wm.parasol || ["#c8402e", "#f2c36a"]); pen.restore();
   }
+  if (wm.holds === "pots") {                        // the pot behind her, before her body
+    pen.save(); pen.translate(x, y); pen.scale(px, px); muUpper(WM_A, WM_B, WM_Y0); wmPot(WM_POTS.back, -1); pen.restore();
+  }
   try {
     WM_KIT.muralPerson(x, y, look, opts);
     if (WM_LATE) { var gos = WM_LATE; WM_LATE = null; gos.forEach(function (go) { go(); }); }   // arms still to draw (no belt drew them)
+    if (WM_OVER) { var overs = WM_OVER; WM_OVER = null; overs.forEach(function (go) { go(); }); }
     pen.save();                                     // the figure's frame again, for what is over everything
     pen.translate(x, y); pen.scale(MU_PX, MU_PX);
     pen.save(); muUpper(WM_A, WM_B, WM_Y0); wmHolds(look); pen.restore();
@@ -3094,12 +3265,13 @@ function wmWoman(x, y, look, wm, opts) {
       pen.save(); pen.translate(8 + neckX, WM_CHIN + NECK_DROP[0]); pen.rotate(-0.05); wmCrown(); pen.restore();
     }
     pen.restore();
-  } finally { pen.restore(); WM = null; WM_LATE = null; WM_TILT = 0; WM_STEP = null; }
+  } finally { pen.restore(); WM = null; WM_LATE = null; WM_OVER = null; WM_TILT = 0; WM_STEP = null; }
 }
 
 // ---------- three more sin ----------
 // The dancer's black with red, green and a gold braid; a gold sin with maroon and a maroon foot; maroon with green and a
-// gold zigzag. Pushed onto the kit's SINS; WM_SIN names where each went.
+// gold zigzag. Pushed onto the kit's SINS; WM_SIN names where each went. Then three woven from waist to foot (chevron,
+// teal, namLai): the head and its band, then one broad band that her woven jok of the same name covers (wm.jok, taller 1).
 function wmAdd(arr, item) { arr.push(item); return arr.length - 1; }
 var WM_SIN = {
   braid: wmAdd(SINS, ["#1e1b24", [[0.05, SIN_HEAD, 20], [0.11, SIN_HEAD_BAND, 2.5], [0.24, "#c8303a", 6], [0.3, "#e0b23a", 1.6, "braid"],
@@ -3110,7 +3282,10 @@ var WM_SIN = {
                                  [0.83, "#e0b23a", 2, "diamonds"], [0.92, "#e0b23a", 1.6, "roundels"]]]),
   zigzag: wmAdd(SINS, ["#6e1f2a", [[0.05, SIN_HEAD, 20], [0.11, SIN_HEAD_BAND, 2.5], [0.22, "#3f6a3a", 5], [0.28, "#e0b23a", 1.4, "zigzag"], [0.38, "#3f6a3a", 5],
                                    [0.5, "#e9c44a", 1.4], [0.6, "#3f6a3a", 5], [0.66, "#e0b23a", 1.4, "zigzag"], [0.89, "#2a3a2a", 34],
-                                   [0.84, "#e0b23a", 1.8, "braid"], [0.94, "#e0b23a", 1.4, "diamonds"]]])
+                                   [0.84, "#e0b23a", 1.8, "braid"], [0.94, "#e0b23a", 1.4, "diamonds"]]]),
+  chevron: wmAdd(SINS, ["#c23b2e", [[0.05, SIN_HEAD, 20], [0.11, SIN_HEAD_BAND, 2.5], [0.585, "#c23b2e", 163]]]),
+  teal: wmAdd(SINS, ["#2c8c8e", [[0.05, SIN_HEAD, 20], [0.11, SIN_HEAD_BAND, 2.5], [0.585, "#2c8c8e", 163]]]),
+  namLai: wmAdd(SINS, ["#b8323a", [[0.05, SIN_HEAD, 20], [0.11, SIN_HEAD_BAND, 2.5], [0.585, "#b8323a", 163]]])
 };
 
 // ---------- the ten women ----------
@@ -3257,11 +3432,14 @@ muralPerson = function (x, y, look, opts) {
 //                ("evenly cut and stands up from his head", Curtis, 1903), "lue" (the Tai Lue turban), and a child's
 //                on a shaven head: "juk" (the topknot on the crown), "kae" (a small knot at each side), "pia" (a plait
 //                from the topknot), "poy" (the Poy Sang Long boy's headdress), "shaved"; face.moustache, face.stubble
-//                (0 to 1), face.pin (a juk's pin: "silver" or "gold"), face.makeup (a name of MU_MAKEUP: a prince's)
+//                (0 to 1), face.pin (a juk's pin: "silver" or "gold"), face.makeup (a name of MU_MAKEUP: a prince's);
+//                "flattop": the mural's men, the sides shaven, a short flat top
 //   holds        what a man carries: "pole" (khan haap, a basket before and one behind him), "drum" (klong yao),
 //                "dap" (a sword in each hand), "stick", "sueng" (the lute); or a woman's (lotus, garland, ...)
 //   bag          [cloth, stripes]: the woven shoulder bag (thung yaam)
-//   trousers     a colour: tieo sado, wide trousers to the calf
+//   trousers     a colour: tieo sado, wide trousers to the calf; [cloth, flowers]: the mural's knee trousers, printed
+//                with flowers, a yellow and a red band at the knee (with patoi: true and tattoo: false)
+//   khaoma       [ground, lines]: a checked pha khao ma round his neck, its ends down his chest
 //   child        -1 to 0: a child's measure (a child's settings have -1 unless they say)
 // castMan(name, more) and castChild(name, more) give the look of one of the ten, as cast() gives the cast's.
 // A person without "man", "child" or "woman" is drawn as before.
@@ -3298,12 +3476,30 @@ wmHead = function (look, lady, skin, fc) {
     return mnHead(look, lady, skin, fc);
   } finally { pen.restore(); }
 };
+// the mural's men (owner, 2026-11-05, of a Lanna procession in a temple painting, after five tries: wings, wings turned
+// down, a flared cap, combed up, parted): hairdo "flattop", the sides shaven, a short flat top over them; where the hair
+// comes out of the head a line, and from it along the side of the head (not over the forehead) short strokes up, about
+// 9 units ("make up lines that start from around the temple and go up maybe 10 pixels"; "along the sides and not along
+// the forehead"). Drawn after the face and the brows, in place of "kae"'s knots.
+function mnFlatTop(hair) {
+  var root = muCurve([-50, -80], [-36, -94], [8, -98], [32, -86]);
+  var top = new MPath().M(-50, -80).C(-52, -98, -44, -118, -20, -120).C(2, -122, 28, -112, 34, -100)
+    .C(35, -94, 34, -90, 32, -86).C(8, -98, -36, -94, -50, -80).Z();
+  mShape(top, hair, 4, 1.2);
+  pen.save(); pen.clip(top.path);
+  var ups = new MPath();
+  for (var u = 0; u <= 0.48 + 1e-6; u += 0.08) { var r0 = root(u); ups.M(r0[0], r0[1]).Q(r0[0] - 0.6, r0[1] - 5, r0[0] - 1.8, r0[1] - 9); }
+  mLine(ups, muColour(blend(hair, MU.sheen, 0.3)), 0.7);
+  pen.restore();
+  var pts = []; for (var k = 0; k <= 20; k++) { pts.push(root(k / 20)); }
+  mLine(new MPath().poly(pts, false), muInk(muColour(hair)), 1.3);
+}
 var MN_CHILD_HAIR = {juk: true, kae: true, pia: true, shaved: true, poy: true};
 function mnHead(look, lady, skin, fc) {
   var hair = look.hair || MU.hair, hd = fc.hairdo || "knot", jaw = lady || WM.child ? 0 : 4;
   if (hd === "knot" || hd === "lue") { muBun(-6, -108, 13, hair, look); }
   if (hd === "juk" || hd === "pia") { mnJuk(hair, fc.jukFlowers !== false, fc.pin); }
-  var shaven = hd === "juk" || hd === "shaved" || hd === "kae" || hd === "pia" || hd === "poy";
+  var shaven = hd === "juk" || hd === "shaved" || hd === "kae" || hd === "pia" || hd === "poy" || hd === "flattop";
   var mass = hd === "cut" ? new MPath().M(32, -86).C(18, -112, -34, -114, -50, -82).C(-58, -62, -54, -40, -40, -30).L(-20, -36).L(30, -64).Z()
     : new MPath().M(30, -88).C(14, -106, -32, -108, -48, -80).C(-58, -60, -54, -34, -38, -18).C(-30, -12, -20, -14, -14, -22).L(30, -60).Z();
   if (shaven) { mFill(mass, blend(skin, hair, 0.22), 5); }   // the shaven scalp, its shadow of hair: one head with the face, no line between
@@ -3367,6 +3563,7 @@ function mnHead(look, lady, skin, fc) {
   }
   muLipsPainted(!!paint || (lady && !WM.child), skin, MU.mouth, paint, feel);
   if (hd === "kae") { mnKae(hair); }
+  if (hd === "flattop") { mnFlatTop(hair); }
   if (hd === "lue") { wmLueWrap(fc.wrap || ["#f6f1e6", "#c8303a"]); }
   if (hd === "poy") { mnPoy(fc.poy || ["#e8508a", "#f2c33a"]); }
   if (look.turban && !shaven && hd !== "lue") { mnTurban(look.turban, face, mass, edge); }
@@ -3407,9 +3604,32 @@ function mnOutside(rec, draw) {
 // ---------- what a man carries ----------
 // wm.holds for a man (MN_HOLDS), drawn as wmHolds draws a woman's, in his upper frame; "pole" hangs one basket behind
 // him (mnBehind, before his body). wm.bag: the woven shoulder bag (thung yaam) across him, its strap over the far shoulder.
+// the pha khao ma round his neck (wm.khaoma [ground, lines], owner, 2026-11-05, "Round the neck"): a check of lines
+// every 9 and a fine white line every 27, slung round the neck below it, its two ends down his chest, a short fringe
+function mnCheck(shape, ground, line) {
+  mFill(shape, ground, 3);
+  pen.save(); pen.clip(shape.path);
+  pen.globalAlpha = 0.55; pen.fillStyle = line;
+  for (var x = -120; x < 120; x += 9) { pen.fillRect(x, -700, 2.4, 400); }
+  for (var y = -700; y < -300; y += 9) { pen.fillRect(-120, y, 240, 2.4); }
+  pen.globalAlpha = 0.5; pen.fillStyle = "#f2ead6";
+  for (x = -116; x < 120; x += 27) { pen.fillRect(x, -700, 1.2, 400); }
+  for (y = -696; y < -300; y += 27) { pen.fillRect(-120, y, 240, 1.2); }
+  pen.globalAlpha = 1; pen.restore();
+  mBrush(shape, muInk(muColour(ground)), 1.1);
+}
+function mnKhaoMa(c) {
+  mnCheck(new MPath().M(-76, -574).C(-60, -548, 20, -546, 50, -570).L(46, -556).C(14, -532, -54, -534, -70, -556).Z(), c[0], c[1]);
+  mnCheck(new MPath().M(-58, -556).C(-56, -520, -50, -480, -52, -452).L(-36, -450).C(-36, -480, -40, -520, -42, -550).Z(), c[0], c[1]);
+  mnCheck(new MPath().M(20, -548).C(22, -520, 28, -496, 30, -470).L(44, -474).C(40, -500, 36, -526, 36, -556).Z(), c[0], c[1]);
+  var fr = new MPath();
+  for (var k = 0; k < 6; k++) { fr.M(-52 + k * 3, -452).L(-53 + k * 3, -442).M(30 + k * 2.6, -471).L(31 + k * 2.6, -461); }
+  mLine(fr, c[1], 0.8);
+}
 var MN_SHOULDER = {near: [-70, -562], far: [44, -560]};
 var MN_KIT_HOLDS = wmHolds;
 wmHolds = function (look) {
+  if (WM.khaoma) { mnKhaoMa(WM.khaoma); }
   if (WM.bag) { mnBag(WM.bag); }
   var h = WM.holds, w = WM_W.near, f = WM_W.far;
   if (MN_HOLDS[h]) { MN_HOLDS[h](w, f); return; }
@@ -3504,7 +3724,7 @@ function mnBehind(wm, x, y, px) {
   pen.save(); pen.translate(x, y); pen.scale(px, px); muUpper(MN_MAN.A, MN_MAN.B, MN_MAN.Y0);
   mnBasket([-175, -552], -1); pen.restore();
 }
-["bag"].forEach(function (k) { WOMAN_KEYS[k] = true; });
+["bag", "khaoma"].forEach(function (k) { WOMAN_KEYS[k] = true; });
 
 // ---------- children ----------
 // A child's measure on the mural figure, as the old figure has it at build -1 (docs/kit/figures.md, "A little boy and a
@@ -3571,21 +3791,46 @@ function mnPoy(c) {
 }
 // ---------- trousers ----------
 // tieo sado: wide trousers to the calf (wm.trousers, a colour). mural.js draws each leg as its foot (muFoot) and then
-// its tube (mFill); after the tube, a wide leg of the trousers from the cloth's hem to the calf.
+// its tube (mFill); after the tube, a wide leg of the trousers from the cloth's hem to the calf. trousers [cloth,
+// flowers]: the mural's knee trousers (owner, 2026-11-05, "Yes, pink + blue"), small five-petalled flowers over the
+// cloth and a yellow and a red band at the knee; with patoi the cloth hitched over his hips is the same, printed alike
+// (and tattoo false: the tattoo is drawn after the leg).
 var MN_LEG = false, MN_KIT_FOOT = muFoot, MN_KIT_FILL = mFill;
 muFoot = function (x, y, len, skin) { var r = MN_KIT_FOOT(x, y, len, skin); MN_LEG = !!(WM && WM.trousers); return r; };   // the leg's tube is the next fill after its foot
+// small flowers over a shape in t[1], a row at a time, every other row shifted, each placed by a hash (the same each frame)
+function mnPrint(rec, t) {
+  var xs = [], ys = [];
+  rec.subs.forEach(function (sub) { sub.pts.forEach(function (p) { xs.push(p[0]); ys.push(p[1]); }); });
+  var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys), n = 0;
+  pen.save(); pen.clip(rec.path);
+  for (var y = y0 + 8; y < y1; y += 22) {
+    for (var x = x0 - 6 + (n % 2) * 11; x < x1 + 6; x += 22) {
+      var k = weaveHash(Math.round(x), Math.round(y), 3), fx = x + (k - 0.5) * 6, fy = y + (weaveHash(Math.round(y), Math.round(x), 4) - 0.5) * 6;
+      for (var p = 0; p < 5; p++) { var a = p * 1.2566 + k * 3; muGlow(fx + Math.cos(a) * 3.2, fy + Math.sin(a) * 3.2, 2.4, 2.4, muRgb(t[1]), 0.95); }
+      muGlow(fx, fy, 1.4, 1.4, "240, 200, 80", 1);
+    }
+    n++;
+  }
+  pen.restore();
+}
 mFill = function (rec, colour, grain) {
   MN_KIT_FILL(rec, colour, grain);
   if (!MN_LEG) { return; }
   MN_LEG = false;
+  var t = WM.trousers, printed = Array.isArray(t), cloth = printed ? t[0] : t, w = printed ? 2 : 0;
   var xs = [], ys = [];
   rec.subs.forEach(function (sub) { sub.pts.forEach(function (p) { xs.push(p[0]); ys.push(p[1]); }); });
-  var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), top = Math.min.apply(null, ys), hem = -150, mid = (x0 + x1) / 2;
-  var leg = new MPath().M(mid - 24, top).L(mid + 24, top).C(mid + 30, top + 80, mid + 30, hem - 30, mid + 28, hem)
-    .Q(mid, hem + 6, mid - 28, hem).C(mid - 30, hem - 30, mid - 30, top + 80, mid - 24, top).Z();
-  MN_KIT_SHAPE(leg, WM.trousers, 8, 1.3);
+  var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), top = Math.min.apply(null, ys), hem = printed ? -215 : -150, mid = (x0 + x1) / 2;
+  var leg = new MPath().M(mid - 24, top).L(mid + 24, top).C(mid + 30, top + 80, mid + 30 + w, hem - 30, mid + 28 + w, hem)
+    .Q(mid, hem + 6, mid - 28 - w, hem).C(mid - 30 - w, hem - 30, mid - 30, top + 80, mid - 24, top).Z();
+  MN_KIT_SHAPE(leg, cloth, 8, 1.3);
+  if (printed) { mnPrint(leg, t); }
   pen.save(); pen.clip(leg.path);
-  mLine(new MPath().M(mid - 6, top + 10).C(mid - 2, top + 80, mid - 8, hem - 40, mid - 4, hem).M(mid + 14, top + 30).C(mid + 16, top + 90, mid + 12, hem - 30, mid + 16, hem), muShade(muColour(WM.trousers)), 1);
+  if (printed) {                                    // the bands at the knee
+    pen.fillStyle = "#e8b62e"; pen.fillRect(mid - 40, hem - 16, 80, 8);
+    pen.fillStyle = "#c23b2e"; pen.fillRect(mid - 40, hem - 8, 80, 12);
+  }
+  mLine(new MPath().M(mid - 6, top + 10).C(mid - 2, top + 80, mid - 8, hem - 40, mid - 4, hem).M(mid + 14, top + 30).C(mid + 16, top + 90, mid + 12, hem - 30, mid + 16, hem), muShade(muColour(cloth)), 1);
   pen.restore();
 };
 ["child", "trousers"].forEach(function (k) { WOMAN_KEYS[k] = true; });
@@ -3760,8 +4005,8 @@ muralPerson = function (x, y, look, opts) {
 // (2026-10-31): "Can you put the sabai on one of the new model sprites and keep it from rocking or shaking?", then "Use
 // one of the new models and stop the sway if possible". Notes: docs/kit/things.md, "The sabai on a mural woman".
 //
-// She wears the cloth whole (sabaiWorn()): its back hanging from her shoulder over her far arm (owner, 2026-10-31:
-// "Have the woman's left arm be below the sabai"), her body, then its front. Her own band is left off (sabai: false);
+// She wears the cloth whole (sabaiWorn()): its back hanging from her shoulder, her far arm (her left) over it, her body,
+// then its front over her shoulder and upper arm, and her left forearm and hand over everything (owner, 2026-11-03). Her own band is left off (sabai: false);
 // she stands still (woman: sway false), so the cloth lies on her as she is; SABAI_MURAL_ARMS lays her near arm hanging
 // over the cloth's lower end. A steady cloth's figures do not bob or rock.
 // e.g. var look = castWoman("maiden", {sabai: false, id: "maiden"});
@@ -3847,9 +4092,13 @@ var MS_TORSO = "M -13.13 -586 C -30 -582 -50 -578 -60 -562 C -68 -548 -66 -520 -
 // belt (with the late arm, mural_women.js draws it there) waits until the cloth is on. The chains of rank (neck
 // "sangwan") are worn over the cloth: below the choker they are drawn again after it. For one with neither, after her.
 // It is cut along her torso's line (MS_TORSO).
-// The cloth's back (worn.back) is drawn after her far arm, which mural.js draws first of her: it hangs over that arm,
-// under all the rest of her. An arm drawn late (in a wai) is drawn over her, but not over the back: it comes out from
-// under the cloth (as the kit's own figure's upper arm stays under it in a wai, owner 2026-10-16).
+// Her far arm, her left, the cloth's shoulder (owner, 2026-11-03: "Fix the woman's left arm. It should be in front of the
+// back part of the sabai and her forearm and hand should be in front of everything. Her bicep and shoulder should be
+// behind the front side of the sabai"; until then the back hung over the whole arm, owner 2026-10-31): the cloth's back
+// is drawn first, then that arm, which mural.js draws first of her, so her body and the cloth's front lie over its
+// shoulder and upper arm; then the same arm again from the elbow down (cut along the elbow's bisector), over all of her
+// (WM_OVER). Never late: in a wai its forearm goes where the late arms go (over the cloth, before her near arm, so her
+// near hand stays in front of it, as the far hand is seen in three-quarter view).
 var MURAL_SABAI_KIT = {muralPerson: muralPerson, muBelt: muBelt, muCollar3q: muCollar3q, muArm: muArm}, MS_WORN = null;
 muralPerson = function (x, y, look, opts) {
   if (!look.worn || !look.woman) { return MURAL_SABAI_KIT.muralPerson(x, y, look, opts); }
@@ -3869,27 +4118,41 @@ function msBack() {                                  // the cloth's back, once
   pen.save();
   try { wear.worn.back(); } finally { pen.restore(); }
 }
-function msOffBack() {                               // a clip: all but the cloth's back (in the frame the cloth was laid in)
-  var T = MS_WORN.worn.where.tail, p = new Path2D();
-  if (!T) { return; }
-  pen.setTransform(MS_WORN.worn.frame);
-  p.rect(-20000, -20000, 40000, 40000);
-  p.moveTo(T.inner[0], T.inner[1]);
-  T.outer.concat(T.hem).forEach(function (q) { p.lineTo(q[0], q[1]); });
-  p.closePath();
-  pen.clip(p, "evenodd");
-}
 muArm = function (S, E, W, wide, sleeve, skin, look, outward, bend, lady) {
   var wear = MS_WORN;
-  if (!wear || wear.back || outward <= 0) { return MURAL_SABAI_KIT.muArm(S, E, W, wide, sleeve, skin, look, outward, bend, lady); }
-  var late = WM_LATE ? WM_LATE.length : 0;
-  MURAL_SABAI_KIT.muArm(S, E, W, wide, sleeve, skin, look, outward, bend, lady);   // her far arm, now or late
-  if (WM_LATE && WM_LATE.length > late) {            // late: over her, still under the back
-    var go = WM_LATE[late];
-    WM_LATE[late] = function () { pen.save(); try { msOffBack(); go(); } finally { pen.restore(); } };
-  }
-  msBack();
+  if (!wear || wear.far || outward <= 0) { return MURAL_SABAI_KIT.muArm(S, E, W, wide, sleeve, skin, look, outward, bend, lady); }
+  wear.far = true;
+  msBack();                                          // the cloth's back under the arm
+  var late = WM_LATE ? WM_LATE.length : 0, base = WM_KIT.muArm, seen = null;
+  WM_KIT.muArm = function () { seen = {args: arguments, frame: pen.getTransform(), arm: WM_ARM}; return base.apply(null, arguments); };
+  try {
+    MURAL_SABAI_KIT.muArm(S, E, W, wide, sleeve, skin, look, outward, bend, lady);
+    if (WM_LATE && WM_LATE.length > late) { WM_LATE.splice(late, 1)[0](); }   // now, not late: under her body and the cloth's front
+  } finally { WM_KIT.muArm = base; }
+  if (!seen) { return; }
+  var fore = function () { msForearm(seen, base); };
+  if (seen.arm && seen.arm.aim !== undefined) { WM_LATE = WM_LATE || []; WM_LATE.splice(late, 0, fore); }   // a wai: before her near arm
+  else { (WM_OVER = WM_OVER || []).push(fore); }
 };
+// The far arm drawn again from the elbow down: clipped to the side of the elbow's bisector that holds the wrist.
+function msForearm(seen, base) {
+  var S = seen.args[0], E = seen.args[1], W = seen.args[2];
+  var lu = Math.hypot(S[0] - E[0], S[1] - E[1]) || 1, lv = Math.hypot(W[0] - E[0], W[1] - E[1]) || 1;
+  var b = [(S[0] - E[0]) / lu + (W[0] - E[0]) / lv, (S[1] - E[1]) / lu + (W[1] - E[1]) / lv], lb = Math.hypot(b[0], b[1]);
+  b = lb < 1e-3 ? [-(S[1] - E[1]) / lu, (S[0] - E[0]) / lu] : [b[0] / lb, b[1] / lb];   // a straight arm: across it
+  var n = [-b[1], b[0]], L = 5000;
+  if (n[0] * (W[0] - E[0]) + n[1] * (W[1] - E[1]) < 0) { n = [-n[0], -n[1]]; }
+  pen.save();
+  try {
+    pen.setTransform(seen.frame);
+    pen.beginPath();
+    pen.moveTo(E[0] + b[0] * L, E[1] + b[1] * L); pen.lineTo(E[0] - b[0] * L, E[1] - b[1] * L);
+    pen.lineTo(E[0] - b[0] * L + n[0] * L, E[1] - b[1] * L + n[1] * L); pen.lineTo(E[0] + b[0] * L + n[0] * L, E[1] + b[1] * L + n[1] * L);
+    pen.closePath(); pen.clip();
+    WM_ARM = seen.arm;
+    base.apply(null, seen.args);
+  } finally { WM_ARM = null; pen.restore(); }
+}
 function msWear() {                                  // the cloth's front, once
   var wear = MS_WORN;
   if (wear.done) { return; }

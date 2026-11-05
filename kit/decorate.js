@@ -441,6 +441,9 @@ var THING_KINDS = {
   krabung: function (one, look) { krabung(pen, one.x, one.base, one.size || 1, look); },
   mortar: function (one, look) { mortar(pen, one.x, one.base, one.size || 1, look); },
   taLaew: function (one, look) { taLaew(pen, one.x, one.base, one.size || 1, look); },
+  // the triangular cushion and the betel set of a house or a palace (pieces.js; look.kind picks each one's kind)
+  monKhit: function (one, look) { monKhit(pen, one.x, one.base, one.size || 1, look); },
+  khanMak: function (one, look) { khanMak(pen, one.x, one.base, one.size || 1, look); },
   namton: function (one) { namton(pen, one.x, one.base, one.size || 1); },
   khom: function (one, look) { khom(one.x, one.base, Object.assign({size: one.size || 1}, look)); },  // hung from (x, base)
   // the offerings of Lanna's rites (offerings.js): the flower cone, the footed bowl of flowers, the jasmine garland

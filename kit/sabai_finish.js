@@ -19,7 +19,7 @@ var SABAI_FINISH_GROUND = "#46101c";
 // one dark (indigo) for what is dark. The reds that sank into a red ground are left out.
 var SABAI_FINISH_THREADS = ["#e0b84a", "#f2d04a", "#efe2c4", "#fbf6ea", "#7ab65a", "#ee8aac", "#6e9ad8", "#e8873a", "#cfd3d8", "#2c3a78"];
 
-var SABAI_FINISH_KIT = {tiles: sabaiTiles, sabai: sabai, edge: sabaiEdge};
+var SABAI_FINISH_KIT = {tiles: sabaiTiles, sabai: sabai, edge: sabaiEdge, ground: sabaiGround};
 
 // (1) Woven figures. Each frame of a tile (sabaiTile: a figure painted once) is laid again as a weave: its picture read
 // on a grid of floats SF_PICKS high and SF_FLOATS across (a float wider than it is tall, as supplementary weft lies),
@@ -102,9 +102,9 @@ sabai = function (t, where, cloth, part) {
   where = sfSmooth(where);
   if (part !== "front" && where.tail) { where.tail = sfSway(where.tail); }
   if (part === "front") { sfShadow(where, half); }
-  sabaiEdge = sfEdge;
-  try { SABAI_FINISH_KIT.sabai(t, where, cloth, part); } finally { sabaiEdge = SABAI_FINISH_KIT.edge; }
-  if (part === "front") { sfFar(t, where, half, cloth); sfBorder(where, half, cloth); sfLight(where, half); }
+  sabaiEdge = sfEdge; sabaiGround = sfGround;
+  try { SABAI_FINISH_KIT.sabai(t, where, cloth, part); } finally { sabaiEdge = SABAI_FINISH_KIT.edge; sabaiGround = SABAI_FINISH_KIT.ground; }
+  if (part === "front") { sfFar(t, where, half, cloth); sfBorder(where, half, cloth); sfLight(where, half, cloth.cloth || "#8a2a3a"); }
   else { sfEnd(where, cloth); }
 };
 
@@ -143,6 +143,84 @@ function sfTuck(where) {                             // nothing below the waist'
   if (where.tuck !== undefined) { pen.beginPath(); pen.rect(-1e5, -1e5, 2e5, 1e5 + where.tuck); pen.clip(); }
 }
 
+// The ground woven (owner, 2026-11-03: "Can you make the horizontal rows look like cloth when it's up close? The icons
+// look nice but the background is too smooth"): a plain weave, its picks SABAI_FINISH_THREAD apart across the cloth (as
+// fine as the figures' floats), each pick a row of small rounded floats, lit along the top and shaded at the foot as the
+// figures' are, half a float along from the last, each pick a little lighter or darker than its neighbours as a hand-spun
+// thread is, and the shade of the warp between them. It is one small woven sheet (sfGroundTile) laid as a pattern, in
+// pieces along the cloth, each turned and gathered as the cloth is there, each short enough that where two meet the
+// weave is out by less than half a pixel (one line per thread had cost up to 330 ms a frame up close). Laid by sabai()
+// of sabai.js over the cloth's colour, under its figures (sabaiGround); seen only near: it fades out as a pick grows
+// thinner than 1.5 pixels.
+var SABAI_FINISH_THREAD = 0.075;                     // one pick across the cloth (the cloth is 72 wide; a figure's float is 0.07 high)
+var SF_PICKS_TILE = 16, SF_FLOATS_TILE = 10, SF_FLOAT = 1.5;   // the sheet: 16 picks by 10 floats, a float 1.5 picks long
+var SF_GROUND_TILES = {};                            // the sheets made, by pixels to a unit
+function sfGroundTile(res) {                         // the weave on a sheet of res pixels to a unit of the cloth
+  if (SF_GROUND_TILES[res]) { return SF_GROUND_TILES[res]; }
+  var P = SABAI_FINISH_THREAD, F = P * SF_FLOAT;
+  var sheet = document.createElement("canvas"), w = Math.max(2, Math.round(SF_FLOATS_TILE * F * res)), h = Math.max(2, Math.round(SF_PICKS_TILE * P * res));
+  sheet.width = w; sheet.height = h;
+  var b = sheet.getContext("2d"), ph = h / SF_PICKS_TILE, fw = w / SF_FLOATS_TILE;
+  function hash(i, j) { var r = Math.sin(i * 12.9898 + j * 78.233) * 43758.5453; return r - Math.floor(r); }
+  b.fillStyle = "rgba(12, 0, 4, 0.26)";              // the warp, in shade between the floats
+  b.fillRect(0, 0, w, h);
+  for (var i = 0; i < SF_PICKS_TILE; i++) {
+    var y0 = i * ph, slub = 0.07 + 0.07 * hash(i, 0); // this pick's thread: a little lighter or darker than the next
+    for (var j = -1; j <= SF_FLOATS_TILE; j++) {
+      var x0 = (j + (i % 2) * 0.5) * fw, a = slub * (0.85 + 0.3 * hash(i, j + 1));
+      b.fillStyle = "rgba(255, 226, 214, " + a.toFixed(3) + ")";
+      b.beginPath(); b.roundRect(x0 + fw * 0.06, y0 + ph * 0.1, fw * 0.88, ph * 0.8, ph * 0.4); b.fill();
+      b.fillStyle = "rgba(255, 244, 230, " + (a * 0.9).toFixed(3) + ")";   // the light along its top
+      b.fillRect(x0 + fw * 0.2, y0 + ph * 0.18, fw * 0.6, ph * 0.16);
+      b.fillStyle = "rgba(15, 0, 5, 0.16)";           // its foot in shade
+      b.fillRect(x0 + fw * 0.1, y0 + ph * 0.68, fw * 0.8, ph * 0.14);
+    }
+  }
+  SF_GROUND_TILES[res] = {sheet: sheet, along: SF_FLOATS_TILE * F / w, across: SF_PICKS_TILE * P / h};
+  return SF_GROUND_TILES[res];
+}
+function sfGround(where, half, from, to) {
+  var frame = pen.getTransform(), scale = Math.hypot(frame.a, frame.b), W = pen.canvas.width, H = pen.canvas.height;
+  var seen = Math.max(0, Math.min(1, (SABAI_FINISH_THREAD * scale - 1.5) / 2));
+  if (!seen) { return; }
+  // the sheet about a pixel to a pixel of the screen (a power of two, so few are made)
+  var tile = sfGroundTile(Math.pow(2, Math.max(4, Math.min(9, Math.round(Math.log2(scale)))))), weave = pen.createPattern(tile.sheet, "repeat");
+  var wide = half + 3, tol = 0.4 / scale, lo = from - 30, hi = to + 30, a = lo;
+  function frameAt(at) { var q = sabaiOn(where, at, 0), s = sabaiOn(where, at, 1); return {q: q, side: [s[0] - q[0], s[1] - q[1]]}; }
+  function toScreen(p) { return [frame.a * p[0] + frame.c * p[1] + frame.e, frame.b * p[0] + frame.d * p[1] + frame.f]; }
+  pen.save();
+  pen.globalAlpha *= seen;
+  pen.fillStyle = weave;
+  var here = frameAt(a);
+  while (a < hi) {
+    var c = Math.cos(here.q[2]), s = Math.sin(here.q[2]), da = Math.min(16, hi - a), next;
+    for (;;) {                                       // as long as this piece's own frame still meets the cloth at its far end
+      next = frameAt(a + da);
+      var err = Math.max.apply(null, [-wide, wide].map(function (k) {
+        return Math.hypot(here.q[0] + c * da + here.side[0] * k - next.q[0] - next.side[0] * k, here.q[1] + s * da + here.side[1] * k - next.q[1] - next.side[1] * k);
+      }));
+      if (err < tol || da < 0.05) { break; }
+      da /= 2;
+    }
+    var corners = [[a, -wide], [a + da, -wide], [a + da, wide], [a, wide]].map(function (m) {
+      return toScreen([here.q[0] + c * (m[0] - a) + here.side[0] * m[1], here.q[1] + s * (m[0] - a) + here.side[1] * m[1]]);
+    });
+    var X = corners.map(function (p) { return p[0]; }), Y = corners.map(function (p) { return p[1]; });
+    if (Math.max.apply(null, X) > 0 && Math.min.apply(null, X) < W && Math.max.apply(null, Y) > 0 && Math.min.apply(null, Y) < H) {
+      // the pattern's x is along the cloth and its y across it, in units of the cloth, in this piece's frame
+      weave.setTransform(new DOMMatrix([c, s, here.side[0], here.side[1], here.q[0] - c * a, here.q[1] - s * a]).scale(tile.along, tile.across));
+      pen.beginPath();
+      [[a, -wide], [a + da, -wide], [a + da, wide], [a, wide]].forEach(function (m, k) {
+        var x = here.q[0] + c * (m[0] - a) + here.side[0] * m[1], y = here.q[1] + s * (m[0] - a) + here.side[1] * m[1];
+        if (k) { pen.lineTo(x, y); } else { pen.moveTo(x, y); }
+      });
+      pen.fill();
+    }
+    a += da; here = next;
+  }
+  pen.restore();
+}
+
 // (2) Light and folds: a soft shadow under the band on her blouse (not past her shoulder, where it would fall on the
 // sky), and over the band a smooth field of light (sfLight).
 function sfShadow(where, half) {
@@ -154,9 +232,10 @@ function sfShadow(where, half) {
   pen.restore();
 }
 
-var SF_LAYERS = null;                                // two small sheets for the light: made once, grown when a cloth needs more
+var SABAI_FINISH_SHEEN = 0.4;                        // how strong the light laid over the cloth is (1 = as it was until 2026-11-03)
+var SF_LAYERS = null;                                // three sheets for the light: made once, grown when a cloth needs more
 function sfLayer(k, w, h) {
-  if (!SF_LAYERS) { SF_LAYERS = [document.createElement("canvas"), document.createElement("canvas")]; }
+  if (!SF_LAYERS) { SF_LAYERS = [document.createElement("canvas"), document.createElement("canvas"), document.createElement("canvas")]; }
   var c = SF_LAYERS[k];
   if (c.width < w || c.height < h) { c.width = Math.max(c.width, w); c.height = Math.max(c.height, h); }
   return c;
@@ -165,11 +244,14 @@ function sfLayer(k, w, h) {
 // The light, with no edge anywhere (the owner saw "a lighter shade box" where strokes had laid it, and patches laid
 // see-through showed their seams). It is painted on two small sheets in the pen's own frame, the shade on white and the
 // light on black, in strips along the cloth each filled across with a smooth gradient, and laid on the cloth whole, the
-// shade multiplied and the light screened. Across it, a sheen on its upper part and shade toward its lower edge as it
+// shade multiplied and the light added (below). Across it, a sheen on its upper part and shade toward its lower edge as it
 // turns away; along it, darker over the last of it where it turns over the shoulder, and a soft glow of the silk that
 // moves along it (with a mural woman's sway, WM_TILT of people.js, where there is one). Then two creases at the
 // turn, and the gold edge catching the light.
-function sfLight(where, half) {
+// The light falls on the threads only, not on the red (owner, 2026-11-03: "don't put any sheen on the red part of the
+// sabai"): it is laid through a third sheet, the cloth as it is drawn, less its ground colour (so the red is near black
+// and a thread is as bright as it stands out from the red), times the light, and added.
+function sfLight(where, half, ground) {
   var from = where.start || 0, to = where.length, frame = pen.getTransform();
   var u = 0.5 + 0.42 * Math.sin(clock * 0.55 + 220 * (typeof WM_TILT !== "undefined" ? WM_TILT : 0)), glowAt = from + (to - from) * u;
   var scale = Math.hypot(frame.a, frame.b), W = pen.canvas.width, H = pen.canvas.height;
@@ -206,7 +288,9 @@ function sfLight(where, half) {
     for (var k = 0; k <= 12; k++) {
       var v = -1 + k / 6;                                                   // -1 its upper edge, 1 its lower
       var dark = Math.min(0.5, 0.2 * Math.pow(Math.max(0, v), 1.6) + 0.16 * turn * turn);
-      var light = 0.1 * Math.exp(-Math.pow((v + 0.5) / 0.35, 2)) + 0.12 * glowA * Math.exp(-Math.pow((v + 0.3) / 0.5, 2));
+      // the sheen and the glow at 0.4 of what they were (owner, 2026-11-03: "take some of the sheen off the sabai. It looks
+      // like a color change with a white overlay. Tone it down")
+      var light = SABAI_FINISH_SHEEN * (0.1 * Math.exp(-Math.pow((v + 0.5) / 0.35, 2)) + 0.12 * glowA * Math.exp(-Math.pow((v + 0.3) / 0.5, 2)));
       var d = Math.round(255 * (1 - dark)), lv = Math.round(255 * light);
       gs.addColorStop(k / 12, "rgb(" + d + "," + Math.round(d * 0.97) + "," + Math.round(d * 0.98) + ")");
       gl.addColorStop(k / 12, "rgb(" + lv + "," + Math.round(lv * 0.94) + "," + Math.round(lv * 0.85) + ")");
@@ -219,8 +303,14 @@ function sfLight(where, half) {
   pen.save(); sfTuck(where); pen.clip(sfBand(where, half));
   pen.setTransform(1, 0, 0, 1, 0, 0);
   pen.imageSmoothingEnabled = true; pen.imageSmoothingQuality = "high";
+  var onC = sfLayer(2, bw, bh), on = onC.getContext("2d");   // where the light falls: the threads, as bright as they stand out from the red
+  on.setTransform(1, 0, 0, 1, 0, 0); on.imageSmoothingEnabled = true; on.imageSmoothingQuality = "high";
+  on.globalCompositeOperation = "copy"; on.drawImage(pen.canvas, box[0], box[1], bw, bh, 0, 0, bw, bh);
+  on.globalCompositeOperation = "difference"; on.fillStyle = ground; on.fillRect(0, 0, bw, bh);
+  on.globalCompositeOperation = "multiply"; on.drawImage(lightC, 0, 0, lw, lh, 0, 0, lw * R, lh * R);
+  on.globalCompositeOperation = "source-over";
   pen.globalCompositeOperation = "multiply"; pen.drawImage(shadeC, 0, 0, lw, lh, box[0], box[1], lw * R, lh * R);
-  pen.globalCompositeOperation = "screen"; pen.drawImage(lightC, 0, 0, lw, lh, box[0], box[1], lw * R, lh * R);
+  pen.globalCompositeOperation = "lighter"; pen.drawImage(onC, 0, 0, bw, bh, box[0], box[1], bw, bh);
   pen.setTransform(frame); pen.globalCompositeOperation = "source-over";
   [to - 30, to - 44].forEach(function (a, i) {       // two creases where it turns
     var p = sabaiAt(where, a, -half + 6), m = sabaiAt(where, a + 6, 0), q = sabaiAt(where, a - 2, half - 6);
