@@ -151,7 +151,8 @@ function sheetSeated() {
 }
 
 // the three sin woven from waist to foot (weaving.js TEEN_JOK_ROWS chevron, teal, namLai): each laid flat, its white head
-// and red band above, and worn by the lotus maiden (WM_SIN of the same name, her jok the same rows)
+// and red band above, and worn by the lotus maiden (WM_SIN of the same name, her jok the same rows); in the teal, after the
+// photograph it came from, she carries water pots on a pole (holds "pots")
 function sheetWovenSins() {
   [["chevron", "chevron"], ["teal", "teal"], ["namLai", "lueLac"]].forEach(function (s, n) {
     var cx = WIDE * (n + 0.5) / 3, base = cast("lotusmaiden");
@@ -160,6 +161,7 @@ function sheetWovenSins() {
     teenJok(pen, cx - 300, 138, 250, {town: s[0], palette: WEAVE_PALETTES[s[1]], cell: 3.4});
     var look = Object.assign({}, base, {size: 1.55, id: "sin-" + s[0], sin: WM_SIN[s[0]]});
     look.woman = Object.assign({}, peopleSettings(base), {jok: [s[0], s[1], 1], holds: null});
+    if (s[0] === "teal") { Object.assign(look.woman, {holds: "pots", hands: "normal", pose: {near: WM_POTS.hand}}); }
     person(cx + 140, 1050, look);
     caption(s[0], cx - 175, 60);
   });

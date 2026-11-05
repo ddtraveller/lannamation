@@ -1871,7 +1871,8 @@ function thAnklet(x, y) {
 //   scarf    [outside, lining, curve, width]: a long cloth from the far hand to the near hand and on (curve(farW, nearW)
 //            gives [[a, c1, c2, b, width, turn], ...] cubic pieces)
 //   holds    in the near hand: "lotus", "garland", "khan" (a bowl of flowers), "fan", "lantern", "parasol" (parasol:
-//            [paper, flowers]); between both: "cloth" (cloth: a SABAI_WEAVES name)
+//            [paper, flowers]); between both: "cloth" (cloth: a SABAI_WEAVES name); on her shoulder: "pots", a carrying
+//            pole with a water pot at each end (with hands: "normal" and pose: {near: WM_POTS.hand})
 //   jok      [town, palette, taller]: her sin's foot a woven teen jok (weaving.js teenJok: "maechaem", "nan" or "long";
 //            one of WEAVE_PALETTES), "taller" times the sin's own foot band; or her whole sin woven, with sin
 //            WM_SIN.chevron, .teal or .namLai: ["chevron", "chevron", 1], ["teal", "teal", 1], ["namLai", "lueLac", 1]
@@ -2385,13 +2386,56 @@ muTinJok = function (y0, y1, x0, x1, ground) {
   pen.fillStyle = round; pen.fillRect(x0, top, x1 - x0, tall + 10);
 };
 
+// ---------- the water carrier ----------
+// holds "pots" (owner, 2026-11-05, after a photograph of a woman carrying water and the mural beside it: "W1 but cut the
+// pot off at the bottom so it looks more like the image and is smaller"): a bamboo carrying pole on her near shoulder,
+// her near hand on it before her (pose near: WM_POTS.hand, with hands "normal"), and a black clay water pot hung on
+// cords from each end, round and wide-mouthed, cut off flat below its widest; the pot behind her is drawn before her
+// body (wmWoman), the pole and the pot before her over it (wmHolds). The pots swing a little, each in its own time.
+var WM_POTS = {back: [-215, -536], front: [150, -590], drop: 205, r: 40,
+               hand: {w: [62, -566], elbow: [-0.2, 1], wrist: -0.6, fingers: 0.9, late: true}};
+// the pole from "from" to "to": a cane of even width, lit along its top, three nodes
+function wmPole(from, to) {
+  var dx = to[0] - from[0], dy = to[1] - from[1], l = Math.hypot(dx, dy), nx = -dy / l * 5.5, ny = dx / l * 5.5;
+  var cane = new MPath().M(from[0] + nx, from[1] + ny).L(to[0] + nx, to[1] + ny).Q(to[0] + dx / l * 4, to[1] + dy / l * 4, to[0] - nx, to[1] - ny)
+    .L(from[0] - nx, from[1] - ny).Q(from[0] - dx / l * 4, from[1] - dy / l * 4, from[0] + nx, from[1] + ny).Z();
+  mShape(cane, "#b08a4a", 3, 1.1);
+  pen.save(); pen.clip(cane.path);
+  pen.strokeStyle = "rgba(240, 214, 160, 0.8)"; pen.lineWidth = 2.6; pen.beginPath();
+  pen.moveTo(from[0] - nx * 0.45, from[1] - ny * 0.45); pen.lineTo(to[0] - nx * 0.45, to[1] - ny * 0.45); pen.stroke();
+  pen.restore();
+  var nodes = new MPath();
+  [0.2, 0.48, 0.76].forEach(function (u) { var x = from[0] + dx * u, y = from[1] + dy * u; nodes.M(x + nx, y + ny).L(x - nx, y - ny); });
+  mLine(nodes, "#6a4a24", 1.2);
+}
+// a pot hung from the pole's end P: way 1 before her, -1 behind
+function wmPot(P, way) {
+  var r = WM_POTS.r, h = r * 0.92, sway = Math.sin(clock * 1.3 + (way > 0 ? 0 : 1.7)) * 5, c = [P[0] + sway, P[1] + WM_POTS.drop];
+  var top = c[1] - h, mouth = r * 0.7, rim = top - r * 0.08, foot = c[1] + h * 0.6;
+  mLine(new MPath().M(P[0], P[1]).L(c[0] - mouth - 2, rim + 4).M(P[0], P[1]).L(c[0] + mouth + 2, rim + 4).M(P[0], P[1]).L(c[0] - 2, rim + 2), "#c9a46a", 1.1);
+  var body = new MPath().M(c[0] - mouth, top).C(c[0] - r * 1.08, top + h * 0.15, c[0] - r * 1.18, c[1] + h * 0.3, c[0] - r * 0.72, foot)
+    .Q(c[0], foot + 2.5, c[0] + r * 0.72, foot).C(c[0] + r * 1.18, c[1] + h * 0.3, c[0] + r * 1.08, top + h * 0.15, c[0] + mouth, top).Z();
+  mShape(body, "#2a2220", 8, 1.3);
+  pen.save(); pen.clip(body.path);
+  var g = pen.createRadialGradient(c[0] + r * 0.35, c[1] - h * 0.35, 2, c[0] + r * 0.3, c[1] - h * 0.3, r * 0.9);   // the shine of fired clay
+  g.addColorStop(0, "rgba(122, 106, 98, 0.85)"); g.addColorStop(0.5, "rgba(122, 106, 98, 0)");
+  pen.fillStyle = g; pen.fillRect(c[0] - r * 1.2, top, r * 2.4, h * 2.2);
+  pen.restore();
+  mShape(new MPath().M(c[0] - mouth, top + 1).L(c[0] - mouth * 0.85, rim + 3).L(c[0] + mouth * 0.85, rim + 3).L(c[0] + mouth, top + 1).Z(), "#2a2220", 4, 1);
+  mShape(new MPath().E(c[0], rim + 2, mouth * 1.05, 4.5), "#3a302c", 3, 1.1);       // the rolled lip
+  mShape(new MPath().E(c[0], rim + 1.5, mouth * 0.7, 2.4), "#141010", 1, 0.6);      // the mouth
+  mLine(new MPath().M(c[0] - mouth * 0.8, rim + 6).L(c[0] + mouth * 0.8, rim + 6), "#c9a46a", 2);   // the cord tied under the lip
+}
+
 // ---------- what she holds, over everything ----------
 // lotus, garland, khan: a bowl of flowers (the near hand); cloth: a length of her own weaving hung from
 // both hands (wm.cloth, a SABAI_WEAVES name); parasol: a Bo Sang paper parasol over her shoulder (wm.parasol colours);
-// fan: a red lacquer fan with gold; lantern: a paper lantern (khom) hung from a stick, lit
+// fan: a red lacquer fan with gold; lantern: a paper lantern (khom) hung from a stick, lit; pots: a carrying pole and
+// water pots (above)
 function wmHolds(look) {
   var h = WM.holds, w = WM_W.near, f = WM_W.far;
   if (!h || !w) { return; }
+  if (h === "pots") { wmPole(WM_POTS.back, WM_POTS.front); wmPot(WM_POTS.front, 1); }
   if (h === "khan") { wmKhan([w[0] + 4, w[1] - 16]); }
   if (h === "cloth" && f) { wmCloth(w, f, WM.cloth); }
   if (h === "fan") { wmFan(w); }
@@ -3204,6 +3248,9 @@ function wmWoman(x, y, look, wm, opts) {
   if (wm.holds === "parasol" && wm.pose && wm.pose.near) {
     pen.save(); pen.translate(x, y); pen.scale(px, px); muUpper(WM_A, WM_B, WM_Y0);
     wmParasol(wm.pose.near.w, wm.parasol || ["#c8402e", "#f2c36a"]); pen.restore();
+  }
+  if (wm.holds === "pots") {                        // the pot behind her, before her body
+    pen.save(); pen.translate(x, y); pen.scale(px, px); muUpper(WM_A, WM_B, WM_Y0); wmPot(WM_POTS.back, -1); pen.restore();
   }
   try {
     WM_KIT.muralPerson(x, y, look, opts);

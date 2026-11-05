@@ -909,6 +909,16 @@ closes into a fist round what it holds. The grandmother, the weaver, the Tai Lue
 have it; the dancers, the celestial, the maiden, the princess and the lady of the court keep the dancer's hand; on
 `mural_mix.html` every woman not in a dancer's pose or wearing the brass nails has it.
 
+**The water carrier** (owner, 2026-11-05, after a photograph of a woman carrying water pots and the mural beside it;
+of three pots, black, terracotta and pale clay: "W1 but cut the pot off at the bottom so it looks more like the image
+and is smaller"): `holds: "pots"` with `hands: "normal"` and `pose: {near: WM_POTS.hand}` lays a bamboo pole on her
+near shoulder (`wmPole`: a cane of even width, lit along its top, three nodes; the kit's ink brush tapers, so a pole
+drawn with it read as a wire), her near hand closed on it before her, and hangs a black clay pot on cords from each end
+(`wmPot`: round, wide-mouthed with a rolled lip, cut off flat below its widest, the shine of fired clay, the cords tied
+under the lip; no net, as the photograph has none), the pot behind her drawn before her body as the parasol is, the
+pole and the pot before her over it; each swings a little in its own time. `people.html` shows her in the teal sin, at
+55 s.
+
 **Tried first**: the faces by scaling the head a few percent (unseen) before the outline was drawn with numbers; the
 parasol drawn over her, floating, before it went behind her head, drawn before her body; the hems at their charts' own
 width (a figure and a half across); the rubies milky until the foil was toned down and the colour made more opaque.
