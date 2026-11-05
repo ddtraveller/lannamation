@@ -1241,8 +1241,9 @@ function muralPerson(x, y, look, opts) {
     });
     var cloth2 = new MPath().M(-50, -442).C(-62, -410, -64, -330, -62, legsOut + 6).Q(-30, legsOut + 14, -4, legsOut - 6)
       .L(2, legsOut - 26).L(8, legsOut - 6).Q(36, legsOut + 14, 60, legsOut + 4).C(62, -330, 58, -410, 44, -442).Z();
-    var sarong = look.sarong || "#3a4660";
+    var printed = WM && Array.isArray(WM.trousers), sarong = printed ? WM.trousers[0] : look.sarong || "#3a4660";
     mFill(cloth2, sarong, 12);
+    if (printed) { mnPrint(cloth2, WM.trousers); }   // the cloth over his hips, printed as his knee trousers
     pen.save(); pen.clip(cloth2.path);
     var stripes = new MPath();
     for (var sy = -432; sy < legsOut + 10; sy += 9) { stripes.M(-80, sy).Q(0, sy + 12, 80, sy); }
@@ -3431,11 +3432,14 @@ muralPerson = function (x, y, look, opts) {
 //                ("evenly cut and stands up from his head", Curtis, 1903), "lue" (the Tai Lue turban), and a child's
 //                on a shaven head: "juk" (the topknot on the crown), "kae" (a small knot at each side), "pia" (a plait
 //                from the topknot), "poy" (the Poy Sang Long boy's headdress), "shaved"; face.moustache, face.stubble
-//                (0 to 1), face.pin (a juk's pin: "silver" or "gold"), face.makeup (a name of MU_MAKEUP: a prince's)
+//                (0 to 1), face.pin (a juk's pin: "silver" or "gold"), face.makeup (a name of MU_MAKEUP: a prince's);
+//                "flattop": the mural's men, the sides shaven, a short flat top
 //   holds        what a man carries: "pole" (khan haap, a basket before and one behind him), "drum" (klong yao),
 //                "dap" (a sword in each hand), "stick", "sueng" (the lute); or a woman's (lotus, garland, ...)
 //   bag          [cloth, stripes]: the woven shoulder bag (thung yaam)
-//   trousers     a colour: tieo sado, wide trousers to the calf
+//   trousers     a colour: tieo sado, wide trousers to the calf; [cloth, flowers]: the mural's knee trousers, printed
+//                with flowers, a yellow and a red band at the knee (with patoi: true and tattoo: false)
+//   khaoma       [ground, lines]: a checked pha khao ma round his neck, its ends down his chest
 //   child        -1 to 0: a child's measure (a child's settings have -1 unless they say)
 // castMan(name, more) and castChild(name, more) give the look of one of the ten, as cast() gives the cast's.
 // A person without "man", "child" or "woman" is drawn as before.
@@ -3472,12 +3476,30 @@ wmHead = function (look, lady, skin, fc) {
     return mnHead(look, lady, skin, fc);
   } finally { pen.restore(); }
 };
+// the mural's men (owner, 2026-11-05, of a Lanna procession in a temple painting, after five tries: wings, wings turned
+// down, a flared cap, combed up, parted): hairdo "flattop", the sides shaven, a short flat top over them; where the hair
+// comes out of the head a line, and from it along the side of the head (not over the forehead) short strokes up, about
+// 9 units ("make up lines that start from around the temple and go up maybe 10 pixels"; "along the sides and not along
+// the forehead"). Drawn after the face and the brows, in place of "kae"'s knots.
+function mnFlatTop(hair) {
+  var root = muCurve([-50, -80], [-36, -94], [8, -98], [32, -86]);
+  var top = new MPath().M(-50, -80).C(-52, -98, -44, -118, -20, -120).C(2, -122, 28, -112, 34, -100)
+    .C(35, -94, 34, -90, 32, -86).C(8, -98, -36, -94, -50, -80).Z();
+  mShape(top, hair, 4, 1.2);
+  pen.save(); pen.clip(top.path);
+  var ups = new MPath();
+  for (var u = 0; u <= 0.48 + 1e-6; u += 0.08) { var r0 = root(u); ups.M(r0[0], r0[1]).Q(r0[0] - 0.6, r0[1] - 5, r0[0] - 1.8, r0[1] - 9); }
+  mLine(ups, muColour(blend(hair, MU.sheen, 0.3)), 0.7);
+  pen.restore();
+  var pts = []; for (var k = 0; k <= 20; k++) { pts.push(root(k / 20)); }
+  mLine(new MPath().poly(pts, false), muInk(muColour(hair)), 1.3);
+}
 var MN_CHILD_HAIR = {juk: true, kae: true, pia: true, shaved: true, poy: true};
 function mnHead(look, lady, skin, fc) {
   var hair = look.hair || MU.hair, hd = fc.hairdo || "knot", jaw = lady || WM.child ? 0 : 4;
   if (hd === "knot" || hd === "lue") { muBun(-6, -108, 13, hair, look); }
   if (hd === "juk" || hd === "pia") { mnJuk(hair, fc.jukFlowers !== false, fc.pin); }
-  var shaven = hd === "juk" || hd === "shaved" || hd === "kae" || hd === "pia" || hd === "poy";
+  var shaven = hd === "juk" || hd === "shaved" || hd === "kae" || hd === "pia" || hd === "poy" || hd === "flattop";
   var mass = hd === "cut" ? new MPath().M(32, -86).C(18, -112, -34, -114, -50, -82).C(-58, -62, -54, -40, -40, -30).L(-20, -36).L(30, -64).Z()
     : new MPath().M(30, -88).C(14, -106, -32, -108, -48, -80).C(-58, -60, -54, -34, -38, -18).C(-30, -12, -20, -14, -14, -22).L(30, -60).Z();
   if (shaven) { mFill(mass, blend(skin, hair, 0.22), 5); }   // the shaven scalp, its shadow of hair: one head with the face, no line between
@@ -3541,6 +3563,7 @@ function mnHead(look, lady, skin, fc) {
   }
   muLipsPainted(!!paint || (lady && !WM.child), skin, MU.mouth, paint, feel);
   if (hd === "kae") { mnKae(hair); }
+  if (hd === "flattop") { mnFlatTop(hair); }
   if (hd === "lue") { wmLueWrap(fc.wrap || ["#f6f1e6", "#c8303a"]); }
   if (hd === "poy") { mnPoy(fc.poy || ["#e8508a", "#f2c33a"]); }
   if (look.turban && !shaven && hd !== "lue") { mnTurban(look.turban, face, mass, edge); }
@@ -3581,9 +3604,32 @@ function mnOutside(rec, draw) {
 // ---------- what a man carries ----------
 // wm.holds for a man (MN_HOLDS), drawn as wmHolds draws a woman's, in his upper frame; "pole" hangs one basket behind
 // him (mnBehind, before his body). wm.bag: the woven shoulder bag (thung yaam) across him, its strap over the far shoulder.
+// the pha khao ma round his neck (wm.khaoma [ground, lines], owner, 2026-11-05, "Round the neck"): a check of lines
+// every 9 and a fine white line every 27, slung round the neck below it, its two ends down his chest, a short fringe
+function mnCheck(shape, ground, line) {
+  mFill(shape, ground, 3);
+  pen.save(); pen.clip(shape.path);
+  pen.globalAlpha = 0.55; pen.fillStyle = line;
+  for (var x = -120; x < 120; x += 9) { pen.fillRect(x, -700, 2.4, 400); }
+  for (var y = -700; y < -300; y += 9) { pen.fillRect(-120, y, 240, 2.4); }
+  pen.globalAlpha = 0.5; pen.fillStyle = "#f2ead6";
+  for (x = -116; x < 120; x += 27) { pen.fillRect(x, -700, 1.2, 400); }
+  for (y = -696; y < -300; y += 27) { pen.fillRect(-120, y, 240, 1.2); }
+  pen.globalAlpha = 1; pen.restore();
+  mBrush(shape, muInk(muColour(ground)), 1.1);
+}
+function mnKhaoMa(c) {
+  mnCheck(new MPath().M(-76, -574).C(-60, -548, 20, -546, 50, -570).L(46, -556).C(14, -532, -54, -534, -70, -556).Z(), c[0], c[1]);
+  mnCheck(new MPath().M(-58, -556).C(-56, -520, -50, -480, -52, -452).L(-36, -450).C(-36, -480, -40, -520, -42, -550).Z(), c[0], c[1]);
+  mnCheck(new MPath().M(20, -548).C(22, -520, 28, -496, 30, -470).L(44, -474).C(40, -500, 36, -526, 36, -556).Z(), c[0], c[1]);
+  var fr = new MPath();
+  for (var k = 0; k < 6; k++) { fr.M(-52 + k * 3, -452).L(-53 + k * 3, -442).M(30 + k * 2.6, -471).L(31 + k * 2.6, -461); }
+  mLine(fr, c[1], 0.8);
+}
 var MN_SHOULDER = {near: [-70, -562], far: [44, -560]};
 var MN_KIT_HOLDS = wmHolds;
 wmHolds = function (look) {
+  if (WM.khaoma) { mnKhaoMa(WM.khaoma); }
   if (WM.bag) { mnBag(WM.bag); }
   var h = WM.holds, w = WM_W.near, f = WM_W.far;
   if (MN_HOLDS[h]) { MN_HOLDS[h](w, f); return; }
@@ -3678,7 +3724,7 @@ function mnBehind(wm, x, y, px) {
   pen.save(); pen.translate(x, y); pen.scale(px, px); muUpper(MN_MAN.A, MN_MAN.B, MN_MAN.Y0);
   mnBasket([-175, -552], -1); pen.restore();
 }
-["bag"].forEach(function (k) { WOMAN_KEYS[k] = true; });
+["bag", "khaoma"].forEach(function (k) { WOMAN_KEYS[k] = true; });
 
 // ---------- children ----------
 // A child's measure on the mural figure, as the old figure has it at build -1 (docs/kit/figures.md, "A little boy and a
@@ -3745,21 +3791,46 @@ function mnPoy(c) {
 }
 // ---------- trousers ----------
 // tieo sado: wide trousers to the calf (wm.trousers, a colour). mural.js draws each leg as its foot (muFoot) and then
-// its tube (mFill); after the tube, a wide leg of the trousers from the cloth's hem to the calf.
+// its tube (mFill); after the tube, a wide leg of the trousers from the cloth's hem to the calf. trousers [cloth,
+// flowers]: the mural's knee trousers (owner, 2026-11-05, "Yes, pink + blue"), small five-petalled flowers over the
+// cloth and a yellow and a red band at the knee; with patoi the cloth hitched over his hips is the same, printed alike
+// (and tattoo false: the tattoo is drawn after the leg).
 var MN_LEG = false, MN_KIT_FOOT = muFoot, MN_KIT_FILL = mFill;
 muFoot = function (x, y, len, skin) { var r = MN_KIT_FOOT(x, y, len, skin); MN_LEG = !!(WM && WM.trousers); return r; };   // the leg's tube is the next fill after its foot
+// small flowers over a shape in t[1], a row at a time, every other row shifted, each placed by a hash (the same each frame)
+function mnPrint(rec, t) {
+  var xs = [], ys = [];
+  rec.subs.forEach(function (sub) { sub.pts.forEach(function (p) { xs.push(p[0]); ys.push(p[1]); }); });
+  var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys), n = 0;
+  pen.save(); pen.clip(rec.path);
+  for (var y = y0 + 8; y < y1; y += 22) {
+    for (var x = x0 - 6 + (n % 2) * 11; x < x1 + 6; x += 22) {
+      var k = weaveHash(Math.round(x), Math.round(y), 3), fx = x + (k - 0.5) * 6, fy = y + (weaveHash(Math.round(y), Math.round(x), 4) - 0.5) * 6;
+      for (var p = 0; p < 5; p++) { var a = p * 1.2566 + k * 3; muGlow(fx + Math.cos(a) * 3.2, fy + Math.sin(a) * 3.2, 2.4, 2.4, muRgb(t[1]), 0.95); }
+      muGlow(fx, fy, 1.4, 1.4, "240, 200, 80", 1);
+    }
+    n++;
+  }
+  pen.restore();
+}
 mFill = function (rec, colour, grain) {
   MN_KIT_FILL(rec, colour, grain);
   if (!MN_LEG) { return; }
   MN_LEG = false;
+  var t = WM.trousers, printed = Array.isArray(t), cloth = printed ? t[0] : t, w = printed ? 2 : 0;
   var xs = [], ys = [];
   rec.subs.forEach(function (sub) { sub.pts.forEach(function (p) { xs.push(p[0]); ys.push(p[1]); }); });
-  var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), top = Math.min.apply(null, ys), hem = -150, mid = (x0 + x1) / 2;
-  var leg = new MPath().M(mid - 24, top).L(mid + 24, top).C(mid + 30, top + 80, mid + 30, hem - 30, mid + 28, hem)
-    .Q(mid, hem + 6, mid - 28, hem).C(mid - 30, hem - 30, mid - 30, top + 80, mid - 24, top).Z();
-  MN_KIT_SHAPE(leg, WM.trousers, 8, 1.3);
+  var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), top = Math.min.apply(null, ys), hem = printed ? -215 : -150, mid = (x0 + x1) / 2;
+  var leg = new MPath().M(mid - 24, top).L(mid + 24, top).C(mid + 30, top + 80, mid + 30 + w, hem - 30, mid + 28 + w, hem)
+    .Q(mid, hem + 6, mid - 28 - w, hem).C(mid - 30 - w, hem - 30, mid - 30, top + 80, mid - 24, top).Z();
+  MN_KIT_SHAPE(leg, cloth, 8, 1.3);
+  if (printed) { mnPrint(leg, t); }
   pen.save(); pen.clip(leg.path);
-  mLine(new MPath().M(mid - 6, top + 10).C(mid - 2, top + 80, mid - 8, hem - 40, mid - 4, hem).M(mid + 14, top + 30).C(mid + 16, top + 90, mid + 12, hem - 30, mid + 16, hem), muShade(muColour(WM.trousers)), 1);
+  if (printed) {                                    // the bands at the knee
+    pen.fillStyle = "#e8b62e"; pen.fillRect(mid - 40, hem - 16, 80, 8);
+    pen.fillStyle = "#c23b2e"; pen.fillRect(mid - 40, hem - 8, 80, 12);
+  }
+  mLine(new MPath().M(mid - 6, top + 10).C(mid - 2, top + 80, mid - 8, hem - 40, mid - 4, hem).M(mid + 14, top + 30).C(mid + 16, top + 90, mid + 12, hem - 30, mid + 16, hem), muShade(muColour(cloth)), 1);
   pen.restore();
 };
 ["child", "trousers"].forEach(function (k) { WOMAN_KEYS[k] = true; });

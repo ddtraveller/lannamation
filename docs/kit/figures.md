@@ -965,6 +965,20 @@ feet, above it scaled about the waist and set on the shorter legs, the head larg
 waist and no seam shows. The trousers: `mural.js` draws each leg as its foot and then its tube; after the tube, a wide
 trouser leg to the calf. With the file loaded, `mural.html` draws as without it (five frames: no pixel more than 6 apart).
 
+**The mural's men** (owner, 2026-11-05, from a Lanna temple painting of a procession the owner sent): `face.hairdo:
+"flattop"` (`mnFlatTop`): the sides shaven, a short flat top over them, the line where the hair comes out of the head,
+and from it along the side of the head short strokes up, about 9 units, none over the forehead. It came after five
+tries, each the owner's word on the last: two upturned points ("wings"); those turned down, the sides shaven ("Turn the
+wings upside down and show a shaved head on the sides"); a round cap with short ends ("D2"), then its edge flared ("D2
+... with a little flare out at the top"); combed up from a root line ("so it looks like a flat top kind of"); parted
+("Don't show the lines going up in the front. Show a part"); then no part and no lines on top, only "up lines that start
+from around the temple and go up maybe 10 pixels", "along the sides and not along the forehead". `trousers: [cloth,
+flowers]` (`mnPrint`): knee trousers printed with small five-petalled flowers, a yellow and a red band at the knee; with
+`patoi: true` the cloth hitched over his hips takes the same cloth and print, and `tattoo: false` (the tattoo is drawn
+after the leg). A colour alone is the calf trousers as before, pixel for pixel. `khaoma: [ground, lines]`
+(`mnKhaoMa`): a check slung round his neck, its two ends down his chest with a short fringe ("Round the neck"; the knot
+at the waist was the other candidate). `people.html` shows two, pink with red flowers and blue with ivory, at 61 s.
+
 ## The mural figure seated (2026-10-30)
 
 **Since 2026-11-01** (owner: "get rid of the new system") this section's files are parts of one file, `people.js`, each part
