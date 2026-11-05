@@ -20,7 +20,8 @@
 // large. Across the middle: the kit's buffalo ambles over pulling the ox
 // cart, its wheels turning with the ground covered, and the great drum on
 // its cart stands at the right. By night: a row of phang pratheep lamps
-// along a path, and three krathong afloat on dark water.
+// along a path, and three krathong afloat on dark water; by the lamps, the triangular cushion (monKhit) and the
+// betel set (khanMak) of the couple's painting.
 var DURATION = 16;
 
 var BEAT = 0.5;
@@ -70,6 +71,9 @@ function sheet(t) {
   pen.fillRect(0, 930, WIDE, 150);
   pratheepRow(pen, 70, 880, 12, 50, 1.9, t);
   caption("pratheepRow: the flames flicker, the glow", 340, 840, "#d8c8a0");
+  monKhit(pen, 760, 880, 1.6, {kind: "rim", tint: ["#121a2c", 0.2]});
+  khanMak(pen, 885, 880, 1.6, {kind: "red", tint: ["#121a2c", 0.2]});
+  caption("monKhit, khanMak", 800, 915, "#d8c8a0");
   krathong(pen, 950, 1000, 1.9, t, true);
   krathong(pen, 1150, 1030, 1.4, t + 2, true);
   krathong(pen, 1300, 985, 1.1, t + 4, true);
