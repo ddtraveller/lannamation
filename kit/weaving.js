@@ -29,7 +29,8 @@ var WEAVE_DYES = {
   black: "#1d1712", red: "#9a1f24", lac: "#b8323a", indigo: "#24335e", deepIndigo: "#1a2442",
   yellow: "#e2b52f", jackfruit: "#d79a2a", green: "#3f7a46", white: "#f2ead6", cream: "#e8dcc0",
   pink: "#d0507a", magenta: "#b0306e", purple: "#5a2f6a", orange: "#d9732c", silver: "#c9cdd2", gold: "#d8b04a",
-  brown: "#6a4a2c"
+  brown: "#6a4a2c",
+  vermilion: "#c23b2e", saffron: "#e07a2c", maroon: "#6e1820", teal: "#2c8c8e", blue: "#1d3f6e", ivory: "#efe6cf"
 };
 
 // The palettes: a ground and the pattern threads 1 to 4, by the town or people the sources give them to.
@@ -38,6 +39,8 @@ var WEAVE_DYES = {
 //   long      indigo ground, yellow of jackfruit, red of stick lac, green (yellow over indigo), white
 //   lue       the Tai Lue nam lai: red, indigo, white, black, yellow, pink and green blocks
 //   khit      indigo cotton on a white ground, two colours, raised
+//   chevron, teal, lueLac   the three woven sin of the owner's pictures (TEEN_JOK_ROWS, below): vermilion with gold,
+//             saffron, maroon and white; teal with blue, ivory, lac red and black; the Tai Lue colours on lac red
 var WEAVE_PALETTES = {
   maechaem: {ground: WEAVE_DYES.black, threads: [WEAVE_DYES.yellow, WEAVE_DYES.red, WEAVE_DYES.green, WEAVE_DYES.white]},
   maechaemRed: {ground: WEAVE_DYES.red, threads: [WEAVE_DYES.yellow, WEAVE_DYES.black, WEAVE_DYES.green, WEAVE_DYES.white]},
@@ -45,7 +48,10 @@ var WEAVE_PALETTES = {
   nanIndigo: {ground: WEAVE_DYES.indigo, threads: [WEAVE_DYES.gold, WEAVE_DYES.white, WEAVE_DYES.pink, WEAVE_DYES.yellow]},
   long: {ground: WEAVE_DYES.indigo, threads: [WEAVE_DYES.jackfruit, WEAVE_DYES.lac, WEAVE_DYES.green, WEAVE_DYES.white]},
   lue: {ground: WEAVE_DYES.red, threads: [WEAVE_DYES.indigo, WEAVE_DYES.white, WEAVE_DYES.yellow, WEAVE_DYES.green]},
-  khit: {ground: WEAVE_DYES.white, threads: [WEAVE_DYES.indigo, WEAVE_DYES.deepIndigo, WEAVE_DYES.red, WEAVE_DYES.indigo]}
+  khit: {ground: WEAVE_DYES.white, threads: [WEAVE_DYES.indigo, WEAVE_DYES.deepIndigo, WEAVE_DYES.red, WEAVE_DYES.indigo]},
+  chevron: {ground: WEAVE_DYES.vermilion, threads: [WEAVE_DYES.yellow, WEAVE_DYES.saffron, WEAVE_DYES.maroon, WEAVE_DYES.white]},
+  teal: {ground: WEAVE_DYES.teal, threads: [WEAVE_DYES.blue, WEAVE_DYES.ivory, WEAVE_DYES.lac, WEAVE_DYES.black]},
+  lueLac: {ground: WEAVE_DYES.lac, threads: [WEAVE_DYES.indigo, WEAVE_DYES.white, WEAVE_DYES.yellow, WEAVE_DYES.green]}
 };
 
 // ---------- building grids ----------
@@ -118,6 +124,42 @@ function laiKap(w, kind) {
     if (kind === "outline") { return d === i || i === h - 1 ? "1" : ""; }
     if (kind === "nested") { return d === i || i === h - 1 || (d === i - 3 && i >= 3) ? "1" : ""; }
     return "1";
+  });
+}
+
+// Stacked chevrons: each thread of "threads" in turn a stepped zigzag line k picks thick under the one before, amp
+// floats from a peak to a trough, rising "slope" picks a float (the woven sin of the owner's pictures).
+// e.g. laiZigzag(6, 2, ["1", "2", "3"], 1.3)
+function laiZigzag(amp, k, threads, slope) {
+  var s = slope || 1, rows = Math.ceil(amp * s) + k * threads.length;
+  return laiFrom(rows, 2 * amp, function (i, j) {
+    var peak = Math.abs((j % (2 * amp)) - amp) * s, n = Math.floor((i - peak) / k);
+    return n >= 0 && n < threads.length ? threads[n] : "";
+  });
+}
+
+// A grid with "gap" columns of ground after it, every ground cell then woven in the thread "block" (a figure on a band
+// of another colour). e.g. laiOnBlock(laiDiamond(3, "nested"), "3", 3)
+function laiOnBlock(grid, block, gap) {
+  var after = new Array(gap + 1).join(".");
+  return grid.map(function (row) { return (row + after).replace(/\./g, block); });
+}
+
+// A solid stepped diamond of radius r in "inner", edged with "edge" where a diamond one larger would run, on a block
+// of "block", "gap" columns after it. e.g. laiDiamondEdged(3, "3", "2", "4", 3)
+function laiDiamondEdged(r, inner, edge, block, gap) {
+  var ring = laiDiamond(r + 1, "hollow", edge);
+  return laiOnBlock(laiDiamond(r, "solid", inner).map(function (row, i) {
+    return row.split("").map(function (ch, j) { return ring[i + 1].charAt(j + 1) === edge ? edge : ch; }).join("");
+  }), block, gap);
+}
+
+// The flowing water (namLaiWeft, below) as a grid "rows" picks tall, at every other warp so its four blocks go round
+// one body: threads 1 to 4, no stripes.
+function laiNamLaiBlocks(rows) {
+  return laiFrom(rows, 36, function (i, j) {
+    var q = namLaiWeft(j * 2, i + 4, ["1", "2", "3", "4"], rows + 8);
+    return q.length === 1 ? q : "";
   });
 }
 
@@ -798,6 +840,29 @@ var TEEN_JOK_ROWS = {
          ["gap", 1], ["band", "hangSapao"], ["foot", 5, "red"]]
 };
 
+// Three whole woven sin, waist to foot, from pictures the owner sent (2026-11-05): their rows as a hem's are, a row's
+// band a grid of its own. chevron: after a painting of a Lanna couple, a vermilion sin of stacked gold, saffron and
+// maroon chevrons with white and gold lines between, a maroon foot of gold diamonds; teal: after a photograph of a woman
+// carrying water pots, fine blue and ivory stripes and a blue and ivory zigzag on teal, a black foot of lac red diamonds
+// edged in ivory; namLai: the Tai Lue's flowing water in blocks of indigo, white, yellow and green on lac red, white
+// lines between, a foot of indigo with the jointed line. Each with its palette of the same name (lueLac for namLai).
+(function (rows) {
+  var r = [], n, zig = laiZigzag(6, 2, ["1", "2", "3"], 1.3);
+  for (n = 0; n < 5; n++) { r.push(["stripe", 1, "4"], ["gap", 2], ["band", zig], ["gap", 2], ["stripe", 1, "1"], ["gap", 3]); }
+  rows.chevron = r.concat([["stripe", 2, "3"], ["band", laiOnBlock(laiDiamond(3, "nested", "1"), "3", 3)], ["stripe", 2, "3"],
+                           ["stripe", 1, "1"], ["stripe", 3, "3"]]);
+  r = []; zig = laiZigzag(5, 1, ["2", "1", "2"], 1.2);
+  for (n = 0; n < 4; n++) {
+    r.push(["stripe", 1, "1"], ["gap", 1], ["stripe", 1, "2"], ["gap", 3], ["band", zig], ["gap", 3], ["stripe", 1, "2"], ["gap", 1],
+           ["stripe", 1, "1"], ["gap", 6]);
+  }
+  rows.teal = r.concat([["stripe", 2, "4"], ["stripe", 1, "3"], ["stripe", 1, "4"], ["band", laiDiamondEdged(3, "3", "2", "4", 3)],
+                        ["stripe", 1, "4"], ["stripe", 1, "3"], ["stripe", 4, "4"]]);
+  r = []; zig = laiNamLaiBlocks(16);
+  for (n = 0; n < 4; n++) { r.push(["band", zig], ["gap", 1], ["stripe", 1, "2"], ["gap", 1]); }
+  rows.namLai = r.concat([["stripe", 2, "1"], ["band", "kanKho"], ["stripe", 2, "1"], ["stripe", 3, "3"]]);
+})(TEEN_JOK_ROWS);
+
 // The decorated hem of a sin (teen jok), across width w, set at (x, y), its top-left: each row of TEEN_JOK_ROWS of
 // its town woven across. look: {town: "maechaem", "nan" or "long", palette, cell, seed}. Gives back {w, h}.
 // e.g. teenJok(pen, 60, 400, 900, {town: "maechaem", cell: 7})
@@ -807,7 +872,7 @@ function teenJok(brush, x, y, w, look) {
   var cols = Math.floor(w / cell), rows = TEEN_JOK_ROWS[town], plan = [], total = 0;
   rows.forEach(function (r) {
     var grid;
-    if (r[0] === "band") { grid = weaveAcross(LAI[r[1]].grid, cols, 1); }
+    if (r[0] === "band") { grid = weaveAcross(typeof r[1] === "string" ? LAI[r[1]].grid : r[1], cols, 1); }
     else if (r[0] === "main") {                                       // lantern, bowl, lantern, bowl: one row, their middles level
       var a = LAI[r[1][0]].grid, b = LAI[r[1][1]].grid, tallest = Math.max(a.length, b.length);
       function lift(g) { var pad = Math.floor((tallest - g.length) / 2); return laiBlank(pad, g[0].length).concat(g, laiBlank(tallest - g.length - pad, g[0].length)); }

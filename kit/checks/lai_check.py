@@ -31,7 +31,7 @@ READ = """() => ({
   }),
   rows: Object.keys(TEEN_JOK_ROWS).map(function (town) {
     return {town: town, keys: TEEN_JOK_ROWS[town].map(function (r) {
-      return r[0] === "band" ? [r[1]] : r[0] === "main" ? r[1] : [];
+      return r[0] === "band" ? (typeof r[1] === "string" ? [r[1]] : []) : r[0] === "main" ? r[1] : [];   // a band's own grid has no realm
     })};
   })
 })"""

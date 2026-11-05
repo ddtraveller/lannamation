@@ -894,7 +894,11 @@ foil-backed: the bright foil under a colour 0.86 opaque, the cut (a table and li
 far side, a twinkle. The sabai: `wmTexture` weaves its end and body once onto a sheet (`weaveGrid`, as `sabaiGrid` gives
 them), and the sheet is laid along the band in slices bent to it. The teen jok: `teenJok` weaves her town's rows in her
 palette once; the sheet is laid round her in upright strips bowed as `muSin` bows its stripes, its floats 0.72 as wide
-(more of the pattern round her), the thin bands that crossed the foot left off (`wmJokSin`). Nothing moves by a spring:
+(more of the pattern round her), the thin bands that crossed the foot left off (`wmJokSin`). The whole sheet: until
+2026-11-05 `wmJokSheet` took the sheet's size as `teenJok` gives it, half the size its canvas is woven at, so only its
+top-left quarter was laid round her at twice the size; the owner chose the fix ("Fix it"), and every hem now shows all
+its rows down to the foot. A sin woven from waist to foot (`WM_SIN.chevron`, `.teal`, `.namLai`, with `jok` of the same
+rows, taller 1) is laid the same way over one broad band from under the waist to the hem. Nothing moves by a spring:
 what sways, sways by the clock, and a still is the frame of the film.
 
 **Ordinary hands** (owner, of the men and children: "Change the hands to be like normal hands", then of the women who

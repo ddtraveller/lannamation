@@ -1873,7 +1873,8 @@ function thAnklet(x, y) {
 //   holds    in the near hand: "lotus", "garland", "khan" (a bowl of flowers), "fan", "lantern", "parasol" (parasol:
 //            [paper, flowers]); between both: "cloth" (cloth: a SABAI_WEAVES name)
 //   jok      [town, palette, taller]: her sin's foot a woven teen jok (weaving.js teenJok: "maechaem", "nan" or "long";
-//            one of WEAVE_PALETTES), "taller" times the sin's own foot band
+//            one of WEAVE_PALETTES), "taller" times the sin's own foot band; or her whole sin woven, with sin
+//            WM_SIN.chevron, .teal or .namLai: ["chevron", "chevron", 1], ["teal", "teal", 1], ["namLai", "lueLac", 1]
 // Her woven sabai is painted once and laid along the band (not thread by thread); she sways slowly about her feet,
 // and her gold and her stones catch the light as she does. Standing, she walks with the kit's own look.step (a stride a 1, as
 // person() takes it): her feet step under her sin, its foot swinging with them, her arms swinging the other way (owner,
@@ -2361,8 +2362,8 @@ function wmJokSheet(town, palette, w) {
   var key = town + "|" + palette + "|" + Math.round(w);
   if (!WM_JOK[key]) {
     var got = null, brush = {drawImage: function (img) { got = img; }};
-    var size = teenJok(brush, 0, 0, w, {town: town, palette: WEAVE_PALETTES[palette], cell: 7});
-    WM_JOK[key] = {canvas: got, w: size.w, h: size.h};
+    teenJok(brush, 0, 0, w / 2, {town: town, palette: WEAVE_PALETTES[palette], cell: 7});
+    WM_JOK[key] = {canvas: got, w: got.width, h: got.height};     // its size as the sheet is: weaveKept weaves at twice
   }
   return WM_JOK[key];
 }
@@ -3221,7 +3222,8 @@ function wmWoman(x, y, look, wm, opts) {
 
 // ---------- three more sin ----------
 // The dancer's black with red, green and a gold braid; a gold sin with maroon and a maroon foot; maroon with green and a
-// gold zigzag. Pushed onto the kit's SINS; WM_SIN names where each went.
+// gold zigzag. Pushed onto the kit's SINS; WM_SIN names where each went. Then three woven from waist to foot (chevron,
+// teal, namLai): the head and its band, then one broad band that her woven jok of the same name covers (wm.jok, taller 1).
 function wmAdd(arr, item) { arr.push(item); return arr.length - 1; }
 var WM_SIN = {
   braid: wmAdd(SINS, ["#1e1b24", [[0.05, SIN_HEAD, 20], [0.11, SIN_HEAD_BAND, 2.5], [0.24, "#c8303a", 6], [0.3, "#e0b23a", 1.6, "braid"],
@@ -3232,7 +3234,10 @@ var WM_SIN = {
                                  [0.83, "#e0b23a", 2, "diamonds"], [0.92, "#e0b23a", 1.6, "roundels"]]]),
   zigzag: wmAdd(SINS, ["#6e1f2a", [[0.05, SIN_HEAD, 20], [0.11, SIN_HEAD_BAND, 2.5], [0.22, "#3f6a3a", 5], [0.28, "#e0b23a", 1.4, "zigzag"], [0.38, "#3f6a3a", 5],
                                    [0.5, "#e9c44a", 1.4], [0.6, "#3f6a3a", 5], [0.66, "#e0b23a", 1.4, "zigzag"], [0.89, "#2a3a2a", 34],
-                                   [0.84, "#e0b23a", 1.8, "braid"], [0.94, "#e0b23a", 1.4, "diamonds"]]])
+                                   [0.84, "#e0b23a", 1.8, "braid"], [0.94, "#e0b23a", 1.4, "diamonds"]]]),
+  chevron: wmAdd(SINS, ["#c23b2e", [[0.05, SIN_HEAD, 20], [0.11, SIN_HEAD_BAND, 2.5], [0.585, "#c23b2e", 163]]]),
+  teal: wmAdd(SINS, ["#2c8c8e", [[0.05, SIN_HEAD, 20], [0.11, SIN_HEAD_BAND, 2.5], [0.585, "#2c8c8e", 163]]]),
+  namLai: wmAdd(SINS, ["#b8323a", [[0.05, SIN_HEAD, 20], [0.11, SIN_HEAD_BAND, 2.5], [0.585, "#b8323a", 163]]])
 };
 
 // ---------- the ten women ----------

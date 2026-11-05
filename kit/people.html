@@ -17,9 +17,10 @@
 <script>
 // The "people" sheet: the twenty of people.js by their names in cast(), drawn by person(). From 0 s the ten women; from 8 s the
 // six men; from 12 s the four children; from 16 s all twenty walking in place; from 28 s new women from the generator, five every four seconds (castMix);
-// from 48 s the women large, from 52 s their woven hems (teen jok), from 55 s the 23 woven sabai, from 58 s the men's heads, from 61 s the children's, from 64 s the
-// hands, from 67 s a face in each feeling, from 70 s an old face in each, from 73 s women seated, from 77 s at the wheel and the loom, from 81 s the same, large.
-var DURATION = 85;
+// from 48 s the women large, from 52 s their woven hems (teen jok), from 55 s the three woven sin (chevron, teal, the flowing water), each laid flat and worn,
+// from 58 s the 23 woven sabai, from 61 s the men's heads, from 64 s the children's, from 67 s the hands, from 70 s a face in each feeling, from 73 s an old
+// face in each, from 76 s women seated, from 80 s at the wheel and the loom, from 84 s the same, large.
+var DURATION = 88;
 var BEAT = 0.5;
 var WOMEN = ["heavenly", "lotusmaiden", "naildancer", "orchiddancer", "princess", "khangran", "clothweaver", "luewoman", "courtlady", "festivalgirl"];
 var MEN = ["polefarmer", "longdrummer", "swordsman", "townsman", "whiteelder", "lueman"];
@@ -149,6 +150,21 @@ function sheetSeated() {
   });
 }
 
+// the three sin woven from waist to foot (weaving.js TEEN_JOK_ROWS chevron, teal, namLai): each laid flat, its white head
+// and red band above, and worn by the lotus maiden (WM_SIN of the same name, her jok the same rows)
+function sheetWovenSins() {
+  [["chevron", "chevron"], ["teal", "teal"], ["namLai", "lueLac"]].forEach(function (s, n) {
+    var cx = WIDE * (n + 0.5) / 3, base = cast("lotusmaiden");
+    weaveGround(pen, cx - 300, 90, 250, 40, WEAVE_DYES.white, 3, 1);
+    weaveGround(pen, cx - 300, 130, 250, 8, SIN_HEAD_BAND, 3, 2);
+    teenJok(pen, cx - 300, 138, 250, {town: s[0], palette: WEAVE_PALETTES[s[1]], cell: 3.4});
+    var look = Object.assign({}, base, {size: 1.55, id: "sin-" + s[0], sin: WM_SIN[s[0]]});
+    look.woman = Object.assign({}, peopleSettings(base), {jok: [s[0], s[1], 1], holds: null});
+    person(cx + 140, 1050, look);
+    caption(s[0], cx - 175, 60);
+  });
+}
+
 function sheetWork(t, size, base, places) {
   spinningWheel(pen, places[0], base, size, t, {id: "wheel", weaver: Object.assign({}, MURAL_WOMEN.grandmother.look, {woman: "grandmother"})});
   frameLoom(pen, places[1], base, size, t, {id: "loom", weaver: Object.assign({}, MURAL_WOMEN.weaver.look, {woman: "weaver"}), cloth: "maechaem"});
@@ -175,14 +191,15 @@ function draw(t) {
   }
   else if (t < 52) { sheetCards(3.6, 245 + 650 * 2.12, function (name) { return made(name).say; }); }
   else if (t < 55) { sheetCards(3.2, 456, function (name) { var j = made(name).woman.jok; return "teen jok of " + TOWNS[j[0]] + ", " + THREADS[j[1]]; }); }
-  else if (t < 58) { sheetWeaves(); }
-  else if (t < 61) { sheetHeads(MEN, 3.2, 1690); }
-  else if (t < 64) { sheetHeads(CHILDREN, 3.2, 1520); }
-  else if (t < 67) { sheetHands(); }
-  else if (t < 70) { sheetFeelings("buakham"); }
-  else if (t < 73) { sheetFeelings("grandmother"); }
-  else if (t < 77) { sheetSeated(); }
-  else if (t < 81) { sheetWork(t, 1, 900, [300, 1100]); }
+  else if (t < 58) { sheetWovenSins(); }
+  else if (t < 61) { sheetWeaves(); }
+  else if (t < 64) { sheetHeads(MEN, 3.2, 1690); }
+  else if (t < 67) { sheetHeads(CHILDREN, 3.2, 1520); }
+  else if (t < 70) { sheetHands(); }
+  else if (t < 73) { sheetFeelings("buakham"); }
+  else if (t < 76) { sheetFeelings("grandmother"); }
+  else if (t < 80) { sheetSeated(); }
+  else if (t < 84) { sheetWork(t, 1, 900, [300, 1100]); }
   else { sheetWork(t, 2, 1000, [180, 1000]); }
   screen.fillStyle = "#111";
   screen.fillRect(0, 0, 1920, 1080);
