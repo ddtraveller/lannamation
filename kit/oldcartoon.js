@@ -6110,9 +6110,9 @@ function personBody(fig) {
   var sabaiFront = null;                            // the kit's sabai, kept to be drawn again over an upper arm in a wai
   if ((look.skirt || look.sabai) && look.sabai !== false) {   // the sabai across the chest, over the body and under the arms; sabai: false for none (a cloth of sabai.js is worn instead)
     sabaiFront = bodySabai(b);
-  } else if (look.bare && look.tattoo) {            // a bare chest: the tattoo of a man of the north reaches the chest and the collarbones
-    bodyTattoo(b);
-  } else {                                          // buttons down the front
+  } else if (look.bare) {                           // a bare chest: the tattoo of a man of the north reaches the chest and the collarbones;
+    if (look.tattoo) { bodyTattoo(b); }             // with none, the skin only (until 2026-11-06 a bare chest with no sabai and no
+  } else {                                          // tattoo, as a noble's, had a shirt's neckline, buttons and pocket drawn on it); buttons down the front
     bodyShirtFront(b);
   }
   if (!look.coat && !look.skirt && !look.plain && look.sin === undefined) { bodyWaistCloth(b); }   // a pha khao ma round the waist
