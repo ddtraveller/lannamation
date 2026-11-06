@@ -6,7 +6,7 @@
 // and a long ripple runs out across the river (the only sign of the naga he is: the chronicle, story.py).
 var W02_LONG = 45;
 var W02_SOUND = {calls: [[0, "wind", 0.1, 45], [6.0, "magpie", 0.2], [20.0, "plover", 0.18], [33.0, "magpie", 0.18]]};
-var W02_LINES = [[1.0, 8.6, "W004"], [9.6, 14.6, "W005"], [16.4, 22.6, "W006"], [24.0, 30.6, "W007"], [33.0, 42.4, "W008"]];
+var W02_LINES = [[1.0, 8.2, "W004"], [9.6, 12.97, "W005"], [16.4, 21.62, "W006"], [24.0, 28.22, "W007"], [33.0, 41.76, "W008"]];
 
 var W02_GROUND = 850;                                  // where the prince stands
 var W02_PRINCE_AT = 760;                               // his x when they stop
@@ -122,7 +122,7 @@ function welSceneBrahman(t) {
       pen.globalAlpha = b.alpha;
       if (planted && b.face > 0) { w02Staff(); }        // behind him while he faces the land
       person(b.x, b.y, welPerson("elder", WEL_BRAHMAN, {id: "brahman", face: b.face, size: WEL_BRAHMAN.size * b.size, step: b.step,
-        holding: planted ? null : "stick", mouth: welTalk(t, (t > 16.6 && t < 22.4) || (t > 24.2 && t < 30.4)),
+        holding: planted ? null : "stick", mouth: welTalk(t, welSays(t, W02_LINES, ["W006", "W007"])),
         reachA: pointing ? [pointAt[0], pointAt[1], between(t, 16.8, 17.4)] : undefined,
         reachB: onHeart ? [b.x + 4 * b.face, b.y - 182 * b.size, between(t, 24.2, 24.8)] : undefined,
         wai: bowing || undefined, bend: 0.05 + 0.25 * bowing, at: t < 34.6 ? [px, W02_GROUND - 300] : undefined}));

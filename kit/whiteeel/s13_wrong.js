@@ -6,7 +6,7 @@
 // up one by one, people carrying more: Wiang Prueksa, the town of talking together, its name in gold.
 var W13_LONG = 50;
 var W13_SOUND = {calls: [[0.5, "hens", 0.15], [8.0, "rooster-crow", 0.12], [31.0, "plover", 0.15], [40.0, "kingfisher", 0.15]]};
-var W13_LINES = [[1.2, 7.6, "W049"], [10.0, 15.4, "W050"], [19.6, 27.0, "W051"], [32.0, 42.6, "W052"]];
+var W13_LINES = [[1.2, 8.6, "W049"], [10.0, 15.56, "W050"], [19.6, 23.96, "W051"], [32.0, 37.72, "W052"]];
 var W13_CUTS = [16.0, 30.0];
 var W13_HER = [1500, CNG_GROUND - 10];                 // where the old woman stands, then sits at her tray (in the village panel)
 var W13_LANG = 1;                                      // which of WEL_HEADS is Khun Lang (the elder)
@@ -40,7 +40,7 @@ function w13Bow(t) {
     var x = W13_HER[0] + 230 + k * 120, y = W13_HER[1] + (k % 2) * 18;
     sprites.push({name: "head " + k, kind: "person", x: x, y: y, draw: function () {
       person(x, y, welPerson(h[0], h[1], {id: "head" + k, face: -1, wai: bow || undefined, bend: 0.3 * bow, feel: "sad",
-                                         at: [W13_HER[0], W13_HER[1] - 220], mouth: welTalk(t + k, k === 0 && t > 1.2 && t < 7.6)}));
+                                         at: [W13_HER[0], W13_HER[1] - 220], mouth: welTalk(t + k, k === 0 && welSays(t, W13_LINES, ["W049"]))}));
     }});
   });
   var giver = between(t, 9.6, 11.4) * (1 - between(t, 12.4, 14));   // a woman of the village brings the tray

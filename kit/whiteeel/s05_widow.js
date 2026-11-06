@@ -5,7 +5,7 @@
 // without a word").
 var W05_LONG = 35;
 var W05_SOUND = {calls: [[0.5, "dove", 0.14], [4.0, "hens", 0.14], [14.0, "magpie", 0.15], [27.0, "dog", 0.1]]};
-var W05_LINES = [[1.2, 6.6, "W016"], [13.0, 17.6, "W017"], [25.2, 32.2, "W018"]];
+var W05_LINES = [[1.2, 7.34, "W016"], [13.0, 16.68, "W017"], [25.2, 31.42, "W018"]];
 var W05_CUTS = [12.0, 24.0];
 var W05_SWEEP = [1080, 846];                           // where she sweeps
 var W05_FIRE = [1300, 848];                            // the little fire by the ladder's foot

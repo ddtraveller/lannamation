@@ -6,7 +6,7 @@
 // groove in the ground behind it (the groove that will be the Mae Nam Lak, scene 12).
 var W06_LONG = 45;
 var W06_SOUND = {calls: [[0, "wind", 0.1, 45], [3.0, "plover", 0.18], [11.0, "kingfisher", 0.18], [15.0, "egret", 0.14]]};
-var W06_LINES = [[1.4, 7.6, "W019"], [11.0, 17.0, "W020"], [25.0, 31.6, "W021"]];
+var W06_LINES = [[1.4, 8.64, "W019"], [11.0, 16.06, "W020"], [25.0, 29.82, "W021"]];
 var W06_CUTS = [10.0, 22.0];
 var W06_BANK_Y = 790;                                  // where the people stand on the near bank
 var W06_FISHERS = [["farmer", {size: 0.74}, 620], ["villager", {size: 0.74, turban: "#2a6a5a"}, 860], ["boy", {size: 0.48}, 980],

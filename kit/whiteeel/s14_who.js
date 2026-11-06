@@ -7,13 +7,13 @@
 // the tale teaches, and says goodbye with a wai, as the first two tales' goodbyes (maeng/s14, changngu/s25); into black.
 var W14_LONG = 55;
 var W14_SOUND = {calls: [[0, "frogs", 0.2, 55], [3.0, "buffalo", 0.25], [20.0, "egret", 0.12], [38.0, "crickets", 0.12, 17]]};
-var W14_LINES = [[1.2, 9.6, "W053"], [11.0, 16.4, "W054"], [18.4, 23.6, "W055"], [25.0, 31.4, "W056"], [33.0, 36.4, "W057"], [38.4, 46.6, "W058"]];
+var W14_LINES = [[1.2, 10.7, "W053"], [11.0, 16.17, "W054"], [18.4, 23.95, "W055"], [25.0, 33.36, "W056"], [33.56, 37.58, "W057"], [38.4, 45.3, "W058"]];
 var W14_SHORE = 900;                                   // the near shore, where Bua-kham comes
 var W14_SUN = [520, 470, 640];                         // the sun going down: x, from y, to y
 var W14_ISLAND = [1280, 640, 1];                       // Ko Mae Mai: its middle, its shore's y, size
 var W14_FIRES = [[260, WEL_WATER + 4], [700, WEL_WATER + 6], [1760, WEL_WATER + 4]];
 var W14_HERD = [[1440, 760, 0.42, 3], [1760, 792, 0.46, 5], [2080, 772, 0.4, 8]];   // [x at 0 s, waterline, size, seed]
-var W14_SPEAKS = [[38.4, 46.6]];                       // Bua-kham says the moral herself
+var W14_SPEAKS = ["W058"];                            // Bua-kham says the moral herself
 var W14_WAI = [47.6, 48.2, 52.0, 52.6];                // the hands come up, are joined, part, are down
 
 // The island, painted once: a low mound with trees, a white and gold chedi among them and a small shrine on its posts.
@@ -94,7 +94,7 @@ function welSceneWho(t) {
     var come = between(t, 36.2, 38.8), x = mix(WIDE + 140, 1660, come), w = W14_WAI;   // in from the right, clear of the words
     var up = between(t, w[0], w[1]) * (1 - between(t, w[2], w[3]));
     person(x, W14_SHORE + 90, welPerson("buakham", {size: 1.05}, {id: "buakham", face: -1, step: come > 0 && come < 1 ? t / BEAT * 0.9 : 0,
-      feel: "happy", mouth: welTalk(t, W14_SPEAKS.some(function (s) { return t > s[0] && t < s[1]; })), wai: up || undefined, bend: 0.12 * up}));
+      feel: "happy", mouth: welTalk(t, welSays(t, W14_LINES, W14_SPEAKS)), wai: up || undefined, bend: 0.12 * up}));
   }
   sceneryReeds(80, 1110, 1.5, t, "back"); sceneryReeds(80, 1110, 1.5, t, "front");
   sceneryReeds(1850, 1100, 1.35, t + 2, "back"); sceneryReeds(1850, 1100, 1.35, t + 2, "front");

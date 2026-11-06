@@ -5,7 +5,7 @@
 // courtiers before him. The city's places are the Chang Ngu film's (changngu/sets.js: cngLane, cngCourt, cngPalace).
 var W04_LONG = 35;
 var W04_SOUND = {calls: [[0.5, "hens", 0.16], [3.0, "dog", 0.1], [25.0, "dove", 0.14]]};
-var W04_LINES = [[1.0, 5.6, "W013"], [7.4, 17.4, "W014"], [21.4, 28.6, "W015"]];
+var W04_LINES = [[1.0, 5.32, "W013"], [7.4, 17.0, "W014"], [21.4, 26.34, "W015"]];
 var W04_CUTS = [6.5, 20.0];
 
 // The kings who sit one after another (a few of the forty-five): each a look over the kit's noble, the brocade and the

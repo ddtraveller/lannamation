@@ -6,15 +6,14 @@
 // good she did not. His face is kind and calm and nothing marks him (story.py).
 var W08_LONG = 55;
 var W08_SOUND = {calls: [[0, "crickets", 0.12, 55], [30.0, "tokay", 0.14]]};
-var W08_LINES = [[1.2, 7.6, "W025"], [10.2, 16.6, "W026"], [18.0, 22.4, "W027"], [23.6, 28.8, "W028"], [30.0, 32.6, "W029"],
-                 [34.0, 42.2, "W030"], [44.0, 51.0, "W031"]];
-var W08_CUTS = [9.0];
-var W08_SPEAKS = {young: [[18.0, 22.4], [30.0, 32.6], [44.0, 51.0]], widow: [[23.6, 28.8], [34.0, 42.2]]};
+var W08_LINES = [[1.2, 9.36, "W025"], [10.2, 18.7, "W026"], [18.9, 25.16, "W027"], [25.36, 32.34, "W028"], [32.54, 34.46, "W029"], [34.66, 43.24, "W030"], [44.0, 48.25, "W031"]];
+var W08_CUTS = [9.8];                                  // after his first line ends
+var W08_SPEAKS = {young: ["W027", "W029", "W031"], widow: ["W028", "W030"]};   // who says which line
 var W08_LAMP = [960, CNG_FLOOR + 30];                  // the lamp on the floor between them
 var W08_BOWL = [1120, CNG_FLOOR + 40];                 // the rice and the water she sets before him
 
 // Whether who is speaking at second t.
-function w08Says(who, t) { return W08_SPEAKS[who].some(function (s) { return t > s[0] && t < s[1]; }); }
+function w08Says(who, t) { return welSays(t, W08_LINES, W08_SPEAKS[who]); }
 
 // Shot 1: the yard as the light goes; he comes along the path and climbs her ladder; she looks down from the veranda.
 function w08Arrive(t) {

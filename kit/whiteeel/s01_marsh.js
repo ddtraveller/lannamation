@@ -4,13 +4,13 @@
 // the herds go out every morning (the research notes: "out in the morning, swimming back in the evening"); far off on
 // the shore a herder's hut with a thread of smoke; an egret low across the water; the title in the mist; the camera
 // pushing in, slowly. Owner, 2026-11-06: "Yes, build it" (the plan of seven steps).
-var W01_LONG = 30;
+var W01_LONG = 30.8;
 // Its sounds (sounds.py, laid in by the film's music as a life's calls are: [second, sound, loudness], and a bed's
 // length): frogs at first light, a buffalo's low call, a plover over the water.
 var W01_SOUND = {calls: [[0, "frogs", 0.25, 16], [7.5, "buffalo", 0.3], [12.5, "plover", 0.2]]};
 // The narration: [from, to, id] in the scene's own seconds. Placeholders from story.py's length until Pan's voice is
 // recorded; the scene is timed again to her takes (docs/kit/films.md, step 4).
-var W01_LINES = [[9.0, 15.0, "W001"], [15.2, 21.6, "W002"], [21.8, 28.4, "W003"]];
+var W01_LINES = [[9.0, 16.88, "W001"], [17.08, 23.47, "W002"], [23.67, 29.31, "W003"]];
 
 // The titles in the mist (as changngu/s01_mekong.js's): the series, Lanna Tales (นิทานล้านนา), in the Lanna script, as
 // the first two films have it; then the tale's name, ตำนานปลาไหลเผือก, in the Lanna script, from the Kam Mueang

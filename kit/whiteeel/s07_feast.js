@@ -6,7 +6,7 @@
 // at the foot of her ladder.
 var W07_LONG = 40;
 var W07_SOUND = {calls: [[3.0, "hens", 0.12], [11.0, "crickets", 0.14, 29], [30.0, "dog", 0.1]]};
-var W07_LINES = [[1.2, 8.4, "W022"], [12.4, 18.6, "W023"], [26.4, 32.4, "W024"]];
+var W07_LINES = [[1.2, 6.38, "W022"], [12.4, 16.5, "W023"], [26.4, 31.54, "W024"]];
 var W07_CUTS = [11.0, 24.0];
 var W07_LANE_HOUSES = [[260, 880, 0.7], [760, 870, 0.66], [1300, 880, 0.72], [1760, 870, 0.64]];   // changngu/sets.js cngLane()'s
 
@@ -42,7 +42,7 @@ function w07Court(t) {
     {name: "hall, back", kind: "palace", z: "set", y: dais - 1, draw: function () { cngPalace("back"); }},
     {name: "the king", kind: "person", z: "set", x: p[0], y: dais, draw: function () {
       person(p[0], dais, welPerson("noble", Object.assign({size: 0.8}, WEL_OLD_KING), {id: "mahachaichana", floor: "cross", face: -1,
-        reachA: t > 1.6 && t < 6 ? [p[0] - 120, dais - 150, between(t, 1.6, 2.2)] : undefined, mouth: welTalk(t, t > 1.8 && t < 4.6), at: [p[0] - 600, 900]}));
+        reachA: t > 1.6 && t < 6 ? [p[0] - 120, dais - 150, between(t, 1.6, 2.2)] : undefined, mouth: welTalk(t, welSays(t, W07_LINES, ["W022"]) && t < 4.6), at: [p[0] - 600, 900]}));
     }},
     {name: "hall, front", kind: "palace", z: "set", y: dais + 1, draw: function () { cngPalace("front"); }},
     {name: "eel", kind: "beast", x: 640, y: floor + 70, draw: function () { whiteEel(330, floor + 70, t, {caught: true, size: 0.56, face: -1}); }}

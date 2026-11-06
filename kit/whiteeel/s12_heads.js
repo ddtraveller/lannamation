@@ -6,10 +6,10 @@
 // into the water: the Mae Nam Lak, its name in gold.
 var W12_LONG = 50;
 var W12_SOUND = {calls: [[0, "wind", 0.1, 50], [5.0, "plover", 0.15], [30.0, "dove", 0.12]]};
-var W12_LINES = [[1.2, 7.6, "W043"], [9.0, 13.8, "W044"], [16.4, 22.2, "W045"], [24.0, 27.4, "W046"], [29.0, 35.8, "W047"], [39.6, 46.8, "W048"]];
+var W12_LINES = [[1.2, 7.7, "W043"], [9.0, 13.56, "W044"], [16.4, 24.36, "W045"], [24.56, 29.38, "W046"], [29.58, 36.08, "W047"], [39.6, 44.58, "W048"]];
 var W12_CUTS = [14.6, 38.4];
 var W12_SHORE = 860;                                   // the near shore's edge in the first shot
-var W12_SPEAKS = {heads: [[24.0, 27.4]], widow: [[16.6, 22.0], [29.0, 35.8]]};
+var W12_SPEAKS = {heads: ["W046"], widow: ["W045", "W047"]};   // who says which line
 
 // The land, the water and the sky of late morning; shore: the near shore's y (none: water to the foot); house: [x, base,
 // size, waterline] of her house in the water, and who (a function) drawn on it before the water's face goes over.
@@ -61,13 +61,13 @@ function w12Raft2(t) {
   w12Set(t, null, house, function () {
     person(wx, wy, welPerson("grandmother", WEL_WIDOW, {id: "widow", face: -1, holding: null, size: WEL_WIDOW.size * house[2] / WEL_YARD[2],
       step: down > 0 && down < 1 ? t / BEAT * 0.7 : 0, at: [rx, ry - 200],
-      mouth: welTalk(t, W12_SPEAKS.widow.some(function (s) { return t > s[0] && t < s[1]; }))}));
+      mouth: welTalk(t, welSays(t, W12_LINES, W12_SPEAKS.widow))}));
   });
   w12Raft(rx, ry, 360);
   WEL_HEADS.forEach(function (h, k) {
     var x = rx - 120 + k * 110, y = ry - 4 + (k % 2) * 6, poling = k === 0 && arrive < 1;
     var look = {id: "raft" + k, face: 1, size: h[1].size * 0.9, at: [wx, wy - 160], feel: arrive >= 1 && k === 2 ? "sad" : undefined,
-                mouth: welTalk(t + k, W12_SPEAKS.heads.some(function (s) { return t > s[0] && t < s[1]; }) && k === 1)};
+                mouth: welTalk(t + k, welSays(t, W12_LINES, W12_SPEAKS.heads) && k === 1)};
     if (poling) { look.reachA = [x - 30, y - 150]; look.reachB = [x - 10, y - 190]; }
     var j = person(x, y, welPerson(h[0], h[1], look));
     if (poling) {                                       // the pole, from his hands down into the water

@@ -214,6 +214,10 @@ var WEL_FOLK = [["soldier", {size: 0.78}], ["maiden", {size: 0.74}], ["soldier",
 // age, a little bent (scenes 4, 7). Kind "noble".
 var WEL_OLD_KING = {sarong: ["#8a2a3a", BROCADE], hair: "#ece7dd", beard: "#f4f0e6", age: 1, bend: 0.1, smile: 0.4};
 
+// Whether one of the lines named in ids ("W027", ...) is being said at second t of a scene whose lines are lines
+// (its WNN_LINES), so a mouth moves with the voice wherever the lines are retimed to. e.g. welSays(t, W08_LINES, ["W027"])
+function welSays(t, lines, ids) { return lines.some(function (l) { return ids.indexOf(l[2]) >= 0 && t > l[0] && t < l[1] - 0.3; }); }
+
 // A mouth that talks while on is true: t, the scene's second. Gives back person()'s mouth, or undefined.
 // e.g. person(x, y, welPerson("elder", WEL_BRAHMAN, {mouth: welTalk(t, t > 16 && t < 22)}));
 function welTalk(t, on) { return on ? {open: 0.06 + 0.24 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined; }

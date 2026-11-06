@@ -7,7 +7,7 @@
 var W10_LONG = 60;
 var W10_ROARS = [[3.0, 0.5], [21.0, 0.75], [35.0, 1.0]];   // [second, how strong]
 var W10_SOUND = {calls: [[0, "crickets", 0.1, 46], [3.0, "roar", 0.5], [21.0, "roar", 0.75], [35.0, "roar", 1.0], [50.0, "dove", 0.12]]};
-var W10_LINES = [[5.4, 11.0, "W035"], [12.0, 18.2, "W036"], [22.6, 30.4, "W037"], [36.4, 41.6, "W038"], [47.0, 52.6, "W039"]];
+var W10_LINES = [[5.4, 12.24, "W035"], [12.44, 19.18, "W036"], [22.6, 31.62, "W037"], [36.4, 43.06, "W038"], [47.0, 50.58, "W039"]];
 var W10_CUTS = [20.0, 46.0];
 var W10_MAT = [760, CNG_FLOOR + 40];                   // where she lies
 var W10_HANG = [1040, CNG_BEAM];                       // where the lamp hangs from the beam
