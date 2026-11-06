@@ -261,6 +261,67 @@ function welPlainTrees() {
   return paper;
 }
 
+// ---------- the widow's house ----------
+// Her house at the edge of the city (scenes 5, 7 to 13): the kit's northern house on posts (oldcartoon.js house():
+// its veranda, its ladder at the right, its crossed roof ends), old: its wood greyed by the weather, a patch on its roof.
+// Painted once as a sprite. At size 1 it is 380 across and 440 tall; its floor is 112 over the ground, the ladder's
+// foot at 82 right of its middle, its top at the veranda (WEL_HOUSE_TOP).
+var WEL_HOUSE = null, WEL_HOUSE_TOP = 112, WEL_LADDER = 82;
+
+// brush: where to draw; x, base: the middle of its foot; size: as house(). e.g. welWidowHouse(pen, 1250, 840, 1);
+function welWidowHouse(brush, x, base, size) {
+  if (!WEL_HOUSE) {
+    WEL_HOUSE = document.createElement("canvas");
+    WEL_HOUSE.width = 440 * PIX;
+    WEL_HOUSE.height = 480 * PIX;
+    var b = WEL_HOUSE.getContext("2d");
+    b.scale(PIX, PIX);
+    house(b, 220, 455, 1);
+    b.globalCompositeOperation = "source-atop";        // the weather on its wood
+    b.fillStyle = "rgba(128, 118, 104, 0.3)";
+    b.fillRect(0, 0, 440, 480);
+    b.fillStyle = "rgba(60, 50, 40, 0.18)";             // streaks down the boards
+    for (var n = 0; n < 14; n++) { b.fillRect(90 + n * 19 + 6 * dice(n + 3), 225, 2 + 2 * dice(n), 90 + 30 * dice(n + 9)); }
+    b.fillStyle = "#6e5a48";                            // a patch of other tiles on the roof
+    b.beginPath(); b.moveTo(120, 214); b.lineTo(178, 176); b.lineTo(196, 200); b.lineTo(140, 236); b.closePath(); b.fill();
+    b.globalCompositeOperation = "source-over";
+  }
+  brush.drawImage(WEL_HOUSE, x - 220 * size, base - 455 * size, 440 * size, 480 * size);
+}
+
+// The yard at the edge of the city, by day, painted once (scenes 5, 7, 8): the far range, Yonok's rampart away to the
+// left with roofs over it, grass and flowers, a path of beaten earth across the front, the widow's house on the right
+// with bushes in flower round it and a tamarind over it. WEL_YARD: [x, base, size] of her house; WEL_PATH: the path's y.
+var WEL_YARD = [1360, 812, 1.6], WEL_PATH = 878, WEL_YARD_SHEET = {};
+function welYard(kind) {
+  kind = kind || "day";
+  if (WEL_YARD_SHEET[kind]) { return WEL_YARD_SHEET[kind]; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE * PIX;
+  paper.height = 1080 * PIX;
+  var b = paper.getContext("2d"), keep = pen;
+  b.scale(PIX, PIX);
+  cngFar(b, 0, 560, kind === "dusk" ? "dusk" : undefined);
+  sceneryMeadow(b, -40, WIDE + 40, 560, 1080, {seed: 11, haze: "#b4cfa0"});
+  b.save();                                             // the city's rampart, far off at the left, and roofs over it
+  b.beginPath(); b.rect(0, 0, 820, 1080); b.clip();
+  cngRampart(b, 560, 640);
+  b.restore();
+  [[160, 0.34], [420, 0.3], [640, 0.32]].forEach(function (h) { house(b, h[0], 662, h[1]); });
+  b.fillStyle = "#c9b285";                              // the path across the front
+  b.beginPath(); b.moveTo(-20, WEL_PATH - 30); b.quadraticCurveTo(900, WEL_PATH - 50, WIDE + 20, WEL_PATH - 20);
+  b.lineTo(WIDE + 20, WEL_PATH + 40); b.quadraticCurveTo(900, WEL_PATH + 20, -20, WEL_PATH + 46); b.closePath(); b.fill();
+  thkTreeOn(b, 1760, WEL_YARD[1] - 20, 0.5, 91, [["mango", 14, 14]]);   // a tree over her house
+  pen = b;
+  [[930, 826, 140, 80, 401, [["hibiscus", 14, 8]]], [1690, 830, 160, 90, 407, [["jasmine", 10, 8]]], [840, 834, 110, 70, 409, []]].forEach(function (k) {
+    thkPlace(natBush(k[2], k[3], k[4], THK_SUN, k[5], PIX), k[0], k[1], 1, 0);
+  });
+  pen = keep;
+  welWidowHouse(b, WEL_YARD[0], WEL_YARD[1], WEL_YARD[2]);
+  WEL_YARD_SHEET[kind] = paper;
+  return paper;
+}
+
 // ---------- the narration ----------
 // The words under the picture: t, the scene's second; lines, its WNN_LINES ([from, to, id]). Writes the line being
 // said (WHITEEEL_WORDS[id]: its Kam Mueang, then its English). The kit's subtitle() writes one line and does not wrap: a
