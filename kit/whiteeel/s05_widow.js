@@ -43,8 +43,8 @@ function w05Fire(t) {
 
 // Her neighbours on the path: a mother with her little girl, two men with baskets on a pole, a woman; they talk as
 // they go and look ahead, not at her. u: seconds since the shot began.
-var W05_NEIGHBOURS = [["maiden", {size: 0.72}, -40], ["girl", {size: 0.42}, -120], ["farmer", {size: 0.76}, -420], ["villager", {size: 0.76, turban: "#2a6a5a"}, -530],
-                      ["weaver", {size: 0.7}, -900]];
+var W05_NEIGHBOURS = [[5, {size: 0.72}, -40], ["child:tufts", {size: 0.42}, -120], ["farmer", {size: 0.76}, -420], ["villager", {size: 0.76, turban: "#2a6a5a"}, -530],
+                      [17, {size: 0.7}, -900]];
 function w05Neighbours(t, u, sprites) {
   W05_NEIGHBOURS.forEach(function (n, k) {
     var x = n[2] + 120 * u, y = WEL_PATH + (k % 2) * 16;

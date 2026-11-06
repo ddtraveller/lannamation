@@ -206,9 +206,10 @@ var WEL_HEADS = [["villager", {turban: "#8a6a58", sabai: ["#9a8a66", "#6a5a44", 
 // Ngu film's King Phang, his descendant, in a blue brocade (pick A; the owner, 2026-11-06: "Do what you think is most
 // historically accurate"). Kind "noble".
 var WEL_PRINCE = {sarong: ["#24335e", BROCADE], smile: 0.6, size: 0.82};
-// The people who walked with him from far away: two soldiers with spears, men, women and a boy. Each [kind, look].
-var WEL_FOLK = [["soldier", {size: 0.78}], ["maiden", {size: 0.74}], ["soldier", {turban: "#2a4a6a", size: 0.78}], ["farmer", {size: 0.78}],
-                ["weaver", {size: 0.72}], ["villager", {turban: "#c9962a", size: 0.78}], ["boy", {size: 0.5}]];
+// The people who walked with him from far away: two soldiers with spears, men, two painted women (one with a parasol
+// for the road), a farmer with his baskets on a pole and a boy. Each [kind, look] (welPerson()'s kinds).
+var WEL_FOLK = [["soldier", {size: 0.78}], [11, {size: 0.74}], ["soldier", {turban: "#2a4a6a", size: 0.78}], ["man:farmer", {size: 0.78}],
+                [4, {size: 0.72}], ["villager", {turban: "#c9962a", size: 0.78}], ["child:boy", {size: 0.5}]];
 
 // King Mahachaichana, the last of Yonok's forty-five kings, seventy (the chronicle): white hair and beard, the lines of
 // age, a little bent (scenes 4, 7). Kind "noble".
@@ -225,8 +226,25 @@ function welTalk(t, on) { return on ? {open: 0.06 + 0.24 * Math.abs(Math.sin(t *
 // A look of the film's cast: the kit's cast (kind), the film's look (own), the scene's keys (extra). A feeling given by
 // the scene takes the place of the cast's own smile and wonder, as changngu/sets.js's cngPerson. Gives back a look for
 // person(); changes nothing. e.g. person(900, 880, welPerson("grandmother", WEL_WIDOW, {id: "widow", face: -1}));
+// kind can also be one of people.js's painted people (the owner, 2026-11-07: the long-necked women out of the film, "use
+// those [the new women models] and the other models from the other movies"): a number, a woman of castMix(); "woman:name",
+// "man:name", "child:name", one of MURAL_WOMEN, MURAL_MEN or MURAL_CHILDREN. extra.free: true empties a painted
+// person's hands (what she holds and the pose for it), for a scene that gives her something to carry (own.free the same).
+// e.g. person(x, y, welPerson(17, {size: 0.72}, {id: "lane3", face: 1})); welPerson("child:tufts", {size: 0.42}, {id: "girl"})
 function welPerson(kind, own, extra) {
-  var look = cast(kind, Object.assign({}, own, extra || {}));
+  var more = Object.assign({}, own, extra || {}), painted = typeof kind === "string" ? kind.split(":") : null, look;
+  delete more.free;
+  if (typeof kind === "number") { look = castMix(kind, more); }
+  else if (painted.length === 2) { look = {woman: castWoman, man: castMan, child: castChild}[painted[0]](painted[1], more); }
+  else { look = cast(kind, more); }
+  if ((extra && extra.free) || (own && own.free)) {
+    ["woman", "man", "child"].forEach(function (k) {
+      var s = look[k], known = {woman: MURAL_WOMEN, man: MURAL_MEN, child: MURAL_CHILDREN}[k];
+      if (s === undefined) { return; }
+      if (typeof s === "string") { s = known[s][k]; }
+      look[k] = Object.assign({}, s, {holds: undefined, pose: undefined});
+    });
+  }
   if (extra && extra.feel !== undefined) {
     if (extra.smile === undefined) { delete look.smile; }
     if (extra.wonder === undefined) { delete look.wonder; }
@@ -387,6 +405,54 @@ function welYardNight(t, lit) {
     pen.fillStyle = g;
     pen.fillRect(wx - 70, wy - 70, 140, 140);
   }
+}
+
+// ---------- a lane of Yonok, its homes each its own ----------
+// Chang Ngu's lane (changngu/sets.js cngLane(): the range, the rampart, trees in flower, the lane of beaten earth, its
+// grass), but no two homes alike (the owner, 2026-11-07: "make the people in the village and homes look more unique"):
+// a teak house with its crossed roof ends (house()), a bamboo house tied together (pieces.js ruenPhuk()), a small house
+// with its granary beside it (longKhao()), a bamboo house gone grey with weather, each with flowers of its own at its
+// feet. WEL_LANE_HOMES: [x, base, size, kind ("teak" or "bamboo"), [x, y] of its kitchen's smoke, [x, y] of its lamp]
+// for scenes that smoke and light them. Scenes 4 and 7.
+var WEL_LANE = {};
+var WEL_LANE_HOMES = [[250, 880, 0.7, "teak", [222, 670], [187, 775]], [720, 878, 1.0, "bamboo", [690, 660], [800, 770]],
+                      [1240, 884, 0.6, "teak", [1216, 704], [1186, 794]], [1740, 874, 0.92, "bamboo", [1712, 666], [1812, 776]]];
+
+// kind: "day" or "dusk" (the bamboo houses' doorways lit). Gives back the lane's canvas, WIDE by 1080, clear above the
+// far hills; painted once for each. e.g. pen.drawImage(welLane("dusk"), 0, 0);
+function welLane(kind) {
+  if (WEL_LANE[kind]) { return WEL_LANE[kind]; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE;
+  paper.height = 1080;
+  var b = paper.getContext("2d"), n, keep = pen, dusk = kind === "dusk";
+  cngFar(b, 0, 560);
+  cngRampart(b, 504, 660);
+  var blooms = [["ratchaphruek", 28, 14], ["mango", 20, 14], ["frangipani", 28, 12], ["longan", 24, 14]];
+  for (n = 0; n < 7; n++) { thkTreeOn(b, 60 + n * 300 + 50 * dice(n + 60), 680, 0.26 + 0.07 * dice(n + 61), 81 + n, [blooms[n % 4]]); }
+  csBand(b, 0, 660, WIDE, 420, "#b9a070", "#9a8058");    // the ground
+  pen = b;
+  var feet = [["hibiscus", "marigold"], ["dokkaew", "tahern"], ["jasmine", "marigold"], ["tahern", "hibiscus"]];
+  WEL_LANE_HOMES.forEach(function (h, k) {
+    if (k === 2) { longKhao(b, h[0] + 210, h[1] - 4, 0.42, true); }   // the granary beside the small house
+    if (h[3] === "teak") { house(b, h[0], h[1], h[2]); }
+    else { ruenPhuk(b, h[0], h[1], h[2], {fine: true, glow: dusk ? 0.6 : 0, tint: k === 3 ? ["#8a8a80", 0.28] : undefined}); }
+    [[-0.36, feet[k][0]], [0.38, feet[k][1]]].forEach(function (f) {
+      flora(f[1], h[0] + f[0] * 380 * h[2], h[1] + 4, {size: 0.42 * h[2], ground: false});
+    });
+  });
+  pen = keep;
+  b.fillStyle = "#c9b285";                               // the lane
+  b.beginPath(); b.moveTo(0, CNG_LANE_Y - 40); b.lineTo(WIDE, CNG_LANE_Y - 50); b.lineTo(WIDE, CNG_LANE_Y + 70); b.lineTo(0, CNG_LANE_Y + 80); b.closePath(); b.fill();
+  b.fillStyle = "rgba(140, 116, 70, 0.25)";              // its ruts
+  [CNG_LANE_Y - 12, CNG_LANE_Y + 30].forEach(function (y) { b.fillRect(0, y, WIDE, 4); });
+  pen = b;                                               // grass along its edges
+  for (n = 0; n < 16; n++) {
+    thkPlace(sceneryGrass(30 + 30 * dice(n), 8, 521 + n), 60 + n * 120 + 40 * dice(n + 3), CNG_LANE_Y - 40 + (n % 2 ? 0 : 124), 1, 0);
+  }
+  pen = keep;
+  WEL_LANE[kind] = paper;
+  return paper;
 }
 
 // ---------- the narration ----------

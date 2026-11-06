@@ -10,7 +10,7 @@ var W06_LINES = [[1.4, 8.64, "W019"], [11.0, 16.06, "W020"], [25.0, 29.82, "W021
 var W06_CUTS = [10.0, 22.0];
 var W06_BANK_Y = 790;                                  // where the people stand on the near bank
 var W06_FISHERS = [["farmer", {size: 0.74}, 620], ["villager", {size: 0.74, turban: "#2a6a5a"}, 860], ["boy", {size: 0.48}, 980],
-                   ["weaver", {size: 0.7}, 1180], ["fellow", {size: 0.74}, 1420]];
+                   [3, {size: 0.7, free: true}, 1180], ["fellow", {size: 0.74}, 1420]];
 var W06_HAULERS = [["soldier", {size: 0.74, holding: null}], ["farmer", {size: 0.74}], ["villager", {size: 0.74, turban: "#c9962a"}],
                    ["fellow", {size: 0.74}], ["khammun", {size: 0.74}], ["villager", {size: 0.74, turban: "#2a4a6a"}], ["inta", {size: 0.74}]];
 

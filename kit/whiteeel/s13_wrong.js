@@ -46,7 +46,7 @@ function w13Bow(t) {
   var giver = between(t, 9.6, 11.4) * (1 - between(t, 12.4, 14));   // a woman of the village brings the tray
   if (giver > 0) {
     sprites.push({name: "giver", kind: "person", x: W13_HER[0] + 160, y: W13_HER[1] + 30, draw: function () {
-      person(W13_HER[0] + 160, W13_HER[1] + 30, welPerson("weaver", {size: 0.7}, {id: "giver", face: -1, bend: 0.3 * served, feel: "happy",
+      person(W13_HER[0] + 160, W13_HER[1] + 30, welPerson(24, {size: 0.7, free: true}, {id: "giver", face: -1, bend: 0.3 * served, feel: "happy",
                                                                                 reachA: [W13_HER[0] + 100, W13_HER[1] - 20]}));
     }});
   }

@@ -77,7 +77,7 @@ function w02Wake(t) {
 // sheet with pen. From sets.js: welSky(), welClouds(), welFar(), welKokWater(), welPlain(), welPlainTrees(),
 // welPerson() with WEL_PRINCE, WEL_FOLK, WEL_BRAHMAN, welTalk(), welFadeIn(). Its words are W02_LINES (W004 to W008).
 // Its z plan: the sky, the hills and the far bank, the plain, the river, the reeds' back, then by drawByZ the people by
-// their feet, the reeds' front over the Brahman as he goes in, the ripple, the trees, the soft grass in front.
+// their feet with each clump of reeds' front (12 below its foot, so he is among them only at the water), the ripple, the trees, the soft grass in front.
 function welSceneBrahman(t) {
   var drift = between(t, 0, W02_LONG), pan = -40 * drift;   // the camera drifts a little with them
   pen.save();
@@ -130,8 +130,10 @@ function welSceneBrahman(t) {
       pen.restore();
     }});
   }
+  W02_REEDS.forEach(function (r, k) {                   // each clump's front by its foot: he walks before them, then in among them
+    sprites.push({name: "reeds " + k, kind: "person", x: r[0], y: r[1] + 12, draw: function () { sceneryReeds(r[0], r[1], r[2], t, "front"); }});
+  });
   drawByZ(sprites);
-  W02_REEDS.forEach(function (r) { sceneryReeds(r[0], r[1], r[2], t, "front"); });
   w02Wake(t);
   sceneryBeds(t, thkOnce("wel-plain-frame", function () {
     return [{sprite: sceneryGrass(300, 18, 621), x: 40, y: 1110}, {sprite: sceneryGrass(280, 16, 627), x: WIDE - 20, y: 1110}];

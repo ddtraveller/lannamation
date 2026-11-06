@@ -8,7 +8,14 @@ var W07_LONG = 40;
 var W07_SOUND = {calls: [[3.0, "hens", 0.12], [11.0, "crickets", 0.14, 29], [30.0, "dog", 0.1]]};
 var W07_LINES = [[1.2, 6.38, "W022"], [12.4, 16.5, "W023"], [26.4, 31.54, "W024"]];
 var W07_CUTS = [11.0, 24.0];
-var W07_LANE_HOUSES = [[260, 880, 0.7], [760, 870, 0.66], [1300, 880, 0.72], [1760, 870, 0.64]];   // changngu/sets.js cngLane()'s
+// The families eating before their houses, each its own: [x, y] of its tray, and who sits round it: [kind (welPerson()'s:
+// a number is a painted woman of castMix()), look, dx, dy from the tray]. A man or a boy sits on the old rig (a painted
+// man or boy does not sit); the women and girls are painted (the owner, 2026-11-07), their hands free for the food.
+var W07_FAMILIES = [
+  [[520, 905], [[2, {}, -90, 0], ["khammun", {size: 0.6}, 90, 6], ["child:tufts", {size: 0.42}, -40, 16]]],
+  [[1040, 900], [[13, {}, -105, -2], ["luaman", {size: 0.6}, 100, 4], [20, {}, -45, 18], ["boy", {size: 0.42}, 45, 20]]],
+  [[1560, 905], [[17, {}, -90, 0], ["farmer", {turban: "#2a4a6a", size: 0.6}, 90, 6], ["child:plait", {size: 0.44}, -40, 16]]]
+];
 
 // A piece of the eel on a banana leaf, carried at (x, y): the leaf folded under, the pale meat on it.
 function w07Leaf(x, y) {
@@ -50,11 +57,11 @@ function w07Court(t) {
   for (var k = 0; k < 8; k++) {
     (function (k) {
       var left = k % 2 === 0, go = between(t, 3 + k * 0.7, 9 + k * 0.7), from = 760 + (k % 4) * 60, y = floor + 90 + (k % 3) * 22;
-      var x = mix(from, left ? -160 : WIDE + 160, go), kind = ["maiden", "farmer", "weaver", "villager", "boy", "fellow", "buakham", "inta"][k];
+      var x = mix(from, left ? -160 : WIDE + 160, go), kind = [9, "farmer", 10, "villager", "boy", "fellow", "child:plait", "inta"][k];
       if (go <= 0 || go >= 1) { return; }
       sprites.push({name: "carrier " + k, kind: "person", x: x, y: y, draw: function () {
-        var face = left ? -1 : 1, size = kind === "boy" ? 0.5 : 0.7;
-        var j = person(x, y, welPerson(kind, {size: size}, {id: "carrier" + k, face: face, step: t / BEAT * 0.9 + k, feel: "happy",
+        var face = left ? -1 : 1, size = kind === "boy" || kind === "child:plait" ? 0.5 : 0.7;
+        var j = person(x, y, welPerson(kind, {size: size}, {id: "carrier" + k, face: face, step: t / BEAT * 0.9 + k, feel: "happy", free: true,
                                                            reachA: [x + face * 40 * size / 0.7, y - 150 * size / 0.7], reachB: [x + face * 30 * size / 0.7, y - 146 * size / 0.7]}));
         var w = cngLocal(j.wristA);
         w07Leaf(w[0] + face * 6, w[1] - 6);
@@ -65,25 +72,26 @@ function w07Court(t) {
   cngBeds(t, "court", "frame");
 }
 
-// Shot 2: dusk in a lane: smoke from every kitchen, lamps lit, families eating on mats before their houses.
+// Shot 2: dusk in a lane: smoke from every kitchen, lamps lit, families eating on mats before their houses, no two alike.
 function w07Lane(t) {
   pen.drawImage(welSky("sunset"), 0, 0);
   welClouds(t + 90, "dusk");
-  pen.drawImage(cngLane("day"), 0, 0);
+  pen.drawImage(welLane("dusk"), 0, 0);
   pen.fillStyle = "rgba(150, 70, 90, 0.26)";           // the dusk over it
   pen.fillRect(0, 0, WIDE, 1080);
-  W07_LANE_HOUSES.forEach(function (h, k) {
-    welSmoke(t + k * 2, h[0] - 40 * h[2], h[1] - 300 * h[2], {rise: 220, lean: 60, wide: 30, alpha: 0.5, colour: "236, 226, 232", count: 16});
-    sceneryLampLight(t + k, h[0] - 90 * h[2], h[1] - 150 * h[2], h[1], {});
+  WEL_LANE_HOMES.forEach(function (h, k) {
+    welSmoke(t + k * 2, h[4][0], h[4][1], {rise: 220, lean: 60, wide: 30, alpha: 0.5, colour: "236, 226, 232", count: 16});
+    sceneryLampLight(t + k, h[5][0], h[5][1], h[1], {});
   });
   var sprites = [];
-  [[520, 905, 0], [1040, 900, 1], [1560, 905, 2]].forEach(function (m, n) {   // a family round each tray
+  W07_FAMILIES.forEach(function (f, n) {                 // a family round each tray
+    var m = f[0];
     sprites.push({name: "tray " + n, kind: "thing", x: m[0], y: m[1], draw: function () { w07Tray(m[0], m[1]); }});
-    [["weaver", -1, -90, 0], ["farmer", 1, 90, 6], ["girl", -1, -40, 16]].forEach(function (who, w) {
+    f[1].forEach(function (who, w) {
       var x = m[0] + who[2], y = m[1] + who[3] - 4;
       sprites.push({name: "eater " + n + w, kind: "person", x: x, y: y, draw: function () {
-        var size = who[0] === "girl" ? 0.42 : 0.66;
-        person(x, y, welPerson(who[0], {size: size}, {id: "eater" + n + w, face: -who[1], floor: "cross", feel: "happy",
+        person(x, y, welPerson(who[0], Object.assign({size: 0.66}, who[1]), {id: "eater" + n + w, face: who[2] < 0 ? 1 : -1, floor: "cross",
+                                                    feel: "happy", free: typeof who[0] === "number" || who[0].indexOf(":") > 0,
                                                     reachA: Math.sin(t * 1.6 + n + w) > 0.4 ? [m[0], m[1] - 14] : undefined,
                                                     mouth: welTalk(t + w, Math.sin(t * 0.8 + n * 2 + w) > 0.5)}));
       }});
@@ -115,7 +123,7 @@ function w07Yard(t) {
 
 // Scene 7, the entry the film calls (SCENES): t, its own second, 0 to W07_LONG. Gives back nothing: it draws the whole
 // sheet with pen. From sets.js: welSky(), welClouds(), welYard(), WEL_YARD, WEL_LADDER, welPerson() with WEL_OLD_KING
-// and WEL_WIDOW, welSmoke(), welTalk(); from changngu/sets.js: cngCourt(), cngPalace(), CNG_PALACE, cngLane(), cngBeds(),
+// and WEL_WIDOW, welSmoke(), welTalk(), welLane(), WEL_LANE_HOMES; from changngu/sets.js: cngCourt(), cngPalace(), CNG_PALACE, cngBeds(),
 // cngLocal(), cngCutsOver(); from chiangsaen.js whiteEel(), hoKhamDais(), hoKhamFloor(). Its words are W07_LINES.
 function welSceneFeast(t) {
   if (t < W07_CUTS[0]) { w07Court(t); }

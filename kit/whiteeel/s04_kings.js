@@ -2,7 +2,7 @@
 // Yonok by day, busy, people coming and going and petals on the air (the city grown rich); the court, the hall's dais,
 // where king after king sits, each a moment, the light of the seasons turning over them (forty-five reigns, a few of
 // them seen); and last, King Mahachaichana, seventy, white-haired, on the same dais in the late gold light, his
-// courtiers before him. The city's places are the Chang Ngu film's (changngu/sets.js: cngLane, cngCourt, cngPalace).
+// courtiers before him. The city's places are the Chang Ngu film's (changngu/sets.js: cngCourt, cngPalace; the lane is sets.js welLane()).
 var W04_LONG = 35;
 var W04_SOUND = {calls: [[0.5, "hens", 0.16], [3.0, "dog", 0.1], [25.0, "dove", 0.14]]};
 var W04_LINES = [[1.0, 5.32, "W013"], [7.4, 17.0, "W014"], [21.4, 26.34, "W015"]];
@@ -25,9 +25,9 @@ var W04_SEASONS = ["rgba(255, 200, 220, 0.12)", "rgba(80, 110, 150, 0.2)", "rgba
 function w04Lane(t) {
   pen.drawImage(welSky("day"), 0, 0);
   welClouds(t + 20, "day");
-  pen.drawImage(cngLane("day"), 0, 0);
-  var sprites = [], walkers = [["weaver", {}, 1], ["villager", {turban: "#2a6a5a"}, -1], ["maiden", {}, 1], ["farmer", {}, -1],
-                                ["boy", {size: 0.5}, 1], ["buakham", {}, -1], ["elder", {}, 1], ["fellow", {}, -1]];
+  pen.drawImage(welLane("day"), 0, 0);
+  var sprites = [], walkers = [[8, {}, 1], ["villager", {turban: "#2a6a5a"}, -1], [12, {}, 1], ["farmer", {}, -1],
+                                ["boy", {size: 0.5}, 1], ["child:plait", {size: 0.46}, -1], ["oldfarmer", {}, 1], ["woman:lue", {}, -1]];
   walkers.forEach(function (w, k) {
     var speed = 70 + 14 * (k % 3), span = WIDE + 400, along = (k * 290 + speed * t) % span;   // round and round, so the lane is never empty
     var x = w[2] > 0 ? along - 200 : WIDE + 200 - along, y = CNG_LANE_Y - 20 + (k % 3) * 24;
@@ -90,7 +90,7 @@ function w04OldKing(t) {
 }
 
 // Scene 4, the entry the film calls (SCENES): t, its own second, 0 to W04_LONG. Gives back nothing: it draws the whole
-// sheet with pen. From sets.js: welSky(), welClouds(), welPerson(); from changngu/sets.js: cngLane(), CNG_LANE_Y,
+// sheet with pen. From sets.js: welSky(), welClouds(), welPerson(), welLane(); from changngu/sets.js: CNG_LANE_Y,
 // cngCourt(), cngPalace(), CNG_PALACE, cngBeds(), cngCutsOver(); from chiangsaen.js hoKhamDais(), hoKhamFloor().
 // Its words are W04_LINES (W013 to W015).
 function welSceneKings(t) {

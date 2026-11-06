@@ -9,10 +9,10 @@ FOLDER = Path("C:/jslab/eel/wt/kit/whiteeel")
 LINK = ('<link href="https://fonts.googleapis.com/css2?family=Gelasio:ital,wght@1,400&family=Noto+Sans+Tai+Tham:wght@700'
         '&family=Noto+Sans+Thai:wght@700&family=Noto+Serif+Thai:wght@500;600;700&display=swap" rel="stylesheet">')
 # Every kit module a scene of this film uses, in the order its scene pages load them (weaving.js, sabai.js and
-# sabai_finish.js before credits.js), then the Chang Ngu film's sets (Yonok's places) before this film's.
+# sabai_finish.js before credits.js; people.js last of the kit's, for the painted people), then the Chang Ngu film's sets (Yonok's places) before this film's.
 MODULES = ["oldcartoon", "backdrops", "naga", "beasts", "myth", "himmaphan", "cumulus", "highlands", "pieces", "night",
            "flora", "butterflies", "thicket", "pinewoods", "wildplaces", "scenery", "chiangsaen", "northbirds", "lannabirds",
-           "taleanimals", "decorate", "weaving", "sabai", "sabai_finish", "credits"]
+           "taleanimals", "decorate", "weaving", "sabai", "sabai_finish", "credits", "people"]
 
 
 def scenes():
