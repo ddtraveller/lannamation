@@ -164,6 +164,42 @@ function welWadeRings(x, waterline, wide, t) {
   pen.restore();
 }
 
+// ---------- the people ----------
+// The looks of the tale's people over the kit's cast (cast()), the film's colours; the owner's picks from the candidate
+// sheet of 2026-11-06. A scene draws one with person(x, y, welPerson(kind, WEL_..., {id, face, ...})). The Brahman's
+// shoulder cloth is woven (weaving.js's Hat Siao sabai, with its naga): a page that draws him loads sabai.js and
+// sabai_finish.js after weaving.js, or the cloth comes out plain.
+// The Brahman, who is the naga Phanthu: old, all in white, his white hair in a knot (lady: false keeps a man's face
+// under it), a white beard, a staff, and the naga woven in his shoulder cloth (the owner: "A with the naga in his
+// sash"). Kind "elder".
+var WEL_BRAHMAN = {lady: false, turban: null, bun: "low", hair: "#ece7dd", beard: "#f4f0e6", age: 0.7, bend: 0.05, bare: true,
+                   tattoo: false, sabai: ["#f2ead6", "#2f6a5a", "phuanHatSiao", "own"], sarong: "#f2ede2", patoi: false,
+                   shirt: "#f4efe2", legs: "#f2ede2", holding: "stick", smile: 0.5, skin: "#d9a87c", size: 0.78};
+// The old widow: a cloth tied round her head, a faded indigo blouse, a black wrap over her shoulders, a stick; no gold
+// (a palm-leaf ear plug and a strand of seed beads, where a well-off woman wears gold). Kind "grandmother".
+var WEL_WIDOW = {turban: "#7a5a6a", shirt: "#4a5a78", sin: 0, bun: "low", earplug: "#b8a060", beads: ["#7a5a3a"], bangles: 0,
+                 bend: 0.16, holding: "stick", smile: 0.3, sabai: ["#2a2a30", "#2a2a30", "tuapDam", "own"], size: 0.68};
+// The young man: a little too fine for the village, a white shirt and a long jade cloth to the ankle, no tattoo showing,
+// head bare. Kind "inta".
+var WEL_YOUNG = {shirt: "#f4efe2", sarong: "#2f5a4a", patoi: false, tattoo: false, legs: "#2f5a4a",
+                 sabai: ["#f2ead6", "#3f7a6a", "check"], smile: 0.3, north: "soft", size: 0.8};
+// The village heads, as the Chang Ngu film's headman: head-cloths and checked shoulder cloths. Each [kind, look].
+var WEL_HEADS = [["villager", {turban: "#8a6a58", sabai: ["#9a8a66", "#6a5a44", "check"], sarong: "#4f3e30", age: 0.4, smile: 0.4, size: 0.8}],
+                 ["elder", {turban: "#2a4a6a", hair: "#ece7dd", beard: "#f4f0e6", sabai: ["#a8b8c8", "#2a4a6a", "check"], smile: 0.4, size: 0.76}],
+                 ["farmer", {turban: "#6a3a2a", age: 0.6, hair: "#a9a39a", smile: 0.4, size: 0.8}]];
+
+// A look of the film's cast: the kit's cast (kind), the film's look (own), the scene's keys (extra). A feeling given by
+// the scene takes the place of the cast's own smile and wonder, as changngu/sets.js's cngPerson. Gives back a look for
+// person(); changes nothing. e.g. person(900, 880, welPerson("grandmother", WEL_WIDOW, {id: "widow", face: -1}));
+function welPerson(kind, own, extra) {
+  var look = cast(kind, Object.assign({}, own, extra || {}));
+  if (extra && extra.feel !== undefined) {
+    if (extra.smile === undefined) { delete look.smile; }
+    if (extra.wonder === undefined) { delete look.wonder; }
+  }
+  return look;
+}
+
 // ---------- the narration ----------
 // The words under the picture: t, the scene's second; lines, its WNN_LINES ([from, to, id]). Writes the line being
 // said (WHITEEEL_WORDS[id]: its Kam Mueang, then its English). e.g. welSubtitles(t, W01_LINES);
