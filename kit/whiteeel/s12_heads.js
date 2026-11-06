@@ -11,20 +11,6 @@ var W12_CUTS = [14.6, 38.4];
 var W12_SHORE = 860;                                   // the near shore's edge in the first shot
 var W12_SPEAKS = {heads: [[24.0, 27.4]], widow: [[16.6, 22.0], [29.0, 35.8]]};
 
-// The new water with a near shore of grass at shore (its edge's y), its far edge at top (WEL_WATER unless told), as
-// scenery.js takes a water. Made once for each.
-var W12_WATERS = {};
-function w12Water(shore, top) {
-  var far = top || WEL_WATER, key = shore + " " + far;
-  if (W12_WATERS[key]) { return W12_WATERS[key]; }
-  var line = [], near = [];
-  for (var k = 0; k <= 10; k++) { line.push([-400 + k * (WIDE + 800) / 10, far + (k % 2 ? 1.5 : 0)]); }
-  for (k = 10; k >= 0; k--) { near.push([-400 + k * (WIDE + 800) / 10, shore + 8 * Math.sin(k * 1.9) + 5 * dice(k + 60)]); }
-  W12_WATERS[key] = {edge: [[-400, shore]].concat(line, near), top: line, line: far, left: -200, right: WIDE + 200, foot: shore + 20,
-                     depths: ["#7a968a", "#3c5a4e"], mirror: [[far, 1], [far + 70, 0.85], [far + 170, 0.6]], tint: "70, 96, 84", rings: [], mist: null};
-  return W12_WATERS[key];
-}
-
 // The land, the water and the sky of late morning; shore: the near shore's y (none: water to the foot); house: [x, base,
 // size, waterline] of her house in the water, and who (a function) drawn on it before the water's face goes over.
 function w12Set(t, shore, house, who) {
@@ -32,7 +18,7 @@ function w12Set(t, shore, house, who) {
   welClouds(t + 140, "day");
   welFar(pen, WEL_WATER);
   if (shore) { sceneryMeadow(pen, -40, WIDE + 40, shore - 30, 1080, {seed: 21}); }
-  var water = shore ? w12Water(shore) : welMarshWater();
+  var water = shore ? welLake(shore) : welMarshWater();
   sceneryWaterDepths(water);
   function onIt() { if (house) { welWidowHouse(pen, house[0], house[1], house[2]); } if (who) { who(); } }
   onIt();
@@ -110,7 +96,7 @@ function w12Stream(t) {
   pen.lineDashOffset = -t * 40;                         // its water running down
   pen.stroke(stream);
   pen.restore();
-  var water = w12Water(1120, 850);                      // the water this side, the stream running down into it
+  var water = welLake(1120, 850);                      // the water this side, the stream running down into it
   sceneryWaterDepths(water);
   sceneryWaterSurface(t, water);
   var h = WEL_HEADS[1];

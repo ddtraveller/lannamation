@@ -136,6 +136,20 @@ function welMarshWater() {
   return WEL_MARSH_WATER;
 }
 
+// The marsh's water with a near shore of grass at shore (its edge's y), its far edge at top (WEL_WATER unless told), as
+// scenery.js takes a water (scenes 12, 14). Made once for each. e.g. var lake = welLake(860); sceneryWaterDepths(lake);
+var WEL_LAKES = {};
+function welLake(shore, top) {
+  var far = top || WEL_WATER, key = shore + " " + far;
+  if (WEL_LAKES[key]) { return WEL_LAKES[key]; }
+  var line = [], near = [];
+  for (var k = 0; k <= 10; k++) { line.push([-400 + k * (WIDE + 800) / 10, far + (k % 2 ? 1.5 : 0)]); }
+  for (k = 10; k >= 0; k--) { near.push([-400 + k * (WIDE + 800) / 10, shore + 8 * Math.sin(k * 1.9) + 5 * dice(k + 60)]); }
+  WEL_LAKES[key] = {edge: [[-400, shore]].concat(line, near), top: line, line: far, left: -200, right: WIDE + 200, foot: shore + 20,
+                     depths: ["#7a968a", "#3c5a4e"], mirror: [[far, 1], [far + 70, 0.85], [far + 170, 0.6]], tint: "70, 96, 84", rings: [], mist: null};
+  return WEL_LAKES[key];
+}
+
 // A herd's beast wading in the marsh: a scene draws it twice, whole before the water's face (so the marsh's own face
 // lies over its legs) and then again over the face above its waterline only (welAbove()), and last the rings its legs
 // make where they meet the water (welWadeRings()). waterline: the y where the water meets its legs.
