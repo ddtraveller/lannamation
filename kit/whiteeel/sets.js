@@ -263,11 +263,30 @@ function welPlainTrees() {
 
 // ---------- the narration ----------
 // The words under the picture: t, the scene's second; lines, its WNN_LINES ([from, to, id]). Writes the line being
-// said (WHITEEEL_WORDS[id]: its Kam Mueang, then its English). e.g. welSubtitles(t, W01_LINES);
+// said (WHITEEEL_WORDS[id]: its Kam Mueang, then its English). The kit's subtitle() writes one line and does not wrap: a
+// Kam Mueang line wider than the picture is cut at the space nearest its middle, and its halves are shown one after
+// the other over the line's time, the English under both. e.g. welSubtitles(t, W01_LINES);
 function welSubtitles(t, lines) {
   lines.forEach(function (line) {
-    if (t >= line[0] && t < line[1]) { subtitle(WHITEEEL_WORDS[line[2]][1], WHITEEEL_WORDS[line[2]][2]); }
+    if (t < line[0] || t >= line[1]) { return; }
+    var words = WHITEEEL_WORDS[line[2]], halves = welHalves(words[1]);
+    var big = halves.length < 2 ? words[1] : t < mix(line[0], line[1], halves[0].length / words[1].length) ? halves[0] : halves[1];
+    subtitle(big, words[2]);
   });
+}
+// A Kam Mueang line as it fits under the picture: [the line], or its two halves cut at the space nearest its middle
+// when it is wider than 1800 in the subtitle's letters.
+function welHalves(text) {
+  screen.save();
+  screen.font = "bold 58px " + LETTERS_THAI + ", 'Noto Sans Thai', Tahoma, sans-serif";
+  var wide = screen.measureText(text).width;
+  screen.restore();
+  if (wide <= 1800) { return [text]; }
+  var best = -1;
+  for (var k = 0; k < text.length; k++) {
+    if (text[k] === " " && (best < 0 || Math.abs(k - text.length / 2) < Math.abs(best - text.length / 2))) { best = k; }
+  }
+  return best < 0 ? [text] : [text.slice(0, best), text.slice(best + 1)];
 }
 
 // A scene's first seconds out of the dark (the film page's own cuts fade through black). e.g. welFadeIn(t, 2);
