@@ -326,6 +326,51 @@ function welYard(kind) {
   return paper;
 }
 
+// The night laid over a set drawn in the day's colours: dark blue, none over the sky (already the night's) down to
+// from, full (alpha) from to down. e.g. welNightOver(300, 470, 0.66);
+function welNightOver(from, to, alpha) {
+  var g = pen.createLinearGradient(0, from, 0, to);
+  g.addColorStop(0, "rgba(10, 16, 46, 0)");
+  g.addColorStop(1, "rgba(10, 16, 46, " + alpha + ")");
+  pen.fillStyle = g;
+  pen.fillRect(-WIDE, 0, 3 * WIDE, 1600);
+}
+
+// The Kok at night under the moon (scenes 3, 9): the night sky and the moon, the hills, the plain and the river
+// darkened, the stars and the moon clear of the dark, the moon's path on the water, fireflies over the plain.
+// under: what is drawn in the river under its face (a function), or none. e.g. welKokNight(t);
+var WEL_MOON = [1480, 170, 46];
+function welKokNight(t, under) {
+  pen.drawImage(welSky("night"), 0, 0);
+  welFar(pen, WEL_KOK);
+  pen.drawImage(welPlain(), 0, 0, WIDE, 1080);
+  var kok = welKokWater();
+  sceneryWaterDepths(kok);
+  if (under) { under(); }
+  sceneryWaterSurface(t, kok);
+  welNightOver(WEL_KOK - 440, WEL_KOK - 220, 0.62);
+  sceneryMoon(t, WEL_MOON[0], WEL_MOON[1], WEL_MOON[2], {});
+  natGlitter(t, WEL_MOON[0], WEL_KOK, WEL_KOK_BANK, 0.5, "220, 230, 255");
+}
+
+// The widow's yard at night (scenes 9, 10): the night sky and the moon, the yard darkened, a lamp's warm light in her
+// window if lit. e.g. welYardNight(t, true);
+function welYardNight(t, lit) {
+  pen.drawImage(welSky("night"), 0, 0);
+  sceneryMoon(t, 420, 150, 40, {});
+  pen.drawImage(welYard("dusk"), 0, 0, WIDE, 1080);
+  welNightOver(130, 340, 0.68);
+  sceneryMoon(t, 420, 150, 40, {});
+  if (lit) {
+    var wx = WEL_YARD[0], wy = WEL_YARD[1] - 172 * WEL_YARD[2], flick = 0.85 + 0.15 * Math.sin(t * 7);
+    var g = pen.createRadialGradient(wx, wy, 2, wx, wy, 70);
+    g.addColorStop(0, "rgba(255, 200, 120, " + (0.75 * flick).toFixed(3) + ")");
+    g.addColorStop(1, "rgba(255, 200, 120, 0)");
+    pen.fillStyle = g;
+    pen.fillRect(wx - 70, wy - 70, 140, 140);
+  }
+}
+
 // ---------- the narration ----------
 // The words under the picture: t, the scene's second; lines, its WNN_LINES ([from, to, id]). Writes the line being
 // said (WHITEEEL_WORDS[id]: its Kam Mueang, then its English). The kit's subtitle() writes one line and does not wrap: a

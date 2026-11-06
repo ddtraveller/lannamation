@@ -8,7 +8,6 @@ var W03_LONG = 40;
 var W03_SOUND = {calls: [[0, "crickets", 0.2, 19], [19.5, "birds", 0.2, 20]]};
 var W03_LINES = [[1.4, 7.4, "W009"], [9.0, 17.0, "W010"], [22.4, 30.0, "W011"], [31.6, 37.4, "W012"]];
 var W03_CUTS = [19.5];
-var W03_MOON = [1480, 170, 46];
 var W03_RISE = [1560, 690];                            // where the naga comes up out of the river
 var W03_LOOP = [940, 800, 700, 96];                   // the moat's loop round the city's land: middle x, y, half wide, half tall
 var W03_DIG = [8.0, 18.6];                             // the seconds the naga goes round
@@ -49,18 +48,7 @@ function w03Moat(t) {
 
 // The night: the plain by the Kok under the moon; the Brahman's light; the naga going round, the moat behind him.
 function w03Night(t) {
-  pen.drawImage(welSky("night"), 0, 0);
-  sceneryMoon(t, W03_MOON[0], W03_MOON[1], W03_MOON[2], {});
-  welFar(pen, WEL_KOK);
-  pen.drawImage(welPlain(), 0, 0, WIDE, 1080);
-  var kok = welKokWater();
-  sceneryWaterDepths(kok);
-  sceneryWaterSurface(t, kok);
-  pen.fillStyle = "rgba(10, 18, 48, 0.62)";             // the night over the land
-  pen.fillRect(0, 0, WIDE, 1080);
-  pen.drawImage(welSky("night"), 0, 0, WIDE, WEL_KOK - 300, 0, 0, WIDE, WEL_KOK - 300);   // the stars and the moon clear of it
-  sceneryMoon(t, W03_MOON[0], W03_MOON[1], W03_MOON[2], {});
-  natGlitter(t, W03_MOON[0], WEL_KOK, WEL_KOK_BANK, 0.5, "220, 230, 255");   // the moon's path on the river
+  welKokNight(t);                                       // the Kok under the moon (sets.js)
   w03Moat(t);
   var gone = between(t, 4.2, 5.8), glow = between(t, 2.6, 4.6) * (1 - between(t, 6.2, 8));
   if (gone < 1) {                                       // the Brahman at the water's edge, small, going in a light
