@@ -5,7 +5,7 @@
 // and last, the widow's yard at dusk, the far roofs smoking and lit, and her house dark, nothing brought, she alone
 // at the foot of her ladder.
 var W07_LONG = 40;
-var W07_SOUND = {calls: [[0, "crowd", 0.18, 11], [11, "evening", 0.16, 29]]};
+var W07_SOUND = {calls: [[3.0, "hens", 0.12], [11.0, "crickets", 0.14, 29], [30.0, "dog", 0.1]]};
 var W07_LINES = [[1.2, 8.4, "W022"], [12.4, 18.6, "W023"], [26.4, 32.4, "W024"]];
 var W07_CUTS = [11.0, 24.0];
 var W07_LANE_HOUSES = [[260, 880, 0.7], [760, 870, 0.66], [1300, 880, 0.72], [1760, 870, 0.64]];   // changngu/sets.js cngLane()'s

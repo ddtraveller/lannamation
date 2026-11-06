@@ -6,7 +6,7 @@
 // Fireflies come out as the light goes. Then Bua-kham, who tells the kit's tales, comes along the near shore, says what
 // the tale teaches, and says goodbye with a wai, as the first two tales' goodbyes (maeng/s14, changngu/s25); into black.
 var W14_LONG = 55;
-var W14_SOUND = {calls: [[0, "frogs", 0.2, 55], [3.0, "buffalo", 0.25]]};
+var W14_SOUND = {calls: [[0, "frogs", 0.2, 55], [3.0, "buffalo", 0.25], [20.0, "egret", 0.12], [38.0, "crickets", 0.12, 17]]};
 var W14_LINES = [[1.2, 9.6, "W053"], [11.0, 16.4, "W054"], [18.4, 23.6, "W055"], [25.0, 31.4, "W056"], [33.0, 36.4, "W057"], [38.4, 46.6, "W058"]];
 var W14_SHORE = 900;                                   // the near shore, where Bua-kham comes
 var W14_SUN = [520, 470, 640];                         // the sun going down: x, from y, to y

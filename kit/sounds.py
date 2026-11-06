@@ -187,6 +187,29 @@ def wind():
     return 0.6 * out / np.abs(out).max()
 
 
+def roar():
+    """A deep roar from under the ground, as the city goes down in the tale of the White Eel (whiteeel/s10, three of
+    them, each louder): a rumble of low noise (through low-passes at 90 Hz and 260 Hz) that swells in under a second,
+    rolls unevenly and dies away, a low tone under it sinking from 46 to 30 Hz, and a crack of brighter noise at its
+    height; 5 s. Nothing of the city is seen falling: only this is heard.
+
+    Gives back the samples (a numpy array at RATE), peaking at 0.8; the same every time.
+    e.g. roar()"""
+    from scipy.signal import butter, sosfilt
+    seconds, rng = 5.0, np.random.default_rng(41)
+    n = int(seconds * RATE)
+    t = np.arange(n) / RATE
+    noise = rng.standard_normal(n)
+    deep = sosfilt(butter(4, 90, "low", fs=RATE, output="sos"), noise)
+    body = sosfilt(butter(2, 260, "low", fs=RATE, output="sos"), noise)
+    swell = np.clip(t / 0.8, 0, 1) ** 1.5 * np.exp(-np.clip(t - 1.0, 0, None) / 1.3)
+    roll = 0.7 + 0.3 * np.sin(2 * np.pi * t * 3.1) * np.sin(2 * np.pi * t * 0.9 + 0.4)
+    tone = np.sin(2 * np.pi * np.cumsum(46 - 16 * np.clip(t / seconds, 0, 1)) / RATE)
+    crack = sosfilt(butter(2, [300, 1400], "band", fs=RATE, output="sos"), noise) * np.exp(-((t - 0.95) / 0.12) ** 2)
+    out = (deep / np.abs(deep).max() + 0.45 * body / np.abs(body).max() + 0.5 * tone) * swell * roll + 0.35 * crack / np.abs(crack).max()
+    return 0.8 * out / np.abs(out).max()
+
+
 def mouse_squeak():
     """A mouse's squeaks: three short whistles, each rising then falling between 3.5 and 6.5 kHz, 50 to 80 ms.
 
@@ -239,8 +262,9 @@ SOUNDS = {
     "mouse-squeak": (mouse_squeak, "a mouse's three high squeaks, for the mice along a wall"),
     "wind": (wind, "wind high on a mountain at dawn, soft and low, in slow gusts, 20 s to lay end to end"),
     "plate-ting": (plate_ting, "the golden plate (kangsadan) struck once: a bright ring that shimmers and dies, 3 s"),
+    "roar": (roar, "a deep roar from under the ground, swelling, rolling and dying away, 5 s (the White Eel's three roars)"),
 }
-MADE = ("crickets", "mouse-squeak", "wind", "plate-ting")     # the ones made from numbers, not by howl.py
+MADE = ("crickets", "mouse-squeak", "wind", "plate-ting", "roar")     # the ones made from numbers, not by howl.py
 
 # Sounds the kit does not make but fetches: recordings whose makers gave them to everyone (public domain, or a
 # licence that lets the kit use them, named here with them), each from where it lives, cut if a part is wanted.

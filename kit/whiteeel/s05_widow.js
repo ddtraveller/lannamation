@@ -4,7 +4,7 @@
 // go by along the path, talking among themselves, and none of them looks her way (story.py: "watches neighbours pass
 // without a word").
 var W05_LONG = 35;
-var W05_SOUND = {calls: [[0, "birds", 0.16, 35], [12, "fire", 0.15, 12]]};
+var W05_SOUND = {calls: [[0.5, "dove", 0.14], [4.0, "hens", 0.14], [14.0, "magpie", 0.15], [27.0, "dog", 0.1]]};
 var W05_LINES = [[1.2, 6.6, "W016"], [13.0, 17.6, "W017"], [25.2, 32.2, "W018"]];
 var W05_CUTS = [12.0, 24.0];
 var W05_SWEEP = [1080, 846];                           // where she sweeps

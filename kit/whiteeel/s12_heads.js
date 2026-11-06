@@ -5,7 +5,7 @@
 // last one of them looks back across the water at the long groove where the eel was dragged, a stream now running down
 // into the water: the Mae Nam Lak, its name in gold.
 var W12_LONG = 50;
-var W12_SOUND = {calls: [[0, "dawn", 0.12, 50]]};
+var W12_SOUND = {calls: [[0, "wind", 0.1, 50], [5.0, "plover", 0.15], [30.0, "dove", 0.12]]};
 var W12_LINES = [[1.2, 7.6, "W043"], [9.0, 13.8, "W044"], [16.4, 22.2, "W045"], [24.0, 27.4, "W046"], [29.0, 35.8, "W047"], [39.6, 46.8, "W048"]];
 var W12_CUTS = [14.6, 38.4];
 var W12_SHORE = 860;                                   // the near shore's edge in the first shot

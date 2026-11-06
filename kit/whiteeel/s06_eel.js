@@ -5,7 +5,7 @@
 // caught (its killing is not shown), and a line of people hauling it on ropes toward the city, its body cutting a long
 // groove in the ground behind it (the groove that will be the Mae Nam Lak, scene 12).
 var W06_LONG = 45;
-var W06_SOUND = {calls: [[0, "river", 0.18, 22], [12, "crowd", 0.2, 33]]};
+var W06_SOUND = {calls: [[0, "wind", 0.1, 45], [3.0, "plover", 0.18], [11.0, "kingfisher", 0.18], [15.0, "egret", 0.14]]};
 var W06_LINES = [[1.4, 7.6, "W019"], [11.0, 17.0, "W020"], [25.0, 31.6, "W021"]];
 var W06_CUTS = [10.0, 22.0];
 var W06_BANK_Y = 790;                                  // where the people stand on the near bank

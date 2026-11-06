@@ -4,7 +4,7 @@
 // figure on its veranda looking to the north and to the south. The camera draws slowly back from her house to the
 // whole of the water. The water is the marsh of today's Nong Lom (scene 1's: sets.js welMarshWater()), as it was born.
 var W11_LONG = 40;
-var W11_SOUND = {calls: [[0, "dawn", 0.16, 40], [9, "plover", 0.18]]};
+var W11_SOUND = {calls: [[0, "wind", 0.1, 40], [3.0, "egret", 0.15], [9.0, "plover", 0.18], [20.0, "dove", 0.12]]};
 var W11_LINES = [[1.6, 7.4, "W040"], [10.4, 14.6, "W041"], [16.0, 21.4, "W042"]];
 var W11_HOUSE = [980, 760, 1.1];                       // her house in the water: x, the posts' foot (under the water), size
 var W11_WATERLINE = 712;                               // where the water stands on its posts

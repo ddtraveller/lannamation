@@ -5,7 +5,7 @@
 // then morning at the city: Yonok's wall and gate as the Chang Ngu film painted them (changngu/sets.js), the moat
 // before them, and the prince and his people on the road; the city's two names in gold as the voice says them.
 var W03_LONG = 40;
-var W03_SOUND = {calls: [[0, "crickets", 0.2, 19], [19.5, "birds", 0.2, 20]]};
+var W03_SOUND = {calls: [[0, "crickets", 0.2, 19], [21.0, "rooster-crow", 0.22], [26.0, "magpie", 0.18]]};
 var W03_LINES = [[1.4, 7.4, "W009"], [9.0, 17.0, "W010"], [22.4, 30.0, "W011"], [31.6, 37.4, "W012"]];
 var W03_CUTS = [19.5];
 var W03_RISE = [1560, 690];                            // where the naga comes up out of the river

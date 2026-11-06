@@ -5,7 +5,7 @@
 // whole city is eating, she tells him, he asks if she had some, and she says who would give her any; and he says it is
 // good she did not. His face is kind and calm and nothing marks him (story.py).
 var W08_LONG = 55;
-var W08_SOUND = {calls: [[0, "evening", 0.14, 10], [10, "night", 0.12, 45]]};
+var W08_SOUND = {calls: [[0, "crickets", 0.12, 55], [30.0, "tokay", 0.14]]};
 var W08_LINES = [[1.2, 7.6, "W025"], [10.2, 16.6, "W026"], [18.0, 22.4, "W027"], [23.6, 28.8, "W028"], [30.0, 32.6, "W029"],
                  [34.0, 42.2, "W030"], [44.0, 51.0, "W031"]];
 var W08_CUTS = [9.0];

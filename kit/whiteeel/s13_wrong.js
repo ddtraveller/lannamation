@@ -5,7 +5,7 @@
 // to him; and last, on the bank of the Mae Khong (the Chang Ngu film's river, cngRiver()), the posts of a new town going
 // up one by one, people carrying more: Wiang Prueksa, the town of talking together, its name in gold.
 var W13_LONG = 50;
-var W13_SOUND = {calls: [[0, "village", 0.16, 30], [30, "river", 0.16, 20]]};
+var W13_SOUND = {calls: [[0.5, "hens", 0.15], [8.0, "rooster-crow", 0.12], [31.0, "plover", 0.15], [40.0, "kingfisher", 0.15]]};
 var W13_LINES = [[1.2, 7.6, "W049"], [10.0, 15.4, "W050"], [19.6, 27.0, "W051"], [32.0, 42.6, "W052"]];
 var W13_CUTS = [16.0, 30.0];
 var W13_HER = [1500, CNG_GROUND - 10];                 // where the old woman stands, then sits at her tray (in the village panel)

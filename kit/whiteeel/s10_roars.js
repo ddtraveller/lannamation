@@ -6,7 +6,7 @@
 // (story.py). The roars are sounds (W10_SOUND, for sounds.py), each louder.
 var W10_LONG = 60;
 var W10_ROARS = [[3.0, 0.5], [21.0, 0.75], [35.0, 1.0]];   // [second, how strong]
-var W10_SOUND = {calls: [[0, "night", 0.1, 46], [3.0, "roar", 0.5], [21.0, "roar", 0.75], [35.0, "roar", 1.0], [46, "dawn", 0.14, 14]]};
+var W10_SOUND = {calls: [[0, "crickets", 0.1, 46], [3.0, "roar", 0.5], [21.0, "roar", 0.75], [35.0, "roar", 1.0], [50.0, "dove", 0.12]]};
 var W10_LINES = [[5.4, 11.0, "W035"], [12.0, 18.2, "W036"], [22.6, 30.4, "W037"], [36.4, 41.6, "W038"], [47.0, 52.6, "W039"]];
 var W10_CUTS = [20.0, 46.0];
 var W10_MAT = [760, CNG_FLOOR + 40];                   // where she lies

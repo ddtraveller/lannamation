@@ -5,7 +5,7 @@
 // under the water and is gone (never a tail or a head: story.py); and her door again, she looking out toward the
 // river, and going in.
 var W09_LONG = 40;
-var W09_SOUND = {calls: [[0, "night", 0.14, 40]]};
+var W09_SOUND = {calls: [[0, "crickets", 0.14, 40], [18.0, "frogs", 0.18, 15], [26.0, "toad", 0.12]]};
 var W09_LINES = [[1.2, 4.6, "W032"], [6.0, 13.4, "W033"], [14.8, 21.2, "W034"]];
 var W09_CUTS = [18.0, 33.0];
 

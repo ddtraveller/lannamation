@@ -5,7 +5,7 @@
 // bows, and walks away toward the reeds at the water, two of the prince's men after him; among the reeds he is gone,
 // and a long ripple runs out across the river (the only sign of the naga he is: the chronicle, story.py).
 var W02_LONG = 45;
-var W02_SOUND = {calls: [[0, "birds", 0.2, 45]]};
+var W02_SOUND = {calls: [[0, "wind", 0.1, 45], [6.0, "magpie", 0.2], [20.0, "plover", 0.18], [33.0, "magpie", 0.18]]};
 var W02_LINES = [[1.0, 8.6, "W004"], [9.6, 14.6, "W005"], [16.4, 22.6, "W006"], [24.0, 30.6, "W007"], [33.0, 42.4, "W008"]];
 
 var W02_GROUND = 850;                                  // where the prince stands
