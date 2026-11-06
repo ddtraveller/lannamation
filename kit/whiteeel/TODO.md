@@ -17,7 +17,7 @@ as Chang Ngu's King Phang, his descendant: the princes of the murals are bare-ch
 | # | Scene | s | State | Plan |
 |---|---|---|---|---|
 | 1 | Nong Lom today | 30 | built (75304a5) | dawn on the marsh, buffalo wading, the titles |
-| 2 | The Brahman | 45 | next | midday plain by the Kok; the prince and his people walk in; the Brahman meets him, points over the land, speaks, the prince makes a wai; he walks into the reeds and is gone, a long ripple on the river |
+| 2 | The Brahman | 45 | built | midday plain by the Kok; the prince and his people walk in; the Brahman meets him, points over the land, speaks, the prince makes a wai; he walks into the reeds and is gone, a long ripple on the river |
 | 3 | The naga's city | 40 | | night: the Brahman by the river becomes the naga and goes round the plain, water filling behind him; cut to morning: the walls and gate stand (Chang Ngu's gate), people at work |
 | 4 | Forty-five kings | 35 | | the city through the years: the court with a king crowned, and another; the same gate; last, the old King Mahachaichana on his throne |
 | 5 | The old widow | 35 | | the edge of the city: her house on stilts; she sweeps under it, cooks a little rice for one; neighbours pass |
@@ -31,9 +31,13 @@ as Chang Ngu's King Phang, his descendant: the princes of the murals are bare-ch
 | 13 | We were wrong | 50 | | on the shore they bow to her and lead her to a house, food first; a circle, Khun Lang chosen; posts of a new town by the Mae Khong |
 | 14 | Who was he? | 55 | | the marsh today at sunset: buffalo swimming home, fires, the island with its temple and shrine; a pale shimmer under the water, or a cloud; the moral; the goodbye |
 
+| 15 | The credits | 120 | built | the marsh by night, the roll (credits.js), the pandas' thanks |
+
+The whole film: `film.html` (made by `film_page.py`), 740 s, 58 lines, all fifteen drawing (2026-11-06).
+
 ## After the scenes
 
-- `film.html` with all fourteen, `feelings.py` for the music, the sounds (three roars, frogs, buffalo).
+- `feelings.py` for the music, the sounds (three roars, frogs, buffalo).
 - Pan's voice on the Spark (the skill lanna-tale-film, step 3), then each scene's lines retimed to the takes.
   Pan's ear on story.py's ASK words is still owed; the takes use the words as they are.
 - Render (laptop from the first scene, the Spark from the last), mix, join after the hero film and the studio card.
