@@ -34,9 +34,16 @@ as Chang Ngu's King Phang, his descendant: the princes of the murals are bare-ch
 
 The whole film: `film.html` (made by `film_page.py`), 740 s, 58 lines, all fifteen drawing (2026-11-06).
 
-## After the scenes
+## Done (2026-11-06)
 
-- `feelings.py` for the music, the sounds (three roars, frogs, buffalo).
-- Pan's voice on the Spark (the skill lanna-tale-film, step 3), then each scene's lines retimed to the takes.
-  Pan's ear on story.py's ASK words is still owed; the takes use the words as they are.
-- Render (laptop from the first scene, the Spark from the last), mix, join after the hero film and the studio card.
+- Pan's voice: 174 takes, one kept a line (all 58 hers, heard at 0.89 or more of their Kam Mueang words); every voiced
+  line checked to be the script's Kam Mueang, none Central Thai. Lines retimed to the takes (7f6d0d2).
+- Music (feelings.py) and 49 sounds, a new roar in sounds.py; the mix at -14 LUFS.
+- Rendered at 7f6d0d2 (render worktree C:/jslab/eel/render, its film_scenes/ clips kept for re-renders), joined after
+  the hero film (v31) and the studio card: lanna_tales_whiteeel_v1.mp4, 875.3 s, -14.1 LUFS, peak -1.7 dBTP. LOCAL only.
+
+## Still open
+
+- Pan's ear on story.py's ASK words (13); a line she changes is spoken and rendered again.
+- A reader of the Lanna script for the tale's title. The credits' headings are in Thai, as the first films'.
+- The owner's look; S3, YouTube and the site on his word only; watdonchan sync (with the bare-chest kit fix).
