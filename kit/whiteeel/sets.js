@@ -196,6 +196,10 @@ var WEL_PRINCE = {sarong: ["#24335e", BROCADE], smile: 0.6, size: 0.82};
 var WEL_FOLK = [["soldier", {size: 0.78}], ["maiden", {size: 0.74}], ["soldier", {turban: "#2a4a6a", size: 0.78}], ["farmer", {size: 0.78}],
                 ["weaver", {size: 0.72}], ["villager", {turban: "#c9962a", size: 0.78}], ["boy", {size: 0.5}]];
 
+// King Mahachaichana, the last of Yonok's forty-five kings, seventy (the chronicle): white hair and beard, the lines of
+// age, a little bent (scenes 4, 7). Kind "noble".
+var WEL_OLD_KING = {sarong: ["#8a2a3a", BROCADE], hair: "#ece7dd", beard: "#f4f0e6", age: 1, bend: 0.1, smile: 0.4};
+
 // A mouth that talks while on is true: t, the scene's second. Gives back person()'s mouth, or undefined.
 // e.g. person(x, y, welPerson("elder", WEL_BRAHMAN, {mouth: welTalk(t, t > 16 && t < 22)}));
 function welTalk(t, on) { return on ? {open: 0.06 + 0.24 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined; }

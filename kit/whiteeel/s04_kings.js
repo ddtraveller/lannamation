@@ -19,8 +19,6 @@ var W04_KINGS = [
   {sarong: ["#8a2a3a", BROCADE], age: 0.5, beard: "#2a2220"},
   {sarong: ["#24335e", BROCADE], age: 0.3}
 ];
-// King Mahachaichana, the last of them, seventy (the chronicle): white hair and beard, the lines of age, a little bent.
-var W04_OLD_KING = {sarong: ["#8a2a3a", BROCADE], hair: "#ece7dd", beard: "#f4f0e6", age: 1, bend: 0.1, smile: 0.4};
 var W04_SEASONS = ["rgba(255, 200, 220, 0.12)", "rgba(80, 110, 150, 0.2)", "rgba(255, 190, 90, 0.16)", "rgba(200, 230, 255, 0.12)"];
 
 // The lane by day: people coming and going both ways, petals on the air.
@@ -85,7 +83,7 @@ function w04Reigns(t) {
 function w04OldKing(t) {
   var p = CNG_PALACE, dais = hoKhamDais(p[1], p[2]);
   w04Court(t, function () {
-    person(p[0], dais, welPerson("noble", Object.assign({size: 0.8}, W04_OLD_KING), {id: "mahachaichana", floor: "cross", face: -1,
+    person(p[0], dais, welPerson("noble", Object.assign({size: 0.8}, WEL_OLD_KING), {id: "mahachaichana", floor: "cross", face: -1,
                                                                                      at: [p[0] - 600, 900], blink: Math.sin(t * 1.3) > 0.97 ? 1 : 0}));
   }, "rgba(255, 180, 90, 0.14)");
   sceneryAir(t, {butterfly: null, petals: null, light: [0.5, 15]});
