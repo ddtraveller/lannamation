@@ -188,6 +188,18 @@ var WEL_HEADS = [["villager", {turban: "#8a6a58", sabai: ["#9a8a66", "#6a5a44", 
                  ["elder", {turban: "#2a4a6a", hair: "#ece7dd", beard: "#f4f0e6", sabai: ["#a8b8c8", "#2a4a6a", "check"], smile: 0.4, size: 0.76}],
                  ["farmer", {turban: "#6a3a2a", age: 0.6, hair: "#a9a39a", smile: 0.4, size: 0.8}]];
 
+// Prince Singhanavati (scenes 2, 3): the kit's noble, bare-chested with the gold of the murals' princes, as the Chang
+// Ngu film's King Phang, his descendant, in a blue brocade (pick A; the owner, 2026-11-06: "Do what you think is most
+// historically accurate"). Kind "noble".
+var WEL_PRINCE = {sarong: ["#24335e", BROCADE], smile: 0.6, size: 0.82};
+// The people who walked with him from far away: two soldiers with spears, men, women and a boy. Each [kind, look].
+var WEL_FOLK = [["soldier", {size: 0.78}], ["maiden", {size: 0.74}], ["soldier", {turban: "#2a4a6a", size: 0.78}], ["farmer", {size: 0.78}],
+                ["weaver", {size: 0.72}], ["villager", {turban: "#c9962a", size: 0.78}], ["boy", {size: 0.5}]];
+
+// A mouth that talks while on is true: t, the scene's second. Gives back person()'s mouth, or undefined.
+// e.g. person(x, y, welPerson("elder", WEL_BRAHMAN, {mouth: welTalk(t, t > 16 && t < 22)}));
+function welTalk(t, on) { return on ? {open: 0.06 + 0.24 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined; }
+
 // A look of the film's cast: the kit's cast (kind), the film's look (own), the scene's keys (extra). A feeling given by
 // the scene takes the place of the cast's own smile and wonder, as changngu/sets.js's cngPerson. Gives back a look for
 // person(); changes nothing. e.g. person(900, 880, welPerson("grandmother", WEL_WIDOW, {id: "widow", face: -1}));
@@ -198,6 +210,55 @@ function welPerson(kind, own, extra) {
     if (extra.wonder === undefined) { delete look.wonder; }
   }
   return look;
+}
+
+// ---------- the Kok river and its plain ----------
+// The Kok as it runs past the plain where the city was founded (scenes 2, 3, 6, 9): slow, wide, greener than the
+// Mekong, between low banks; the film's hills and a bushy far bank (welFar()) behind it; on the near side a wide plain
+// of grass (scenery.js sceneryMeadow()). WEL_KOK: the far bank's line; WEL_KOK_BANK: the near bank's, at its middle.
+var WEL_KOK = 600, WEL_KOK_BANK = 712;
+var WEL_KOK_WATER = null, WEL_PLAIN = null;
+
+// Gives back the river as scenery.js takes a water (sceneryWaterDepths(), sceneryWaterSurface()); made once.
+// e.g. var kok = welKokWater(); sceneryWaterDepths(kok);
+function welKokWater() {
+  if (WEL_KOK_WATER) { return WEL_KOK_WATER; }
+  var top = [], near = [];
+  for (var k = 0; k <= 10; k++) { top.push([-300 + k * (WIDE + 600) / 10, WEL_KOK + (k % 2 ? 1.5 : 0)]); }
+  for (k = 10; k >= 0; k--) { near.push([-300 + k * (WIDE + 600) / 10, WEL_KOK_BANK + 10 * Math.sin(k * 1.7) + 6 * dice(k + 40)]); }
+  WEL_KOK_WATER = {edge: [[-300, WEL_KOK_BANK]].concat(top, near), top: top, line: WEL_KOK, left: 0, right: WIDE,
+                   foot: WEL_KOK_BANK + 20, depths: ["#86a294", "#4e6e60"], mirror: [[WEL_KOK, 1], [640, 0.8], [690, 0.55]],
+                   tint: "84, 112, 96", rings: [[520, 660, 2.2], [1240, 690, 7.5], [300, 680, 15.0], [1500, 650, 26.0]], mist: null};
+  return WEL_KOK_WATER;
+}
+
+// The plain on the near side, painted once, WIDE by 1080: grass from the near bank to the foot of the picture, with
+// two trees in flower at its sides. Drawn before the water (the water's near edge lies over its top).
+function welPlain() {
+  if (WEL_PLAIN) { return WEL_PLAIN; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE * PIX;
+  paper.height = 1080 * PIX;
+  var b = paper.getContext("2d");
+  b.scale(PIX, PIX);
+  sceneryMeadow(b, -40, WIDE + 40, WEL_KOK_BANK - 30, 1080, {seed: 7});
+  WEL_PLAIN = paper;
+  return paper;
+}
+// The plain's trees, drawn after the water: a flame of the forest at the left and a golden shower at the right, small
+// on the near bank. Painted once. e.g. pen.drawImage(welPlainTrees(), 0, 0, WIDE, 1080);
+var WEL_PLAIN_TREES = null;
+function welPlainTrees() {
+  if (WEL_PLAIN_TREES) { return WEL_PLAIN_TREES; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE * PIX;
+  paper.height = 1080 * PIX;
+  var b = paper.getContext("2d");
+  b.scale(PIX, PIX);
+  thkTreeOn(b, 140, WEL_KOK_BANK + 40, 0.34, 51, [["thongkwao", 30, 14]]);
+  thkTreeOn(b, 1810, WEL_KOK_BANK + 30, 0.3, 57, [["ratchaphruek", 26, 12]]);
+  WEL_PLAIN_TREES = paper;
+  return paper;
 }
 
 // ---------- the narration ----------
