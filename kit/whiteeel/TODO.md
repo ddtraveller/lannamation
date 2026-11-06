@@ -18,19 +18,18 @@ as Chang Ngu's King Phang, his descendant: the princes of the murals are bare-ch
 |---|---|---|---|---|
 | 1 | Nong Lom today | 30 | built (75304a5) | dawn on the marsh, buffalo wading, the titles |
 | 2 | The Brahman | 45 | built | midday plain by the Kok; the prince and his people walk in; the Brahman meets him, points over the land, speaks, the prince makes a wai; he walks into the reeds and is gone, a long ripple on the river |
-| 3 | The naga's city | 40 | | night: the Brahman by the river becomes the naga and goes round the plain, water filling behind him; cut to morning: the walls and gate stand (Chang Ngu's gate), people at work |
-| 4 | Forty-five kings | 35 | | the city through the years: the court with a king crowned, and another; the same gate; last, the old King Mahachaichana on his throne |
-| 5 | The old widow | 35 | | the edge of the city: her house on stilts; she sweeps under it, cooks a little rice for one; neighbours pass |
-| 6 | The white eel | 45 | | the Kok on a bright day: people fishing, the pale shape; the eel rises; nets and ropes; dragged up the bank, a groove in the mud (no killing shown) |
-| 7 | The feast | 40 | | the palace yard: the king points, the eel shared on banana leaves; dusk: smoke from every kitchen, lamps along the lane, her house dark |
-| 8 | The young man | 55 | | evening inside her house by one lamp: he climbs her stairs; rice and water set out, untouched; they talk |
-| 9 | Down to the river | 40 | | night: he speaks at the top of her stairs and goes down into the dark; moonlit Kok: a ripple and a pale gleam once; fireflies |
-| 10 | Three roars | 60 | | inside at night: three roars, each louder; the lamp swings; she sits up, goes to the door, goes back; before dawn, the top of her stairs, grey mist |
-| 11 | Morning water | 40 | | sunrise: mist lifting off flat water to both edges; her house alone on its stilts in the water, her small figure on the veranda |
-| 12 | The village heads | 50 | | late morning: the heads come in a line to the water's edge; pole a raft to her house; she comes down; the stream where the groove was |
-| 13 | We were wrong | 50 | | on the shore they bow to her and lead her to a house, food first; a circle, Khun Lang chosen; posts of a new town by the Mae Khong |
-| 14 | Who was he? | 55 | | the marsh today at sunset: buffalo swimming home, fires, the island with its temple and shrine; a pale shimmer under the water, or a cloud; the moral; the goodbye |
-
+| 3 | The naga's city | 40 | built | night: the Brahman by the river becomes the naga and goes round the plain, water filling behind him; cut to morning: the walls and gate stand (Chang Ngu's gate), people at work |
+| 4 | Forty-five kings | 35 | built | the city through the years: the court with a king crowned, and another; the same gate; last, the old King Mahachaichana on his throne |
+| 5 | The old widow | 35 | built | the edge of the city: her house on stilts; she sweeps under it, cooks a little rice for one; neighbours pass |
+| 6 | The white eel | 45 | built | the Kok on a bright day: people fishing, the pale shape; the eel rises; nets and ropes; dragged up the bank, a groove in the mud (no killing shown) |
+| 7 | The feast | 40 | built | the palace yard: the king points, the eel shared on banana leaves; dusk: smoke from every kitchen, lamps along the lane, her house dark |
+| 8 | The young man | 55 | built | evening inside her house by one lamp: he climbs her stairs; rice and water set out, untouched; they talk |
+| 9 | Down to the river | 40 | built | night: he speaks at the top of her stairs and goes down into the dark; moonlit Kok: a ripple and a pale gleam once; fireflies |
+| 10 | Three roars | 60 | built | inside at night: three roars, each louder; the lamp swings; she sits up, goes to the door, goes back; before dawn, the top of her stairs, grey mist |
+| 11 | Morning water | 40 | built | sunrise: mist lifting off flat water to both edges; her house alone on its stilts in the water, her small figure on the veranda |
+| 12 | The village heads | 50 | built | late morning: the heads come in a line to the water's edge; pole a raft to her house; she comes down; the stream where the groove was |
+| 13 | We were wrong | 50 | built | on the shore they bow to her and lead her to a house, food first; a circle, Khun Lang chosen; posts of a new town by the Mae Khong |
+| 14 | Who was he? | 55 | built | the marsh today at sunset: buffalo swimming home, fires, the island with its temple and shrine; a pale shimmer under the water, or a cloud; the moral; the goodbye |
 | 15 | The credits | 120 | built | the marsh by night, the roll (credits.js), the pandas' thanks |
 
 The whole film: `film.html` (made by `film_page.py`), 740 s, 58 lines, all fifteen drawing (2026-11-06).
