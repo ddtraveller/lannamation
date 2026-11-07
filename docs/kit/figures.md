@@ -1066,3 +1066,27 @@ a scene of ten is about a second a frame to render. The old figure takes 3 to 17
 
 **Not yet**: turn, twist, the hop and a lean (`bend`) are not read: always three-quarter (but a woman's face, by `front`). A seated man stands (as before), and
 a seated woman returns only `stand` among her joints. The speed above.
+
+## The kit's young women are painted (2026-11-07)
+
+The owner, of the White Eel's first film: "At 2:53 there are some long neck women... remove those from the kit and
+replace them in the scene ... There are new women models, use those and the other models from the other movies", and
+then, asked how far: the whole kit, the widow of that film kept as she was. So no young woman is drawn by `person()`'s
+own figure any more. In `people.js`:
+
+- Each of the cast's young women and girls carries painted settings (`PEOPLE_KIND_PAINTED`), her own clothes and colours
+  kept: `lady` (the court lady's), `celestial`, `dancer` (theirs, with the dancer's pose), `maiden`, `weaver`, `luagirl`
+  (the weaver's), `luawife` (the grandmother's face, her hair low), `buakham` (the maiden's), `sinuan` (the festival
+  girl's, her hair in a wong), `girl` (the girl with side tufts), `dokkham` (the girl with a plait). Her hands are empty
+  unless she dances: what one of the ten holds, and the pose for it, are hers, not the kind's. This takes the place of
+  "must draw as they did" above.
+- A look of `person()`'s own that would draw a young woman (a lady's face, so `lady` or her hair in a knot, and `age`
+  under 0.5) with no `woman`, `man` or `child` gets settings mixed for her by `castMix()`'s generator (`peopleYoung()`),
+  the same for the same `id`, or with none for the same clothes: her face, hair, jewels and blouse its own.
+- The old (`age` 0.5 and more: `grandmother`, `devotee`, a look with `age`) keep `person()`'s own drawing, which shares
+  its face, neck and hands with the young lady's: that code stays for them.
+
+Every page that draws a young woman loads `people.js` last of the kit's modules, after `weaving.js` (and `sabai.js`,
+`sabai_finish.js` where the cloth is worn). In a page without it `person()` still draws her the old way and warns ("a
+young woman is painted by people.js since 2026-11-07 ..."), so the kit check fails it. Not carried over yet: the Lua
+women's glass-bead strands and wool tassels (`beads`, `earrings`, `wraps`), which the painted figure does not draw.

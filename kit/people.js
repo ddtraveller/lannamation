@@ -4206,7 +4206,39 @@ Object.keys(PEOPLE_CAST).forEach(function (name) {
   CAST[name] = who[0] === "woman" ? castWoman(who[1]) : who[0] === "man" ? castMan(who[1]) : castChild(who[1]);
 });
 
-// A look's painted settings (a name of the twenty's, or the settings themselves), or null for one of person()'s own.
+// The kit's own young women and girls are painted too (the owner, 2026-11-07, of the old drawing's long-necked women:
+// "remove those from the kit", and the whole kit, not one film): each of the cast's women and girls takes the settings
+// of one of the ten or the four children, her own clothes and colours kept, her hands empty unless she dances (what the
+// mural woman holds and the pose for it are hers, not the kind's). The old (age 0.5 and more: grandmother, devotee)
+// keep person()'s own drawing. Each: [kind, a name of MURAL_WOMEN or MURAL_CHILDREN, true to keep her pose].
+var PEOPLE_KIND_PAINTED = {lady: ["woman", "court"], celestial: ["woman", "celestial", true], dancer: ["woman", "dancer", true],
+  maiden: ["woman", "maiden"], weaver: ["woman", "weaver"], luagirl: ["woman", "weaver"], luawife: ["woman", "grandmother"],
+  buakham: ["woman", "maiden"], sinuan: ["woman", "festival"], girl: ["child", "tufts"], dokkham: ["child", "plait"]};
+Object.keys(PEOPLE_KIND_PAINTED).forEach(function (name) {
+  var k = PEOPLE_KIND_PAINTED[name], known = k[0] === "woman" ? MURAL_WOMEN : MURAL_CHILDREN;
+  CAST[name] = Object.assign({}, CAST[name]);
+  CAST[name][k[0]] = k[2] ? k[1] : Object.assign({}, known[k[1]][k[0]], {holds: undefined, pose: undefined});
+});
+
+// A look of person()'s own that draws a young woman (a lady's face, so look.lady or her hair in a knot, and under 0.5
+// of age), with no woman, man or child of its own: painted settings mixed for her (castMix()'s), the same for the same
+// id (or, with none, the same clothes), her hands empty. Gives back the settings, or null when the look is not one.
+// e.g. peopleYoung({bun: true, shirt: "#f4efe2", id: "seller"}).face.hairdo
+var PEOPLE_YOUNG = {};
+function peopleYoung(look) {
+  var lady = look.lady !== undefined ? !!look.lady : !!look.bun;
+  if (!lady || look.age >= 0.5) { return null; }
+  var key = look.id !== undefined ? "id " + look.id : JSON.stringify([look.shirt, look.sin, look.sarong, look.skin, look.hair, look.size]);
+  if (!PEOPLE_YOUNG[key]) {
+    var seed = 0;
+    for (var n = 0; n < key.length; n++) { seed = (seed * 31 + key.charCodeAt(n)) >>> 0; }
+    PEOPLE_YOUNG[key] = Object.assign({}, castMix(seed).woman, {holds: undefined, pose: undefined, hands: "normal", nails: false});
+  }
+  return PEOPLE_YOUNG[key];
+}
+
+// A look's painted settings (a name of the twenty's, or the settings themselves; a young woman's of person()'s own:
+// peopleYoung()), or null for one of person()'s own.
 // e.g. peopleSettings(cast("princess")).neck;   // "sangwan"
 function peopleSettings(look) {
   if (look.woman) {
@@ -4215,7 +4247,7 @@ function peopleSettings(look) {
     checkName("A painted woman", look.woman, MURAL_WOMEN);
     return null;
   }
-  return look.man !== undefined || look.child !== undefined ? mnSettings(look) : null;
+  return look.man !== undefined || look.child !== undefined ? mnSettings(look) : peopleYoung(look);
 }
 
 // person()'s joints for this frame on a sheet nobody sees, for the arms asked of it. Returns the joints; pen as it was.
