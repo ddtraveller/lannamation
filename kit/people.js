@@ -4267,6 +4267,19 @@ function peopleRig(x, y, look, way, lady) {
   finally { pen.setTransform(1, 0, 0, 1, 0, 0); pen = was; }
 }
 
+// person()'s joints for a seat on a sheet nobody sees: the same seat (floor), wai, facing, lean and reaches as the look's,
+// on a plain figure. Returns the joints; pen as it was. e.g. peopleSeat(400, 960, cast("maiden", {floor: true, wai: true}), true).wristA
+function peopleSeat(x, y, look, lady) {
+  if (!PEOPLE_SINK) { var sheet = document.createElement("canvas"); sheet.width = 1; sheet.height = 1; PEOPLE_SINK = sheet.getContext("2d"); }
+  var rig = {size: look.size || 1, lady: lady, bun: lady, plain: true, sabai: false, shirt: "#888888", legs: "#888888", id: "seat/" + (look.id || "n")};
+  ["floor", "wai", "face", "bend", "reachA", "reachB", "handA", "handB"].forEach(function (k) { if (look[k] !== undefined) { rig[k] = look[k]; } });
+  var was = pen, frame = pen.getTransform();
+  pen = PEOPLE_SINK;
+  pen.setTransform(frame);
+  try { return PEOPLE_PERSON(x, y, rig); }
+  finally { pen.setTransform(1, 0, 0, 1, 0, 0); pen = was; }
+}
+
 // The figure's measure of a child: the point of the upper body (the units of the shear's frame) where a grown figure has it,
 // to where it is drawn (forward true), or back. c: the settings' child, a negative number, or 0 for anyone grown.
 function peopleChild(p, c, forward) {
@@ -4299,7 +4312,10 @@ function peoplePainted(x, y, look, wm) {
   if (look.floor && lady) {                          // a seat is the figure's own, with its reaches
     pen.save();
     try { peopleFormed(form, x, function () { muralPerson(x, y, plain, {head: 59 * size * form.tall}); }); } finally { pen.restore(); }
-    return {size: size * 0.82, face: way, stand: spotOf(x, y)};
+    // her joints are the rig's in the same seat (wrists, elbows, chin...), so a page can put a thing in her hands, as
+    // offerings.html puts the cone of flowers between them in her wai (2026-11-07: a seat gave back none, and it broke);
+    // the rig at her height (PEOPLE_FORM's tall), its width its own
+    return Object.assign({}, peopleSeat(x, y, Object.assign({}, look, {size: size * form.tall}), lady), {size: size * 0.82, face: way, stand: spotOf(x, y)});
   }
   plain.reachA = plain.reachB = plain.handA = plain.handB = undefined;
   var settings = Object.assign({}, wm), pose = Object.assign({}, wm.pose || {});
