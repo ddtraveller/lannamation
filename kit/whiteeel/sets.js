@@ -301,6 +301,28 @@ function welPlainTrees() {
   return paper;
 }
 
+// The same two trees as sprites, each on its own sheet, for drawByZ: by its foot among the people, so someone nearer
+// than its foot walks in front of it (the owner, 2026-11-07, of scene 6: "men are walking behind a tree but they should
+// be in front of it"). e.g. sprites.push.apply(sprites, welPlainTreeSprites());
+var WEL_PLAIN_TREE_AT = [[140, 40, 0.34, 51, [["thongkwao", 30, 14]]], [1810, 30, 0.3, 57, [["ratchaphruek", 26, 12]]]];   // x, foot below the bank, size, seed, flowers
+var WEL_PLAIN_TREE_SHEETS = [];
+function welPlainTreeSprites() {
+  return WEL_PLAIN_TREE_AT.map(function (a, k) {
+    if (!WEL_PLAIN_TREE_SHEETS[k]) {
+      var paper = document.createElement("canvas");
+      paper.width = WIDE * PIX;
+      paper.height = 1080 * PIX;
+      var b = paper.getContext("2d");
+      b.scale(PIX, PIX);
+      thkTreeOn(b, a[0], WEL_KOK_BANK + a[1], a[2], a[3], a[4]);
+      WEL_PLAIN_TREE_SHEETS[k] = paper;
+    }
+    return {name: "tree " + k, kind: "person", x: a[0], y: WEL_KOK_BANK + a[1], draw: function () {
+      pen.drawImage(WEL_PLAIN_TREE_SHEETS[k], 0, 0, WIDE, 1080);
+    }};
+  });
+}
+
 // ---------- the widow's house ----------
 // Her house at the edge of the city (scenes 5, 7 to 13): the kit's northern house on posts (oldcartoon.js house():
 // its veranda, its ladder at the right, its crossed roof ends), old: its wood greyed by the weather, a patch on its roof.
@@ -489,4 +511,72 @@ function welFadeIn(t, seconds) {
     pen.fillStyle = "rgba(0, 0, 0, " + (1 - t / seconds).toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);
   }
+}
+
+// ---------- the life of the place: birds, dragonflies, fish ----------
+// The owner, 2026-11-07, of the film: "Go through the scenes and add dragonflies and birds as appropriate", then "Add
+// fish as well". By day over the plain and the water: far flocks crossing the sky, egrets flying low over the marsh, a
+// kingfisher hanging over the river and dropping on a fish, dragonflies hunting over the grass and the water's edge,
+// fish under the water's face; at dusk the flocks and the egrets go home; by night none of them (the fireflies are out).
+// Each takes the scene's second t and a list, so a scene says where they are and nothing else.
+
+// Far birds crossing the sky in a loose line (the kit's birds(): six in ink, the first leading): each flock
+// [x at 0 s, y, pixels a second]. Drawn after the sky and the far hills, before the near things.
+// e.g. welFlocks(t, [[-300, 210, 45], [2100, 160, -30]]);
+function welFlocks(t, flocks) {
+  flocks.forEach(function (f, n) {
+    var x = f[0] + f[2] * t;
+    if (x < -400 || x > WIDE + 400) { return; }
+    pen.save();
+    if (f[2] < 0) { pen.translate(x, 0); pen.scale(-1, 1); pen.translate(-x, 0); }   // flying left, the leader on the left
+    birds(t + n * 3.1, x, f[1]);
+    pen.restore();
+  });
+}
+
+// Cattle egrets flying low and slow, white: each [x at 0 s, y, pixels a second, size, seed]. They bob as they beat.
+// e.g. welEgretsFlying(t, [[-120, 420, 70, 0.55, 1]]);
+function welEgretsFlying(t, list) {
+  list.forEach(function (e) {
+    var x = e[0] + e[2] * t;
+    if (x < -200 || x > WIDE + 200) { return; }
+    egret(x, e[1] + 6 * Math.sin(t * 1.4 + e[4]), t, {fly: true, face: e[2] < 0 ? -1 : 1, size: e[3], seed: e[4]});
+  });
+}
+
+// A kingfisher over the river: it hangs in the air at (x, y) on fast wings, and every so often drops straight down
+// to the water and is back with a fish, then hangs again. look: {size, face, seed, every (seconds between dives, 9),
+// water (the y of the water's face under it)}. e.g. welKingfisher(t, 1500, 520, {water: 660, face: -1});
+function welKingfisher(t, x, y, look) {
+  var every = look.every || 9, at = (t + (look.seed || 0) * 2.3) % every, size = look.size || 0.55, face = look.face || 1;
+  var drop = look.water - y;
+  if (at < every - 2.2) { kingfisher(x, y, t, {hover: true, size: size, face: face}); return; }
+  var u = (at - (every - 2.2)) / 2.2;                // down in 0.5 of it, under for 0.15, up in the rest with the fish
+  if (u < 0.35) { kingfisher(x, y + drop * Math.pow(u / 0.35, 1.6), t, {dive: 1, size: size, face: face}); return; }
+  if (u < 0.5) { ripples(pen, [[x, look.water, t - (u - 0.35) * 2.2]], t); return; }
+  ripples(pen, [[x, look.water, t - (u - 0.35) * 2.2]], t);
+  kingfisher(x, look.water - drop * (u - 0.5) / 0.5, t, {fly: true, fish: true, size: size, face: face});
+}
+
+// Dragonflies hunting: each [kind of DRAGONFLIES, box [x0, y0, x1, y1] it darts about in, seed, size].
+// e.g. welDragonflies(t, [["scarlet", [200, 760, 700, 900], 1, 1.2]]);
+function welDragonflies(t, list) {
+  list.forEach(function (d) {
+    var at = dragonflyDart(t, d[1], {seed: d[2]});
+    dragonfly(d[0], at.x, at.y, t, {turn: at.turn, size: d[3] || 1.2, seed: d[2]});
+  });
+}
+
+// Fish under the water's face, swimming slowly across and turning back at the ends of their reach: each
+// [kind of NATIVE_FISH, x, y, reach (pixels to each side), size, seed]. Draw them after sceneryWaterDepths() and
+// before sceneryWaterSurface(), so the face lies over them. e.g. welFish(t, [["barb", 600, 760, 220, 0.7, 1]]);
+function welFish(t, list) {
+  list.forEach(function (f) {
+    var u = t * 0.07 + f[5] * 0.37, phase = u - Math.floor(u), out = phase < 0.5;   // across one way, then back
+    var s = out ? phase * 2 : (1 - phase) * 2, e = s * s * (3 - 2 * s);
+    pen.save();
+    pen.globalAlpha *= 0.75;
+    nativeFish(pen, f[1] + f[3] * (2 * e - 1), f[2] + 5 * Math.sin(t * 0.8 + f[5]), f[4], out ? 1 : -1, f[0], t);
+    pen.restore();
+  });
 }

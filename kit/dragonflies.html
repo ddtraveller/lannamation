@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>dragonflies - four dragonflies of the north</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script src="oldcartoon.js"></script>
+<script src="butterflies.js"></script>
+<script>
+// The "dragonflies" sheet (butterflies.js, dragonfly()), in two parts of six seconds. First the four, large: above,
+// flying, their wings a shimmer; below, the same at rest, wings flat out; each with the name dragonfly() takes. Then
+// at their own sizes over a pond: each hangs in the air and darts to another spot (dragonflyDart()), and one rests on
+// a reed.
+var DURATION = 12;
+
+var BEAT = 0.5;
+
+function caption(text, x, y) {
+  pen.fillStyle = "#5a4630";
+  pen.textAlign = "center";
+  pen.font = "18px Georgia, 'Times New Roman', serif";
+  pen.fillText(text, x, y);
+}
+
+function sheetNames(t) {
+  pen.fillStyle = "#f3ead8";
+  pen.fillRect(0, 0, WIDE, 1080);
+  Object.keys(DRAGONFLIES).forEach(function (kind, n) {
+    var x = 210 + n * 340;
+    dragonfly(kind, x, 300, t, {size: 6, seed: n});
+    dragonfly(kind, x, 690, t, {size: 6, rest: true});
+    caption(kind, x, 900);
+  });
+  caption("flying (above) and resting (below)", 720, 1040);
+}
+
+function sheetPond(t) {
+  var sky = pen.createLinearGradient(0, 0, 0, 560);
+  sky.addColorStop(0, "#a6d4c8");
+  sky.addColorStop(1, "#eef0dc");
+  pen.fillStyle = sky;
+  pen.fillRect(0, 0, WIDE, 560);
+  var pond = pen.createLinearGradient(0, 560, 0, 1080);
+  pond.addColorStop(0, "#6f9a94");
+  pond.addColorStop(1, "#3f6a66");
+  pen.fillStyle = pond;
+  pen.fillRect(0, 560, WIDE, 520);
+  pen.strokeStyle = "#5a7a3a";                       // a reed, for the one at rest
+  pen.lineWidth = 3;
+  pen.beginPath(); pen.moveTo(1260, 1080); pen.quadraticCurveTo(1270, 820, 1300, 640); pen.stroke();
+  dragonfly("grasshawk", 1300, 646, t, {rest: true, turn: 1.4});
+  Object.keys(DRAGONFLIES).concat(["scarlet", "glider"]).forEach(function (kind, n) {
+    var d = dragonflyDart(t, [120 + n * 240, 520, 520 + n * 240, 820], {seed: n + 1});
+    dragonfly(kind, d.x, d.y, t, {turn: d.turn, seed: n});
+  });
+  caption("at their own sizes, over a pond: each hangs, then darts (dragonflyDart())", 720, 1070);
+}
+
+function draw(t) {
+  settled(t, function (at) {
+    clock = at;
+    if (at < 6) { sheetNames(at); } else { sheetPond(at); }
+  });
+  screen.fillStyle = "#111";
+  screen.fillRect(0, 0, 1920, 1080);
+  screen.drawImage(FILM, 240, 0);
+}
+
+var rendering = false;
+
+function play(now) {
+  if (!rendering) { draw((now / 1000) % DURATION); }
+  requestAnimationFrame(play);
+}
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

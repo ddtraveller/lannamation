@@ -85,9 +85,9 @@ function welSceneWho(t) {
     }
   });
   pen.drawImage(w14Island(), W14_ISLAND[0] - 350, W14_ISLAND[1] - 330, 700, 360);   // the island over the water
+  natGlitter(t, W14_SUN[0], WEL_WATER, W14_SHORE, 0.8, "255, 190, 130");   // the sun's shine on the water's face: under the herd's backs (the owner, 2026-11-07)
+  W14_FIRES.forEach(function (f) { w14Fire(t, f[0], f[1]); });   // the far shore's fires, behind the herd
   w14Herd(t, "over");
-  W14_FIRES.forEach(function (f) { w14Fire(t, f[0], f[1]); });
-  natGlitter(t, W14_SUN[0], WEL_WATER, W14_SHORE, 0.8, "255, 190, 130");
   if (night > 0) { pen.fillStyle = "rgba(30, 20, 50, " + (0.4 * night).toFixed(3) + ")"; pen.fillRect(0, 0, WIDE, 1080); }
   if (t > 38) { sceneryFireflies(t, {far: [[[0, WEL_WATER, WIDE, W14_SHORE], 50, 7]], near: Math.round(12 * between(t, 38, 46))}); }
   if (t > 36) {                                         // Bua-kham on the near shore: the moral, and her wai goodbye

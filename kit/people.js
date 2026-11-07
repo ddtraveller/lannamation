@@ -3470,7 +3470,9 @@ muralPerson = function (x, y, look, opts) {
 
 wmHead = function (look, lady, skin, fc) {
   var grow = WM && WM.child ? 1 + 0.28 * Math.max(0, -WM.child) : 1;     // a child's head, larger on the same chin
+  var form = PEOPLE_GROW && lady ? PEOPLE_GROW : null;       // a grown painted woman's head, as PEOPLE_FORM asks
   pen.save(); pen.scale(grow, grow);
+  if (form) { pen.scale(form.head / form.wide, form.head); }
   try {
     if (lady && !MN_CHILD_HAIR[fc.hairdo]) { return MN_KIT.wmHead(look, lady, skin, fc); }
     return mnHead(look, lady, skin, fc);
@@ -4272,14 +4274,30 @@ function peopleChild(p, c, forward) {
   return [p[0] / trunk, (p[1] - MN_WAIST * legs) / trunk + MN_WAIST];
 }
 
+// How a grown painted woman stands beside person()'s own figures (the owner, 2026-11-07, of the White Eel: "Reconcile the
+// painted woman figures so their heads and bodies are similar size to the old rig"): tall, her whole figure's scale; head,
+// her head's, about her chin; wide, her body's width, her head kept round. At 1, 1, 1 she is as mural.js paints her: at
+// size 1 she stood 413 tall, her head 60 from chin to crown, her shoulders 46 apart; the rig's people 360 to 390, 85 to 88
+// and 66. PEOPLE_GROW: the one being drawn now, for wmHead().
+var PEOPLE_FORM = {tall: 0.85, head: 1.69, wide: 1.5}, PEOPLE_GROW = null;
+// draw() with a grown painted woman's form: her body widened about x, her head grown (wmHead reads PEOPLE_GROW).
+function peopleFormed(form, x, draw) {
+  if (form.wide !== 1) { pen.translate(x, 0); pen.scale(form.wide, 1); pen.translate(-x, 0); }
+  PEOPLE_GROW = form;
+  try { draw(); } finally { PEOPLE_GROW = null; }
+}
+
 // The painted figure on person()'s arms. x, y: where they stand; look: as person()'s; wm: peopleSettings(look). Returns joints.
 function peoplePainted(x, y, look, wm) {
   checkNames("The look's name", look, Object.assign({}, LOOK_KEYS, MURAL_LOOK_KEYS));
   var lady = look.lady !== undefined ? !!look.lady : !!look.bun, way = look.face || 1, size = look.size || 1, px = 59 * size / 100;
   var measure = lady ? MN_LADY : MN_MAN, arms = PEOPLE_ARMS[lady ? "lady" : "man"], kid = wm.child || 0, long = measure.UPPER + measure.FORE;
+  var form = lady && !kid ? PEOPLE_FORM : {tall: 1, head: 1, wide: 1};
+  px *= form.tall;
   var plain = Object.assign({}, look, {woman: wm, man: undefined, child: undefined, face: undefined});
   if (look.floor && lady) {                          // a seat is the figure's own, with its reaches
-    muralPerson(x, y, plain, {head: 59 * size});
+    pen.save();
+    try { peopleFormed(form, x, function () { muralPerson(x, y, plain, {head: 59 * size * form.tall}); }); } finally { pen.restore(); }
     return {size: size * 0.82, face: way, stand: spotOf(x, y)};
   }
   plain.reachA = plain.reachB = plain.handA = plain.handB = undefined;
@@ -4297,7 +4315,7 @@ function peoplePainted(x, y, look, wm) {
       if (!reach && !hand) { return; }
       var S = arms[arm[1]].S, s = inScene(arm[2]), e = inScene(arm[3]), w = inScene(arm[4]), to;
       if (reach) {
-        var target = upperOf([(reach[0] - x) * way / px, (reach[1] - y) / px]), rest = arms[arm[1]].W, u = reach[2] === undefined ? 1 : clamp(reach[2]);
+        var target = upperOf([(reach[0] - x) * way / px / form.wide, (reach[1] - y) / px]), rest = arms[arm[1]].W, u = reach[2] === undefined ? 1 : clamp(reach[2]);
         to = [rest[0] + (target[0] - rest[0]) * u, rest[1] + (target[1] - rest[1]) * u];
       } else {
         to = [S[0] + (w[0] - s[0]) * rate, S[1] + (w[1] - s[1]) * rate];
@@ -4316,7 +4334,7 @@ function peoplePainted(x, y, look, wm) {
   plain.woman = settings;
   pen.save();
   if (way < 0) { pen.translate(x, 0); pen.scale(-1, 1); pen.translate(-x, 0); }
-  muralPerson(x, y, plain, {head: 59 * size});
+  peopleFormed(form, x, function () { muralPerson(x, y, plain, {head: 59 * size * form.tall}); });
   function at(unit, upper) {                         // a point of the figure, in the sheet's pixels, as person()'s joints are
     var p = upper ? [unit[0] + measure.B * unit[1] + (measure.A - measure.B) * measure.Y0, unit[1]] : unit;
     if (kid) { p = peopleChild(p, kid, true); }
@@ -4328,7 +4346,7 @@ function peoplePainted(x, y, look, wm) {
   out.hip = at([0, measure.Y0 + 60], false);
   out.neck = at([4, measure.CHIN + 20], true);
   out.chin = at([8, measure.CHIN], true);
-  out.crown = at([0, measure.CHIN - 100], true);
+  out.crown = at([0, measure.CHIN - 100 * form.head], true);
   out.rest = out.crown;
   [["A", "far"], ["B", "near"]].forEach(function (arm) {
     var hangs = arms[arm[1]], w = (WM_W && WM_W[arm[1]]) || hangs.W;

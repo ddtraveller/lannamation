@@ -5579,7 +5579,7 @@ function personTrunk(fig) {
   // stands on a neck: look.head is how wide the head is (0.9 for her unless
   // told, 1 for anyone else), and a head narrower than 1 is lifted by 12.
   // A face of the north is as broad as its shape says, a lady's too.
-  var narrow = (look.head !== undefined ? look.head : NORTH_FACE ? NORTH_FACE.wide : lady ? 0.9 : 1) * BODY.face, long = STYLE.face === "lanna" && lady && !((look.build || 0) < 0) ? 1.9 : narrow < 1 ? 1 : 0;   // a grown woman's neck long, as the paintings paint it
+  var narrow = (look.head !== undefined ? look.head : NORTH_FACE ? NORTH_FACE.wide : lady ? 0.9 : 1) * BODY.face, long = STYLE.face === "lanna" && lady && !((look.build || 0) < 0) && !(look.age >= 0.5) ? 1.9 : narrow < 1 ? 1 : 0;   // a grown woman's neck long, as the paintings paint it; an old woman's not (the owner, 2026-11-07, of the White Eel's widow: "The widow shouldn't have a long neck")
   joints.waist = spot(0, 0);
   joints.neck = spot(neckX, -148);
   // Where a point of the chest is, once the spine has bent it and the two

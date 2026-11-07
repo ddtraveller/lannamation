@@ -77,6 +77,7 @@ function w06Fishing(t) {
   });
   var sprites = [];
   w06Bank(t, sprites, 0, null);
+  sprites.push.apply(sprites, welPlainTreeSprites());   // the trees by their feet, among the people
   drawByZ(sprites);
 }
 
@@ -92,6 +93,7 @@ function w06Rises(t) {
   ripples(pen, [[hx - 40, 670, 10.3], [hx + 300, 676, 10.8], [hx + 620, 672, 11.4]], t);
   var sprites = [];
   w06Bank(t, sprites, 1, head);
+  sprites.push.apply(sprites, welPlainTreeSprites());   // the trees by their feet, among the people
   drawByZ(sprites);
 }
 
@@ -121,17 +123,17 @@ function w06Haul(t) {
       pen.beginPath(); pen.moveTo(w[0], w[1]); pen.lineTo(head[0] + 10, head[1] + 4); pen.stroke(); pen.restore();
     }});
   });
+  sprites.push.apply(sprites, welPlainTreeSprites());   // the trees by their feet, among the people
   drawByZ(sprites);
 }
 
 // Scene 6, the entry the film calls (SCENES): t, its own second, 0 to W06_LONG. Gives back nothing: it draws the whole
-// sheet with pen. From sets.js: the Kok and its plain (welKokWater(), welPlain(), WEL_KOK, WEL_KOK_BANK), welPerson(),
+// sheet with pen. From sets.js: the Kok and its plain (welKokWater(), welPlain(), welPlainTreeSprites(), WEL_KOK, WEL_KOK_BANK), welPerson(),
 // welTalk(); from chiangsaen.js whiteEel(); from changngu/sets.js cngLocal(), cngCutsOver(). Its words are W06_LINES.
 function welSceneEel(t) {
   if (t < W06_CUTS[0]) { w06Fishing(t); }
   else if (t < W06_CUTS[1]) { w06Rises(t); }
   else { w06Haul(t); }
-  pen.drawImage(welPlainTrees(), 0, 0, WIDE, 1080);
   sceneryBeds(t, thkOnce("wel-plain-frame", function () {
     return [{sprite: sceneryGrass(300, 18, 621), x: 40, y: 1110}, {sprite: sceneryGrass(280, 16, 627), x: WIDE - 20, y: 1110}];
   }), {blur: 5, sway: 0.4});
