@@ -1083,8 +1083,11 @@ own figure any more. In `people.js`:
 - A look of `person()`'s own that would draw a young woman (a lady's face, so `lady` or her hair in a knot, and `age`
   under 0.5) with no `woman`, `man` or `child` gets settings mixed for her by `castMix()`'s generator (`peopleYoung()`),
   the same for the same `id`, or with none for the same clothes: her face, hair, jewels and blouse its own.
-- The old (`age` 0.5 and more: `grandmother`, `devotee`, a look with `age`) keep `person()`'s own drawing, which shares
-  its face, neck and hands with the young lady's: that code stays for them.
+- The old keep `person()`'s own drawing, which shares its face, neck and hands with the young lady's, so that code
+  stays for them: the kinds `grandmother` and `devotee`, and a look of `person()`'s own with `age` 0.5 and more. One of
+  the painted kinds given an age (`cast("lady", {age: 1, hair: "#e8e3da"})`) stays painted, her hair white.
+- Seated (`floor`), a painted woman gives back the joints the rig has in the same seat, wai and lean (`peopleSeat()`),
+  so a page can put something in her hands: `offerings.html`'s cone of flowers in her wai.
 
 Every page that draws a young woman loads `people.js` last of the kit's modules, after `weaving.js` (and `sabai.js`,
 `sabai_finish.js` where the cloth is worn). In a page without it `person()` still draws her the old way and warns ("a
