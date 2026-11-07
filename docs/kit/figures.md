@@ -1084,7 +1084,15 @@ own figure any more. In `people.js`:
   under 0.5) with no `woman`, `man` or `child` gets settings mixed for her by `castMix()`'s generator (`peopleYoung()`),
   the same for the same `id`, or with none for the same clothes: her face, hair, jewels and blouse its own.
 - The old (`age` 0.5 and more: `grandmother`, `devotee`, a look with `age`) keep `person()`'s own drawing, which shares
-  its face, neck and hands with the young lady's: that code stays for them.
+  its face and hands with the young lady's: that code stays for them. Not her long neck (the owner, of the White Eel's
+  widow: "The widow shouldn't have a long neck"): an old woman's neck is any narrower head's (`long` 1, not 1.9).
+- A grown painted woman is sized to `person()`'s people (the owner, 2026-11-07: "Reconcile the painted woman figures
+  so their heads and bodies are similar size to the old rig"): `PEOPLE_FORM` = {tall, head, wide}, her whole figure's
+  scale, her head's about her chin (`wmHead`), and her body's width with her head kept round. Measured at size 1, feet
+  to crown, chin to crown, shoulder to shoulder: the rig's man 392 / 86 / 66, its grandmother 377 / 88 / 65; the
+  painted woman as mural.js paints her 413 / 60 / 46; at the kit's form {0.85, 1.69, 1.5} 386 / 86 / 59 (candidates
+  A {0.93, 1.35, 1.15} and B {0.9, 1.5, 1.3} lay between). Her joints, her seat and the woven sabai on her
+  (`sabaiOfMural`) follow it. Men and children keep their own; a film can set `PEOPLE_FORM` after `people.js`.
 
 Every page that draws a young woman loads `people.js` last of the kit's modules, after `weaving.js` (and `sabai.js`,
 `sabai_finish.js` where the cloth is worn). In a page without it `person()` still draws her the old way and warns ("a

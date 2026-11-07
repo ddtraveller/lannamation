@@ -43,6 +43,7 @@ function w07Court(t) {
   var p = CNG_PALACE, dais = hoKhamDais(p[1], p[2]), floor = hoKhamFloor(p[1], p[2]);
   pen.drawImage(welSky("day"), 0, 0);
   welClouds(t + 50, "day");
+  welFlocks(t, [[-200, 170, 50]]);
   pen.drawImage(cngCourt(), 0, 0);
   cngBeds(t, "court", "back");
   var sprites = [
@@ -76,6 +77,7 @@ function w07Court(t) {
 function w07Lane(t) {
   pen.drawImage(welSky("sunset"), 0, 0);
   welClouds(t + 90, "dusk");
+  welFlocks(t, [[2300, 190, -60], [2650, 150, -55]]);   // home to roost
   pen.drawImage(welLane("dusk"), 0, 0);
   pen.fillStyle = "rgba(150, 70, 90, 0.26)";           // the dusk over it
   pen.fillRect(0, 0, WIDE, 1080);
@@ -105,6 +107,7 @@ function w07Lane(t) {
 function w07Yard(t) {
   pen.drawImage(welSky("sunset"), 0, 0);
   welClouds(t + 90, "dusk");
+  welFlocks(t, [[2300, 190, -60], [2650, 150, -55]]);   // home to roost
   pen.drawImage(welYard("dusk"), 0, 0, WIDE, 1080);
   pen.fillStyle = "rgba(120, 60, 90, 0.3)";
   pen.fillRect(0, 0, WIDE, 1080);

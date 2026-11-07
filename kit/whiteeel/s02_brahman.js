@@ -85,10 +85,13 @@ function welSceneBrahman(t) {
   pen.drawImage(welSky("day"), -60, 0, WIDE + 120, 1080);
   welClouds(t + 60, "day");
   welFar(pen, WEL_KOK);
+  welFlocks(t, [[-300, 200, 50]]);
   pen.drawImage(welPlain(), 0, 0, WIDE, 1080);
   var kok = welKokWater();
   sceneryWaterDepths(kok);
+  welFish(t, [["barb", 760, 676, 220, 0.6, 1], ["gourami", 1420, 690, 170, 0.6, 2]]);
   sceneryWaterSurface(t, kok);
+  welKingfisher(t, 1640, 540, {water: 664, face: -1, seed: 1, size: 0.5});
   W02_REEDS.forEach(function (r) { sceneryReeds(r[0], r[1], r[2], t, "back"); });
   pen.drawImage(welPlainTrees(), 0, 0, WIDE, 1080);
 
@@ -134,6 +137,7 @@ function welSceneBrahman(t) {
     sprites.push({name: "reeds " + k, kind: "person", x: r[0], y: r[1] + 12, draw: function () { sceneryReeds(r[0], r[1], r[2], t, "front"); }});
   });
   drawByZ(sprites);
+  welDragonflies(t, [["marshhawk", [180, 700, 640, 800], 3, 1.8], ["scarlet", [1260, 720, 1760, 820], 4, 1.8]]);
   w02Wake(t);
   sceneryBeds(t, thkOnce("wel-plain-frame", function () {
     return [{sprite: sceneryGrass(300, 18, 621), x: 40, y: 1110}, {sprite: sceneryGrass(280, 16, 627), x: WIDE - 20, y: 1110}];

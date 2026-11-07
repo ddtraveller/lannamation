@@ -65,6 +65,7 @@ function welSceneWidow(t) {
   pen.translate(about[0], about[1]); pen.scale(zoom, zoom); pen.translate(-about[0], -about[1]);
   pen.drawImage(welSky("day"), 0, 0);
   welClouds(t + 120, "day");
+  welFlocks(t, [[-250, 200, 50]]);
   pen.drawImage(welYard("day"), 0, 0, WIDE, 1080);
   var sprites = [];
   if (shot === 0) {                                     // she sweeps the yard
@@ -93,6 +94,7 @@ function welSceneWidow(t) {
     w05Neighbours(t, u, sprites);
   }
   drawByZ(sprites);
+  welDragonflies(t, [["scarlet", [640, 740, 1040, 840], 4, 1.6]]);
   sceneryBeds(t, thkOnce("wel-yard-frame", function () {
     return [{sprite: sceneryGrass(300, 18, 631), x: 40, y: 1110}, {sprite: sceneryGrass(280, 16, 637), x: WIDE - 20, y: 1110}];
   }), {blur: 5, sway: 0.4});

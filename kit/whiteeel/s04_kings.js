@@ -25,6 +25,7 @@ var W04_SEASONS = ["rgba(255, 200, 220, 0.12)", "rgba(80, 110, 150, 0.2)", "rgba
 function w04Lane(t) {
   pen.drawImage(welSky("day"), 0, 0);
   welClouds(t + 20, "day");
+  welFlocks(t, [[-200, 180, 55]]);
   pen.drawImage(welLane("day"), 0, 0);
   var sprites = [], walkers = [[8, {}, 1], ["villager", {turban: "#2a6a5a"}, -1], [12, {}, 1], ["farmer", {}, -1],
                                 ["boy", {size: 0.5}, 1], ["child:plait", {size: 0.46}, -1], ["oldfarmer", {}, 1], ["woman:lue", {}, -1]];
@@ -45,6 +46,7 @@ function w04Court(t, who, tint) {
   var p = CNG_PALACE, dais = hoKhamDais(p[1], p[2]), floor = hoKhamFloor(p[1], p[2]);
   pen.drawImage(welSky("day"), 0, 0);
   welClouds(t + 50, "day");
+  welFlocks(t, [[2200, 160, -45]]);
   pen.drawImage(cngCourt(), 0, 0);
   cngBeds(t, "court", "back");
   drawByZ([

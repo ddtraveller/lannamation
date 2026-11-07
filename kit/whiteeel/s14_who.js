@@ -69,11 +69,14 @@ function welSceneWho(t) {
   welClouds(t + 300, "dusk");
   scenerySun(t, W14_SUN[0], mix(W14_SUN[1], W14_SUN[2], dusk), 34, {glow: 12, colour: "255, 170, 110"});
   welFar(pen, WEL_WATER, "dusk");
+  welFlocks(t, [[2300, 200, -55], [2700, 150, -50]]);   // home to roost
+  welEgretsFlying(t, [[2100, 470, -60, 0.5, 4], [2200, 500, -60, 0.45, 6], [2290, 455, -60, 0.45, 8]]);
   var lake = welLake(W14_SHORE);
   sceneryMeadow(pen, -40, WIDE + 40, W14_SHORE - 30, 1080, {seed: 31});
   sceneryWaterDepths(lake);
   pen.drawImage(w14Island(), W14_ISLAND[0] - 350, W14_ISLAND[1] - 330, 700, 360);
   w14Herd(t, "under");
+  welFish(t, [["barb", 600, 900, 220, 0.8, 10], ["gourami", 1250, 940, 200, 0.9, 11]]);
   var shimmer = between(t, 25.4, 27.0) * (1 - between(t, 30.0, 31.8)), sx = mix(1700, 400, between(t, 25.4, 31.8));
   sceneryWaterSurface(t, lake, function () {
     if (shimmer > 0) {                                  // the long pale shimmer under the water's face
@@ -97,6 +100,7 @@ function welSceneWho(t) {
       feel: "happy", mouth: welTalk(t, welSays(t, W14_LINES, W14_SPEAKS)), wai: up || undefined, bend: 0.12 * up}));
   }
   sceneryReeds(80, 1110, 1.5, t, "back"); sceneryReeds(80, 1110, 1.5, t, "front");
+  if (t < 40) { welDragonflies(t, [["glider", [120, 760, 520, 860], 10, 1.8]]); }
   sceneryReeds(1850, 1100, 1.35, t + 2, "back"); sceneryReeds(1850, 1100, 1.35, t + 2, "front");
   pen.fillStyle = "rgba(0, 0, 0, " + between(t, 53.2, 55).toFixed(3) + ")";   // into black
   pen.fillRect(0, 0, WIDE, 1080);

@@ -85,6 +85,8 @@ function w03Morning(t) {
   pen.drawImage(welSky("sunrise"), 0, 0);
   pen.globalAlpha = 1;
   welClouds(t + 80, "day");
+  welFlocks(t, [[-1100, 190, 60]]);
+  welEgretsFlying(t, [[-900, 430, 75, 0.5, 2], [-1010, 470, 75, 0.45, 5]]);
   pen.drawImage(cngFields(), 0, 0);
   cngGateWall(between(u, 1, 4), t);
   var sprites = [];

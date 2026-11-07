@@ -29,7 +29,9 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6,
 <script src="myth.js"></script>
 <script src="motion.js"></script>
 <script src="cumulus.js"></script>
+<script src="weaving.js"></script>
 <script src="sabai.js"></script>
+<script src="sabai_finish.js"></script>
 <script src="khom.js"></script>
 <script src="pieces.js"></script>
 <script src="band.js"></script>
@@ -40,6 +42,7 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6,
 <script src="paperdoll.js"></script>
 <script src="apsara.js"></script>
 <script src="puman.js"></script>
+<script src="people.js"></script>
 <script>
 // sash.html - a film of the kit. It opens on a cloth, close up: twelve rows
 // of the small things of Thai life, woven across it. Music begins, and the
@@ -85,7 +88,11 @@ var LANNA_MAN = {};
 // The cloth is the kit's woven sabai (sabai.js): its twelve rows, with the
 // woman herself woven into one row of her own, in the same look. The film opens
 // on that row.
-var WOMAN = cast("lady", {size: 1.45, shirt: "#f2ead8", legs: "#2f3f6e", sin: 0, sabai: false, weave: 1,   // no band of the kit's own: the woven cloth of sabai.js is her sabai
+// She is painted (people.js, the owner 2026-11-07: "Rerecord the hero video with the new version with the painted lady
+// and new sash"): HERO_WOMAN names her of MURAL_WOMEN, her face, hair and jewels; her clothes are the film's own.
+var HERO_WOMAN = "princess";   // the hero film's (sash_maeng.html), in the mural's own shape as the owner approved her
+PEOPLE_FORM = {tall: 1, head: 1, wide: 1};
+var WOMAN = cast("lady", {woman: Object.assign({}, MURAL_WOMEN[HERO_WOMAN].woman, {holds: undefined, pose: undefined}), size: 1.45, shirt: "#f2ead8", legs: "#2f3f6e", sin: 0, sabai: false, weave: 1,   // no band of the kit's own: the woven cloth of sabai.js is her sabai
                           flower: "#f28fa8", pins: true, smile: 1, id: "woman", at: [720 + SIDE, 380]});
 
 var WOMAN_ROW = 4;
@@ -140,7 +147,7 @@ ROWS[WOMAN_ROW] = ROWS[WOMAN_ROW].map(function (painter) {
 // The camera opens on her own woven figure (ROWS[WOMAN_ROW][WOMAN_AT]) and keeps it in the middle as the row moves, until it
 // pulls back to her standing there wearing the cloth (owner, 2026-10-20: "Make sure the central sprite that starts out
 // being focused on is the same one that is the woman standing there wearing the sash when the video pulls out").
-var CLOTH = {rows: ROWS, from: MUSIC_AT, row: WOMAN_ROW, fine: 1, follow: WOMAN_AT};
+var CLOTH = {rows: ROWS, from: MUSIC_AT, row: WOMAN_ROW, fine: 1, follow: WOMAN_AT, finish: true, cloth: SABAI_FINISH_GROUND};   // finished (sabai_finish.js)
 
 // ---------- the sets ----------
 // The sky of a scene, painted once: day, dusk or night, with the stars at
@@ -479,8 +486,9 @@ function sceneCloth(t) {                // 0-22: one row, still; the music and t
   // is back she keeps the beat, and makes a wai (owner: "have the woman wai
   // instead of raise her arm and wave"). The wai comes in over 0.4 s (wai: a number; it once came in one frame, a
   // pop: checks/pop_check.py).
-  var look = t < 20 ? WOMAN : Object.assign({}, WOMAN, {late: 0, spring: 0.5, wai: between(t, 20, 20.4)});
-  var where = sabaiOf(t, 720 + SIDE, 1010, look);
+  var worn = Object.assign({}, WOMAN, {woman: Object.assign({}, WOMAN.woman, {sway: false, pose: SABAI_MURAL_ARMS})});   // her near arm over the cloth
+  var look = t < 20 ? worn : Object.assign({}, worn, {late: 0, spring: 0.5, wai: between(t, 20, 20.4)});
+  var where = sabaiOfMural(t, 720 + SIDE, 1010, look);   // the cloth on the painted woman's own body
   pen.save();
   sabaiCamera(t, where, CLOTH, 6, 20);
   skyOf(SKY_DAY, CLOUD_LOOKS.day, t);

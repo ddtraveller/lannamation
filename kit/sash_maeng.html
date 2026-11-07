@@ -32,6 +32,7 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0, light: [-0.6, 0
 <script src="motion.js"></script>
 <script src="cumulus.js"></script>
 <script src="sabai.js"></script>
+<script src="sabai_finish.js"></script>
 <script src="khom.js"></script>
 <script src="pieces.js"></script>
 <script src="band.js"></script>
@@ -48,6 +49,7 @@ window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0, light: [-0.6, 0
 <script src="pinewoods.js"></script>
 <script src="wildplaces.js"></script>
 <script src="scenery.js"></script>
+<script src="people.js"></script>
 <script>
 // sash.html - a film of the kit. It opens on a cloth, close up: twelve rows
 // of the small things of Thai life, woven across it. Music begins, and the
@@ -516,33 +518,6 @@ function sashYard(t) {                           // t: the scene's second. Gives
           }}];
 }
 
-function sceneCloth(t) {                // 0-26.67 (22 until 2026-10-24, the narrator's own pace): one row, still; the music and the walk; one steady pull-back
-  // She stands still while the cloth dances and the camera pulls back; once it
-  // is back she keeps the beat, and makes a wai (owner: "have the woman wai
-  // instead of raise her arm and wave"). The wai comes in over 0.4 s (wai: a number; it once came in one frame, a
-  // pop: checks/pop_check.py).
-  var look = t < 24.67 ? WOMAN : Object.assign({}, WOMAN, {late: 0, spring: 0.5, wai: between(t, 24.67, 25.07)});
-  var where = sabaiOf(t, 720 + SIDE, 1010, look);
-  pen.save();
-  sabaiCamera(t, where, CLOTH, 6, 20);
-  skyOf(SKY_DAY, CLOUD_LOOKS.day, t);
-  pen.drawImage(VILLAGE.back, 0, 0);
-  hillMist(t);
-  pen.drawImage(VILLAGE.front, 0, 0);
-  // The z plan (the kit's drawByZ(), oldcartoon.js Z): the village's sheets, its sky and mist first, as painted (the
-  // set). The magpies, which can be anywhere, in "sky": crossing the sky over the village, behind the tung and the
-  // woman. In "people", by their feet: the tung at its foot, 905, and the woman at hers, 1010, the end of her cloth
-  // that hangs behind her shoulder drawn with her, just before her, so that nothing comes between them.
-  drawByZ(sashYard(t).concat([
-    {name: "tung", kind: "tung", x: 1570 + SIDE, y: 905, draw: function () { villageTung(t); }},
-    {name: "magpies", kind: "magpie", z: "sky", y: 280, draw: function () { villageMagpies(t); }},
-    {name: "woman", kind: "person", x: 720 + SIDE, y: 1010, draw: function () {
-      sabai(t, where, CLOTH, "back");     // the end of the cloth that hangs behind her shoulder
-      person(720 + SIDE, 1010, sabaiWorn(look, t, where, CLOTH));   // the cloth across her chest, worn under her arm
-    }}
-  ]));
-  pen.restore();
-}
 
 // The rooster and the hen in the lane (owner, 2026-10-17: "have the chicken
 // run a few steps and then jump into the air flapping its wings but then come
@@ -1530,6 +1505,120 @@ function play(now) {
 }
 
 requestAnimationFrame(play);
+
+// the cloth finished by the kit (sabai_finish.js), as cloth.js had it in scratch
+CLOTH.finish = true;
+CLOTH.cloth = SABAI_FINISH_GROUND;
+CLOTH.steady = true;                 // its figures neither bob nor rock (owner: "keep it from rocking or shaking")
+CLOTH.stay = true;                   // the camera stays on the cloth, so its middle row walks on too (owner: "The center row should move as well")
+
+// ---------- the first scene: the painted princess in the finished cloth ----------
+// Made in the hero's lab (C:/jslab/hero, hero4.html, 2026-10-30 to 11-03) with the owner, step by step, and moved here
+// unchanged (the owner, 2026-11-07: "Rerecord the hero video with the new version with the painted lady and new sash").
+// She keeps the shape he approved, the mural's own (people.js PEOPLE_FORM at 1, 1, 1), not the rig's size the kit's
+// painted women take since 2026-11-07 (the owner, asked: "As approved").
+PEOPLE_FORM = {tall: 1, head: 1, wide: 1};
+// The owner (2026-10-30): "redo the first scene of the hero video with the new sprites. Show me 10-15 seconds w/o
+// sound." The woman is the mural maiden of mural_women.js wearing the film's own woven cloth, laid on her own shoulder,
+// sleeve, hip and waist (sabaiOfMural, hero1_sabai.js), so the camera that follows the cloth follows it on her: its tail
+// before her, its front over her chest. At the end she makes her wai with the mural figure's hands.
+// 2026-11-02 (owner: "Show me a redone hero scene 1 with the central woman replaced with one of the new sprites"):
+// the princess of the twenty (people.js: cast("princess") = castWoman("princess")), in her own hair, her garland put down
+var HERO_WHO = "princess";
+var HERO_WAI = 21;                   // her wai, from 21 s to 21.8 s and held (owner, 2026-11-03: "The woman should wai at second 21"; it was at 24.4, then 22.4)
+var HERO_WOMAN = Object.assign(castWoman(HERO_WHO), {size: 1.45, sabai: false, id: "woman"});
+var HERO_SETTINGS = Object.assign({}, MURAL_WOMEN[HERO_WHO].woman, {holds: undefined, pose: undefined, hands: "normal", sway: false, alive: true});
+WOMAN = Object.assign({}, WOMAN, {woman: HERO_SETTINGS});   // and the same woman wherever else the film draws her (the phat scene)
+// her near arm hanging over the cloth's lower end (the kit's SABAI_MURAL_ARMS), and the cloth worn as the kit's
+// mural_sabai.js has it: its back, then her wearing its front
+// As the camera comes out to her face she smiles (16.2 to 17 s), winks her near eye (17.6 to 18.2 s), and keeps smiling
+// to the wai (owner, 2026-10-31: "when then camera zooms out she smiles and winks before giving a wai")
+// and as she winks her smile grows a little broader for a moment (owner: "Add a momentary slightly broader smile as the
+// woman winks"): from her smile 0.7 to the kit's fullest, 1, and back
+// 2026-11-03: her smile is her face's own feeling (face.feel.smile; the look's "smile" does not reach the painted face),
+// a gentle 0.5 from 16.2 to 17 s, broader for a moment as she winks, and full as she makes her wai (owner: "Have her
+// smile more warmly when she wais")
+function heroFace(t) {
+  var smile = 0.5 * (0.5 - 0.5 * Math.cos(Math.PI * between(t, 16.2, 17)));
+  var broader = t < 17.45 || t > 18.5 ? 0 : 0.5 - 0.5 * Math.cos(2 * Math.PI * (t - 17.45) / 1.05);
+  var wink = t < 17.6 || t > 18.2 ? 0 : t < 17.75 ? (t - 17.6) / 0.15 : t < 18 ? 1 : 1 - (t - 18) / 0.2;
+  var warm = 0.5 - 0.5 * Math.cos(Math.PI * between(t, HERO_WAI, HERO_WAI + 0.8));
+  return {smile: Math.max(smile + 0.3 * broader, smile + (1 - smile) * warm), wink: wink};
+}
+// As the camera pulls out she turns her face to it, straight on, from 15.5 to 16.5 s, before she smiles and winks (owner,
+// 2026-10-31: "As the camera pulls out have her turn to face the camera straight on before she winks"); her sin sways
+// ever so gently all the while ("Can you have her dress sway ever so gently?"), the kit's front and swish
+function heroWoman(t, where) {
+  var face = heroFace(t), wai = between(t, HERO_WAI, HERO_WAI + 0.8);   // the kit's wai (mural_women.js): both hands over the heart
+  var settings = Object.assign({}, HERO_SETTINGS, {pose: SABAI_MURAL_ARMS, wink: face.wink, front: between(t, 15.5, 16.5), swish: true});
+  var own = HERO_SETTINGS.face;
+  settings.face = Object.assign({}, own, {feel: Object.assign({}, own.feel, {smile: Math.max(own.feel && own.feel.smile || 0, face.smile)})});
+  // never quite still (owner: "animate the face and body so it looks like she is moving ever so slightly"): her head and
+  // blinks are the kit's (alive); here a slow breath and the least lean, of her and the cloth on her together, so it
+  // never slides on her, coming in only as the camera reaches her (up close it would shake the picture)
+  var near = between(t, 14, 16), breath = near * 0.0035 * Math.sin(2 * Math.PI * t / 4.2), lean = near * 0.0025 * Math.sin(2 * Math.PI * t / 6.1 + 0.7);
+  pen.save();
+  pen.translate(720 + SIDE, 1010); pen.rotate(lean); pen.scale(1 + 0.4 * breath, 1 + breath); pen.translate(-(720 + SIDE), -1010);
+  muralPerson(720 + SIDE, 1010, sabaiWorn(Object.assign({}, HERO_WOMAN, {woman: settings, smile: face.smile, wai: wai}), t, where, CLOTH), {head: 59 * HERO_WOMAN.size});
+  pen.restore();
+}
+function sceneCloth(t) {
+  var where = sabaiOfMural(t, 720 + SIDE, 1010, HERO_WOMAN);
+  pen.save();
+  sabaiCamera(t, where, CLOTH, 6, 20);
+  skyOf(SKY_DAY, CLOUD_LOOKS.day, t);
+  pen.drawImage(VILLAGE.back, 0, 0);
+  hillMist(t);
+  pen.drawImage(VILLAGE.front, 0, 0);
+  drawByZ(sashYard(t).concat([
+    {name: "tung", kind: "tung", x: 1570 + SIDE, y: 905, draw: function () { villageTung(t); }},
+    {name: "magpies", kind: "magpie", z: "sky", y: 280, draw: function () { villageMagpies(t); }},
+    {name: "woman", kind: "person", x: 720 + SIDE, y: 1010, draw: function () { heroWoman(t, where); }}
+  ]));
+  pen.restore();
+}
+
+// the yard's two weavers seated as mural women (sit.js): the weaver of mural_women.js at the frame loom, astride its
+// bench, both hands on the beater; the grandmother at the spinning wheel, on the floor, her near hand on the wheel's rim
+// and her far one drawing the cotton back. Each in the sabai the scene gives her; their hands where the film puts the kit
+// figure's (reachB the near hand, reachA the far).
+var SIT_KIT_WEAVE = weavePerson;
+weavePerson = function (brush, x, y, look) {
+  if (!look.floor) { return SIT_KIT_WEAVE(brush, x, y, look); }
+  var keep = pen;
+  pen = brush;
+  try {
+    var side = look.floor === "side", who = side ? "grandmother" : "weaver";
+    var settings = Object.assign({}, MURAL_WOMEN[who].woman, {holds: undefined, pose: undefined});
+    var mural = Object.assign(castWoman(who), {sabai: look.sabai || MURAL_WOMEN[who].look.sabai, id: look.id, woman: settings});
+    muralSeated(x, y, mural, look.size || 1, side ? "side" : "bench", {near: look.reachB, far: look.reachA});
+  } finally { pen = keep; }
+  return {};
+};
+
+// The film's idea (owner, 2026-10-30): "start focused on a woman and then everything starts moving and then as it pulls
+// back the viewer realizes it's the exact same woman that was started with." The figure the camera opens on in the
+// cloth (ROWS[WOMAN_ROW][WOMAN_AT], the kit figure until now) is the same mural maiden, as she stands in the yard: the
+// same face, blouse, sin, jewellery and flowers, at the size the cloth weaves its figures (1.1).
+// She walks as the others do (owner, 2026-10-31: "animate the main icon of the woman so it looks like she is walking like
+// the other icons"): the kit's step, as the rows give it.
+ROWS[WOMAN_ROW][WOMAN_AT] = function (b, u) {
+  muralPerson(0, 0, Object.assign({}, HERO_WOMAN, {size: 1.1, step: u, id: "woman-woven", woman: Object.assign({}, HERO_SETTINGS, {pose: SABAI_MURAL_ARMS})}), {head: 59 * 1.1});
+};
+
+// the two weavers of the yard (and their loom and wheel) half again as big (owner, 2026-10-31: "Make the weavers bigger")
+var HERO_WEAVERS = 0.75, HERO_YARD = sashYard;
+sashYard = function (t) {
+  return HERO_YARD(t).map(function (it) {
+    if (it.name === "weaver-yard-1") {
+      return Object.assign({}, it, {draw: function () { frameLoom(pen, it.x, it.y, HERO_WEAVERS, t, {id: it.name, work: null, cloth: "maechaem", weaver: {sabai: sabaiLook("maeChaemPat")}}); }});
+    }
+    if (it.name === "spinner-yard") {
+      return Object.assign({}, it, {draw: function () { spinningWheel(pen, it.x, it.y, HERO_WEAVERS, t, {id: it.name, weaver: {sabai: sabaiLook("nan")}}); }});
+    }
+    return it;
+  });
+};
 </script>
 </body>
 </html>

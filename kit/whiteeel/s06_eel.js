@@ -19,11 +19,13 @@ var W06_HAULERS = [["soldier", {size: 0.74, holding: null}], ["farmer", {size: 0
 function w06River(t, under, over) {
   pen.drawImage(welSky("day"), -60, 0, WIDE + 120, 1080);
   welClouds(t + 200, "day");
+  welFlocks(t, [[-300, 210, 52]]);
   welFar(pen, WEL_KOK);
   pen.drawImage(welPlain(), 0, 0, WIDE, 1080);
   var kok = welKokWater();
   sceneryWaterDepths(kok);
   if (under) { under(); }
+  welFish(t, [["barb", 520, 680, 200, 0.6, 3], ["gourami", 1180, 692, 160, 0.6, 4]]);
   sceneryWaterSurface(t, kok);
   if (over) { over(); }
   natGlitter(t, 1300, WEL_KOK, WEL_KOK_BANK, 0.5, "255, 250, 230");
@@ -134,6 +136,7 @@ function welSceneEel(t) {
   if (t < W06_CUTS[0]) { w06Fishing(t); }
   else if (t < W06_CUTS[1]) { w06Rises(t); }
   else { w06Haul(t); }
+  welDragonflies(t, [["glider", [1280, 750, 1800, 850], 5, 1.8]]);
   sceneryBeds(t, thkOnce("wel-plain-frame", function () {
     return [{sprite: sceneryGrass(300, 18, 621), x: 40, y: 1110}, {sprite: sceneryGrass(280, 16, 627), x: WIDE - 20, y: 1110}];
   }), {blur: 5, sway: 0.4});

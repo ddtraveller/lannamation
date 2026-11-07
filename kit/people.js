@@ -4032,8 +4032,9 @@ var SABAI_MURAL_ARMS = {near: {w: [-48, -374], elbow: [-1, 0.1], late: true}};
 // sabaiWorn() and sabaiCamera().
 // e.g. var where = sabaiOfMural(t, 720, 1010, look);
 function sabaiOfMural(t, x, y, look) {
-  var px = 59 * (look.size || 1) / 100, n, k;
-  function onHer(u, v, upper) { return [x + (u + (upper ? 0.07 * v + 42.14 : -0.028 * v)) * px, y + v * px]; }
+  var form = look.woman && look.woman.child ? {tall: 1, wide: 1} : PEOPLE_FORM;   // her form (PEOPLE_FORM): the cloth on her as she is drawn
+  var px = 59 * (look.size || 1) * form.tall / 100, n, k;
+  function onHer(u, v, upper) { return [x + (u + (upper ? 0.07 * v + 42.14 : -0.028 * v)) * px * form.wide, y + v * px]; }
   var neck = onHer(18.3, -583, true), hip = onHer(-6, -380, false), waistY = onHer(0, -430, false)[1];
   var half = 36;                                     // half the band's width
   var end = onHer(-58, -404, true);                  // the middle of its lower end: under the belt, left of her middle

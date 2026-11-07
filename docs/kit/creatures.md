@@ -685,6 +685,29 @@ that dips and lifts and faces the way it goes. `BUTTERFLY_KEYS`: size, turn, res
 `butterflies.html` is the sheet: the four large, flying and resting, with their names; then at their own sizes
 over the flowers of flora.js. Drawn from what each is; no picture was copied. Not done: seen from above only (no
 side view with the wings closed), and no caterpillar.
+
+## Four dragonflies of the north (2026-11-07)
+
+The owner, of the White Eel: "Go through the scenes and add dragonflies and birds as appropriate"; the kit had no
+dragonfly. In `butterflies.js`, after the butterflies: `dragonfly(kind, x, y, t, look)`, seen from above as they are,
+(x, y) the middle of its thorax, its head toward `turn`; flying, its four wings shimmer, each pair sweeping a little
+forward and back with a faint blur where it has been; with `rest`, the wings lie still, flat out to the sides.
+`dragonflyDart(t, [x0, y0, x1, y1], {seed, hold})` is how one hunts: it hangs in the air at a spot in the box, bobbing,
+then darts to another in a quarter of a second, and faces the way it went. `DRAGONFLY_KEYS`: size, turn, rest, seed.
+At size 1 one is 30 long and 34 across, twice its size beside the cast, as the butterflies are; a film draws them
+nearer 1.8 so they read on a sheet 1920 wide.
+
+| `kind` | What is drawn |
+|---|---|
+| `scarlet` | the scarlet skimmer (Crocothemis servilia) of the rice fields and ponds: all red, clear wings |
+| `glider` | the wandering glider (Pantala flavescens), the one that comes in swarms before the rains: gold, its wings faintly yellow |
+| `marshhawk` | the green marsh hawk (Orthetrum sabina): green banded with black, its abdomen swollen at the root |
+| `grasshawk` | the grasshawk (Neurothemis fluctuans): red, its wings stained amber to their middles |
+
+Each has a round head that is nearly all eye, a short thorax, four long clear wings with a dark spot near each tip,
+and a thin abdomen in ten rings. `dragonflies.html` is the sheet: the four large, flying and resting; then at their
+own sizes over a pond, darting, one resting on a reed. Drawn from what each is; no picture was copied. Not done: no
+side view, no Thai names of the kinds (แมลงปอ is the dragonfly).
 ## The animals of Mangrai's tale, and the white eel of Wiang Nong Lom (2026-10-25)
 
 For the next tales (`kit/next_tales.md`): `mangrai.js`, a module of its own (load it after `beasts.js`, whose

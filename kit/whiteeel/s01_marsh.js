@@ -108,12 +108,14 @@ function welSceneMarsh(t) {
   pen.globalAlpha = 1 - light;
   welFar(pen, WEL_WATER, "dawn");
   pen.globalAlpha = 1;
+  welFlocks(t, [[-300, 230, 55], [2350, 170, -42]]);   // the day's first birds over the hills
   bdHut(pen, W01_HUT[0], W01_HUT[1], W01_HUT[2]);        // the herder's hut, its thread of smoke
   welSmoke(t, W01_HUT[0] + 10, W01_HUT[1] - 214 * W01_HUT[2] + 6, {rise: 200, lean: 70, wide: 30, alpha: 0.55, colour: "244, 242, 246", count: 22});
   var water = welMarshWater();
   sceneryWaterDepths(water);
   W01_LOTUS.concat(W01_LOTUS_NEAR).forEach(function (l) { sceneryLotus("under", l[0], l[1], 50 * l[2], l[2], l[3], l[4], t); });
   w01Herd(t, "under");                                    // the herd whole, so the water's face lies over their legs
+  welFish(t, [["barb", 760, 905, 240, 0.8, 1], ["gourami", 1260, 965, 200, 0.9, 2], ["snakehead", 420, 1015, 170, 0.8, 3]]);
   sceneryWaterSurface(t, water, function () {             // the egret's reflection, under it
     var at = courseAt(t, W01_EGRET.course);
     if (!at.on) { return; }
@@ -136,6 +138,7 @@ function welSceneMarsh(t) {
   var egretAt = courseAt(t, W01_EGRET.course);
   if (egretAt.on) { egret(egretAt.x, egretAt.y, t, Object.assign({}, W01_EGRET.look, {face: egretAt.face})); }
   W01_LOTUS_NEAR.forEach(function (l) { sceneryLotus("over", l[0], l[1], 50 * l[2], l[2], l[3], l[4], t); });
+  welDragonflies(t, [["scarlet", [240, 760, 640, 860], 1, 1.8], ["glider", [1240, 740, 1680, 850], 2, 1.8]]);
   sceneryReeds(80, 1110, 1.5, t, "back"); sceneryReeds(80, 1110, 1.5, t, "front");   // reeds and soft grass framing the front
   sceneryReeds(1850, 1100, 1.35, t + 2, "back"); sceneryReeds(1850, 1100, 1.35, t + 2, "front");
   sceneryBeds(t, thkOnce("wel-marsh-frame", function () {

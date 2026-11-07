@@ -16,10 +16,12 @@ var W12_SPEAKS = {heads: ["W046"], widow: ["W045", "W047"]};   // who says which
 function w12Set(t, shore, house, who) {
   pen.drawImage(welSky("day"), -200, 0, WIDE + 400, 1080);
   welClouds(t + 140, "day");
+  welFlocks(t, [[-300, 200, 50]]);
   welFar(pen, WEL_WATER);
   if (shore) { sceneryMeadow(pen, -40, WIDE + 40, shore - 30, 1080, {seed: 21}); }
   var water = shore ? welLake(shore) : welMarshWater();
   sceneryWaterDepths(water);
+  welFish(t, [["barb", 620, 760, 220, 0.7, 8], ["gourami", 1360, 820, 200, 0.8, 9]]);
   function onIt() { if (house) { welWidowHouse(pen, house[0], house[1], house[2]); } if (who) { who(); } }
   onIt();
   sceneryWaterSurface(t, water);
@@ -83,6 +85,7 @@ function w12Raft2(t) {
 function w12Stream(t) {
   pen.drawImage(welSky("day"), -200, 0, WIDE + 400, 1080);
   welClouds(t + 140, "day");
+  welFlocks(t, [[-300, 200, 50]]);
   welFar(pen, WEL_WATER);
   sceneryMeadow(pen, -40, WIDE + 40, WEL_WATER - 10, 1080, {seed: 23});   // the land the city stood on, beyond the water's edge
   var stream = new Path2D();                            // the stream, winding down from the far side into the water
@@ -113,6 +116,8 @@ function welSceneHeads(t) {
   if (t < W12_CUTS[0]) { w12Shore(t); }
   else if (t < W12_CUTS[1]) { w12Raft2(t); }
   else { w12Stream(t); }
+  if (t < W12_CUTS[1]) { welKingfisher(t, 1720, 640, {water: 724, face: -1, seed: 3, size: 0.55}); }   // over the water: not in the stream shot
+  welDragonflies(t, [["marshhawk", [1300, 720, 1800, 850], 8, 1.8]]);
   sceneryAir(t, {butterfly: null, petals: null, light: [0.4, 12]});
   cngCutsOver(t, W12_CUTS);
   welFadeIn(t, 1.5);

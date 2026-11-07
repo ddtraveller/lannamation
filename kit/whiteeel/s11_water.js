@@ -32,8 +32,10 @@ function welSceneWater(t) {
   pen.globalAlpha = 1 - light;
   welFar(pen, WEL_WATER, "dawn");
   pen.globalAlpha = 1;
+  welFlocks(t, [[-300, 220, 50]]);
   var water = welMarshWater(), top = W11_HOUSE[1] - WEL_HOUSE_TOP * W11_HOUSE[2];
   sceneryWaterDepths(water);
+  welFish(t, [["barb", 520, 900, 220, 0.8, 5], ["gourami", 1450, 960, 200, 0.9, 6], ["snakehead", 900, 1020, 180, 0.8, 7]]);
   function herHouse() {
     welWidowHouse(pen, W11_HOUSE[0], W11_HOUSE[1], W11_HOUSE[2]);
     person(W11_HOUSE[0] - 50, top + 4, welPerson("grandmother", WEL_WIDOW, {id: "widow", holding: null, face: Math.sin(t * 0.5) > 0 ? 1 : -1,
@@ -65,6 +67,7 @@ function welSceneWater(t) {
   });
   sceneryReeds(60, 1110, 1.5, t, "back"); sceneryReeds(60, 1110, 1.5, t, "front");   // reeds framing the front
   sceneryReeds(1870, 1100, 1.35, t + 2, "back"); sceneryReeds(1870, 1100, 1.35, t + 2, "front");
+  welDragonflies(t, [["glider", [300, 700, 800, 840], 6, 1.8], ["scarlet", [1150, 720, 1650, 850], 7, 1.8]]);
   sceneryAir(t, {butterfly: null, petals: null, light: [0.5, 6]});
   pen.restore();
   welFadeIn(t, 1.5);

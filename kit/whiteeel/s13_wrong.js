@@ -24,6 +24,7 @@ function w13Bow(t) {
   var village = cngVillage(), cam = WIDE * 0.55;
   pen.drawImage(welSky("day"), 0, 0);
   welClouds(t + 40, "day");
+  welFlocks(t, [[-250, 190, 50]]);
   pen.save();
   pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
@@ -60,6 +61,7 @@ function w13Circle(t) {
   var village = cngVillage(), cam = WIDE * 0.35, chosen = between(t, 23.6, 24.6);
   pen.drawImage(welSky("day"), 0, 0);
   welClouds(t + 40, "day");
+  welFlocks(t, [[-250, 190, 50]]);
   pen.save();
   pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
@@ -88,6 +90,7 @@ function w13Town(t) {
   var u = t - W13_CUTS[1], river = cngRiver();
   pen.drawImage(welSky("day"), 0, 0);
   welClouds(t + 10, "day");
+  welFlocks(t, [[2200, 170, -48]]);
   pen.drawImage(river.back, 0, 0);
   cngRiverLife(t, {});
   pen.drawImage(river.near, 0, 0);
@@ -126,6 +129,7 @@ function welSceneWrong(t) {
   if (t < W13_CUTS[0]) { w13Bow(t); }
   else if (t < W13_CUTS[1]) { w13Circle(t); }
   else { w13Town(t); }
+  welDragonflies(t, [["scarlet", [1350, 740, 1800, 850], 9, 1.8]]);
   sceneryAir(t, {butterfly: null, petals: null, light: [0.4, 12]});
   cngCutsOver(t, W13_CUTS);
   welFadeIn(t, 1.5);
