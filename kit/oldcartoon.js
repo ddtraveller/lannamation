@@ -5167,6 +5167,9 @@ function personLook(fig) {
   var who = look.id || "n" + (DRAWN++);
   var rig = look.rig;                             // a puppet of drawn parts, or nothing
   var lady = look.lady !== undefined ? !!look.lady : !!look.bun;   // a woman's face, chest, neck, hands and jewellery (lady), whatever her hair
+  if (lady && !(look.age >= 0.5) && typeof peopleSettings === "undefined") {   // the owner, 2026-11-07: no long-necked young women
+    warn("a young woman is painted by people.js since 2026-11-07 (person()'s own drawing is for the old now): load people.js last, after weaving.js");
+  }
   // hidden: the parts not drawn, so that a hat or a head-cloth of any shape can be worn over any hair ("hair")
   (look.hidden || []).forEach(function (part) { checkName("A part to hide", part, HIDEABLE); });
   var hairShown = (look.hidden || []).indexOf("hair") < 0 && !look.wrap;   // a wound head-cloth covers the hair
