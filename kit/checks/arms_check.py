@@ -12,6 +12,9 @@ shoulder. Then it counts what an arm cannot do, by the kit's own rules (SHOULDER
   sweeps    the most any upper arm turns in one frame, in degrees, while its hand moved less than 12 units
 An upper arm drawn shorter than 25 units (its bone is 62) is pointing at us, not across the picture: it is left out of
 "inward", "folded" and "sweeps". A film is clean when the first three are 0. kit_check.py runs this on every page.
+Arms drawn on people.js's unseen sheet (PEOPLE_SINK: the rig passes a painted figure takes its joints from) are not
+counted: nobody sees them (floor.html's seated painted women, 240 folded, and lanna.html's dancer, 6 flips, 2026-11-08; her
+painted arm, drawn by muArm from those joints, stayed smooth across each flip).
 
 It needs Google Chrome (through Playwright). The page is named from the folder it is run in; "from" and
 "to" are seconds (default the whole page). It prints the counts and up to three of each fault, and ends with
@@ -29,6 +32,7 @@ WRAP = """() => {
   window.ARMS = [];
   var kept = arm, drawn = 0, at = -1;
   arm = function (sx, sy, hand, outward) {
+    if (typeof PEOPLE_SINK !== "undefined" && PEOPLE_SINK && pen === PEOPLE_SINK) { return kept.apply(this, arguments); }
     if (clock !== at) { at = clock; drawn = 0; }
     var r = kept.apply(this, arguments);
     window.ARMS.push([drawn++, r[2] - sx, r[3] - sy, hand[0], hand[1], outward, r[0] - sx, r[1] - sy, clock, arguments[5] || null]);
