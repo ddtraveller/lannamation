@@ -67,6 +67,9 @@ The whole film: `film.html` (made by `film_page.py`), 740 s, 58 lines, all fifte
   958.7 s, -14.1 LUFS, peak -1.5 dB (the limiter lower than before, 0.72: her voice peaks sharper than the made one).
 - For the owner: scene 3's gold name card still reads the chronicle's name (Naga Phanthu Singhanavati Nakhon, and
   พันธุ without its ์) while her W011 says Yonok Nakaphan Singhanavati. Then the owner's look.
+- v5 (the owner's notes on v4): the woman with the parasol keeps her arm folded at her hair as she walks (scenes 2
+  and 3: the walking swing had flipped her elbow; welPerson()'s still), and the naga's ripple lies on the water,
+  behind the reeds and the tree (scene 2). Scenes 2 and 3 rendered again; the sound is v4's.
 
 ## Still open
 
