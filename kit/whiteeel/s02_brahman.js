@@ -76,8 +76,9 @@ function w02Wake(t) {
 // Scene 2, the entry the film calls (SCENES): t, its own second, 0 to W02_LONG. Gives back nothing: it draws the whole
 // sheet with pen. From sets.js: welSky(), welClouds(), welFar(), welKokWater(), welPlain(), welPlainTrees(),
 // welPerson() with WEL_PRINCE, WEL_FOLK, WEL_BRAHMAN, welTalk(), welFadeIn(). Its words are W02_LINES (W004 to W008).
-// Its z plan: the sky, the hills and the far bank, the plain, the river, the reeds' back, then by drawByZ the people by
-// their feet with each clump of reeds' front (12 below its foot, so he is among them only at the water), the ripple, the trees, the soft grass in front.
+// Its z plan: the sky, the hills and the far bank, the plain, the river and the ripple on it, the reeds' back, the trees,
+// then by drawByZ the people by their feet with each clump of reeds' front (12 below its foot, so he is among them only
+// at the water), the soft grass in front.
 function welSceneBrahman(t) {
   var drift = between(t, 0, W02_LONG), pan = -40 * drift;   // the camera drifts a little with them
   pen.save();
@@ -91,6 +92,7 @@ function welSceneBrahman(t) {
   sceneryWaterDepths(kok);
   welFish(t, [["barb", 760, 676, 220, 0.6, 1], ["gourami", 1420, 690, 170, 0.6, 2]]);
   sceneryWaterSurface(t, kok);
+  w02Wake(t);                                           // on the water: behind the reeds, the trees and the people (owner, 2026-11-10)
   welKingfisher(t, 1640, 540, {water: 664, face: -1, seed: 1, size: 0.5});
   W02_REEDS.forEach(function (r) { sceneryReeds(r[0], r[1], r[2], t, "back"); });
   pen.drawImage(welPlainTrees(), 0, 0, WIDE, 1080);
@@ -138,7 +140,6 @@ function welSceneBrahman(t) {
   });
   drawByZ(sprites);
   welDragonflies(t, [["marshhawk", [180, 700, 640, 800], 3, 1.8], ["scarlet", [1260, 720, 1760, 820], 4, 1.8]]);
-  w02Wake(t);
   sceneryBeds(t, thkOnce("wel-plain-frame", function () {
     return [{sprite: sceneryGrass(300, 18, 621), x: 40, y: 1110}, {sprite: sceneryGrass(280, 16, 627), x: WIDE - 20, y: 1110}];
   }), {blur: 5, sway: 0.4});

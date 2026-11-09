@@ -207,8 +207,9 @@ var WEL_HEADS = [["villager", {turban: "#8a6a58", sabai: ["#9a8a66", "#6a5a44", 
 // historically accurate"). Kind "noble".
 var WEL_PRINCE = {sarong: ["#24335e", BROCADE], smile: 0.6, size: 0.82};
 // The people who walked with him from far away: two soldiers with spears, men, two painted women (one with a parasol
-// for the road), a farmer with his baskets on a pole and a boy. Each [kind, look] (welPerson()'s kinds).
-var WEL_FOLK = [["soldier", {size: 0.78}], [11, {size: 0.74}], ["soldier", {turban: "#2a4a6a", size: 0.78}], ["man:farmer", {size: 0.78}],
+// for the road), a farmer with his baskets on a pole and a boy. Each [kind, look] (welPerson()'s kinds). The woman with
+// the parasol holds it with her hand at her hair, still as she walks (still: welPerson()).
+var WEL_FOLK = [["soldier", {size: 0.78}], [11, {size: 0.74, still: "near"}], ["soldier", {turban: "#2a4a6a", size: 0.78}], ["man:farmer", {size: 0.78}],
                 [4, {size: 0.72}], ["villager", {turban: "#c9962a", size: 0.78}], ["child:boy", {size: 0.5}]];
 
 // King Mahachaichana, the last of Yonok's forty-five kings, seventy (the chronicle): white hair and beard, the lines of
@@ -233,7 +234,8 @@ function welTalk(t, on) { return on ? {open: 0.06 + 0.24 * Math.abs(Math.sin(t *
 // e.g. person(x, y, welPerson(17, {size: 0.72}, {id: "lane3", face: 1})); welPerson("child:tufts", {size: 0.42}, {id: "girl"})
 function welPerson(kind, own, extra) {
   var more = Object.assign({}, own, extra || {}), painted = typeof kind === "string" ? kind.split(":") : null, look;
-  delete more.free;
+  var still = more.still;
+  delete more.free; delete more.still;
   if (typeof kind === "number") { look = castMix(kind, more); }
   else if (painted.length === 2) { look = {woman: castWoman, man: castMan, child: castChild}[painted[0]](painted[1], more); }
   else { look = cast(kind, more); }
@@ -244,6 +246,18 @@ function welPerson(kind, own, extra) {
       if (typeof s === "string") { s = known[s][k]; }
       look[k] = Object.assign({}, s, {holds: undefined, pose: undefined});
     });
+  }
+  // still: "near" or "far", a painted woman's posed arm that keeps its place while she walks. The kit swings a walking
+  // woman's wrists (people.js, muArm: 30 * sin of her step, the far arm half a stride after), and an arm folded up to her
+  // hair, swung, flips its elbow from one bend to the other (the owner, 2026-11-10, of the woman with the parasol at 2:58:
+  // "Just have her arm stay folded with her hand on her hair so her elbow doesn't flip around"). The swing is taken out
+  // of her pose beforehand, so her wrist stays where the pose has it and her elbow keeps the bend it has standing.
+  var pose = still && look.woman && typeof look.woman === "object" && look.woman.pose;
+  if (pose && pose[still] && typeof more.step === "number") {
+    var swing = 30 * Math.sin(more.step * Math.PI * 2 + (still === "near" ? 0 : Math.PI)), arm = pose[still];
+    pose = Object.assign({}, pose);
+    pose[still] = Object.assign({}, arm, {w: [arm.w[0] - swing, arm.w[1] + Math.abs(swing) * 0.3]});
+    look.woman = Object.assign({}, look.woman, {pose: pose});
   }
   if (extra && extra.feel !== undefined) {
     if (extra.smile === undefined) { delete look.smile; }
