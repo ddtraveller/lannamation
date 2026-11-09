@@ -1143,3 +1143,8 @@ proportions as the painted women?"; asked which shape, the mural's own (as the h
   `STYLE.women` (0 unless set) is a woman's build as `STYLE.men` is a man's (`builtOf()`): the hero sets 1. No woman of
   `person()`'s has the long neck any more (it was 1.9 for a grown Lanna lady). `wink` (0 to 1) is a new key: the near eye
   shut that far, for the hero's wink.
+- **Shorter necks at the paintings' build** (the owner, of the hero's woman and weavers: "The neck looks too long",
+  "The weavers especially and the main woman"): a head drawn smaller on the same chin left the cartoon's neck under a
+  smaller head, and a woman's head was lifted 12 more on it (`long`). At a build above 0 a woman's head is not lifted,
+  and every head sits `NECK_SHORT` (8) lower at build 1, by its build (candidates 0, 8, 16 and 24 compared: 16 sank the
+  chin into the collar).

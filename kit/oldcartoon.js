@@ -2236,6 +2236,7 @@ function ageFall(age, V) {
 // V.face (a Path2D of the face, which personHead() adds) keeps the far eye, the cheek and the mouth on the face.
 // Reads NORTH_FACE. Returns nothing: it draws with pen. person() calls it; a page draws a person instead.
 // e.g. ladyFace(false, null, saccade(t), view(0.3, true, null), feelingOf({feel: "happy"}));
+var NECK_SHORT = 8;                                 // how much lower the head sits at the paintings' build (build 1), its neck shorter (2026-11-09)
 var FACE_WINK = 0;                                  // the near eye shut this far while a face is drawn (look.wink)
 function ladyFace(shut, mouth, glance, V, feel) {
   var lift = (mouth ? 5 * mouth.open : 0) + 7 * feel.wonder + 6 * feel.fear - 4 * feel.anger + feel.browUp + 2 * feel.worry
@@ -5600,7 +5601,7 @@ function personTrunk(fig) {
   // stands on a neck: look.head is how wide the head is (0.9 for her unless
   // told, 1 for anyone else), and a head narrower than 1 is lifted by 12.
   // A face of the north is as broad as its shape says, a lady's too.
-  var narrow = (look.head !== undefined ? look.head : NORTH_FACE ? NORTH_FACE.wide : lady ? 0.9 : 1) * BODY.face, long = narrow < 1 ? 1 : 0;   // no woman's neck long any more (it was 1.9 for a grown Lanna lady): the owner, 2026-11-07, of the White Eel's widow, "The widow shouldn't have a long neck", and of its young women, then 2026-11-09 of the hero's women drawn by person() again
+  var narrow = (look.head !== undefined ? look.head : NORTH_FACE ? NORTH_FACE.wide : lady ? 0.9 : 1) * BODY.face, long = narrow < 1 && !((look.build || 0) > 0) ? 1 : 0;   // no woman's neck long any more (it was 1.9 for a grown Lanna lady): the owner, 2026-11-07, of the White Eel's widow, "The widow shouldn't have a long neck", and of its young women, then 2026-11-09 of the hero's women drawn by person() again
   joints.waist = spot(0, 0);
   joints.neck = spot(neckX, -148);
   // Where a point of the chest is, once the spine has bent it and the two
@@ -6548,7 +6549,7 @@ function personHead(fig) {
   // The head is drawn about its middle, which is 59 above its chin. A smaller
   // head is moved down by what it lost below its middle, so the chin stays
   // where it was, on the neck.
-  pen.translate(neckX, -186 - (lady ? 8 : 3) - 12 * long + (still ? 0 : 8 * (1 - up)) + 59 * headTall * (1 - small));
+  pen.translate(neckX, -186 - (lady ? 8 : 3) - 12 * long + (still ? 0 : 8 * (1 - up)) + 59 * headTall * (1 - small) + NECK_SHORT * Math.max(0, 1 - small) / 0.28);
   var tilted = look.tilt !== undefined ? look.tilt : feel.tilt;   // how far a dancer's pose, or a feeling, tilts the head
   pen.rotate(-rock * 2.4 + 0.6 * swayAt(1.3) + tilted + lagH[0] * 0.004); // the sway reaches it last
   if (rig) {                                        // the drawn head, turning about the top of the neck
