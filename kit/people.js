@@ -1102,7 +1102,14 @@ function muUnderJaw(rec, chinY, skin) {
   pen.restore();
 }
 function muLower(A) { pen.transform(1, 0, A, 1, 0, 0); }
-function muUpper(A, B, Y0) { pen.transform(1, 0, B, 1, (A - B) * Y0, 0); }
+// MU_BEND: the upper body tipped about the waist (radians, forward above 0), MU_NOD: the head turned about the chin, both
+// while a painted figure is drawn, from person()'s own figure in the same moves (peopleMoves(); the owner, 2026-11-09:
+// "The painted women need to move like the other model figures"). 0 when nothing is being drawn.
+var MU_BEND = 0, MU_NOD = 0;
+function muUpper(A, B, Y0) {
+  if (MU_BEND) { pen.translate(0, Y0); pen.rotate(MU_BEND); pen.translate(0, -Y0); }
+  pen.transform(1, 0, B, 1, (A - B) * Y0, 0);
+}
 
 var NECK_DROP = [2, 16];                              // where the chin sits below "chin": a lady's, a man's (was -4, 8)
 // A man's two legs now, each [hip x, y, knee x, y, ankle x, y]: standing, or in the walk of mural_women.js (wmWalk): each foot goes
@@ -1343,6 +1350,7 @@ function muralPerson(x, y, look, opts) {
   }
   var neckX = (A - B) * Y0 + B * chin;
   pen.save();
+  if (MU_BEND) { pen.translate(0, Y0); pen.rotate(MU_BEND); pen.translate(0, -Y0); }   // on the bent upper body (muUpper)
   pen.translate(8 + neckX, chin + NECK_DROP[lady ? 0 : 1]);
   pen.rotate(lady ? -0.05 : -0.02);
   muHead(look, lady, skin);
@@ -2608,7 +2616,7 @@ function wmDrift() {
 }
 muHead = function (look, lady, skin) {
   var drift = wmDrift();
-  pen.save(); pen.translate(0, -12); pen.rotate(drift); pen.translate(0, 12);   // alive: the head drifts about the chin
+  pen.save(); pen.translate(0, -12); pen.rotate(drift + MU_NOD); pen.translate(0, 12);   // alive: the head drifts about the chin; MU_NOD as person()'s tips
   try { wmFaceHead(look, lady, skin); } finally { pen.restore(); }
 };
 function wmFaceHead(look, lady, skin) {
@@ -3262,7 +3270,8 @@ function wmWoman(x, y, look, wm, opts) {
     pen.save(); muUpper(WM_A, WM_B, WM_Y0); wmHolds(look); pen.restore();
     if (wm.crown) {
       var neckX = (WM_A - WM_B) * WM_Y0 + WM_B * WM_CHIN;
-      pen.save(); pen.translate(8 + neckX, WM_CHIN + NECK_DROP[0]); pen.rotate(-0.05); wmCrown(); pen.restore();
+      pen.save(); if (MU_BEND) { pen.translate(0, WM_Y0); pen.rotate(MU_BEND); pen.translate(0, -WM_Y0); }
+      pen.translate(8 + neckX, WM_CHIN + NECK_DROP[0]); pen.rotate(-0.05); wmCrown(); pen.restore();
     }
     pen.restore();
   } finally { pen.restore(); WM = null; WM_LATE = null; WM_OVER = null; WM_TILT = 0; WM_STEP = null; }
@@ -4280,6 +4289,38 @@ function peopleSeat(x, y, look, lady) {
   finally { pen.setTransform(1, 0, 0, 1, 0, 0); pen = was; }
 }
 
+// How a painted figure moves, from person()'s own plain figure in the same moves (the owner, 2026-11-09: "The painted women
+// need to move like the other model figures"): the rig is drawn twice on the unseen sheet, once in the look's moves (its hop
+// on the beat, a kick, a half-sit, a bend, a sway, a tilt, a walk) and once at rest (the same walk, no hop, nothing else),
+// and the two are compared. Gives back {dy, lean, bend, nod} in the scene's units and radians, forward (the way the figure
+// faces) above 0: dy how far its hips are below rest (a hop is below 0), lean the whole figure about its feet, bend the
+// upper body about the waist, nod the head about the chin; or null when the figure is to keep still (nothing moves it).
+// A painted figure's walk and wai are its own; its arms are the rig's only where the look puts them (peoplePainted).
+// e.g. peopleMoves(400, 960, castWoman("maiden", {bend: 0.3}), true).bend
+var PEOPLE_MOVED = ["step", "stride", "bend", "twist", "sway", "tilt", "sit", "up", "late", "raise", "spring", "shoulders", "dance"];
+function peopleMoves(x, y, look, lady) {
+  var moved = PEOPLE_MOVED.some(function (k) { return look[k] !== undefined && k !== "step" && k !== "stride"; });
+  if (!STYLE.hop && !moved) { return null; }
+  if (!PEOPLE_SINK) { var sheet = document.createElement("canvas"); sheet.width = 1; sheet.height = 1; PEOPLE_SINK = sheet.getContext("2d"); }
+  var way = look.face || 1, base = {size: look.size || 1, lady: lady, bun: lady, plain: true, sabai: false, shirt: "#888888", legs: "#888888", face: way};
+  var now = Object.assign({}, base, {id: "move/" + (look.id || "n")}), rest = Object.assign({}, base, {id: "rest/" + (look.id || "n")});
+  PEOPLE_MOVED.forEach(function (k) { if (look[k] !== undefined) { now[k] = look[k]; } });
+  ["step", "stride"].forEach(function (k) { if (look[k] !== undefined) { rest[k] = look[k]; } });
+  var was = pen, frame = pen.getTransform(), hop = STYLE.hop, a, b;
+  pen = PEOPLE_SINK;
+  try {
+    pen.setTransform(frame); a = PEOPLE_PERSON(x, y, now);
+    STYLE.hop = false;
+    pen.setTransform(frame); b = PEOPLE_PERSON(x, y, rest);
+  } finally { STYLE.hop = hop; pen.setTransform(1, 0, 0, 1, 0, 0); pen = was; }
+  var scene = frame.inverse();
+  function at(j) { var p = scene.transformPoint(new DOMPoint(j[0], j[1])); return [p.x, p.y]; }
+  function turn(from, to) { var p = at(from), q = at(to); return Math.atan2((q[0] - p[0]) * way, p[1] - q[1]); }
+  var lean = turn(a.stand, a.waist) - turn(b.stand, b.waist), bend = turn(a.waist, a.neck) - turn(b.waist, b.neck) - lean;
+  var nod = turn(a.chin, a.crown) - turn(b.chin, b.crown) - bend - lean;
+  return {dy: at(a.hip)[1] - at(b.hip)[1], lean: lean, bend: bend, nod: nod};
+}
+
 // The figure's measure of a child: the point of the upper body (the units of the shear's frame) where a grown figure has it,
 // to where it is drawn (forward true), or back. c: the settings' child, a negative number, or 0 for anyone grown.
 function peopleChild(p, c, forward) {
@@ -4292,8 +4333,12 @@ function peopleChild(p, c, forward) {
 // painted woman figures so their heads and bodies are similar size to the old rig"): tall, her whole figure's scale; head,
 // her head's, about her chin; wide, her body's width, her head kept round. At 1, 1, 1 she is as mural.js paints her: at
 // size 1 she stood 413 tall, her head 60 from chin to crown, her shoulders 46 apart; the rig's people 360 to 390, 85 to 88
-// and 66. PEOPLE_GROW: the one being drawn now, for wmHead().
-var PEOPLE_FORM = {tall: 0.85, head: 1.69, wide: 1.5}, PEOPLE_GROW = null;
+// and 66. The kit's form was {0.85, 1.69, 1.5} (386 / 86 / 59) from 2026-11-07 to 11-09; then the owner turned it the other
+// way: "Can you resize the male figures so their heads and bodies have the same proportions as the painted women?", the
+// mural's own shape: she is 1, 1, 1 again and the men take the paintings' build (STYLE.men, menBuilt() in oldcartoon.js),
+// which also ended the arms that the wide form stretched sideways ("Some have fingers that are too long").
+// PEOPLE_GROW: the one being drawn now, for wmHead().
+var PEOPLE_FORM = {tall: 1, head: 1, wide: 1}, PEOPLE_GROW = null;
 // draw() with a grown painted woman's form: her body widened about x, her head grown (wmHead reads PEOPLE_GROW).
 function peopleFormed(form, x, draw) {
   if (form.wide !== 1) { pen.translate(x, 0); pen.scale(form.wide, 1); pen.translate(-x, 0); }
@@ -4319,8 +4364,15 @@ function peoplePainted(x, y, look, wm) {
   }
   plain.reachA = plain.reachB = plain.handA = plain.handB = undefined;
   var settings = Object.assign({}, wm), pose = Object.assign({}, wm.pose || {});
+  var moves = peopleMoves(x, y, look, lady) || {dy: 0, lean: 0, bend: 0, nod: 0};   // her hop, lean, bend and nod: person()'s
+  function turned(p, about, by) {                    // p turned about a point by an angle
+    var c = Math.cos(by), s = Math.sin(by), dx = p[0] - about[0], dy = p[1] - about[1];
+    return [about[0] + dx * c - dy * s, about[1] + dx * s + dy * c];
+  }
   function upperOf(unit) {                           // a point in the figure's units, into the upper body's frame (its shear)
-    var p = kid ? peopleChild(unit, kid, false) : unit;
+    var q = turned([unit[0], (unit[1] - Math.min(0, moves.dy) / px) / (1 - Math.max(0, moves.dy) / ((lady ? 700 : 720) * px))], [0, 0], -moves.lean);   // her hop and lean undone,
+    q = turned(q, [0, measure.Y0], -moves.bend);                                  // and her bend
+    var p = kid ? peopleChild(q, kid, false) : q;
     return [p[0] - measure.B * p[1] - (measure.A - measure.B) * measure.Y0, p[1]];
   }
   var scene = pen.getTransform().inverse();
@@ -4350,11 +4402,19 @@ function peoplePainted(x, y, look, wm) {
   settings.pose = pose;
   plain.woman = settings;
   pen.save();
+  if (moves.dy < 0) { pen.translate(0, moves.dy); }   // her hop on the beat, a kick: off the ground
+  else if (moves.dy > 0) {                          // her knees bent under her sin, the hips down: her feet stay on the ground
+    pen.translate(0, y); pen.scale(1, 1 - moves.dy / ((lady ? 700 : 720) * px)); pen.translate(0, -y);
+  }
   if (way < 0) { pen.translate(x, 0); pen.scale(-1, 1); pen.translate(-x, 0); }
-  peopleFormed(form, x, function () { muralPerson(x, y, plain, {head: 59 * size * form.tall}); });
+  if (moves.lean) { pen.translate(x, y); pen.rotate(moves.lean); pen.translate(-x, -y); }   // the whole of her, about her feet
+  MU_BEND = moves.bend; MU_NOD = moves.nod;          // her upper body about the waist, her head about the chin (muUpper, muHead)
+  try { peopleFormed(form, x, function () { muralPerson(x, y, plain, {head: 59 * size * form.tall}); }); }
+  finally { MU_BEND = 0; MU_NOD = 0; }
   function at(unit, upper) {                         // a point of the figure, in the sheet's pixels, as person()'s joints are
     var p = upper ? [unit[0] + measure.B * unit[1] + (measure.A - measure.B) * measure.Y0, unit[1]] : unit;
     if (kid) { p = peopleChild(p, kid, true); }
+    if (upper && moves.bend) { p = turned(p, [0, measure.Y0], moves.bend); }
     var d = pen.getTransform().transformPoint(new DOMPoint(x + p[0] * px, y + p[1] * px));
     return [d.x, d.y];
   }
@@ -4418,12 +4478,12 @@ function peoplePoses(look) {
   if (PEOPLE_POSES[key]) { return PEOPLE_POSES[key]; }
   if (PEOPLE_POSES_MADE >= PEOPLE_POSES_MOST) { warn("More than " + PEOPLE_POSES_MOST + " sets of poses: is something in the look changing every frame? Painting her live."); return null; }
   var size = look.size || 1, wide = FILM.width, high = Math.max(FILM.height, Math.ceil((size * 480 + 200) * PIX));
-  var foot = high / PIX - 120, mid = wide / PIX / 2, poses = [], real = pen, held = clock, seen = SIGHTS.on;
+  var foot = high / PIX - 120, mid = wide / PIX / 2, poses = [], real = pen, held = clock, seen = SIGHTS.on, hop = STYLE.hop;
   if (!PEOPLE_POSES_PEN) { PEOPLE_POSES_PEN = document.createElement("canvas").getContext("2d"); }
   var sheet = PEOPLE_POSES_PEN.canvas, small = document.createElement("canvas").getContext("2d", {willReadFrequently: true}), SHRINK = 4;
   sheet.width = wide; sheet.height = high;           // as wide as the film's: the gold's light goes by it
   small.canvas.width = Math.ceil(wide / SHRINK); small.canvas.height = Math.ceil(high / SHRINK);
-  pen = PEOPLE_POSES_PEN; clock = PEOPLE_POSES_HELD; SIGHTS.on = false;
+  pen = PEOPLE_POSES_PEN; clock = PEOPLE_POSES_HELD; SIGHTS.on = false; STYLE.hop = false;   // painted at rest: her hop goes on as she is stamped
   try {
     for (var i = 0; i < look.poses; i++) {
       pen.setTransform(1, 0, 0, 1, 0, 0);
@@ -4447,7 +4507,7 @@ function peoplePoses(look) {
       Object.keys(joints).forEach(function (k) { rel[k] = Array.isArray(joints[k]) ? [joints[k][0] / PIX - mid, joints[k][1] / PIX - foot] : joints[k]; });
       poses.push({canvas: crop, x: x0 / PIX - mid, y: y0 / PIX - foot, w: w / PIX, h: h / PIX, joints: rel});
     }
-  } finally { pen = real; clock = held; SIGHTS.on = seen; }
+  } finally { pen = real; clock = held; SIGHTS.on = seen; STYLE.hop = hop; }
   PEOPLE_POSES_MADE++;
   PEOPLE_POSES[key] = poses;
   return poses;
@@ -4456,8 +4516,13 @@ function peoplePoses(look) {
 // The pose for this step, stamped with her feet at (x, y). Returns her joints, as peoplePainted() does.
 function peopleStamp(x, y, look, poses) {
   var n = poses.length, pose = poses[((Math.round(look.step * n) % n) + n) % n], way = look.face || 1, out = {};
+  var lady = look.lady !== undefined ? !!look.lady : !!look.bun;
+  var moves = peopleMoves(x, y, Object.assign({}, look, {bend: undefined}), lady);   // her hop and lean as person()'s (her bend is painted)
   pen.save();
+  if (moves && moves.dy < 0) { pen.translate(0, moves.dy); }
+  else if (moves && moves.dy > 0) { pen.translate(0, y); pen.scale(1, 1 - moves.dy / (pose.h || 500)); pen.translate(0, -y); }
   if (way < 0) { pen.translate(x, 0); pen.scale(-1, 1); pen.translate(-x, 0); }
+  if (moves && moves.lean) { pen.translate(x, y); pen.rotate(moves.lean); pen.translate(-x, -y); }
   pen.drawImage(pose.canvas, x + pose.x, y + pose.y, pose.w, pose.h);
   Object.keys(pose.joints).forEach(function (k) {
     var j = pose.joints[k];

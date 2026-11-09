@@ -205,7 +205,8 @@ var STYLE = {
   film: 1,                              // how much of the old print shows: grain, flicker, dust, dark corners, the shake in the gate; 0 is a clean picture
   pixels: 1,                            // device pixels per film pixel: 2 draws everything at twice the size and lets the browser smooth it down (read before this sheet: see PIX)
   light: null,                          // where the light comes from, [across, down]: [-0.6, 0.5] throws a shadow to the right; null for the soft pool alone
-  letters: null                         // the fonts of the film's words, {thai, latin}; null for the kit's own (read before this sheet: see LETTERS)
+  letters: null,                        // the fonts of the film's words, {thai, latin}; null for the kit's own (read before this sheet: see LETTERS)
+  men: 1                                // a man's build when his look leaves it out (menBuilt): 1 the paintings', as the painted women stand; 0 the cartoon's
 };
 
 checkNames("FILM_STYLE's entry", window.FILM_STYLE || {}, STYLE);
@@ -4104,6 +4105,20 @@ function leggyOf(build) {
   return 1 + (b < 0 ? 0.15 : 0.3) * b;
 }
 
+// A male figure's build as the kit draws him (the owner, 2026-11-09: "Can you resize the male figures so their heads and
+// bodies have the same proportions as the painted women?", all of them, to the mural's own shape): a man or an old man
+// whose look leaves build out takes STYLE.men (1, the paintings': six and a half to seven heads tall, as a painted woman
+// stands); a boy (build below 0) comes that part of the way up from a child's, keeping a child's larger head; a build the
+// look gives at 0 or more is kept. A woman, of any age, is as she was. Gives back the look, or a copy with its build.
+// e.g. menBuilt(cast("boy")).build   // -0.5
+function menBuilt(look) {
+  var lady = look.lady !== undefined ? !!look.lady : !!look.bun, m = STYLE.men || 0;
+  if (lady || !m) { return look; }
+  if (look.build === undefined) { return Object.assign({}, look, {build: m}); }
+  if (look.build < 0) { return Object.assign({}, look, {build: look.build * (1 - 0.5 * m)}); }
+  return look;
+}
+
 // A hand at rest, as it hangs at the end of an arm with nothing to do: the
 // fingers lie together and bend a little toward the body, the little finger
 // most, and the thumb lies along them. The palm faces the leg, so on the
@@ -5112,6 +5127,7 @@ var WAI_LAYER = null;
 // cartoon maker does, then draws its next frame as it would have.
 function person(x, y, look) {
   var sheetPen = pen;
+  look = menBuilt(look);
   try {
     return personDrawn(x, y, look);
   } catch (error) {

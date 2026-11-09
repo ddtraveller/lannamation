@@ -1097,9 +1097,38 @@ own figure any more. In `people.js`:
   painted woman as mural.js paints her 413 / 60 / 46; at the kit's form {0.85, 1.69, 1.5} 386 / 86 / 59 (candidates
   A {0.93, 1.35, 1.15} and B {0.9, 1.5, 1.3} lay between). Her joints, her seat's (the rig at her height) and the
   woven sabai on her (`sabaiOfMural`) follow it. Men and children keep their own; a film can set `PEOPLE_FORM` after
-  `people.js`, as the hero film does to keep its princess as the owner approved her.
+  `people.js`, as the hero film does to keep its princess as the owner approved her. Turned the other way on 2026-11-09
+  (next section): she is the mural's own shape again and the men take hers.
 
 Every page that draws a young woman loads `people.js` last of the kit's modules, after `weaving.js` (and `sabai.js`,
 `sabai_finish.js` where the cloth is worn). In a page without it `person()` still draws her the old way and warns ("a
 young woman is painted by people.js since 2026-11-07 ..."), so the kit check fails it. Not carried over yet: the Lua
 women's glass-bead strands and wool tassels (`beads`, `earrings`, `wraps`), which the painted figure does not draw.
+
+
+## Everyone at the paintings' build, and the painted figures move with the rig (2026-11-09)
+
+The owner, after the White Eel's v3 and the new hero: "The painted women need to move like the other model figures.
+Some have fingers that are too long. Can you resize the male figures so their heads and bodies have the same
+proportions as the painted women?"; asked which shape, the mural's own (as the hero's princess), and which males, all.
+
+- **The men take the paintings' build.** `STYLE.men` (1) is the build of a male figure whose look leaves `build` out
+  (`menBuilt()` in `oldcartoon.js`, at the top of `person()`): a man or an old man stands as the paintings' figures,
+  his head smaller on the same chin and his legs longer (the build above); a boy comes half of the way up from a child's
+  (build -1 to -0.5), keeping a child's larger head; a build the look gives at 0 or more is kept, and a woman of any age
+  is as she was. Measured at size 1 (`checks/heads_tall.py`'s way: feet to crown in heads): the fellow and the farmer
+  4.7 to 6.8 heads, the elder 4.7 to 6.8, the boy 3.7 to 4.1; the painted woman 6.9, the painted man 7.2 (his shoulders
+  87 apart to the rig man's 86, so the men's breadth already matched). `STYLE.men = 0` draws the cartoon's men again.
+  The rig's grandmothers keep 4.5 heads (the owner asked for the males).
+- **The painted women are the mural's own shape again**: `PEOPLE_FORM` is {1, 1, 1}. Its width of 1.5 had stretched
+  every arm held out sideways, the hand and its fingers with it ("Some have fingers that are too long").
+- **The painted figures move as `person()`'s do** (`peopleMoves()` in `people.js`): each frame `person()`'s plain figure
+  is drawn twice on the unseen sheet, in the look's moves and at rest (no hop, nothing else, the same walk), and the
+  difference is put on the painted figure: the hop on the beat and a kick lift her off the ground; the hips' dip on the
+  beat (the knees bent under her sin) presses her a little shorter about her feet, so her feet stay on the ground; the
+  rock and a kick's lean tip the whole of her about her feet; `bend`, `sway` and the rest tip her upper body about the
+  waist (`MU_BEND`, in `muUpper()`, so the arms, the sabai woven on her, the head and a crown go with it); and the head
+  tips about the chin as the rig's does beyond that (`MU_NOD`, with the head's own drift). Her walk and her wai stay her
+  own (she had both); her arms are the rig's where the look puts them (`reachA`, `handA` ...), as before. A crowd's
+  painted poses (`look.poses`) are painted at rest and stamped with the hop and the lean. The two plain figures cost
+  about 1 ms a frame against her 100. Not followed: `turn` and `twist` (she is painted in three-quarter view only).
