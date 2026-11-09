@@ -91,6 +91,7 @@ var PARTS = [
     ["at", "lady", function (t, x, y) { return {at: [x + 300 * Math.cos(t * 2), y - 300 + 200 * Math.sin(t * 2)]}; }, "at: [x, y] (going round)"],
     ["glance", "lady", function () { return {glance: [0.8, 0.3]}; }, "glance: [0.8, 0.3]"],
     ["blink", "lady", function () { return {blink: 1}; }, "blink: 1"],
+    ["wink", "lady", function () { return {wink: 1, smile: 0.8}; }, "wink: 1,|smile: 0.8"],
     ["wonder", "child", function () { return {wonder: 1, smile: 0}; }, "wonder: 1"],
     ["smile", "fellow", function () { return {smile: 1}; }, "smile: 1"],
     ["fear", "fellow", function () { return {fear: 1}; }, "fear: 1"],
