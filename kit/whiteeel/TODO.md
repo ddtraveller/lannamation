@@ -62,8 +62,11 @@ The whole film: `film.html` (made by `film_page.py`), 740 s, 58 lines, all fifte
   (the Maeng film's way, 25 Oct): the tale 740.8 s -> 824.2 s. W10_ROARS moved by hand. No line crosses a cut.
 - Her two ๆ (W049, W054) stay in the subtitles; SAY_AS says the word twice (tale_plan.py checks the spoken form).
 - The English follows her words where they now mean something else: W011, W012, W037, W049, W056, W058.
-- To do: the music again (feelings.py --film), her voice mixed over it, all 15 scenes rendered again (the kit's men
-  changed too), joined after the hero and the studio card; the owner's look.
+- Made (v4, at 1e036d3): the music again (score_check: 58 of 58 lines in their feeling), her voice over it (every
+  line ends before its words leave), all 15 scenes rendered again, joined after the hero and the studio card:
+  958.7 s, -14.1 LUFS, peak -1.5 dB (the limiter lower than before, 0.72: her voice peaks sharper than the made one).
+- For the owner: scene 3's gold name card still reads the chronicle's name (Naga Phanthu Singhanavati Nakhon, and
+  พันธุ without its ์) while her W011 says Yonok Nakaphan Singhanavati. Then the owner's look.
 
 ## Still open
 
