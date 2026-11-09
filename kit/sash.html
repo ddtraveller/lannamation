@@ -12,10 +12,10 @@
 <canvas id="stage" width="1920" height="1080"></canvas>
 <script>
 // The film's style, read by the kit as it loads: nobody hops (the dance turns
-// it on for its own scene), the old print shows at six tenths, the light comes
+// it on for its own scene), no old print (six tenths until 2026-11-09), the light comes
 // from the upper left and throws a shadow to the right, and the sheet is drawn
 // at two device pixels per film pixel and smoothed down to the picture.
-window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0.6, light: [-0.6, 0.5]};
+window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0, light: [-0.6, 0.5]};
 // The film was staged on the kit's 1440 sheet. On the 1920 one, the sets are
 // painted across the whole width with what stands on them moved in by SIDE,
 // the old bar's width, and each scene draws its figures under a translation
