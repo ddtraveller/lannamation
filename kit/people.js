@@ -213,6 +213,9 @@ function muLimbWide(w, bellies) {
   };
 }
 
+// MU_FINGERS: how long the dancer's fingers are, of mural.js's 36 to 48 on a palm of 35 (the owner, 2026-11-09: "Make the
+// fingers shorter and more normal looking on the painted women"; the women who do not dance have hands "normal")
+var MU_FINGERS = 0.72;
 // a hand from the thumb's edge, its long fingers bending back from the knuckles, each nail a pale crescent
 function muHand(x, y, angle, back, bend, skin, lady) {
   // Seen from the thumb's edge the fingers lie nearly one behind the other, bending back together from the knuckles in
@@ -224,7 +227,7 @@ function muHand(x, y, angle, back, bend, skin, lady) {
   pen.scale(back, 1);
   var parts = [], gaps = new MPath();
   [[36, 1.08, 1.6, 28.5], [45, 1.04, 0.8, 30], [48, 1, 0, 30.5], [44, 0.96, -1, 30]].forEach(function (f, i) {   // little, ring, middle, first
-    var b = bend * f[1], root = [f[2], f[3]], L = f[0];
+    var b = bend * f[1], root = [f[2], f[3]], L = f[0] * MU_FINGERS;
     var tip = [root[0] + L * Math.sin(b) * 0.8 + i * 0.3, root[1] + L * Math.cos(b * 0.8)];
     var mid = [root[0] + L * Math.sin(b * 0.25) * 0.3, root[1] + L * 0.52];
     var at = muBent(root, mid, tip);
@@ -2040,7 +2043,7 @@ muHand = function (x, y, angle, back, bend, skin, lady) {
   var p = WM_ARM;
   if (p && p.wrist) { angle += p.wrist * back; }
   if (p && p.aim !== undefined) { var turn = p.aim - angle; angle += Math.atan2(Math.sin(turn), Math.cos(turn)) * p.aimBy; }   // a wai's hand: fingers up
-  if (p && p.aim !== undefined && p.aimBy >= 0.5) { wmHandWai(x, y, angle, skin, lady, WM && WM.hands === "normal" ? 1 : 1.45); }
+  if (p && p.aim !== undefined && p.aimBy >= 0.5) { wmHandWai(x, y, angle, skin, lady, WM && WM.hands === "normal" ? 1 : 1.45 * MU_FINGERS); }
   else if (WM && WM.hands === "normal") { wmHandNormal(x, y, angle, back, bend, skin, lady); }
   else { WM_KIT.muHand(x, y, angle, back, bend, skin, lady); }
   if (WM && WM.nails && !(p && p.aim !== undefined && p.aimBy >= 0.5)) { wmNails(x, y, angle, back, bend); }
@@ -2124,7 +2127,7 @@ function wmNails(x, y, angle, back, bend) {
   pen.save();
   pen.translate(x, y); pen.rotate(angle - Math.PI / 2); pen.scale(back, 1);
   [[36, 1.08, 1.6, 28.5], [45, 1.04, 0.8, 30], [48, 1, 0, 30.5], [44, 0.96, -1, 30]].forEach(function (f, i) {
-    var b = bend * f[1], L = f[0], tip = [f[2] + L * Math.sin(b) * 0.8 + i * 0.3, f[3] + L * Math.cos(b * 0.8)];
+    var b = bend * f[1], L = f[0] * MU_FINGERS, tip = [f[2] + L * Math.sin(b) * 0.8 + i * 0.3, f[3] + L * Math.cos(b * 0.8)];
     var mid = [f[2] + L * Math.sin(b * 0.25) * 0.3, f[3] + L * 0.52], dx = tip[0] - mid[0], dy = tip[1] - mid[1], l = Math.hypot(dx, dy) || 1;
     wmNail(tip, dx / l, dy / l, i);
   });
@@ -3355,14 +3358,14 @@ function wmAdd2(a, d) { return [a[0] + d[0], a[1] + d[1]]; }
 var MURAL_WOMEN = {
   celestial: {cast: "celestial", say: "a celestial of the murals",
               look: {bun: "wong", shirt: "#f4ecdc", sin: 2, sabai: sabaiLook("chiangKham"), jewels: "gold", bangles: 3, skin: "#e8bf80", hair: "#17110e", makeup: "rose"},
-              woman: {face: WM_FACES.celestial, jok: ["long", "long", 1.6], blouse: "clouds", hair: [], crown: true, armlet: true, earring: "dokhu",
+              woman: {face: WM_FACES.celestial, hands: "normal", jok: ["long", "long", 1.6], blouse: "clouds", hair: [], crown: true, armlet: true, earring: "dokhu",
                       pose: {far: {w: [64, -770], elbow: [1, -0.3], wrist: -0.5, fingers: -0.3}, near: {w: [-128, -425], elbow: [-0.4, 1], wrist: 0.2, fingers: 0.3}},
                       scarf: ["#2a2433", "#c8a24a", function (f, n) {
                         return [[f, wmAdd2(f, [-90, 30]), wmAdd2(n, [60, -140]), n, 1.5, 0], [n, wmAdd2(n, [-30, 90]), wmAdd2(n, [40, 230]), wmAdd2(n, [0, 410]), 2, 0.6]];
                       }, 9]}},
   maiden: {cast: "maiden", say: "a maiden with a lotus bud",
            look: {shirt: "#f1d3cf", sin: 0, sabai: sabaiLook("nan"), jewels: "silver", skin: "#eec2a4", hair: "#1d1410", makeup: "rose"},
-           woman: {face: WM_FACES.maiden, jok: ["nan", "nanIndigo", 1.6], blouse: ["dots", "#fbf3ee"], hair: ["jasmine", "gardenia"], earring: "pearl", neck: "pearls",
+           woman: {face: WM_FACES.maiden, hands: "normal", jok: ["nan", "nanIndigo", 1.6], blouse: ["dots", "#fbf3ee"], hair: ["jasmine", "gardenia"], earring: "pearl", neck: "pearls",
                    belt: "panneng", chain: false, holds: "lotus", pose: {near: {w: [40, -545], elbow: [-0.2, 1], wrist: -0.25, fingers: 0.75, late: true}}}},
   dancer: {cast: "dancer", say: "a fingernail dancer",
            look: {shirt: "#d4502e", sin: WM_SIN.braid, sabai: sabaiLook("tuapDaeng"), jewels: "gold", bangles: 4, skin: "#c98a5e", hair: "#24150e", makeup: "red"},
@@ -3377,7 +3380,7 @@ var MURAL_WOMEN = {
                    pose: {far: {w: [150, -600], elbow: [0.4, 1], wrist: 0.7, fingers: -0.6}, near: {w: [-168, -600], elbow: [-0.4, 1], wrist: 0.7, fingers: -0.6}}}},
   princess: {cast: "lady", say: "a princess of the north",
              look: {shirt: "#f2e2c4", sin: WM_SIN.gold, sabai: sabaiLook("haeOn"), jewels: "gold", bangles: 5, skin: "#e6bd96", hair: "#120e14", makeup: "berry"},
-             woman: {face: WM_FACES.princess, jok: ["nan", "nan", 1.6], blouse: ["dots", "#ffffff"], hair: ["maiwai", "gardenia", "yong"], earring: "dokhu", neck: "sangwan",
+             woman: {face: WM_FACES.princess, hands: "normal", jok: ["nan", "nan", 1.6], blouse: ["dots", "#ffffff"], hair: ["maiwai", "gardenia", "yong"], earring: "dokhu", neck: "sangwan",
                      belt: "panneng", chain: false, holds: "garland", pose: {near: {w: [6, -472], elbow: [-0.6, 1], wrist: 0.5, fingers: 0.5, late: true}}}},
   grandmother: {cast: "grandmother", say: "a grandmother",
                 look: {shirt: "#f3efe6", sin: 2, sabai: sabaiLook("maeChaemPat"), jewels: "silver", bangles: 2, skin: "#d4a07a", hair: "#d8d2c8", makeup: "betel", age: 0.7},
@@ -3393,7 +3396,7 @@ var MURAL_WOMEN = {
                 pose: {near: {w: [-20, -600], elbow: [-0.3, 1], wrist: -0.6, fingers: 1, late: true}}}},
   court: {cast: "lady", say: "a lady of the court, 1914",
           look: {shirt: "#fbf7ef", sin: WM_SIN.gold, sabai: sabaiLook("yuanChet"), jewels: "gold", bangles: 3, skin: "#ecc8a4", hair: "#141014", makeup: "rose"},
-          woman: {face: WM_FACES.court, jok: ["nan", "maechaem", 1.6], blouse: ["lace", "#d8ccb8"], hair: ["gardenia"], earring: "pearl", neck: "pearls", belt: "panneng", chain: false,
+          woman: {face: WM_FACES.court, hands: "normal", jok: ["nan", "maechaem", 1.6], blouse: ["lace", "#d8ccb8"], hair: ["gardenia"], earring: "pearl", neck: "pearls", belt: "panneng", chain: false,
                   holds: "fan", pose: {near: {w: [20, -520], elbow: [-0.5, 1], wrist: 0.2, fingers: 0.6, late: true}}}},
   festival: {cast: "sinuan", say: "a girl at the festival",
              look: {shirt: "#2e2f3e", sin: 2, sabai: sabaiLook("taSaeng"), jewels: "gold", bangles: 4, skin: "#dcae84", hair: "#1d1410", makeup: "rose"},
@@ -4534,8 +4537,20 @@ function peopleStamp(x, y, look, poses) {
   return out;
 }
 
+// PEOPLE_WOMEN: "painted" (the kit's way since 2026-11-07) or "rig": a page that sets "rig" after people.js has every woman
+// and girl drawn by person()'s own figure in her own look, what the look has for a painted figure (woman, child, and the
+// painted keys) left out (the owner, 2026-11-09, of the hero film: "Use the old rig style women but adjust their
+// measurements to be like the painted women and new style men": with STYLE.women 1). Men and boys stay as they are.
+var PEOPLE_WOMEN = "painted";
+function peopleRigLook(look) {
+  var own = {};
+  Object.keys(look).forEach(function (k) { if (LOOK_KEYS[k] && look[k] !== undefined) { own[k] = look[k]; } });
+  return own;
+}
+
 person = function (x, y, look) {
   var wm = peopleSettings(look);
+  if (wm && PEOPLE_WOMEN === "rig" && (look.lady !== undefined ? !!look.lady : !!look.bun)) { return PEOPLE_PERSON(x, y, peopleRigLook(look)); }
   if (wm && peopleCanStamp(look, wm)) {
     var poses = peoplePoses(look);
     if (poses) { return peopleStamp(x, y, look, poses); }

@@ -1132,3 +1132,14 @@ proportions as the painted women?"; asked which shape, the mural's own (as the h
   own (she had both); her arms are the rig's where the look puts them (`reachA`, `handA` ...), as before. A crowd's
   painted poses (`look.poses`) are painted at rest and stamped with the hop and the lean. The two plain figures cost
   about 1 ms a frame against her 100. Not followed: `turn` and `twist` (she is painted in three-quarter view only).
+
+- **Shorter fingers** (the owner, the same day: "Make the fingers shorter and more normal looking on the painted
+  women"): the celestial, the maiden, the princess and the court lady take hands "normal" too, as the others had since
+  2026-10-30; the two fingernail dancers keep the dancer's hand, its fingers 0.72 as long (`MU_FINGERS`: 26 to 35 on a
+  palm of 35, from 36 to 48), their brass nails on the shorter fingers and their wai's hands as much shorter.
+- **The rig's women at the same measure, where a page asks** (the owner, of the hero film: "Use the old rig style women
+  but adjust their measurements to be like the painted women and new style men"): `PEOPLE_WOMEN = "rig"` after
+  `people.js` draws every woman and girl with `person()`'s own figure, in her own look (the painted keys left out), and
+  `STYLE.women` (0 unless set) is a woman's build as `STYLE.men` is a man's (`builtOf()`): the hero sets 1. No woman of
+  `person()`'s has the long neck any more (it was 1.9 for a grown Lanna lady). `wink` (0 to 1) is a new key: the near eye
+  shut that far, for the hero's wink.

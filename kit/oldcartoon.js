@@ -206,7 +206,8 @@ var STYLE = {
   pixels: 1,                            // device pixels per film pixel: 2 draws everything at twice the size and lets the browser smooth it down (read before this sheet: see PIX)
   light: null,                          // where the light comes from, [across, down]: [-0.6, 0.5] throws a shadow to the right; null for the soft pool alone
   letters: null,                        // the fonts of the film's words, {thai, latin}; null for the kit's own (read before this sheet: see LETTERS)
-  men: 1                                // a man's build when his look leaves it out (menBuilt): 1 the paintings', as the painted women stand; 0 the cartoon's
+  men: 1,                               // a man's build when his look leaves it out (builtOf): 1 the paintings', as the painted women stand; 0 the cartoon's
+  women: 0                              // the same for a woman person() draws herself (an old one; a young one where a page has people.js paint none): 0 the cartoon's
 };
 
 checkNames("FILM_STYLE's entry", window.FILM_STYLE || {}, STYLE);
@@ -2235,6 +2236,7 @@ function ageFall(age, V) {
 // V.face (a Path2D of the face, which personHead() adds) keeps the far eye, the cheek and the mouth on the face.
 // Reads NORTH_FACE. Returns nothing: it draws with pen. person() calls it; a page draws a person instead.
 // e.g. ladyFace(false, null, saccade(t), view(0.3, true, null), feelingOf({feel: "happy"}));
+var FACE_WINK = 0;                                  // the near eye shut this far while a face is drawn (look.wink)
 function ladyFace(shut, mouth, glance, V, feel) {
   var lift = (mouth ? 5 * mouth.open : 0) + 7 * feel.wonder + 6 * feel.fear - 4 * feel.anger + feel.browUp + 2 * feel.worry
            + 5 * feel.rapt - 2 * (shut === true ? 1 : shut || 0);   // the brows drop a little in a blink
@@ -2261,7 +2263,7 @@ function ladyFace(shut, mouth, glance, V, feel) {
   var lannaFace = STYLE.face === "lanna", lannaEyes = EYE_LIDS && EYE_LIDS.eyes === "lanna", browUp = lannaFace ? 2 * (1 - side) : 0;
   var browWide = lannaFace ? 1.3 / Math.max(1, feel.eyes) : 1.3;   // a real brow does not grow with a child's large eyes (they met over the nose)
   var nearTall = lannaEyes ? 0.46 * nearW * wide : 4.6 * wide * feel.eyes, farTall = lannaEyes ? 0.46 * farW * wide : 4.4 * wide * feel.eyes;
-  if (V.nearW > 2) { eye(nearX, -277, nearW, nearTall, shut, look, -1, 1, slant, feel.laugh > 0.5); }
+  if (V.nearW > 2) { eye(nearX, -277, nearW, nearTall, FACE_WINK ? Math.max(shut === true ? 1 : shut || 0, FACE_WINK) : shut, look, -1, 1, slant, feel.laugh > 0.5); }
   if (V.nearW > 2) {                                // in profile the brow lies nearer the eye
     if (lannaFace) { lannaBrow(nearX + close, -292 - lift + 3 * side + browDown - browUp, nearW * browWide, 9 * arch, 1.1 * weight, knit, false); }
     else { brow(nearX + close, -292 - lift + 3 * side + browDown, nearW * 1.3, 9 * arch, 1.1 * weight, knit); }
@@ -2443,7 +2445,7 @@ function manFace(shut, mouth, glance, V, feel) {
   var nearTall = lannaEyes ? 0.46 * nearW * wide : 8.5 * small * wide * feel.eyes, farTall = lannaEyes ? 0.46 * farW * wide : 8 * small * wide * feel.eyes;
   var browY = lannaFace ? eyeY - 20 - lift + (V.man ? 2 : 0) : -312 - lift + browDown;   // a grown man's a little lower
   var ridge = V.man ? [1.05, 0.8, 1.3] : [1, 1, 1];   // and longer, flatter and heavier: his brow width, arch, weight
-  if (V.nearW > 2) { eye(V.near + 1 - apart, eyeY, nearW, nearTall, shut, look, -1, 0, slant, feel.laugh > 0.5); }   // long, narrow eyes
+  if (V.nearW > 2) { eye(V.near + 1 - apart, eyeY, nearW, nearTall, FACE_WINK ? Math.max(shut === true ? 1 : shut || 0, FACE_WINK) : shut, look, -1, 0, slant, feel.laugh > 0.5); }   // long, narrow eyes
   if (V.nearW > 2) {
     if (lannaFace) { lannaBrow(V.near + 1 - apart + close, browY, V.nearW * 0.93 * ridge[0], 6 * arch * ridge[1], 2.6 * weight * ridge[2], knit, true); }
     else { brow(V.near + 1 - apart + close, browY, V.nearW * 0.93, 10 * arch, 2.8 * weight, knit); }
@@ -4105,15 +4107,17 @@ function leggyOf(build) {
   return 1 + (b < 0 ? 0.15 : 0.3) * b;
 }
 
-// A male figure's build as the kit draws him (the owner, 2026-11-09: "Can you resize the male figures so their heads and
+// A figure's build as the kit draws it (the owner, 2026-11-09: "Can you resize the male figures so their heads and
 // bodies have the same proportions as the painted women?", all of them, to the mural's own shape): a man or an old man
 // whose look leaves build out takes STYLE.men (1, the paintings': six and a half to seven heads tall, as a painted woman
 // stands); a boy (build below 0) comes that part of the way up from a child's, keeping a child's larger head; a build the
-// look gives at 0 or more is kept. A woman, of any age, is as she was. Gives back the look, or a copy with its build.
-// e.g. menBuilt(cast("boy")).build   // -0.5
-function menBuilt(look) {
-  var lady = look.lady !== undefined ? !!look.lady : !!look.bun, m = STYLE.men || 0;
-  if (lady || !m) { return look; }
+// look gives at 0 or more is kept. A woman the same by STYLE.women (0 unless a page sets it: the hero film's women drawn
+// by person() at the men's measure, the owner, 2026-11-09: "Use the old rig style women but adjust their measurements to
+// be like the painted women and new style men"). Gives back the look, or a copy with its build.
+// e.g. builtOf(cast("boy")).build   // -0.5
+function builtOf(look) {
+  var lady = look.lady !== undefined ? !!look.lady : !!look.bun, m = (lady ? STYLE.women : STYLE.men) || 0;
+  if (!m) { return look; }
   if (look.build === undefined) { return Object.assign({}, look, {build: m}); }
   if (look.build < 0) { return Object.assign({}, look, {build: look.build * (1 - 0.5 * m)}); }
   return look;
@@ -4882,7 +4886,7 @@ var LOOK_KEYS = {};
  "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
  "handB", "hat", "head", "hidden", "holding", "id", "late", "laugh", "lady", "legs", "lid", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "rapt", "reachA", "reachB",
  "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt", "sleepy",
- "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tears", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wonder", "worn", "worry", "wrap", "wraps", "wristA", "wristB"
+ "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tears", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wink", "wonder", "worn", "worry", "wrap", "wraps", "wristA", "wristB"
 ].forEach(function (name) { LOOK_KEYS[name] = true; });
 
 // One villager, standing on (x, y). Everything about them is in "look".
@@ -5052,6 +5056,7 @@ var LOOK_KEYS = {};
 //   fingersA, fingersB
 //                   five curls each, 0 straight to 1 curled (the first finger to the little
 //                   one, then the thumb), as a track reads them from a hand model
+//   wink            0 to 1: the near eye shut that far, the other open (the hero film's wink, 2026-11-09)
 //   glance, blink   the eyes as a track read them from a face: [across, down] for the
 //                   irises, and 0 to 1 for a blink (the lid comes down with it)
 //   raise           [leg 0 or 1, how high, how far forward]: a foot lifted on purpose. A fourth
@@ -5127,7 +5132,7 @@ var WAI_LAYER = null;
 // cartoon maker does, then draws its next frame as it would have.
 function person(x, y, look) {
   var sheetPen = pen;
-  look = menBuilt(look);
+  look = builtOf(look);
   try {
     return personDrawn(x, y, look);
   } catch (error) {
@@ -5595,7 +5600,7 @@ function personTrunk(fig) {
   // stands on a neck: look.head is how wide the head is (0.9 for her unless
   // told, 1 for anyone else), and a head narrower than 1 is lifted by 12.
   // A face of the north is as broad as its shape says, a lady's too.
-  var narrow = (look.head !== undefined ? look.head : NORTH_FACE ? NORTH_FACE.wide : lady ? 0.9 : 1) * BODY.face, long = STYLE.face === "lanna" && lady && !((look.build || 0) < 0) && !(look.age >= 0.5) ? 1.9 : narrow < 1 ? 1 : 0;   // a grown woman's neck long, as the paintings paint it; an old woman's not (the owner, 2026-11-07, of the White Eel's widow: "The widow shouldn't have a long neck")
+  var narrow = (look.head !== undefined ? look.head : NORTH_FACE ? NORTH_FACE.wide : lady ? 0.9 : 1) * BODY.face, long = narrow < 1 ? 1 : 0;   // no woman's neck long any more (it was 1.9 for a grown Lanna lady): the owner, 2026-11-07, of the White Eel's widow, "The widow shouldn't have a long neck", and of its young women, then 2026-11-09 of the hero's women drawn by person() again
   joints.waist = spot(0, 0);
   joints.neck = spot(neckX, -148);
   // Where a point of the chest is, once the spine has bent it and the two
@@ -6640,11 +6645,14 @@ function personHead(fig) {
     var r = feel.rapt, across = glance.length ? glance[0] : glance, down = glance.length ? glance[1] : 0;
     glance = [across * (1 - 0.7 * r), down * (1 - r) - 6 * r];
   }
-  if (lady) {
-    ladyFace(shut, mouth, glance, V, feel);
-  } else {
-    manFace(shut, mouth, glance, V, feel);
-  }
+  FACE_WINK = clamp(look.wink || 0);               // the near eye only (wink)
+  try {
+    if (lady) {
+      ladyFace(shut, mouth, glance, V, feel);
+    } else {
+      manFace(shut, mouth, glance, V, feel);
+    }
+  } finally { FACE_WINK = 0; }
   if (look.age) { ageLines(clamp(look.age), V); }
   if (look.beard) { beard(look.beard, V, drop); }
   }                                                 // end of the kit's own head
