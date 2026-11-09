@@ -4,13 +4,13 @@
 // the herds go out every morning (the research notes: "out in the morning, swimming back in the evening"); far off on
 // the shore a herder's hut with a thread of smoke; an egret low across the water; the title in the mist; the camera
 // pushing in, slowly. Owner, 2026-11-06: "Yes, build it" (the plan of seven steps).
-var W01_LONG = 30.8;
+var W01_LONG = 32.25;
 // Its sounds (sounds.py, laid in by the film's music as a life's calls are: [second, sound, loudness], and a bed's
 // length): frogs at first light, a buffalo's low call, a plover over the water.
-var W01_SOUND = {calls: [[0, "frogs", 0.25, 16], [7.5, "buffalo", 0.3], [12.5, "plover", 0.2]]};
+var W01_SOUND = {calls: [[0, "frogs", 0.25, 14.95], [7.5, "buffalo", 0.3], [11.98, "plover", 0.2]]};
 // The narration: [from, to, id] in the scene's own seconds. Placeholders from story.py's length until Pan's voice is
 // recorded; the scene is timed again to her takes (docs/kit/films.md, step 4).
-var W01_LINES = [[9.0, 16.88, "W001"], [17.08, 23.47, "W002"], [23.67, 29.31, "W003"]];
+var W01_LINES = [[9.0, 15.71, "W001"], [17.08, 24.09, "W002"], [24.35, 30.7, "W003"]];
 
 // The titles in the mist (as changngu/s01_mekong.js's): the series, Lanna Tales (นิทานล้านนา), in the Lanna script, as
 // the first two films have it; then the tale's name, ตำนานปลาไหลเผือก, in the Lanna script, from the Kam Mueang
@@ -27,7 +27,7 @@ var W01_SUN = [1390, 520, 330];
 var W01_HERD = [[-60, 742, 0.36, 0], [150, 716, 0.3, 1], [-250, 770, 0.42, 2], [330, 702, 0.27, 3], [-420, 728, 0.33, 4]];
 var W01_HERD_PACE = 14;
 // The egret low across the water from the right, and how high over the water it flies (its reflection under it).
-var W01_EGRET = {course: [[5.5, 2050, 640], [15.5, -150, 610]], high: 34, look: {fly: true, size: 0.75, seed: 3}};
+var W01_EGRET = {course: [[5.5, 2050, 640], [14.53, -150, 610]], high: 34, look: {fly: true, size: 0.75, seed: 3}};
 // The herder's hut on the far shore, and its thread of smoke.
 var W01_HUT = [1560, WEL_WATER + 8, 0.26];
 // Lotus and water lilies, mid-water and near: [x, line, size, seed, colour]; reeds in beds: [x, base, size].

@@ -74,8 +74,9 @@ def problems(story):
         for english, central, kam in scene[5]:
             if not kam.strip():
                 out.append("scene %d: no Kam Mueang for %r" % (number, english))
-            if "ๆ" in kam:
-                out.append("scene %d: a ๆ in the Kam Mueang of %r (write the word twice: the voice reads ๆ badly)"
+            if "ๆ" in spoken(story, kam):     # a subtitle may keep its ๆ when SAY_AS says the word twice
+                out.append("scene %d: a ๆ in the Kam Mueang of %r (write the word twice, or say it twice "
+                           "in SAY_AS: the voice reads ๆ badly)"
                            % (number, english))
     return out
 

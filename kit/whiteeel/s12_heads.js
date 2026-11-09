@@ -4,10 +4,10 @@
 // ladder to them and tells them of the eel, the young man and the three roars, and they ask how big the eel was; and
 // last one of them looks back across the water at the long groove where the eel was dragged, a stream now running down
 // into the water: the Mae Nam Lak, its name in gold.
-var W12_LONG = 50;
-var W12_SOUND = {calls: [[0, "wind", 0.1, 50], [5.0, "plover", 0.15], [30.0, "dove", 0.12]]};
-var W12_LINES = [[1.2, 7.7, "W043"], [9.0, 13.56, "W044"], [16.4, 24.36, "W045"], [24.56, 29.38, "W046"], [29.58, 36.08, "W047"], [39.6, 44.58, "W048"]];
-var W12_CUTS = [14.6, 38.4];
+var W12_LONG = 56.21;
+var W12_SOUND = {calls: [[0, "wind", 0.1, 56.21], [5.49, "plover", 0.15], [33.73, "dove", 0.12]]};
+var W12_LINES = [[1.2, 8.39, "W043"], [9.77, 15.78, "W044"], [18.68, 26.61, "W045"], [26.88, 32.89, "W046"], [33.16, 41.81, "W047"], [45.4, 50.71, "W048"]];
+var W12_CUTS = [16.88, 44.2];
 var W12_SHORE = 860;                                   // the near shore's edge in the first shot
 var W12_SPEAKS = {heads: ["W046"], widow: ["W045", "W047"]};   // who says which line
 
@@ -58,8 +58,8 @@ function w12Shore(t) {
 // Shot 2: on the raft at her house; she comes down her ladder to them; they talk.
 function w12Raft2(t) {
   var house = [1100, 820, 1.4, 760], top = house[1] - WEL_HOUSE_TOP * house[2], ladder = house[0] + WEL_LADDER * house[2] + 14;
-  var arrive = between(t, 14.8, 19.0), rx = mix(-300, ladder - 330, arrive), ry = 790;
-  var down = between(t, 17.6, 20.6), wx = ladder, wy = mix(top + 6, house[3] - 18, down);
+  var arrive = between(t, 17.08, 21.29), rx = mix(-300, ladder - 330, arrive), ry = 790;
+  var down = between(t, 19.89, 22.9), wx = ladder, wy = mix(top + 6, house[3] - 18, down);
   w12Set(t, null, house, function () {
     person(wx, wy, welPerson("grandmother", WEL_WIDOW, {id: "widow", face: -1, holding: null, size: WEL_WIDOW.size * house[2] / WEL_YARD[2],
       step: down > 0 && down < 1 ? t / BEAT * 0.7 : 0, at: [rx, ry - 200],
@@ -105,7 +105,7 @@ function w12Stream(t) {
   var h = WEL_HEADS[1];
   w12Raft(400, 1046, 420);                              // he stands on the raft, looking back
   person(380, 1040, welPerson(h[0], h[1], {id: "looker", face: 1, size: 1.0, at: [1200, 760], feel: "awe"}));
-  cngGoldName("แม่น้ำลาก", "the Mae Nam Lak, the dragged river", 1180, 230, between(t, 41.4, 42.4) * (1 - between(t, 48, 49.4)));
+  cngGoldName("แม่น้ำลาก", "the Mae Nam Lak, the dragged river", 1180, 230, between(t, 47.36, 48.46) * (1 - between(t, 54.21, 55.61)));
 }
 
 // Scene 12, the entry the film calls (SCENES): t, its own second, 0 to W12_LONG. Gives back nothing: it draws the whole

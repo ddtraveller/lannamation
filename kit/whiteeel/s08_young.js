@@ -4,10 +4,10 @@
 // cngRoom("night")), she sets out rice and water for him and he does not touch them, and they talk: he asks what the
 // whole city is eating, she tells him, he asks if she had some, and she says who would give her any; and he says it is
 // good she did not. His face is kind and calm and nothing marks him (story.py).
-var W08_LONG = 55;
-var W08_SOUND = {calls: [[0, "crickets", 0.12, 55], [30.0, "tokay", 0.14]]};
-var W08_LINES = [[1.2, 9.36, "W025"], [10.2, 18.7, "W026"], [18.9, 25.16, "W027"], [25.36, 32.34, "W028"], [32.54, 34.46, "W029"], [34.66, 43.24, "W030"], [44.0, 48.25, "W031"]];
-var W08_CUTS = [9.8];                                  // after his first line ends
+var W08_LONG = 63.9;
+var W08_SOUND = {calls: [[0, "crickets", 0.12, 63.9], [33.09, "tokay", 0.14]]};
+var W08_LINES = [[1.2, 10.73, "W025"], [11.64, 20.81, "W026"], [21.09, 27.82, "W027"], [28.09, 35.5, "W028"], [35.77, 39.7, "W029"], [39.96, 49.89, "W030"], [50.72, 57.09, "W031"]];
+var W08_CUTS = [11.24];                                  // after his first line ends
 var W08_SPEAKS = {young: ["W027", "W029", "W031"], widow: ["W028", "W030"]};   // who says which line
 var W08_LAMP = [960, CNG_FLOOR + 30];                  // the lamp on the floor between them
 var W08_BOWL = [1120, CNG_FLOOR + 40];                 // the rice and the water she sets before him
@@ -23,11 +23,11 @@ function w08Arrive(t) {
   pen.fillStyle = "rgba(60, 40, 90, 0.42)";
   pen.fillRect(0, 0, WIDE, 1080);
   var ladder = WEL_YARD[0] + WEL_LADDER * WEL_YARD[2] + 16, top = WEL_YARD[1] - WEL_HOUSE_TOP * WEL_YARD[2];
-  var walk = between(t, 0.6, 4.6), climb = between(t, 5.0, 7.6);
+  var walk = between(t, 0.6, 5.24), climb = between(t, 5.71, 8.8);
   var x = climb > 0 ? ladder : mix(-120, ladder, walk), y = climb > 0 ? mix(WEL_YARD[1] + 22, top + 6, climb) : WEL_PATH - 30 + 50 * walk;
   if (walk >= 1) { y = mix(WEL_YARD[1] + 22, top + 6, climb); }
   person(WEL_YARD[0] - 60, top + 4, welPerson("grandmother", WEL_WIDOW, {id: "widow", face: 1, holding: null, at: [x, y - 200],
-                                                                         feel: t > 3 ? "surprised" : undefined}));
+                                                                         feel: t > 3.34 ? "surprised" : undefined}));
   person(x, y, welPerson("inta", WEL_YOUNG, {id: "young", face: climb > 0 ? -1 : 1, step: (walk > 0 && walk < 1) || (climb > 0 && climb < 1) ? t / BEAT * 0.9 : 0,
                                             at: [WEL_YARD[0] - 60, top - 200]}));
 }
@@ -43,16 +43,16 @@ function w08Inside(t) {
   pen.fillRect(0, 0, WIDE, 1600);
   pratheep(pen, W08_LAMP[0], W08_LAMP[1], 2.0, t, 2, {});
   sceneryLampLight(t, W08_LAMP[0], W08_LAMP[1] - 24, W08_LAMP[1] + 20, {reach: 300, strength: 0.8, seed: 8});
-  var set = between(t, 11.6, 13.2);                     // she sets the bowl before him
+  var set = between(t, 13.17, 14.92);                     // she sets the bowl before him
   var sprites = [
     {name: "widow", kind: "person", x: 720, y: CNG_FLOOR + 40, draw: function () {
       person(720, CNG_FLOOR + 40, welPerson("grandmother", WEL_WIDOW, {id: "widow", face: 1, holding: null, floor: "side",
         reachA: set > 0 && set < 1 ? [mix(800, W08_BOWL[0] - 40, set), W08_BOWL[1] - 30] : undefined,
-        mouth: welTalk(t, w08Says("widow", t)), feel: t > 34 && t < 43 ? "sad" : undefined, at: [1200, CNG_FLOOR - 160]}));
+        mouth: welTalk(t, w08Says("widow", t)), feel: t > 39.3 && t < 49.72 ? "sad" : undefined, at: [1200, CNG_FLOOR - 160]}));
     }},
     {name: "young", kind: "person", x: 1200, y: CNG_FLOOR + 40, draw: function () {
       person(1200, CNG_FLOOR + 40, welPerson("inta", WEL_YOUNG, {id: "young", face: -1, floor: "cross",
-        mouth: welTalk(t, w08Says("young", t)), feel: t > 44 ? "concerned" : undefined, at: [720, CNG_FLOOR - 140]}));
+        mouth: welTalk(t, w08Says("young", t)), feel: t > 50.72 ? "concerned" : undefined, at: [720, CNG_FLOOR - 140]}));
     }}
   ];
   if (set >= 1 || (set > 0 && set < 1)) {

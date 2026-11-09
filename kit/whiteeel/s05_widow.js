@@ -3,10 +3,10 @@
 // fire at the ladder's foot and cooks a pot of rice for one; then, her stick in her hand, she watches her neighbours
 // go by along the path, talking among themselves, and none of them looks her way (story.py: "watches neighbours pass
 // without a word").
-var W05_LONG = 35;
-var W05_SOUND = {calls: [[0.5, "dove", 0.14], [4.0, "hens", 0.14], [14.0, "magpie", 0.15], [27.0, "dog", 0.1]]};
-var W05_LINES = [[1.2, 7.34, "W016"], [13.0, 16.68, "W017"], [25.2, 31.42, "W018"]];
-var W05_CUTS = [12.0, 24.0];
+var W05_LONG = 37.57;
+var W05_SOUND = {calls: [[0.5, "dove", 0.14], [4.86, "hens", 0.14], [16.41, "magpie", 0.15], [30.48, "dog", 0.1]]};
+var W05_LINES = [[1.2, 9.01, "W016"], [14.74, 20.5, "W017"], [29.09, 33.92, "W018"]];
+var W05_CUTS = [13.74, 27.89];
 var W05_SWEEP = [1080, 846];                           // where she sweeps
 var W05_FIRE = [1300, 848];                            // the little fire by the ladder's foot
 

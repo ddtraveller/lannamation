@@ -4,32 +4,32 @@
 // here"), lays a hand on his heart ("have a heart that loves people and animals"), and the prince makes him a wai; he
 // bows, and walks away toward the reeds at the water, two of the prince's men after him; among the reeds he is gone,
 // and a long ripple runs out across the river (the only sign of the naga he is: the chronicle, story.py).
-var W02_LONG = 45;
-var W02_SOUND = {calls: [[0, "wind", 0.1, 45], [6.0, "magpie", 0.2], [20.0, "plover", 0.18], [33.0, "magpie", 0.18]]};
-var W02_LINES = [[1.0, 8.2, "W004"], [9.6, 12.97, "W005"], [16.4, 21.62, "W006"], [24.0, 28.22, "W007"], [33.0, 41.76, "W008"]];
+var W02_LONG = 53.95;
+var W02_SOUND = {calls: [[0, "wind", 0.1, 53.95], [7.31, "magpie", 0.2], [25.61, "plover", 0.18], [42.05, "magpie", 0.18]]};
+var W02_LINES = [[1.0, 9.89, "W004"], [11.36, 17.25, "W005"], [20.74, 27.57, "W006"], [30.02, 37.19, "W007"], [42.05, 50.64, "W008"]];
 
 var W02_GROUND = 850;                                  // where the prince stands
 var W02_PRINCE_AT = 760;                               // his x when they stop
 var W02_MEET = 1080;                                   // the Brahman's x when he stops before him
 var W02_REEDS = [[1520, 742, 0.75], [1640, 736, 0.9], [1760, 744, 0.7], [1420, 748, 0.55]];
 var W02_GONE = [1600, 745];                            // where he walks to among the reeds, and is gone
-var W02_WAKE = 39.6;                                   // when the ripple sets out
+var W02_WAKE = 48.57;                                   // when the ripple sets out
 
 // The prince's people: where each stands behind him when they stop ([x, y] of the feet).
 function w02FolkAt(k) { return [W02_PRINCE_AT - 150 - k * 115, W02_GROUND - 18 + (k % 3) * 22]; }
 
 // The party walking in: how far along, 0 to 1 (they walk 0.4 to 8.6 s and stop).
-function w02Arrive(t) { return between(t, 0.4, 8.6); }
+function w02Arrive(t) { return between(t, 0.4, 10.36); }
 
 // The Brahman at second t: {x, y, face, size, step, alpha} of his walk in, his stand, and his walk away.
 function w02Brahman(t) {
-  var come = between(t, 9.4, 15.0), go = between(t, 34.6, 40.2), x, y;
+  var come = between(t, 11.16, 19.34), go = between(t, 43.63, 49.16), x, y;
   if (go <= 0) { x = mix(WIDE + 140, W02_MEET, come); y = W02_GROUND - 6; }
   else { x = mix(W02_MEET, W02_GONE[0], go); y = mix(W02_GROUND - 6, W02_GONE[1], go); }
   var size = mix(1, 0.72, go);                        // smaller as he goes back toward the water
   var moving = (come > 0 && come < 1) || (go > 0 && go < 1);
-  var face = go > 0 ? 1 : t > 16.6 && t < 22.4 ? 1 : -1;   // he turns to point out over the land, and back
-  return {x: x, y: y, face: face, size: size, step: moving ? t / BEAT * 0.9 : 0, alpha: 1 - between(t, 38.8, 40.2)};
+  var face = go > 0 ? 1 : t > 21.01 && t < 28.42 ? 1 : -1;   // he turns to point out over the land, and back
+  return {x: x, y: y, face: face, size: size, step: moving ? t / BEAT * 0.9 : 0, alpha: 1 - between(t, 47.78, 49.16)};
 }
 
 // His staff stood in the ground before him, where his hand held it as he faced the prince (the kit's stick: about 52
@@ -52,7 +52,7 @@ function w02Staff() {
 function w02Wake(t) {
   var u = t - W02_WAKE;
   if (u < 0) { return; }
-  var hx = W02_GONE[0] + 40 + 150 * u, hy = 668 - 6 * u, fade = 1 - between(t, 43.5, 45), spread = Math.min(1, u / 2);
+  var hx = W02_GONE[0] + 40 + 150 * u, hy = 668 - 6 * u, fade = 1 - between(t, 52.45, 53.95), spread = Math.min(1, u / 2);
   pen.save();
   pen.globalAlpha = 0.6 * fade;
   pen.strokeStyle = "rgba(240, 248, 240, 0.9)";
@@ -96,15 +96,15 @@ function welSceneBrahman(t) {
   pen.drawImage(welPlainTrees(), 0, 0, WIDE, 1080);
 
   var arrive = w02Arrive(t), walking = arrive > 0 && arrive < 1, b = w02Brahman(t);
-  var pointing = t > 16.8 && t < 22.4, onHeart = t > 24.2 && t < 30.4, bowing = between(t, 32.6, 33.4) * (1 - between(t, 34.2, 34.8));
-  var wai = between(t, 26.5, 27.3) * (1 - between(t, 31.2, 32));
+  var pointing = t > 21.28 && t < 28.42, onHeart = t > 30.38 && t < 39.45, bowing = between(t, 41.65, 42.45) * (1 - between(t, 43.24, 43.83));
+  var wai = between(t, 34.55, 35.99) * (1 - between(t, 40.25, 41.05));
   var pointAt = [b.x + 200, b.y - 215];             // his free hand out over the plain, upriver                         // out over the plain, upriver
-  var lookAt = t < 9.4 ? null : pointing ? [b.x + 500, 640] : t < 38.8 ? [b.x, b.y - 300] : [W02_GONE[0], W02_GONE[1] - 60];
+  var lookAt = t < 11.16 ? null : pointing ? [b.x + 500, 640] : t < 47.78 ? [b.x, b.y - 300] : [W02_GONE[0], W02_GONE[1] - 60];
   var sprites = [];
   var px = mix(-180, W02_PRINCE_AT, arrive);
   sprites.push({name: "prince", kind: "person", x: px, y: W02_GROUND, draw: function () {
     person(px, W02_GROUND, welPerson("noble", WEL_PRINCE, {id: "prince", face: 1, step: walking ? t / BEAT * 0.9 : 0,
-      feel: pointing ? "awe" : t > 39.6 ? "surprised" : undefined, at: lookAt || undefined, wai: wai || undefined,
+      feel: pointing ? "awe" : t > 48.57 ? "surprised" : undefined, at: lookAt || undefined, wai: wai || undefined,
       bend: 0.12 * wai}));
   }});
   WEL_FOLK.forEach(function (f, k) {
@@ -115,20 +115,20 @@ function welSceneBrahman(t) {
     sprites.push({name: "folk " + k, kind: "person", x: x, y: y, draw: function () {
       person(x, y, welPerson(f[0], f[1], {id: "folk" + k, size: size, face: 1,
         step: walking || (follow > 0 && follow < 1) ? t / BEAT * 0.9 + k : 0,
-        feel: pointing ? "awe" : t > 39.8 ? "surprised" : undefined, at: lookAt || undefined}));
+        feel: pointing ? "awe" : t > 48.77 ? "surprised" : undefined, at: lookAt || undefined}));
     }});
   });
-  if (b.alpha > 0 && t > 9.4) {
-    var planted = t > 16.4 && t < 34.6;                 // he stands his staff in the ground while he speaks, freeing his hands
+  if (b.alpha > 0 && t > 11.16) {
+    var planted = t > 20.74 && t < 43.63;                 // he stands his staff in the ground while he speaks, freeing his hands
     sprites.push({name: "brahman", kind: "person", x: b.x, y: b.y, draw: function () {
       pen.save();
       pen.globalAlpha = b.alpha;
       if (planted && b.face > 0) { w02Staff(); }        // behind him while he faces the land
       person(b.x, b.y, welPerson("elder", WEL_BRAHMAN, {id: "brahman", face: b.face, size: WEL_BRAHMAN.size * b.size, step: b.step,
         holding: planted ? null : "stick", mouth: welTalk(t, welSays(t, W02_LINES, ["W006", "W007"])),
-        reachA: pointing ? [pointAt[0], pointAt[1], between(t, 16.8, 17.4)] : undefined,
-        reachB: onHeart ? [b.x + 4 * b.face, b.y - 182 * b.size, between(t, 24.2, 24.8)] : undefined,
-        wai: bowing || undefined, bend: 0.05 + 0.25 * bowing, at: t < 34.6 ? [px, W02_GROUND - 300] : undefined}));
+        reachA: pointing ? [pointAt[0], pointAt[1], between(t, 21.28, 22.09)] : undefined,
+        reachB: onHeart ? [b.x + 4 * b.face, b.y - 182 * b.size, between(t, 30.38, 31.47)] : undefined,
+        wai: bowing || undefined, bend: 0.05 + 0.25 * bowing, at: t < 43.63 ? [px, W02_GROUND - 300] : undefined}));
       if (planted && b.face < 0) { w02Staff(); }        // before him while he faces the prince
       pen.restore();
     }});

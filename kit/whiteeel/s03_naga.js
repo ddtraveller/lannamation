@@ -4,13 +4,13 @@
 // ground opens into a channel of moonlit water, the moat (the chronicle: the naga dug the moat round the city's land);
 // then morning at the city: Yonok's wall and gate as the Chang Ngu film painted them (changngu/sets.js), the moat
 // before them, and the prince and his people on the road; the city's two names in gold as the voice says them.
-var W03_LONG = 40;
-var W03_SOUND = {calls: [[0, "crickets", 0.2, 19], [21.0, "rooster-crow", 0.22], [26.0, "magpie", 0.18]]};
-var W03_LINES = [[1.4, 7.14, "W009"], [9.0, 14.78, "W010"], [22.4, 28.46, "W011"], [31.6, 35.94, "W012"]];
-var W03_CUTS = [19.5];
+var W03_LONG = 50.32;
+var W03_SOUND = {calls: [[0, "crickets", 0.2, 21.91], [23.91, "rooster-crow", 0.22], [32.43, "magpie", 0.18]]};
+var W03_LINES = [[1.4, 8.09, "W009"], [10.03, 17.62, "W010"], [25.31, 36.76, "W011"], [39.97, 46.2, "W012"]];
+var W03_CUTS = [22.41];
 var W03_RISE = [1560, 690];                            // where the naga comes up out of the river
 var W03_LOOP = [940, 800, 700, 96];                   // the moat's loop round the city's land: middle x, y, half wide, half tall
-var W03_DIG = [8.0, 18.6];                             // the seconds the naga goes round
+var W03_DIG = [9.03, 21.51];                             // the seconds the naga goes round
 
 // Where the naga's chest is at second s of the scene: up out of the river, then once round the loop and back to the
 // river where he began. Gives back [x, y].
@@ -50,7 +50,7 @@ function w03Moat(t) {
 function w03Night(t) {
   welKokNight(t);                                       // the Kok under the moon (sets.js)
   w03Moat(t);
-  var gone = between(t, 4.2, 5.8), glow = between(t, 2.6, 4.6) * (1 - between(t, 6.2, 8));
+  var gone = between(t, 4.75, 6.66), glow = between(t, 2.83, 5.23) * (1 - between(t, 7.14, 9.03));
   if (gone < 1) {                                       // the Brahman at the water's edge, small, going in a light
     pen.save();
     pen.globalAlpha = 1 - gone;
@@ -64,11 +64,11 @@ function w03Night(t) {
     pen.fillStyle = g;
     pen.fillRect(W03_RISE[0] - 240, W03_RISE[1] - 200, 400, 400);
   }
-  if (t > 5.6) {                                        // the naga, his chest led along the path, the body after it
+  if (t > 6.42) {                                        // the naga, his chest led along the path, the body after it
     var offset = clock - t, chest = w03Path(t), dir = w03Path(t + 0.1)[0] - chest[0];
     var near = between(chest[1], W03_LOOP[1] - W03_LOOP[3], W03_LOOP[1] + W03_LOOP[3]);
     pen.save();
-    pen.globalAlpha = between(t, 5.6, 6.6) * (1 - between(t, 18.4, 19.2));
+    pen.globalAlpha = between(t, 6.42, 7.62) * (1 - between(t, 21.31, 22.11));
     naga(chest[0], chest[1], {size: mix(0.32, 0.5, near), heads: 5, face: dir < 0 ? -1 : 1, mouth: 0.15,
                               body: "#2f7d5c", trail: function (c) { return w03Path(c - offset); }});
     pen.restore();

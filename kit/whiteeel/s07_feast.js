@@ -4,10 +4,10 @@
 // going up from every kitchen, lamps lit on the verandas and families eating together on mats before their houses;
 // and last, the widow's yard at dusk, the far roofs smoking and lit, and her house dark, nothing brought, she alone
 // at the foot of her ladder.
-var W07_LONG = 40;
-var W07_SOUND = {calls: [[3.0, "hens", 0.12], [11.0, "crickets", 0.14, 29], [30.0, "dog", 0.1]]};
-var W07_LINES = [[1.2, 6.38, "W022"], [12.4, 16.5, "W023"], [26.4, 31.54, "W024"]];
-var W07_CUTS = [11.0, 24.0];
+var W07_LONG = 45.62;
+var W07_SOUND = {calls: [[3.84, "hens", 0.12], [13.2, "crickets", 0.14, 32.42], [35.5, "dog", 0.1]]};
+var W07_LINES = [[1.2, 8.51, "W022"], [14.6, 21.53, "W023"], [31.49, 37.1, "W024"]];
+var W07_CUTS = [13.2, 29.09];
 // The families eating before their houses, each its own: [x, y] of its tray, and who sits round it: [kind (welPerson()'s:
 // a number is a painted woman of castMix()), look, dx, dy from the tray]. A man or a boy sits on the old rig (a painted
 // man or boy does not sit); the women and girls are painted (the owner, 2026-11-07), their hands free for the food.
@@ -50,7 +50,7 @@ function w07Court(t) {
     {name: "hall, back", kind: "palace", z: "set", y: dais - 1, draw: function () { cngPalace("back"); }},
     {name: "the king", kind: "person", z: "set", x: p[0], y: dais, draw: function () {
       person(p[0], dais, welPerson("noble", Object.assign({size: 0.8}, WEL_OLD_KING), {id: "mahachaichana", floor: "cross", face: -1,
-        reachA: t > 1.6 && t < 6 ? [p[0] - 120, dais - 150, between(t, 1.6, 2.2)] : undefined, mouth: welTalk(t, welSays(t, W07_LINES, ["W022"]) && t < 4.6), at: [p[0] - 600, 900]}));
+        reachA: t > 1.79 && t < 8.2 ? [p[0] - 120, dais - 150, between(t, 1.79, 2.67)] : undefined, mouth: welTalk(t, welSays(t, W07_LINES, ["W022"]) && t < 6.19), at: [p[0] - 600, 900]}));
     }},
     {name: "hall, front", kind: "palace", z: "set", y: dais + 1, draw: function () { cngPalace("front"); }},
     {name: "eel", kind: "beast", x: 640, y: floor + 70, draw: function () { whiteEel(330, floor + 70, t, {caught: true, size: 0.56, face: -1}); }}
@@ -120,7 +120,7 @@ function w07Yard(t) {
   var foot = [WEL_YARD[0] + WEL_LADDER * WEL_YARD[2] - 40, WEL_YARD[1] + 26];
   person(foot[0], foot[1], welPerson("grandmother", WEL_WIDOW, {id: "widow", face: -1, floor: "side", holding: null, feel: "sad",
                                                                at: [400, 560]}));
-  pen.fillStyle = "rgba(20, 16, 30, " + (0.25 * between(t, 24, 40)).toFixed(3) + ")";   // the night coming
+  pen.fillStyle = "rgba(20, 16, 30, " + (0.25 * between(t, 29.09, 45.62)).toFixed(3) + ")";   // the night coming
   pen.fillRect(0, 0, WIDE, 1080);
 }
 

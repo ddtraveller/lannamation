@@ -5,16 +5,16 @@
 // shimmer passes under its face, as a cloud's reflection passes over it: perhaps the one, perhaps only the other.
 // Fireflies come out as the light goes. Then Bua-kham, who tells the kit's tales, comes along the near shore, says what
 // the tale teaches, and says goodbye with a wai, as the first two tales' goodbyes (maeng/s14, changngu/s25); into black.
-var W14_LONG = 55;
-var W14_SOUND = {calls: [[0, "frogs", 0.2, 55], [3.0, "buffalo", 0.25], [20.0, "egret", 0.12], [38.0, "crickets", 0.12, 17]]};
-var W14_LINES = [[1.2, 10.7, "W053"], [11.0, 16.17, "W054"], [18.4, 23.95, "W055"], [25.0, 33.36, "W056"], [33.56, 37.58, "W057"], [38.4, 45.3, "W058"]];
+var W14_LONG = 67.77;
+var W14_SOUND = {calls: [[0, "frogs", 0.2, 67.77], [3.4, "buffalo", 0.25], [23.76, "egret", 0.12], [43.12, "crickets", 0.12, 24.65]]};
+var W14_LINES = [[1.2, 12.64, "W053"], [13.01, 19.42, "W054"], [21.71, 28.62, "W055"], [29.73, 37.84, "W056"], [38.29, 42.62, "W057"], [43.52, 57.99, "W058"]];
 var W14_SHORE = 900;                                   // the near shore, where Bua-kham comes
 var W14_SUN = [520, 470, 640];                         // the sun going down: x, from y, to y
 var W14_ISLAND = [1280, 640, 1];                       // Ko Mae Mai: its middle, its shore's y, size
 var W14_FIRES = [[260, WEL_WATER + 4], [700, WEL_WATER + 6], [1760, WEL_WATER + 4]];
 var W14_HERD = [[1440, 760, 0.42, 3], [1760, 792, 0.46, 5], [2080, 772, 0.4, 8]];   // [x at 0 s, waterline, size, seed]
 var W14_SPEAKS = ["W058"];                            // Bua-kham says the moral herself
-var W14_WAI = [47.6, 48.2, 52.0, 52.6];                // the hands come up, are joined, part, are down
+var W14_WAI = [60.37, 60.97, 64.77, 65.37];                // the hands come up, are joined, part, are down
 
 // The island, painted once: a low mound with trees, a white and gold chedi among them and a small shrine on its posts.
 var W14_ISLE = null;
@@ -64,7 +64,7 @@ function w14Herd(t, part) {
 // welSmoke(), welTalk(), welPerson(); from backdrops.js bdChedi(), bdHut(); from beasts.js buffalo(). Its words are
 // W14_LINES (W053 to W058).
 function welSceneWho(t) {
-  var dusk = between(t, 0, 44), night = between(t, 40, W14_LONG);
+  var dusk = between(t, 0, 55.79), night = between(t, 40, W14_LONG);
   pen.drawImage(welSky("sunset"), -200, 0, WIDE + 400, 1080);
   welClouds(t + 300, "dusk");
   scenerySun(t, W14_SUN[0], mix(W14_SUN[1], W14_SUN[2], dusk), 34, {glow: 12, colour: "255, 170, 110"});
@@ -77,7 +77,7 @@ function welSceneWho(t) {
   pen.drawImage(w14Island(), W14_ISLAND[0] - 350, W14_ISLAND[1] - 330, 700, 360);
   w14Herd(t, "under");
   welFish(t, [["barb", 600, 900, 220, 0.8, 10], ["gourami", 1250, 940, 200, 0.9, 11]]);
-  var shimmer = between(t, 25.4, 27.0) * (1 - between(t, 30.0, 31.8)), sx = mix(1700, 400, between(t, 25.4, 31.8));
+  var shimmer = between(t, 30.12, 31.68) * (1 - between(t, 34.62, 36.37)), sx = mix(1700, 400, between(t, 30.12, 36.37));
   sceneryWaterSurface(t, lake, function () {
     if (shimmer > 0) {                                  // the long pale shimmer under the water's face
       var g = pen.createRadialGradient(sx, 760, 6, sx, 760, 300);
@@ -92,17 +92,17 @@ function welSceneWho(t) {
   W14_FIRES.forEach(function (f) { w14Fire(t, f[0], f[1]); });   // the far shore's fires, behind the herd
   w14Herd(t, "over");
   if (night > 0) { pen.fillStyle = "rgba(30, 20, 50, " + (0.4 * night).toFixed(3) + ")"; pen.fillRect(0, 0, WIDE, 1080); }
-  if (t > 38) { sceneryFireflies(t, {far: [[[0, WEL_WATER, WIDE, W14_SHORE], 50, 7]], near: Math.round(12 * between(t, 38, 46))}); }
-  if (t > 36) {                                         // Bua-kham on the near shore: the moral, and her wai goodbye
-    var come = between(t, 36.2, 38.8), x = mix(WIDE + 140, 1660, come), w = W14_WAI;   // in from the right, clear of the words
+  if (t > 43.12) { sceneryFireflies(t, {far: [[[0, WEL_WATER, WIDE, W14_SHORE], 50, 7]], near: Math.round(12 * between(t, 43.12, 58.77))}); }
+  if (t > 41) {                                         // Bua-kham on the near shore: the moral, and her wai goodbye
+    var come = between(t, 41.22, 44.4), x = mix(WIDE + 140, 1660, come), w = W14_WAI;   // in from the right, clear of the words
     var up = between(t, w[0], w[1]) * (1 - between(t, w[2], w[3]));
     person(x, W14_SHORE + 90, welPerson("buakham", {size: 1.05}, {id: "buakham", face: -1, step: come > 0 && come < 1 ? t / BEAT * 0.9 : 0,
       feel: "happy", mouth: welTalk(t, welSays(t, W14_LINES, W14_SPEAKS)), wai: up || undefined, bend: 0.12 * up}));
   }
   sceneryReeds(80, 1110, 1.5, t, "back"); sceneryReeds(80, 1110, 1.5, t, "front");
-  if (t < 40) { welDragonflies(t, [["glider", [120, 760, 520, 860], 10, 1.8]]); }
+  if (t < 47.03) { welDragonflies(t, [["glider", [120, 760, 520, 860], 10, 1.8]]); }
   sceneryReeds(1850, 1100, 1.35, t + 2, "back"); sceneryReeds(1850, 1100, 1.35, t + 2, "front");
-  pen.fillStyle = "rgba(0, 0, 0, " + between(t, 53.2, 55).toFixed(3) + ")";   // into black
+  pen.fillStyle = "rgba(0, 0, 0, " + between(t, 65.97, 67.77).toFixed(3) + ")";   // into black
   pen.fillRect(0, 0, WIDE, 1080);
   welFadeIn(t, 1.5);
 }

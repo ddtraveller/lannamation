@@ -3,10 +3,10 @@
 // where king after king sits, each a moment, the light of the seasons turning over them (forty-five reigns, a few of
 // them seen); and last, King Mahachaichana, seventy, white-haired, on the same dais in the late gold light, his
 // courtiers before him. The city's places are the Chang Ngu film's (changngu/sets.js: cngCourt, cngPalace; the lane is sets.js welLane()).
-var W04_LONG = 35;
-var W04_SOUND = {calls: [[0.5, "hens", 0.16], [3.0, "dog", 0.1], [25.0, "dove", 0.14]]};
-var W04_LINES = [[1.0, 5.32, "W013"], [7.4, 17.0, "W014"], [21.4, 26.34, "W015"]];
-var W04_CUTS = [6.5, 20.0];
+var W04_LONG = 38.95;
+var W04_SOUND = {calls: [[0.5, "hens", 0.16], [3.1, "dog", 0.1], [28.24, "dove", 0.14]]};
+var W04_LINES = [[1.0, 5.43, "W013"], [7.59, 17.22, "W014"], [21.68, 30.22, "W015"]];
+var W04_CUTS = [6.69, 20.28];
 
 // The kings who sit one after another (a few of the forty-five): each a look over the kit's noble, the brocade and the
 // head-cloth told apart, the age going up and down as one reign follows another. Kind "noble".

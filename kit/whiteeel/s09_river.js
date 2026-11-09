@@ -4,23 +4,23 @@
 // into the dark; the Kok under the moon, fireflies over the plain: a ripple, and something long and pale gleams once
 // under the water and is gone (never a tail or a head: story.py); and her door again, she looking out toward the
 // river, and going in.
-var W09_LONG = 40;
-var W09_SOUND = {calls: [[0, "crickets", 0.14, 40], [18.0, "frogs", 0.18, 15], [26.0, "toad", 0.12]]};
-var W09_LINES = [[1.2, 5.98, "W032"], [6.18, 12.99, "W033"], [14.8, 19.88, "W034"]];
-var W09_CUTS = [20.2, 33.0];                           // the first after the line of his going ends
+var W09_LONG = 44.61;
+var W09_SOUND = {calls: [[0, "crickets", 0.14, 44.61], [22.09, "frogs", 0.18, 15.52], [30.61, "toad", 0.12]]};
+var W09_LINES = [[1.2, 6.91, "W032"], [7.18, 15.85, "W033"], [17.72, 24.43, "W034"]];
+var W09_CUTS = [24.81, 37.61];                           // the first after the line of his going ends
 
 // Shot 1: on her veranda; he speaks; he goes down and away into the dark.
 function w09Veranda(t) {
   welYardNight(t, true);
   var top = WEL_YARD[1] - WEL_HOUSE_TOP * WEL_YARD[2], ladder = WEL_YARD[0] + WEL_LADDER * WEL_YARD[2] + 16;
-  var down = between(t, 13.0, 14.8), away = between(t, 14.8, 19.8), x, y;
+  var down = between(t, 15.92, 17.72), away = between(t, 17.72, 24.41), x, y;
   if (down <= 0) { x = WEL_YARD[0] + 70; y = top + 4; }
   else if (away <= 0) { x = ladder; y = mix(top + 6, WEL_YARD[1] + 22, down); }
   else { x = mix(ladder, 760, away); y = mix(WEL_YARD[1] + 22, WEL_PATH - 20, away); }
   person(WEL_YARD[0] - 50, top + 4, welPerson("grandmother", WEL_WIDOW, {id: "widow", face: 1, holding: null, at: [x, y - 220],
-                                                                         feel: t > 6 && t < 14 ? "concerned" : undefined}));
+                                                                         feel: t > 7 && t < 16.92 ? "concerned" : undefined}));
   pen.save();
-  pen.globalAlpha = 1 - between(t, 17.6, 19.8);         // into the dark
+  pen.globalAlpha = 1 - between(t, 21.54, 24.41);         // into the dark
   person(x, y, welPerson("inta", WEL_YOUNG, {id: "young", face: down > 0 ? -1 : -1, step: (down > 0 && down < 1) || (away > 0 && away < 1) ? t / BEAT * 0.9 : 0,
                                             mouth: welTalk(t, welSays(t, W09_LINES, ["W032", "W033"])), at: down > 0 ? undefined : [WEL_YARD[0] - 50, top - 200]}));
   pen.restore();
@@ -28,7 +28,7 @@ function w09Veranda(t) {
 
 // Shot 2: the Kok under the moon: a ripple, a pale gleam once under the water, gone.
 function w09Kok(t) {
-  var gleam = between(t, 25.6, 26.8) * (1 - between(t, 29.0, 30.4)), gx = mix(1500, 760, between(t, 25.6, 30.4));
+  var gleam = between(t, 30.21, 31.41) * (1 - between(t, 33.61, 35.01)), gx = mix(1500, 760, between(t, 30.21, 35.01));
   welKokNight(t);
   if (gleam > 0) {                                      // seen through the water's face, long and pale
     var g = pen.createRadialGradient(gx, 664, 6, gx, 664, 260);
@@ -46,7 +46,7 @@ function w09Kok(t) {
 // Shot 3: her door; she looks out toward the river, and goes in.
 function w09Door(t) {
   welYardNight(t, true);
-  var top = WEL_YARD[1] - WEL_HOUSE_TOP * WEL_YARD[2], go = between(t, 36.6, 38.6);
+  var top = WEL_YARD[1] - WEL_HOUSE_TOP * WEL_YARD[2], go = between(t, 41.21, 43.21);
   pen.save();
   pen.globalAlpha = 1 - go;
   person(WEL_YARD[0] - 50 + 40 * go, top + 4, welPerson("grandmother", WEL_WIDOW, {id: "widow", face: go > 0 ? 1 : -1, holding: null,

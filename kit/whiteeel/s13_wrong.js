@@ -4,10 +4,10 @@
 // them sit in a circle and talk together, and one of them, Khun Lang, is chosen, and the rest raise their joined hands
 // to him; and last, on the bank of the Mae Khong (the Chang Ngu film's river, cngRiver()), the posts of a new town going
 // up one by one, people carrying more: Wiang Prueksa, the town of talking together, its name in gold.
-var W13_LONG = 50;
-var W13_SOUND = {calls: [[0.5, "hens", 0.15], [8.0, "rooster-crow", 0.12], [31.0, "plover", 0.15], [40.0, "kingfisher", 0.15]]};
-var W13_LINES = [[1.2, 8.6, "W049"], [10.0, 15.56, "W050"], [19.6, 23.96, "W051"], [32.0, 37.72, "W052"]];
-var W13_CUTS = [16.0, 30.0];
+var W13_LONG = 55.55;
+var W13_SOUND = {calls: [[0.5, "hens", 0.15], [8.96, "rooster-crow", 0.12], [35.5, "plover", 0.15], [45.55, "kingfisher", 0.15]]};
+var W13_LINES = [[1.2, 9.51, "W049"], [10.98, 17.45, "W050"], [21.56, 28.39, "W051"], [36.5, 43.19, "W052"]];
+var W13_CUTS = [17.96, 34.5];
 var W13_HER = [1500, CNG_GROUND - 10];                 // where the old woman stands, then sits at her tray (in the village panel)
 var W13_LANG = 1;                                      // which of WEL_HEADS is Khun Lang (the elder)
 
@@ -28,10 +28,10 @@ function w13Bow(t) {
   pen.save();
   pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
-  var sat = between(t, 8.6, 9.6), served = between(t, 10.4, 12.4), bow = between(t, 1.4, 2.4) * (1 - between(t, 6.4, 7.4));
+  var sat = between(t, 9.58, 10.58), served = between(t, 11.46, 13.84), bow = between(t, 1.43, 2.57) * (1 - between(t, 7.14, 8.28));
   var sprites = [{name: "widow", kind: "person", x: W13_HER[0], y: W13_HER[1], draw: function () {
     person(W13_HER[0], W13_HER[1], welPerson("grandmother", WEL_WIDOW, sat > 0.5 ? {id: "widow", face: 1, holding: null, floor: "side", feel: "happy",
-        reachA: t > 13 ? [W13_HER[0] + 70, W13_HER[1] - 16] : undefined} : {id: "widow", face: 1, feel: t > 4 ? "happy" : "concerned"}));
+        reachA: t > 14.56 ? [W13_HER[0] + 70, W13_HER[1] - 16] : undefined} : {id: "widow", face: 1, feel: t > 4.4 ? "happy" : "concerned"}));
   }}];
   if (served > 0) {
     var tx = W13_HER[0] + 90;
@@ -44,7 +44,7 @@ function w13Bow(t) {
                                          at: [W13_HER[0], W13_HER[1] - 220], mouth: welTalk(t + k, k === 0 && welSays(t, W13_LINES, ["W049"]))}));
     }});
   });
-  var giver = between(t, 9.6, 11.4) * (1 - between(t, 12.4, 14));   // a woman of the village brings the tray
+  var giver = between(t, 10.58, 12.65) * (1 - between(t, 13.84, 15.75));   // a woman of the village brings the tray
   if (giver > 0) {
     sprites.push({name: "giver", kind: "person", x: W13_HER[0] + 160, y: W13_HER[1] + 30, draw: function () {
       person(W13_HER[0] + 160, W13_HER[1] + 30, welPerson(24, {size: 0.7, free: true}, {id: "giver", face: -1, bend: 0.3 * served, feel: "happy",
@@ -58,7 +58,7 @@ function w13Bow(t) {
 
 // Shot 2: all sit in a circle and talk; Khun Lang is chosen and the rest raise their joined hands to him.
 function w13Circle(t) {
-  var village = cngVillage(), cam = WIDE * 0.35, chosen = between(t, 23.6, 24.6);
+  var village = cngVillage(), cam = WIDE * 0.35, chosen = between(t, 28.1, 29.1);
   pen.drawImage(welSky("day"), 0, 0);
   welClouds(t + 40, "day");
   welFlocks(t, [[-250, 190, 50]]);
@@ -73,15 +73,15 @@ function w13Circle(t) {
     var isLang = c[2] === W13_LANG, up = isLang ? chosen : 0;
     sprites.push({name: "sitter " + n, kind: "person", x: x, y: y, draw: function () {
       person(x, y, welPerson(c[0], c[1], {id: "circle" + n, face: x < middle[0] ? 1 : -1, floor: up > 0.5 ? undefined : "cross",
-        wai: !isLang && t > 24.6 ? 1 : undefined, feel: t > 24 ? "happy" : "thinking",
-        at: t > 23.6 ? [middle[0] + 300 * Math.cos(W13_LANG / circle.length * Math.PI * 2 + 0.3), middle[1] - 200] : [middle[0], middle[1] - 140],
-        mouth: welTalk(t + n, t < 23 && Math.sin(t * 0.9 + n * 1.7) > 0.45)}));
+        wai: !isLang && t > 29.1 ? 1 : undefined, feel: t > 28.5 ? "happy" : "thinking",
+        at: t > 28.1 ? [middle[0] + 300 * Math.cos(W13_LANG / circle.length * Math.PI * 2 + 0.3), middle[1] - 200] : [middle[0], middle[1] - 140],
+        mouth: welTalk(t + n, t < 27.18 && Math.sin(t * 0.9 + n * 1.7) > 0.45)}));
     }});
   });
   drawByZ(sprites);
   pen.drawImage(village.front, 0, 0);
   pen.restore();
-  cngGoldName("ขุนลัง", "Khun Lang", 960, 230, between(t, 24.4, 25.2) * (1 - between(t, 28.8, 29.8)));
+  cngGoldName("ขุนลัง", "Khun Lang", 960, 230, between(t, 28.9, 29.7) * (1 - between(t, 33.3, 34.3)));
 }
 
 // Shot 3: the bank of the Mae Khong; the posts of a new town going up; people carrying more.

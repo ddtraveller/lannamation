@@ -4,11 +4,11 @@
 // she gets up and goes to the door, stops, and comes back. Before dawn the third, the loudest; then, outside, she stands
 // at the top of her stairs and looks out into grey mist, and does not go down. Nothing of the city is shown falling
 // (story.py). The roars are sounds (W10_SOUND, for sounds.py), each louder.
-var W10_LONG = 60;
-var W10_ROARS = [[3.0, 0.5], [21.0, 0.75], [35.0, 1.0]];   // [second, how strong]
-var W10_SOUND = {calls: [[0, "crickets", 0.1, 46], [3.0, "roar", 0.5], [21.0, "roar", 0.75], [35.0, "roar", 1.0], [50.0, "dove", 0.12]]};
-var W10_LINES = [[5.4, 12.24, "W035"], [12.44, 19.18, "W036"], [22.6, 31.62, "W037"], [36.4, 43.06, "W038"], [47.0, 50.58, "W039"]];
-var W10_CUTS = [20.0, 46.0];
+var W10_LONG = 67.2;
+var W10_ROARS = [[3.0, 0.5], [23.81, 0.75], [39.86, 1.0]];   // [second, how strong]
+var W10_SOUND = {calls: [[0, "crickets", 0.1, 50.68], [3.0, "roar", 0.5], [23.81, "roar", 0.75], [39.86, "roar", 1.0], [57.12, "dove", 0.12]]};
+var W10_LINES = [[5.4, 14.72, "W035"], [14.99, 21.92, "W036"], [25.41, 36.4, "W037"], [41.26, 47.07, "W038"], [51.86, 57.71, "W039"]];
+var W10_CUTS = [22.81, 50.68];
 var W10_MAT = [760, CNG_FLOOR + 40];                   // where she lies
 var W10_HANG = [1040, CNG_BEAM];                       // where the lamp hangs from the beam
 var W10_DOOR = 1500;                                   // where she goes toward the door
@@ -81,11 +81,11 @@ function w10Inside(t) {
   pen.fillRect(0, 0, WIDE, 1600);
   w10Lamp(t);
   if (t < W10_CUTS[0]) {                                // after dusk: she sits up, remembers, lies down again
-    var up = between(t, 3.4, 4.2) * (1 - between(t, 15.6, 16.6));
-    w10Lying(t, up, t < 9 ? "fear" : "thinking");
+    var up = between(t, 3.4, 4.2) * (1 - between(t, 18.28, 19.32));
+    w10Lying(t, up, t < 10.44 ? "fear" : "thinking");
   } else {                                              // midnight and before dawn: up, to the door, and back
-    var go = between(t, 22.4, 25.6), back = between(t, 27.4, 30.6), rise = between(t, 21.4, 22.2);
-    if (t < 31.4) {
+    var go = between(t, 25.21, 29.13), back = between(t, 31.36, 35.33), rise = between(t, 24.21, 25.01);
+    if (t < 36.26) {
       if (go <= 0) { w10Lying(t, rise, "fear"); }
       else {
         var x = mix(mix(W10_MAT[0] + 40, W10_DOOR, go), W10_MAT[0] + 40, back), walking = (go > 0 && go < 1) || (back > 0 && back < 1);
@@ -93,13 +93,13 @@ function w10Inside(t) {
           step: walking ? t / BEAT * 0.7 : 0, feel: go >= 1 && back <= 0 ? "thinking" : "fear", at: [W10_DOOR + 200, CNG_FLOOR - 220]}));
       }
     } else {                                            // she lies down; the third roar, and she gets up and goes
-      var up2 = (1 - between(t, 31.4, 32.4)) + between(t, 35.4, 36.2);
+      var up2 = (1 - between(t, 36.26, 37.26)) + between(t, 40.26, 41.06);
       w10Lying(t, Math.min(1, up2), "fear");
     }
   }
   pen.restore();
-  if (t > 38) {                                         // the grey before dawn coming in
-    pen.fillStyle = "rgba(170, 180, 200, " + (0.3 * between(t, 38, 46)).toFixed(3) + ")";
+  if (t > 42.66) {                                         // the grey before dawn coming in
+    pen.fillStyle = "rgba(170, 180, 200, " + (0.3 * between(t, 42.66, 50.68)).toFixed(3) + ")";
     pen.fillRect(0, 0, WIDE, 1080);
   }
 }

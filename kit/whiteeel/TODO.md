@@ -54,8 +54,19 @@ The whole film: `film.html` (made by `film_page.py`), 740 s, 58 lines, all fifte
   counted the arms of people.js's unseen rig (arms_check now skips PEOPLE_SINK). The hero pages load slower with the
   finished cloth (kit_check SLOW_LOAD).
 
+## v4: Pan's own voice and words (2026-11-09)
+
+- Pan checked all 58 lines (her words now in story.py: 57 changed, 4 kept as the writer had them) and read every
+  one aloud (8 Nov). Her readings are the narration, in place of the made voice: 394.6 s of voice against 318.8 s.
+- Every scene laid out again for her lengths, no pause shortened, each scene's moments moved through its time warp
+  (the Maeng film's way, 25 Oct): the tale 740.8 s -> 824.2 s. W10_ROARS moved by hand. No line crosses a cut.
+- Her two ๆ (W049, W054) stay in the subtitles; SAY_AS says the word twice (tale_plan.py checks the spoken form).
+- The English follows her words where they now mean something else: W011, W012, W037, W049, W056, W058.
+- To do: the music again (feelings.py --film), her voice mixed over it, all 15 scenes rendered again (the kit's men
+  changed too), joined after the hero and the studio card; the owner's look.
+
 ## Still open
 
-- Pan's ear on story.py's ASK words (13); a line she changes is spoken and rendered again.
+- Pan's ear on story.py's ASK words (13): done by her checks of 8 Nov (every line hers).
 - A reader of the Lanna script for the tale's title. The credits' headings are in Thai, as the first films'.
 - The owner's look; S3, YouTube and the site on his word only; watdonchan sync (with the bare-chest kit fix).

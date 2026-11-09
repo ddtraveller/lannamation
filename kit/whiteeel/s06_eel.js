@@ -4,10 +4,10 @@
 // chiangsaen.js), and the people gather, shouting, and two throw ropes over it; then on the plain, the eel lying
 // caught (its killing is not shown), and a line of people hauling it on ropes toward the city, its body cutting a long
 // groove in the ground behind it (the groove that will be the Mae Nam Lak, scene 12).
-var W06_LONG = 45;
-var W06_SOUND = {calls: [[0, "wind", 0.1, 45], [3.0, "plover", 0.18], [11.0, "kingfisher", 0.18], [15.0, "egret", 0.14]]};
-var W06_LINES = [[1.4, 8.64, "W019"], [11.0, 16.06, "W020"], [25.0, 29.82, "W021"]];
-var W06_CUTS = [10.0, 22.0];
+var W06_LONG = 46.39;
+var W06_SOUND = {calls: [[0, "wind", 0.1, 46.39], [2.63, "plover", 0.18], [11.0, "kingfisher", 0.18], [15.0, "egret", 0.14]]};
+var W06_LINES = [[1.4, 7.01, "W019"], [11.0, 15.99, "W020"], [25.0, 31.15, "W021"]];
+var W06_CUTS = [9.45, 22.0];
 var W06_BANK_Y = 790;                                  // where the people stand on the near bank
 var W06_FISHERS = [["farmer", {size: 0.74}, 620], ["villager", {size: 0.74, turban: "#2a6a5a"}, 860], ["boy", {size: 0.48}, 980],
                    [3, {size: 0.7, free: true}, 1180], ["fellow", {size: 0.74}, 1420]];
@@ -46,8 +46,8 @@ function w06Pole(hx, hy, t) {
 // throwing ropes (shot 2). Pushes their sprites.
 function w06Bank(t, sprites, shot, eelHead) {
   W06_FISHERS.forEach(function (f, k) {
-    var x = f[2] + (shot ? 60 * between(t, 10, 13) * (k < 2 ? 1 : -1) : 0), y = W06_BANK_Y + (k % 2) * 18;
-    var seen = shot ? true : t > 5.6, pointing = (k === 1 || k === 3) && seen;
+    var x = f[2] + (shot ? 60 * between(t, 9.45, 13) * (k < 2 ? 1 : -1) : 0), y = W06_BANK_Y + (k % 2) * 18;
+    var seen = shot ? true : t > 4.64, pointing = (k === 1 || k === 3) && seen;
     var roping = shot && (k === 0 || k === 4) && t > 17.5;
     sprites.push({name: "fisher " + k, kind: "person", x: x, y: y, draw: function () {
       var look = {id: "fisher" + k, face: 1, feel: seen ? "surprised" : undefined, at: seen ? (eelHead || [1300, 660]) : [x + 200, 660],
@@ -70,7 +70,7 @@ function w06Bank(t, sprites, shot, eelHead) {
 // Shot 1: fishing; the pale shape under the water.
 function w06Fishing(t) {
   w06River(t, null, function () {                    // the shape, seen through the water's face
-    var x = mix(1900, 700, between(t, 3, 10)), a = between(t, 3, 4.5) * 0.5;
+    var x = mix(1900, 700, between(t, 2.63, 9.45)), a = between(t, 2.63, 3.79) * 0.5;
     var g = pen.createRadialGradient(x, 668, 6, x, 668, 220);
     g.addColorStop(0, "rgba(246, 240, 236, " + a.toFixed(3) + ")");
     g.addColorStop(1, "rgba(246, 240, 236, 0)");
@@ -85,7 +85,7 @@ function w06Fishing(t) {
 
 // Shot 2: the eel rises and swims at the surface; they gather, shouting; two throw ropes.
 function w06Rises(t) {
-  var hx = mix(1560, 1080, between(t, 10, 21)), up = between(t, 10.2, 12.2), head = null;
+  var hx = mix(1560, 1080, between(t, 9.45, 21)), up = between(t, 9.76, 12.2), head = null;
   w06River(t);
   pen.save();
   pen.beginPath(); pen.rect(0, 0, WIDE, WEL_KOK_BANK + 8); pen.clip();   // only the river shows it

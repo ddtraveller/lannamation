@@ -3,21 +3,21 @@
 // egrets crossing low; and in the middle of it the widow's house alone on its posts, standing in the water, her small
 // figure on its veranda looking to the north and to the south. The camera draws slowly back from her house to the
 // whole of the water. The water is the marsh of today's Nong Lom (scene 1's: sets.js welMarshWater()), as it was born.
-var W11_LONG = 40;
-var W11_SOUND = {calls: [[0, "wind", 0.1, 40], [3.0, "egret", 0.15], [9.0, "plover", 0.18], [20.0, "dove", 0.12]]};
-var W11_LINES = [[1.6, 7.62, "W040"], [10.4, 13.28, "W041"], [16.0, 20.0, "W042"]];
+var W11_LONG = 43.93;
+var W11_SOUND = {calls: [[0, "wind", 0.1, 43.93], [3.02, "egret", 0.15], [9.07, "plover", 0.18], [23.93, "dove", 0.12]]};
+var W11_LINES = [[1.6, 7.61, "W040"], [10.47, 15.55, "W041"], [18.34, 23.85, "W042"]];
 var W11_HOUSE = [980, 760, 1.1];                       // her house in the water: x, the posts' foot (under the water), size
 var W11_WATERLINE = 712;                               // where the water stands on its posts
 var W11_SUN = [1400, 520, 300];
-var W11_EGRETS = [{course: [[3.0, 2050, 600], [14.0, -150, 570]], high: 30, look: {fly: true, size: 0.7, seed: 4}},
-                  {course: [[4.2, 2100, 630], [15.6, -120, 600]], high: 26, look: {fly: true, size: 0.6, seed: 9}}];
+var W11_EGRETS = [{course: [[3.02, 2050, 600], [16.34, -150, 570]], high: 30, look: {fly: true, size: 0.7, seed: 4}},
+                  {course: [[4.23, 2100, 630], [17.94, -120, 600]], high: 26, look: {fly: true, size: 0.6, seed: 9}}];
 var W11_REEDS = [[300, 700, 0.5], [520, 690, 0.4], [1420, 696, 0.45], [1660, 706, 0.55], [1180, 740, 0.35], [760, 738, 0.3]];
 
 // Scene 11, the entry the film calls (SCENES): t, its own second, 0 to W11_LONG. Gives back nothing: it draws the whole
 // sheet with pen. From sets.js: welSky(), welClouds(), welFar(), welMarshWater(), WEL_WATER, welWidowHouse(), welAbove(),
 // welPerson() with WEL_WIDOW; from kit's lannabirds egret(). Its words are W11_LINES (W040 to W042).
 function welSceneWater(t) {
-  var light = between(t, 0, W11_LONG), dawn = 1 - between(t, 4, W11_LONG - 4), back = between(t, 0, 30);
+  var light = between(t, 0, W11_LONG), dawn = 1 - between(t, 4, W11_LONG - 4), back = between(t, 0, 33.93);
   var zoom = mix(1.45, 1.0, back * back * (3 - 2 * back));
   pen.save();
   pen.translate(W11_HOUSE[0], 620); pen.scale(zoom, zoom); pen.translate(-W11_HOUSE[0], -620);   // drawing back from her house
@@ -40,7 +40,7 @@ function welSceneWater(t) {
     welWidowHouse(pen, W11_HOUSE[0], W11_HOUSE[1], W11_HOUSE[2]);
     person(W11_HOUSE[0] - 50, top + 4, welPerson("grandmother", WEL_WIDOW, {id: "widow", holding: null, face: Math.sin(t * 0.5) > 0 ? 1 : -1,
                                                                             size: WEL_WIDOW.size * W11_HOUSE[2] / WEL_YARD[2],   // to her house's scale, as in her yard
-                                                                             feel: t > 10 ? "awe" : undefined,
+                                                                             feel: t > 10.07 ? "awe" : undefined,
                                                                             at: [Math.sin(t * 0.5) > 0 ? 1900 : 0, top - 40]}));
   }
   herHouse();                                           // whole, so the water's face lies over its posts
