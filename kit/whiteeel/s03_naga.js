@@ -103,7 +103,7 @@ function w03Morning(t) {
     }});
   });
   drawByZ(sprites);
-  cngGoldName("นาคพันธุสิงหนวตินคร", "Naga Phanthu Singhanavati Nakhon", 960, 230, between(u, 3.2, 4.2) * (1 - between(u, 10.2, 11)));
+  cngGoldName("โยนกนาคพันธุ์สิงหนวัติ", "The story of The White Eel", 960, 230, between(u, 3.2, 4.2) * (1 - between(u, 10.2, 11)));
   cngGoldName("โยนก", "Yonok", 960, 230, between(u, 12.4, 13.4) * (1 - between(u, 18.6, 19.6)));
   sceneryAir(t, {butterfly: null, petals: null, light: [0.4, 9]});
 }
