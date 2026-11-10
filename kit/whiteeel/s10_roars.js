@@ -15,8 +15,8 @@ var W10_LONG = 67.2;
 var W10_ROARS = [[3.0, 0.5], [23.81, 0.75], [39.86, 1.0]];   // [second, how strong]
 var W10_STRIKES = [9.6, 16.9, 30.6, 45.4, 52.6, 58.4, 63.6];   // the lightning: none on a roar
 var W10_SOUND = {calls: [[0, "rain", 0.16, 50.68], [50.68, "rain", 0.34, 16.52], [3.0, "roar", 0.5], [23.81, "roar", 0.75], [39.86, "roar", 1.0],
-                         [10.3, "thunder", 0.4], [17.5, "thunder", 0.5], [31.2, "thunder", 0.5], [45.9, "thunder", 0.55],
-                         [52.9, "thunder", 0.7], [59.1, "thunder", 0.55], [64.0, "thunder", 0.6]]};   // indoors the rain is muffled
+                         [10.3, "thunder", 0.56], [17.5, "thunder", 0.7], [31.2, "thunder", 0.7], [45.9, "thunder", 0.77],
+                         [52.9, "thunder", 0.98], [59.1, "thunder", 0.77], [64.0, "thunder", 0.84]]};   // indoors the rain is muffled
 var W10_LINES = [[5.4, 14.72, "W035"], [14.99, 21.92, "W036"], [25.41, 36.4, "W037"], [41.26, 47.07, "W038"], [51.86, 57.71, "W039"]];
 var W10_CUTS = [22.81, 50.68];
 var W10_MAT = [760, CNG_FLOOR + 40];                   // where she lies
@@ -213,6 +213,21 @@ function w10Flood(t) {
   pen.restore();
 }
 
+// Her house again over the water and its mist (the owner, 2026-11-10: "the water z order should be behind the house"):
+// welWidowHouse()'s sheet as dark as the yard under it, drawn where welYard() put it. e.g. w10House();
+var W10_HOUSE = null;
+function w10House() {
+  if (!W10_HOUSE) {
+    W10_HOUSE = document.createElement("canvas");
+    W10_HOUSE.width = WEL_HOUSE.width; W10_HOUSE.height = WEL_HOUSE.height;
+    var b = W10_HOUSE.getContext("2d");
+    b.drawImage(WEL_HOUSE, 0, 0);
+    b.globalCompositeOperation = "source-atop"; b.fillStyle = "rgba(8, 12, 26, 0.62)"; b.fillRect(0, 0, W10_HOUSE.width, W10_HOUSE.height);
+  }
+  var x = WEL_YARD[0], base = WEL_YARD[1], size = WEL_YARD[2];
+  pen.drawImage(W10_HOUSE, x - 220 * size, base - 455 * size, 440 * size, 480 * size);
+}
+
 // Outside: the top of her stairs before dawn in the storm, black cloud, the rain so thick the city at the left is all but
 // gone in it, water lying between it and her house, mist on the water; a stroke far off over the city lights it all a
 // moment; she stands and looks out, and does not go down.
@@ -230,6 +245,7 @@ function w10Stairs(t) {
   pen.fillStyle = "rgba(8, 12, 26, 0.62)"; pen.fillRect(-WIDE, -1080, 3 * WIDE, 3 * 1080);
   w10Flood(t);
   softMist(t, 700, 90, 0.32, 31, "120, 132, 156");    // mist lying on the water
+  w10House();                                           // her house in front of the water and the mist
   var haze = pen.createLinearGradient(0, 0, 1150, 0);  // the rain thickest over the city: it is all but gone in it
   haze.addColorStop(0, "rgba(60, 68, 88, 0.9)"); haze.addColorStop(0.7, "rgba(60, 68, 88, 0.62)"); haze.addColorStop(1, "rgba(60, 68, 88, 0.15)");
   pen.fillStyle = haze; pen.fillRect(-WIDE, -1080, 1150 + WIDE, 3 * 1080);
