@@ -74,6 +74,10 @@ The whole film: `film.html` (made by `film_page.py`), 740 s, 58 lines, all fifte
   smaller; the storm in scene 10 (rain, lightning, thunder; the stairs in the storm, water between the city and her
   house, mist); a cracked jar; the old torn sum kai and her black hen; sweeping, her free arm down; a ladle as she
   cooks; scene 14's fish kept in the water. 958.7 s, -14.1 LUFS.
+- v7 and v8 (the owner's notes on v6): scene 10's stairs, her house drawn again over the flood and its mist; the
+  thunder louder (calls x1.4) and heard over the voice (kit: tale_music.py OVER, sash_narrate.py --over, under a line
+  it dips to 0.5, not 0.3: about +7 dB there, +3 dB between lines). v7's AAC encode overshot to 0.0 dBTP; v8_all.sh
+  lowers the limiter until the file is at most -1 dBTP (0.72 was enough: -1.5). 958.7 s, -14.1 LUFS.
 - Open: s13 fails the arm check, 6 arms folded 154-155 degrees in one frame (29.13 s), as it did before v6.
 
 ## Still open
