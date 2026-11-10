@@ -138,7 +138,7 @@ function welSceneMarsh(t) {
   var egretAt = courseAt(t, W01_EGRET.course);
   if (egretAt.on) { egret(egretAt.x, egretAt.y, t, Object.assign({}, W01_EGRET.look, {face: egretAt.face})); }
   W01_LOTUS_NEAR.forEach(function (l) { sceneryLotus("over", l[0], l[1], 50 * l[2], l[2], l[3], l[4], t); });
-  welDragonflies(t, [["scarlet", [240, 760, 640, 860], 1, 1.8], ["glider", [1240, 740, 1680, 850], 2, 1.8]]);
+  welDragonflies(t, [["scarlet", [240, 760, 640, 860], 1, 1.2], ["glider", [1240, 740, 1680, 850], 2, 1.2]]);
   sceneryReeds(80, 1110, 1.5, t, "back"); sceneryReeds(80, 1110, 1.5, t, "front");   // reeds and soft grass framing the front
   sceneryReeds(1850, 1100, 1.35, t + 2, "back"); sceneryReeds(1850, 1100, 1.35, t + 2, "front");
   sceneryBeds(t, thkOnce("wel-marsh-frame", function () {

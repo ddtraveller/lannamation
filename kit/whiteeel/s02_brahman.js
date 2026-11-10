@@ -93,7 +93,7 @@ function welSceneBrahman(t) {
   welFish(t, [["barb", 760, 676, 220, 0.6, 1], ["gourami", 1420, 690, 170, 0.6, 2]]);
   sceneryWaterSurface(t, kok);
   w02Wake(t);                                           // on the water: behind the reeds, the trees and the people (owner, 2026-11-10)
-  welKingfisher(t, 1640, 540, {water: 664, face: -1, seed: 1, size: 0.5});
+  welKingfisher(t, 1640, 540, {water: 664, face: -1, seed: 1, size: 0.5, once: 41.0});   // one fish, and away
   W02_REEDS.forEach(function (r) { sceneryReeds(r[0], r[1], r[2], t, "back"); });
   pen.drawImage(welPlainTrees(), 0, 0, WIDE, 1080);
 
@@ -139,7 +139,7 @@ function welSceneBrahman(t) {
     sprites.push({name: "reeds " + k, kind: "person", x: r[0], y: r[1] + 12, draw: function () { sceneryReeds(r[0], r[1], r[2], t, "front"); }});
   });
   drawByZ(sprites);
-  welDragonflies(t, [["marshhawk", [180, 700, 640, 800], 3, 1.8], ["scarlet", [1260, 720, 1760, 820], 4, 1.8]]);
+  welDragonflies(t, [["marshhawk", [180, 700, 640, 800], 3, 1.2], ["scarlet", [1260, 720, 1760, 820], 4, 1.2]]);
   sceneryBeds(t, thkOnce("wel-plain-frame", function () {
     return [{sprite: sceneryGrass(300, 18, 621), x: 40, y: 1110}, {sprite: sceneryGrass(280, 16, 627), x: WIDE - 20, y: 1110}];
   }), {blur: 5, sway: 0.4});

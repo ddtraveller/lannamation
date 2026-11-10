@@ -440,6 +440,7 @@ var THING_KINDS = {
   kongKhao: function (one, look) { kongKhao(pen, one.x, one.base, one.size || 1, look); },
   krabung: function (one, look) { krabung(pen, one.x, one.base, one.size || 1, look); },
   mortar: function (one, look) { mortar(pen, one.x, one.base, one.size || 1, look); },
+  sumKai: function (one, look) { sumKai(pen, one.x, one.base, one.size || 1, look); },
   taLaew: function (one, look) { taLaew(pen, one.x, one.base, one.size || 1, look); },
   // the triangular cushion and the betel set of a house or a palace (pieces.js; look.kind picks each one's kind)
   monKhit: function (one, look) { monKhit(pen, one.x, one.base, one.size || 1, look); },

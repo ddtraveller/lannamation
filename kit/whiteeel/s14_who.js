@@ -76,7 +76,11 @@ function welSceneWho(t) {
   sceneryWaterDepths(lake);
   pen.drawImage(w14Island(), W14_ISLAND[0] - 350, W14_ISLAND[1] - 330, 700, 360);
   w14Herd(t, "under");
-  welFish(t, [["barb", 600, 900, 220, 0.8, 10], ["gourami", 1250, 940, 200, 0.9, 11]]);
+  pen.save();                                           // the fish in the water, never over the land (the owner, 2026-11-10,
+  pen.beginPath(); lake.edge.forEach(function (p, i) { if (i) { pen.lineTo(p[0], p[1]); } else { pen.moveTo(p[0], p[1]); } });
+  pen.closePath(); pen.clip();                          // at 13:24: "a fish swimming through the land")
+  welFish(t, [["barb", 600, 860, 220, 0.8, 10], ["gourami", 1250, 875, 200, 0.9, 11]]);
+  pen.restore();
   var shimmer = between(t, 30.12, 31.68) * (1 - between(t, 34.62, 36.37)), sx = mix(1700, 400, between(t, 30.12, 36.37));
   sceneryWaterSurface(t, lake, function () {
     if (shimmer > 0) {                                  // the long pale shimmer under the water's face
@@ -100,7 +104,7 @@ function welSceneWho(t) {
       feel: "happy", mouth: welTalk(t, welSays(t, W14_LINES, W14_SPEAKS)), wai: up || undefined, bend: 0.12 * up}));
   }
   sceneryReeds(80, 1110, 1.5, t, "back"); sceneryReeds(80, 1110, 1.5, t, "front");
-  if (t < 47.03) { welDragonflies(t, [["glider", [120, 760, 520, 860], 10, 1.8]]); }
+  if (t < 47.03) { welDragonflies(t, [["glider", [120, 760, 520, 860], 10, 1.2]]); }
   sceneryReeds(1850, 1100, 1.35, t + 2, "back"); sceneryReeds(1850, 1100, 1.35, t + 2, "front");
   pen.fillStyle = "rgba(0, 0, 0, " + between(t, 65.97, 67.77).toFixed(3) + ")";   // into black
   pen.fillRect(0, 0, WIDE, 1080);

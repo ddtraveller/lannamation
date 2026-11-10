@@ -707,7 +707,14 @@ nearer 1.8 so they read on a sheet 1920 wide.
 Each has a round head that is nearly all eye, a short thorax, four long clear wings with a dark spot near each tip,
 and a thin abdomen in ten rings. `dragonflies.html` is the sheet: the four large, flying and resting; then at their
 own sizes over a pond, darting, one resting on a reed. Drawn from what each is; no picture was copied. Not done: no
-side view, no Thai names of the kinds (แมลงปอ is the dragonfly).
+Thai names of the kinds (แมลงปอ is the dragonfly).
+
+**From the side** (2026-11-10; the owner, of the White Eel: "change the dragonflies so they look like they are being
+seen from a side view rather than a top view. They should be a little smaller, too"): `look.side` draws one as it
+hangs in the air at the height of the eye: the head and its great eye, the thorax with the legs folded under it, the
+abdomen drooping a little to the claspers, and its beat a blur of wings fanned over its back (picked from three: the
+wings raised and beating, the blur, the wings held flat). It faces the way `turn` points, right or left, so
+`dragonflyDart()` drives it as before; resting, its wings lie out flat, edge on. The White Eel draws them so, at 1.2.
 ## The animals of Mangrai's tale, and the white eel of Wiang Nong Lom (2026-10-25)
 
 For the next tales (`kit/next_tales.md`): `mangrai.js`, a module of its own (load it after `beasts.js`, whose

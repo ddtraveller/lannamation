@@ -136,7 +136,7 @@ function welSceneEel(t) {
   if (t < W06_CUTS[0]) { w06Fishing(t); }
   else if (t < W06_CUTS[1]) { w06Rises(t); }
   else { w06Haul(t); }
-  welDragonflies(t, [["glider", [1280, 750, 1800, 850], 5, 1.8]]);
+  welDragonflies(t, [["glider", [1280, 750, 1800, 850], 5, 1.2]]);
   sceneryBeds(t, thkOnce("wel-plain-frame", function () {
     return [{sprite: sceneryGrass(300, 18, 621), x: 40, y: 1110}, {sprite: sceneryGrass(280, 16, 627), x: WIDE - 20, y: 1110}];
   }), {blur: 5, sway: 0.4});

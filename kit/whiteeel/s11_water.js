@@ -67,7 +67,7 @@ function welSceneWater(t) {
   });
   sceneryReeds(60, 1110, 1.5, t, "back"); sceneryReeds(60, 1110, 1.5, t, "front");   // reeds framing the front
   sceneryReeds(1870, 1100, 1.35, t + 2, "back"); sceneryReeds(1870, 1100, 1.35, t + 2, "front");
-  welDragonflies(t, [["glider", [300, 700, 800, 840], 6, 1.8], ["scarlet", [1150, 720, 1650, 850], 7, 1.8]]);
+  welDragonflies(t, [["glider", [300, 700, 800, 840], 6, 1.2], ["scarlet", [1150, 720, 1650, 850], 7, 1.2]]);
   sceneryAir(t, {butterfly: null, petals: null, light: [0.5, 6]});
   pen.restore();
   welFadeIn(t, 1.5);

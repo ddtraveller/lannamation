@@ -25,6 +25,19 @@ function w05Broom(hx, hy, gx, gy) {
   pen.restore();
 }
 
+// The ladle she stirs the rice with: a thin handle of wood standing up out of her hand (h, where her hand reaches) and
+// down past it into the pot, its bowl hidden in it; drawn before her, so her hand covers its middle (the owner, 2026-11-10: "When she is cooking
+// add a spoon into her hand. It can likely just look like a line").
+function w05Ladle(h) {
+  var top = [h[0] - 8, h[1] - 34], to = [W05_FIRE[0] + 2, W05_FIRE[1] - 24];
+  pen.save();
+  pen.strokeStyle = "#6a4a2a"; pen.lineWidth = 3.2; pen.lineCap = "round";
+  pen.beginPath(); pen.moveTo(top[0], top[1]); pen.lineTo(to[0], to[1]); pen.stroke();
+  pen.strokeStyle = "rgba(255, 220, 170, 0.35)"; pen.lineWidth = 1;
+  pen.beginPath(); pen.moveTo(top[0], top[1] - 1); pen.lineTo(to[0], to[1] - 1); pen.stroke();
+  pen.restore();
+}
+
 // The little fire: three stones, a flicker of flame, a small black pot on them, its lid, and the steam and smoke.
 function w05Fire(t) {
   var x = W05_FIRE[0], y = W05_FIRE[1];
@@ -72,7 +85,7 @@ function welSceneWidow(t) {
     var swing = Math.sin(t * 3.2), hand = [W05_SWEEP[0] - 70 + 26 * swing, W05_SWEEP[1] - 96];
     sprites.push({name: "widow", kind: "person", x: W05_SWEEP[0], y: W05_SWEEP[1], draw: function () {
       var j = person(W05_SWEEP[0], W05_SWEEP[1], welPerson("grandmother", WEL_WIDOW, {id: "widow", face: -1, holding: null, bend: 0.3,
-                                                                                      reachA: hand, reachB: [hand[0] + 18, hand[1] + 22]}));
+                                                                                      reachA: hand}));   // the other arm at her side (owner, 2026-11-10)
       var w = cngLocal(j.wristA);
       w05Broom(w[0], w[1], w[0] - 46 + 20 * swing, W05_SWEEP[1] + 4);
     }});
@@ -80,6 +93,7 @@ function welSceneWidow(t) {
     w05Fire(t);
     var stir = Math.sin(t * 1.6);
     sprites.push({name: "widow", kind: "person", x: W05_FIRE[0] - 80, y: W05_FIRE[1] + 4, draw: function () {
+      w05Ladle([W05_FIRE[0] - 18 + 6 * stir, W05_FIRE[1] - 38]);   // under her fist
       person(W05_FIRE[0] - 80, W05_FIRE[1] + 4, welPerson("grandmother", WEL_WIDOW, {id: "widow", face: 1, holding: null, floor: "side",
                                                                                    reachA: [W05_FIRE[0] - 18 + 6 * stir, W05_FIRE[1] - 38], at: [W05_FIRE[0], W05_FIRE[1] - 30],
                                                                                    feel: "concerned"}));
@@ -94,7 +108,8 @@ function welSceneWidow(t) {
     w05Neighbours(t, u, sprites);
   }
   drawByZ(sprites);
-  welDragonflies(t, [["scarlet", [640, 740, 1040, 840], 4, 1.6]]);
+  welYardHen(t, [[5.2, 12.6], [29.0, 36.4]]);           // her hen out of its basket, twice (in the shots that show it)
+  welDragonflies(t, [["scarlet", [640, 740, 1040, 840], 4, 1.1]]);
   sceneryBeds(t, thkOnce("wel-yard-frame", function () {
     return [{sprite: sceneryGrass(300, 18, 631), x: 40, y: 1110}, {sprite: sceneryGrass(280, 16, 637), x: WIDE - 20, y: 1110}];
   }), {blur: 5, sway: 0.4});

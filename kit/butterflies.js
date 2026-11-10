@@ -339,7 +339,12 @@ function butterflyDrift(t, x, y, look) {
 // shimmer, a blur at their beat; resting (look.rest), they lie still, flat out to the sides.
 //   size   1 is 30 long; turn: radians its head is turned from up; rest: true, it sits with its wings still;
 //   seed   a number, so that two do not shimmer as one
-var DRAGONFLY_KEYS = {size: true, turn: true, rest: true, seed: true};
+//   side   true: seen from the side, as one hanging in the air at the height of the eye (the owner, 2026-11-10, of
+//          the White Eel: "change the dragonflies so they look like they are being seen from a side view rather
+//          than a top view"): its head and great eye, the thorax with the legs folded under it, the abdomen
+//          drooping a little to the claspers; flying, its wings a blur fanned over its back at their beat; resting,
+//          held out flat, edge on. It faces right when turn points right of up, left when left; size as above.
+var DRAGONFLY_KEYS = {size: true, turn: true, rest: true, seed: true, side: true};
 var DRAGONFLIES = {
   scarlet: {body: "#c8281e", tail: "#d8301e", eye: "#a01814", wing: "rgba(236, 242, 246, 0.34)", base: null, spot: "#7a2a18", line: "#4a1410"},
   glider: {body: "#a8742a", tail: "#d8a23a", eye: "#8a3a1e", wing: "rgba(246, 240, 214, 0.36)", base: null, spot: "#c8a24a", line: "#4a3014"},
@@ -380,6 +385,7 @@ function dragonfly(kind, x, y, t, look) {
   checkNames("A dragonfly's look", look, DRAGONFLY_KEYS);
   if (!DRAGONFLIES[kind]) { checkName("The dragonfly", kind, DRAGONFLIES); return; }
   var k = DRAGONFLIES[kind], size = look.size || 1, seed = look.seed || 0;
+  if (look.side) { dragonflySide(k, x, y, t, look); return; }
   pen.save();
   pen.translate(x, y);
   pen.rotate(look.turn || 0);
@@ -420,6 +426,56 @@ function dragonfly(kind, x, y, t, look) {
   pen.fillStyle = k.eye; pen.fill(); pen.stroke();
   pen.fillStyle = "rgba(255, 255, 255, 0.55)";
   pen.beginPath(); pen.arc(-1.6, -5.8, 0.45, 0, 7); pen.arc(0.9, -5.8, 0.45, 0, 7); pen.fill();
+  pen.restore();
+}
+
+// dragonfly()'s side view (look.side): k, its kind's colours; the rest as dragonfly(). Its thorax at (x, y), its head
+// at +10 the way it faces, its tail's claspers at -19.
+function dragonflySide(k, x, y, t, look) {
+  var size = look.size || 1, seed = look.seed || 0, face = Math.sin(look.turn || 0) < 0 ? -1 : 1;
+  var beat = look.rest ? 0 : Math.sin((t + seed * 0.13) * Math.PI * 2 * 26);
+  pen.save();
+  pen.translate(x, y);
+  pen.scale(face * size, size);
+  pen.translate(-6.2, 0.4);                         // its thorax on (x, y)
+  function wing(rootX, rootY, angle, long, chord, hind, alpha, squash) {
+    pen.save(); pen.translate(rootX, rootY); pen.rotate(angle); if (squash) { pen.scale(1, squash); }
+    dragonflyWing(k, long, chord, hind, alpha); pen.restore();
+  }
+  function wings(far) {                             // far: the pair on the far side, behind its body, fainter
+    var a = far ? 0.45 : 1, s = far ? 0.12 : 0;
+    if (look.rest) {                                 // held out flat, seen edge on
+      wing(6.4, -2.0, Math.PI + 0.08 - s, 15.5, 3.4, false, 0.9 * a, 0.32);
+      wing(5.2, -1.8, Math.PI - 0.12 - s, 14.5, 4.2, true, 0.9 * a, 0.32);
+      return;
+    }
+    for (var g = -1; g <= 1; g += 0.5) {             // the fan of the beat over its back
+      wing(6.6, -2.4, -1.9 + s + 0.55 * g, 15.5, 3.4, false, 0.28 * a);
+      wing(5.0, -2.2, -2.2 + s + 0.55 * g, 14.5, 4.2, true, 0.28 * a);
+    }
+    wing(6.6, -2.4, -1.9 + s + 0.55 * beat, 15.5, 3.4, false, 0.6 * a);
+  }
+  wings(true);
+  pen.lineWidth = 0.6;
+  pen.strokeStyle = k.line;
+  for (var n = 9; n >= 0; n--) {                    // the abdomen, ten rings, drooping a little to the tail
+    var cx = 2.4 - n * 2.2, cy = 0.4 + n * n * 0.03, ry = (k.swollen && n < 2 ? 1.6 : 1.2) - n * 0.035;
+    pen.beginPath(); pen.ellipse(cx, cy, 1.35, ry, 0.04 * n, 0, 7);
+    pen.fillStyle = k.bands && n % 2 ? k.bands : k.tail; pen.fill(); pen.stroke();
+  }
+  pen.beginPath(); pen.moveTo(-17.6, 3.2); pen.lineTo(-19.6, 3.9); pen.moveTo(-17.6, 3.0); pen.lineTo(-19.4, 2.4); pen.stroke();   // the claspers
+  pen.strokeStyle = "rgba(30, 24, 20, 0.8)"; pen.lineWidth = 0.55;   // the legs, folded under it
+  [[5.0, 1.8, 6.4, 4.6], [6.4, 1.9, 8.0, 4.4], [7.6, 1.7, 9.6, 3.9]].forEach(function (l) {
+    pen.beginPath(); pen.moveTo(l[0], l[1]); pen.quadraticCurveTo(l[0] + 0.4, l[3], l[2], l[3]); pen.stroke();
+  });
+  pen.strokeStyle = k.line; pen.lineWidth = 0.6;
+  pen.beginPath(); pen.ellipse(6.2, -0.4, 3.7, 2.9, -0.35, 0, 7);   // the thorax
+  pen.fillStyle = k.body; pen.fill(); pen.stroke();
+  pen.beginPath(); pen.ellipse(10.4, -0.9, 2.3, 2.5, 0, 0, 7);      // the head, nearly all eye
+  pen.fillStyle = k.eye; pen.fill(); pen.stroke();
+  pen.fillStyle = "rgba(255, 255, 255, 0.6)";
+  pen.beginPath(); pen.arc(10.9, -1.8, 0.6, 0, 7); pen.fill();
+  wings(false);
   pen.restore();
 }
 

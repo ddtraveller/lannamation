@@ -353,6 +353,16 @@ function welWidowHouse(brush, x, base, size) {
     var b = WEL_HOUSE.getContext("2d");
     b.scale(PIX, PIX);
     house(b, 220, 455, 1);
+    b.save();                                          // the big jar under the floor cracked (the owner, 2026-11-10)
+    b.beginPath(); b.ellipse(150, 431, 22, 26, 0, 0, 7); b.clip();
+    var crack = [[143, 405], [147, 414], [142, 421], [149, 430], [145, 438], [152, 446], [150, 458]];
+    [["rgba(255, 196, 150, 0.35)", 1.0, 1], ["rgba(46, 18, 8, 0.9)", 1.4, 0]].forEach(function (ink) {
+      b.strokeStyle = ink[0]; b.lineWidth = ink[1]; b.lineJoin = "round";
+      b.beginPath(); crack.forEach(function (c, i) { if (i) { b.lineTo(c[0] + ink[2], c[1]); } else { b.moveTo(c[0] + ink[2], c[1]); } });
+      b.moveTo(149 + ink[2], 430); b.lineTo(157 + ink[2], 426); b.lineTo(163 + ink[2], 431);   // a branch off it
+      b.stroke();
+    });
+    b.restore();
     b.globalCompositeOperation = "source-atop";        // the weather on its wood
     b.fillStyle = "rgba(128, 118, 104, 0.3)";
     b.fillRect(0, 0, 440, 480);
@@ -369,6 +379,10 @@ function welWidowHouse(brush, x, base, size) {
 // left with roofs over it, grass and flowers, a path of beaten earth across the front, the widow's house on the right
 // with bushes in flower round it and a tamarind over it. WEL_YARD: [x, base, size] of her house; WEL_PATH: the path's y.
 var WEL_YARD = [1360, 812, 1.6], WEL_PATH = 878, WEL_YARD_SHEET = {};
+// The old sum kai (pieces.js sumKai()) by her house, right of her ladder, torn at its foot, where her one small black
+// hen goes in and out (the owner, 2026-11-10: "it should look old and have a torn part in it from which a small black
+// chicken should sometimes come out to peck around for food"): [x, base, size]; WEL_HEN: the hen's size.
+var WEL_KAI = [1600, 842, 1.15], WEL_HEN = 0.62;
 function welYard(kind) {
   kind = kind || "day";
   if (WEL_YARD_SHEET[kind]) { return WEL_YARD_SHEET[kind]; }
@@ -394,8 +408,35 @@ function welYard(kind) {
   });
   pen = keep;
   welWidowHouse(b, WEL_YARD[0], WEL_YARD[1], WEL_YARD[2]);
+  sumKai(b, WEL_KAI[0], WEL_KAI[1], WEL_KAI[2], {old: true, torn: true});   // her hen's basket, old and torn
   WEL_YARD_SHEET[kind] = paper;
   return paper;
+}
+
+// The widow's small black hen (the kit's rooster(), a hen, black) comes out of the tear in her sum kai, pecks about
+// by it (roosterPeck()), and goes back in. outs: [[from, to], ...], the seconds she is out (each more than 3 s);
+// drawn over the yard, so she is in front of the basket. e.g. welYardHen(t, [[6, 13]]);
+function welYardHen(t, outs) {
+  outs.forEach(function (o, k) {
+    if (t < o[0] || t > o[1]) { return; }
+    var tear = sumKaiTear(WEL_KAI[0], WEL_KAI[1], WEL_KAI[2]), u = t - o[0], left = o[1] - t, walk = 1.2, reach = 46;
+    var stay = o[1] - o[0] - 2 * walk, home = reach + roosterPeck(stay, {seed: k + 3, hen: true, roam: 40}).x * WEL_HEN;
+    var x, look, alpha = 1;
+    if (u < walk) {                                   // out through the tear
+      var e = u / walk; x = reach * e; look = {face: 1, walk: reach * e / WEL_HEN / 48};
+      alpha = Math.min(1, e / 0.2);
+    } else if (left < walk) {                         // and back in
+      var e2 = left / walk; x = home * e2; look = {face: -1, walk: home * (1 - e2) / WEL_HEN / 48};
+      alpha = Math.min(1, e2 / 0.2);
+    } else {
+      var p = roosterPeck(u - walk, {seed: k + 3, hen: true, roam: 40}); x = reach + p.x * WEL_HEN; look = p.look;
+    }
+    pen.save();
+    pen.globalAlpha *= alpha;
+    pen.translate(tear[0] - 8 + x, WEL_KAI[1] + 5); pen.scale(WEL_HEN, WEL_HEN);
+    rooster(0, 0, t, Object.assign({}, look, {hen: true, black: true}));
+    pen.restore();
+  });
 }
 
 // The night laid over a set drawn in the day's colours: dark blue, none over the sky (already the night's) down to
@@ -560,8 +601,22 @@ function welEgretsFlying(t, list) {
 
 // A kingfisher over the river: it hangs in the air at (x, y) on fast wings, and every so often drops straight down
 // to the water and is back with a fish, then hangs again. look: {size, face, seed, every (seconds between dives, 9),
-// water (the y of the water's face under it)}. e.g. welKingfisher(t, 1500, 520, {water: 660, face: -1});
+// water (the y of the water's face under it), once (a second: it dives that once, and flies away out of the picture
+// with its fish, the way it faces; the owner, 2026-11-10: "the bird that catches a fish should only catch one fish
+// then fly away", and only in one scene, scene 2)}. e.g. welKingfisher(t, 1500, 520, {water: 660, face: -1});
 function welKingfisher(t, x, y, look) {
+  if (look.once !== undefined) {
+    var sz = look.size || 0.55, fc = look.face || 1, dp = look.water - y, v = t - look.once;
+    if (v < 0) { kingfisher(x, y, t, {hover: true, size: sz, face: fc}); return; }
+    if (v < 0.77) { kingfisher(x, y + dp * Math.pow(v / 0.77, 1.6), t, {dive: 1, size: sz, face: fc}); return; }
+    if (v < 1.1) { ripples(pen, [[x, look.water, t - (v - 0.77)]], t); return; }
+    if (v < 4) { ripples(pen, [[x, look.water, t - (v - 0.77)]], t); }
+    var up = Math.min(1, (v - 1.1) / 1.1), away = Math.max(0, v - 1.6);   // up out of the water, then off and away
+    var fx = x + fc * 420 * away * away * 0.5 + fc * 260 * away, fy = look.water - dp * up - 40 * away;
+    if (fx < -200 || fx > WIDE + 200) { return; }
+    kingfisher(fx, fy, t, {fly: true, fish: true, size: sz, face: fc});
+    return;
+  }
   var every = look.every || 9, at = (t + (look.seed || 0) * 2.3) % every, size = look.size || 0.55, face = look.face || 1;
   var drop = look.water - y;
   if (at < every - 2.2) { kingfisher(x, y, t, {hover: true, size: size, face: face}); return; }
@@ -572,12 +627,14 @@ function welKingfisher(t, x, y, look) {
   kingfisher(x, look.water - drop * (u - 0.5) / 0.5, t, {fly: true, fish: true, size: size, face: face});
 }
 
-// Dragonflies hunting: each [kind of DRAGONFLIES, box [x0, y0, x1, y1] it darts about in, seed, size].
+// Dragonflies hunting: each [kind of DRAGONFLIES, box [x0, y0, x1, y1] it darts about in, seed, size]. Seen from the
+// side (the owner, 2026-11-10: "change the dragonflies so they look like they are being seen from a side view rather
+// than a top view. They should be a little smaller, too": the film's sizes 1.8 to 1.2).
 // e.g. welDragonflies(t, [["scarlet", [200, 760, 700, 900], 1, 1.2]]);
 function welDragonflies(t, list) {
   list.forEach(function (d) {
     var at = dragonflyDart(t, d[1], {seed: d[2]});
-    dragonfly(d[0], at.x, at.y, t, {turn: at.turn, size: d[3] || 1.2, seed: d[2]});
+    dragonfly(d[0], at.x, at.y, t, {turn: at.turn, size: d[3] || 1.2, seed: d[2], side: true});
   });
 }
 

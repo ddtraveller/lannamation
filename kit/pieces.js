@@ -2357,6 +2357,102 @@ function kongKhao(brush, x, base, size, look) {
 // canvas 2D context; x, base: pixels of the sheet; size: needed; look: optional, tint. Returns
 // nothing: it draws with brush, and leaves brush as it found it.
 // e.g. krabung(pen, 480, 930, 1.1);
+// The sum kai (สุ่มไก่): a low dome of loosely woven bamboo in the hexagonal weave (ตาหลิ่ว), a hole at its top, set mouth
+// down on the ground over the hens at night (the owner, 2026-11-10, of the White Eel: "Thais use something that looks
+// like a loosely woven basket upsidedown to keep chickens overnight"; picked from three: a tall bell, this dome, a bell
+// with a stone on it). The dark inside shows through the weave; tight bands bind its foot and its neck. look: old: true,
+// the bamboo gone grey and stained, strands broken and sticking out; torn: true, a hole torn in its foot at the right,
+// its strands broken round it, wide enough for a hen (sumKaiTear() says where). Standing on (x, base): 124 across and
+// 60 tall at size 1, as a hen of the kit (rooster(), hen) at 0.6 goes under it. Painted once for each look.
+// e.g. sumKai(pen, 1600, 846, 1.15, {old: true, torn: true});
+var SUM_KAI = {};
+function sumKai(brush, x, base, size, look) {
+  look = look || {};
+  var name = (look.old ? "old" : "new") + (look.torn ? "torn" : ""), sheet = SUM_KAI[name];
+  if (!sheet) { sheet = SUM_KAI[name] = sumKaiSheet(!!look.old, !!look.torn); }
+  brush.save();
+  brush.fillStyle = "rgba(40, 30, 20, 0.25)";        // its shadow
+  brush.beginPath(); brush.ellipse(x, base + 2 * size, 65 * size, 7 * size, 0, 0, 7); brush.fill();
+  brush.drawImage(sheet, x - 160 * size, base - 116 * size, 320 * size, 130 * size);
+  brush.restore();
+}
+// Where a torn sum kai's hole is: [x, y] at the middle of its foot, for a hen that goes in and out. e.g. sumKaiTear(1600, 846, 1.15)
+function sumKaiTear(x, base, size) { return [x + 30 * size, base]; }
+function sumKaiSheet(old, torn) {
+  var c = document.createElement("canvas"), W = 160, H = 130, foot = 62, neck = 19, tall = 60;
+  c.width = W * 2 * PIX; c.height = H * PIX;
+  var b = c.getContext("2d"), cane = old ? "#9a8c6e" : "#c8b07a", dark = "rgba(40, 32, 22, 0.55)";
+  b.scale(PIX, PIX); b.translate(W, H - 14);
+  var out = new Path2D();
+  out.moveTo(-foot, 0);
+  out.bezierCurveTo(-foot, -tall * 0.85, -neck - 6, -tall + 10, -neck, -tall);
+  out.lineTo(neck, -tall);
+  out.bezierCurveTo(neck + 6, -tall + 10, foot, -tall * 0.85, foot, 0);
+  out.quadraticCurveTo(0, 8, -foot, 0);
+  out.closePath();
+  b.save(); b.clip(out);
+  b.fillStyle = "rgba(24, 18, 12, 0.32)";            // the dark inside, through the weave
+  b.fillRect(-W, -H, 2 * W, 2 * H);
+  b.lineCap = "round";
+  [0, Math.PI / 3, -Math.PI / 3].forEach(function (a) {   // the hexagonal weave: strips three ways at 60 degrees
+    b.save(); b.rotate(a);
+    for (var d = -180; d < 180; d += 12.65) {
+      b.strokeStyle = dark; b.lineWidth = 4.6; b.beginPath(); b.moveTo(-200, d); b.lineTo(200, d); b.stroke();
+      b.strokeStyle = cane; b.lineWidth = 3.2; b.beginPath(); b.moveTo(-200, d); b.lineTo(200, d); b.stroke();
+    }
+    b.restore();
+  });
+  [[0, -9], [-tall + 2, -tall + 12]].forEach(function (band) {   // the tight bands at its foot and its neck
+    for (var y = band[0]; y > band[1]; y -= 3) {
+      b.strokeStyle = y % 6 ? cane : "rgba(70, 58, 40, 0.9)"; b.lineWidth = 3;
+      b.beginPath(); b.moveTo(-90, y); b.lineTo(90, y); b.stroke();
+    }
+  });
+  b.globalCompositeOperation = "source-atop";        // the light from the left
+  var g = b.createLinearGradient(-foot, 0, foot, 0);
+  g.addColorStop(0, "rgba(255, 240, 210, 0.18)"); g.addColorStop(0.5, "rgba(0, 0, 0, 0)"); g.addColorStop(1, "rgba(20, 14, 8, 0.38)");
+  b.fillStyle = g; b.fillRect(-W, -H, 2 * W, 2 * H);
+  if (old) {                                         // the weather on it, and its stains
+    b.fillStyle = "rgba(110, 104, 92, 0.3)"; b.fillRect(-W, -H, 2 * W, 2 * H);
+    for (var n = 0; n < 7; n++) {
+      b.fillStyle = "rgba(50, 40, 26, " + (0.16 + 0.14 * dice(n + 40)).toFixed(2) + ")";
+      b.beginPath(); b.ellipse(-foot + 2 * foot * dice(n + 3), -tall * dice(n + 9) * 0.9, 9 + 10 * dice(n), 6 + 6 * dice(n + 1), 0, 0, 7); b.fill();
+    }
+  }
+  var tear = [30, -13, 17, 13];
+  if (torn) {                                        // the hole torn in its foot
+    b.globalCompositeOperation = "destination-out";
+    var hole = new Path2D();
+    for (var a = 0; a <= 12; a++) {
+      var r = 0.75 + 0.35 * dice(a + 60), an = a / 12 * Math.PI * 2;
+      if (a === 0) { hole.moveTo(tear[0] + Math.cos(an) * tear[2] * r, tear[1] + Math.sin(an) * tear[3] * r); }
+      else { hole.lineTo(tear[0] + Math.cos(an) * tear[2] * r, tear[1] + Math.sin(an) * tear[3] * r); }
+    }
+    hole.closePath();
+    b.fill(hole);
+  }
+  b.restore();
+  b.globalCompositeOperation = "source-over";
+  b.strokeStyle = "rgba(60, 50, 34, 0.7)"; b.lineWidth = 1.2; b.stroke(out);
+  b.strokeStyle = cane; b.lineWidth = 2.2; b.lineCap = "round";
+  if (torn) {                                        // the broken strands round the hole
+    for (a = 0; a < 9; a++) {
+      var an2 = a / 9 * Math.PI * 2 + 0.3, ex = tear[0] + Math.cos(an2) * tear[2] * 0.95, ey = tear[1] + Math.sin(an2) * tear[3] * 0.95;
+      if (ey > 2) { continue; }
+      b.beginPath(); b.moveTo(ex, ey); b.lineTo(ex - Math.cos(an2) * (5 + 6 * dice(a + 70)), ey - Math.sin(an2) * (5 + 6 * dice(a + 71)) + 2); b.stroke();
+    }
+  }
+  if (old) {                                         // and a few broken strands on the dome
+    [[-34, -40, -46, -52], [-10, -tall + 4, -18, -tall - 8], [44, -28, 56, -36]].forEach(function (l) {
+      b.beginPath(); b.moveTo(l[0], l[1]); b.lineTo(l[2], l[3]); b.stroke();
+    });
+  }
+  b.fillStyle = "rgba(20, 14, 8, 0.85)";             // the hole at its top, and its rim
+  b.beginPath(); b.ellipse(0, -tall, neck - 2, 3, 0, 0, 7); b.fill();
+  b.strokeStyle = old ? "#6e6048" : "#9a7e4e"; b.lineWidth = 3; b.beginPath(); b.ellipse(0, -tall, neck, 4, 0, 0, 7); b.stroke();
+  return c;
+}
+
 function krabung(brush, x, base, size, look) {
   var tone = thingTone(look);
   brush.save();

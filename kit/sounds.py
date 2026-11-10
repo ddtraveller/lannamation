@@ -250,6 +250,58 @@ def plate_ting():
     return 0.8 * out / np.abs(out).max()
 
 
+def rain():
+    """Heavy rain at night on a yard and a wooden house (the owner, 2026-11-10, of the White Eel's widow waiting the
+    night: "show a big rain storm outside with lightning and add sound effects like thunder"): its hiss (noise through
+    a band of 500 Hz to 6 kHz), the deep patter of it on the ground (noise under 300 Hz), many small drops (short
+    bright ticks, some 300 a second) and a few big ones off the eaves on the boards (lower knocks), all swelling and
+    easing in slow gusts; 20 s, so a scene can lay it end to end.
+
+    Gives back the samples (a numpy array at RATE), peaking at 0.6; the same every time.
+    e.g. rain()"""
+    from scipy.signal import butter, sosfilt
+    seconds, rng = 20.0, np.random.default_rng(53)
+    n = int(seconds * RATE)
+    t = np.arange(n) / RATE
+    noise = rng.standard_normal(n)
+    hiss = sosfilt(butter(2, [500, 6000], "band", fs=RATE, output="sos"), noise)
+    patter = sosfilt(butter(2, 300, "low", fs=RATE, output="sos"), rng.standard_normal(n))
+    out = 0.55 * hiss + 0.9 * patter
+    tick = np.arange(int(0.006 * RATE))
+    for at in rng.uniform(0, seconds - 0.01, int(300 * seconds)):   # the small drops
+        a = int(at * RATE)
+        out[a:a + len(tick)] += rng.uniform(0.2, 1.0) * np.exp(-tick / (0.0012 * RATE)) * rng.standard_normal(len(tick))
+    knock = np.arange(int(0.05 * RATE))
+    for at in rng.uniform(0, seconds - 0.06, int(4 * seconds)):     # big drops off the eaves on the boards
+        a, pitch = int(at * RATE), rng.uniform(380, 700)
+        out[a:a + len(knock)] += rng.uniform(1.0, 2.2) * np.exp(-knock / (0.012 * RATE)) * np.sin(2 * np.pi * pitch * knock / RATE)
+    gust = 0.75 + 0.15 * np.sin(2 * np.pi * t / 10) + 0.1 * np.sin(2 * np.pi * t / 4 + 1.1)   # whole periods in 20 s
+    out = out * gust
+    return 0.6 * out / np.abs(out).max()
+
+
+def thunder():
+    """A clap of thunder near by (the White Eel's storm): a crack of bright noise at the stroke, two smaller cracks
+    after it, then the rumble, low noise (through low-passes at 110 Hz and 320 Hz) rolling in four swells, each
+    lower than the last, dying away; 7 s. A scene lays it a moment after its flash, softer for one far off.
+
+    Gives back the samples (a numpy array at RATE), peaking at 0.8; the same every time.
+    e.g. thunder()"""
+    from scipy.signal import butter, sosfilt
+    seconds, rng = 7.0, np.random.default_rng(67)
+    n = int(seconds * RATE)
+    t = np.arange(n) / RATE
+    noise = rng.standard_normal(n)
+    deep = sosfilt(butter(2, 110, "low", fs=RATE, output="sos"), noise)
+    low = sosfilt(butter(2, 320, "low", fs=RATE, output="sos"), noise)
+    bright = sosfilt(butter(2, 2500, "low", fs=RATE, output="sos"), rng.standard_normal(n))
+    crack = sum(h * np.exp(-np.clip(t - at, 0, None) / 0.05) * (t >= at) for at, h in ((0.0, 1.0), (0.11, 0.55), (0.27, 0.4)))
+    rolls = sum(h * np.exp(-((t - at) / w) ** 2) for at, h, w in ((0.5, 1.0, 0.45), (1.5, 0.75, 0.6), (2.7, 0.55, 0.8), (4.0, 0.35, 1.0)))
+    out = 0.7 * bright * crack + (2.4 * deep + 0.8 * low) * rolls * np.exp(-t / 3.2)
+    out *= np.clip(t / 0.004, 0, 1) * np.clip((seconds - t) / 0.5, 0, 1)
+    return 0.8 * out / np.abs(out).max()
+
+
 # Every sound: its name, what makes its outline, and what it is for.
 SOUNDS = {
     "maeng-base": (maeng_base, "the creature's howl, the night on the mountain: rises, holds high, falls away into the cave"),
@@ -263,8 +315,10 @@ SOUNDS = {
     "wind": (wind, "wind high on a mountain at dawn, soft and low, in slow gusts, 20 s to lay end to end"),
     "plate-ting": (plate_ting, "the golden plate (kangsadan) struck once: a bright ring that shimmers and dies, 3 s"),
     "roar": (roar, "a deep roar from under the ground, swelling, rolling and dying away, 5 s (the White Eel's three roars)"),
+    "rain": (rain, "heavy rain at night on a yard and a wooden house, in slow gusts, 20 s to lay end to end"),
+    "thunder": (thunder, "a clap of thunder near by: a crack, then a rumble rolling and dying away, 7 s"),
 }
-MADE = ("crickets", "mouse-squeak", "wind", "plate-ting", "roar")     # the ones made from numbers, not by howl.py
+MADE = ("crickets", "mouse-squeak", "wind", "plate-ting", "roar", "rain", "thunder")     # the ones made from numbers, not by howl.py
 
 # Sounds the kit does not make but fetches: recordings whose makers gave them to everyone (public domain, or a
 # licence that lets the kit use them, named here with them), each from where it lives, cut if a part is wanted.

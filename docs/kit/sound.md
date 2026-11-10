@@ -186,6 +186,16 @@ along the film (`HEARD_NEAR`), crows for itself; one off the film is not heard.
   Kept as `kit/sounds/rooster-crow.flac` (sounds.py: a "file" in place of a "url"): the model is too large to run
   again for each copy of the kit.
 
+## Rain and thunder (2026-11-10)
+
+The owner, of the White Eel's widow waiting the night: "show a big rain storm outside with lightning and add sound
+effects like thunder". `sounds.py` makes both from numbers, as it makes the wind and the roar. `rain`: the hiss
+(noise through a band of 500 Hz to 6 kHz), its deep patter on the ground (noise under 300 Hz), some 300 small drops
+a second as short bright ticks and four big ones off the eaves as low knocks on the boards, all in slow gusts whose
+periods go whole into its 20 s, so a scene lays it end to end. `thunder`: a crack of bright noise at the stroke and
+two smaller ones after it, then low noise (low-passes at 110 and 320 Hz) rolling in four swells, each lower, dying
+away; 7 s. A scene calls it a moment after each flash it draws, softer for a stroke far off (`W10_SOUND`).
+
 ## The golden plate struck (2026-10-25)
 
 The owner, for Chang Ngu's scene 18: "add a gong sound when the gong is struck", and if a found one is noisy, "generate

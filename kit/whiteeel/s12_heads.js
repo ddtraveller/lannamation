@@ -116,8 +116,12 @@ function welSceneHeads(t) {
   if (t < W12_CUTS[0]) { w12Shore(t); }
   else if (t < W12_CUTS[1]) { w12Raft2(t); }
   else { w12Stream(t); }
-  if (t < W12_CUTS[1]) { welKingfisher(t, 1720, 640, {water: 724, face: -1, seed: 3, size: 0.55}); }   // over the water: not in the stream shot
-  welDragonflies(t, [["marshhawk", [1300, 720, 1800, 850], 8, 1.8]]);
+  if (t < W12_CUTS[1]) {                                // a cattle egret fishing in the shallows (the kingfisher dives in scene 2
+    var eg = t < W12_CUTS[0] ? [1150, 812, -1] : [300, 830, 1];   // only: the owner, 2026-11-10), clear of the people in each shot
+    egret(eg[0], eg[1], t, {size: 0.62, face: eg[2], peck: Math.max(0, Math.sin(t * 0.9 + 1)) * (0.5 + 0.5 * Math.sin(t * 7))});
+    welWadeRings(eg[0], eg[1] - 3, 26, t);
+  }
+  welDragonflies(t, [["marshhawk", [1300, 720, 1800, 850], 8, 1.2]]);
   sceneryAir(t, {butterfly: null, petals: null, light: [0.4, 12]});
   cngCutsOver(t, W12_CUTS);
   welFadeIn(t, 1.5);

@@ -129,7 +129,7 @@ function welSceneWrong(t) {
   if (t < W13_CUTS[0]) { w13Bow(t); }
   else if (t < W13_CUTS[1]) { w13Circle(t); }
   else { w13Town(t); }
-  welDragonflies(t, [["scarlet", [1350, 740, 1800, 850], 9, 1.8]]);
+  welDragonflies(t, [["scarlet", [1350, 740, 1800, 850], 9, 1.2]]);
   sceneryAir(t, {butterfly: null, petals: null, light: [0.4, 12]});
   cngCutsOver(t, W13_CUTS);
   welFadeIn(t, 1.5);
