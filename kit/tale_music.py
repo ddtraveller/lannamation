@@ -77,6 +77,10 @@ CALLS = re.compile(r'calls: (\[\[.*?\]\])', re.S)
 JOIN = 0.05            # seconds of fade at each join of two scenes' music, so it does not click
 LAP = 0.5              # a bed laid end to end: the seconds each lap crosses into the next
 EASE = 1.5             # a bed's fade in and out
+# The sounds heard over the voice: film() also writes them alone into film_over.wav, and sash_narrate.py --over dips
+# them less than the music while a line is said (owner, 2026-11-10, of the White Eel's storm: "make the thunder
+# sounds a little louder"; the music's dip under her lines had all but hidden it).
+OVER = {"thunder"}
 
 
 def bed(heard, seconds):
@@ -104,7 +108,8 @@ def film(folder, prefix, out):
     """The film's music: every scene's (sNN.wav, made first) one after another, as film.html lays the scenes, with
     the sounds their life calls (decorate.js: calls [[second, sound, loudness], ...], sounds.py's out/sounds/NAME.wav)
     laid in at their seconds, in the middle of both ears; a call with a fourth number is a bed, laid end to end for
-    that many seconds (bed()). Into out/film.wav.
+    that many seconds (bed()). Into out/film.wav; the calls of OVER's sounds also alone into out/film_over.wav (when
+    the film has any).
 
     folder, prefix: as scenes() takes them; out: the folder of the music (a Path). Returns nothing; prints a line a
     call and one for the film. Fails (AssertionError) when a file is not at score.RATE, and with soundfile's error
@@ -124,6 +129,7 @@ def film(folder, prefix, out):
             calls += [[start + c[0], c[1], c[2], name] + c[3:] for c in json.loads(found)]
         parts.append(music)
     track = numpy.concatenate(parts, axis=1)
+    over = numpy.zeros_like(track)
     for at, sound, loud, name, *lies in calls:
         heard, rate = soundfile.read(str(KIT / "out" / "sounds" / (sound + ".wav")), always_2d=True)
         assert rate == RATE, sound
@@ -133,9 +139,14 @@ def film(folder, prefix, out):
         first = int(at * RATE)
         heard = heard[:max(0, track.shape[1] - first)]
         track[:, first:first + len(heard)] += heard
+        if sound in OVER:
+            over[:, first:first + len(heard)] += heard
         print("%7.1f s  %-13s %.2f  (%s)%s" % (at, sound, loud, name, "  for %.1f s" % lies[0] if lies else ""))
     soundfile.write(str(out / "film.wav"), track.T, RATE, subtype="FLOAT")
     print("film.wav: %.1f s, %d scenes, %d calls" % (track.shape[1] / RATE, len(parts), len(calls)))
+    if over.any():
+        soundfile.write(str(out / "film_over.wav"), over.T, RATE, subtype="FLOAT")
+        print("film_over.wav: the calls of %s alone, for sash_narrate.py --over" % ", ".join(sorted(OVER)))
 
 
 def run(folder, prefix, feel, scene_feel, out, args):

@@ -196,6 +196,13 @@ periods go whole into its 20 s, so a scene lays it end to end. `thunder`: a crac
 two smaller ones after it, then low noise (low-passes at 110 and 320 Hz) rolling in four swells, each lower, dying
 away; 7 s. A scene calls it a moment after each flash it draws, softer for a stroke far off (`W10_SOUND`).
 
+Thunder is heard over the voice. The narration mix (`sash_narrate.py`) dips the whole music to 0.3 while a line is
+said, and the scene's sounds are in the music, so in v6 five of the seven claps fell under the widow's lines and
+were all but lost (the owner: "make the thunder sounds a little louder"). `tale_music.py`'s `OVER` names the sounds
+heard over the voice (`thunder`); `--film` also writes their calls alone into `film_over.wav`, and
+`sash_narrate.py --over out/<film>_music/film_over.wav` dips those only to `OVER_UNDER` (0.5). A film mixed without
+`--over` sounds as before.
+
 ## The golden plate struck (2026-10-25)
 
 The owner, for Chang Ngu's scene 18: "add a gong sound when the gong is struck", and if a found one is noisy, "generate

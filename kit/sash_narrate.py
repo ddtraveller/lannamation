@@ -22,7 +22,8 @@ words is kept: the takes differ, and one can be much clearer than another (four 
 scored 0.57 to 0.72 of its letters heard back, the first take 0.47). Delete spoken_km/ to speak every
 line again. Each line starts at its second.
 The music is lowered while the voice speaks and comes back between lines, and fades over the film's
-last two seconds. Then it says, line by line, how long the voice took and whether the line is over
+last two seconds. With --over (tale_music.py's film_over.wav: sounds that are in the music already, such as
+thunder), those sounds are lowered only to OVER_UNDER, not to UNDER, so a storm is still heard under a line. Then it says, line by line, how long the voice took and whether the line is over
 before its words leave the screen.
 With --spoken the lines were spoken already, elsewhere, one file a line: the page's WORDS give each line its id
 as a sixth item (or, with no ids, 01.wav, 02.wav ... in order), and the folder has ID.wav for each (the film of the creature with four ears and five eyes:
@@ -70,6 +71,7 @@ SPOKEN = HERE / "spoken_km"           # the extension's takes; the assistant's g
 ASSISTANT_VOICE = "facebook/mms-tts-nod"
 MUSIC = 0.7          # the music between lines, of the level sash_music.py made it
 UNDER = 0.3          # the music while the voice speaks, of that
+OVER_UNDER = 0.5     # --over's sounds (tale_music.py OVER: thunder) while the voice speaks: dipped less than the music
 RAMP = 0.35          # seconds the music takes to go down before a line and to come back after it
 VOICE = 0.9          # the voice's peak
 FADE = 2.0           # seconds of the music's fade at the end
@@ -264,6 +266,7 @@ def main():
                         help="assistant: the Kam Mueang assistant's voice, which needs no model folder")
     parser.add_argument("--page", default=str(HERE / "sash.html"))
     parser.add_argument("--music", default=str(HERE / "sash.wav"))
+    parser.add_argument("--over", help="tale_music.py's film_over.wav: sounds in --music that dip only to OVER_UNDER")
     parser.add_argument("--out", default=str(HERE / "sash_voice.wav"))
     parser.add_argument("--takes", type=int, default=1, help="takes of each new line; the clearest is kept")
     parser.add_argument("--spoken", help="a folder of lines spoken already, ID.wav for each line's id (WORDS' sixth item)")
@@ -312,8 +315,14 @@ def main():
         late = end - min(shown, after)
         print("%3d  %6.1f  %5.2f  %5.1f  %5.1f   %s" % (n + 1, start, len(sound) / RATE, end, shown,
                                                      "fits" if late <= 0 else "TOO LONG by %.2f s" % late))
-    gain[-int(FADE * RATE):] *= numpy.linspace(1, 0, int(FADE * RATE))
-    track = music * gain + voice  # the voice in the middle of both ears
+    fade = numpy.ones(length)
+    fade[-int(FADE * RATE):] = numpy.linspace(1, 0, int(FADE * RATE))
+    track = music * gain * fade + voice  # the voice in the middle of both ears
+    if args.over:                        # given back what the dip took of them, down to OVER_UNDER only
+        over, _ = soundfile.read(args.over, dtype="float64", always_2d=True)
+        over = numpy.pad(over.T, ((0, 0), (0, max(0, length - over.shape[0]))))[:, :length] * MUSIC
+        over_gain = 1 - (1 - gain) * (1 - OVER_UNDER) / (1 - UNDER)
+        track = track + over * (over_gain - gain) * fade
     master(track, args.out, scratch.name)
     scratch.cleanup()
     print("%s: %.1f s, %d lines, -14 LUFS, stereo" % (Path(args.out).name, seconds, len(words)))
