@@ -70,6 +70,11 @@ The whole film: `film.html` (made by `film_page.py`), 740 s, 58 lines, all fifte
 - v5 (the owner's notes on v4): the woman with the parasol keeps her arm folded at her hair as she walks (scenes 2
   and 3: the walking swing had flipped her elbow; welPerson()'s still), and the naga's ripple lies on the water,
   behind the reeds and the tree (scene 2). Scenes 2 and 3 rendered again; the sound is v4's.
+- v6 (the owner's notes on v5): one kingfisher dive (scene 2; an egret in scene 12); dragonflies from the side,
+  smaller; the storm in scene 10 (rain, lightning, thunder; the stairs in the storm, water between the city and her
+  house, mist); a cracked jar; the old torn sum kai and her black hen; sweeping, her free arm down; a ladle as she
+  cooks; scene 14's fish kept in the water. 958.7 s, -14.1 LUFS.
+- Open: s13 fails the arm check, 6 arms folded 154-155 degrees in one frame (29.13 s), as it did before v6.
 
 ## Still open
 
