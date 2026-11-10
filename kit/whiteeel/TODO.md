@@ -78,6 +78,11 @@ The whole film: `film.html` (made by `film_page.py`), 740 s, 58 lines, all fifte
   thunder louder (calls x1.4) and heard over the voice (kit: tale_music.py OVER, sash_narrate.py --over, under a line
   it dips to 0.5, not 0.3: about +7 dB there, +3 dB between lines). v7's AAC encode overshot to 0.0 dBTP; v8_all.sh
   lowers the limiter until the file is at most -1 dBTP (0.72 was enough: -1.5). 958.7 s, -14.1 LUFS.
+- v9 LIVE 2026-11-10 16:23 (the owner: "Use Pan's spelling and go with The story of The White Eel for the English on
+  the gold card. Add the video to s3 and link it on the lanna_cartoon.html page"): scene 3's card โยนกนาคพันธุ์สิงหนวัติ /
+  The story of The White Eel (3ca8870), v8's sound; 958.7 s, -14.1 LUFS, -1.5 dBTP, 670,976,122 bytes, sha256 1f4c6942...,
+  krueng.ai/video/lanna_tales_whiteeel.mp4 (over the 7 Nov upload), read back and matched; invalidation
+  IC7ACQL1GQHF5KJLJ0Z0LBEFY5. The page link: watdonchan feat/lanna-cartoon-codex bd29062e, for the owner's merge.
 - Open: s13 fails the arm check, 6 arms folded 154-155 degrees in one frame (29.13 s), as it did before v6.
 
 ## Still open
