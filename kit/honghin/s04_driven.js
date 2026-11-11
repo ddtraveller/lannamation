@@ -1,0 +1,45 @@
+// s04_driven.js - scene 4 of the film of Hong Hin: driven out (45 s). The six wives before the king, telling him; the
+// king's anger. Then the gate at dusk: Vimala walks out of it alone, the little spotted dog in her arms, along the road
+// into the falling dark, weeping.
+var H04_LONG = 45;
+var H04_SOUND = {calls: [[0, "birds", 0.15, 16], [17, "crickets", 0.2, 28]]};
+var H04_LINES = [[2, 8.6, "H017"], [10, 16.2, "H018"], [20, 27, "H019"]];
+var H04_CUTS = [17];
+
+// Scene 4, the entry the film calls. From sets.js: hhCourt(), hhWife(), hhVimala(), hhCamera(), hhCuts(), hhAtChest().
+function hhSceneDriven(t) {
+  var p = CNG_PALACE;
+  if (t < H04_CUTS[0]) {                                // the six before the king, his anger
+    var told = t > 9;
+    var wives = [];
+    for (var k = 0; k < 6; k++) {
+      (function (k) {
+        var x = p[0] - 520 + k * 100 + (k > 2 ? 520 : 0), y = 980 + (k % 2) * 30;
+        wives.push({name: "wife " + k, kind: "person", x: x, y: y, draw: function () {
+          person(x, y, hhWife(k, {face: x < p[0] ? 1 : -1, feel: "concerned", at: [p[0], 620]}));
+        }});
+      })(k);
+    }
+    hhCamera(0.4 + 0.4 * between(t, 0, H04_CUTS[0]), p[0], 700, 1.4);
+    hhCourt(t, [[0, welPerson("noble", HH_KING, {id: "king", floor: "cross", face: 1, size: 0.8, feel: told ? "angry" : "surprised",
+                                                 at: [p[0] - 300, 900]})]], wives);
+    hhCameraEnd();
+  } else {                                               // the gate at dusk, she walks out with the dog in her arms
+    var s = t - H04_CUTS[0], walk = between(s, 1, 26), x = mix(CNG_GATE[0], 260, walk), y = mix(830, 1010, walk);
+    pen.drawImage(welSky("sunset"), 0, 0);
+    scenerySun(t, 1560, 560, 40, {glow: 10, colour: "255, 180, 120"});
+    pen.drawImage(cngFields(), 0, 0);
+    cngGateWall(1 - between(s, 3, 6), t);
+    pen.fillStyle = "rgba(120, 50, 60, " + (0.2 + 0.3 * walk).toFixed(3) + ")";   // the dusk deepening
+    pen.fillRect(0, 0, WIDE, 1080);
+    var size = mix(0.5, 0.82, walk);
+    person(x, y, hhVimala({size: size, face: -1, feel: "sad", step: s * 0.7, tears: 1,
+                           reachA: [x - 30 * size, y - 250 * size], reachB: [x - 10 * size, y - 240 * size]}));
+    hhAtChest(x, y, size, -1, function (cx, cy) {
+      pen.save(); pen.translate(cx - 10, cy + 20); pen.scale(0.9 * size, 0.9 * size); puppy(0, 0, t, {feel: "sad"}); pen.restore();
+    });
+    sceneryAir(t, {butterfly: null, petals: [10, "#f6b8cc", 2, 1], light: null});
+  }
+  welFadeIn(t, 1.5);
+  hhCuts(t, H04_CUTS);
+}

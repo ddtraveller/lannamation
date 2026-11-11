@@ -765,8 +765,10 @@ and what the kit lacked for it, drawn as candidates on the kit's own painters; t
 | Indra (พระอินทร์), green as Thai painting colours him | `indra(x, y, t, look)` (himmaphan.js), `pose` `"fly"` (a thewada of the murals), `"stand"` (a halo) or `"throne"` (cross-legged on the pale red stone throne that grows hot when the world is wronged); `spireCrown(j, tall)` the gold spire crown (ชฎา) on any head | all three, his moments in the tale |
 
 **A fix on the way (ogre.js):** `ogreHead()` read `person()`'s joints as film pixels; they are pixels of the sheet,
-`PIX` to a film pixel, so on a film's page (two pixels) the ogre's head was drawn at twice its place and size, off the
-body. No film had drawn an ogre yet. It divides by `PIX` now, as `ogreMeat()` and `spireCrown()` do.
+through every turn and scale the pen has (PIX to a film pixel, and a scene's camera), so on a film's page (two pixels)
+the ogre's head was drawn at twice its place and size, off the body, and under a camera it would be off again. No film
+had drawn an ogre yet. Each joint is now taken back through the pen's transform (`ogJoint()`; himmaphan.js
+`himmaJoint()` for `spireCrown()` and the reins), as `ogreMeat()` does.
 
 Not checked against the khao so's own words: the Hemmarat's form (the notebook calls it a winged lion-elephant) and the
 princesses' colours other than Culakantha's. The tale's things and places are `honghin.js`: things.md, "The things of

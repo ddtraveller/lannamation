@@ -1,0 +1,42 @@
+// s15_hemmarat.js - scene 15 of the film of Hong Hin: the Hemmarat (45 s). A high mountain pass at dusk. The great dark
+// winged beast, an elephant in its claws, sees the swan and springs at it; Kanchai flashes; a cut to the beast falling
+// into the forest below (the owner: the stroke, then a cut); the swan flies on, the grandmother holding tight.
+var H15_LONG = 45;
+var H15_SOUND = {calls: [[0, "wind", 0.3, 45], [13, "roar", 0.45], [23.4, "swish", 0.4]]};
+var H15_LINES = [[2, 10.2, "H068"], [11.6, 15.2, "H069"], [16.6, 24.4, "H070"]];
+var H15_CUTS = [24.2];
+
+// Scene 15, the entry the film calls. From sets.js: hhPass(), hhBoy(), HH_GRAN (s14_ghouls.js); myth.js hemmarat();
+// himmaphan.js hongHin(); honghin.js kanchai().
+function hhSceneHemmarat(t) {
+  if (t < H15_CUTS[0]) {
+    var spring = between(t, 15, 21), stroke = between(t, 22.8, 23.8);
+    hhPass(t);
+    var bx = mix(400, 900, spring), by = mix(560, 420, spring);
+    hemmarat(bx, by, {size: 0.9, face: 1, trunk: 0.8, mouth: spring > 0 ? 1 : 0.3});
+    var hs = hongHin(mix(2000, 1300, between(t, 0, 12)), 360 + 20 * Math.sin(t), t, {size: 1.4, face: -1});
+    person(hs.behind[0], hs.behind[1], welPerson("grandmother", HH_GRAN, {id: "gran", floor: "astride", face: -1, feel: spring > 0 ? "fear" : "neutral"}));
+    var hand = [hs.seat[0] - 60, hs.seat[1] - 190];
+    person(hs.seat[0], hs.seat[1], hhBoy(13, {floor: "astride", face: -1, feel: spring > 0 ? "angry" : "neutral", reachA: spring > 0.5 ? hand : undefined}));
+    if (spring > 0.5) { kanchai(hand[0], hand[1], {size: 0.4, angle: mix(-0.3, -2.4, stroke)}); }
+    if (stroke > 0) {
+      pen.save(); pen.globalCompositeOperation = "lighter";
+      pen.strokeStyle = "rgba(255, 246, 210, " + (0.9 * (1 - stroke)).toFixed(3) + ")"; pen.lineWidth = 30; pen.lineCap = "round";
+      pen.beginPath(); pen.arc(hs.seat[0], hs.seat[1] - 120, 340, 2.0, 2.0 + 1.8 * stroke); pen.stroke(); pen.restore();
+    }
+  } else {                                               // the beast falling into the forest; the swan flies on
+    var s = t - H15_CUTS[0], fall = between(s, 0, 4);
+    hhPass(t);
+    forestSlope(pen, function (x) { return 880 - 60 * Math.sin(x * 0.004); }, -100, WIDE + 100, 1080, {seed: 5});
+    if (fall < 1) {
+      pen.save(); pen.translate(700, mix(400, 1100, fall * fall)); pen.rotate(1.2 * fall);
+      hemmarat(0, 0, {size: 0.9, face: 1, trunk: 0.2, prey: false, feel: "fear"});
+      pen.restore();
+    }
+    var hs2 = hongHin(mix(1100, -300, between(s, 3, 20)), 330 + 20 * Math.sin(t), t, {size: 1.3, face: -1});
+    person(hs2.behind[0], hs2.behind[1], welPerson("grandmother", HH_GRAN, {id: "gran", floor: "astride", face: -1, feel: "happy"}));
+    person(hs2.seat[0], hs2.seat[1], hhBoy(13, {floor: "astride", face: -1, feel: "happy"}));
+  }
+  welFadeIn(t, 1.5);
+  hhCuts(t, H15_CUTS);
+}

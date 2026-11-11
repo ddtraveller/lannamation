@@ -992,7 +992,7 @@ function hongHin(x, y, t, look) {
 }
 
 // hongHinReins(h, hands): the red reins from the rider's hands (a point of the scene: where the scene sent his hands,
-// or a joint person() gave back divided by PIX) to the beak; h is what hongHin() gave back. Draw it after the rider.
+// or a joint person() gave back, through himmaJoint()) to the beak; h is what hongHin() gave back. Draw it after the rider.
 function hongHinReins(h, hands) {
   pen.save();
   pen.strokeStyle = HONG_HIN.rein;
@@ -1010,8 +1010,12 @@ function hongHinReins(h, hands) {
 // brow with a red stone, six tiers, each narrower, to a point. tall: its height in heads (1.1 unless told). Returns
 // nothing; it draws with pen. A head under it is best drawn with hidden: ["hair"].
 // e.g. spireCrown(person(900, GROUND, {regalia: true, hidden: ["hair"]}), 1.2);
+function himmaJoint(p) {                            // a joint person() gave back, in the pen's present measure
+  var m = pen.getTransform().inverse();
+  return [m.a * p[0] + m.c * p[1] + m.e, m.b * p[0] + m.d * p[1] + m.f];
+}
 function spireCrown(j, tall) {
-  var crown = [j.crown[0] / PIX, j.crown[1] / PIX], chin = [j.chin[0] / PIX, j.chin[1] / PIX];
+  var crown = himmaJoint(j.crown), chin = himmaJoint(j.chin);
   var h = Math.hypot(chin[0] - crown[0], chin[1] - crown[1]), tilt = Math.atan2(chin[0] - crown[0], chin[1] - crown[1]);
   var s = h / 100, w = 52 * s, up = (tall || 1.1) * 100 * s, k;
   pen.save();

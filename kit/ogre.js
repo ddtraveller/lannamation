@@ -37,11 +37,16 @@ var OGRES = {
 function ogFill(fill, ink, width) { pen.fillStyle = fill; pen.fill(); pen.strokeStyle = ink; pen.lineWidth = width || 2; pen.stroke(); }
 
 // ogreHead(j, kind, face, t): the head drawn over the person's, j what person() gave back.
-// person() gives its joints in pixels of the sheet, PIX to a film pixel; the head is drawn in film pixels, so they are
-// divided by PIX here (until 2026-11-11 they were not: on a film's page, at two pixels, the head was drawn at twice its
-// place and size, off the body).
+// person() gives its joints in pixels of the sheet, through all the pen's turns and scales (PIX to a film pixel, and a
+// scene's camera); the head is drawn with the pen as it is now, so each joint is taken back through the pen's
+// transform (ogJoint). Until 2026-11-11 they were used as they came: on a film's page, at two pixels, the head was drawn
+// at twice its place and size, off the body.
+function ogJoint(p) {
+  var m = pen.getTransform().inverse();
+  return [m.a * p[0] + m.c * p[1] + m.e, m.b * p[0] + m.d * p[1] + m.f];
+}
 function ogreHead(j, kind, face, t) {
-  var crown = [j.crown[0] / PIX, j.crown[1] / PIX], chin = [j.chin[0] / PIX, j.chin[1] / PIX];
+  var crown = ogJoint(j.crown), chin = ogJoint(j.chin);
   var c = OGRES[kind], cx = (crown[0] + chin[0]) / 2, cy = (crown[1] + chin[1]) / 2;
   var h = Math.hypot(chin[0] - crown[0], chin[1] - crown[1]), s = h / 100;
   var tilt = Math.atan2(chin[0] - crown[0], chin[1] - crown[1]);
@@ -121,7 +126,8 @@ var OGRE_LOOKS = {
 // e.g. var j = ogre(600, GROUND, t, {kind: "ghoul", reachA: [660, GROUND - 330]}); ogreMeat(j.wristA, -0.6);
 function ogreMeat(p, turn) {
   pen.save();
-  pen.translate(p[0] / PIX, p[1] / PIX);
+  var at = ogJoint(p);
+  pen.translate(at[0], at[1]);
   pen.rotate(turn || 0);
   pen.beginPath(); pen.ellipse(26, 0, 34, 18, 0, 0, Math.PI * 2); ogFill("#b8343a", "#5a1416", 2);
   pen.fillStyle = "#e8848a"; pen.beginPath(); pen.ellipse(18, -4, 18, 7, 0.1, 0, Math.PI * 2); pen.fill();
