@@ -2,7 +2,7 @@
 
     python tale_plan.py whiteeel       (in kit/: writes plan.html, words.js, central.txt here)
 
-Proposed 2026-11-05 from the research notes C:/jslab/tale3/research/white_eel/NOTES.md: the Singhanavati chronicle
+Proposed 2026-11-05 from the research notes (kept outside this repository): the Singhanavati chronicle
 (ตำนานสิงหนวติกุมาร, ประชุมพงศาวดาร ภาคที่ 61, 1936, Thai Wikisource; the founding and the sinking read in full) and
 the tellings of today. Pan, the narrator, picked the tale on 4 Nov 2026. The owner's two choices, 5 Nov 2026: the fish
 is the white eel, as people know it today (the chronicle has a white barb); the young man stays a mystery, with a hint

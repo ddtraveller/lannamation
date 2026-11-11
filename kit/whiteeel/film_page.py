@@ -1,11 +1,11 @@
 """Write whiteeel/film.html: every scene of the film of the White Eel one after another, with their words, as
-changngu/film.html lays out the second tale (C:/jslab/tale2/film_page.py, made for it). The scenes are read from the
+changngu/film.html lays out the second tale (the Chang Ngu film's own page script). The scenes are read from the
 folder (sNN_name.js, each with its W{NN}_LONG, W{NN}_LINES and its entry, function welScene...), so the page is made
 again whenever a scene is added. Run: python film_page.py"""
 import re
 from pathlib import Path
 
-FOLDER = Path("C:/jslab/eel/wt/kit/whiteeel")
+FOLDER = Path(__file__).resolve().parent
 LINK = ('<link href="https://fonts.googleapis.com/css2?family=Gelasio:ital,wght@1,400&family=Noto+Sans+Tai+Tham:wght@700'
         '&family=Noto+Sans+Thai:wght@700&family=Noto+Serif+Thai:wght@500;600;700&display=swap" rel="stylesheet">')
 # Every kit module a scene of this film uses, in the order its scene pages load them (weaving.js, sabai.js and

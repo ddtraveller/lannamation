@@ -39,7 +39,7 @@ The whole film: `film.html` (made by `film_page.py`), 740 s, 58 lines, all fifte
 - Pan's voice: 174 takes, one kept a line (all 58 hers, heard at 0.89 or more of their Kam Mueang words); every voiced
   line checked to be the script's Kam Mueang, none Central Thai. Lines retimed to the takes (7f6d0d2).
 - Music (feelings.py) and 49 sounds, a new roar in sounds.py; the mix at -14 LUFS.
-- Rendered at 7f6d0d2 (render worktree C:/jslab/eel/render, its film_scenes/ clips kept for re-renders), joined after
+- Rendered at 7f6d0d2 (a render worktree, its film_scenes/ clips kept for re-renders), joined after
   the hero film (v31) and the studio card: lanna_tales_whiteeel_v1.mp4, 875.3 s, -14.1 LUFS, peak -1.7 dBTP. LOCAL only.
 
 ## v3 (2026-11-07 and 08)
@@ -48,7 +48,7 @@ The whole film: `film.html` (made by `film_page.py`), 740 s, 58 lines, all fifte
   neck, the painted women sized to the rig (people.js PEOPLE_FORM), the shine and fires behind the buffalo at 12:20, no
   shake or grit (film 0), birds, dragonflies and fish (sets.js), and the new hero (sash_maeng.html with the lab's
   princess in the finished sash).
-- Rendered at 4fee38d by C:/jslab/eel/v3_all.sh: the hero Videos/maeng/lanna_sash_maeng32.mp4 (122.467 s, v31's sound,
+- Rendered at 4fee38d by a local build script: the hero Videos/maeng/lanna_sash_maeng32.mp4 (122.467 s, v31's sound,
   the words as v31's), then lanna_tales_whiteeel_v3.mp4, 875.3 s, -14.1 LUFS, peak -1.1 dB. LOCAL only.
 - The kit check after: 89 pages, 11 failed. Eight wanted people.js (fixed on main, 8199bb2). floor.html and lanna.html
   counted the arms of people.js's unseen rig (arms_check now skips PEOPLE_SINK). The hero pages load slower with the
