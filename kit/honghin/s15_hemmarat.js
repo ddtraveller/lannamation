@@ -2,7 +2,7 @@
 // winged beast, an elephant in its claws, sees the swan and springs at it; Kanchai flashes; a cut to the beast falling
 // into the forest below (the owner: the stroke, then a cut); the swan flies on, the grandmother holding tight.
 var H15_LONG = 45;
-var H15_SOUND = {calls: [[0, "wind", 0.3, 45], [13, "roar", 0.45], [23.4, "swish", 0.4]]};
+var H15_SOUND = {calls: [[0, "wind", 0.3, 45], [13, "roar", 0.45]]};
 var H15_LINES = [[2, 10.2, "H068"], [11.6, 15.2, "H069"], [16.6, 24.4, "H070"]];
 var H15_CUTS = [24.2];
 

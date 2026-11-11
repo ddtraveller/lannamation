@@ -4,7 +4,7 @@
 // pots, sets her on the swan, rises; the ghouls come home and fly after them throwing stones and trees; Kanchai
 // flashes; a cut to them falling like rain (the owner: the stroke, then a cut).
 var H14_LONG = 60;
-var H14_SOUND = {calls: [[0, "crickets", 0.15, 26], [26.5, "crash", 0.35], [34, "roar", 0.4], [44.6, "swish", 0.4], [46, "wind", 0.3, 14]]};
+var H14_SOUND = {calls: [[0, "crickets", 0.15, 26], [34, "roar", 0.4], [46, "wind", 0.3, 14]]};
 var H14_LINES = [[2, 8.2, "H062"], [9.6, 15.6, "H063"], [17, 25.2, "H064"], [26.6, 33.2, "H065"], [34.6, 39.6, "H066"], [41, 47.2, "H067"]];
 var H14_CUTS = [16.6, 26.2, 34.2, 45];
 

@@ -3,7 +3,7 @@
 // water poured from a conch over the boy, the bai si beside him, white threads; on the dais the boy, Vimala beside him,
 // his three wives, his grandmother and the old gardeners in new clothes; the stone swan on the palace roof folds its wings.
 var H21_LONG = 60;
-var H21_SOUND = {calls: [[0, "birds", 0.2, 9], [9, "crowd", 0.25, 14], [23, "gong", 0.3], [40, "birds", 0.2, 20]]};
+var H21_SOUND = {calls: [[0, "shama", 0.2, 9], [23, "plate-ting", 0.3], [40, "shama", 0.2, 20]]};
 var H21_LINES = [[2, 7.6, "H092"], [9, 13.2, "H093"], [14.6, 22.2, "H094"], [23.6, 29.2, "H095"], [31, 40.2, "H096"]];
 var H21_CUTS = [8.6, 14.2];
 var HH_GRAN_HOME = Object.assign({}, HH_OLD_QUEEN, {size: 0.62});

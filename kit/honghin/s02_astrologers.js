@@ -3,7 +3,7 @@
 // the court. Two astrologers on the floor before the hall read the stars on their boards and speak; then the six wives,
 // near, look at one another.
 var H02_LONG = 45;
-var H02_SOUND = {calls: [[0, "birds", 0.2, 45]]};
+var H02_SOUND = {calls: [[0, "shama", 0.2, 45]]};
 var H02_LINES = [[2, 8.4, "H006"], [9.8, 13.6, "H007"], [15, 20.6, "H008"], [22, 30.6, "H009"], [32.5, 39.5, "H010"]];
 var H02_CUTS = [21, 31.5];
 

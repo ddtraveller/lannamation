@@ -2,7 +2,7 @@
 // brothers play saba with pieces of gold, a row of them set up as targets. The boy watches; his mother brings him a
 // pouch of red seeds; the brothers laugh. He throws, and throws: the gold falls row on row, and he carries it home.
 var H09_LONG = 55;
-var H09_SOUND = {calls: [[0, "birds", 0.2, 55], [19, "crowd", 0.2]]};
+var H09_SOUND = {calls: [[0, "shama", 0.2, 55]]};
 var H09_LINES = [[2, 8.2, "H037"], [9.6, 16.2, "H038"], [17.6, 21, "H039"], [22.6, 30.2, "H040"], [32, 39.4, "H041"]];
 var H09_CUTS = [17.2, 31.4];
 var H09_ROW = [1080, CNG_LANE_Y + 40];                  // the first gold piece of the target row; they go on to the right

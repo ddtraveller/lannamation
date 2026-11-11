@@ -3,7 +3,7 @@
 // the boy brings his grandmother across. At dusk the six brothers close round him; a cut to the night: they ride away on
 // an elephant with the old woman, and in the weeds the boy lies still.
 var H16_LONG = 60;
-var H16_SOUND = {calls: [[0, "wind", 0.2, 10], [10.5, "river", 0.25, 49.5], [24, "crowd", 0.3], [36, "crickets", 0.25, 24], [38, "elephant", 0.3]]};
+var H16_SOUND = {calls: [[0, "wind", 0.2, 10], [10.5, "frogs", 0.25, 49.5], [36, "crickets", 0.25, 24], [38, "elephant-trumpet", 0.3]]};
 var H16_LINES = [[2, 9.6, "H071"], [11, 17.6, "H072"], [19, 27.2, "H073"], [28.6, 36.2, "H074"]];
 var H16_CUTS = [10.2, 18.6, 27.6];
 

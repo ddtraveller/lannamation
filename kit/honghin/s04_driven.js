@@ -2,7 +2,7 @@
 // king's anger. Then the gate at dusk: Vimala walks out of it alone, the little spotted dog in her arms, along the road
 // into the falling dark, weeping.
 var H04_LONG = 45;
-var H04_SOUND = {calls: [[0, "birds", 0.15, 16], [17, "crickets", 0.2, 28]]};
+var H04_SOUND = {calls: [[0, "shama", 0.15, 16], [17, "crickets", 0.2, 28]]};
 var H04_LINES = [[2, 8.6, "H017"], [10, 16.2, "H018"], [20, 27, "H019"]];
 var H04_CUTS = [17];
 

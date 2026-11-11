@@ -3,7 +3,7 @@
 // The fair: a high pavilion, the whole city coming in by one gate; from the pavilion she sees a boy at the gate and cries
 // out to her grandson.
 var H18_LONG = 55;
-var H18_SOUND = {calls: [[0, "crowd", 0.2, 10], [25, "crowd", 0.3, 30], [40, "gong", 0.25]]};
+var H18_SOUND = {calls: [[40, "plate-ting", 0.25]]};
 var H18_LINES = [[2, 8.6, "H079"], [10, 15.6, "H080"], [17, 24.2, "H081"], [25.6, 33.2, "H082"], [35, 41.2, "H083"]];
 var H18_CUTS = [9.6, 25.2];
 var H18_PAV = [1380, 960, 0.9];

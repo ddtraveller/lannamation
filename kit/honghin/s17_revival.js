@@ -4,7 +4,7 @@
 // for a fire, to leap into it and die with him (as the text, the owner). He comes as an old Brahman, pours heavenly
 // medicine on the boy's wounds, and the boy breathes and sits up.
 var H17_LONG = 60;
-var H17_SOUND = {calls: [[0, "river", 0.2, 60], [0, "birds", 0.15, 60], [22, "roar", 0.3]]};
+var H17_SOUND = {calls: [[0, "frogs", 0.2, 60], [0, "shama", 0.15, 60], [22, "roar", 0.3]]};
 var H17_LINES = [[2, 8.6, "H075"], [10, 20.2, "H076"], [21.6, 30.2, "H077"], [31.6, 40.2, "H078"]];
 var H17_CUTS = [9.6, 21, 31];
 var H17_BODY = [960, WEL_KOK_BANK + 170];

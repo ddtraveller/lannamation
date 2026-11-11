@@ -3,7 +3,7 @@
 // King Wassawaro, a red ogre king, bursts in roaring; the boy speaks calmly; the king's face changes; a wedding feast of
 // roast meat and raw among the giants.
 var H12_LONG = 55;
-var H12_SOUND = {calls: [[0, "wind", 0.15, 9], [18, "roar", 0.35], [33, "crowd", 0.2, 22]]};
+var H12_SOUND = {calls: [[0, "wind", 0.15, 9], [18, "roar", 0.35]]};
 var H12_LINES = [[2, 8.2, "H053"], [9.6, 16.6, "H054"], [18.2, 22.2, "H055"], [23.6, 31.2, "H056"], [33, 37.2, "H057"]];
 var H12_CUTS = [9.2, 33];
 

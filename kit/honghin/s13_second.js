@@ -3,7 +3,7 @@
 // Anumat comes at the boy in a rage, sees the wheel on the soles of his feet, kneels, gives him Salicanta, and points
 // the way south to the ghouls' city; the swan flies off that way.
 var H13_LONG = 60;
-var H13_SOUND = {calls: [[0, "birds", 0.2, 12], [13, "roar", 0.3], [36, "wind", 0.2, 24]]};
+var H13_SOUND = {calls: [[0, "shama", 0.2, 12], [13, "roar", 0.3], [36, "wind", 0.2, 24]]};
 var H13_LINES = [[2, 11.2, "H058"], [13, 21.2, "H059"], [22.6, 28.4, "H060"], [30, 35.2, "H061"]];
 var H13_CUTS = [12.4, 36.2];
 

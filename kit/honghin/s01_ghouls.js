@@ -5,10 +5,9 @@
 // then the forest under the moon, and the titles. Owner, 2026-11-11: "Yes, and keep going" (the seven-step plan).
 var H01_LONG = 45;
 // Its sounds (sounds.py names): night insects, an owl, the ghouls' growls, a cry far off, an alarm gong.
-var H01_SOUND = {calls: [[0, "crickets", 0.25, 45], [5, "owl", 0.25], [18, "roar", 0.15], [27.5, "crowd", 0.15], [31, "gong", 0.3]]};
+var H01_SOUND = {calls: [[0, "crickets", 0.25, 45], [5, "barnowl", 0.25], [18, "roar", 0.15], [31, "plate-ting", 0.3]]};
 // The narration, [from, to, id] in the scene's own seconds: placeholders until Pan's voice (docs/kit/films.md, step 4).
-var H01_LINES = [[1.5, 7.2, "H001"], [8.5, 13.6], [15.6, 22.2], [28.2, 33.8], [37.2, 41.8]];
-["H001", "H002", "H003", "H004", "H005"].forEach(function (id, k) { H01_LINES[k][2] = id; });
+var H01_LINES = [[1.5, 7.2, "H001"], [8.5, 13.6, "H002"], [15.6, 22.2, "H003"], [28.2, 33.8, "H004"], [37.2, 41.8, "H005"]];
 
 // The horde: [kind, size, how far behind the first (seconds), seed]. They come out of the forest at the left, cross
 // to the wall, climb it and go over (shot 2); four of them come back over it carrying the queen (shot 3).

@@ -3,7 +3,7 @@
 // thousand men to a great river, where the six sit down on the bank; the stone swan rises over the army and is gone into
 // the clouds, and the soldiers go down on their knees.
 var H11_LONG = 50;
-var H11_SOUND = {calls: [[0, "birds", 0.15, 12], [12.5, "crickets", 0.2, 7], [19.5, "river", 0.25, 30.5], [19.5, "crowd", 0.15, 10]]};
+var H11_SOUND = {calls: [[0, "shama", 0.15, 12], [12.5, "crickets", 0.2, 7], [19.5, "frogs", 0.25, 30.5]]};
 var H11_LINES = [[2, 11.2, "H049"], [12.8, 18, "H050"], [20, 27.8, "H051"], [29.4, 35.4, "H052"]];
 var H11_CUTS = [12.2, 19.4];
 

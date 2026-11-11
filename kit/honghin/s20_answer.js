@@ -2,7 +2,7 @@
 // Vimala; she sends them away: a broken bowl cannot be mended. Then the king himself on his elephant, banners before
 // him; he kneels in the garden and weeps, the boy beside him; she forgives him, and asks that the old gardeners come too.
 var H20_LONG = 55;
-var H20_SOUND = {calls: [[0, "birds", 0.2, 55], [16, "elephant", 0.3], [16, "gong", 0.2]]};
+var H20_SOUND = {calls: [[0, "shama", 0.2, 55], [16, "elephant-trumpet", 0.3], [16, "plate-ting", 0.2]]};
 var H20_LINES = [[2, 7.6, "H088"], [9, 15.2, "H089"], [16.6, 24.6, "H090"], [26, 33.2, "H091"]];
 var H20_CUTS = [16];
 

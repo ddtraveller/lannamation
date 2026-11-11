@@ -4,7 +4,7 @@
 // (the owner, 2026-11-11). The six brothers creep up, beat the body with sticks and the butt of a musket, smear its
 // blood on their clothes, and press a bag of gold into the boy's hands.
 var H10_LONG = 60;
-var H10_SOUND = {calls: [[0, "cicadas", 0.2, 34], [27, "roar", 0.35], [34.6, "swish", 0.4], [37, "cicadas", 0.15, 23]]};
+var H10_SOUND = {calls: [[0, "cicadas", 0.2, 34], [27, "roar", 0.35], [37, "cicadas", 0.15, 23]]};
 var H10_LINES = [[2, 7.6, "H042"], [9, 16.6, "H043"], [18, 22.2, "H044"], [23.6, 29.6, "H045"], [31, 34.4, "H046"], [38, 46.6, "H047"], [48, 55.2, "H048"]];
 var H10_CUTS = [17.4, 35.2];
 var H10_PALM = [1420, 905];

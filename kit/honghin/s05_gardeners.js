@@ -2,7 +2,7 @@
 // an old man and an old woman wake, the old man lights a torch, they find the queen weeping at their gate with the dog;
 // they take her in. Morning: she waters the beds, the old woman beside her; the old man with his hoe.
 var H05_LONG = 40;
-var H05_SOUND = {calls: [[0, "crickets", 0.25, 20], [21, "rooster", 0.3], [22, "birds", 0.2, 18]]};
+var H05_SOUND = {calls: [[0, "crickets", 0.25, 20], [21, "rooster-crow", 0.3], [22, "shama", 0.2, 18]]};
 var H05_LINES = [[2, 9.2, "H020"], [10.6, 15.6, "H021"], [22, 28.4, "H022"], [30, 36.4, "H023"]];
 var H05_CUTS = [20.5];
 var HH_OLD_MAN = {size: 0.72};                         // the old gardener, the kit's elder

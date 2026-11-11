@@ -3,7 +3,7 @@
 // wives and their sons in fetters; the king's judgement: they were punished severely (the owner: said, not shown). The
 // hall empties; the king alone, his head bowed.
 var H19_LONG = 55;
-var H19_SOUND = {calls: [[0, "crowd", 0.15, 30], [30, "gong", 0.3]]};
+var H19_SOUND = {calls: [[30, "plate-ting", 0.3]]};
 var H19_LINES = [[2, 11.2, "H084"], [12.6, 21.6, "H085"], [23, 28.6, "H086"], [30, 34.2, "H087"]];
 var H19_CUTS = [12.2, 22.6, 36];
 
