@@ -9,6 +9,9 @@
 //                              behind, the sole to the sky; a lotus held up, the other hand before the chest
 //   kinnari(x, y, t, look)     a kinnari in flight: a woman crowned to the waist, a bird below, her wings spread
 //   hongFlight(x, y, t, look)  the hong on the wing, its neck long, its tail a flame of plumes
+//   hongHin(x, y, t, look)     the stone swan of the tale of Hong Hin, plates of gold stone, a saddle cloth and reins,
+//                              a rider's seat (hongHinReins() the reins); indra(x, y, t, look) Indra, green, flying,
+//                              standing or on his throne; spireCrown(j) a gold spire crown on anyone's head
 //
 // (x, y) is the middle of the figure; each flies to the right (look.face -1 to the left); t is the second; look.size,
 // 1 being about 220 from crown to the lowest point; look.seed sets each one's own time, so a flight of them do not move
@@ -915,4 +918,160 @@ function hongNeck(spine, light) {
     var bx = mix(mix(c0, m0, u), mix(m0, d0, u), u), by = mix(mix(c1, m1, u), mix(m1, d1, u), u);
     pen.beginPath(); pen.arc(bx, by, 1.4, 0, Math.PI * 2); pen.fill();
   });
+}
+
+// ---------- for the tale of Hong Hin (2026-11-11) ----------
+// The stone swan (หงส์หิน) the prince rides, and Indra (พระอินทร์), who made it: the owner's picks of the candidates,
+// 2026-11-11. The swan is "the made swan" (หงส์ยนต์): the hong of hongFlight() worked in plates of gold stone, fitted and
+// pinned, a red saddle cloth with a gold border on its back, steered by red reins to its beak, as the khao so has
+// Indra make it from a golden boulder (หินคำ) and the boy pull and slacken its reins (ชักยนต์ ผ่อนยนต์). Indra is green,
+// as Thai painting colours him, in three moments of the tale: flying down ("fly", a thewada of the murals), standing
+// ("stand", the spire crown and a halo) and on his stone throne ("throne", the Pandukambala that grows hot when the
+// world is wronged).
+var HONG_HIN = {gold: "#d6ac52", goldLit: "#f2d68e", goldLine: "#6a4818", plate: "rgba(96, 62, 18, 0.65)",
+                pin: "rgba(250, 226, 150, 0.9)", saddle: "#a8322a", border: "#e3b04a", rein: "#a8322a"};
+var HONG_HIN_SHEET = null;                           // the swan is drawn here first, so its plates lie on it alone
+
+// hongHin(x, y, t, look): the stone swan flying, about the middle of its body, to the right (look.face -1 to the left);
+// look: the hong's keys (HIMMA_KEYS), size 2.25 unless told (a boy of size 0.7 sits on it). It flies level (the rider
+// keeps his seat) unless look.level is false. Returns {seat, behind, beak}, points of the scene: where the rider sits
+// (person(..., {floor: "astride"})), where one more sits behind him (the grandmother, on the way home), and the beak,
+// where the reins end (hongHinReins()).
+// e.g. var h = hongHin(900, 500, t, {});
+//      var j = person(h.seat[0], h.seat[1], cast("boy", {floor: "astride", reachA: [h.seat[0] + 58, h.seat[1] - 62]}));
+//      hongHinReins(h, [h.seat[0] + 58, h.seat[1] - 62]);
+function hongHin(x, y, t, look) {
+  look = Object.assign({size: 2.25, level: true, seed: 1.3}, look || {});
+  if (look.level === false) { delete look.level; }
+  var size = look.size, face = look.face || 1;
+  if (!HONG_HIN_SHEET || HONG_HIN_SHEET.width !== pen.canvas.width || HONG_HIN_SHEET.height !== pen.canvas.height) {
+    HONG_HIN_SHEET = document.createElement("canvas");
+    HONG_HIN_SHEET.width = pen.canvas.width;
+    HONG_HIN_SHEET.height = pen.canvas.height;
+  }
+  var sheet = HONG_HIN_SHEET.getContext("2d"), keep = pen, colours = Object.assign({}, HIMMA), base = pen.getTransform();
+  sheet.setTransform(1, 0, 0, 1, 0, 0);
+  sheet.clearRect(0, 0, HONG_HIN_SHEET.width, HONG_HIN_SHEET.height);
+  sheet.setTransform(base);
+  Object.assign(HIMMA, {gold: HONG_HIN.gold, goldLit: HONG_HIN.goldLit, goldLine: HONG_HIN.goldLine});
+  pen = sheet;
+  try { hongFlight(x, y, t, look); } finally { pen = keep; Object.assign(HIMMA, colours); }
+  sheet.save();                                      // the plates, in the swan's own measure, on the swan alone
+  sheet.globalCompositeOperation = "source-atop";
+  sheet.translate(x, y);
+  sheet.scale(size * face, size);
+  sheet.strokeStyle = HONG_HIN.plate;
+  sheet.lineWidth = 1.3 / size;
+  var k, n;
+  for (k = -12; k <= 12; k++) {                      // seams down the body, a little curved
+    sheet.beginPath(); sheet.moveTo(k * 11.5, -107); sheet.quadraticCurveTo(k * 11.5 + 7, -27, k * 11.5 - 2.7, 40); sheet.stroke();
+  }
+  for (k = 0; k < 6; k++) {                          // and along it
+    sheet.beginPath(); sheet.moveTo(-151, -67 + k * 17.8); sheet.quadraticCurveTo(0, -76 + k * 17.8, 133, -67 + k * 17.8); sheet.stroke();
+  }
+  sheet.fillStyle = HONG_HIN.pin;                    // a pin where the seams cross
+  for (k = -12; k <= 12; k++) {
+    for (n = 0; n < 6; n++) { sheet.beginPath(); sheet.arc(k * 11.5 + 1.8, -67 + n * 17.8 - 1.8, 0.9, 0, Math.PI * 2); sheet.fill(); }
+  }
+  sheet.restore();
+  pen.save();
+  pen.setTransform(1, 0, 0, 1, 0, 0);
+  pen.drawImage(HONG_HIN_SHEET, 0, 0);
+  pen.restore();
+  pen.save();                                        // the saddle cloth on its back, red with a gold border
+  pen.translate(x, y);
+  pen.scale(size * face, size);
+  pen.beginPath();
+  pen.moveTo(-45, -16.5); pen.quadraticCurveTo(-18, -22.8, 7, -17.4); pen.lineTo(3.3, 6.5);
+  pen.quadraticCurveTo(-18, 11, -42, 4.8); pen.closePath();
+  pen.fillStyle = HONG_HIN.saddle; pen.fill();
+  pen.lineWidth = 5 / size; pen.strokeStyle = HONG_HIN.border; pen.stroke();
+  pen.restore();
+  return {seat: [x - 18 * size * face, y - 13 * size + 8], behind: [x - 52 * size * face, y - 9 * size + 8],
+          beak: [x + 112 * size * face, y - 56 * size]};
+}
+
+// hongHinReins(h, hands): the red reins from the rider's hands (a point of the scene: where the scene sent his hands,
+// or a joint person() gave back divided by PIX) to the beak; h is what hongHin() gave back. Draw it after the rider.
+function hongHinReins(h, hands) {
+  pen.save();
+  pen.strokeStyle = HONG_HIN.rein;
+  pen.lineWidth = 3;
+  pen.lineCap = "round";
+  var face = h.beak[0] > hands[0] ? 1 : -1;
+  pen.beginPath();
+  pen.moveTo(hands[0], hands[1]);
+  pen.quadraticCurveTo((hands[0] + h.beak[0]) / 2, hands[1] + 30, h.beak[0] - 16 * face, h.beak[1] + 4);
+  pen.stroke();
+  pen.restore();
+}
+
+// spireCrown(j, tall): a gold spire crown (ชฎา) on a person's head, from the joints person() gave back: a band over the
+// brow with a red stone, six tiers, each narrower, to a point. tall: its height in heads (1.1 unless told). Returns
+// nothing; it draws with pen. A head under it is best drawn with hidden: ["hair"].
+// e.g. spireCrown(person(900, GROUND, {regalia: true, hidden: ["hair"]}), 1.2);
+function spireCrown(j, tall) {
+  var crown = [j.crown[0] / PIX, j.crown[1] / PIX], chin = [j.chin[0] / PIX, j.chin[1] / PIX];
+  var h = Math.hypot(chin[0] - crown[0], chin[1] - crown[1]), tilt = Math.atan2(chin[0] - crown[0], chin[1] - crown[1]);
+  var s = h / 100, w = 52 * s, up = (tall || 1.1) * 100 * s, k;
+  pen.save();
+  pen.translate(crown[0], crown[1]);
+  pen.rotate(-tilt);
+  pen.lineWidth = 1.6;
+  pen.strokeStyle = HIMMA.goldLine;
+  pen.beginPath();                                   // the band round the brow
+  pen.moveTo(-w, 12 * s); pen.quadraticCurveTo(0, -4 * s, w, 12 * s); pen.lineTo(w * 0.9, 26 * s);
+  pen.quadraticCurveTo(0, 12 * s, -w * 0.9, 26 * s); pen.closePath();
+  pen.fillStyle = HIMMA.gold; pen.fill(); pen.stroke();
+  for (k = 0; k < 6; k++) {                          // the tiers to the spire
+    var y0 = 6 * s - k * up / 7, y1 = 6 * s - (k + 1) * up / 7, w0 = w * (0.8 - k * 0.12), w1 = w * (0.8 - (k + 1) * 0.12);
+    pen.beginPath(); pen.moveTo(-w0, y0); pen.lineTo(-w1, y1); pen.lineTo(w1, y1); pen.lineTo(w0, y0); pen.closePath();
+    pen.fillStyle = k % 2 ? "#e9bd58" : "#d49a32"; pen.fill(); pen.stroke();
+  }
+  pen.beginPath();
+  pen.moveTo(-w * 0.08, 6 * s - 6 * up / 7); pen.lineTo(0, 6 * s - up * 1.12); pen.lineTo(w * 0.08, 6 * s - 6 * up / 7);
+  pen.closePath(); pen.fillStyle = HIMMA.goldLit; pen.fill(); pen.stroke();
+  pen.fillStyle = HIMMA.jewel;                       // a red stone on the band
+  pen.beginPath(); pen.arc(0, 10 * s, 5 * s, 0, Math.PI * 2); pen.fill();
+  pen.restore();
+}
+
+// Indra's colours: his green skin, as the thewada's gilded one is painted (the "fly" pose), and his look as a person.
+var INDRA = {skin: "#5aa06a", skinLit: "#8ccc96", skinShade: "#3a7a4e", skinLine: "#1e4a2a", body: "#4f9a62",
+             throne: "#c8786a", throneLine: "#5a2a20", cushion: "#e3b04a"};
+var INDRA_LOOK = {bare: true, regalia: true, sarong: ["#8a2a3a", BROCADE], pins: true, bangles: 5, hidden: ["hair"],
+                  buttons: false, smile: 0.6};
+var INDRA_KEYS = {pose: true, size: true, face: true, seed: true, at: true, feel: true, id: true, sarong: true};
+
+// indra(x, y, t, look): Indra. look.pose: "fly" (the default: (x, y) the middle of the figure, as thewada()), "stand"
+// ((x, y) the ground under him; a halo) or "throne" ((x, y) the ground under his stone throne, he sits cross-legged on
+// it); size (1.6 flying, 1.5 standing, 1.35 seated, unless told), face, seed; at, feel, id and sarong as person()'s.
+// Returns person()'s joints when he stands or sits, else nothing.
+// e.g. indra(960, GROUND, t, {pose: "throne", at: [600, 700]});
+function indra(x, y, t, look) {
+  look = look || {};
+  checkNames("Indra's name", look, INDRA_KEYS);
+  var pose = look.pose || "fly", face = look.face || 1, own = {face: face};
+  ["at", "feel", "id", "sarong"].forEach(function (k) { if (look[k] !== undefined) { own[k] = look[k]; } });
+  if (pose === "fly") {
+    var colours = Object.assign({}, HIMMA);
+    Object.assign(HIMMA, {skin: INDRA.skin, skinLit: INDRA.skinLit, skinShade: INDRA.skinShade, skinLine: INDRA.skinLine});
+    try { thewada(x, y, t, {size: look.size || 1.6, face: face, seed: look.seed || 0}); } finally { Object.assign(HIMMA, colours); }
+    return undefined;
+  }
+  var j;
+  if (pose === "throne") {
+    var size = look.size || 1.35, u = size / 1.35;
+    pen.save();                                      // the throne: a block of pale red stone, a gold cushion on it
+    pen.fillStyle = INDRA.throne; pen.strokeStyle = INDRA.throneLine; pen.lineWidth = 2;
+    pen.beginPath(); pen.rect(x - 170 * u, y - 190 * u, 340 * u, 190 * u); pen.fill(); pen.stroke();
+    pen.fillStyle = INDRA.cushion; pen.beginPath(); pen.rect(x - 180 * u, y - 210 * u, 360 * u, 24 * u); pen.fill(); pen.stroke();
+    pen.restore();
+    j = person(x, y - 200 * u, Object.assign({}, INDRA_LOOK, {skin: INDRA.body, size: size, floor: "cross", sarong: ["#2a5a3a", BROCADE]}, own));
+  } else {
+    if (pose !== "stand") { checkName("Indra's pose", pose, {fly: true, stand: true, throne: true}); }
+    j = person(x, y, Object.assign({}, INDRA_LOOK, {skin: INDRA.body, size: look.size || 1.5, halo: true}, own));
+  }
+  spireCrown(j, 1.2);
+  return j;
 }

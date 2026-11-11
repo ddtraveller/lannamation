@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>honghin - the tale of Hong Hin: the stone swan, ghouls, the giantess, the giants' daughters, the Hemmarat, Indra, and the things and places</title>
+<style>html, body { margin: 0; background: #111; } canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>window.FILM_STYLE = {wide: 1920, pixels: 2, hop: false, film: 0, light: [-0.6, 0.5]};</script>
+<script src="oldcartoon.js"></script>
+<script src="naga.js"></script>
+<script src="beasts.js"></script>
+<script src="myth.js"></script>
+<script src="himmaphan.js"></script>
+<script src="ogre.js"></script>
+<script src="pieces.js"></script>
+<script src="honghin.js"></script>
+<script src="weaving.js"></script>
+<script src="sabai.js"></script>
+<script src="sabai_finish.js"></script>
+<script src="people.js"></script>
+<script>
+// The "honghin" sheet: what the kit gained for the tale of Hong Hin (2026-11-11, the owner's picks of the candidates), at
+// two pixels to a film pixel as the films draw. Four seconds each: the stone swan with the prince and his grandmother
+// (himmaphan.js hongHin, hongHinReins); the ghouls' horde and the old giantess (ogre.js, kinds ghoul, ghoulPale,
+// ghoulDark, giantess; ogreMeat); the three giant kings' daughters (ogre.js ogreDaughter, people.js); the Hemmarat
+// (myth.js hemmarat) and Indra flying; Indra standing and on his throne (himmaphan.js indra, spireCrown); then honghin.js:
+// the sugar palm and the swan hidden as a log; saba, the red seeds, the puppy, Kanchai, the crossbow, musket and fetters;
+// the three floating palaces; the bai si and the conch.
+var DURATION = 36;
+var BEAT = 0.5;
+var PANEL = 4;
+function caption(text, x, y, size) {
+  pen.fillStyle = "#3a2c1c"; pen.textAlign = "center"; pen.font = (size || 26) + "px Georgia, serif"; pen.fillText(text, x, y);
+}
+function sky(top, low, ground) {
+  var g = pen.createLinearGradient(0, 0, 0, GROUND);
+  g.addColorStop(0, top); g.addColorStop(1, low);
+  pen.fillStyle = g; pen.fillRect(0, 0, 1920, 1080);
+  if (ground) { pen.fillStyle = ground; pen.fillRect(0, GROUND, 1920, 180); }
+  pen.fillStyle = "rgba(246, 237, 212, 0.92)"; pen.fillRect(0, 1000, 1920, 80);
+}
+function swans(t) {
+  sky("#7f9cc4", "#f4dcae");
+  var h = hongHin(760 + 40 * Math.sin(t * 0.4), 470, t, {});
+  var hands = [h.seat[0] + 58, h.seat[1] - 62];
+  person(h.behind[0], h.behind[1], cast("grandmother", {floor: "astride", id: "yai", size: 0.62, at: h.beak}));
+  person(h.seat[0], h.seat[1], {bare: true, regalia: true, turban: "#b8294a", pins: true, bangles: 4, sarong: ["#8a2a3a", BROCADE],
+                                skin: "#f1d2b4", size: 0.7, smile: 0.7, eyes: 1.1, id: "prince", floor: "astride",
+                                reachA: hands, reachB: [hands[0] - 10, hands[1] + 6], at: [h.beak[0] + 80, h.beak[1]]});
+  hongHinReins(h, hands);
+  hongHin(1600, 300, t + 3, {size: 1.1, face: -1});
+  caption("hongHin(): the made swan, plates of gold stone; the prince on its seat, his grandmother behind; hongHinReins()", 960, 1050, 24);
+}
+function ogres(t) {
+  sky("#5a6a5a", "#c8c0a0", "#6a6a48");
+  var a = ogre(260, GROUND, t, {kind: "ghoul", id: "gh1", reachA: [330, GROUND - 330], at: [500, 600]});
+  ogreMeat(a.wristA, -0.6);
+  ogre(640, GROUND, t, {kind: "ghoulPale", id: "gh2", reachA: [760, GROUND - 200], reachB: [780, GROUND - 230]});
+  ogre(1000, GROUND, t, {kind: "ghoulDark", id: "gh3", step: t * 0.5});
+  ogre(1560, GROUND, t, {kind: "giantess", id: "giantess", face: -1, reachB: [1400, GROUND - 260]});
+  caption("ogre(): kinds \"ghoul\" (ogreMeat() in the hand), \"ghoulPale\", \"ghoulDark\"; and \"giantess\"", 960, 1050, 24);
+}
+function daughters(t) {
+  sky("#d8c8e8", "#f6ead2", "#c8b890");
+  ["mukhawadi", "culakantha", "salicanta"].forEach(function (name, i) {
+    person(480 + i * 480, GROUND, ogreDaughter(name, {size: 1.35, id: name, face: i === 2 ? -1 : 1}));
+    caption(name, 480 + i * 480, GROUND + 60, 26);
+  });
+  caption("ogreDaughter(): the three giant kings' daughters, each her father's colour, her own face, clothes and jewels", 960, 1050, 24);
+}
+function hemmaratIndra(t) {
+  sky("#6a7aa0", "#e8d0a8", "#7a8a58");
+  hemmarat(600, GROUND - 380, {size: 0.8, face: -1});
+  indra(1400, 450, t, {pose: "fly", size: 1.7});
+  caption("hemmarat(): the Hatsadiling's dark kin, an elephant in its claws; indra() flying", 960, 1050, 24);
+}
+function indraStands(t) {
+  sky("#86a8d8", "#fbeed2", "#d8c8a0");
+  indra(620, GROUND, t, {pose: "stand", id: "indra1", at: [1200, 600]});
+  indra(1300, GROUND, t, {pose: "throne", id: "indra2", face: -1, at: [620, 500]});
+  caption("indra(): standing, a halo and spireCrown(); seated on the stone throne", 960, 1050, 24);
+}
+function palmLog(t) {
+  sky("#c88a5a", "#f4dcae", "#7a7a4a");
+  sugarPalm(560, GROUND, t, {});
+  ogre(760, GROUND, t, {kind: "giantess", id: "giantess2", face: -1, size: 1.4});
+  swanLog(1440, GROUND, t);
+  caption("sugarPalm(): the old palm at the south gate, its hollow; swanLog(): the stone swan hidden", 960, 1050, 24);
+}
+function things(t) {
+  sky("#d8c8a8", "#f4e8d0", "#c8b088");
+  for (var n = 0; n < 6; n++) { sabaBean(160 + n * 62, GROUND - 40); }
+  for (n = 0; n < 6; n++) { redSeed(170 + n * 56, GROUND - 160); }
+  seedPouch(310, GROUND - 230);
+  puppy(640, GROUND, t);
+  kanchai(860, GROUND - 40, {size: 0.9});
+  crossbow(1150, GROUND - 420); musket(1150, GROUND - 200);
+  fetters(1600, GROUND - 120);
+  caption("sabaBean(), redSeed(), seedPouch(); puppy(); kanchai(); crossbow(), musket(); fetters()", 960, 1050, 24);
+}
+function palaces(t) {
+  var g = pen.createLinearGradient(0, 0, 0, 1080);
+  g.addColorStop(0, "#6a90c8"); g.addColorStop(1, "#f4dcae"); pen.fillStyle = g; pen.fillRect(0, 0, 1920, 1080);
+  vimana(360, 560, t, {kind: "prasat", size: 0.42});
+  vimana(960, 520, t, {kind: "hall", size: 0.42});
+  vimana(1560, 600, t, {kind: "lotus", size: 0.42, who: function (x, y) {
+    person(x, y, ogreDaughter("culakantha", {size: 0.9, id: "inside", floor: "side"}));
+  }});
+  caption("vimana(): \"prasat\", \"hall\", \"lotus\" (its princess within), each on a thaiCloud() with streamer()s", 960, 1050, 24);
+}
+function crowning(t) {
+  sky("#5a2a1a", "#c8925a", "#e8d8b8");
+  baiSri(620, GROUND, 1.1, t);
+  conch(1300, GROUND - 200, 1.5);
+  caption("baiSri(): the bai si su khwan of the crowning; conch()", 960, 1050, 24);
+}
+var SHEETS = [swans, ogres, daughters, hemmaratIndra, indraStands, palmLog, things, palaces, crowning];
+function sheet(t) { SHEETS[Math.min(SHEETS.length - 1, Math.floor(t / PANEL))](t); }
+var SCENES = [[0, DURATION, sheet]];
+function draw(t) { film(t, SCENES); }
+var rendering = false;
+function play(now) { if (!rendering) { draw((now / 1000) % DURATION); } requestAnimationFrame(play); }
+requestAnimationFrame(play);
+</script>
+</body>
+</html>

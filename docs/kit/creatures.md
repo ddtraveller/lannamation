@@ -748,3 +748,26 @@ h.seat[1] + 18, {floor: "astride"})`, as on the elephant). The owner's picks, al
 
 `horseTack(kind)` and `horseTackHead(kind)` draw it in the horse's own frames, so it walks and nods with the horse.
 Sheet: `riding.html`.
+
+## The beings of the tale of Hong Hin (2026-11-11)
+
+For the next tale, Hong Hin, the stone swan (หงส์หิน): the plot as the old khao so (Chao Suriyawong's, 1901) tells it,
+and what the kit lacked for it, drawn as candidates on the kit's own painters; the owner picked. Sheet: `honghin.html`
+(at two pixels to a film pixel, as the films draw).
+
+| What | Call | The owner's pick |
+|---|---|---|
+| The stone swan the prince rides | `hongHin(x, y, t, look)` (himmaphan.js): `hongFlight()`'s hong in plates of gold stone, fitted and pinned, a red saddle cloth with a gold border, flying level; it gives back `{seat, behind, beak}`, the rider's seat, a second seat behind (the grandmother on the way home) and the beak; `hongHinReins(h, hands)` draws the red reins from the rider's hands to it | C of three: "the made swan" (หงส์ยนต์); golden flecked stone and grey carved stone with moss were the others |
+| The ghouls (ยักษ์ผีดิบ) who eat their meat raw | `ogre()` kinds `"ghoul"` (grey-green, wild black hair, yellow eyes), `"ghoulPale"` (bone-pale, white matted hair, stooped), `"ghoulDark"` (dark, bone beads, orange eyes), long nails; `ogreMeat(p, turn)` a raw haunch with its bone, held at a joint | all three, one horde |
+| The old giantess under the palm at the south gate (ย่ายักษ์เถ้า) | `ogre()` kind `"giantess"`: red, white hair, an old woman's indigo blouse and sin, drawn at the paintings' build (build 1: the kit's old women are short, and the ogre's head looked too big on them) | C of three (green and grey-blue the others) |
+| The three giant kings' daughters | `ogreDaughter(name, more)` (ogre.js, with people.js): painted women, each in a skin of her father's kingdom and her own face, clothes and jewels: `"mukhawadi"` rose, the princess's face, gold and rubies; `"culakantha"` pale green as the khao so has her, the celestial's face, silver and jade; `"salicanta"` blue, the court lady's face, gold and sapphires, pearls, a fan | C, "but give them individual jewelry and clothing and faces" |
+| The Hemmarat (เหมะราช), that swallows bull elephants | `hemmarat(x, y, look)` (myth.js): of the Hatsadiling's kind, dark purple and gold, flying, an elephant caught under its claws (`prey: false` none) | A of three |
+| Indra (พระอินทร์), green as Thai painting colours him | `indra(x, y, t, look)` (himmaphan.js), `pose` `"fly"` (a thewada of the murals), `"stand"` (a halo) or `"throne"` (cross-legged on the pale red stone throne that grows hot when the world is wronged); `spireCrown(j, tall)` the gold spire crown (ชฎา) on any head | all three, his moments in the tale |
+
+**A fix on the way (ogre.js):** `ogreHead()` read `person()`'s joints as film pixels; they are pixels of the sheet,
+`PIX` to a film pixel, so on a film's page (two pixels) the ogre's head was drawn at twice its place and size, off the
+body. No film had drawn an ogre yet. It divides by `PIX` now, as `ogreMeat()` and `spireCrown()` do.
+
+Not checked against the khao so's own words: the Hemmarat's form (the notebook calls it a winged lion-elephant) and the
+princesses' colours other than Culakantha's. The tale's things and places are `honghin.js`: things.md, "The things of
+the tale of Hong Hin".

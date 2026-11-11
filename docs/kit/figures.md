@@ -767,6 +767,8 @@ gold spire crown, the kit's temple-gate `yak()` alive), `"forest"` (dark, wild-h
 (red, crowned, in gold); the rest of the look is `person()`'s (size, face, step, at, feel, reachA) and wins over the
 kind's own (`OGRE_LOOKS`). It gives back the person's joints. `ogreHead(j, kind, face, t)` is the head alone, over a
 person a scene draws itself. The owner's picks, all three. Sheet: `ogre.html`.
+For the tale of Hong Hin (2026-11-11): the kinds `"ghoul"`, `"ghoulPale"`, `"ghoulDark"` and `"giantess"`, `ogreMeat()` and
+`ogreDaughter()`; see creatures.md, "The beings of the tale of Hong Hin".
 
 ## Faces with more realism, from thangka, Khmer and Lanna art (2026-10-29)
 

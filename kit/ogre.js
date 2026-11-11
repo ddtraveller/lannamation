@@ -10,6 +10,10 @@
 //             yak() alive
 //   "forest"  a forest ogre: dark blue-grey, wild hair, tusks, no crown
 //   "king"    a red ogre king, crowned and in gold
+// And for the tale of Hong Hin (2026-11-11, the owner's picks): the ghouls (ยักษ์ผีดิบ) "ghoul" (grey-green, wild black
+// hair, yellow eyes), "ghoulPale" (bone-pale, white matted hair, stooped) and "ghoulDark" (dark, bone beads, orange
+// eyes), one horde; and the old giantess under the palm, "giantess" (red, white hair, an old woman's blouse and sin).
+// Their meat is ogreMeat(); the three giant kings' daughters are ogreDaughter() (people.js).
 // Its face: round white eyes that bulge and roll, a ring round each, thick curled brows, a broad nose, a mouth the
 // width of the face with a row of teeth and a fang rising from each corner, big ears with gold rings.
 //   ogre(x, y, t, look)        draws the whole ogre and gives back the person's joints; look: kind (one of OGRES), and
@@ -20,16 +24,27 @@
 var OGRES = {
   mural:  {skin: "#2f7f4e", dark: "#1a4a2e", crown: "spire", hair: null, eye: "#3a5fae"},
   forest: {skin: "#4a5a6a", dark: "#2a323c", crown: null, hair: "#1a1a1e", eye: "#c8302a"},
-  king:   {skin: "#c8452f", dark: "#7a2414", crown: "spire", hair: null, eye: "#2a8a4a"}
+  king:   {skin: "#c8452f", dark: "#7a2414", crown: "spire", hair: null, eye: "#2a8a4a"},
+  // Hong Hin's ghouls (ยักษ์ผีดิบ), the ogres of the forest who eat their meat raw: one horde of three kinds (the owner's
+  // pick, 2026-11-11, all three)
+  ghoul:     {skin: "#7d8a6a", dark: "#3e4a34", crown: null, hair: "#2a2620", eye: "#d8c040"},
+  ghoulPale: {skin: "#cfc6b4", dark: "#8a8070", crown: null, hair: "#e6e0d4", eye: "#c8302a"},
+  ghoulDark: {skin: "#4a3230", dark: "#241614", crown: null, hair: "#151010", eye: "#e8862a"},
+  // the old giantess under the palm at Varanasi's south gate (ย่ายักษ์เถ้า), red, her hair white (the owner's pick, C)
+  giantess:  {skin: "#a8452f", dark: "#5a2414", crown: null, hair: "#e8e3da", eye: "#2a8a4a"}
 };
 
 function ogFill(fill, ink, width) { pen.fillStyle = fill; pen.fill(); pen.strokeStyle = ink; pen.lineWidth = width || 2; pen.stroke(); }
 
 // ogreHead(j, kind, face, t): the head drawn over the person's, j what person() gave back.
+// person() gives its joints in pixels of the sheet, PIX to a film pixel; the head is drawn in film pixels, so they are
+// divided by PIX here (until 2026-11-11 they were not: on a film's page, at two pixels, the head was drawn at twice its
+// place and size, off the body).
 function ogreHead(j, kind, face, t) {
-  var c = OGRES[kind], cx = (j.crown[0] + j.chin[0]) / 2, cy = (j.crown[1] + j.chin[1]) / 2;
-  var h = Math.hypot(j.chin[0] - j.crown[0], j.chin[1] - j.crown[1]), s = h / 100;
-  var tilt = Math.atan2(j.chin[0] - j.crown[0], j.chin[1] - j.crown[1]);
+  var crown = [j.crown[0] / PIX, j.crown[1] / PIX], chin = [j.chin[0] / PIX, j.chin[1] / PIX];
+  var c = OGRES[kind], cx = (crown[0] + chin[0]) / 2, cy = (crown[1] + chin[1]) / 2;
+  var h = Math.hypot(chin[0] - crown[0], chin[1] - crown[1]), s = h / 100;
+  var tilt = Math.atan2(chin[0] - crown[0], chin[1] - crown[1]);
   pen.save();
   pen.translate(cx, cy);
   pen.rotate(-tilt);
@@ -92,8 +107,57 @@ function ogreHead(j, kind, face, t) {
 var OGRE_LOOKS = {
   mural:  {bare: true, regalia: true, sarong: ["#8a2a3a", BROCADE], turban: "#2f7f4e"},
   forest: {bare: true, sarong: "#3a2a1e", patoi: 0.75, tattoo: true, turban: "#1a1a1e"},
-  king:   {bare: true, regalia: true, sarong: ["#1e2a5a", BROCADE], turban: "#c8452f"}
+  king:   {bare: true, regalia: true, sarong: ["#1e2a5a", BROCADE], turban: "#c8452f"},
+  ghoul:     {bare: true, sarong: "#4a3a24", patoi: 0.6, turban: "#2a2620", bend: 0.12, nails: "long"},
+  ghoulPale: {bare: true, sarong: "#6a6458", patoi: 0.6, turban: "#e6e0d4", bend: 0.24, age: 0.7, nails: "long"},
+  ghoulDark: {bare: true, sarong: "#2a1c18", patoi: 0.75, tattoo: true, turban: "#151010", bend: 0.08, nails: "long",
+              beads: ["#efe6d2", "#d8ccb0", "#efe6d2"]},          // a string of bone beads
+  // an old woman's body at the build of the paintings (build 1: the kit's old women are short, and the head looked too big)
+  giantess:  {lady: true, shirt: "#24335e", sin: 2, age: 1, bend: 0.2, build: 1, nails: "long"}
 };
+
+// ogreMeat(p, turn): a raw haunch of meat, the bone's end showing, held at p (a joint person() gave back, in pixels of
+// the sheet, as wristA) and turned by turn radians: what the ghouls carry and eat. Returns nothing; it draws with pen.
+// e.g. var j = ogre(600, GROUND, t, {kind: "ghoul", reachA: [660, GROUND - 330]}); ogreMeat(j.wristA, -0.6);
+function ogreMeat(p, turn) {
+  pen.save();
+  pen.translate(p[0] / PIX, p[1] / PIX);
+  pen.rotate(turn || 0);
+  pen.beginPath(); pen.ellipse(26, 0, 34, 18, 0, 0, Math.PI * 2); ogFill("#b8343a", "#5a1416", 2);
+  pen.fillStyle = "#e8848a"; pen.beginPath(); pen.ellipse(18, -4, 18, 7, 0.1, 0, Math.PI * 2); pen.fill();
+  pen.beginPath(); pen.rect(-22, -5, 26, 10); ogFill("#f2ead6", "#7a6a50", 1.4);
+  pen.beginPath(); pen.arc(-24, -5, 6, 0, Math.PI * 2); pen.arc(-24, 5, 6, 0, Math.PI * 2); ogFill("#f2ead6", "#7a6a50", 1.4);
+  pen.restore();
+}
+
+// The three giant kings' daughters of Hong Hin, each in a skin of her father's kingdom (the owner's pick, 2026-11-11: "C,
+// but give them individual jewelry and clothing and faces"): painted women of people.js (load it), each from a different
+// painted woman (her face), in her own blouse, sin, shoulder cloth, hair flowers, earrings, necklace and metal.
+//   mukhawadi   the first kingdom's (Wassawaro's), rose: the princess's face, gold and rubies, a crown
+//   culakantha  the second's (Kumbhanda's), pale green, as the khao so has her, her eyes black as gems: the
+//               celestial's face, silver and jade
+//   salicanta   the third's (Anumat's), blue: the court lady's face, gold and sapphires, pearls
+// ogreDaughter(name, more): her look, for person(); more: any of a look's keys, which win.
+// e.g. person(900, GROUND, ogreDaughter("culakantha", {size: 1.3, id: "cula"}));
+var OGRE_DAUGHTERS = {
+  mukhawadi:  {from: "princess", look: {skin: "#e8a8a0", shirt: "#f6dcd0", sabai: "haeOn", jewels: "gold",
+                                        stones: ["#c8202a", "#e0b23a"], makeup: "berry"},
+               woman: {crown: true, earring: "dokhu", neck: "sangwan", hair: ["maiwai", "gardenia"], blouse: ["dots", "#ffffff"]}},
+  culakantha: {from: "celestial", look: {skin: "#b8d4a8", shirt: "#eef2e0", sabai: "chiangKham", jewels: "silver",
+                                         stones: ["#2e8a6a", "#e8f0e8"], makeup: "rose", hair: "#0c0a0e"},
+               woman: {crown: true, earring: "pearl", neck: "pendant", hair: ["jasmine"], blouse: "clouds", scarf: undefined}},
+  salicanta:  {from: "court", look: {skin: "#a8b8e0", shirt: "#f4f0f8", sabai: "yuanChet", jewels: "gold",
+                                     stones: ["#2a4aa8", "#e0b23a"], makeup: "coral"},
+               woman: {crown: true, earring: "dokhu", neck: "pearls", hair: ["ueang", "flower"], blouse: ["lace", "#c8c0d8"], holds: "fan"}}
+};
+function ogreDaughter(name, more) {
+  var d = OGRE_DAUGHTERS[name];
+  if (!d) { checkName("A giant king's daughter", name, OGRE_DAUGHTERS); d = OGRE_DAUGHTERS.mukhawadi; }
+  var w = MURAL_WOMEN[d.from], woman = Object.assign({}, w.woman, d.woman);
+  var own = Object.assign({}, d.look, {sabai: sabaiLook(d.look.sabai)});   // the cloth's weave, by name (weaving.js loads after)
+  Object.keys(woman).forEach(function (k) { if (woman[k] === undefined) { delete woman[k]; } });
+  return cast(w.cast, Object.assign({}, w.look, own, {woman: woman}, more));
+}
 
 // ogre(x, y, t, look): the ogre standing on (x, y) at second t (see the top of this file). look.kind: "mural" unless
 // told. Returns the joints person() gives back.

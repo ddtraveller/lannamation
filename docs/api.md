@@ -804,19 +804,7 @@ e.g. ageFall(0.8, view(0.2, true, null));
 
 ### `ladyFace(shut, mouth, glance, V, feel)`
 
-```
-A lady's face, drawn in the head's pixels (middle (0, -286)): eyes, brows, nose, rouge, mouth.
-  V      the view of the head for its turn (see view()): where each feature sits
-  feel   {wonder, smile}, each 0 to 1
-  shut     true, false, or 0 to 1: how far the lids are down
-  mouth    mouthAt()'s shape, or null for a shut mouth
-  glance   where the irises look: across, or [across, down], in pixels (saccade() gives one)
-  feel     in full, feelingOf()'s numbers: it reads wonder, smile, fear, anger, sad, worry, laugh, full, browUp,
-           eyes and lips
-V.face (a Path2D of the face, which personHead() adds) keeps the far eye, the cheek and the mouth on the face.
-Reads NORTH_FACE. Returns nothing: it draws with pen. person() calls it; a page draws a person instead.
-e.g. ladyFace(false, null, saccade(t), view(0.3, true, null), feelingOf({feel: "happy"}));
-```
+(no comment)
 
 ### `manFace(shut, mouth, glance, V, feel)`
 
@@ -1223,6 +1211,19 @@ How much longer than the cartoon's a figure's legs are, for its build: up
 to 1.3 times at build 1, and down to 0.85 at -1, a child's (see person()).
 build: -1 to 1, default 0. Returns 0.85 to 1.3.
 e.g. leggyOf(-1)   // 0.85
+```
+
+### `builtOf(look)`
+
+```
+A figure's build as the kit draws it (the owner, 2026-11-09: "Can you resize the male figures so their heads and
+bodies have the same proportions as the painted women?", all of them, to the mural's own shape): a man or an old man
+whose look leaves build out takes STYLE.men (1, the paintings': six and a half to seven heads tall, as a painted woman
+stands); a boy (build below 0) comes that part of the way up from a child's, keeping a child's larger head; a build the
+look gives at 0 or more is kept. A woman the same by STYLE.women (0 unless a page sets it: the hero film's women drawn
+by person() at the men's measure, the owner, 2026-11-09: "Use the old rig style women but adjust their measurements to
+be like the painted women and new style men"). Gives back the look, or a copy with its build.
+e.g. builtOf(cast("boy")).build   // -0.5
 ```
 
 ### `tattoo(ax, ay, bx, by)`
@@ -3827,14 +3828,23 @@ Returns nothing: it draws with brush, and leaves brush as it found it.
 e.g. kongKhao(pen, 560, 930, 1.1);
 ```
 
-### `krabung(brush, x, base, size, look)`
+### `sumKai(brush, x, base, size, look)`
+
+(no comment)
+
+### `sumKaiTear(x, base, size)`
 
 ```
-krabung(brush, x, base, size, look) draws an open basket, 68 wide and 54 tall at size 1. brush: a
-canvas 2D context; x, base: pixels of the sheet; size: needed; look: optional, tint. Returns
-nothing: it draws with brush, and leaves brush as it found it.
-e.g. krabung(pen, 480, 930, 1.1);
+Where a torn sum kai's hole is: [x, y] at the middle of its foot, for a hen that goes in and out. e.g. sumKaiTear(1600, 846, 1.15)
 ```
+
+### `sumKaiSheet(old, torn)`
+
+(no comment)
+
+### `krabung(brush, x, base, size, look)`
+
+(no comment)
 
 ### `mortar(brush, x, base, size, look)`
 
@@ -3948,6 +3958,14 @@ brush: a canvas 2D context; x, base: pixels of the sheet; size: needed; look: op
 1, 0), tint. Returns nothing: it draws with brush, and leaves brush as it found it.
 e.g. ruenPhuk(pen, 900, 900, 1.2, {glow: 0.7});
 ```
+
+### `monKhit(brush, x, base, size, look)`
+
+(no comment)
+
+### `khanMak(brush, x, base, size, look)`
+
+(no comment)
 
 ## offerings.js
 
@@ -6687,6 +6705,8 @@ has now, the scene's, so call it where the person is drawn, inside the camera.
   look    the person's look; t: seconds; where: sabaiOf()'s answer for that person and frame
   cloth   the cloth's names (SABAI_KEYS, at the top of this file), as sabai() takes them
 Returns a new look for person(); it reads pen's frame now, when it is called.
+The painter carries the cloth's back too (worn.back, the same frame) and where it lies (worn.where), for a figure
+that lays an arm under the back (people.js).
 e.g. person(720, 1010, sabaiWorn(look, t, where, {from: 3}));
 ```
 
@@ -6719,6 +6739,13 @@ offset across, from distance from to distance to along (pixels of the sheet). jo
 from the open path, false starts with a moveTo. Returns nothing.
 e.g. pen.beginPath(); sabaiEdge(where, -36, 0, where.length, false); pen.stroke();
 one edge of the cloth, or of a row, from one end to the other
+```
+
+### `sabaiGround(where, half, from, to)`
+
+```
+sabaiGround(where, half, from, to) paints over the cloth's colour, clipped to one band of it from distance from to
+distance to, before its rows and figures are laid: here nothing (sabai_finish.js weaves threads into it). Returns nothing.
 ```
 
 ### `sabaiBand(where, inner, outer, from, to)`
@@ -6855,6 +6882,35 @@ e.g. laiDiamond(4, "nested")
 
 ```
 The stepped triangle (lai kap, the sheath of a bract), point up, w wide (odd). kind: "solid", "outline", "nested".
+```
+
+### `laiZigzag(amp, k, threads, slope)`
+
+```
+Stacked chevrons: each thread of "threads" in turn a stepped zigzag line k picks thick under the one before, amp
+floats from a peak to a trough, rising "slope" picks a float (the woven sin of the owner's pictures).
+e.g. laiZigzag(6, 2, ["1", "2", "3"], 1.3)
+```
+
+### `laiOnBlock(grid, block, gap)`
+
+```
+A grid with "gap" columns of ground after it, every ground cell then woven in the thread "block" (a figure on a band
+of another colour). e.g. laiOnBlock(laiDiamond(3, "nested"), "3", 3)
+```
+
+### `laiDiamondEdged(r, inner, edge, block, gap)`
+
+```
+A solid stepped diamond of radius r in "inner", edged with "edge" where a diamond one larger would run, on a block
+of "block", "gap" columns after it. e.g. laiDiamondEdged(3, "3", "2", "4", 3)
+```
+
+### `laiNamLaiBlocks(rows)`
+
+```
+The flowing water (namLaiWeft, below) as a grid "rows" picks tall, at every other warp so its four blocks go round
+one body: threads 1 to 4, no stripes.
 ```
 
 ### `weaveHash(a, b, c)`
@@ -8034,7 +8090,7 @@ the point a distance along a route, and the way it runs there
 
 ## myth.js
 
-myth.js - four creatures of the myths of Lanna, the north of Thailand, for films made with oldcartoon.js: the Mom, the Luang, the Hatsadiling bird and the creature with four ears and five eyes. They stand on the beasts' legs and the Naga's body, so load it after both:  <script src="oldcartoon.js"></script> <script src="naga.js"></script> <script src="beasts.js"></script> <script src="myth.js"></script>  and call mom(x, y, look), luang(x, y, look), hatsadiling(x, y, look) or maengSiHuHaTa(x, y, look) from a scene. A fifth, Chang Ngu, the snake-elephant of Chiang Saen, is at the file's end: changNgu(x, y, look).  Nothing is copied. Each was read by eye from one photograph of a work in the north (all on Wikimedia Commons) and from what is written of it, and this file keeps what the work does, as rules, and draws its own creature in the kit's manner: flat colour inside a fine dark line.  The Mom (ตัวมอม). A creature the craftsmen of the north made up, seen as sculpture at the temples of the upper north, at the foot of a stair or by a gate, where it keeps watch. It is told that it is the mount of Pajjunna, the god of rain, and that it was carried in a procession to ask for rain. Writers
+myth.js - four creatures of the myths of Lanna, the north of Thailand, for films made with oldcartoon.js: the Mom, the Luang, the Hatsadiling bird and the creature with four ears and five eyes. They stand on the beasts' legs and the Naga's body, so load it after both:  <script src="oldcartoon.js"></script> <script src="naga.js"></script> <script src="beasts.js"></script> <script src="myth.js"></script>  and call mom(x, y, look), luang(x, y, look), hatsadiling(x, y, look) or maengSiHuHaTa(x, y, look) from a scene (and hemmarat(x, y, look), the Hatsadiling's dark kin of the tale of Hong Hin, at the end of the file). A fifth, Chang Ngu, the snake-elephant of Chiang Saen, is at the file's end: changNgu(x, y, look).  Nothing is copied. Each was read by eye from one photograph of a work in the north (all on Wikimedia Commons) and from what is written of it, and this file keeps what the work does, as rules, and draws its own creature in the kit's manner: flat colour inside a fine dark line.  The Mom (ตัวมอม). A creature the craftsmen of the north made up, seen as sculpture at the temples of the upper north, at the foot of a stair or by a gate, where it keeps watch. It is told that it is t
 
 ### `mythScales(shapeOf, left, top, right, bottom, r, colour)`
 
@@ -8279,9 +8335,13 @@ sets FINE and LINE while it draws and leaves them at 1 and STYLE.line.
 e.g. changNgu(900, 960, {size: 0.62, face: -1});
 ```
 
+### `hemmarat(x, y, look)`
+
+(no comment)
+
 ## ogre.js
 
-ogre.js - a living ogre (ยักษ์), for the Lanna cartoon kit: the ogres of the tales (Hong Hin's three ogre kings, the jataka tales' ogres of the forest). Load it after oldcartoon.js:  <script src="oldcartoon.js"></script> <script src="ogre.js"></script>  An ogre is a person's body at a giant's size, in a skin of its own, with an ogre's head drawn over the person's head, at the place and the size person() gives back (joints.crown, joints.chin). The owner's pick, 2026-10-26, all three: "mural"   the murals' green yaksha, the gold spire crown (ชฎา) and the flames at the ears: the kit's temple-gate yak() alive "forest"  a forest ogre: dark blue-grey, wild hair, tusks, no crown "king"    a red ogre king, crowned and in gold Its face: round white eyes that bulge and roll, a ring round each, thick curled brows, a broad nose, a mouth the width of the face with a row of teeth and a fang rising from each corner, big ears with gold rings. ogre(x, y, t, look)        draws the whole ogre and gives back the person's joints; look: kind (one of OGRES), and any of person()'s keys (size, face, step, at, feel, reachA...), which win over the kind's own ogreHead(j, kind, face, t) the head alone, over a 
+ogre.js - a living ogre (ยักษ์), for the Lanna cartoon kit: the ogres of the tales (Hong Hin's three ogre kings, the jataka tales' ogres of the forest). Load it after oldcartoon.js:  <script src="oldcartoon.js"></script> <script src="ogre.js"></script>  An ogre is a person's body at a giant's size, in a skin of its own, with an ogre's head drawn over the person's head, at the place and the size person() gives back (joints.crown, joints.chin). The owner's pick, 2026-10-26, all three: "mural"   the murals' green yaksha, the gold spire crown (ชฎา) and the flames at the ears: the kit's temple-gate yak() alive "forest"  a forest ogre: dark blue-grey, wild hair, tusks, no crown "king"    a red ogre king, crowned and in gold And for the tale of Hong Hin (2026-11-11, the owner's picks): the ghouls (ยักษ์ผีดิบ) "ghoul" (grey-green, wild black hair, yellow eyes), "ghoulPale" (bone-pale, white matted hair, stooped) and "ghoulDark" (dark, bone beads, orange eyes), one horde; and the old giantess under the palm, "giantess" (red, white hair, an old woman's blouse and sin). Their meat is ogreMeat(); the three giant kings' daughters are ogreDaughter() (people.js). Its face: round white eyes that b
 
 ### `ogFill(fill, ink, width)`
 
@@ -8291,7 +8351,22 @@ ogre.js - a living ogre (ยักษ์), for the Lanna cartoon kit: the ogres 
 
 ```
 ogreHead(j, kind, face, t): the head drawn over the person's, j what person() gave back.
+person() gives its joints in pixels of the sheet, PIX to a film pixel; the head is drawn in film pixels, so they are
+divided by PIX here (until 2026-11-11 they were not: on a film's page, at two pixels, the head was drawn at twice its
+place and size, off the body).
 ```
+
+### `ogreMeat(p, turn)`
+
+```
+ogreMeat(p, turn): a raw haunch of meat, the bone's end showing, held at p (a joint person() gave back, in pixels of
+the sheet, as wristA) and turned by turn radians: what the ghouls carry and eat. Returns nothing; it draws with pen.
+e.g. var j = ogre(600, GROUND, t, {kind: "ghoul", reachA: [660, GROUND - 330]}); ogreMeat(j.wristA, -0.6);
+```
+
+### `ogreDaughter(name, more)`
+
+(no comment)
 
 ### `ogre(x, y, t, look)`
 
@@ -9151,7 +9226,7 @@ e.g. bambooRat(700, GROUND, t, {size: 2, dig: 1});
 
 ## butterflies.js
 
-butterflies.js - four butterflies of the north, for films made with oldcartoon.js. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="butterflies.js"></script>  and call butterfly(kind, x, y, t, look) from a scene: (x, y) is the middle of its body, seen from above, its head toward "turn" (0 is up). Flying, its wings beat; resting on a flower (look.rest), they open and close slowly. The kinds are the keys of BUTTERFLIES: the golden birdwing (Troides aeacus) of Doi Suthep's forests, black forewings and gold hindwings, the largest of them and protected in Thailand; the leopard lacewing (Cethosia cyane), orange and black with a white band, common in Chiang Mai's gardens; the common bluebottle (Graphium sarpedon), black with a band of see-through blue-green, quick over the flowers; and the common grass yellow (Eurema hecabe), small and bright, everywhere in the grass. Drawn from what each is, in flat colour inside a fine dark line.  butterflyDrift(t, x, y, look) gives where a butterfly is at second t as it wanders: a course that dips and lifts with its wingbeats and turns as it goes.  var b = butterflyDrift(clock, 300, 500, {vx: 60, seed: 2}); butterfly("lacewing
+butterflies.js - four butterflies and four dragonflies of the north (dragonfly(), at its end), for films made with oldcartoon.js. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="butterflies.js"></script>  and call butterfly(kind, x, y, t, look) from a scene: (x, y) is the middle of its body, seen from above, its head toward "turn" (0 is up). Flying, its wings beat; resting on a flower (look.rest), they open and close slowly. The kinds are the keys of BUTTERFLIES: the golden birdwing (Troides aeacus) of Doi Suthep's forests, black forewings and gold hindwings, the largest of them and protected in Thailand; the leopard lacewing (Cethosia cyane), orange and black with a white band, common in Chiang Mai's gardens; the common bluebottle (Graphium sarpedon), black with a band of see-through blue-green, quick over the flowers; and the common grass yellow (Eurema hecabe), small and bright, everywhere in the grass. Drawn from what each is, in flat colour inside a fine dark line.  butterflyDrift(t, x, y, look) gives where a butterfly is at second t as it wanders: a course that dips and lifts with its wingbeats and turns as it goes.  var b = butterflyDrift(clock, 30
 
 ### `butterflyForePath(span, pointed)`
 
@@ -9237,9 +9312,38 @@ Returns {x, y, turn}: pixels of the sheet, and radians from up. Changes nothing.
 e.g. var b = butterflyDrift(clock, 300, 500, {vx: 60, seed: 2});
 ```
 
+### `dragonflyWing(k, long, chord, hind, alpha)`
+
+```
+One wing, from its root at (0, 0) out along +x: long and narrow, its trailing edge fuller near the body on a hind
+wing; the dark spot (pterostigma) near the tip; a stain over its inner half if the kind has one.
+```
+
+### `dragonfly(kind, x, y, t, look)`
+
+(no comment)
+
+### `dragonflySide(k, x, y, t, look)`
+
+```
+dragonfly()'s side view (look.side): k, its kind's colours; the rest as dragonfly(). Its thorax at (x, y), its head
+at +10 the way it faces, its tail's claspers at -19.
+```
+
+### `dragonflyDart(t, box, look)`
+
+```
+Where a dragonfly is at second t as it hunts over a patch of water or grass: it hangs in the air at a spot, bobbing
+a little, then darts in a quarter of a second to another spot in the box, and hangs there; it faces where it darted.
+  box    [x0, y0, x1, y1] in pixels of the sheet, where its spots are
+  look   {seed (which spots and when), hold (seconds it hangs, 1.4 on average)}
+Returns {x, y, turn}: pixels of the sheet, and radians from up. Changes nothing.
+e.g. var d = dragonflyDart(clock, [300, 600, 700, 760], {seed: 3});
+```
+
 ## himmaphan.js
 
-himmaphan.js - beings of the Himmaphan, the mythic forest above the world in Thai art, flying, for the Lanna cartoon kit: the thewada (an angel), the kinnari (half woman, half bird) and the hong (the golden swan) on the wing. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="himmaphan.js"></script>  thewada(x, y, t, look)     an angel flying as the murals paint them: one knee forward, the other leg swept up behind, the sole to the sky; a lotus held up, the other hand before the chest kinnari(x, y, t, look)     a kinnari in flight: a woman crowned to the waist, a bird below, her wings spread hongFlight(x, y, t, look)  the hong on the wing, its neck long, its tail a flame of plumes  (x, y) is the middle of the figure; each flies to the right (look.face -1 to the left); t is the second; look.size, 1 being about 220 from crown to the lowest point; look.seed sets each one's own time, so a flight of them do not move as one; look.scarves (the thewada's and the kinnari's): two long scarves streaming behind; look.gift: what the thewada holds up, "lotus" (the default) or "garland"; look.light (0 to 1, 0.6 unless told): the low sun on them, gilding their edges; look.s
+himmaphan.js - beings of the Himmaphan, the mythic forest above the world in Thai art, flying, for the Lanna cartoon kit: the thewada (an angel), the kinnari (half woman, half bird) and the hong (the golden swan) on the wing. Load it after the kit:  <script src="oldcartoon.js"></script> <script src="himmaphan.js"></script>  thewada(x, y, t, look)     an angel flying as the murals paint them: one knee forward, the other leg swept up behind, the sole to the sky; a lotus held up, the other hand before the chest kinnari(x, y, t, look)     a kinnari in flight: a woman crowned to the waist, a bird below, her wings spread hongFlight(x, y, t, look)  the hong on the wing, its neck long, its tail a flame of plumes hongHin(x, y, t, look)     the stone swan of the tale of Hong Hin, plates of gold stone, a saddle cloth and reins, a rider's seat (hongHinReins() the reins); indra(x, y, t, look) Indra, green, flying, standing or on his throne; spireCrown(j) a gold spire crown on anyone's head  (x, y) is the middle of the figure; each flies to the right (look.face -1 to the left); t is the second; look.size, 1 being about 220 from crown to the lowest point; look.seed sets each one's own time, so a 
 
 ### `himmaFill(fill, line, width)`
 
@@ -9433,6 +9537,45 @@ each: a smooth band, gold deepening down to the breast, its fine feathers in tic
 spine: [[x, y], ...], at least six joints, drawn pixels (hongFlight()'s, turned and lifted); light: 0 to 1.
 Returns nothing: it draws with pen.
 e.g. hongNeck(spine, 0.6);
+```
+
+### `hongHin(x, y, t, look)`
+
+```
+hongHin(x, y, t, look): the stone swan flying, about the middle of its body, to the right (look.face -1 to the left);
+look: the hong's keys (HIMMA_KEYS), size 2.25 unless told (a boy of size 0.7 sits on it). It flies level (the rider
+keeps his seat) unless look.level is false. Returns {seat, behind, beak}, points of the scene: where the rider sits
+(person(..., {floor: "astride"})), where one more sits behind him (the grandmother, on the way home), and the beak,
+where the reins end (hongHinReins()).
+e.g. var h = hongHin(900, 500, t, {});
+     var j = person(h.seat[0], h.seat[1], cast("boy", {floor: "astride", reachA: [h.seat[0] + 58, h.seat[1] - 62]}));
+     hongHinReins(h, [h.seat[0] + 58, h.seat[1] - 62]);
+```
+
+### `hongHinReins(h, hands)`
+
+```
+hongHinReins(h, hands): the red reins from the rider's hands (a point of the scene: where the scene sent his hands,
+or a joint person() gave back divided by PIX) to the beak; h is what hongHin() gave back. Draw it after the rider.
+```
+
+### `spireCrown(j, tall)`
+
+```
+spireCrown(j, tall): a gold spire crown (ชฎา) on a person's head, from the joints person() gave back: a band over the
+brow with a red stone, six tiers, each narrower, to a point. tall: its height in heads (1.1 unless told). Returns
+nothing; it draws with pen. A head under it is best drawn with hidden: ["hair"].
+e.g. spireCrown(person(900, GROUND, {regalia: true, hidden: ["hair"]}), 1.2);
+```
+
+### `indra(x, y, t, look)`
+
+```
+indra(x, y, t, look): Indra. look.pose: "fly" (the default: (x, y) the middle of the figure, as thewada()), "stand"
+((x, y) the ground under him; a halo) or "throne" ((x, y) the ground under his stone throne, he sits cross-legged on
+it); size (1.6 flying, 1.5 standing, 1.35 seated, unless told), face, seed; at, feel, id and sarong as person()'s.
+Returns person()'s joints when he stands or sits, else nothing.
+e.g. indra(960, GROUND, t, {pose: "throne", at: [600, 700]});
 ```
 
 ## paperdoll.js
@@ -10238,6 +10381,1496 @@ in at the foot of the frame, when the end's middle reaches the frame's middle an
 go (over 0.8 s), for the thanks; figures: the film's bowing figures for its "pair" rows (creditBow()), or left out.
 Gives back nothing: it writes with pen. e.g. creditRoll(t, rows, [3, 174], 177.5, figures);
 ```
+
+## honghin.js
+
+honghin.js - the things and places of the tale of Hong Hin, the stone swan (หงส์หิน), for the Lanna cartoon kit, as mangrai.js and chiangsaen.js hold their tales'. Load it after the kit, pieces.js (vimanaHall draws the palace hall), and, for vimanaLotus's princess, people.js:  <script src="oldcartoon.js"></script> <script src="pieces.js"></script> <script src="honghin.js"></script>  The beings of the tale are in the kit's own files (2026-11-11): the stone swan and Indra in himmaphan.js (hongHin, indra), the ghouls, the giantess and the giants' daughters in ogre.js, the Hemmarat in myth.js. Here, each the owner's pick of two or three candidates (2026-11-11; sheet honghin.html): sugarPalm(x, base, t, look)    the old sugar palm at Varanasi's south gate, the giantess's home: dead fans hanging under its head, a hollow at its foot, shaded, and bones before it swanLog(x, base, t)            the stone swan folded and hidden: a log under creepers, the red saddle cloth showing sabaBean(x, y), redSeed(x, y), seedPouch(x, base) the six brothers' gold saba pieces (the beans of the saba vine, in gold), the red seeds with a black eye (มะกล่ำตาแดง) the prince wins with, and his mother's pouch pup
+
+### `hhInk(fill, ink, w)`
+
+```
+---------- small helpers ----------
+```
+
+### `hhRandom(seed)`
+
+```
+a repeatable random: the same moss and spots every frame
+```
+
+### `hhOver(draw, over)`
+
+```
+draw() on the sheet, then over(ctx) on what it drew only, then onto the film
+```
+
+### `hhGold(x0, y0, x1, y1)`
+
+```
+---------- gold, white, light from the upper left ----------
+```
+
+### `hhWhite(x0, x1)`
+
+(no comment)
+
+### `kranokFlame(x, y, h, lean, fill)`
+
+```
+A kranok flame (the curling flame of Thai ornament), rising from (x, y), h tall, leaning lean; filled with fill.
+```
+
+### `redentBox(x, w, y0, y1, fill, ink, step)`
+
+```
+A redented box (ย่อมุม): the corners stepped in twice, from (x - w, y0) to (x + w, y1), filled.
+```
+
+### `flameArch(x, y, w, h, dark)`
+
+```
+An arched niche or door with its flame-edged gold frame (ซุ้มโขง): its foot's middle at (x, y), w wide, h tall.
+```
+
+### `ringSpire(x, y, w, h)`
+
+```
+A spire of rings (ปล้องไฉน) on a lotus bell, from (x, y) up h, its width w at the foot, a little umbrella near the top.
+```
+
+### `goldTiers(x, y, w0, w1, n, th, gold)`
+
+```
+The stepped gold roof: n tiers from width w0 to w1, each th tall, from y up; small arched niches on each tier's front,
+a flame at each tier's corners. Returns the top's y.
+```
+
+### `thaiCloud(x, y, w, t, seed)`
+
+```
+Thai painting's cloud: round lobes heaped in rows into one billow, white lit from above, blue in its underside,
+the lobes' upper edges inked, a gold line on the lit side, and a scroll curling at each end.
+```
+
+### `streamer(x, y, long, wide, colour, t, dir, phase)`
+
+```
+A streamer (a tung's tail or a ribbon) from (x, y), long, rippling in the wind behind (to the left: dir -1).
+```
+
+### `chatra(x, y, h)`
+
+```
+A tiered parasol (ฉัตร) on its pole, its foot at (x, y), h tall.
+```
+
+### `vimanaPrasat(x, base, s, t)`
+
+```
+---------- A: the white prasat ----------
+```
+
+### `vimanaHall(x, base, s, t)`
+
+```
+---------- B: a palace hall with a spire ----------
+```
+
+### `vimanaLotus(x, base, s, t, who)`
+
+```
+---------- C: an open gold pavilion on a lotus ----------
+```
+
+### `baiSri(x, base, s, t)`
+
+```
+---------- the bai si in detail ----------
+A bai si su khwan: a gold footed bowl (khan); on it a cone of banana leaves folded into points (nom maeo), tier on
+tier, a band of jasmine and marigold between the tiers, a cone of flowers at the top with a candle, white threads
+(sai sin) hanging from the top in loops; round its foot the offerings: a hand of bananas, a boiled egg, sticky rice
+in a banana-leaf parcel, a cup of water.
+```
+
+### `redSeed(x, y)`
+
+```
+a red seed with its black eye (มะกล่ำตาแดง, Abrus)
+```
+
+### `crossbow(x, y)`
+
+```
+crossbow(x, y): a crossbow (หน้าไม้), its stock's middle at (x, y), tipped up a little, a bolt on it, about 260 long.
+```
+
+### `musket(x, y)`
+
+```
+musket(x, y): a matchlock musket (ปืนคาบศิลา), its middle at (x, y), tipped up a little, about 320 long.
+```
+
+### `fetters(x, y)`
+
+```
+fetters(x, y): iron fetters, two rings and a chain between, their middle at (x, y), about 190 wide.
+```
+
+### `conch(x, y, s)`
+
+```
+a conch for pouring water, a gold cap and a gold stand
+```
+
+### `sugarPalm(x, base, t, look)`
+
+```
+---------- the sugar palm at the south gate ----------
+sugarPalm(x, base, t, look): a sugar palm (Borassus, ตาล), the old one at Varanasi's south gate under which the giantess
+lives: a straight grey trunk ringed with leaf scars, dead fans hanging brown under a round head of green fans, dark
+fruit; at its foot a hollow, dark inside, its rim lit on the left and shadowed under, its mouth worn; bones before it.
+(x, base): the trunk's foot; look: tall (600), lean (-30), dry (true), hollow (true). The owner's pick (C), "but give
+the hollow some shading so it's more clear what it is".
+e.g. sugarPalm(1500, GROUND, t, {});
+```
+
+### `swanLog(x, base, t)`
+
+```
+---------- the swan hidden ----------
+swanLog(x, base, t): the stone swan folded to look like a log (ซ่อนไว้เหมือนขอน) in the thicket by the orchard: a log
+lying, its bark in lines and its cut end ringed, moss on it, creepers over it, and the red saddle cloth with its gold
+border showing through. (x, base): its middle, on the ground; about 500 long. The owner's pick (C).
+```
+
+### `sabaBean(x, y)`
+
+```
+---------- saba ----------
+sabaBean(x, y): one of the six brothers' gold saba pieces, the bean of the saba vine cast in gold, lying at (x, y) (its
+foot); about 52 wide. redSeed(x, y): a red seed with its black eye (มะกล่ำตาแดง, Abrus), the prince's pieces, at its
+middle; seedPouch(x, base): his mother's pouch of them, its foot at (x, base). The owner's picks (B, the beans).
+```
+
+### `seedPouch(x, base)`
+
+(no comment)
+
+### `puppy(x, y, t, look)`
+
+```
+---------- the puppy ----------
+puppy(x, y, t, look): the spotted puppy the six wives put in the baby's place: the kit's dog() at three quarters its
+size, tan with dark patches (the owner's pick, B). (x, y): where its feet stand; look: as dog()'s how ({feel}).
+```
+
+### `kanchai(x, y, look)`
+
+```
+---------- Kanchai ----------
+kanchai(x, y, look): Indra's sword Kanchai, point up, the pommel's foot at (x, y): a flame-edged blade with a glow along
+it, a gold guard and hilt with a red stone, about 490 long at size 1. look: size (1), angle (radians, 0 upright),
+glow (0 to 1; 1). The owner's pick (C). For a hand, put (x, y) at the wrist, divided by PIX.
+```
+
+### `vimana(x, base, t, look)`
+
+(no comment)
+
+## people.js
+
+people.js - the twenty painted people, drawn by person() and named in cast(), and the generator that mixes new women. The owner, 2026-11-01: "Some new sprites were created. I want them moved to the old model system and to get rid of the new system", then of what to keep: the figure itself, its faces, hair and hands, and "a system that could generate these kind of women figures". A look with `woman`, `man` or `child` is painted by the painters below (load this file last, after oldcartoon.js, weaving.js and, for a worn cloth, sabai.js and sabai_finish.js); any other look is person()'s own, so both can share a scene. person() works out the arms: handA, handB, reachA and reachB go through its rig on a sheet nobody sees, and the painted arm takes the place the rig gives. A walk (step, stride, so stroll()), a wai, a seat (floor) and a look (at) are taken by the figure; face -1 mirrors it. It is always drawn in three-quarter view: turn, twist, the hop and a lean (bend) are not read. Returns joints as person() does, where the painted figure has them. e.g. person(700, GROUND, cast("naildancer", {size: 1.4})); var w = stroll(t, 200, 1500, 0, cast("princess")); person(w.x, GROUND, w.look); pe
+
+### `MPath()`
+
+```
+---------- paths that remember their points ----------
+```
+
+### `muColour(c)`
+
+```
+---------- colour ----------
+the mural's muted pigment: toward a warm grey of the same lightness
+```
+
+### `muHex(r, g, b)`
+
+(no comment)
+
+### `muPattern(scale)`
+
+```
+the grain, turned off the square and scaled, so it shows no tiles
+```
+
+### `muInk(c)`
+
+(no comment)
+
+### `muShade(c)`
+
+(no comment)
+
+### `muGrain()`
+
+(no comment)
+
+### `mFill(rec, colour, round)`
+
+```
+---------- paint and line ----------
+Paint a shape: its colour, the mottle, and the soft darker band inside its edge (deeper on the side away from the
+light, below and to the right). round: how wide that band is, in units (0 for none).
+```
+
+### `mBrush(rec, colour, weight)`
+
+```
+Ink a path with the brush: each outline a ribbon, fuller on the side away from the light and wavering a little; an
+open line tapering to its ends. weight: pixels at its fullest (default MU.line).
+```
+
+### `mShape(rec, colour, round, weight)`
+
+(no comment)
+
+### `mLine(rec, colour, weight)`
+
+(no comment)
+
+### `muBent(A, J, B)`
+
+```
+---------- tubes, limbs ----------
+```
+
+### `muTube(at, wide, from, to)`
+
+(no comment)
+
+### `muEase(a, b, u)`
+
+(no comment)
+
+### `muBump(t, at, spread)`
+
+(no comment)
+
+### `muLimbWide(w, bellies)`
+
+(no comment)
+
+### `muHand(x, y, angle, back, bend, skin, lady)`
+
+```
+a hand from the thumb's edge, its long fingers bending back from the knuckles, each nail a pale crescent
+```
+
+### `muFoot(x, y, long, skin)`
+
+```
+a bare foot, three-quarter, toes to the right, heel at (x, y)
+```
+
+### `muHead(look, lady, skin)`
+
+```
+---------- the head ----------
+three-quarter to the right, chin at (0, 0), crown at (0, -100)
+```
+
+### `muLipsPainted(lady, skin, at, paint, f)`
+
+```
+A lady's in the painting's colours, multiplied over the skin as they darkened its white skin: the upper lip rose,
+the lower pale with a darker rim, the seam and the corners' ticks dark. A man's in his own muted lip colours.
+With a feeling (f: muFeelOf()'s numbers, or nothing) the painting's lips move: their corners up in a smile and down
+in sadness, anger and worry; pressed thin in anger and worry; open as the kit's feeling opens a mouth (f.open: how far,
+how wide, how round), the lower lip dropping in the middle while the corners stay, the mouth dark between them.
+```
+
+### `muLipRounder(P, round)`
+
+```
+The lower lip rounder at the bottom (owner, 2026-10-30: "a little rounder at the bottom instead of the v shape"): its
+lower edge's depth below the line from corner to corner, which the painting draws as a V to its deepest point, drawn
+toward a U, deepest - deepest * u * u (u 0 at the deepest point, 1 at each corner), by "round" (0 to 1); the darker
+rim inside the edge goes down with it. P: LIPS_LANNA or its like. Returns a new P; the corners stay where they were.
+e.g. muLipRounder(LIPS_LANNA, 0.8)
+```
+
+### `muEarPainted(skin, back)`
+
+```
+The painting's ear, moved back (to the left) by "back" units: the painting's head is shallower behind the ear than
+this one, so the ear sits as far back on this head as the owner wants. Returns where its lobe is.
+```
+
+### `muInkLine(pts, rgb)`
+
+(no comment)
+
+### `muRgb(c)`
+
+(no comment)
+
+### `muGlow(x, y, rx, ry, rgb, alpha, turn)`
+
+```
+a soft spot of colour, fading from its middle to its edge: rx, ry its radii
+```
+
+### `muNose(kind, skin, lady)`
+
+(no comment)
+
+### `muBun(x, y, r, hair, look)`
+
+(no comment)
+
+### `muHue(hex)`
+
+```
+[hue in degrees, saturation, lightness] of "#rrggbb", or null
+```
+
+### `muClothes(look)`
+
+```
+The colours of what a person wears, nearest the face first: her scarf, her sabai, her collar, the flower in her hair,
+her blouse, her skirt, her sin or sarong and their wider bands (3 or more: a fine stripe is not what the cloth looks
+like). look: the person's look. Returns a list of CSS colours. e.g. muClothes(cast("sinuan"))
+```
+
+### `muMakeup(look)`
+
+(no comment)
+
+### `muLipTones(c)`
+
+```
+the lipstick's five tones as the painting's lips have them: the upper lip its colour, the lower paler, the rim
+between, the seam and the corners' ticks darker (multiply: they darken the skin by as much as the paint did)
+```
+
+### `muFeelOf(look)`
+
+```
+The creases a feeling makes, and the face's fall with age, inside the face (the kit's feelingOf() and ageFall(), on
+this head). A feeling's creases only on an old face (owner, 2026-10-30: with lines "they just look old when they have
+emotions"), growing from age 0.3 to full at 0.8; a young face shows it by its brows, lids and mouth (muEye,
+muLipsPainted, muBrowTurn). On an old face:
+  the fold between the brows   worry, anger (as frownFold()), and anger's crease across the top of the nose
+  lines across the forehead    wonder, fear, awe: the whole brow; sadness and worry: short, over the inner brows
+  the smile's folds            from beside the nose round the corners of the mouth, a crease under the near eye,
+                               a dimple at the corner; laughing, crow's feet too
+  sadness                      the corners pulled down, the chin pressed up under the lower lip
+Age (look.age, 0 to 1), MU.ageLines:
+  fall    the kit's Lanna face (ageFall()): a hollow temple, bags under the eyes, the fold from the nose a soft shade
+          with a fine line, jowls, two faint lines across the brow, crow's feet
+  lines   fall, and firmer: three lines across the brow, lines from the corners of the mouth down to the jaw, a crease
+          under the lower lip, the fold between the brows
+look: the person's look; f: muFeelOf()'s numbers.
+A feeling as the kit gives it (feelingOf(): by name, look.feel, or by its numbers), with only the feeling's own smile
+(a cast member's resting smile is no feeling here). Returns feelingOf()'s numbers.
+```
+
+### `muFaceLines(look, f)`
+
+(no comment)
+
+### `muBrowTurn(f, x, y, side)`
+
+```
+A brow lifted and turned with the feeling (MU.feelLines "brows"), about its middle (x, y): up in wonder, fear, awe
+and sadness; its inner end down in anger, up in sadness and worry. side: 1 the near brow (inner end to the right),
+-1 the far one (inner end to the left). Changes pen's transform: the caller saves and restores.
+```
+
+### `muCheeks(lady, paint, f)`
+
+```
+The cheeks and the temple, inside the face (MU.cheek):
+  now     a flat warm oval on the near cheek, a flat shade at the temple: both edges show
+  soft    the same places, each fading out from its middle: no edge anywhere
+  swept   a lady's rouge on the cheekbone, swept up and back toward the ear, a touch on the far cheek
+  dancer  swept, and a wash on the lids, deepest at the outer corner, as dancers paint them
+Its colours are muMakeup's. A man or a child keeps soft warmth whichever: no rouge.
+```
+
+### `muEye(c, long, way, lady, paint, f)`
+
+```
+The eye with a feeling (f: muFeelOf()'s numbers, or nothing): wide in wonder, fear and awe; the upper lid down in
+sleep, fullness and sadness, low and flat at the inner end in anger, at the outer end in sadness and worry; the
+lower lid up in a smile; shut and bowed up in a laugh; the look up in awe, down in sadness.
+```
+
+### `muFigures(kind, y, w, colour, x0, x1, sag)`
+
+```
+---------- cloth ----------
+The woven figures of a band, along a line at height y: small diamonds, a zigzag, a braid, roundels, dots.
+```
+
+### `muSin(top, hem, waistX, hipX, hemX, design)`
+
+```
+The pha sin: a straight tube from the waist to the ankle. Its own bands (SINS), and between them the fine stripes
+of the cloth in its body's own tones, every one bowed a little round the body, bent where the cloth folds; the
+folds' shadows; the woven figures; the foot band.
+```
+
+### `muArm(S, E, W, wide, sleeve, skin, look, outward, bend, lady)`
+
+```
+An arm: a sleeve to the wrist (creased at the elbow) or bare, bangles, the hand.
+```
+
+### `muRing(c, y0, r, drop)`
+
+(no comment)
+
+### `muRingArc(ring, from, to, n)`
+
+```
+the ring's front from one edge of the neck to the other (or back), n steps
+```
+
+### `muCollar3q(c, y0, r, wide, drop)`
+
+```
+A collar of gold round the neck, three-quarter: a band between the ring at the neck (inner) and a wider, lower one
+lying on the shoulders (outer), flames hanging from its outer edge, beads along it, a pendant at the front.
+```
+
+### `muOverShoulder(a, b, c, d, colour, luxe)`
+
+```
+The part of a sabai (or a man's sash) that goes over the shoulder: from the band's end on the chest (a, b: its upper
+and lower corners) up over the shoulder's top and down the back to where it hangs (c: the back's outer edge, d: where
+the fold across the upper arm meets it), drawn over the arm; the gold borders run on round it.
+```
+
+### `muWeaveOf(look)`
+
+(no comment)
+
+### `muStrip(spec)`
+
+```
+the strip's middle line: [x, y, tangent x, tangent y] a distance along it, its length, where the chest part ends, and "crown",
+where it turns over the shoulder's top to go down behind
+```
+
+### `muSabaiWoven(spec, part, look)`
+
+(no comment)
+
+### `muUnderJaw(rec, chinY, skin)`
+
+```
+---------- the figure ----------
+The shadow the jaw throws on the neck: dark under the chin, fading down, inside the neck's (or the body's) shape.
+```
+
+### `muLower(A)`
+
+(no comment)
+
+### `muUpper(A, B, Y0)`
+
+(no comment)
+
+### `muManLegs()`
+
+```
+A man's two legs now, each [hip x, y, knee x, y, ankle x, y]: standing, or in the walk of mural_women.js (wmWalk): each foot goes
+40 before and behind him, lifted as it comes through, the knee ahead of it. Returns the list.
+e.g. muManLegs()[0][4];   // 36 at rest
+```
+
+### `muralPerson(x, y, look, opts)`
+
+(no comment)
+
+### `muWall(x, y, w, h)`
+
+```
+A plaster wall, as the mural is painted on: a warm ground, mottled, a few hairline cracks.
+```
+
+### `muJewels(look)`
+
+```
+The jewellery that goes with what a person wears:
+  metal   gold with finery: a dancer's, a celestial's, regalia, or clothes with gold in them (a gold border, a gold
+          sin); silver, the north's own silverwork, with everyday clothes, plain or dark or indigo
+  stones  the first stone the stone nearest the colour of her clothes (the first strong colour, nearest the face
+          first: muClothes); the second its partner: turquoise with coral, brick and orange, emerald with the other
+          reds and pinks, ruby with blue, indigo, green and purple; ruby and emerald with clothes of no colour
+look.jewels ("gold" or "silver") and look.stones (two CSS colours) choose instead.
+look: the person's look. Returns {metal: "gold" or "silver", stones: [colour, colour]}.
+e.g. muJewels(cast("sinuan"))   // {metal: "silver", stones: [carnelian, turquoise]}
+```
+
+### `muDress(look)`
+
+```
+Put on a person's jewellery (muJewels) before she is drawn: muralPerson() does; a page drawing a head alone
+(muHead) does it first. look: the person's look. Returns what muJewels gave. e.g. muDress(cast("buakham"))
+```
+
+### `muInGold(draw)`
+
+```
+draw() with gold for the metal, whatever the person wears: the gold thread of a cloth
+```
+
+### `muGold(rec, deep)`
+
+```
+---------- the metal ----------
+Metal reads as metal by its light: pale where it faces the light, deep (amber in gold) where it turns away, a fine
+dark line. In the metal being worn (MU_METAL).
+```
+
+### `muBead(x, y, r)`
+
+```
+a bead of the metal: its light a point near the top
+```
+
+### `muJewel(x, y, r, colour)`
+
+```
+a jewel: a deep colour with a spark
+```
+
+### `muBeads(at, step, r)`
+
+```
+beads along a curve: at(t) for t 0 to 1, every "step" units
+```
+
+### `muCurve(a, c1, c2, b)`
+
+(no comment)
+
+### `muFlame(x, y, h, w, way, turn)`
+
+```
+the flame of a kranok: a point that rises from a base and curls over at its tip; way 1 curls right, -1 left
+```
+
+### `muGoldFlower(x, y, r, jewel)`
+
+```
+a small gold flower: petals round a jewel
+```
+
+### `muBunGold(x, y, r, swayAt)`
+
+```
+---------- jewellery ----------
+The bun dressed: a ring of gold flowers round its front, a pin, and strands of gold beads hanging from it, swaying.
+```
+
+### `muEarring(x, y)`
+
+```
+a drop earring: the stud, three beads, a jewelled drop with a kranok point under it
+```
+
+### `muCollar(cx, cy, half, drop)`
+
+```
+a collar of gold in tiers, round the base of the neck, with points hanging from it and a pendant
+```
+
+### `muArmlet(at, t, wide)`
+
+```
+an armlet round the upper arm: a band of gold with a flame rising from it; at(t) the arm's middle line, wide its
+half-width there
+```
+
+### `muBelt(y, x0, x1, buckleX)`
+
+```
+the belt: a band of gold plates round the waist and its buckle, a jewelled lozenge edged with flames
+```
+
+### `muBangles(at, from, n, wide)`
+
+```
+bangles: gold rings at the wrist, each with its light
+```
+
+### `muSilk(rec, colour, pleats, lights)`
+
+```
+---------- silk ----------
+Silk's sheen: soft long lights where the cloth turns to the light, and the fine pleats of a draped cloth, inside a
+shape. lines: [[x0, y0, x1, y1] ...] the pleats; lights: the same, for the sheen.
+```
+
+### `muBrocade(at, wide, colour)`
+
+```
+a brocade border along a curve: a band of gold thread with small lozenges in the cloth's colour
+```
+
+### `muBrocadeGold(at, wide, colour)`
+
+(no comment)
+
+### `muTassels(at, step, long)`
+
+```
+gold tassels hanging from an edge, every "step" along at(t)
+```
+
+### `muTasselsGold(at, step, long)`
+
+(no comment)
+
+### `muTinJok(y0, y1, x0, x1, ground)`
+
+```
+The tin jok, the woven foot of a sin: a broad band of gold thread holding rows of lozenges and hooks in red, green
+and the cloth's dark, between borders of small teeth.
+```
+
+### `muTinJokGold(y0, y1, x0, x1, ground)`
+
+(no comment)
+
+### `muSinFigure(rec, colour, y0, y1, x0, x1)`
+
+```
+the woven figure over the body of a sin: a lattice of small diamonds in a paler and a deeper tone of its colour
+```
+
+### `thGround(x, y, w, h)`
+
+```
+A thangka's ground behind a figure: a sky of azurite, deep at the top and paling to the horizon, over green hills,
+with the cloth's faint grain.
+```
+
+### `muBox(rec)`
+
+```
+the box round a path's points: [x0, y0, x1, y1]
+```
+
+### `muIsSkin(c)`
+
+(no comment)
+
+### `thGoldWork(rec, step, kind)`
+
+```
+---------- gold line work on silk ----------
+Small flowers and cloud scrolls in gold, scattered over a cloth in a staggered lattice; step: units apart.
+```
+
+### `thFolds(rec, colour, folds)`
+
+```
+Shade a cloth in bands along its folds: each fold a line from a to b, darkest on it and fading either side, and a
+paler ridge beside it, as the thangka shades silk.
+```
+
+### `thScarf(at, wide, outside, lining, turns, phase)`
+
+```
+---------- the scarf ----------
+A long scarf of two colours along a curve: it twists as it goes ("turns" half-turns), and where its face turns away
+the lining shows; the two faces meet at a point in each twist. at(t) its middle line, wide its half-width.
+```
+
+### `thLongChain(l, r, low, out)`
+
+```
+---------- jewels ----------
+A long chain from both sides of the neck down to a pendant at the breast, and on to the waist. out (optional): how
+far each strand first runs out along the shoulder before it falls, [left, right] (a bare neck: it rests on its foot).
+```
+
+### `thSwags(y, x0, x1, n, sag)`
+
+```
+Swags of jewel strings across the hips from the belt, each with a drop at its lowest point.
+```
+
+### `thAnklet(x, y)`
+
+```
+gold rings and beads round an ankle
+```
+
+### `wmTexture(name, colours)`
+
+(no comment)
+
+### `wmSlice(tex, sy, sh, o, u, v)`
+
+```
+one slice of the sheet, rows sy to sy + sh, laid on the parallelogram from o along u (across) and v (down the sheet)
+```
+
+### `wmClothLight(rec, shadeAt, sheenAt, half)`
+
+```
+light on a woven cloth: a soft shade along its lower part, a sheen along its upper, the grain of the paint over all
+```
+
+### `wmElbow(S, W, toward)`
+
+```
+---------- arms in a pose ----------
+the elbow of a two-bone arm from shoulder S to wrist W, on the side nearer "toward" (a direction)
+```
+
+### `wmWaiOf(look)`
+
+```
+how far into the wai, eased: 0 none, 1 the hands together
+```
+
+### `wmWaiArm(S, E, W, p, side, lady, e)`
+
+```
+her arm's pose on the way into the wai, e of the way there
+```
+
+### `wmHandWai(x, y, angle, skin, lady, long)`
+
+(no comment)
+
+### `wmHandNormal(x, y, angle, back, bend, skin, lady)`
+
+```
+---------- ordinary hands ----------
+The owner (2026-10-30, of the men and children): "Change the hands to be like normal hands", then of the women who do
+not dance, "Yes, normal". mural.js draws every hand as a Thai dancer holds hers: fingers 36 to 48 long on a palm of
+35, slender, sweeping back from the knuckles. wm.hands "normal": fingers 0.62 as long (a little shorter than the palm,
+as a real hand's are), thicker, the palm broader; each finger an arc turning toward the palm and the thumb, a little
+at rest and round in a grip (bend 0 to 1: at rest to a fist). Drawn in mural.js's way: one shape in one line, a fine
+line between the fingers, the thumb over the palm. Arguments as muHand's.
+```
+
+### `wmNails(x, y, angle, back, bend)`
+
+```
+the long curved brass nails of the fingernail dance (leb fon), on the four fingers, as muHand lays them
+```
+
+### `wmNail(tip, dx, dy, i)`
+
+```
+one brass nail of finger i, from its tip on the way (dx, dy) the finger points
+```
+
+### `wmScarf()`
+
+```
+---------- the long cloth over the arms ----------
+```
+
+### `wmOrchid(x, y, s, way)`
+
+(no comment)
+
+### `wmBud(x, y, a)`
+
+(no comment)
+
+### `wmBloom(x, y, r, colour)`
+
+(no comment)
+
+### `wmPearl(x, y, r)`
+
+(no comment)
+
+### `wmJokSheet(town, palette, w)`
+
+(no comment)
+
+### `wmPole(from, to)`
+
+```
+the pole from "from" to "to": a cane of even width, lit along its top, three nodes
+```
+
+### `wmPot(P, way)`
+
+```
+a pot hung from the pole's end P: way 1 before her, -1 behind
+```
+
+### `wmHolds(look)`
+
+```
+---------- what she holds, over everything ----------
+lotus, garland, khan: a bowl of flowers (the near hand); cloth: a length of her own weaving hung from
+both hands (wm.cloth, a SABAI_WEAVES name); parasol: a Bo Sang paper parasol over her shoulder (wm.parasol colours);
+fan: a red lacquer fan with gold; lantern: a paper lantern (khom) hung from a stick, lit; pots: a carrying pole and
+water pots (above)
+```
+
+### `wmKhan(c)`
+
+```
+khan dok: a footed bowl of her metal, heaped with marigolds, jasmine and a rose, two candles, on her palm at c
+```
+
+### `wmCloth(nw, fw, name)`
+
+```
+a length of her weaving held up between her hands, its woven end down, hanging in folds, its fringe
+```
+
+### `wmParasol(w, c)`
+
+```
+a Bo Sang paper parasol: its shaft from her hand, its canopy tipped back over her shoulder, ribs and painted flowers.
+Behind her: wmWoman draws it before her body, at the wrist her pose gives, and her hand closes over the shaft.
+```
+
+### `wmFan(w)`
+
+```
+a fan of red lacquer, gold round its edge and a gold flower in its middle, held up before her
+```
+
+### `wmLantern(w)`
+
+```
+a khom: a paper lantern hung from a bamboo stick, lit inside; its ribs, its caps, its paper fringe swinging
+```
+
+### `wmCrown()`
+
+```
+---------- the crown of a celestial (the murals' heaven, not the court) ----------
+```
+
+### `wmAlive()`
+
+```
+alive (her settings): how much, 0 to 1; her blink now, 0 open to 1 shut (one of 0.18 s every 4.6 s, in her own time);
+her head's drift now, radians about a point a little above her chin (two slow waves, at most 0.031)
+```
+
+### `wmBlink()`
+
+(no comment)
+
+### `wmDrift()`
+
+(no comment)
+
+### `wmFaceHead(look, lady, skin)`
+
+(no comment)
+
+### `wmFront()`
+
+(no comment)
+
+### `wmToward(pts, front, e)`
+
+```
+a closed path of one piece in three-quarter (pts) on the way to straight on (front(p, i): where point i goes), e of the way
+```
+
+### `wmJawFront(W, chin)`
+
+```
+the traced jaw at this width and chin, sampled evenly along its length
+```
+
+### `wmFaceFront(p, J)`
+
+```
+the face's outline straight on: the point of the three-quarter outline (about its own middle) at the same turn on it.
+Her own jaw (J: wm.face.jaw) goes on both sides alike: her cheek fuller or leaner, her chin longer or shorter
+```
+
+### `wmHairFront(p)`
+
+```
+the hair's mass straight on: over the crown and down both sides to the ears
+```
+
+### `wmEdgeFront(fh)`
+
+```
+the hair over the brow straight on, point for point as the three-quarter edge is drawn (45 points: its line over the
+brow from the near temple, its outer edge back over the crown, and the short way down and back at the near temple).
+Its line comes down over both temples alike to the tops of her ears (WM_FRONT_HEAD.brow: [half its width there, how
+low, its middle]), so the hair frames her face as an oval, as the references the owner sent have it
+```
+
+### `wmCheeksFront(lady, paint, f)`
+
+```
+the colour of her cheeks straight on: the near cheek's, either side
+```
+
+### `wmNoseFront(skin)`
+
+```
+The nose straight on, after the same painting: no line down the bridge but a soft shade down either side of it and
+light down its middle; a round lit tip with a soft shadow under it; each wing a round, drawn by a line that comes
+round its side and runs level under the nostril; the nostrils two dark slots, long, thin and nearly level
+(WM_FRONT_HEAD.nose: how high its tip is)
+```
+
+### `wmLipsFront()`
+
+```
+The lips straight on, after the same painting, shaped as LIPS_LANNA is so that muLipsPainted paints them, smiles them
+and opens them: wider than the three-quarter mouth slid to the middle had been, the upper lip a bow with its two peaks
+either side of the middle, the lower fuller (WM_FRONT_HEAD.mouth: where the seam is, half its width, how high the upper
+lip is and how deep the lower)
+```
+
+### `wmFaceLine(k, cw, co, ch, fw)`
+
+```
+the head's own lines, built for her jaw (cw, co, ch, fw) and k (MU.tara)
+```
+
+### `wmMoved(from, to, wide, e, draw)`
+
+```
+draw(), moved as a feature at "from" goes to "to" straight on, its width times "wide" there, e of the way
+```
+
+### `wmHead(look, lady, skin, fc)`
+
+```
+muHead (mural.js), a lady's, with her own outline, hairline, brows and eyes; chin at (0, 0), crown at (0, -100)
+```
+
+### `wmEye(c, long, way, lady, paint, f, E)`
+
+```
+muEye (mural.js) with her own eye (E: wm.face.eyes): its tilt, its opening, its crease, where it looks, its wing
+```
+
+### `wmJon(hair)`
+
+```
+the lock before the ear: from the temple's hairline down over the ear's front, its end turned forward in a curl
+```
+
+### `wmWongLoop(K, hair)`
+
+(no comment)
+
+### `wmComb(K, kind)`
+
+```
+a comb set across the top of the knot: gold with stones, or ivory
+```
+
+### `wmTail(K, hair)`
+
+```
+from under the knot, straight down the back, its end swinging
+```
+
+### `wmIpun(hair)`
+
+```
+the raised frame over the brow, its light, its lines; the jewelled pin
+```
+
+### `wmLueWrap(c)`
+
+```
+the head-cloth: high and round, wound in folds, its striped edge, its end tucked
+```
+
+### `wmLightPhase(cx, cy)`
+
+(no comment)
+
+### `wmFlash(phase)`
+
+(no comment)
+
+### `wmStar(x, y, size, alpha, turn)`
+
+```
+a star of light: two thin rays and a glow, added to what is under it
+```
+
+### `wmWalk()`
+
+(no comment)
+
+### `wmSinSway()`
+
+```
+how far her sin leans now about her waist: its sway (swish), her walk
+```
+
+### `wmJokSin(n)`
+
+(no comment)
+
+### `wmWoman(x, y, look, wm, opts)`
+
+```
+one woman (muralPerson below, for a look with "woman"): her sway, her parasol behind her, mural.js's figure in her
+settings, then what she holds and her crown over everything. opts: as muralPerson takes them.
+```
+
+### `wmAdd(arr, item)`
+
+```
+---------- three more sin ----------
+The dancer's black with red, green and a gold braid; a gold sin with maroon and a maroon foot; maroon with green and a
+gold zigzag. Pushed onto the kit's SINS; WM_SIN names where each went. Then three woven from waist to foot (chevron,
+teal, namLai): the head and its band, then one broad band that her woven jok of the same name covers (wm.jok, taller 1).
+```
+
+### `wmAdd2(a, d)`
+
+(no comment)
+
+### `castWoman(name, more)`
+
+```
+The look of one of MURAL_WOMEN, as cast() gives the cast's: name, and more to change or add to it.
+e.g. person(700, GROUND, castWoman("weaver", {size: 1.5, id: "weaver"}))
+```
+
+### `mnFlatTop(hair)`
+
+```
+the mural's men (owner, 2026-11-05, of a Lanna procession in a temple painting, after five tries: wings, wings turned
+down, a flared cap, combed up, parted): hairdo "flattop", the sides shaven, a short flat top over them; where the hair
+comes out of the head a line, and from it along the side of the head (not over the forehead) short strokes up, about
+9 units ("make up lines that start from around the temple and go up maybe 10 pixels"; "along the sides and not along
+the forehead"). Drawn after the face and the brows, in place of "kae"'s knots.
+```
+
+### `mnHead(look, lady, skin, fc)`
+
+(no comment)
+
+### `mnTurban(colour, face, mass, edge)`
+
+```
+the head-cloth wound round below the knot, as mural.js draws it, its fringed ends at the back
+```
+
+### `mnJuk(hair, flowers, pin)`
+
+```
+a child's topknot on a shaven head: a small knot at the crown, tied, with a ring of jasmine buds round it
+```
+
+### `mnOutside(rec, draw)`
+
+```
+draw() with the pen kept outside "rec" (a path): what it draws shows only off it
+```
+
+### `mnCheck(shape, ground, line)`
+
+```
+---------- what a man carries ----------
+wm.holds for a man (MN_HOLDS), drawn as wmHolds draws a woman's, in his upper frame; "pole" hangs one basket behind
+him (mnBehind, before his body). wm.bag: the woven shoulder bag (thung yaam) across him, its strap over the far shoulder.
+the pha khao ma round his neck (wm.khaoma [ground, lines], owner, 2026-11-05, "Round the neck"): a check of lines
+every 9 and a fine white line every 27, slung round the neck below it, its two ends down his chest, a short fringe
+```
+
+### `mnKhaoMa(c)`
+
+(no comment)
+
+### `mnForearm(side)`
+
+```
+the forearm's way from its elbow to the wrist (side "near" or "far"), from the pose: a blade or a shaft goes on along it
+```
+
+### `mnBasket(P, way)`
+
+```
+a woven basket on three cords from the pole's end at P; way 1 before him, -1 behind
+```
+
+### `mnBag(c)`
+
+```
+the thung yaam: a woven cloth bag hanging at his near hip from a strap over the far shoulder, its fringe, its stripes
+```
+
+### `mnBehind(wm, x, y, px)`
+
+```
+before his body: the basket at the pole's far end, behind him
+```
+
+### `mnChild(x, y, look, opts, build)`
+
+(no comment)
+
+### `mnKae(hair)`
+
+```
+kae: a small round knot of hair at each side of the shaven head, tied with red
+```
+
+### `mnPlait(hair)`
+
+```
+pia: a plait from the topknot down the back of the head, tied with red at its end
+```
+
+### `mnPoy(c)`
+
+```
+the Poy Sang Long boy's headdress: a tall wrapped turban of bright silk, its end standing up and curling back, a gold
+band, flowers and gold flames on it
+```
+
+### `mnPrint(rec, t)`
+
+```
+small flowers over a shape in t[1], a row at a time, every other row shifted, each placed by a hash (the same each frame)
+```
+
+### `castMan(name, more)`
+
+```
+The look of one of MURAL_MEN or MURAL_CHILDREN, as cast() gives the cast's: name, and more to change or add to it.
+A child keeps the cast's own size for a child (a boy 0.8, where a man is 1.3): more.size changes it.
+e.g. person(700, GROUND, castMan("elder", {size: 1.4})); person(820, GROUND, castChild("boy"))
+```
+
+### `castChild(name, more)`
+
+(no comment)
+
+### `mnSettings(look)`
+
+```
+the settings of a look's "man" or "child" (a name, or the settings themselves), as wmWoman takes them; a child's
+build -1 unless they say
+```
+
+### `sitWrist(P, x, yStand, px)`
+
+```
+a point P (film pixels) as her pose's wrist, in the frame mural_women.js poses in (her upper frame, standing at
+(x, y + drop)); the lady's shear muUpper(-0.028, 0.07, -430)
+```
+
+### `muralSeated(x, y, look, size, kind, reach)`
+
+(no comment)
+
+### `sitLower(look, kind)`
+
+```
+her seated legs in her sin, in her units, the seat's top or the floor at y 0, her waist at y -SIT_WAIST
+```
+
+### `sabaiOfMural(t, x, y, look)`
+
+```
+Where the cloth lies on a mural woman standing at (x, y): sabai.js's sabaiOf() on her own body, not the kit figure's
+joints. Over the shoulder on the right of the picture and across her to the left: from the right side of her neck's
+foot (her neck ring) down to her belt on the left, under her near arm, tucked in at the waist (owner, 2026-10-30: "the
+sabai should extend all the way across the sprites body"; 2026-10-31: "From her belt, up to the point where the sabai
+extends to the point of her torso should all be covered by the sabai"); past her side there it is cut along her
+torso's line (MS_TORSO), so her outline keeps its curve in the cloth's colour; its back hanging behind the shoulder
+past the hip. Her points are read in her own units as mural.js draws a lady: a unit is 59 * size / 100 pixels
+(person()'s head), her upper body sheared by muUpper(-0.028, 0.07, -430). The middle line is a quadratic in 97
+points, its heading the curve's own tangent (smooth, no facets up close).
+t: seconds (the back's edge waves with it); look: hers (its size). Returns what sabaiOf() returns, for sabai(),
+sabaiWorn() and sabaiCamera().
+e.g. var where = sabaiOfMural(t, 720, 1010, look);
+```
+
+### `msBack()`
+
+```
+the cloth's back, once
+```
+
+### `msForearm(seen, base)`
+
+```
+The far arm drawn again from the elbow down: clipped to the side of the elbow's bisector that holds the wrist.
+```
+
+### `msWear()`
+
+```
+the cloth's front, once
+```
+
+### `msBelt()`
+
+```
+the belt that waited for the cloth, where it was to be drawn
+```
+
+### `peopleYoung(look)`
+
+(no comment)
+
+### `peopleSettings(look)`
+
+```
+A look's painted settings (a name of the twenty's, or the settings themselves; a young woman's of person()'s own:
+peopleYoung()), or null for one of person()'s own.
+e.g. peopleSettings(cast("princess")).neck;   // "sangwan"
+```
+
+### `peopleRig(x, y, look, way, lady)`
+
+```
+person()'s joints for this frame on a sheet nobody sees, for the arms asked of it. Returns the joints; pen as it was.
+```
+
+### `peopleSeat(x, y, look, lady)`
+
+```
+person()'s joints for a seat on a sheet nobody sees: the same seat (floor), wai, facing, lean and reaches as the look's,
+on a plain figure. Returns the joints; pen as it was. e.g. peopleSeat(400, 960, cast("maiden", {floor: true, wai: true}), true).wristA
+```
+
+### `peopleMoves(x, y, look, lady)`
+
+(no comment)
+
+### `peopleChild(p, c, forward)`
+
+```
+The figure's measure of a child: the point of the upper body (the units of the shear's frame) where a grown figure has it,
+to where it is drawn (forward true), or back. c: the settings' child, a negative number, or 0 for anyone grown.
+```
+
+### `peopleFormed(form, x, draw)`
+
+```
+draw() with a grown painted woman's form: her body widened about x, her head grown (wmHead reads PEOPLE_GROW).
+```
+
+### `peoplePainted(x, y, look, wm)`
+
+```
+The painted figure on person()'s arms. x, y: where they stand; look: as person()'s; wm: peopleSettings(look). Returns joints.
+```
+
+### `spotOf(x, y)`
+
+```
+(x, y) of the scene in the sheet's pixels.
+```
+
+### `wmElbowOf(S, W, toward, measure)`
+
+```
+wmElbow() with the bones of who is drawn (it reads them while the figure is being drawn).
+```
+
+### `peopleBendOf(look)`
+
+(no comment)
+
+### `peopleCanStamp(look, wm)`
+
+(no comment)
+
+### `peoplePoses(look)`
+
+```
+The sheets of this look: [{canvas, x, y, w, h, joints}, ...], painted if they are not yet; null past PEOPLE_POSES_MOST sets
+(a look that changes every frame would make a set a frame: that one is painted live).
+e.g. peoplePoses(cast("princess", {poses: 8, size: 0.8, stride: 1}));
+```
+
+### `peopleStamp(x, y, look, poses)`
+
+```
+The pose for this step, stamped with her feet at (x, y). Returns her joints, as peoplePainted() does.
+```
+
+### `peopleRigLook(look)`
+
+(no comment)
+
+### `peopleDraw(seed)`
+
+```
+---------- the generator ----------
+A draw of its own: rnd() 0 to 1, pick(list), chance(p), between(a, b), the same for the same seed (mulberry32).
+e.g. peopleDraw(17).pick(["high", "wong"]);
+```
+
+### `castMix(seed, more)`
+
+```
+A new woman, mixed from the kit's pieces: a face from the ten's, changed a little; a way with the hair and what is set in it;
+earrings, a necklace, a belt; a blouse's finish; one of the woven sabai; a sin and a woven teen jok at its foot; what she
+holds and the pose that goes with it; her skin, hair, lipstick and metal. seed: any number, the same woman for the same
+number; more: the look's keys to change. Returns a look for person().
+e.g. person(700, GROUND, castMix(17, {size: 1.4, id: "mix17"}));
+```
+
+## sabai_finish.js
+
+sabai_finish.js - the woven sabai of sabai.js finished: its figures woven in thread, light and folds over it, woven borders, a decorated end with a knotted fringe, the end moving in the breeze, and broad bands of pattern from far. Load it after sabai.js and weaving.js (it weaves with WEAVE_DYES and teenJok). A cloth whose names have finish: true is drawn so; every other cloth is drawn by sabai.js as before, and a page without this file draws as before.  The owner (2026-10-30), of the hero film's first scene: "Give me some ideas for making the cloth look better?", then "Write down 4-7 as next steps after 1-3 and then begin on 1-3"; of the first look: "There looks like a lighter shade box around the sabai ... make the color scheme a bit different so the woven icons stand out against the sash a little better"; then (2026-10-31) "yes to the kit". Notes: docs/kit/things.md, "The sabai finished".  e.g. var CLOTH = {rows: SABAI_ROWS, finish: true, cloth: SABAI_FINISH_GROUND}; sabai(t, where, CLOTH, "back"); person(x, y, sabaiWorn(look, t, where, CLOTH));
+
+### `sfThread(r, g, b)`
+
+```
+the thread nearest a colour (weighted as the eye weighs them)
+```
+
+### `sfWeave(sheet)`
+
+```
+one frame of a tile, woven: a new canvas of the same size
+```
+
+### `sfEdge(where, across, from, to, joined)`
+
+```
+The cloth's edges and rows in 97 points, not 25, and its heading turning smoothly, not in steps from one piece of its
+middle line to the next (up close both showed as small straight steps).
+```
+
+### `sfSmooth(where)`
+
+```
+the same cloth, its heading the line's own through each point
+```
+
+### `sfLine(where, from, to, across, steps)`
+
+```
+a line along the band at an offset across it
+```
+
+### `sfBand(where, half)`
+
+```
+The band's outline, from its cut end to its top, its ends cut as sabai() cuts them (where.startCap, where.endCap):
+cut square at "start" it left out the slanted cut's corner, which then had no light, and up close showed as a square
+with a hard edge (owner, 2026-10-31: "There is a clear/white square around the sabai").
+```
+
+### `sfCorner(cap, across, sq)`
+
+```
+where the band's edge at an offset "across" meets a cap's line (sabai()'s corner)
+```
+
+### `sfBow(where, cap, along, half)`
+
+```
+a rounded end's points, from -half to half (sabai()'s bow)
+```
+
+### `sfTuck(where)`
+
+```
+nothing below the waist's line, where the cloth is tucked in
+```
+
+### `sfGroundTile(res)`
+
+```
+the weave on a sheet of res pixels to a unit of the cloth
+```
+
+### `sfGround(where, half, from, to)`
+
+(no comment)
+
+### `sfShadow(where, half)`
+
+```
+(2) Light and folds: a soft shadow under the band on her blouse (not past her shoulder, where it would fall on the
+sky), and over the band a smooth field of light (sfLight).
+```
+
+### `sfLayer(k, w, h)`
+
+(no comment)
+
+### `sfLight(where, half, ground)`
+
+```
+The light, with no edge anywhere (the owner saw "a lighter shade box" where strokes had laid it, and patches laid
+see-through showed their seams). It is painted on two small sheets in the pen's own frame, the shade on white and the
+light on black, in strips along the cloth each filled across with a smooth gradient, and laid on the cloth whole, the
+shade multiplied and the light added (below). Across it, a sheen on its upper part and shade toward its lower edge as it
+turns away; along it, darker over the last of it where it turns over the shoulder, and a soft glow of the silk that
+moves along it (with a mural woman's sway, WM_TILT of people.js, where there is one). Then two creases at the
+turn, and the gold edge catching the light.
+The light falls on the threads only, not on the red (owner, 2026-11-03: "don't put any sheen on the red part of the
+sabai"): it is laid through a third sheet, the cloth as it is drawn, less its ground colour (so the red is near black
+and a thread is as bright as it stands out from the red), times the light, and added.
+```
+
+### `sfBorder(where, half, cloth)`
+
+```
+(4) Woven borders: in place of the flat gold hem along each long edge, a thin gold selvedge and inside it a row of
+small diamonds woven in gold thread, each three floats (short, long, short), as a teen jok's borders are.
+```
+
+### `sfBreeze(d)`
+
+```
+(5) Moving as cloth: the end hanging behind her moves in the same breeze as the tung on its pole (oldcartoon.js
+tung()), less (a heavier cloth, against her), swinging more toward its foot and the foot after the top in time, with
+a faint ripple running down it; the fringe trails after the foot (sfEnd).
+how far the hanging end is moved sideways at d: 0 the shoulder, 1 its foot
+```
+
+### `sfSway(T)`
+
+(no comment)
+
+### `sfFar(t, where, half, cloth)`
+
+```
+(7) Less at a distance: as the camera pulls back and the cloth grows small on the screen, its rows of small figures
+give way to broader bands of pattern, as a cloth is seen from across a yard: a row of gold lozenges down its middle,
+each with a heart of green, between fine gold lines and cream stripes. Seen from near (the cloth more than 340 of the
+screen's pixels across) none of it; from far (less than 230) all of it: a short crossfade, as the two together look
+muddy.
+```
+
+### `sfEndSheet(cloth)`
+
+```
+(3) A finished end: the end hanging behind her shoulder ("back") gets a woven end panel above its foot (teenJok's rows
+of Nan in the cloth's own colours: its ground, gold, cream, green, black; woven once) and a knotted fringe that swings.
+```
+
+### `sfEnd(where, cloth)`
+
+(no comment)
 
 ## scenery.js
 
@@ -11141,7 +12774,8 @@ words is kept: the takes differ, and one can be much clearer than another (four 
 scored 0.57 to 0.72 of its letters heard back, the first take 0.47). Delete spoken_km/ to speak every
 line again. Each line starts at its second.
 The music is lowered while the voice speaks and comes back between lines, and fades over the film's
-last two seconds. Then it says, line by line, how long the voice took and whether the line is over
+last two seconds. With --over (tale_music.py's film_over.wav: sounds that are in the music already, such as
+thunder), those sounds are lowered only to OVER_UNDER, not to UNDER, so a storm is still heard under a line. Then it says, line by line, how long the voice took and whether the line is over
 before its words leave the screen.
 With --spoken the lines were spoken already, elsewhere, one file a line: the page's WORDS give each line its id
 as a sixth item (or, with no ids, 01.wav, 02.wav ... in order), and the folder has ID.wav for each (the film of the creature with four ears and five eyes:
@@ -11407,8 +13041,11 @@ or 1 with a message for a name it does not know; a download or ffmpeg that fails
 - `maeng_home()`: Running home into its cave: one long howl that starts low and lifts: a chorus outline, 6 s.
 - `crickets()`: Field crickets in the grass at night, a chorus of seven: each sings chirps of three or four pulses (a pulse
 - `wind()`: Wind high on a mountain at dawn: noise made soft and low (through low-passes at 350 Hz and 1100 Hz, mixed
+- `roar()`: A deep roar from under the ground, as the city goes down in the tale of the White Eel (whiteeel/s10, three of
 - `mouse_squeak()`: A mouse's squeaks: three short whistles, each rising then falling between 3.5 and 6.5 kHz, 50 to 80 ms.
 - `plate_ting()`: The golden plate struck, once: a kangsadan, a thin round plate of bronze hung by a cord and struck ("ting
+- `rain()`: Heavy rain at night on a yard and a wooden house (the owner, 2026-11-10, of the White Eel's widow waiting the
+- `thunder()`: A clap of thunder near by (the White Eel's storm): a crack of bright noise at the stroke, two smaller cracks
 - `fetch(name, out)`: A fetched sound: the recording downloaded once (kept in out/sounds/ under its own name), cut, as a WAV.
 - `make(name, out)`: Make one sound by its name and write it into out: its samples, a numpy array at RATE.
 - `main()`: The command line: sounds.py [NAME...] | --list. Makes the sounds named (every one when none is), writes
@@ -11573,6 +13210,9 @@ shoulder. Then it counts what an arm cannot do, by the kit's own rules (SHOULDER
   sweeps    the most any upper arm turns in one frame, in degrees, while its hand moved less than 12 units
 An upper arm drawn shorter than 25 units (its bone is 62) is pointing at us, not across the picture: it is left out of
 "inward", "folded" and "sweeps". A film is clean when the first three are 0. kit_check.py runs this on every page.
+Arms drawn on people.js's unseen sheet (PEOPLE_SINK: the rig passes a painted figure takes its joints from) are not
+counted: nobody sees them (floor.html's seated painted women, 240 folded, and lanna.html's dancer, 6 flips, 2026-11-08; her
+painted arm, drawn by muArm from those joints, stayed smooth across each flip).
 
 It needs Google Chrome (through Playwright). The page is named from the folder it is run in; "from" and
 "to" are seconds (default the whole page). It prints the counts and up to three of each fault, and ends with
@@ -11727,8 +13367,8 @@ for each page, in Chrome with no window:
             differ by more than 24 in a colour, and how many of those a shift of one pixel does not explain (a line
             lying a part of a pixel aside changes the pixels along its edge, and nobody sees it; a pixel counts when
             its colour is outside what the other picture has within one pixel of it). A page passes with fewer than
-            SAME_LIMIT of the second. The kit's settled() is what brings a jump that near: a page whose draw() does
-            not use it shows what hangs at rest, and fails here.
+            SAME_LIMIT of the second (or what KNOWN allows it). The kit's settled() is what brings a jump that near:
+            a page whose draw() does not use it shows what hangs at rest, and fails here.
   arms      what arms_check.py counts over the whole page: elbows that flip, upper arms that point in toward the
             spine, forearms folded past 150 degrees. A page passes with none, or with no more than KNOWN allows.
             Its frames are drawn unpainted (arms_check.py): only where the arms are is wanted.
@@ -11749,7 +13389,8 @@ draws them unpainted), then one page at a time.
 
 It needs Google Chrome (through Playwright). Pages are named from the kit's folder (kit/). The time a page
 may take to load is KIT_CHECK_LOAD_SECONDS from the environment (180 unless set), times the pages loading at once
-(--jobs): four at once, the hero film took longer than 180 s to load (2026-10-29).
+(--jobs): four at once, the hero film took longer than 180 s to load (2026-10-29); the pages in SLOW_LOAD three
+times that.
 ```
 
 - `fingerprint(page_file, quick)`: What a page's check depends on: the page, every script it loads, and this check's own code; and whether the

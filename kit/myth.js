@@ -9,7 +9,8 @@
 //     <script src="myth.js"></script>
 //
 // and call mom(x, y, look), luang(x, y, look), hatsadiling(x, y, look) or
-// maengSiHuHaTa(x, y, look) from a scene. A fifth, Chang Ngu, the
+// maengSiHuHaTa(x, y, look) from a scene (and hemmarat(x, y, look), the
+// Hatsadiling's dark kin of the tale of Hong Hin, at the end of the file). A fifth, Chang Ngu, the
 // snake-elephant of Chiang Saen, is at the file's end: changNgu(x, y, look).
 //
 // Nothing is copied. Each was read by eye from one photograph of a work in
@@ -127,7 +128,7 @@
 var MYTH_KEYS = {};
 
 ["size", "face", "late", "mouth", "colour", "gold", "belly", "step", "eyes", "trail", "depth", "sing", "horns", "wings", "fly", "head", "trunk", "feel",
- "glow", "wake", "watch", "eyeFeel", "id", "slope"
+ "glow", "wake", "watch", "eyeFeel", "id", "slope", "prey"
 ].forEach(function (name) { MYTH_KEYS[name] = true; });
 
 // How the two that walk do it, for amble() of beasts.js: [how large it is
@@ -1507,4 +1508,30 @@ function changNgu(x, y, look) {
   pen.restore();
   FINE = 1;
   LINE = STYLE.line;
+}
+
+// ---------- the Hemmarat ----------
+// The Hemmarat (เหมะราช) of the tale of Hong Hin: the beast of the high mountain pass that swallows bull elephants, whose
+// head the prince takes off on his way home from the ghoul city. The owner's pick of the candidates (2026-11-11, A): of
+// the Hatsadiling's kind (an elephant's head on a great bird), dark, flying, an elephant caught under it.
+//   x, y   the ground under it, as the Hatsadiling's (it flies: the place it would stand)
+//   look   MYTH_KEYS, as the Hatsadiling's (size 0.55 unless told; colour, belly, gold its own dark ones unless told;
+//          fly true unless false), and prey: true (the default) an elephant caught under it, false none
+// Returns what hatsadiling() gives back. It draws with pen.
+// e.g. hemmarat(700, GROUND - 420, {face: -1, trunk: 0.7});
+var HEMMARAT = {colour: "#3a2a4a", belly: "#8a7a9a", gold: "#c89a3a"};
+function hemmarat(x, y, look) {
+  look = Object.assign({size: 0.55, fly: true, trunk: 0.7, feel: "angry"}, HEMMARAT, look || {});
+  var prey = look.prey !== false, s = look.size / 0.55, face = look.face || 1;
+  delete look.prey;
+  if (look.fly === false) { delete look.fly; }
+  var got = hatsadiling(x, y, look);
+  if (prey) {                                        // the elephant in its claws, tipped, its trunk up
+    pen.save();
+    pen.translate(x - 40 * s * face, y + 50 * s);  // its back just under the claws
+    pen.rotate(0.35 * face);
+    elephant(0, 0, {size: 0.12 * s, trunk: 0.9, mouth: 1, face: face});
+    pen.restore();
+  }
+  return got;
 }

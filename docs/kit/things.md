@@ -856,3 +856,26 @@ point it is sent to, so a tool held in one hand is drawn at the joints `person()
 | `khiao(brush, x, y, angle, size)` | the sickle (เคียว): its handle's end at (x, y) running at `angle`, the blade a toothed crescent |
 | `riceClump(brush, x, base, size, t, look)` | a clump of ripe rice stirring in the breeze; `look.gather: [x, y]` draws its stalks in to a hand, `look.cut` leaves the stubble |
 | `toolWood(brush, ax, ay, bx, by, wide, colour)`, `toolIron(brush, points, colour)` | a wooden handle, a piece of forged iron, for drawing another tool |
+
+## The things of the tale of Hong Hin (2026-11-11)
+
+`honghin.js` (load it after the kit and `pieces.js`; `people.js` for a princess in her palace), as `mangrai.js` and
+`chiangsaen.js` hold their tales'. Each the owner's pick of two or three candidates; sheet `honghin.html`. The tale's
+beings are in creatures.md, "The beings of the tale of Hong Hin".
+
+| What | Call | The owner's pick |
+|---|---|---|
+| The old sugar palm at Varanasi's south gate, the giantess's home | `sugarPalm(x, base, t, look)`: a grey trunk ringed with leaf scars, dead fans hanging brown under a round head of green fans that stir, dark fruit; a hollow at its foot, dark at its depth, its rim lit on the left and in shadow on the right, its shadow before it, bones on the ground (`look`: tall, lean, dry, hollow) | C of three, "but give the hollow some shading so it's more clear what it is" |
+| The stone swan folded and hidden | `swanLog(x, base, t)`: a log under creepers, moss, its cut end ringed, the red saddle cloth showing through | C of three |
+| Saba | `sabaBean(x, y)` the brothers' gold pieces, the saba vine's bean in gold; `redSeed(x, y)` the prince's red seeds with a black eye (มะกล่ำตาแดง); `seedPouch(x, base)` his mother's pouch of them | B (the beans) of two |
+| The puppy put in the baby's place | `puppy(x, y, t, look)`: the kit's `dog()` at three quarters, tan with dark patches | B of two |
+| Indra's sword Kanchai | `kanchai(x, y, look)`: a flame-edged blade that shines, a gold guard and hilt with a red stone (`look`: size, angle, glow) | C of three (a dap and a straight gold sword the others) |
+| The brothers' arms, the trial's fetters | `crossbow(x, y)`, `musket(x, y)` (a matchlock), `fetters(x, y)` | as drawn |
+| The giant princesses' floating palaces | `vimana(x, base, t, look)`, `look.kind` `"prasat"` (white walls on a stepped plinth, gold naga at the stair, a flame-edged gold arch over the door, six gold tiers with niches and flames, a spire of rings, small spires at the corners), `"hall"` (the kit's palace hall in its fine finish, a gold tiered spire on its ridge, tiered parasols at its corners) or `"lotus"` (an open pavilion of gold pillars on a great pink lotus, red lacquer stencilled in gold, garlands of jasmine and marigold, `look.who` draws the princess seated within); each on `thaiCloud()` with `streamer()`s, bobbing | all three, one for each princess; the palaces drawn after the owner's pictures of Khuang Phra Chao Lanna, Mae Rim ("make them as beautiful and elaborate as you possibly can"), after a first round the owner found too plain |
+| Their parts | `thaiCloud(x, y, w, t, seed)` a cloud of Thai painting, its lobes heaped, a scroll at each end; `streamer(x, y, long, wide, colour, t, dir, phase)` a forked streamer in the wind; `chatra(x, y, h)` a tiered parasol; `goldTiers`, `ringSpire`, `flameArch`, `redentBox`, `kranokFlame` the prasat's | |
+| The crowning | `baiSri(x, base, size, t)`: the bai si su khwan, banana leaves folded to points tier on tier, bands of jasmine and marigold, a cone of flowers and a candle, white threads looping down, on a gold footed bowl, bananas, an egg, sticky rice and water before it; `conch(x, y, size)` a conch with a gold cap on its stand | the bai si drawn again in detail when the first "was not clear what it is"; then "Yes, use it" |
+
+Not made for the tale: its places (Varanasi's palace and gate, the orchard hut, the ghoul city, the frontier river and
+the camp, Indra's heaven, the fair and its high pavilion): those are each film's sets (`sets.js`), from the kit's
+pieces, when the scenes are built.
+
