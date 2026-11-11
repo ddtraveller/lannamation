@@ -3,13 +3,16 @@
 // Anumat comes at the boy in a rage, sees the wheel on the soles of his feet, kneels, gives him Salicanta, and points
 // the way south to the ghouls' city; the swan flies off that way.
 var H13_LONG = 60;
-var H13_SOUND = {calls: [[0, "shama", 0.2, 12], [13, "roar", 0.3], [36, "wind", 0.2, 24]]};
-var H13_LINES = [[2, 11.2, "H058"], [13, 21.2, "H059"], [22.6, 28.4, "H060"], [30, 35.2, "H061"]];
+var H13_SOUND = {calls: [[0.0, "shama", 0.2, 17.48], [17.81, "roar", 0.3], [37.1, "wind", 0.2, 22.9]]};
+var H13_LINES = [[2, 17.61, "H058"], [17.81, 26.35, "H059"], [26.55, 32.71, "H060"], [32.91, 36.74, "H061"]];
+// The lines as the scene was drawn to them; it plays to H13_LINES, Pan's voice (sets.js hhClock()).
+var H13_PLAN = [[2, 11.2, "H058"], [13, 21.2, "H059"], [22.6, 28.4, "H060"], [30, 35.2, "H061"]];
 var H13_CUTS = [12.4, 36.2];
 
 // Scene 13, the entry the film calls. From sets.js: hhGiantCity(), hhBoy(); ogre.js ogre(), ogreDaughter(); himmaphan.js
 // hongHin().
 function hhSceneSecond(t) {
+  var said = t; t = hhClock(t, H13_PLAN, H13_LINES, H13_LONG);
   var h = HH_GIANT_HALL;
   if (t < H13_CUTS[0]) {                                // the green palace: Kumbhanda gives Culakantha
     hhCamera(0.7, h[0], 780, 1.3);
@@ -50,5 +53,5 @@ function hhSceneSecond(t) {
     person(hs.seat[0], hs.seat[1], hhBoy(13, {floor: "astride", face: -1, feel: "neutral"}));
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H13_CUTS);
+  hhCuts(said, hhSaidAll(H13_CUTS, H13_PLAN, H13_LINES, H13_LONG));
 }

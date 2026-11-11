@@ -3,14 +3,17 @@
 // raises his hands in a vow of truth; her milk streams to his mouth, as the khao so tells it (the owner, 2026-11-11:
 // "Show it"); she knows him, holds him and weeps; she names him.
 var H08_LONG = 55;
-var H08_SOUND = {calls: [[0, "crickets", 0.2, 55], [3, "wind", 0.15, 6]]};
-var H08_LINES = [[2, 8.6, "H031"], [10.4, 13.2, "H032"], [14.6, 20.4, "H033"], [21.8, 29.2, "H034"], [31, 37.4, "H035"], [39.4, 46.6, "H036"]];
+var H08_SOUND = {calls: [[0.0, "crickets", 0.2, 55.0], [2.88, "wind", 0.15, 5.5]]};
+var H08_LINES = [[2, 8.2, "H031"], [10.4, 14.76, "H032"], [14.96, 20.72, "H033"], [21.8, 29.5, "H034"], [31, 36.8, "H035"], [39.4, 49.26, "H036"]];
+// The lines as the scene was drawn to them; it plays to H08_LINES, Pan's voice (sets.js hhClock()).
+var H08_PLAN = [[2, 8.6, "H031"], [10.4, 13.2, "H032"], [14.6, 20.4, "H033"], [21.8, 29.2, "H034"], [31, 37.4, "H035"], [39.4, 46.6, "H036"]];
 var H08_CUTS = [10];
 var H08_LOG = [420, 1000];                             // where the swan lands and lies as a log
 
 // Scene 8, the entry the film calls. From sets.js: hhOrchardAt(), HH_ORCHARD_HOUSE, hhVimala(), hhBoy(); himmaphan.js
 // hongHin(); honghin.js swanLog().
 function hhSceneMother(t) {
+  var said = t; t = hhClock(t, H08_PLAN, H08_LINES, H08_LONG);
   if (t < H08_CUTS[0]) {                                // the swan comes down and folds into a log
     var land = between(t, 0.5, 5), fold = between(t, 5.5, 8);
     hhCamera(0.6, 700, 820, 1.3);
@@ -37,7 +40,7 @@ function hhSceneMother(t) {
                                      at: [bx, g - 380], free: true,
                                      reachA: embrace > 0 ? [bx + 40, g - 300] : undefined, reachB: embrace > 0 ? [bx + 20, g - 260] : undefined}));
     var bj = person(bx, g + 10, hhBoy(13, {face: 1, feel: knows ? "happy" : "concerned", wai: vow ? 1 : undefined,
-                                           mouth: welTalk(t, welSays(t, H08_LINES, ["H032"])), at: [vx, g - 400]}));
+                                           mouth: welTalk(t, welSays(t, H08_PLAN, ["H032"])), at: [vx, g - 400]}));
     if (milk > 0 && vj && bj && bj.chin) {               // her milk streaming to his mouth, a thin bright arc
       var sh = vj.shoulderA ? himmaJoint(vj.shoulderA) : null;
       var from = sh ? [sh[0] - 14, sh[1] + 22] : [vx - 20, g - 300];
@@ -57,5 +60,5 @@ function hhSceneMother(t) {
     hhCameraEnd();
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H08_CUTS);
+  hhCuts(said, hhSaidAll(H08_CUTS, H08_PLAN, H08_LINES, H08_LONG));
 }

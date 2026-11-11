@@ -3,13 +3,16 @@
 // The fair: a high pavilion, the whole city coming in by one gate; from the pavilion she sees a boy at the gate and cries
 // out to her grandson.
 var H18_LONG = 55;
-var H18_SOUND = {calls: [[40, "plate-ting", 0.25]]};
-var H18_LINES = [[2, 8.6, "H079"], [10, 15.6, "H080"], [17, 24.2, "H081"], [25.6, 33.2, "H082"], [35, 41.2, "H083"]];
+var H18_SOUND = {calls: [[38.6, "plate-ting", 0.25]]};
+var H18_LINES = [[2, 11.9, "H079"], [12.1, 18.46, "H080"], [18.66, 24.82, "H081"], [25.6, 32.02, "H082"], [35, 39.86, "H083"]];
+// The lines as the scene was drawn to them; it plays to H18_LINES, Pan's voice (sets.js hhClock()).
+var H18_PLAN = [[2, 8.6, "H079"], [10, 15.6, "H080"], [17, 24.2, "H081"], [25.6, 33.2, "H082"], [35, 41.2, "H083"]];
 var H18_CUTS = [9.6, 25.2];
 var H18_PAV = [1380, 960, 0.9];
 
 // Scene 18, the entry the film calls. From sets.js: hhCourt(), hhSon(), HH_OLD_QUEEN, hhPavilion(), hhBoy().
 function hhSceneSpeaks(t) {
+  var said = t; t = hhClock(t, H18_PLAN, H18_LINES, H18_LONG);
   var p = CNG_PALACE, dais = hoKhamDais(p[1], p[2]);
   if (t < H18_CUTS[0]) {                                // the six bring her home as heroes
     var sons = [];
@@ -30,7 +33,7 @@ function hhSceneSpeaks(t) {
     hhCourt(t, [[-80, welPerson("noble", HH_KING, {id: "king", floor: "cross", face: 1, size: 0.8, feel: t > 17 ? "surprised" : "concerned",
                                                    at: [p[0] + 80, dais - 120], mouth: welTalk(t, t > 10 && t < 13)})],
                 [80, welPerson("grandmother", HH_OLD_QUEEN, {id: "oldqueen", floor: "side", face: -1, feel: t > 15 ? "angry" : "sad", tears: t < 15 ? 1 : 0,
-                                                             mouth: welTalk(t, welSays(t, H18_LINES, ["H080", "H081"])), at: [p[0] - 80, dais - 120]})]], []);
+                                                             mouth: welTalk(t, welSays(t, H18_PLAN, ["H080", "H081"])), at: [p[0] - 80, dais - 120]})]], []);
     hhCameraEnd();
   } else {                                               // the fair: the pavilion, the one gate, the city coming in
     var s = t - H18_CUTS[1], seen = t > 36;
@@ -58,5 +61,5 @@ function hhSceneSpeaks(t) {
                               at: seen ? [H18_PAV[0], top - 60] : [CNG_GATE[0], 700]}));
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H18_CUTS);
+  hhCuts(said, hhSaidAll(H18_CUTS, H18_PLAN, H18_LINES, H18_LONG));
 }

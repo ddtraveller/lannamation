@@ -3,8 +3,10 @@
 // the boy brings his grandmother across. At dusk the six brothers close round him; a cut to the night: they ride away on
 // an elephant with the old woman, and in the weeds the boy lies still.
 var H16_LONG = 60;
-var H16_SOUND = {calls: [[0, "wind", 0.2, 10], [10.5, "frogs", 0.25, 49.5], [36, "crickets", 0.25, 24], [38, "elephant-trumpet", 0.3]]};
-var H16_LINES = [[2, 9.6, "H071"], [11, 17.6, "H072"], [19, 27.2, "H073"], [28.6, 36.2, "H074"]];
+var H16_SOUND = {calls: [[0.0, "wind", 0.2, 9.26], [10.13, "frogs", 0.25, 49.87], [35.72, "crickets", 0.25, 24.28], [37.73, "elephant-trumpet", 0.3]]};
+var H16_LINES = [[2, 8.96, "H071"], [11, 20.46, "H072"], [20.66, 28.3, "H073"], [28.6, 36.31, "H074"]];
+// The lines as the scene was drawn to them; it plays to H16_LINES, Pan's voice (sets.js hhClock()).
+var H16_PLAN = [[2, 9.6, "H071"], [11, 17.6, "H072"], [19, 27.2, "H073"], [28.6, 36.2, "H074"]];
 var H16_CUTS = [10.2, 18.6, 27.6];
 
 // The river at an hour: the Kok's plain (whiteeel/sets.js), "dusk" or "night". t: seconds.
@@ -26,6 +28,7 @@ function h16River(t, hour) {
 // Scene 16, the entry the film calls. From sets.js: hhHeaven(), hhBoy(), hhSon(), HH_GRAN, hhNight(); honghin.js vimana();
 // himmaphan.js hongHin(); whiteeel/sets.js welPlain(), welKokWater().
 function hhSceneCrime(t) {
+  var said = t; t = hhClock(t, H16_PLAN, H16_LINES, H16_LONG);
   var bank = WEL_KOK_BANK + 120;
   if (t < H16_CUTS[0]) {                                // home through the clouds, the palaces following
     hhHeaven(t, 1080);
@@ -68,5 +71,5 @@ function hhSceneCrime(t) {
     sceneryMoon(t, HH_MOON[0], HH_MOON[1], HH_MOON[2], {});
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H16_CUTS);
+  hhCuts(said, hhSaidAll(H16_CUTS, H16_PLAN, H16_LINES, H16_LONG));
 }

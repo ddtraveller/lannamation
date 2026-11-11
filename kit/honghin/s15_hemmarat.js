@@ -2,13 +2,16 @@
 // winged beast, an elephant in its claws, sees the swan and springs at it; Kanchai flashes; a cut to the beast falling
 // into the forest below (the owner: the stroke, then a cut); the swan flies on, the grandmother holding tight.
 var H15_LONG = 45;
-var H15_SOUND = {calls: [[0, "wind", 0.3, 45], [13, "roar", 0.45]]};
-var H15_LINES = [[2, 10.2, "H068"], [11.6, 15.2, "H069"], [16.6, 24.4, "H070"]];
+var H15_SOUND = {calls: [[0.0, "wind", 0.3, 45.0], [15.78, "roar", 0.45]]};
+var H15_LINES = [[2, 14.3, "H068"], [14.5, 18.18, "H069"], [18.38, 26.74, "H070"]];
+// The lines as the scene was drawn to them; it plays to H15_LINES, Pan's voice (sets.js hhClock()).
+var H15_PLAN = [[2, 10.2, "H068"], [11.6, 15.2, "H069"], [16.6, 24.4, "H070"]];
 var H15_CUTS = [24.2];
 
 // Scene 15, the entry the film calls. From sets.js: hhPass(), hhBoy(), HH_GRAN (s14_ghouls.js); myth.js hemmarat();
 // himmaphan.js hongHin(); honghin.js kanchai().
 function hhSceneHemmarat(t) {
+  var said = t; t = hhClock(t, H15_PLAN, H15_LINES, H15_LONG);
   if (t < H15_CUTS[0]) {
     var spring = between(t, 15, 21), stroke = between(t, 22.8, 23.8);
     hhPass(t);
@@ -38,5 +41,5 @@ function hhSceneHemmarat(t) {
     person(hs2.seat[0], hs2.seat[1], hhBoy(13, {floor: "astride", face: -1, feel: "happy"}));
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H15_CUTS);
+  hhCuts(said, hhSaidAll(H15_CUTS, H15_PLAN, H15_LINES, H15_LONG));
 }

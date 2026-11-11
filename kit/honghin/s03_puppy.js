@@ -3,8 +3,10 @@
 // Far above, Indra on his stone throne: it glows; he looks down. In the clouds the falling child is caught by Indra and
 // Witsanukam and carried up.
 var H03_LONG = 55;
-var H03_SOUND = {calls: [[0, "crickets", 0.2, 28], [30, "wind", 0.2, 25]]};
-var H03_LINES = [[1.5, 7.4, "H011"], [8.6, 11.8, "H012"], [17, 23.2, "H013"], [24.2, 28.6, "H014"], [30, 37.4, "H015"], [44.6, 51.6, "H016"]];
+var H03_SOUND = {calls: [[0.0, "crickets", 0.2, 28.73], [30.04, "wind", 0.2, 24.96]]};
+var H03_LINES = [[1.5, 10.0, "H011"], [10.2, 15.1, "H012"], [17, 23.5, "H013"], [24.2, 29.84, "H014"], [30.04, 38.58, "H015"], [44.6, 51.2, "H016"]];
+// The lines as the scene was drawn to them; it plays to H03_LINES, Pan's voice (sets.js hhClock()).
+var H03_PLAN = [[1.5, 7.4, "H011"], [8.6, 11.8, "H012"], [17, 23.2, "H013"], [24.2, 28.6, "H014"], [30, 37.4, "H015"], [44.6, 51.6, "H016"]];
 var H03_CUTS = [16.5, 29.2, 43.6];
 var H03_MAT = [860, CNG_FLOOR + 40];                    // where Vimala lies on the mat
 var H03_HOLE = [1180, CNG_FLOOR + 70];                  // the hole in the floor
@@ -45,6 +47,7 @@ function h03Room(t, part) {
 
 // Scene 3, the entry the film calls. From sets.js: hhVimala(), hhWife(), hhCamera(), hhCuts(); changngu/sets.js cngRoom().
 function hhScenePuppy(t) {
+  var said = t; t = hhClock(t, H03_PLAN, H03_LINES, H03_LONG);
   if (t < H03_CUTS[0]) {
     hhCamera(0.5 + 0.3 * between(t, 0, H03_CUTS[0]), 900, 760, 1.35);
     h03Room(t, "crowd");
@@ -78,5 +81,5 @@ function hhScenePuppy(t) {
     thaiCloud(960, 1060, 1500, t, 9);
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H03_CUTS);
+  hhCuts(said, hhSaidAll(H03_CUTS, H03_PLAN, H03_LINES, H03_LONG));
 }

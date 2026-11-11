@@ -3,13 +3,16 @@
 // wives and their sons in fetters; the king's judgement: they were punished severely (the owner: said, not shown). The
 // hall empties; the king alone, his head bowed.
 var H19_LONG = 55;
-var H19_SOUND = {calls: [[30, "plate-ting", 0.3]]};
-var H19_LINES = [[2, 11.2, "H084"], [12.6, 21.6, "H085"], [23, 28.6, "H086"], [30, 34.2, "H087"]];
+var H19_SOUND = {calls: [[30.0, "plate-ting", 0.3]]};
+var H19_LINES = [[2, 13.2, "H084"], [13.4, 22.18, "H085"], [23, 28.81, "H086"], [30, 33.02, "H087"]];
+// The lines as the scene was drawn to them; it plays to H19_LINES, Pan's voice (sets.js hhClock()).
+var H19_PLAN = [[2, 11.2, "H084"], [12.6, 21.6, "H085"], [23, 28.6, "H086"], [30, 34.2, "H087"]];
 var H19_CUTS = [12.2, 22.6, 36];
 
 // Scene 19, the entry the film calls. From sets.js: hhCourt(), hhBoy(), hhWife(), hhSon(), hhCamera(), hhCuts();
 // honghin.js fetters(), puppy().
 function hhSceneTruth(t) {
+  var said = t; t = hhClock(t, H19_PLAN, H19_LINES, H19_LONG);
   var p = CNG_PALACE, dais = hoKhamDais(p[1], p[2]), floor = hoKhamFloor(p[1], p[2]);
   var king = function (feel) { return [[0, welPerson("noble", HH_KING, {id: "king", floor: "cross", face: 1, size: 0.8, feel: feel, at: [p[0] - 300, 900]})]]; };
   if (t < H19_CUTS[0]) {                                // the boy tells it all
@@ -61,5 +64,5 @@ function hhSceneTruth(t) {
     hhCameraEnd();
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H19_CUTS);
+  hhCuts(said, hhSaidAll(H19_CUTS, H19_PLAN, H19_LINES, H19_LONG));
 }

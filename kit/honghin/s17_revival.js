@@ -4,8 +4,10 @@
 // for a fire, to leap into it and die with him (as the text, the owner). He comes as an old Brahman, pours heavenly
 // medicine on the boy's wounds, and the boy breathes and sits up.
 var H17_LONG = 60;
-var H17_SOUND = {calls: [[0, "frogs", 0.2, 60], [0, "shama", 0.15, 60], [22, "roar", 0.3]]};
-var H17_LINES = [[2, 8.6, "H075"], [10, 20.2, "H076"], [21.6, 30.2, "H077"], [31.6, 40.2, "H078"]];
+var H17_SOUND = {calls: [[0.0, "frogs", 0.2, 60.0], [0.0, "shama", 0.15, 60.0], [22.26, "roar", 0.3]]};
+var H17_LINES = [[2, 9.6, "H075"], [10, 19.92, "H076"], [21.6, 36.14, "H077"], [36.34, 42.28, "H078"]];
+// The lines as the scene was drawn to them; it plays to H17_LINES, Pan's voice (sets.js hhClock()).
+var H17_PLAN = [[2, 8.6, "H075"], [10, 20.2, "H076"], [21.6, 30.2, "H077"], [31.6, 40.2, "H078"]];
 var H17_CUTS = [9.6, 21, 31];
 var H17_BODY = [960, WEL_KOK_BANK + 170];
 
@@ -28,6 +30,7 @@ function h17Bank(t, up, feel, turned) {
 
 // Scene 17, the entry the film calls. From sets.js: hhBoy(); ogre.js ogreDaughter(), ogre(); whiteeel/sets.js WEL_BRAHMAN.
 function hhSceneRevival(t) {
+  var said = t; t = hhClock(t, H17_PLAN, H17_LINES, H17_LONG);
   var b = H17_BODY;
   if (t < H17_CUTS[0]) {                                // they find him
     hhCamera(0.7, b[0], 860, 1.4);
@@ -75,5 +78,5 @@ function hhSceneRevival(t) {
     hhCameraEnd();
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H17_CUTS);
+  hhCuts(said, hhSaidAll(H17_CUTS, H17_PLAN, H17_LINES, H17_LONG));
 }

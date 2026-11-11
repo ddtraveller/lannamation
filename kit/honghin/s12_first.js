@@ -3,13 +3,16 @@
 // King Wassawaro, a red ogre king, bursts in roaring; the boy speaks calmly; the king's face changes; a wedding feast of
 // roast meat and raw among the giants.
 var H12_LONG = 55;
-var H12_SOUND = {calls: [[0, "wind", 0.15, 9], [18, "roar", 0.35]]};
-var H12_LINES = [[2, 8.2, "H053"], [9.6, 16.6, "H054"], [18.2, 22.2, "H055"], [23.6, 31.2, "H056"], [33, 37.2, "H057"]];
+var H12_SOUND = {calls: [[0.0, "wind", 0.15, 9.32], [18.0, "roar", 0.35]]};
+var H12_LINES = [[2, 9.34, "H053"], [9.6, 17.0, "H054"], [18.2, 22.08, "H055"], [23.6, 32.78, "H056"], [33, 37.94, "H057"]];
+// The lines as the scene was drawn to them; it plays to H12_LINES, Pan's voice (sets.js hhClock()).
+var H12_PLAN = [[2, 8.2, "H053"], [9.6, 16.6, "H054"], [18.2, 22.2, "H055"], [23.6, 31.2, "H056"], [33, 37.2, "H057"]];
 var H12_CUTS = [9.2, 33];
 
 // Scene 12, the entry the film calls. From sets.js: hhGiantCity(), hhBoy(); ogre.js ogre(), ogreDaughter(), ogreMeat();
 // himmaphan.js hongHin().
 function hhSceneFirst(t) {
+  var said = t; t = hhClock(t, H12_PLAN, H12_LINES, H12_LONG);
   var h = HH_GIANT_HALL, dais = hoKhamDais(h[1], h[2]);
   if (t < H12_CUTS[0]) {                                // the swan comes down by the red city's palace
     var land = between(t, 0.5, 7);
@@ -23,7 +26,7 @@ function hhSceneFirst(t) {
     var sprites = [
       {name: "boy", kind: "person", x: h[0] - 360, y: 1000, draw: function () {
         person(h[0] - 360, 1000, hhBoy(13, {face: 1, feel: t > 18 && t < 23 ? "surprised" : "happy", at: [h[0], dais - 200],
-                                            mouth: welTalk(t, welSays(t, H12_LINES, ["H056"]))}));
+                                            mouth: welTalk(t, welSays(t, H12_PLAN, ["H056"]))}));
       }},
       {name: "the king", kind: "person", x: mix(WIDE + 200, h[0] + 300, king), y: 1010, draw: function () {
         if (king <= 0) { return; }
@@ -51,5 +54,5 @@ function hhSceneFirst(t) {
     hhCameraEnd();
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H12_CUTS);
+  hhCuts(said, hhSaidAll(H12_CUTS, H12_PLAN, H12_LINES, H12_LONG));
 }

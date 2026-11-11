@@ -4,8 +4,10 @@
 // (the owner, 2026-11-11). The six brothers creep up, beat the body with sticks and the butt of a musket, smear its
 // blood on their clothes, and press a bag of gold into the boy's hands.
 var H10_LONG = 60;
-var H10_SOUND = {calls: [[0, "cicadas", 0.2, 34], [27, "roar", 0.35], [37, "cicadas", 0.15, 23]]};
-var H10_LINES = [[2, 7.6, "H042"], [9, 16.6, "H043"], [18, 22.2, "H044"], [23.6, 29.6, "H045"], [31, 34.4, "H046"], [38, 46.6, "H047"], [48, 55.2, "H048"]];
+var H10_SOUND = {calls: [[0.0, "cicadas", 0.2, 40.32], [32.21, "roar", 0.35], [41.32, "cicadas", 0.15, 18.68]]};
+var H10_LINES = [[2, 14.92, "H042"], [15.12, 22.7, "H043"], [22.9, 27.83, "H044"], [28.03, 35.81, "H045"], [36.01, 41.29, "H046"], [41.49, 51.23, "H047"], [51.43, 58.31, "H048"]];
+// The lines as the scene was drawn to them; it plays to H10_LINES, Pan's voice (sets.js hhClock()).
+var H10_PLAN = [[2, 7.6, "H042"], [9, 16.6, "H043"], [18, 22.2, "H044"], [23.6, 29.6, "H045"], [31, 34.4, "H046"], [38, 46.6, "H047"], [48, 55.2, "H048"]];
 var H10_CUTS = [17.4, 35.2];
 var H10_PALM = [1420, 905];
 var H10_FALLEN = [1180, 960];                          // where she lies, under the palm
@@ -23,6 +25,7 @@ function h10Gate(t) {
 // Scene 10, the entry the film calls. From sets.js: hhBoy(), hhSon(), hhCamera(), hhCuts(); ogre.js ogre() kind
 // "giantess"; honghin.js sugarPalm(), kanchai(), musket(); himmaphan.js himmaJoint().
 function hhSceneGiantess(t) {
+  var said = t; t = hhClock(t, H10_PLAN, H10_LINES, H10_LONG);
   if (t < H10_CUTS[0]) {                                // the palm, the empty road, the giantess in its shade
     hhCamera(0.3 + 0.4 * between(t, 0, H10_CUTS[0]), H10_PALM[0] - 100, 760, 1.3);
     h10Gate(t);
@@ -39,7 +42,7 @@ function hhSceneGiantess(t) {
                                     reachA: spring > 0 ? [gx - 200, H10_PALM[1] - 300] : undefined, reachB: spring > 0 ? [gx - 180, H10_PALM[1] - 260] : undefined});
     var hand = stroke > 0 ? [bx + 140, H10_PALM[1] - 160] : [bx + 30, H10_PALM[1] - 330];
     person(bx, H10_PALM[1] + 30, hhBoy(13, {face: 1, feel: spring > 0 ? "angry" : "neutral", step: walk > 0 && walk < 1 ? s * 0.8 : 0,
-                                            mouth: welTalk(t, welSays(t, H10_LINES, ["H045"])), at: [gx, H10_PALM[1] - 360],
+                                            mouth: welTalk(t, welSays(t, H10_PLAN, ["H045"])), at: [gx, H10_PALM[1] - 360],
                                             reachA: draw > 0 ? hand : undefined}));
     if (draw > 0) { kanchai(hand[0], hand[1], {size: 0.42, angle: stroke > 0 ? mix(0.2, 2.4, stroke) : 0.2}); }
     if (stroke > 0) {                                    // the stroke: a flash across the picture
@@ -78,5 +81,5 @@ function hhSceneGiantess(t) {
     hhCameraEnd();
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H10_CUTS);
+  hhCuts(said, hhSaidAll(H10_CUTS, H10_PLAN, H10_LINES, H10_LONG));
 }

@@ -4,13 +4,16 @@
 // pots, sets her on the swan, rises; the ghouls come home and fly after them throwing stones and trees; Kanchai
 // flashes; a cut to them falling like rain (the owner: the stroke, then a cut).
 var H14_LONG = 60;
-var H14_SOUND = {calls: [[0, "crickets", 0.15, 26], [34, "roar", 0.4], [46, "wind", 0.3, 14]]};
-var H14_LINES = [[2, 8.2, "H062"], [9.6, 15.6, "H063"], [17, 25.2, "H064"], [26.6, 33.2, "H065"], [34.6, 39.6, "H066"], [41, 47.2, "H067"]];
+var H14_SOUND = {calls: [[0.0, "crickets", 0.15, 28.68], [36.34, "roar", 0.4], [47.84, "wind", 0.3, 12.16]]};
+var H14_LINES = [[2, 12.84, "H062"], [13.04, 19.32, "H063"], [19.52, 28.74, "H064"], [28.94, 36.4, "H065"], [36.6, 43.74, "H066"], [43.94, 49.18, "H067"]];
+// The lines as the scene was drawn to them; it plays to H14_LINES, Pan's voice (sets.js hhClock()).
+var H14_PLAN = [[2, 8.2, "H062"], [9.6, 15.6, "H063"], [17, 25.2, "H064"], [26.6, 33.2, "H065"], [34.6, 39.6, "H066"], [41, 47.2, "H067"]];
 var H14_CUTS = [16.6, 26.2, 34.2, 45];
 
 // Scene 14, the entry the film calls. From sets.js: hhGhoulPlace(), hhBoy(), hhGlint(), hhDevice(); ogre.js ogre(),
 // ogreMeat(); himmaphan.js hongHin(); honghin.js kanchai().
 function hhSceneGhouls2(t) {
+  var said = t; t = hhClock(t, H14_PLAN, H14_LINES, H14_LONG);
   if (t < H14_CUTS[0]) {                                // the swan comes down among the huts; the old woman alone
     var land = between(t, 0.5, 6);
     hhCamera(0.5, 960, 800, 1.2);
@@ -24,7 +27,7 @@ function hhSceneGhouls2(t) {
     hhCamera(1, 1050, 860, 1.6);
     hhGhoulPlace(t, 0);
     person(1180, 990, welPerson("grandmother", HH_GRAN, {id: "gran", floor: "side", face: -1, feel: "sad", tears: 1,
-                                                         mouth: welTalk(t, welSays(t, H14_LINES, ["H064"])), at: [960, 760]}));
+                                                         mouth: welTalk(t, welSays(t, H14_PLAN, ["H064"])), at: [960, 760]}));
     person(960, 1000, hhBoy(13, {face: 1, feel: "sad", at: [1180, 880]}));
     if (t > 20) {                                        // a glimpse: the ghouls far off tearing at raw meat
       pen.save(); pen.globalAlpha = between(t, 20, 21) * (1 - between(t, 24.8, 25.8));
@@ -90,6 +93,6 @@ function hhSceneGhouls2(t) {
     person(hs4.seat[0], hs4.seat[1], hhBoy(13, {floor: "astride", face: 1}));
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H14_CUTS);
+  hhCuts(said, hhSaidAll(H14_CUTS, H14_PLAN, H14_LINES, H14_LONG));
 }
 var H14_HORDE_FLY = ["ghoul", "ghoulDark", "ghoulPale", "ghoul", "ghoulDark", "ghoulPale"];

@@ -3,8 +3,10 @@
 // the court. Two astrologers on the floor before the hall read the stars on their boards and speak; then the six wives,
 // near, look at one another.
 var H02_LONG = 45;
-var H02_SOUND = {calls: [[0, "shama", 0.2, 45]]};
-var H02_LINES = [[2, 8.4, "H006"], [9.8, 13.6, "H007"], [15, 20.6, "H008"], [22, 30.6, "H009"], [32.5, 39.5, "H010"]];
+var H02_SOUND = {calls: [[0.0, "shama", 0.2, 45.0]]};
+var H02_LINES = [[2, 11.22, "H006"], [11.42, 16.58, "H007"], [16.78, 24.56, "H008"], [24.76, 34.2, "H009"], [34.4, 42.12, "H010"]];
+// The lines as the scene was drawn to them; it plays to H02_LINES, Pan's voice (sets.js hhClock()).
+var H02_PLAN = [[2, 8.4, "H006"], [9.8, 13.6, "H007"], [15, 20.6, "H008"], [22, 30.6, "H009"], [32.5, 39.5, "H010"]];
 var H02_CUTS = [21, 31.5];
 
 // The court's people. t: seconds; near: the six wives' feeling (scene's end) or none.
@@ -22,7 +24,7 @@ function h02People(t, feel) {
     var x = p[0] + a[0] - 300, y = floor + 70;
     list.push({name: "astrologer " + i, kind: "person", x: x, y: y, draw: function () {
       hhBoard(x + 150, y + 34, a[2]);
-      var talking = welSays(t, H02_LINES, ["H009"]) && i === 0;
+      var talking = welSays(t, H02_PLAN, ["H009"]) && i === 0;
       person(x, y, welPerson("elder", CNG_SEER, {id: "seer" + i, floor: "cross", face: 1, size: 0.66, feel: "thinking",
                                                  at: [p[0], 600], mouth: welTalk(t, talking)}));
     }});
@@ -32,6 +34,7 @@ function h02People(t, feel) {
 
 // Scene 2, the entry the film calls. From sets.js: hhCourt(), hhCamera(), hhCuts(), hhWife(), hhVimala(), hhBoard().
 function hhSceneAstrologers(t) {
+  var said = t; t = hhClock(t, H02_PLAN, H02_LINES, H02_LONG);
   var p = CNG_PALACE;
   var onDais = [[-70, welPerson("noble", HH_KING, {id: "king", floor: "cross", face: 1, size: 0.8, at: [p[0] + 60, 600]})],
                 [70, hhVimala({floor: "side", face: -1, feel: t < H02_CUTS[0] ? "happy" : "concerned"})]];
@@ -49,5 +52,5 @@ function hhSceneAstrologers(t) {
     hhCameraEnd();
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H02_CUTS);
+  hhCuts(said, hhSaidAll(H02_CUTS, H02_PLAN, H02_LINES, H02_LONG));
 }

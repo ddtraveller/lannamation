@@ -3,8 +3,10 @@
 // water poured from a conch over the boy, the bai si beside him, white threads; on the dais the boy, Vimala beside him,
 // his three wives, his grandmother and the old gardeners in new clothes; the stone swan on the palace roof folds its wings.
 var H21_LONG = 60;
-var H21_SOUND = {calls: [[0, "shama", 0.2, 9], [23, "plate-ting", 0.3], [40, "shama", 0.2, 20]]};
-var H21_LINES = [[2, 7.6, "H092"], [9, 13.2, "H093"], [14.6, 22.2, "H094"], [23.6, 29.2, "H095"], [31, 40.2, "H096"]];
+var H21_SOUND = {calls: [[0.0, "shama", 0.2, 9.0], [22.04, "plate-ting", 0.3], [43.32, "shama", 0.2, 16.68]]};
+var H21_LINES = [[2, 7.26, "H092"], [9, 14.16, "H093"], [14.6, 20.36, "H094"], [23.6, 29.96, "H095"], [31, 43.99, "H096"]];
+// The lines as the scene was drawn to them; it plays to H21_LINES, Pan's voice (sets.js hhClock()).
+var H21_PLAN = [[2, 7.6, "H092"], [9, 13.2, "H093"], [14.6, 22.2, "H094"], [23.6, 29.2, "H095"], [31, 40.2, "H096"]];
 var H21_CUTS = [8.6, 14.2];
 var HH_GRAN_HOME = Object.assign({}, HH_OLD_QUEEN, {size: 0.62});
 
@@ -34,6 +36,7 @@ function hhCourt2(t, onDais, sprites) {
 // Scene 21, the entry the film calls. From sets.js: hhBoy(), HH_BOY_CROWNED, hhVimala(), HH_KING; ogre.js ogreDaughter();
 // honghin.js vimana(), baiSri(), conch(); himmaphan.js hongHin().
 function hhSceneCrowned(t) {
+  var said = t; t = hhClock(t, H21_PLAN, H21_LINES, H21_LONG);
   var p = CNG_PALACE, dais = hoKhamDais(p[1], p[2]);
   var wives = function (feel, wai) {
     return [["mukhawadi", p[0] - 420], ["culakantha", p[0] + 360], ["salicanta", p[0] + 520]].map(function (d, k) {
@@ -89,5 +92,5 @@ function hhSceneCrowned(t) {
     if (t > 46) { pen.fillStyle = "rgba(0, 0, 0, " + between(t, 54, 60).toFixed(3) + ")"; pen.fillRect(0, 0, WIDE, 1080); }
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H21_CUTS);
+  hhCuts(said, hhSaidAll(H21_CUTS, H21_PLAN, H21_LINES, H21_LONG));
 }

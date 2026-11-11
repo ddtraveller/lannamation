@@ -2,8 +2,10 @@
 // brothers play saba with pieces of gold, a row of them set up as targets. The boy watches; his mother brings him a
 // pouch of red seeds; the brothers laugh. He throws, and throws: the gold falls row on row, and he carries it home.
 var H09_LONG = 55;
-var H09_SOUND = {calls: [[0, "shama", 0.2, 55]]};
-var H09_LINES = [[2, 8.2, "H037"], [9.6, 16.2, "H038"], [17.6, 21, "H039"], [22.6, 30.2, "H040"], [32, 39.4, "H041"]];
+var H09_SOUND = {calls: [[0.0, "shama", 0.2, 55.0]]};
+var H09_LINES = [[2, 13.6, "H037"], [13.8, 20.1, "H038"], [20.3, 25.44, "H039"], [25.64, 35.18, "H040"], [35.38, 41.3, "H041"]];
+// The lines as the scene was drawn to them; it plays to H09_LINES, Pan's voice (sets.js hhClock()).
+var H09_PLAN = [[2, 8.2, "H037"], [9.6, 16.2, "H038"], [17.6, 21, "H039"], [22.6, 30.2, "H040"], [32, 39.4, "H041"]];
 var H09_CUTS = [17.2, 31.4];
 var H09_ROW = [1080, CNG_LANE_Y + 40];                  // the first gold piece of the target row; they go on to the right
 var H09_THROWS = [33, 36, 39, 42, 45, 48];              // when each red seed flies (one piece falls to each)
@@ -37,6 +39,7 @@ function h09Lane(t, feel, down, boy) {
 // Scene 9, the entry the film calls. From sets.js: hhSon(), hhBoy(), hhVimala(), hhCamera(), hhCuts(); whiteeel/sets.js
 // welLane(); honghin.js sabaBean(), redSeed(), seedPouch().
 function hhSceneSaba(t) {
+  var said = t; t = hhClock(t, H09_PLAN, H09_LINES, H09_LONG);
   var down = H09_THROWS.filter(function (w) { return t > w + 0.8; }).length, bx = 300, by = CNG_LANE_Y + 100;
   if (t < H09_CUTS[0]) {                                // the brothers at play; the boy watching; his mother's pouch
     hhCamera(0.4, 900, 800, 1.2);
@@ -53,7 +56,7 @@ function hhSceneSaba(t) {
     hhCamera(1, 700, 820, 1.5);
     var l2 = h09Lane(t, t < 22.4 ? "laughing" : "angry", 0, [bx, by]);
     l2.push({name: "boy", kind: "person", x: bx + 220, y: by, draw: function () {
-      person(bx + 220, by, hhBoy(13, {face: 1, feel: "neutral", mouth: welTalk(t, welSays(t, H09_LINES, ["H040"])), at: [800, 760]}));
+      person(bx + 220, by, hhBoy(13, {face: 1, feel: "neutral", mouth: welTalk(t, welSays(t, H09_PLAN, ["H040"])), at: [800, 760]}));
       seedPouch(bx + 100, by + 10);
     }});
     drawByZ(l2);
@@ -77,5 +80,5 @@ function hhSceneSaba(t) {
     hhCameraEnd();
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H09_CUTS);
+  hhCuts(said, hhSaidAll(H09_CUTS, H09_PLAN, H09_LINES, H09_LONG));
 }

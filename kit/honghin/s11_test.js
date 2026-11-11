@@ -3,8 +3,10 @@
 // thousand men to a great river, where the six sit down on the bank; the stone swan rises over the army and is gone into
 // the clouds, and the soldiers go down on their knees.
 var H11_LONG = 50;
-var H11_SOUND = {calls: [[0, "shama", 0.15, 12], [12.5, "crickets", 0.2, 7], [19.5, "frogs", 0.25, 30.5]]};
-var H11_LINES = [[2, 11.2, "H049"], [12.8, 18, "H050"], [20, 27.8, "H051"], [29.4, 35.4, "H052"]];
+var H11_SOUND = {calls: [[0.0, "shama", 0.15, 11.38], [12.27, "crickets", 0.2, 7.39], [19.66, "frogs", 0.25, 30.34]]};
+var H11_LINES = [[2, 10.36, "H049"], [12.8, 19.03, "H050"], [20, 26.16, "H051"], [29.4, 34.72, "H052"]];
+// The lines as the scene was drawn to them; it plays to H11_LINES, Pan's voice (sets.js hhClock()).
+var H11_PLAN = [[2, 11.2, "H049"], [12.8, 18, "H050"], [20, 27.8, "H051"], [29.4, 35.4, "H052"]];
 var H11_CUTS = [12.2, 19.4];
 
 // The river camp: the Kok's plain (whiteeel/sets.js) by day, the army along the bank, the six sitting. t: seconds;
@@ -43,6 +45,7 @@ function h11Camp(t, kneel) {
 // Scene 11, the entry the film calls. From sets.js: hhCourt(), hhSon(), hhBoy(), hhOrchardAt(); whiteeel/sets.js welFar(),
 // welPlain(), welKokWater(); himmaphan.js hongHin(), hongHinReins().
 function hhSceneTest(t) {
+  var said = t; t = hhClock(t, H11_PLAN, H11_LINES, H11_LONG);
   var p = CNG_PALACE;
   if (t < H11_CUTS[0]) {                                // the king commands
     var sons = [];
@@ -84,5 +87,5 @@ function hhSceneTest(t) {
     hhCameraEnd();
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H11_CUTS);
+  hhCuts(said, hhSaidAll(H11_CUTS, H11_PLAN, H11_LINES, H11_LONG));
 }

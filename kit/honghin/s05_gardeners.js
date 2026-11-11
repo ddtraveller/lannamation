@@ -2,14 +2,17 @@
 // an old man and an old woman wake, the old man lights a torch, they find the queen weeping at their gate with the dog;
 // they take her in. Morning: she waters the beds, the old woman beside her; the old man with his hoe.
 var H05_LONG = 40;
-var H05_SOUND = {calls: [[0, "crickets", 0.25, 20], [21, "rooster-crow", 0.3], [22, "shama", 0.2, 18]]};
-var H05_LINES = [[2, 9.2, "H020"], [10.6, 15.6, "H021"], [22, 28.4, "H022"], [30, 36.4, "H023"]];
+var H05_SOUND = {calls: [[0.0, "crickets", 0.25, 20.05], [21.02, "rooster-crow", 0.3], [22.0, "shama", 0.2, 18.0]]};
+var H05_LINES = [[2, 9.2, "H020"], [10.6, 16.16, "H021"], [22, 29.03, "H022"], [30, 34.42, "H023"]];
+// The lines as the scene was drawn to them; it plays to H05_LINES, Pan's voice (sets.js hhClock()).
+var H05_PLAN = [[2, 9.2, "H020"], [10.6, 15.6, "H021"], [22, 28.4, "H022"], [30, 36.4, "H023"]];
 var H05_CUTS = [20.5];
 var HH_OLD_MAN = {size: 0.72};                         // the old gardener, the kit's elder
 var HH_OLD_WOMAN = {size: 0.68};                       // his wife, the kit's grandmother
 
 // Scene 5, the entry the film calls. From sets.js: hhOrchardAt(), HH_ORCHARD_HOUSE, HH_ORCHARD_GROUND, hhVimala().
 function hhSceneGardeners(t) {
+  var said = t; t = hhClock(t, H05_PLAN, H05_LINES, H05_LONG);
   var g = HH_ORCHARD_GROUND, hx = HH_ORCHARD_HOUSE[0];
   if (t < H05_CUTS[0]) {                                // night: the torch, the queen at the gate, taken in
     hhCamera(0.5 + 0.3 * between(t, 0, H05_CUTS[0]), hx - 300, 760, 1.35);
@@ -60,5 +63,5 @@ function hhSceneGardeners(t) {
     hhCameraEnd();
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H05_CUTS);
+  hhCuts(said, hhSaidAll(H05_CUTS, H05_PLAN, H05_LINES, H05_LONG));
 }

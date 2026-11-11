@@ -2,12 +2,15 @@
 // king's anger. Then the gate at dusk: Vimala walks out of it alone, the little spotted dog in her arms, along the road
 // into the falling dark, weeping.
 var H04_LONG = 45;
-var H04_SOUND = {calls: [[0, "shama", 0.15, 16], [17, "crickets", 0.2, 28]]};
-var H04_LINES = [[2, 8.6, "H017"], [10, 16.2, "H018"], [20, 27, "H019"]];
+var H04_SOUND = {calls: [[0.0, "shama", 0.15, 16.73], [17.57, "crickets", 0.2, 27.43]]};
+var H04_LINES = [[2, 10.82, "H017"], [11.02, 17.32, "H018"], [20, 25.97, "H019"]];
+// The lines as the scene was drawn to them; it plays to H04_LINES, Pan's voice (sets.js hhClock()).
+var H04_PLAN = [[2, 8.6, "H017"], [10, 16.2, "H018"], [20, 27, "H019"]];
 var H04_CUTS = [17];
 
 // Scene 4, the entry the film calls. From sets.js: hhCourt(), hhWife(), hhVimala(), hhCamera(), hhCuts(), hhAtChest().
 function hhSceneDriven(t) {
+  var said = t; t = hhClock(t, H04_PLAN, H04_LINES, H04_LONG);
   var p = CNG_PALACE;
   if (t < H04_CUTS[0]) {                                // the six before the king, his anger
     var told = t > 9;
@@ -41,5 +44,5 @@ function hhSceneDriven(t) {
     sceneryAir(t, {butterfly: null, petals: [10, "#f6b8cc", 2, 1], light: null});
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H04_CUTS);
+  hhCuts(said, hhSaidAll(H04_CUTS, H04_PLAN, H04_LINES, H04_LONG));
 }

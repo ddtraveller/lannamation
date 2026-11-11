@@ -2,14 +2,17 @@
 // glows, and in a flash it is a swan of stone plates, its wings opening. He gives the boy, thirteen, the sword Kanchai.
 // The boy climbs on, takes the red reins, and they dive down through the clouds toward the world.
 var H07_LONG = 55;
-var H07_SOUND = {calls: [[0, "wind", 0.15, 55]]};
-var H07_LINES = [[2, 7.6, "H027"], [9, 16.6, "H028"], [18.4, 26.4, "H029"], [28, 34.4, "H030"]];
+var H07_SOUND = {calls: [[0.0, "wind", 0.15, 55.0]]};
+var H07_LINES = [[2, 8.86, "H027"], [9.06, 16.14, "H028"], [18.4, 24.16, "H029"], [28, 35.04, "H030"]];
+// The lines as the scene was drawn to them; it plays to H07_LINES, Pan's voice (sets.js hhClock()).
+var H07_PLAN = [[2, 7.6, "H027"], [9, 16.6, "H028"], [18.4, 26.4, "H029"], [28, 34.4, "H030"]];
 var H07_CUTS = [36];
 var H07_SWAN = [1180, 620];                            // where the swan wakes beside Indra
 
 // Scene 7, the entry the film calls. From sets.js: hhHeaven(), hhBoulder(), hhBoy(); himmaphan.js indra(), hongHin(),
 // hongHinReins(); honghin.js kanchai().
 function hhSceneSwan(t) {
+  var said = t; t = hhClock(t, H07_PLAN, H07_LINES, H07_LONG);
   if (t < H07_CUTS[0]) {
     var glow = between(t, 8, 14), made = between(t, 14, 16.5), sword = between(t, 28.5, 30.5);
     hhCamera(0.5, 1000, 640, 1.2);
@@ -58,5 +61,5 @@ function hhSceneSwan(t) {
     hongHinReins(h, hands);
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H07_CUTS);
+  hhCuts(said, hhSaidAll(H07_CUTS, H07_PLAN, H07_LINES, H07_LONG));
 }

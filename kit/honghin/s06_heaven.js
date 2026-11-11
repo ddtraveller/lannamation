@@ -2,12 +2,15 @@
 // have no milk for him. Years pass: the boy, grown, asks Indra who his mother is; Indra tells him, and the clouds part
 // on a small hut in an orchard far below.
 var H06_LONG = 45;
-var H06_SOUND = {calls: [[0, "wind", 0.15, 45]]};
-var H06_LINES = [[2, 9.6, "H024"], [12.4, 16.2, "H025"], [19, 27.4, "H026"]];
+var H06_SOUND = {calls: [[0.0, "wind", 0.15, 45.0]]};
+var H06_LINES = [[2, 9.84, "H024"], [12.4, 19.28, "H025"], [19.48, 29.58, "H026"]];
+// The lines as the scene was drawn to them; it plays to H06_LINES, Pan's voice (sets.js hhClock()).
+var H06_PLAN = [[2, 9.6, "H024"], [12.4, 16.2, "H025"], [19, 27.4, "H026"]];
 var H06_CUTS = [11.2];
 
 // Scene 6, the entry the film calls. From sets.js: hhHeaven(), hhBoy(), hhOrchardAt(); himmaphan.js indra().
 function hhSceneHeaven(t) {
+  var said = t; t = hhClock(t, H06_PLAN, H06_LINES, H06_LONG);
   if (t < H06_CUTS[0]) {                                // the queens of heaven and the crying child
     hhCamera(0.7, 900, 700, 1.3);
     hhHeaven(t);
@@ -33,11 +36,11 @@ function hhSceneHeaven(t) {
       pen.strokeStyle = "rgba(255, 255, 255, 0.9)"; pen.lineWidth = 10;
       pen.beginPath(); pen.ellipse(960, 960, 360 * part, 120 * part, 0, 0, 7); pen.stroke();
     }
-    var asking = welSays(t, H06_LINES, ["H025"]), telling = welSays(t, H06_LINES, ["H026"]);
+    var asking = welSays(t, H06_PLAN, ["H025"]), telling = welSays(t, H06_PLAN, ["H026"]);
     person(640, 900, hhBoy(10, {face: 1, feel: telling ? "surprised" : "concerned", mouth: welTalk(t, asking),
                                 at: part > 0.5 ? [960, 960] : [1240, 640]}));
     indra(1240, 900, t, {pose: "stand", id: "indra", face: -1, feel: "concerned", at: part > 0.5 ? [960, 960] : [640, 700]});
   }
   welFadeIn(t, 1.5);
-  hhCuts(t, H06_CUTS);
+  hhCuts(said, hhSaidAll(H06_CUTS, H06_PLAN, H06_LINES, H06_LONG));
 }

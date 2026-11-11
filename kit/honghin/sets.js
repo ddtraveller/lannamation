@@ -182,10 +182,38 @@ function hhCourt(t, onDais, sprites) {
 // picture as u goes 0 to 1. Call hhCameraEnd() after. e.g. hhCamera(between(t, 20, 24), 500, 760, 1.6); ...; hhCameraEnd();
 function hhCamera(u, x, y, zoom) {
   var z = mix(1, zoom, u), cx = mix(960, x, u), cy = mix(540, y, u);
+  if (z >= 1) {                                          // the view stays on the set (past its edge is black)
+    cx = Math.max(960 / z, Math.min(WIDE - 960 / z, cx));
+    cy = Math.max(540 / z, Math.min(1080 - 540 / z, cy));
+  }
   pen.save();
   pen.translate(960, 540); pen.scale(z, z); pen.translate(-cx, -cy);
 }
 function hhCameraEnd() { pen.restore(); }
+
+// A scene's clock, as it was drawn. Each scene was drawn to its plan's lines (HNN_PLAN); Pan's voice says them at
+// HNN_LINES (retimed to her takes). hhClock() turns the film's second into the drawing's: each line's start, and the
+// end of its voice (its end less 0.4 s), come at the same moment in both, the time between in step; so what is shown
+// keeps with what is said. hhSaid() is the other way (a cut drawn at the plan's second: said when?).
+// e.g. var said = t; t = hhClock(t, H02_PLAN, H02_LINES, H02_LONG); ... hhCuts(said, hhSaidAll(H02_CUTS, ...));
+function hhClockMarks(lines, long, hold) {
+  var marks = [0];
+  lines.forEach(function (l) { marks.push(l[0], l[1] - hold); });
+  marks.push(long);
+  return marks;
+}
+function hhWarp(t, from, to) {
+  for (var k = 1; k < from.length; k++) {
+    if (t <= from[k] || k === from.length - 1) {
+      var u = from[k] > from[k - 1] ? clamp((t - from[k - 1]) / (from[k] - from[k - 1])) : 1;
+      return to[k - 1] + (to[k] - to[k - 1]) * u;
+    }
+  }
+  return t;
+}
+function hhClock(t, plan, said, long) { return hhWarp(t, hhClockMarks(said, long, 0.4), hhClockMarks(plan, long, 0)); }
+function hhSaid(t, plan, said, long) { return hhWarp(t, hhClockMarks(plan, long, 0), hhClockMarks(said, long, 0.4)); }
+function hhSaidAll(times, plan, said, long) { return times.map(function (c) { return hhSaid(c, plan, said, long); }); }
 
 // A cut through black at each of cuts (seconds), half a second each side. e.g. hhCuts(t, [14.5, 27]);
 function hhCuts(t, cuts) {
