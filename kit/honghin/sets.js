@@ -104,19 +104,181 @@ function hhCityNight(t) {
   HH_NIGHT_LAMPS.forEach(function (l, i) { sceneryLampLight(t, l[0], l[1], l[2], {reach: 120, strength: 0.8, seed: i}); });
 }
 
+// ---------- the scenery pass, the places of scenes 2 to 21 ----------
+// The court of Chang Ngu (changngu/sets.js cngCourt(): the rampart, its trees in flower, the brick paving) under Hong
+// Hin's own mountains. Painted once.
+var HH_COURT = null;
+function hhCourtSheet() {
+  if (HH_COURT) { return HH_COURT; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE; paper.height = 1080;
+  var b = paper.getContext("2d"), n;
+  b.drawImage(hhRangeAt(560), 0, 0);
+  cngRampart(b, 512, 710);
+  [["ratchaphruek", 30, 14], ["frangipani", 30, 12], ["mango", 22, 14], ["ratchaphruek", 26, 14], ["frangipani", 26, 12], ["mango", 20, 14]].forEach(function (bloom, i) {
+    thkTreeOn(b, 120 + i * 330 + 60 * dice(i + 20), 720, 0.3 + 0.08 * dice(i + 8), 51 + i, [bloom]);
+  });
+  csBand(b, 0, 700, WIDE, 380, "#c98a62", "#a8704e");
+  b.strokeStyle = "rgba(110, 60, 40, 0.3)";
+  var rows = [];
+  for (n = 0; n < 16; n++) { rows.push(712 + n * n * 1.6 + n * 8); }
+  rows.forEach(function (py, r) {
+    b.beginPath(); b.moveTo(0, py); b.lineTo(WIDE, py); b.stroke();
+    if (r + 1 >= rows.length) { return; }
+    var brick = 30 + r * 7, low = rows[r + 1];
+    for (var bx = (r % 2) * brick / 2; bx < WIDE + brick; bx += brick) {
+      var lean = (bx - WIDE / 2) * 0.04;
+      b.beginPath(); b.moveTo(bx, py); b.lineTo(bx + lean * (low - py) / 40, low); b.stroke();
+    }
+  });
+  HH_COURT = paper;
+  return paper;
+}
+// A glazed jar of water with lotus in it, its foot at (x, y), size 1 about 90 tall.
+function hhLotusJar(x, y, size, seed) {
+  var s = size || 1;
+  pen.save(); pen.translate(x, y); pen.scale(s, s);
+  pen.beginPath(); pen.moveTo(-34, 0); pen.bezierCurveTo(-56, -30, -50, -70, -30, -78); pen.lineTo(30, -78);
+  pen.bezierCurveTo(50, -70, 56, -30, 34, 0); pen.closePath();
+  var g = pen.createLinearGradient(-50, 0, 50, 0); g.addColorStop(0, "#3a5a6a"); g.addColorStop(0.4, "#6a94a0"); g.addColorStop(1, "#24363e");
+  pen.fillStyle = g; pen.fill(); pen.strokeStyle = "#1a262c"; pen.lineWidth = 2; pen.stroke();
+  pen.strokeStyle = "rgba(230, 200, 120, 0.8)"; pen.lineWidth = 2;   // a band of gold dragons' scales round its shoulder
+  pen.beginPath(); pen.moveTo(-44, -54); pen.quadraticCurveTo(0, -48, 44, -54); pen.stroke();
+  pen.fillStyle = "#3e6a8a"; pen.beginPath(); pen.ellipse(0, -78, 30, 6, 0, 0, 7); pen.fill();
+  pen.fillStyle = "#4e8a44"; pen.strokeStyle = "#2a4a24"; pen.lineWidth = 1.2;   // the leaves, and the flowers on their stalks
+  [[-18, -84, 0.2], [14, -86, -0.3], [-2, -96, 0.1]].forEach(function (l) { pen.beginPath(); pen.ellipse(l[0], l[1], 16, 6, l[2], 0, 7); pen.fill(); pen.stroke(); });
+  [[-10, -150, "#f4a6c0"], [16, -132, "#ffffff"]].forEach(function (f, k) {
+    pen.strokeStyle = "#4e7a3a"; pen.lineWidth = 2.4; pen.beginPath(); pen.moveTo(f[0] * 0.3, -84); pen.quadraticCurveTo(f[0], (f[1] - 84) / 2, f[0], f[1]); pen.stroke();
+    pen.fillStyle = f[2]; pen.strokeStyle = "#b85a7a";
+    pen.beginPath(); pen.moveTo(f[0], f[1] - 22); pen.quadraticCurveTo(f[0] + 12, f[1] - 6, f[0], f[1] + 2); pen.quadraticCurveTo(f[0] - 12, f[1] - 6, f[0], f[1] - 22);
+    pen.fill(); pen.lineWidth = 1; pen.stroke();
+  });
+  pen.restore();
+}
+// The court's royal things (the owner's "yes", 2026-11-12): two tall gold parasols (honghin.js chatra()) on the dais
+// either side of the throne, behind who sits there, and two lotus jars at the foot of the steps; drawByZ sprites.
+function hhCourtThings() {
+  var p = CNG_PALACE, s = p[2], dais = hoKhamDais(p[1], p[2]);
+  return [[-205, "chatra"], [205, "chatra"], [-120, "jar"], [120, "jar"]].map(function (d, k) {
+    var x = p[0] + d[0] * s, y = d[1] === "chatra" ? dais : p[1] + 12;
+    var one = {name: d[1] + " " + k, kind: "thing", x: x, y: d[1] === "chatra" ? dais - 0.5 : y, draw: function () {
+      if (d[1] === "chatra") { chatra(x, y, 300 * s); } else { hhLotusJar(x, y, 0.62, k); }
+    }};
+    if (d[1] === "chatra") { one.z = "set"; }           // on the dais, among the hall's parts
+    return one;
+  });
+}
+// The flowering trees round a giant king's hall, behind it, in its kingdom's colours: the flame of the forest in the red
+// city, the golden shower in the green, the frangipani in the blue. Painted once each.
+var HH_GIANT_TREES = {};
+function hhGiantTrees(kingdom) {
+  if (HH_GIANT_TREES[kingdom]) { return HH_GIANT_TREES[kingdom]; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE; paper.height = 1080;
+  var b = paper.getContext("2d"), bloom = {red: ["thongkwao", 26, 12], green: ["ratchaphruek", 28, 14], blue: ["frangipani", 28, 12]}[kingdom];
+  [[230, 0.3], [520, 0.26], [1400, 0.27], [1690, 0.31]].forEach(function (tr, i) { thkTreeOn(b, tr[0], 705, tr[1], 71 + i, [bloom]); });
+  HH_GIANT_TREES[kingdom] = paper;
+  return paper;
+}
+
+// ---------- each place's air and framing ----------
+// A scene's place says what it is as it is drawn (hhPlace(name), the first in a frame wins: heaven over the orchard seen
+// through its clouds); at the scene's end hhPlaceAir(t) lays that place's air (light, petals, fireflies, a butterfly)
+// and its framing (blossom hanging into a top corner, grass at the bottom corners, out of focus) over the picture, in
+// the frame's own place, not the camera's (docs/kit/places.md, points 5 and 7).
+var HH_PLACE = null;
+function hhPlace(name) { if (!HH_PLACE) { HH_PLACE = name; } }
+var HH_FRAMES = {};
+function hhFrameOf(name, make) { return HH_FRAMES[name] || (HH_FRAMES[name] = make()); }
+function hhCorners(seed, greens) {
+  return [{sprite: sceneryGrass(260, 16, seed, greens), x: 60, y: 1110}, {sprite: sceneryGrass(240, 14, seed + 2, greens), x: WIDE - 50, y: 1110}];
+}
+var HH_AIR = {
+  court: function (t) {
+    sceneryBeds(t, hhFrameOf("court", function () {
+      return [{sprite: sceneryHanging(520, 220, 501, THK_GREENS, [["ratchaphruek", 26, 14]]), x: WIDE - 180, y: -30}];
+    }), {blur: 5, sway: 0.4});
+    sceneryAir(t, {butterfly: null, petals: [14, "#f2c94c", 7, 0.9], light: [0.55, 3]});
+  },
+  fields: function (t) {
+    sceneryBeds(t, hhFrameOf("fields", function () { return hhCorners(511); }), {blur: 5, sway: 0.4});
+    sceneryAir(t, {butterfly: null, petals: null, light: [0.8, 5]});
+  },
+  "orchard-day": function (t) {
+    sceneryBeds(t, hhFrameOf("orchard-day", function () {
+      return [{sprite: sceneryHanging(500, 210, 521, THK_GREENS, [["frangipani", 24, 12]]), x: 160, y: -30}].concat(hhCorners(523));
+    }), {blur: 5, sway: 0.4});
+    sceneryAir(t, {butterfly: {kind: "lacewing", x: 1500, y: 560, vx: -70, weave: 50, seed: 4, size: 1.2, turn: 0.4, wing: 3},
+                   petals: [12, "#f6b8cc", 9, 1.0], light: [0.6, 4]});
+  },
+  "orchard-dusk": function (t) {
+    var dusk = THK_SHADE.map(function (g) { return blend(g, "#3a2430", 0.35); });
+    sceneryBeds(t, hhFrameOf("orchard-dusk", function () {
+      return [{sprite: sceneryHanging(500, 210, 531, dusk, [["frangipani", 22, 12, "#f4e2d0"]]), x: 160, y: -30}].concat(hhCorners(533, dusk));
+    }), {blur: 5, sway: 0.4});
+    sceneryFireflies(t, {far: [[[0, 760, WIDE, 1000], 24, 6]], near: 4});
+  },
+  "orchard-night": function (t) {
+    var dark = THK_SHADE.map(function (g) { return blend(g, "#0c1124", 0.78); });
+    sceneryBeds(t, hhFrameOf("orchard-night", function () { return hhCorners(541, dark); }), {blur: 5, sway: 0.4});
+    sceneryFireflies(t, {far: [[[0, 700, WIDE, 1000], 40, 7]], near: 8});
+  },
+  heaven: function (t) { sceneryAir(t, {butterfly: null, petals: [18, "#ffe08a", 13, 0.8], light: [0.9, 2]}); },
+  giant: function (t) {
+    sceneryBeds(t, hhFrameOf("giant", function () {
+      return [{sprite: sceneryHanging(480, 200, 551, THK_GREENS, [["bougainvillea", 30, 12, "#d8338a"]]), x: 150, y: -30}];
+    }), {blur: 5, sway: 0.4});
+    sceneryAir(t, {butterfly: null, petals: [10, "#e85a7a", 11, 1.0], light: [0.5, 6]});
+  },
+  ghouls: function (t) {
+    var dark = THK_SHADE.map(function (g) { return blend(g, "#0e1612", 0.6); });
+    sceneryBeds(t, hhFrameOf("ghouls", function () {
+      return [{sprite: sceneryHanging(520, 220, 561, dark, []), x: 140, y: -40}, {sprite: sceneryHanging(460, 200, 563, dark, []), x: WIDE - 150, y: -40}];
+    }), {blur: 5, sway: 0.3});
+    softMist(t, 990, 60, 0.3, 19, "190, 204, 190");
+  },
+  "river-day": function (t) {
+    sceneryBeds(t, hhFrameOf("river-day", function () { return hhCorners(571); }), {blur: 5, sway: 0.4});
+    sceneryAir(t, {butterfly: null, petals: null, light: [0.5, 7]});
+  },
+  "river-dusk": function (t) {
+    var dusk = THK_SHADE.map(function (g) { return blend(g, "#3a2430", 0.35); });
+    sceneryBeds(t, hhFrameOf("river-dusk", function () { return hhCorners(573, dusk); }), {blur: 5, sway: 0.4});
+    sceneryFireflies(t, {far: [[[0, 700, WIDE, 980], 20, 8]], near: 3});
+  },
+  "river-night": function (t) { sceneryFireflies(t, {far: [[[0, 650, WIDE, 980], 40, 9]], near: 8}); },
+  lane: function (t) {
+    sceneryBeds(t, hhFrameOf("lane", function () {
+      return [{sprite: sceneryHanging(500, 210, 581, THK_GREENS, [["bougainvillea", 30, 12, "#e86a2a"]]), x: WIDE - 170, y: -30}];
+    }), {blur: 5, sway: 0.4});
+    sceneryAir(t, {butterfly: null, petals: [12, "#f6b8cc", 15, 1.0], light: [0.6, 8]});
+  }
+};
+function hhPlaceAir(t) {
+  var place = HH_PLACE;
+  HH_PLACE = null;
+  if (place && HH_AIR[place]) { HH_AIR[place](t); }
+}
+
 // ---------- the scenery pass (docs/kit/places.md, "Painting the scenery") ----------
 // The owner, 2026-11-12, "yes" to scene 1's plan. Hong Hin's own far mountains (a film has its own, not another's): a far
 // ridge and a second between, a limestone peak at the left, a range clothed in forest with pines, painted once.
-function hhRange() { return farRange("#9ab0c4", "214, 222, 236", 580, {peak: 420 + SIDE, ridges: 2, pines: 18, seed: 23}); }
+var HH_RANGE = {peak: 420 + SIDE, ridges: 2, pines: 18, seed: 23};
+function hhRange() { return farRange("#9ab0c4", "214, 222, 236", 580, HH_RANGE); }
+// The same mountains with their foot at foot (pixels of the sheet), in the light of the hour: "day" (unless told),
+// "dusk" (rose and violet) or "night". e.g. pen.drawImage(hhRangeAt(600, "dusk"), 0, 0);
+var HH_RANGE_LIGHT = {day: ["#9ab0c4", "214, 222, 236"], dusk: ["#a08aa8", "240, 196, 168"], night: ["#4a5670", "60, 70, 100"]};
+function hhRangeAt(foot, light) { var c = HH_RANGE_LIGHT[light || "day"]; return farRange(c[0], c[1], foot, HH_RANGE); }
 // Varanasi's fields before the wall (as changngu/sets.js cngFields(), the plain, the meadow and the road where they lie
 // there), under Hong Hin's own mountains. Painted once.
-var HH_FIELDS = null;
-function hhFields() {
-  if (HH_FIELDS) { return HH_FIELDS; }
+var HH_FIELDS = {};
+function hhFields(light) {                              // light: the mountains' hour, "day" unless told ("dusk")
+  light = light || "day";
+  if (HH_FIELDS[light]) { return HH_FIELDS[light]; }
   var paper = document.createElement("canvas");
   paper.width = WIDE; paper.height = 1080;
   var b = paper.getContext("2d");
-  b.drawImage(hhRange(), 0, 0);
+  b.drawImage(light === "day" ? hhRange() : hhRangeAt(580, light), 0, 0);
   csBand(b, 0, 540, WIDE, 540, "#a9c97a", "#86a85a");
   sceneryMeadow(b, 0, WIDE, 560, 1080, {seed: 5, haze: "#b4cfa0", many: 1.5});
   b.fillStyle = "#c9b285";                               // the road from the near fields to the gate, and along the wall
@@ -124,7 +286,7 @@ function hhFields() {
   b.lineTo(CNG_GATE[0] + 260, 1080); b.lineTo(CNG_GATE[0] - 260, 1080); b.closePath(); b.fill();
   b.fillRect(0, CNG_ROAD - 26, WIDE, 52);
   [[260, 760, 0.55, 3], [1520, 770, 0.6, 5]].forEach(function (c) { bamboo(b, c[0], c[1], c[2], c[3]); });
-  HH_FIELDS = paper;
+  HH_FIELDS[light] = paper;
   return paper;
 }
 // The frangipani by the gate, white in flower (a temple's and a palace's tree at night), on a sheet of its own.
@@ -241,12 +403,14 @@ function hhCarried(x, y, tall, look, face) {
 // rest of the scene's people. e.g. hhCourt(t, [[-60, kingLook]], []);
 function hhCourt(t, onDais, sprites) {
   var p = CNG_PALACE, dais = hoKhamDais(p[1], p[2]);
+  hhPlace("court");
   pen.drawImage(cngSky("day"), 0, 0);
   cngClouds(t + 50, "day");
-  pen.drawImage(cngCourt(), 0, 0);
+  pen.drawImage(hhCourtSheet(), 0, 0);
   cngBeds(t, "court", "back");
   var list = [{name: "hall, back", kind: "palace", z: "set", y: dais - 1, draw: function () { cngPalace("back"); }},
               {name: "hall, front", kind: "palace", z: "set", y: dais + 1, draw: function () { cngPalace("front"); }}];
+  hhCourtThings().forEach(function (s) { list.push(s); });   // the parasols and the lotus jars by the steps
   (onDais || []).forEach(function (d, k) {
     list.push({name: "dais " + k, kind: "person", z: "set", x: p[0] + d[0], y: dais, draw: function () { person(p[0] + d[0], dais, d[1]); }});
   });
@@ -317,15 +481,16 @@ function hhBoard(x, y, seed) {
 // Where the old gardeners live and Vimala with them (scenes 5, 8, 9, 20): the far hills, a meadow, their bamboo house
 // on posts among fruit trees in flower (mango, banana), beds of vegetables before it, a fence of split bamboo. Painted
 // once; a scene lays the hour over it. HH_ORCHARD_HOUSE: [x, base, size]; HH_ORCHARD_GROUND: where people stand.
-var HH_ORCHARD = null;
+var HH_ORCHARD = {};
 var HH_ORCHARD_HOUSE = [1250, 840, 0.95];
 var HH_ORCHARD_GROUND = 930;
-function hhOrchard() {
-  if (HH_ORCHARD) { return HH_ORCHARD; }
+function hhOrchard(light) {                             // light: the mountains' hour ("day" unless told: "dusk")
+  light = light === "dusk" ? "dusk" : "day";
+  if (HH_ORCHARD[light]) { return HH_ORCHARD[light]; }
   var paper = document.createElement("canvas");
   paper.width = WIDE; paper.height = 1080;
   var b = paper.getContext("2d"), k;
-  cngFar(b, 0, 600);
+  b.drawImage(hhRangeAt(600, light), 0, 0);             // the film's own mountains (scenery pass, 2026-11-12)
   sceneryMeadow(b, 0, WIDE, 590, 1080, {seed: 21, haze: "#b4cfa0", many: 1.2});
   thkTreeOn(b, 260, 760, 0.34, 81, [["mango", 22, 14]]);
   thkTreeOn(b, 1700, 770, 0.3, 83, [["frangipani", 26, 12]]);
@@ -340,15 +505,16 @@ function hhOrchard() {
   b.strokeStyle = "#c8b080"; b.lineWidth = 4;            // the split-bamboo fence along the front
   for (k = 0; k < 40; k++) { b.beginPath(); b.moveTo(k * 50, 1040); b.lineTo(k * 50 + 4, 990); b.stroke(); }
   b.lineWidth = 3; b.beginPath(); b.moveTo(0, 1008); b.lineTo(WIDE, 1004); b.stroke();
-  HH_ORCHARD = paper;
+  HH_ORCHARD[light] = paper;
   return paper;
 }
 // The orchard at an hour: "day", "dusk" (a warm low sun) or "night" (the moon, darkened). e.g. hhOrchardAt(t, "dusk");
 function hhOrchardAt(t, hour) {
+  hhPlace("orchard-" + hour);
   pen.drawImage(welSky(hour === "night" ? "clear" : hour === "dusk" ? "sunset" : "day"), 0, 0);
   if (hour === "day") { welClouds(t, "day", 1); }
   if (hour === "dusk") { scenerySun(t, 420, 470, 36, {glow: 10, colour: "255, 196, 130"}); }
-  pen.drawImage(hhOrchard(), 0, 0);
+  pen.drawImage(hhOrchard(hour), 0, 0);
   if (hour === "dusk") { pen.fillStyle = "rgba(160, 80, 60, 0.25)"; pen.fillRect(0, 0, WIDE, 1080); }
   if (hour === "night") { hhNight(0.62, t); }
 }
@@ -359,6 +525,7 @@ function hhAtChest(x, y, size, face, draw) { draw(x + 14 * face * size, y - 250 
 // Indra's heaven (Tavatimsa): a bright sky, gold light, the clouds of Thai painting (honghin.js thaiCloud), a palace
 // far off on its cloud (vimana). t: seconds; low: the clouds' line (1000 unless told). e.g. hhHeaven(t);
 function hhHeaven(t, low) {
+  hhPlace("heaven");
   var g = pen.createLinearGradient(0, 0, 0, 1080);
   g.addColorStop(0, "#5a78b8"); g.addColorStop(0.6, "#c8d8f0"); g.addColorStop(1, "#fbe8c8");
   pen.fillStyle = g; pen.fillRect(-WIDE, -400, 3 * WIDE, 2000);
@@ -450,13 +617,17 @@ function hhBoy(years, extra) {
 // "blue" (Anumat's). HH_GIANT_HALL: [x, base, size]. who: [[x offset, look or painter (x, y)], ...] seated on the dais.
 var HH_GIANT_HALL = [960, 900, 1.0];
 var HH_GIANT_SKY = {red: ["#6a2a3a", "#e8905a", "#f6d0a0"], green: ["#2a5a4a", "#9ac8a0", "#e8f0d0"], blue: ["#2a3a6a", "#8aa0d8", "#e0e4f0"]};
+// Each kingdom's own far mountains in its air: [colour, air, seed] for farRange() (scenery pass, 2026-11-12).
+var HH_GIANT_FAR = {red: ["#a8869a", "236, 196, 170", 31], green: ["#8aa898", "226, 238, 220", 33], blue: ["#8e9ac0", "220, 226, 244", 35]};
 function hhGiantCity(t, kingdom, who, sprites) {
   var c = HH_GIANT_SKY[kingdom], g = pen.createLinearGradient(0, 0, 0, 900);
   g.addColorStop(0, c[0]); g.addColorStop(0.55, c[1]); g.addColorStop(1, c[2]);
   pen.fillStyle = g; pen.fillRect(-WIDE, -400, 3 * WIDE, 2000);
-  cngFar(pen, 0, 640, kingdom === "red" ? "dusk" : undefined);
+  hhPlace("giant");
+  pen.drawImage(farRange(HH_GIANT_FAR[kingdom][0], HH_GIANT_FAR[kingdom][1], 660, {peak: false, ridges: 2, pines: 12, seed: HH_GIANT_FAR[kingdom][2]}), 0, 0);
   if (kingdom === "green") { forest(pen, -100, WIDE + 100, 700, {tall: 320, seed: 13, far: 0.4}); }
   csBand(pen, -200, 640, WIDE + 400, 700, kingdom === "blue" ? "#8a8aa0" : "#b8784e", kingdom === "blue" ? "#6a6a84" : "#8a5236");
+  pen.drawImage(hhGiantTrees(kingdom), 0, 0);           // trees in flower round the hall (scenery pass, 2026-11-12)
   var h = HH_GIANT_HALL, dais = hoKhamDais(h[1], h[2]);
   var list = [{name: "hall back", kind: "palace", z: "set", y: dais - 1, draw: function () { hoKham(pen, h[0], h[1], h[2], {part: "back", fine: true}); }},
               {name: "hall front", kind: "palace", z: "set", y: dais + 1, draw: function () { hoKham(pen, h[0], h[1], h[2], {part: "front", fine: true, pediment: "peacock"}); }}];
@@ -508,6 +679,7 @@ function hhGhoulForest() {
   return paper;
 }
 function hhGhoulPlace(t, broken) {
+  hhPlace("ghouls");
   pen.drawImage(hhGhoulForest(), 0, 0);
   pen.fillStyle = "rgba(12, 22, 16, 0.45)"; pen.fillRect(0, 0, WIDE, 1080);   // the shade under the canopy
   pen.save(); pen.globalCompositeOperation = "lighter";  // shafts of light through the canopy
@@ -542,9 +714,9 @@ function hhGhoulPlace(t, broken) {
 function hhPass(t) {
   pen.drawImage(welSky("sunset"), 0, 0);
   scenerySun(t, 1500, 560, 40, {glow: 10, colour: "255, 170, 110"});
-  cngFar(pen, 0, 620, "dusk");
+  pen.drawImage(hhRangeAt(640, "dusk"), 0, 0);          // the film's own mountains (scenery pass, 2026-11-12)
   mistSea(pen, t, {level: 700, layers: 1, glow: "#f3b27a"});
-  cngFar(pen, 400, 900, "dusk");
+  pen.drawImage(farRange("#8a6a84", "240, 180, 150", 920, {peak: false, ridges: 1, pines: 10, seed: 39}), 0, 0);
   mistSea(pen, t + 7, {level: 950, layers: 1, glow: "#f0a070"});
 }
 // A point of the scene as person() gives its joints (through the pen's present transform), for the kit's painters that

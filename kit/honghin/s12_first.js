@@ -64,6 +64,7 @@ function hhSceneFirst(t) {
     [h[0] - 260, h[0] + 260].forEach(function (x) { pen.beginPath(); pen.ellipse(x, 1040, 90, 18, 0, 0, 7); pen.fill(); ogreMeat(hhDevice([x - 30, 1020]), 0.2); });
     hhCameraEnd();
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H12_CUTS, H12_PLAN, H12_LINES, H12_LONG));
 }

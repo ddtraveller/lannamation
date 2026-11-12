@@ -12,9 +12,10 @@ var H11_CUTS = [12.2, 19.4];
 // The river camp: the Kok's plain (whiteeel/sets.js) by day, the army along the bank, the six sitting. t: seconds;
 // kneel: 0 to 1, the soldiers going down on their knees.
 function h11Camp(t, kneel) {
+  hhPlace("river-day");
   pen.drawImage(cngSky("day"), 0, 0);
   cngClouds(t + 10, "day");
-  welFar(pen, WEL_KOK);
+  pen.drawImage(hhRangeAt(WEL_KOK - 10), 0, 0);
   pen.drawImage(welPlain(), 0, 0, WIDE, 1080);
   var kok = welKokWater();
   sceneryWaterDepths(kok);
@@ -87,6 +88,7 @@ function hhSceneTest(t) {
     }
     hhCameraEnd();
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H11_CUTS, H11_PLAN, H11_LINES, H11_LONG));
 }

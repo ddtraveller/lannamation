@@ -11,9 +11,10 @@ var H16_CUTS = [10.2, 18.6, 27.6];
 
 // The river at an hour: the Kok's plain (whiteeel/sets.js), "dusk" or "night". t: seconds.
 function h16River(t, hour) {
+  hhPlace("river-" + hour);
   pen.drawImage(welSky(hour === "night" ? "clear" : "sunset"), 0, 0);
   if (hour !== "night") { scenerySun(t, 1580, 470, 36, {glow: 10, colour: "255, 180, 120"}); }
-  welFar(pen, WEL_KOK);
+  pen.drawImage(hhRangeAt(WEL_KOK - 10, hour === "night" ? "night" : "dusk"), 0, 0);
   vimana(380, WEL_KOK - 40, t, {kind: "prasat", size: 0.16});      // the three palaces on the far bank
   vimana(700, WEL_KOK - 50, t + 2, {kind: "hall", size: 0.14});
   vimana(1000, WEL_KOK - 40, t + 4, {kind: "lotus", size: 0.15});
@@ -84,6 +85,7 @@ function hhSceneCrime(t) {
     person(e.seat[0] + 70, e.seat[1] + 6, hhSon(0, {floor: "astride", face: -1, id: "rider"}));
     sceneryMoon(t, HH_MOON[0], HH_MOON[1], HH_MOON[2], {});
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H16_CUTS, H16_PLAN, H16_LINES, H16_LONG));
 }

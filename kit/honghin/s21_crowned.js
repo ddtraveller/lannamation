@@ -15,7 +15,7 @@ function h21Court(t, land, onDais, sprites) {
   var p = CNG_PALACE;
   pen.drawImage(cngSky("day"), 0, 0);
   cngClouds(t + 50, "day");
-  pen.drawImage(cngCourt(), 0, 0);
+  pen.drawImage(hhCourtSheet(), 0, 0);
   vimana(260, mix(300, 640, land), t, {kind: "prasat", size: 0.3});
   vimana(1700, mix(260, 620, land), t + 2, {kind: "lotus", size: 0.3});
   vimana(560, mix(200, 600, land), t + 4, {kind: "hall", size: 0.26});
@@ -54,7 +54,7 @@ function hhSceneCrowned(t) {
   } else if (t < H21_CUTS[1]) {                          // the festival nights: lanterns, lamps, dancers
     pen.drawImage(welSky("clear"), 0, 0);
     sceneryStars(t, {band: null, horizon: 600, count: 1800, bright: 18, glow: null, seed: 47, alpha: 1});
-    pen.drawImage(cngCourt(), 0, 0);
+    pen.drawImage(hhCourtSheet(), 0, 0);
     hhCourt2(t, [], []);
     hhNight(0.55, t);
     // The city dancing, as the hero film's night (sash_maeng.html sceneDance): the crowd behind, dancers each in her own
@@ -107,6 +107,7 @@ function hhSceneCrowned(t) {
     hhCameraEnd();
     if (t > 44) { pen.fillStyle = "rgba(0, 0, 0, " + between(t, 44.5, 47).toFixed(3) + ")"; pen.fillRect(0, 0, WIDE, 1080); }
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H21_CUTS, H21_PLAN, H21_LINES, H21_LONG));
 }

@@ -51,6 +51,7 @@ function hhSceneAstrologers(t) {
     hhCourt(t, onDais, h02People(t, t < 36 ? "surprised" : "concerned"));
     hhCameraEnd();
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H02_CUTS, H02_PLAN, H02_LINES, H02_LONG));
 }

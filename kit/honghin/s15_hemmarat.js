@@ -42,6 +42,7 @@ function hhSceneHemmarat(t) {
     person(hs2.seat[0], hs2.seat[1], hhBoy(13, {floor: "astride", face: -1, feel: "happy"}));
     hs2.near();
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H15_CUTS, H15_PLAN, H15_LINES, H15_LONG));
 }

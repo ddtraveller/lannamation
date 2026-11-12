@@ -62,6 +62,7 @@ function hhSceneGardeners(t) {
     sceneryAir(t, {butterfly: {kind: "lacewing", x: 300, y: 620, vx: 60, weave: 50, seed: 3, size: 1.1, turn: 1.2, wing: 2}, petals: [12, "#f6dce4", 3, 1], light: [0.4, 3]});
     hhCameraEnd();
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H05_CUTS, H05_PLAN, H05_LINES, H05_LONG));
 }

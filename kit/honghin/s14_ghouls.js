@@ -61,7 +61,7 @@ function hhSceneGhouls2(t) {
   } else if (t < H14_CUTS[3]) {                          // the ghouls fly after them, throwing; Kanchai flashes
     var s = t - H14_CUTS[2];
     pen.drawImage(welSky("sunset"), 0, 0);
-    cngFar(pen, 0, 900, "dusk");
+    pen.drawImage(hhRangeAt(1120, "dusk"), 0, 0);         // low, far below them in the air (scenery pass)
     var hs3 = hongHin(1300, 360 + 20 * Math.sin(t), t, {size: 1.5, rider: true});
     person(hs3.behind[0], hs3.behind[1], welPerson("grandmother", HH_GRAN, {id: "gran", floor: "astride", face: 1, feel: "fear"}));
     // Kanchai held up, then brought down in an arc through the ghouls, in his hand (owner, 2026-11-12)
@@ -88,7 +88,7 @@ function hhSceneGhouls2(t) {
   } else {                                               // a cut: they fall from the sky like rain
     var f = t - H14_CUTS[3];
     pen.drawImage(welSky("sunset"), 0, 0);
-    cngFar(pen, 0, 900, "dusk");
+    pen.drawImage(hhRangeAt(900, "dusk"), 0, 0);
     forest(pen, -100, WIDE + 100, 1060, {tall: 260, seed: 23, far: 0.3});
     for (var n = 0; n < 12; n++) {
       var fx = 160 + n * 140 + 40 * Math.sin(n * 3), fall = ((f * 0.5 + n * 0.13) % 1.2), fy = mix(-200, 1300, fall);
@@ -101,6 +101,7 @@ function hhSceneGhouls2(t) {
     person(hs4.seat[0], hs4.seat[1], hhBoy(13, {floor: "astride", face: 1}));
     hs4.near();
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H14_CUTS, H14_PLAN, H14_LINES, H14_LONG));
 }

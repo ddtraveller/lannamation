@@ -13,8 +13,9 @@ var H17_BODY = [960, WEL_KOK_BANK + 170];
 
 // The bank in the morning mist, the boy lying, the three about him. t: seconds; up: 0 to 1, his sitting up; feel: theirs.
 function h17Bank(t, up, feel, turned) {
+  hhPlace("river-day");
   pen.drawImage(cngSky("day"), 0, 0);
-  welFar(pen, WEL_KOK);
+  pen.drawImage(hhRangeAt(WEL_KOK - 10), 0, 0);
   pen.drawImage(welPlain(), 0, 0, WIDE, 1080);
   var kok = welKokWater();
   sceneryWaterDepths(kok); sceneryWaterSurface(t, kok);
@@ -23,8 +24,9 @@ function h17Bank(t, up, feel, turned) {
   person(0, up > 0 ? 0 : 160, hhBoy(13, {face: 1, feel: up > 0 ? "happy" : "sleepy", blink: up > 0 ? undefined : 1, floor: up > 0 ? "cross" : undefined}));
   pen.restore();
   [["mukhawadi", -220, 1], ["culakantha", 160, -1], ["salicanta", 420, -1]].forEach(function (d, k) {
-    hhPrincessAt(H17_BODY[0] + d[1], H17_BODY[1] + 20, d[0], {size: 0.72, id: d[0], floor: "side", face: turned ? -d[2] : d[2],
-                                                               feel: feel, tears: feel === "sad" ? 1 : 0, at: [H17_BODY[0], H17_BODY[1] - 40]});
+    var pj = hhPrincessAt(H17_BODY[0] + d[1], H17_BODY[1] + 20, d[0], {size: 0.72, id: d[0], floor: "side", face: turned ? -d[2] : d[2],
+                                                                        feel: feel, tears: feel === "sad" ? 1 : 0, at: [H17_BODY[0], H17_BODY[1] - 40]});
+    if (feel === "sad" && pj && pj.crown) { hhTears(pj, turned ? -d[2] : d[2], t); }   // the painted faces draw no tears
   });
 }
 
@@ -77,6 +79,7 @@ function hhSceneRevival(t) {
     }
     hhCameraEnd();
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H17_CUTS, H17_PLAN, H17_LINES, H17_LONG));
 }

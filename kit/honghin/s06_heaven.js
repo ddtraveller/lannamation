@@ -44,6 +44,7 @@ function hhSceneHeaven(t) {
     indra(1240, 900, t, {pose: "stand", id: "indra", face: -1, feel: "concerned", at: part > 0.5 ? [960, 960] : [640, 700], ground: false});
     hhCloudFeet(1240, 900, t, 360, 15);
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H06_CUTS, H06_PLAN, H06_LINES, H06_LONG));
 }

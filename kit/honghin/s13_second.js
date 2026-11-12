@@ -53,6 +53,7 @@ function hhSceneSecond(t) {
     person(hs.seat[0], hs.seat[1], hhBoy(13, {floor: "astride", face: -1, feel: "neutral"}));
     hs.near();
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H13_CUTS, H13_PLAN, H13_LINES, H13_LONG));
 }

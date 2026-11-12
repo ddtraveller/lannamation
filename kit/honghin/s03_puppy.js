@@ -72,6 +72,7 @@ function hhScenePuppy(t) {
     var hot = between(t, 31, 35);
     var jx = 960, jy = 900;
     indra(jx, jy, t, {pose: "throne", id: "indraThrone", feel: hot > 0.5 ? "surprised" : "neutral", at: hot > 0.8 ? [jx, 1400] : [jx + 400, 400]});
+    hhCloudFeet(jx, jy, t, 560, 19);                     // the throne's foot in the cloud (scenery pass)
     pen.save();
     pen.globalCompositeOperation = "lighter";
     pen.fillStyle = "rgba(255, 70, 30, " + (0.45 * hot * (0.85 + 0.15 * Math.sin(t * 9))).toFixed(3) + ")";
@@ -91,6 +92,7 @@ function hhScenePuppy(t) {
     swaddledBaby(pen, bx, by, 0.85);
     thaiCloud(960, 1060, 1500, t, 9);
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H03_CUTS, H03_PLAN, H03_LINES, H03_LONG));
 }

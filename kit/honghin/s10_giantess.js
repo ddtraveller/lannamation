@@ -14,9 +14,10 @@ var H10_FALLEN = [1180, 960];                          // where she lies, under 
 
 // The road outside the south gate at noon, the palm. t: seconds.
 function h10Gate(t) {
+  hhPlace("fields");
   pen.drawImage(cngSky("day"), 0, 0);
   cngClouds(t + 70, "day");
-  pen.drawImage(cngFields(), 0, 0);
+  pen.drawImage(hhFields(), 0, 0);
   cngGateWall(0.3, t);
   sugarPalm(H10_PALM[0], H10_PALM[1], t, {tall: 560});
   pen.fillStyle = "rgba(255, 236, 190, 0.12)"; pen.fillRect(0, 0, WIDE, 1080);   // the noon glare
@@ -81,6 +82,7 @@ function hhSceneGiantess(t) {
     }
     hhCameraEnd();
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H10_CUTS, H10_PLAN, H10_LINES, H10_LONG));
 }

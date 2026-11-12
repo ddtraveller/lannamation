@@ -12,6 +12,7 @@ var H09_THROWS = [33, 36, 39, 42, 45, 48];              // when each red seed fl
 
 // The lane, the six brothers, the row of gold. t: seconds; laugh: their feeling; down: how many pieces have fallen.
 function h09Lane(t, feel, down, boy) {
+  hhPlace("lane");
   pen.drawImage(cngSky("day"), 0, 0);
   cngClouds(t + 20, "day");
   pen.drawImage(welLane("day"), 0, 0);
@@ -79,6 +80,7 @@ function hhSceneSaba(t) {
     });
     hhCameraEnd();
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H09_CUTS, H09_PLAN, H09_LINES, H09_LONG));
 }

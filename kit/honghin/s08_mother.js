@@ -68,6 +68,7 @@ function hhSceneMother(t) {
     }
     hhCameraEnd();
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H08_CUTS, H08_PLAN, H08_LINES, H08_LONG));
 }

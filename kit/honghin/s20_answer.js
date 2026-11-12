@@ -50,6 +50,7 @@ function hhSceneAnswer(t) {
     sceneryAir(t, {butterfly: null, petals: [16, "#f6dce4", 7, 1], light: [0.4, 5]});
     hhCameraEnd();
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H20_CUTS, H20_PLAN, H20_LINES, H20_LONG));
 }

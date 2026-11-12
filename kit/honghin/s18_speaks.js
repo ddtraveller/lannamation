@@ -39,7 +39,7 @@ function hhSceneSpeaks(t) {
     var s = t - H18_CUTS[1], seen = t > 36;
     pen.drawImage(cngSky("day"), 0, 0);
     cngClouds(t + 30, "day");
-    pen.drawImage(cngFields(), 0, 0);
+    pen.drawImage(hhFields(), 0, 0);
     cngGateWall(1, t);
     for (var b = 0; b < 5; b++) { tung(pen, 200 + b * 360, 900, t, b % 2 === 0); }
     var top = hhPavilion(H18_PAV[0], H18_PAV[1], H18_PAV[2], "back");
@@ -60,6 +60,7 @@ function hhSceneSpeaks(t) {
     person(bx, by, hhBoy(13, {face: 1, step: bu < 1 ? t * 0.7 : 0, size: mix(0.62, 0.48, bu), feel: seen ? "surprised" : "neutral",
                               at: seen ? [H18_PAV[0], top - 60] : [CNG_GATE[0], 700]}));
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H18_CUTS, H18_PLAN, H18_LINES, H18_LONG));
 }

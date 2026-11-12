@@ -51,7 +51,7 @@ function hhSceneSwan(t) {
     if (down > 0.45) {                                   // the world below: the hills and the city's fields
       pen.save(); pen.globalAlpha = between(down, 0.45, 0.8);
       pen.translate(0, mix(500, 0, between(down, 0.45, 1)));
-      pen.drawImage(cngFields(), 0, 0); cngGateWall(0, t);
+      pen.drawImage(hhFields(), 0, 0); cngGateWall(0, t);
       pen.restore();
     }
     for (var c = 0; c < 4; c++) {                        // clouds rushing up past them
@@ -66,6 +66,7 @@ function hhSceneSwan(t) {
     hongHinReins(h, hands);
     h.near();                                            // the near wing over the boy's leg (owner, 2026-11-12)
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H07_CUTS, H07_PLAN, H07_LINES, H07_LONG));
 }

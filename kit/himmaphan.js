@@ -1130,6 +1130,23 @@ function indra(x, y, t, look) {
     pen.save();                                      // the throne: a block of pale red stone, a gold cushion on it
     pen.fillStyle = INDRA.throne; pen.strokeStyle = INDRA.throneLine; pen.lineWidth = 2;
     pen.beginPath(); pen.rect(x - 170 * u, y - 190 * u, 340 * u, 190 * u); pen.fill(); pen.stroke();
+    // carved (scenery pass, 2026-11-12): a lit top edge, two sunk panels with a lozenge each, a lotus band, gold edging
+    pen.fillStyle = "rgba(255, 230, 210, 0.35)"; pen.fillRect(x - 170 * u, y - 190 * u, 340 * u, 10 * u);
+    [-1, 1].forEach(function (side) {
+      var px = x + side * 82 * u;
+      pen.fillStyle = "rgba(90, 30, 20, 0.22)"; pen.fillRect(px - 62 * u, y - 150 * u, 124 * u, 112 * u);
+      pen.strokeStyle = HIMMA.gold; pen.lineWidth = 2; pen.strokeRect(px - 62 * u, y - 150 * u, 124 * u, 112 * u);
+      pen.beginPath(); pen.moveTo(px, y - 136 * u); pen.lineTo(px + 34 * u, y - 94 * u); pen.lineTo(px, y - 52 * u); pen.lineTo(px - 34 * u, y - 94 * u); pen.closePath();
+      pen.fillStyle = HIMMA.gold; pen.fill(); pen.strokeStyle = INDRA.throneLine; pen.lineWidth = 1; pen.stroke();
+      pen.fillStyle = HIMMA.jewel; pen.beginPath(); pen.arc(px, y - 94 * u, 6 * u, 0, Math.PI * 2); pen.fill();
+    });
+    for (var lp = 0; lp < 17; lp++) {                 // the lotus band under the cushion
+      var lx = x - 168 * u + (lp + 0.5) * 336 * u / 17;
+      pen.beginPath(); pen.moveTo(lx - 10 * u, y - 168 * u); pen.quadraticCurveTo(lx, y - 186 * u, lx + 10 * u, y - 168 * u);
+      pen.fillStyle = lp % 2 ? HIMMA.goldLit : HIMMA.gold; pen.fill();
+    }
+    pen.strokeStyle = HIMMA.gold; pen.lineWidth = 3; pen.strokeRect(x - 170 * u, y - 190 * u, 340 * u, 190 * u);
+    pen.strokeStyle = INDRA.throneLine; pen.lineWidth = 2;
     pen.fillStyle = INDRA.cushion; pen.beginPath(); pen.rect(x - 180 * u, y - 210 * u, 360 * u, 24 * u); pen.fill(); pen.stroke();
     pen.restore();
     j = person(x, y - 200 * u, Object.assign({}, INDRA_LOOK, {skin: INDRA.body, size: size, floor: "cross", sarong: ["#2a5a3a", BROCADE]}, own));

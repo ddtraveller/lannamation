@@ -63,6 +63,7 @@ function hhSceneTruth(t) {
     hhCourt(t, [[0, welPerson("noble", HH_KING, {id: "king", floor: "cross", face: 1, size: 0.8, feel: "sad", tears: 1, bend: 0.25})]], []);
     hhCameraEnd();
   }
+  hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H19_CUTS, H19_PLAN, H19_LINES, H19_LONG));
 }
