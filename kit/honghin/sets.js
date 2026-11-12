@@ -90,12 +90,76 @@ function hhCityNight(t) {
   pen.drawImage(welSky("clear"), 0, 0);
   sceneryStars(t, {band: null, horizon: 600, count: 1800, bright: 18, glow: null, seed: 41, alpha: 1});
   sceneryMoon(t, HH_MOON[0], HH_MOON[1], HH_MOON[2], {});
-  pen.drawImage(cngFields(), 0, 0);
+  pen.drawImage(hhFields(), 0, 0);
   hoKham(pen, 1390, 620, 0.42, {part: "back", fine: true});
   hoKham(pen, 1390, 620, 0.42, {part: "front", fine: true, pediment: "peacock"});
   cngGateWall(0, t);
+  sceneryBeds(t, hhWallBeds());                         // flowering bushes at the wall's foot, in front of it
+  pen.drawImage(hhGateTree(), 0, 0);                    // a frangipani in flower by the gate
+  sceneryBeds(t, hhLaneBeds());                          // and bushes along the lane to the gate
   hhNight(0.62, t);
+  sceneryClouds(t, {light: "night", count: 4, top: 70, bottom: 300, alpha: 0.75, seed: 9});   // moonlit clouds drifting
+  sceneryMoon(t, HH_MOON[0], HH_MOON[1], HH_MOON[2], {});
+  batStream(t, {from: [520, 520], to: [1250, 140], start: 1, count: 24, every: 0.45, long: 12, colour: "#6e6a86"});   // moonlit, so they show on the dark sky
   HH_NIGHT_LAMPS.forEach(function (l, i) { sceneryLampLight(t, l[0], l[1], l[2], {reach: 120, strength: 0.8, seed: i}); });
+}
+
+// ---------- the scenery pass (docs/kit/places.md, "Painting the scenery") ----------
+// The owner, 2026-11-12, "yes" to scene 1's plan. Hong Hin's own far mountains (a film has its own, not another's): a far
+// ridge and a second between, a limestone peak at the left, a range clothed in forest with pines, painted once.
+function hhRange() { return farRange("#9ab0c4", "214, 222, 236", 580, {peak: 420 + SIDE, ridges: 2, pines: 18, seed: 23}); }
+// Varanasi's fields before the wall (as changngu/sets.js cngFields(), the plain, the meadow and the road where they lie
+// there), under Hong Hin's own mountains. Painted once.
+var HH_FIELDS = null;
+function hhFields() {
+  if (HH_FIELDS) { return HH_FIELDS; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE; paper.height = 1080;
+  var b = paper.getContext("2d");
+  b.drawImage(hhRange(), 0, 0);
+  csBand(b, 0, 540, WIDE, 540, "#a9c97a", "#86a85a");
+  sceneryMeadow(b, 0, WIDE, 560, 1080, {seed: 5, haze: "#b4cfa0", many: 1.5});
+  b.fillStyle = "#c9b285";                               // the road from the near fields to the gate, and along the wall
+  b.beginPath(); b.moveTo(CNG_GATE[0] - 50, 790); b.lineTo(CNG_GATE[0] + 50, 790);
+  b.lineTo(CNG_GATE[0] + 260, 1080); b.lineTo(CNG_GATE[0] - 260, 1080); b.closePath(); b.fill();
+  b.fillRect(0, CNG_ROAD - 26, WIDE, 52);
+  [[260, 760, 0.55, 3], [1520, 770, 0.6, 5]].forEach(function (c) { bamboo(b, c[0], c[1], c[2], c[3]); });
+  HH_FIELDS = paper;
+  return paper;
+}
+// The frangipani by the gate, white in flower (a temple's and a palace's tree at night), on a sheet of its own.
+var HH_GATE_TREE = null;
+function hhGateTree() {
+  if (HH_GATE_TREE) { return HH_GATE_TREE; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE; paper.height = 1080;
+  thkTreeOn(paper.getContext("2d"), 700, 735, 0.24, 91, [["frangipani", 30, 12]]);
+  HH_GATE_TREE = paper;
+  return paper;
+}
+// The flowering beds: bougainvillea and jasmine at the wall's foot, clear of the gate; hibiscus along the lane.
+var HH_BEDS = {};
+function hhWallBeds() {
+  return HH_BEDS.wall || (HH_BEDS.wall = [
+    {sprite: sceneryBush(300, 120, 401, THK_SHADE, [["bougainvillea", 30, 12, "#d8338a"]]), x: 180, y: 712},
+    {sprite: sceneryBush(260, 110, 403, THK_SHADE, [["jasmine", 40, 7]]), x: 470, y: 708},
+    {sprite: sceneryBush(280, 120, 405, THK_SHADE, [["bougainvillea", 28, 12, "#e86a2a"]]), x: 1260, y: 712},
+    {sprite: sceneryBush(320, 130, 407, THK_SHADE, [["jasmine", 44, 7]]), x: 1620, y: 710}]);
+}
+function hhLaneBeds() {
+  return HH_BEDS.lane || (HH_BEDS.lane = [
+    {sprite: sceneryBush(220, 110, 411, THK_GREENS, [["hibiscus", 14, 14, "#d93a2e"]]), x: CNG_GATE[0] - 240, y: 900},
+    {sprite: sceneryBush(240, 120, 413, THK_GREENS, [["hibiscus", 16, 14, "#f0a030"]]), x: CNG_GATE[0] + 250, y: 905}]);
+}
+// The picture framed at night: frangipani hanging into the top left, grass at the bottom corners, out of focus, in the
+// dark of the night. Drawn last, in the frame's own place (not the camera's). e.g. sceneryBeds(t, hhNightFrame(), {blur: 5, sway: 0.4});
+function hhNightFrame() {
+  if (HH_BEDS.frame) { return HH_BEDS.frame; }
+  var dark = THK_SHADE.map(function (g) { return blend(g, "#0c1124", 0.78); });
+  HH_BEDS.frame = [{sprite: sceneryHanging(420, 170, 481, dark, [["frangipani", 18, 11, "#8a8ea0"]]), x: 120, y: -40},
+                   {sprite: sceneryGrass(260, 16, 451, dark), x: 120, y: 1100},
+                   {sprite: sceneryGrass(240, 14, 453, dark), x: 1800, y: 1100}];
+  return HH_BEDS.frame;
 }
 
 // The forest's edge by the city wall at night (scenes 1): the dark forest on the left, the wall running off to the
@@ -108,8 +172,12 @@ function hhEdge() {
   var paper = document.createElement("canvas");
   paper.width = WIDE; paper.height = 1080;
   var b = paper.getContext("2d");
-  cngFar(b, 0, 560);
+  b.drawImage(hhRange(), 0, 0);                          // the film's own mountains (scenery pass, 2026-11-12)
   csBand(b, 0, 540, WIDE, 540, "#7e9a5c", "#5e7a44");
+  sceneryMeadow(b, 0, WIDE, 760, 1080, {seed: 41, haze: "#9ab48a", many: 1.1, depth: [0.4, 1]});   // grass where they walk
+  b.fillStyle = "#a8926a";                               // the path out of the forest to the wall's foot
+  b.beginPath(); b.moveTo(160, 868); b.quadraticCurveTo(560, 852, HH_EDGE_WALL[0] + 40, 866);
+  b.lineTo(HH_EDGE_WALL[0] + 40, 902); b.quadraticCurveTo(560, 896, 160, 914); b.closePath(); b.fill();
   forest(b, -60, 1000, 640, {tall: 300, seed: 7, far: 0.3});
   forest(b, -120, 860, 820, {tall: 420, seed: 11});
   HH_EDGE = paper;
@@ -121,6 +189,14 @@ function hhEdgeNight(t) {
   sceneryMoon(t, HH_MOON[0], HH_MOON[1], HH_MOON[2], {});
   pen.drawImage(hhEdge(), 0, 0);
   cityWall(pen, HH_EDGE_WALL[0], HH_EDGE_WALL[1], WIDE - HH_EDGE_WALL[0] + 200, HH_EDGE_WALL[2], {gate: false, t: t});
+  hhWallLamp(t, 1560, HH_EDGE_TOP);
+}
+// A lamp on the wall's top: a post, a little roof, the flame (its light is laid after the night: HH_EDGE_LAMP).
+var HH_EDGE_LAMP = [1560, HH_EDGE_TOP - 64];
+function hhWallLamp(t, x, top) {
+  pen.fillStyle = "#3a2414"; pen.fillRect(x - 4, top - 60, 8, 60);
+  pen.beginPath(); pen.moveTo(x - 20, top - 70); pen.lineTo(x, top - 86); pen.lineTo(x + 20, top - 70); pen.closePath(); pen.fill();
+  pen.fillStyle = "#ffd27a"; pen.beginPath(); pen.ellipse(x, top - 63 + Math.sin(t * 9) * 0.6, 4, 6, 0, 0, 7); pen.fill();
 }
 // The night laid over all that is drawn (the hills, the trees, the wall), then the stars and the moon again over it,
 // clear. e.g. hhNight(0.6, t);

@@ -41,9 +41,15 @@ function hhSceneGhouls(t) {
     hhCityNight(t);
     sceneryFireflies(t, {far: [[[0, 640, WIDE, 1000], 70, 2]], near: 10});
   }
+  var edgeLight = function () {                         // the forest's edge at night: the lamp on the wall, low mist, fireflies
+    sceneryLampLight(t, HH_EDGE_LAMP[0], HH_EDGE_LAMP[1], HH_EDGE_TOP, {reach: 170, strength: 0.85, seed: 7});
+    softMist(t, 905, 46, 0.22, 17, "200, 210, 240");
+    sceneryFireflies(t, {far: [[[0, 700, HH_EDGE_WALL[0], 960], 40, 4]], near: 6});
+  };
   if (shot === 1 || shot === 2) {
     hhEdgeNight(t);
     hhNight(0.6, t);
+    edgeLight();
     var drawn = [];
     if (shot === 1) {                                   // out of the trees, across the field, up the wall and over
       H01_HORDE.forEach(function (g) {
@@ -80,10 +86,12 @@ function hhSceneGhouls(t) {
   if (shot === 3) {                                      // the forest under the moon, mist, the titles
     hhEdgeNight(t);
     hhNight(0.7, t);
+    edgeLight();
     softMist(t, 820, 70, 0.4, 13, "200, 210, 240");
     sceneryFireflies(t, {far: [[[0, 640, 1000, 980], 50, 5]], near: 6});
   }
   pen.restore();
+  sceneryBeds(t, hhNightFrame(), {blur: 5, sway: 0.4});   // the picture framed, near and out of focus (scenery pass)
   if (shot === 3) { hhTitle(t, H01_SHOTS[3] + 0.5, H01_LONG); }
   welFadeIn(t, 2);
   [H01_SHOTS[1], H01_SHOTS[2], H01_SHOTS[3]].forEach(function (cut) {   // each cut through black
