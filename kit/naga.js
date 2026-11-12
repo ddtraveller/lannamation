@@ -587,24 +587,36 @@ var RIVER_SNAKES = {
 //   kind    "plain" (unless told), "pearl", "naga", "nagaRed" or "nagaGreen", as RIVER_SNAKES above
 //   body, blot, belly   colours instead of the kind's own (blot null: no blotches)
 //   late    a part of a second, so that two snakes do not wave together
+//   tail    a Naga's tail as a Chinese dragon's (owner, 2026-11-12: "give them tails more like the Chinese dragon's
+//           tail"): its last third trails up out of the water and ends in "flame" (a fan of flame tongues), "tuft" (a
+//           streaming tuft of kranok curls) or "fin" (gold spines down it to a forked fin). Unless told, the tail
+//           ends round under the water, as before. Only the "naga" kinds draw it (riverNagaTail()).
 var RIVER_SNAKE_KEYS = {};
 
-["size", "face", "kind", "body", "blot", "belly", "late"].forEach(function (name) { RIVER_SNAKE_KEYS[name] = true; });
+["size", "face", "kind", "body", "blot", "belly", "late", "tail"].forEach(function (name) { RIVER_SNAKE_KEYS[name] = true; });
 
 // The middle of a swimming snake, from its head back along the water: it rises and dips across the water line,
 // the head held up out of it. x, water: the head's x and the water line, pixels of the sheet; s: the size;
-// face: 1 or -1; phase: where the wave is (radians). Returns a list of 61 [x, y], head first. Draws nothing.
+// face: 1 or -1; phase: where the wave is (radians); raised: true for a dragon's tail (look.tail), its last third
+// trailing low up out of the water, swaying, its very end lifted a little more. Returns a list of 61 [x, y], head
+// first. Draws nothing.
 // RIVER_SNAKE_LONG is its length at size 1 (owner, 2026-10-25: "a bit longer", 860, was 760); the wave and the neck
 // keep the lengths they had at 760.
 // e.g. riverSnakeSpine(900, 780, 0.8, 1, clock * 1.6)
 var RIVER_SNAKE_LONG = 860;
-function riverSnakeSpine(x, water, s, face, phase) {
+function riverSnakeSpine(x, water, s, face, phase, raised) {
   var points = [], more = RIVER_SNAKE_LONG / 760;
   for (var n = 0; n <= 60; n++) {
     var u = n / 60, back = u * RIVER_SNAKE_LONG * s;
     var rise = -62 * s * Math.sin(u * 11 * more - phase) * (0.7 + 0.3 * u) + 12 * s;
     var head = Math.pow(Math.max(0, 1 - u * 6 * more), 1.6);   // the neck rises out of the water to the head
-    points.push([x - face * back, water + rise * (1 - head) - 96 * s * head]);
+    var y = water + rise * (1 - head) - 96 * s * head, k = raised ? Math.max(0, (u - 0.7) / 0.3) : 0;
+    if (k > 0) {                                                // the tail: smoothly from the wave up into a low rise
+      var up = water - s * (10 + 38 * Math.pow(k, 1.5)) + 8 * s * Math.sin(clock * 2 + k * 3) * k;
+      var flick = Math.max(0, (k - 0.8) / 0.2);
+      y = mix(y, up, k * k * (3 - 2 * k)) - s * 22 * flick * flick;
+    }
+    points.push([x - face * back, y]);
   }
   return points;
 }
@@ -706,7 +718,7 @@ function riverSnake(x, water, look) {
   checkNames("The river snake's name", look, RIVER_SNAKE_KEYS);
   var s = look.size || 1, face = look.face || 1, own = RIVER_SNAKES[look.kind || "plain"];
   if (!own) { checkName("The river snake's kind", look.kind, RIVER_SNAKES); own = RIVER_SNAKES.plain; }
-  if (own.naga) { return riverNaga(x, water, s, face, look.late, own.naga); }
+  if (own.naga) { return riverNaga(x, water, s, face, look.late, own.naga, look.tail); }
   var c = {body: look.body || own.body, blot: look.blot !== undefined ? look.blot : own.blot,
            belly: look.belly || own.belly, sheen: own.sheen};
   FINE = Math.min(1, Math.pow(s, -0.7));
@@ -1313,16 +1325,70 @@ function riverNagaCubic(a, b, c, d, u) {
   return out;
 }
 
+// The end of a river Naga's tail as a Chinese dragon's (owner, 2026-11-12; the three drawn as candidates, then "Do one
+// of each" for Chang Ngu's three snakes):
+//   flame  a fan of five flame tongues (nagaFlame()), gold outside and the Naga's fin colour within, flickering
+//   tuft   a streaming tuft: seven kranok curls fanned back from the tip, gold and the fin colour in turn, each branching
+//          into smaller curls, breathing as they sway
+//   fin    gold spines down the last third of the back, leaning toward the tail, and a forked fin: two broad kranok
+//          leaves and a small one between
+// f: the body's band (riverNagaFrame), its last point the tip; face: 1 or -1; s: the size; kind: one of the three;
+// seed: any number, so two flames do not flicker together. Draws with pen in the colours of RIVER_NAGA; returns nothing.
+// e.g. riverNagaTail(f, -1, 1.6, "flame", 1100);
+var RIVER_NAGA_TAILS = {flame: true, tuft: true, fin: true};
+function riverNagaTail(f, face, s, kind, seed) {
+  if (!RIVER_NAGA_TAILS[kind]) { checkName("The river Naga's tail", kind, RIVER_NAGA_TAILS); return; }
+  var last = f.p.length - 1, tip = f.p[last], dir = Math.atan2(f.t[last][1], f.t[last][0]), lw = 1.3 * FINE;
+  var gold = {fill: RIVER_NAGA.gold, vein: RIVER_NAGA.goldLight, lw: lw, leaf: 0.6,
+              sprout: {fill: RIVER_NAGA.goldLight, vein: RIVER_NAGA.gold, lw: lw}};
+  var own = {fill: RIVER_NAGA.fin, vein: RIVER_NAGA.gold, lw: lw, leaf: 0.6,
+             sprout: {fill: RIVER_NAGA.gold, vein: RIVER_NAGA.goldLight, lw: lw}};
+  if (kind === "flame") {
+    pen.save();
+    pen.translate(tip[0], tip[1]);
+    pen.rotate(dir);
+    nagaFlame(150 * s, 34 * s, [[-0.8, 0.5, -1], [0.8, 0.55, 1], [-0.42, 0.78, -1], [0.42, 0.8, 1], [0, 1, 1]], seed * 0.01,
+              {crest: RIVER_NAGA.gold, fire: RIVER_NAGA.fin});
+    pen.restore();
+  } else if (kind === "tuft") {
+    for (var k = 0; k < 7; k++) {
+      var spread = (k - 3) / 3;
+      kranokCurl(tip[0], tip[1], dir + spread * 0.75, (120 - 22 * Math.abs(spread)) * s, 9 * s, k % 2 ? 1 : -1, 4.4, 1,
+                 k % 2 ? own : gold, 0.18 * Math.sin(clock * 2.2 + k));
+    }
+  } else {
+    pen.fillStyle = RIVER_NAGA.gold;
+    pen.strokeStyle = RIVER_NAGA.goldDeep;
+    pen.lineWidth = lw;
+    for (var a = f.total * 0.62; a < f.total - 6 * s; a += 22 * s) {
+      var b = riverNagaAt(f, a, -0.9), lean = 0.9, h = (18 + 22 * (a / f.total)) * s;
+      var sd = Math.atan2(-b.n[1] * Math.cos(lean) + b.t[1] * Math.sin(lean), -b.n[0] * Math.cos(lean) + b.t[0] * Math.sin(lean));
+      pen.beginPath();
+      pen.moveTo(b.x - b.t[0] * 7 * s, b.y - b.t[1] * 7 * s);
+      pen.lineTo(b.x + Math.cos(sd) * h, b.y + Math.sin(sd) * h);
+      pen.lineTo(b.x + b.t[0] * 9 * s, b.y + b.t[1] * 9 * s);
+      pen.closePath();
+      pen.fill();
+      pen.stroke();
+    }
+    [[-0.55, 1], [0.55, -1]].forEach(function (lobe, j) {
+      kranokCurl(tip[0], tip[1], dir + lobe[0], 130 * s, 22 * s, lobe[1], 1.6, 1, j ? own : gold, 0.1 * Math.sin(clock * 2.4 + j));
+    });
+    kranokCurl(tip[0], tip[1], dir, 70 * s, 12 * s, 1, 2.6, 0, gold, 0.1 * Math.sin(clock * 3));
+  }
+}
+
 // riverSnake()'s kind "naga": the snake swimming as riverSnake() lays it (the same spine, water line and wake), drawn as
 // a Naga. x, water, s: the head's x, the water line, the size; face: 1 or -1; late: as riverSnake(); colours: the name
-// of its palette in RIVER_NAGA_COLOURS ("gold" unless told). Returns {head,
+// of its palette in RIVER_NAGA_COLOURS ("gold" unless told); tail: a dragon's tail, "flame", "tuft" or "fin"
+// (riverNagaTail()), or none (the round end under the water). Returns {head,
 // neck} as riverSnake() does. It sets FINE and LINE while it draws and leaves them at 1 and STYLE.line.
-// e.g. riverNaga(1100, 780, 1.6, -1, 0, "gold");
-function riverNaga(x, water, s, face, late, colours) {
+// e.g. riverNaga(1100, 780, 1.6, -1, 0, "gold", "tuft");
+function riverNaga(x, water, s, face, late, colours, tail) {
   RIVER_NAGA = RIVER_NAGA_COLOURS[colours || "gold"];
   FINE = Math.min(1, Math.pow(s, -0.7));
   LINE = STYLE.line * FINE;
-  var spine = riverSnakeSpine(x, water, s, face, (clock + (late || 0)) * 1.6);
+  var spine = riverSnakeSpine(x, water, s, face, (clock + (late || 0)) * 1.6, !!tail);
   var f = riverNagaFrame(nagaLine(spine, 6), face, function (u) { return s * mix(40, 10, Math.pow(u, 0.85)); });
   pen.save();                                                   // only what is above the water shows
   pen.beginPath(); pen.rect(-1e4, -1e4, 2e4, water + 4 + 1e4); pen.clip();
@@ -1341,6 +1407,7 @@ function riverNaga(x, water, s, face, late, colours) {
     pen.restore();
   }
   riverNagaBody(f, face);
+  if (tail) { riverNagaTail(f, face, s, tail, x); }
   if (shine) {                                                  // and glints that come and go along it
     for (var gk = 0; gk < 9; gk++) {
       var beat = clock * 1.3 + gk * 0.37, which = Math.floor(beat), life = beat - which;

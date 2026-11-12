@@ -74,7 +74,7 @@ function c23Hill(t) {
     var slide = between(t, C23_CHANGE[1], C23_CHANGE[1] + 6.5);
     pen.save();
     pen.beginPath(); pen.rect(0, 0, cave[0] + 10, 1080); pen.clip();
-    riverSnake(mix(cave[0] - 120, cave[0] + 620, slide), cave[1] + 4, {size: 0.6, face: 1, kind: "naga"});
+    riverSnake(mix(cave[0] - 120, cave[0] + 620, slide), cave[1] + 4, {size: 0.6, face: 1, kind: "naga", tail: "tuft"});
     pen.restore();
   }
   var people = between(t, 16, 26);                          // the people, far behind, following, then stopping to look

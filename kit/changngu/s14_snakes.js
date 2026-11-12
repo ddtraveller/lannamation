@@ -8,8 +8,8 @@ var C14_LONG = 55;
 var C14_SOUND = {calls: []};
 var C14_LINES = [[1.4, 5.92, "C061"], [6.12, 10.97, "C062"], [12.0, 15.5, "C063"], [21.0, 28.88, "C064"], [29.08, 33.08, "C065"], [33.28, 37.96, "C066"]];
 var C14_SWIM = CNG_BANK - 54;                          // the snakes' water line, the channel before the bank
-var C14_SNAKES = [[3, 21, 1.6, {kind: "nagaRed"}],     // from, to (seconds), size, look
-                  [22, 41, 1.0, {kind: "nagaGreen", late: 0.4}]];
+var C14_SNAKES = [[3, 21, 1.6, {kind: "nagaRed", tail: "flame"}],     // from, to (seconds), size, look
+                  [22, 41, 1.0, {kind: "nagaGreen", late: 0.4, tail: "fin"}]];
 
 // Where a snake's head is at second t, or null when it is not in the river: from the right edge to past the left.
 function c14Head(snake, t) {
