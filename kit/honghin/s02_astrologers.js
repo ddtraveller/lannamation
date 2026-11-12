@@ -20,10 +20,10 @@ function h02People(t, feel) {
       }});
     })(k);
   }
-  [[-330, 1, 31], [-170, 1, 37]].forEach(function (a, i) {   // the two astrologers, their boards before them
-    var x = p[0] + a[0] - 300, y = floor + 70;
+  [[-500, 1, 31], [-290, 1, 37]].forEach(function (a, i) {   // the two astrologers, each with his board before him, clear
+    var x = p[0] + a[0] - 300, y = floor + 70;                 // of the dais (owner, 2026-11-12: a board lay over the throne)
     list.push({name: "astrologer " + i, kind: "person", x: x, y: y, draw: function () {
-      hhBoard(x + 150, y + 34, a[2]);
+      hhBoard(x + 85, y + 34, a[2]);
       var talking = welSays(t, H02_PLAN, ["H009"]) && i === 0;
       person(x, y, welPerson("elder", CNG_SEER, {id: "seer" + i, floor: "cross", face: 1, size: 0.66, feel: "thinking",
                                                  at: [p[0], 600], mouth: welTalk(t, talking)}));
@@ -43,7 +43,7 @@ function hhSceneAstrologers(t) {
     hhCourt(t, onDais, h02People(t));
     hhCameraEnd();
   } else if (t < H02_CUTS[1]) {                         // the astrologers at their boards
-    hhCamera(1, p[0] - 520, 860, 1.9);
+    hhCamera(1, p[0] - 700, 860, 1.9);
     hhCourt(t, onDais, h02People(t));
     hhCameraEnd();
   } else {                                              // the six wives, near, looking at one another

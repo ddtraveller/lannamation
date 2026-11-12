@@ -719,10 +719,10 @@ function hangingCradle(brush, x, y, size, t, look) {
   if (look.baby !== false) { swaddledBaby(brush, x + swing, y - 26 * s, s * 0.9); }
 }
 
-// A baby swaddled in cloth, lying, its head to the left, eyes shut, a tuft of hair. At (x, y), its middle.
-// e.g. swaddledBaby(pen, 900, 730, 1);
-function swaddledBaby(brush, x, y, size) {
-  var s = size;
+// A baby swaddled in cloth, lying, its head to the left, eyes shut, a tuft of hair. At (x, y), its middle. feel "sad":
+// a frown and a tear on its cheek, else a small smile. e.g. swaddledBaby(pen, 900, 730, 1);
+function swaddledBaby(brush, x, y, size, feel) {
+  var s = size, sad = feel === "sad";
   brush.fillStyle = "#f2ead8";
   brush.beginPath(); brush.ellipse(x + 12 * s, y, 46 * s, 18 * s, 0, 0, 7); brush.fill();
   brush.fillStyle = "#f1cda8";
@@ -733,7 +733,17 @@ function swaddledBaby(brush, x, y, size) {
   brush.fillStyle = "rgba(232, 120, 110, 0.35)";       // pink cheeks, and a small smile (owner, 2026-10-25)
   brush.beginPath(); brush.arc(x - 44 * s, y + 3 * s, 3.6 * s, 0, 7); brush.arc(x - 22 * s, y + 3 * s, 3.6 * s, 0, 7); brush.fill();
   brush.lineWidth = 1.8 * s;
-  brush.beginPath(); brush.arc(x - 33 * s, y + 1.5 * s, 4.5 * s, 0.45, Math.PI - 0.45); brush.stroke();
+  if (sad) {                                           // sad (owner, 2026-11-12): brows up in the middle, a frown, a tear
+    brush.beginPath(); brush.moveTo(x - 43 * s, y - 10 * s); brush.lineTo(x - 36 * s, y - 13 * s);
+    brush.moveTo(x - 30 * s, y - 13 * s); brush.lineTo(x - 23 * s, y - 10 * s); brush.stroke();
+    brush.beginPath(); brush.arc(x - 33 * s, y + 9 * s, 4.5 * s, Math.PI + 0.5, -0.5); brush.stroke();
+    brush.fillStyle = "#8ccbe8"; brush.strokeStyle = "#4a8ab0"; brush.lineWidth = 1 * s;
+    brush.beginPath(); brush.moveTo(x - 25 * s, y + 0 * s); brush.quadraticCurveTo(x - 22 * s, y + 6 * s, x - 25 * s, y + 8 * s);
+    brush.quadraticCurveTo(x - 28 * s, y + 6 * s, x - 25 * s, y + 0 * s); brush.closePath(); brush.fill(); brush.stroke();
+    brush.fillStyle = "rgba(255, 255, 255, 0.9)"; brush.beginPath(); brush.arc(x - 25.8 * s, y + 5.4 * s, 0.9 * s, 0, 7); brush.fill();
+  } else {
+    brush.beginPath(); brush.arc(x - 33 * s, y + 1.5 * s, 4.5 * s, 0.45, Math.PI - 0.45); brush.stroke();
+  }
   brush.fillStyle = "#2a2220";
   brush.beginPath(); brush.arc(x - 36 * s, y - 21 * s, 5 * s, 0, 7); brush.fill();
 }

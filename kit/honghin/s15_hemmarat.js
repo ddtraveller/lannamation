@@ -17,11 +17,12 @@ function hhSceneHemmarat(t) {
     hhPass(t);
     var bx = mix(400, 900, spring), by = mix(560, 420, spring);
     hemmarat(bx, by, {size: 0.9, face: 1, trunk: 0.8, mouth: spring > 0 ? 1 : 0.3});
-    var hs = hongHin(mix(2000, 1300, between(t, 0, 12)), 360 + 20 * Math.sin(t), t, {size: 1.4, face: -1});
+    var hs = hongHin(mix(2000, 1300, between(t, 0, 12)), 360 + 20 * Math.sin(t), t, {size: 1.4, face: -1, rider: true});
     person(hs.behind[0], hs.behind[1], welPerson("grandmother", HH_GRAN, {id: "gran", floor: "astride", face: -1, feel: spring > 0 ? "fear" : "neutral"}));
     var hand = [hs.seat[0] - 60, hs.seat[1] - 190];
-    person(hs.seat[0], hs.seat[1], hhBoy(13, {floor: "astride", face: -1, feel: spring > 0 ? "angry" : "neutral", reachA: spring > 0.5 ? hand : undefined}));
-    if (spring > 0.5) { kanchai(hand[0], hand[1], {size: 0.4, angle: mix(-0.3, -2.4, stroke)}); }
+    var bj = person(hs.seat[0], hs.seat[1], hhBoy(13, {floor: "astride", face: -1, feel: spring > 0 ? "angry" : "neutral", reachA: spring > 0.5 ? hand : undefined}));
+    if (spring > 0.5) { hhSword(bj, mix(0.3, -2.4, stroke), 0.4); }   // in his hand (owner, 2026-11-12)
+    hs.near();
     if (stroke > 0) {
       pen.save(); pen.globalCompositeOperation = "lighter";
       pen.strokeStyle = "rgba(255, 246, 210, " + (0.9 * (1 - stroke)).toFixed(3) + ")"; pen.lineWidth = 30; pen.lineCap = "round";
@@ -36,9 +37,10 @@ function hhSceneHemmarat(t) {
       hemmarat(0, 0, {size: 0.9, face: 1, trunk: 0.2, prey: false, feel: "fear"});
       pen.restore();
     }
-    var hs2 = hongHin(mix(1100, -300, between(s, 3, 20)), 330 + 20 * Math.sin(t), t, {size: 1.3, face: -1});
+    var hs2 = hongHin(mix(1100, -300, between(s, 3, 20)), 330 + 20 * Math.sin(t), t, {size: 1.3, face: -1, rider: true});
     person(hs2.behind[0], hs2.behind[1], welPerson("grandmother", HH_GRAN, {id: "gran", floor: "astride", face: -1, feel: "happy"}));
     person(hs2.seat[0], hs2.seat[1], hhBoy(13, {floor: "astride", face: -1, feel: "happy"}));
+    hs2.near();
   }
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H15_CUTS, H15_PLAN, H15_LINES, H15_LONG));

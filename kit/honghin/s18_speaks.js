@@ -2,7 +2,7 @@
 // home as heroes; a feast made ready. She weeps at a window; the king asks; she turns on him: those six never saved me.
 // The fair: a high pavilion, the whole city coming in by one gate; from the pavilion she sees a boy at the gate and cries
 // out to her grandson.
-var H18_LONG = 55;
+var H18_LONG = 42;                                     // 55 until 2026-11-12 (owner: cut the boy at the city, 17:47)
 var H18_SOUND = {calls: [[38.6, "plate-ting", 0.25]]};
 var H18_LINES = [[2, 11.9, "H079"], [12.1, 18.46, "H080"], [18.66, 24.82, "H081"], [25.6, 32.02, "H082"], [35, 39.86, "H083"]];
 // The lines as the scene was drawn to them; it plays to H18_LINES, Pan's voice (sets.js hhClock()).

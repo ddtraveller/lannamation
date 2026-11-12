@@ -2,8 +2,8 @@
 // Kumbhanda, a green yaksha, gives the boy his daughter Culakantha, pale green, her eyes black as gems. A blue city: King
 // Anumat comes at the boy in a rage, sees the wheel on the soles of his feet, kneels, gives him Salicanta, and points
 // the way south to the ghouls' city; the swan flies off that way.
-var H13_LONG = 60;
-var H13_SOUND = {calls: [[0.0, "shama", 0.2, 17.48], [17.81, "roar", 0.3], [37.1, "wind", 0.2, 22.9]]};
+var H13_LONG = 52;                                     // 60 until 2026-11-12 (owner: the empty hall at the end was too long)
+var H13_SOUND = {calls: [[0.0, "shama", 0.2, 17.48], [17.81, "roar", 0.3], [37.1, "wind", 0.2, 14.9]]};
 var H13_LINES = [[2, 17.61, "H058"], [17.81, 26.35, "H059"], [26.55, 32.71, "H060"], [32.91, 36.74, "H061"]];
 // The lines as the scene was drawn to them; it plays to H13_LINES, Pan's voice (sets.js hhClock()).
 var H13_PLAN = [[2, 11.2, "H058"], [13, 21.2, "H059"], [22.6, 28.4, "H060"], [30, 35.2, "H061"]];
@@ -16,7 +16,7 @@ function hhSceneSecond(t) {
   var h = HH_GIANT_HALL;
   if (t < H13_CUTS[0]) {                                // the green palace: Kumbhanda gives Culakantha
     hhCamera(0.7, h[0], 780, 1.3);
-    hhGiantCity(t, "green", [[0, ogreDaughter("culakantha", {size: 0.8, id: "culakantha", floor: "side", face: -1, at: [h[0] - 360, 760]})]], [
+    hhGiantCity(t, "green", [[0, function (x, y) { hhPrincessAt(x, y, "culakantha", {size: 0.8, id: "culakantha", floor: "side", face: -1, at: [h[0] - 360, 760]}); }]], [
       {name: "boy", kind: "person", x: h[0] - 360, y: 1000, draw: function () { person(h[0] - 360, 1000, hhBoy(13, {face: 1, feel: "happy", at: [h[0], 700]})); }},
       {name: "kumbhanda", kind: "person", x: h[0] + 320, y: 1010, draw: function () {
         ogre(h[0] + 320, 1010, t, {kind: "mural", id: "kumbhanda", face: -1, size: 1.25, feel: t > 6 ? "happy" : "angry", at: [h[0] - 360, 700],
@@ -27,7 +27,7 @@ function hhSceneSecond(t) {
     var see = between(t, 24.5, 26), kneel = between(t, 26, 28);
     hhCamera(0.8, h[0], 780, 1.3);
     var bx = h[0] - 340, ax = mix(WIDE + 100, h[0] + 260, between(t, 13, 16));
-    hhGiantCity(t, "blue", [[0, ogreDaughter("salicanta", {size: 0.8, id: "salicanta", floor: "side", face: -1, at: [bx, 760]})]], [
+    hhGiantCity(t, "blue", [[0, function (x, y) { hhPrincessAt(x, y, "salicanta", {size: 0.8, id: "salicanta", floor: "side", face: -1, at: [bx, 760]}); }]], [
       {name: "boy", kind: "person", x: bx, y: 1000, draw: function () {
         person(bx, 1000, hhBoy(13, {face: 1, feel: kneel > 0 ? "happy" : "neutral", at: [ax, 700]}));
         if (see > 0) {                                     // the wheel on the soles of his feet, glowing
@@ -49,8 +49,9 @@ function hhSceneSecond(t) {
   } else {                                               // south: the swan flies off over the blue city
     var s = t - H13_CUTS[1];
     hhGiantCity(t, "blue", [], []);
-    var hs = hongHin(mix(1500, -300, between(s, 0, 18)), 380 + 30 * Math.sin(t), t, {size: 1.4, face: -1});
+    var hs = hongHin(mix(1500, -300, between(s, 0, 13)), 380 + 30 * Math.sin(t), t, {size: 1.4, face: -1, rider: true});
     person(hs.seat[0], hs.seat[1], hhBoy(13, {floor: "astride", face: -1, feel: "neutral"}));
+    hs.near();
   }
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H13_CUTS, H13_PLAN, H13_LINES, H13_LONG));

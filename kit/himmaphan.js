@@ -754,7 +754,7 @@ function hongChain(rise, t) {
 // 2026-10-24: "I don't want it to tilt to the side. Just the wings going up and down"). Returns nothing: it draws with
 // pen and leaves pen as it found it.
 // e.g. hongFlight(1660, 300, t, {size: 1.6, seed: 2.1, soar: true, beats: [3, 2]});
-function hongFlight(x, y, t, look) {
+function hongFlight(x, y, t, look, keepNear) {
   look = look || {};
   checkNames("The hong's name", look, HIMMA_KEYS);
   var size = look.size || 1, seed = look.seed || 0, light = look.light === undefined ? 0.6 : look.light;
@@ -862,7 +862,12 @@ function hongFlight(x, y, t, look) {
   pen.fillStyle = HIMMA.brow;
   pen.beginPath(); pen.arc(95.5, -58, 1.5, 0, Math.PI * 2); pen.fill();
   pen.restore();
-  pen.save(); onJoint(6); pen.translate(8, -8); hongWing(beat, rate, light, false, t); pen.restore();   // the near wing
+  if (keepNear) {                                    // the near wing kept to be drawn later, over a rider (hongHin's look.rider)
+    var m = pen.getTransform();
+    keepNear(function () { pen.save(); pen.setTransform(m); onJoint(6); pen.translate(8, -8); hongWing(beat, rate, light, false, t); pen.restore(); });
+  } else {
+    pen.save(); onJoint(6); pen.translate(8, -8); hongWing(beat, rate, light, false, t); pen.restore();   // the near wing
+  }
   pen.restore();
 }
 
@@ -936,48 +941,54 @@ var HONG_HIN_SHEET = null;                           // the swan is drawn here f
 // look: the hong's keys (HIMMA_KEYS), size 2.25 unless told (a boy of size 0.7 sits on it). It flies level (the rider
 // keeps his seat) unless look.level is false. Returns {seat, behind, beak}, points of the scene: where the rider sits
 // (person(..., {floor: "astride"})), where one more sits behind him (the grandmother, on the way home), and the beak,
-// where the reins end (hongHinReins()).
+// where the reins end (hongHinReins()). With look.rider true the near wing is not drawn: it comes back as near(), to be
+// called after the rider, so the wing is in front of his legs (the owner, 2026-11-12).
 // e.g. var h = hongHin(900, 500, t, {});
 //      var j = person(h.seat[0], h.seat[1], cast("boy", {floor: "astride", reachA: [h.seat[0] + 58, h.seat[1] - 62]}));
 //      hongHinReins(h, [h.seat[0] + 58, h.seat[1] - 62]);
 function hongHin(x, y, t, look) {
   look = Object.assign({size: 2.25, level: true, seed: 1.3}, look || {});
   if (look.level === false) { delete look.level; }
+  var rider = look.rider, near = null;
+  delete look.rider;
   var size = look.size, face = look.face || 1;
   if (!HONG_HIN_SHEET || HONG_HIN_SHEET.width !== pen.canvas.width || HONG_HIN_SHEET.height !== pen.canvas.height) {
     HONG_HIN_SHEET = document.createElement("canvas");
     HONG_HIN_SHEET.width = pen.canvas.width;
     HONG_HIN_SHEET.height = pen.canvas.height;
   }
-  var sheet = HONG_HIN_SHEET.getContext("2d"), keep = pen, colours = Object.assign({}, HIMMA), base = pen.getTransform();
-  sheet.setTransform(1, 0, 0, 1, 0, 0);
-  sheet.clearRect(0, 0, HONG_HIN_SHEET.width, HONG_HIN_SHEET.height);
-  sheet.setTransform(base);
-  Object.assign(HIMMA, {gold: HONG_HIN.gold, goldLit: HONG_HIN.goldLit, goldLine: HONG_HIN.goldLine});
-  pen = sheet;
-  try { hongFlight(x, y, t, look); } finally { pen = keep; Object.assign(HIMMA, colours); }
-  sheet.save();                                      // the plates, in the swan's own measure, on the swan alone
-  sheet.globalCompositeOperation = "source-atop";
-  sheet.translate(x, y);
-  sheet.scale(size * face, size);
-  sheet.strokeStyle = HONG_HIN.plate;
-  sheet.lineWidth = 1.3 / size;
-  var k, n;
-  for (k = -12; k <= 12; k++) {                      // seams down the body, a little curved
-    sheet.beginPath(); sheet.moveTo(k * 11.5, -107); sheet.quadraticCurveTo(k * 11.5 + 7, -27, k * 11.5 - 2.7, 40); sheet.stroke();
+  function plated(draw) {                            // draw() on the swan's own sheet, its plates over what it drew, then onto the film
+    var sheet = HONG_HIN_SHEET.getContext("2d"), keep = pen, colours = Object.assign({}, HIMMA), base = pen.getTransform();
+    sheet.setTransform(1, 0, 0, 1, 0, 0);
+    sheet.clearRect(0, 0, HONG_HIN_SHEET.width, HONG_HIN_SHEET.height);
+    sheet.setTransform(base);
+    Object.assign(HIMMA, {gold: HONG_HIN.gold, goldLit: HONG_HIN.goldLit, goldLine: HONG_HIN.goldLine});
+    pen = sheet;
+    try { draw(); } finally { pen = keep; Object.assign(HIMMA, colours); }
+    sheet.save();                                    // the plates, in the swan's own measure, on the swan alone
+    sheet.globalCompositeOperation = "source-atop";
+    sheet.translate(x, y);
+    sheet.scale(size * face, size);
+    sheet.strokeStyle = HONG_HIN.plate;
+    sheet.lineWidth = 1.3 / size;
+    var k, n;
+    for (k = -12; k <= 12; k++) {                    // seams down the body, a little curved
+      sheet.beginPath(); sheet.moveTo(k * 11.5, -107); sheet.quadraticCurveTo(k * 11.5 + 7, -27, k * 11.5 - 2.7, 40); sheet.stroke();
+    }
+    for (k = 0; k < 6; k++) {                        // and along it
+      sheet.beginPath(); sheet.moveTo(-151, -67 + k * 17.8); sheet.quadraticCurveTo(0, -76 + k * 17.8, 133, -67 + k * 17.8); sheet.stroke();
+    }
+    sheet.fillStyle = HONG_HIN.pin;                  // a pin where the seams cross
+    for (k = -12; k <= 12; k++) {
+      for (n = 0; n < 6; n++) { sheet.beginPath(); sheet.arc(k * 11.5 + 1.8, -67 + n * 17.8 - 1.8, 0.9, 0, Math.PI * 2); sheet.fill(); }
+    }
+    sheet.restore();
+    pen.save();
+    pen.setTransform(1, 0, 0, 1, 0, 0);
+    pen.drawImage(HONG_HIN_SHEET, 0, 0);
+    pen.restore();
   }
-  for (k = 0; k < 6; k++) {                          // and along it
-    sheet.beginPath(); sheet.moveTo(-151, -67 + k * 17.8); sheet.quadraticCurveTo(0, -76 + k * 17.8, 133, -67 + k * 17.8); sheet.stroke();
-  }
-  sheet.fillStyle = HONG_HIN.pin;                    // a pin where the seams cross
-  for (k = -12; k <= 12; k++) {
-    for (n = 0; n < 6; n++) { sheet.beginPath(); sheet.arc(k * 11.5 + 1.8, -67 + n * 17.8 - 1.8, 0.9, 0, Math.PI * 2); sheet.fill(); }
-  }
-  sheet.restore();
-  pen.save();
-  pen.setTransform(1, 0, 0, 1, 0, 0);
-  pen.drawImage(HONG_HIN_SHEET, 0, 0);
-  pen.restore();
+  plated(function () { hongFlight(x, y, t, look, rider ? function (draw) { near = draw; } : null); });
   pen.save();                                        // the saddle cloth on its back, red with a gold border
   pen.translate(x, y);
   pen.scale(size * face, size);
@@ -987,8 +998,10 @@ function hongHin(x, y, t, look) {
   pen.fillStyle = HONG_HIN.saddle; pen.fill();
   pen.lineWidth = 5 / size; pen.strokeStyle = HONG_HIN.border; pen.stroke();
   pen.restore();
-  return {seat: [x - 18 * size * face, y - 13 * size + 8], behind: [x - 52 * size * face, y - 9 * size + 8],
-          beak: [x + 112 * size * face, y - 56 * size]};
+  var got = {seat: [x - 18 * size * face, y - 13 * size + 8], behind: [x - 52 * size * face, y - 9 * size + 8],
+             beak: [x + 112 * size * face, y - 56 * size]};
+  if (near) { got.near = function () { plated(near); }; }
+  return got;
 }
 
 // hongHinReins(h, hands): the red reins from the rider's hands (a point of the scene: where the scene sent his hands,
@@ -1006,37 +1019,84 @@ function hongHinReins(h, hands) {
   pen.restore();
 }
 
-// spireCrown(j, tall): a gold spire crown (ชฎา) on a person's head, from the joints person() gave back: a band over the
-// brow with a red stone, six tiers, each narrower, to a point. tall: its height in heads (1.1 unless told). Returns
-// nothing; it draws with pen. A head under it is best drawn with hidden: ["hair"].
+// spireCrown(j, tall, t): a gold spire crown (ชฎา) on a person's head, from the joints person() gave back: a band over the
+// brow set with stones, ear flanges, six tiers edged with lotus petals, each narrower, to a point; given t (seconds),
+// glints of light flash over it in turn (the owner, 2026-11-12: "more detail and sparkle"). tall: its height in heads
+// (1.1 unless told). Returns nothing; it draws with pen. A head under it is best drawn with hidden: ["hair"].
 // e.g. spireCrown(person(900, GROUND, {regalia: true, hidden: ["hair"]}), 1.2);
 function himmaJoint(p) {                            // a joint person() gave back, in the pen's present measure
   var m = pen.getTransform().inverse();
   return [m.a * p[0] + m.c * p[1] + m.e, m.b * p[0] + m.d * p[1] + m.f];
 }
-function spireCrown(j, tall) {
+function spireCrown(j, tall, t) {
   var crown = himmaJoint(j.crown), chin = himmaJoint(j.chin);
   var h = Math.hypot(chin[0] - crown[0], chin[1] - crown[1]), tilt = Math.atan2(chin[0] - crown[0], chin[1] - crown[1]);
-  var s = h / 100, w = 52 * s, up = (tall || 1.1) * 100 * s, k;
+  var s = h / 100, w = 52 * s, up = (tall || 1.1) * 100 * s, k, n;
   pen.save();
   pen.translate(crown[0], crown[1]);
   pen.rotate(-tilt);
   pen.lineWidth = 1.6;
   pen.strokeStyle = HIMMA.goldLine;
+  [-1, 1].forEach(function (side) {                  // the ear flanges (กรรเจียก): a gold leaf behind each ear, its tip curling
+    pen.beginPath();                                 // back and down (not up: up, they read as horns)
+    pen.moveTo(side * w * 0.86, 10 * s);
+    pen.bezierCurveTo(side * w * 1.3, 8 * s, side * w * 1.42, 34 * s, side * w * 1.3, 58 * s);
+    pen.quadraticCurveTo(side * w * 1.46, 66 * s, side * w * 1.52, 54 * s);
+    pen.quadraticCurveTo(side * w * 1.5, 72 * s, side * w * 1.24, 70 * s);
+    pen.bezierCurveTo(side * w * 1.12, 50 * s, side * w * 1.08, 32 * s, side * w * 0.9, 24 * s);
+    pen.closePath(); pen.fillStyle = HIMMA.gold; pen.fill(); pen.stroke();
+    pen.beginPath(); pen.moveTo(side * w * 1.0, 16 * s); pen.quadraticCurveTo(side * w * 1.28, 30 * s, side * w * 1.27, 60 * s); pen.stroke();
+    pen.fillStyle = HIMMA.jewel; pen.beginPath(); pen.arc(side * w * 1.1, 22 * s, 2.6 * s, 0, Math.PI * 2); pen.fill();
+  });
   pen.beginPath();                                   // the band round the brow
   pen.moveTo(-w, 12 * s); pen.quadraticCurveTo(0, -4 * s, w, 12 * s); pen.lineTo(w * 0.9, 26 * s);
   pen.quadraticCurveTo(0, 12 * s, -w * 0.9, 26 * s); pen.closePath();
   pen.fillStyle = HIMMA.gold; pen.fill(); pen.stroke();
-  for (k = 0; k < 6; k++) {                          // the tiers to the spire
+  for (n = -4; n <= 4; n++) {                        // a row of small stones along the band, red and green by turns
+    var bx = n * w * 0.2, by = 13 * s + Math.abs(n) * Math.abs(n) * 0.35 * s;
+    pen.fillStyle = n % 2 ? HIMMA.jewel2 : HIMMA.jewel; pen.beginPath(); pen.arc(bx, by, 2.4 * s, 0, Math.PI * 2); pen.fill();
+  }
+  for (k = 0; k < 6; k++) {                          // the tiers to the spire, each edged with a row of lotus petals
     var y0 = 6 * s - k * up / 7, y1 = 6 * s - (k + 1) * up / 7, w0 = w * (0.8 - k * 0.12), w1 = w * (0.8 - (k + 1) * 0.12);
     pen.beginPath(); pen.moveTo(-w0, y0); pen.lineTo(-w1, y1); pen.lineTo(w1, y1); pen.lineTo(w0, y0); pen.closePath();
-    pen.fillStyle = k % 2 ? "#e9bd58" : "#d49a32"; pen.fill(); pen.stroke();
+    var g = pen.createLinearGradient(-w0, 0, w0, 0);
+    g.addColorStop(0, HIMMA.goldLit); g.addColorStop(0.45, k % 2 ? "#e9bd58" : "#d49a32"); g.addColorStop(1, "#9a6a1e");
+    pen.fillStyle = g; pen.fill(); pen.stroke();
+    var petals = Math.max(3, Math.round(w0 / (6 * s)));
+    for (n = 0; n < petals; n++) {                   // the petals along the tier's foot
+      var px = -w0 + (n + 0.5) * 2 * w0 / petals, pr = w0 / petals;
+      pen.beginPath(); pen.moveTo(px - pr, y0); pen.quadraticCurveTo(px, y0 - 2.6 * pr, px + pr, y0);
+      pen.fillStyle = n % 2 ? HIMMA.goldLit : "#f0cc6a"; pen.fill(); pen.lineWidth = 0.8; pen.stroke();
+    }
+    pen.lineWidth = 1.6;
+    pen.fillStyle = k % 2 ? HIMMA.jewel2 : HIMMA.jewel;   // a stone in the middle of each tier
+    pen.beginPath(); pen.arc(0, (y0 + y1) / 2 - 2 * s, Math.max(1.4, 3.2 * s * (1 - k * 0.1)), 0, Math.PI * 2); pen.fill(); pen.stroke();
   }
   pen.beginPath();
   pen.moveTo(-w * 0.08, 6 * s - 6 * up / 7); pen.lineTo(0, 6 * s - up * 1.12); pen.lineTo(w * 0.08, 6 * s - 6 * up / 7);
   pen.closePath(); pen.fillStyle = HIMMA.goldLit; pen.fill(); pen.stroke();
   pen.fillStyle = HIMMA.jewel;                       // a red stone on the band
-  pen.beginPath(); pen.arc(0, 10 * s, 5 * s, 0, Math.PI * 2); pen.fill();
+  pen.beginPath(); pen.arc(0, 10 * s, 5 * s, 0, Math.PI * 2); pen.fill(); pen.stroke();
+  if (t !== undefined) {                             // the gold sparkles: small stars that flash in turn over the crown
+    [[0, 10], [-0.5, -1], [0.45, -2], [-0.25, -3], [0.2, -4], [0, -6.6], [-1.25, 40], [1.25, 40]].forEach(function (q, i) {
+      var gx = q[0] * w, gy = q[1] < 0 ? 6 * s + q[1] * up / 7 : q[1] * s, on = Math.max(0, Math.sin(t * 2.4 + i * 2.3));
+      himmaGlint(gx, gy, 9 * s * on * on, on);
+    });
+  }
+  pen.restore();
+}
+// A glint of light, a four-pointed star at (x, y), r long, alpha 0 to 1. e.g. himmaGlint(0, 0, 8, 1);
+function himmaGlint(x, y, r, alpha) {
+  if (r < 0.5 || alpha <= 0) { return; }
+  pen.save();
+  pen.globalAlpha *= alpha;
+  var g = pen.createRadialGradient(x, y, 0, x, y, r * 1.2);
+  g.addColorStop(0, "rgba(255, 255, 240, 0.95)"); g.addColorStop(1, "rgba(255, 240, 180, 0)");
+  pen.fillStyle = g; pen.beginPath(); pen.arc(x, y, r * 1.2, 0, Math.PI * 2); pen.fill();
+  pen.fillStyle = "#fffef4";
+  pen.beginPath();
+  pen.moveTo(x, y - r); pen.quadraticCurveTo(x, y, x + r, y); pen.quadraticCurveTo(x, y, x, y + r);
+  pen.quadraticCurveTo(x, y, x - r, y); pen.quadraticCurveTo(x, y, x, y - r); pen.closePath(); pen.fill();
   pen.restore();
 }
 
@@ -1045,18 +1105,19 @@ var INDRA = {skin: "#5aa06a", skinLit: "#8ccc96", skinShade: "#3a7a4e", skinLine
              throne: "#c8786a", throneLine: "#5a2a20", cushion: "#e3b04a"};
 var INDRA_LOOK = {bare: true, regalia: true, sarong: ["#8a2a3a", BROCADE], pins: true, bangles: 5, hidden: ["hair"],
                   buttons: false, smile: 0.6};
-var INDRA_KEYS = {pose: true, size: true, face: true, seed: true, at: true, feel: true, id: true, sarong: true};
+var INDRA_KEYS = {pose: true, size: true, face: true, seed: true, at: true, feel: true, id: true, sarong: true, ground: true};
 
 // indra(x, y, t, look): Indra. look.pose: "fly" (the default: (x, y) the middle of the figure, as thewada()), "stand"
 // ((x, y) the ground under him; a halo) or "throne" ((x, y) the ground under his stone throne, he sits cross-legged on
-// it); size (1.6 flying, 1.5 standing, 1.35 seated, unless told), face, seed; at, feel, id and sarong as person()'s.
+// it); size (1.6 flying, 1.5 standing, 1.35 seated, unless told), face, seed; at, feel, id, sarong and ground (false: no
+// shadow, as on a cloud) as person()'s.
 // Returns person()'s joints when he stands or sits, else nothing.
 // e.g. indra(960, GROUND, t, {pose: "throne", at: [600, 700]});
 function indra(x, y, t, look) {
   look = look || {};
   checkNames("Indra's name", look, INDRA_KEYS);
   var pose = look.pose || "fly", face = look.face || 1, own = {face: face};
-  ["at", "feel", "id", "sarong"].forEach(function (k) { if (look[k] !== undefined) { own[k] = look[k]; } });
+  ["at", "feel", "id", "sarong", "ground"].forEach(function (k) { if (look[k] !== undefined) { own[k] = look[k]; } });
   if (pose === "fly") {
     var colours = Object.assign({}, HIMMA);
     Object.assign(HIMMA, {skin: INDRA.skin, skinLit: INDRA.skinLit, skinShade: INDRA.skinShade, skinLine: INDRA.skinLine});
@@ -1076,6 +1137,6 @@ function indra(x, y, t, look) {
     if (pose !== "stand") { checkName("Indra's pose", pose, {fly: true, stand: true, throne: true}); }
     j = person(x, y, Object.assign({}, INDRA_LOOK, {skin: INDRA.body, size: look.size || 1.5, halo: true}, own));
   }
-  spireCrown(j, 1.2);
+  spireCrown(j, 1.2, t);
   return j;
 }

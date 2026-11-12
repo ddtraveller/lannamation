@@ -40,11 +40,12 @@ function hhSceneGiantess(t) {
     var gx = mix(H10_PALM[0] - 120, H10_PALM[0] - 230, spring), bx = mix(860, H10_PALM[0] - 520, walk);
     ogre(gx, H10_PALM[1] + 10, t, {kind: "giantess", id: "giantess", face: -1, size: 1.25, feel: "angry",
                                     reachA: spring > 0 ? [gx - 200, H10_PALM[1] - 300] : undefined, reachB: spring > 0 ? [gx - 180, H10_PALM[1] - 260] : undefined});
-    var hand = stroke > 0 ? [bx + 140, H10_PALM[1] - 160] : [bx + 30, H10_PALM[1] - 330];
-    person(bx, H10_PALM[1] + 30, hhBoy(13, {face: 1, feel: spring > 0 ? "angry" : "neutral", step: walk > 0 && walk < 1 ? s * 0.8 : 0,
-                                            mouth: welTalk(t, welSays(t, H10_PLAN, ["H045"])), at: [gx, H10_PALM[1] - 360],
-                                            reachA: draw > 0 ? hand : undefined}));
-    if (draw > 0) { kanchai(hand[0], hand[1], {size: 0.42, angle: stroke > 0 ? mix(0.2, 2.4, stroke) : 0.2}); }
+    var g = H10_PALM[1] + 30;                            // the sword held up to chop, then brought down (owner, 2026-11-12)
+    var hand = [mix(bx + 40, bx + 150, stroke), mix(g - 400, g - 230, stroke)];
+    var bj = person(bx, g, hhBoy(13, {face: 1, feel: spring > 0 ? "angry" : "neutral", step: walk > 0 && walk < 1 ? s * 0.8 : 0,
+                                      mouth: welTalk(t, welSays(t, H10_PLAN, ["H045"])), at: [gx, H10_PALM[1] - 360],
+                                      reachA: draw > 0 ? hand : undefined}));
+    if (draw > 0) { hhSword(bj, mix(-0.9, 2.2, stroke), 0.42); }
     if (stroke > 0) {                                    // the stroke: a flash across the picture
       pen.save(); pen.globalCompositeOperation = "lighter";
       pen.strokeStyle = "rgba(255, 246, 210, " + (0.9 * (1 - stroke)).toFixed(3) + ")"; pen.lineWidth = 26; pen.lineCap = "round";

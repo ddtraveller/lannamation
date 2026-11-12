@@ -32,9 +32,10 @@ function hhSceneCrime(t) {
   var bank = WEL_KOK_BANK + 120;
   if (t < H16_CUTS[0]) {                                // home through the clouds, the palaces following
     hhHeaven(t, 1080);
-    var hs = hongHin(mix(1500, 1100, between(t, 0, 10)), 380 + 20 * Math.sin(t), t, {size: 1.3, face: -1});
+    var hs = hongHin(mix(1500, 1100, between(t, 0, 10)), 380 + 20 * Math.sin(t), t, {size: 1.3, face: -1, rider: true});
     person(hs.behind[0], hs.behind[1], welPerson("grandmother", HH_GRAN, {id: "gran", floor: "astride", face: -1, feel: "happy"}));
     person(hs.seat[0], hs.seat[1], hhBoy(13, {floor: "astride", face: -1, feel: "happy"}));
+    hs.near();
     vimana(hs.seat[0] + 420, 560, t, {kind: "prasat", size: 0.24, face: -1});
     vimana(hs.seat[0] + 760, 470, t + 2, {kind: "hall", size: 0.22, face: -1});
     vimana(hs.seat[0] + 1060, 600, t + 4, {kind: "lotus", size: 0.22, face: -1});
@@ -48,13 +49,24 @@ function hhSceneCrime(t) {
     hhCamera(0.7, 800, 820, 1.4);
     h16River(t, "dusk");
     var bx = 820;
-    person(bx - 260, bank + 20, welPerson("grandmother", HH_GRAN, {id: "gran", face: 1, feel: "fear", at: [bx, bank - 200]}));
-    person(bx, bank + 10, hhBoy(13, {face: -1, feel: close > 0.5 ? "fear" : "surprised", at: [bx + 200, bank - 200]}));
+    // all in the order of their depth, the brothers at the back of the ring behind the others; their arms at their sides
+    // (the owner, 2026-11-12: the two highest up were in front, and they waved)
+    var ring = [{name: "gran", kind: "person", x: bx - 260, y: bank + 20, draw: function () {
+                  person(bx - 260, bank + 20, welPerson("grandmother", HH_GRAN, {id: "gran", face: 1, feel: "fear", at: [bx, bank - 200]}));
+                }},
+                {name: "boy", kind: "person", x: bx, y: bank + 10, draw: function () {
+                  person(bx, bank + 10, hhBoy(13, {face: -1, feel: close > 0.5 ? "fear" : "surprised", at: [bx + 200, bank - 200]}));
+                }}];
     for (var k = 0; k < 6; k++) {
-      var a = k / 6 * Math.PI * 2, r = mix(520, 170, close), sx = bx + Math.cos(a) * r * 1.2, sy = bank + 10 + Math.sin(a) * r * 0.25;
-      person(sx, sy, hhSon(k, {face: sx < bx ? 1 : -1, feel: "angry", id: "son" + k, step: close > 0 && close < 1 ? t * 0.9 + k : 0,
-                               at: [bx, bank - 200], reachA: close >= 1 ? [sx + (sx < bx ? 90 : -90), bank - 300] : undefined}));
+      (function (k) {
+        var a = k / 6 * Math.PI * 2, r = mix(520, 170, close), sx = bx + Math.cos(a) * r * 1.2, sy = bank + 10 + Math.sin(a) * r * 0.25;
+        ring.push({name: "son " + k, kind: "person", x: sx, y: sy, draw: function () {
+          person(sx, sy, hhSon(k, {face: sx < bx ? 1 : -1, feel: "angry", id: "son" + k, step: close > 0 && close < 1 ? t * 0.9 + k : 0,
+                                   at: [bx, bank - 200]}));
+        }});
+      })(k);
     }
+    drawByZ(ring);
     hhCameraEnd();
   } else {                                               // night: they ride away with her; the boy lies in the weeds
     var s = t - H16_CUTS[2], ride = between(s, 1, 34);
@@ -64,10 +76,12 @@ function hhSceneCrime(t) {
     pen.restore();
     for (var g = 0; g < 9; g++) { sceneryReeds(380 + g * 40, bank + 120, 0.5 + 0.1 * (g % 3), t, "front"); }
     var ex = mix(1500, 200, ride);
+    for (var n = 1; n < 6; n++) {                        // the five on foot behind the elephant, further back (owner, 2026-11-12)
+      person(ex + 150 + n * 90, bank - 70 - (n % 2) * 16, hhSon(n, {face: -1, step: t * 0.8 + n, id: "walk" + n, size: 0.72}));
+    }
     var e = elephant(ex, bank - 40, {size: 0.62, face: -1, step: t * 0.5, cloth: "#8a2a3a"});
     person(e.seat[0], e.seat[1], welPerson("grandmother", HH_GRAN, {id: "gran", floor: "astride", face: -1, feel: "sad", tears: 1}));
     person(e.seat[0] + 70, e.seat[1] + 6, hhSon(0, {floor: "astride", face: -1, id: "rider"}));
-    for (var n = 1; n < 6; n++) { person(ex + 150 + n * 90, bank + (n % 2) * 26, hhSon(n, {face: -1, step: t * 0.8 + n, id: "walk" + n})); }
     sceneryMoon(t, HH_MOON[0], HH_MOON[1], HH_MOON[2], {});
   }
   welFadeIn(t, 1.5);

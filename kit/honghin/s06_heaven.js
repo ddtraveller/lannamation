@@ -16,9 +16,10 @@ function hhSceneHeaven(t) {
     hhHeaven(t);
     [[700, 1, "celestial"], [1120, -1, "celestial"]].forEach(function (q, i) {
       person(q[0], 960, welPerson("woman:" + q[2], {size: 0.8}, {id: "queen" + i, face: q[1], feel: "concerned", at: [900, 760], free: true,
-                                                                reachA: i === 0 ? [880, 760] : undefined, reachB: i === 0 ? [900, 770] : undefined}));
+                                                                reachA: i === 0 ? [880, 760] : undefined, reachB: i === 0 ? [900, 770] : undefined, ground: false}));
+      hhCloudFeet(q[0], 960, t, 300, 12 + i);
     });
-    swaddledBaby(pen, 900, 770, 0.7);
+    swaddledBaby(pen, 900, 770, 1.25, "sad");           // crying: a frown, a tear (owner, 2026-11-12)
     if (Math.sin(t * 5) > 0) {                          // his crying, little lines over him
       pen.strokeStyle = "rgba(90, 60, 40, 0.7)"; pen.lineWidth = 2;
       [-1, 0, 1].forEach(function (d) { pen.beginPath(); pen.moveTo(900 + d * 18, 730); pen.lineTo(900 + d * 26, 712); pen.stroke(); });
@@ -38,8 +39,10 @@ function hhSceneHeaven(t) {
     }
     var asking = welSays(t, H06_PLAN, ["H025"]), telling = welSays(t, H06_PLAN, ["H026"]);
     person(640, 900, hhBoy(10, {face: 1, feel: telling ? "surprised" : "concerned", mouth: welTalk(t, asking),
-                                at: part > 0.5 ? [960, 960] : [1240, 640]}));
-    indra(1240, 900, t, {pose: "stand", id: "indra", face: -1, feel: "concerned", at: part > 0.5 ? [960, 960] : [640, 700]});
+                                at: part > 0.5 ? [960, 960] : [1240, 640], ground: false}));
+    hhCloudFeet(640, 900, t, 240, 14);
+    indra(1240, 900, t, {pose: "stand", id: "indra", face: -1, feel: "concerned", at: part > 0.5 ? [960, 960] : [640, 700], ground: false});
+    hhCloudFeet(1240, 900, t, 360, 15);
   }
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H06_CUTS, H06_PLAN, H06_LINES, H06_LONG));

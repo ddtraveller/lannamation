@@ -3,8 +3,8 @@
 // comes as a handsome prince offering palaces; they turn away. He comes as a monster to eat the body; they gather wood
 // for a fire, to leap into it and die with him (as the text, the owner). He comes as an old Brahman, pours heavenly
 // medicine on the boy's wounds, and the boy breathes and sits up.
-var H17_LONG = 60;
-var H17_SOUND = {calls: [[0.0, "frogs", 0.2, 60.0], [0.0, "shama", 0.15, 60.0], [22.26, "roar", 0.3]]};
+var H17_LONG = 58;                                     // 60 until 2026-11-12 (owner: the healing a couple of seconds shorter)
+var H17_SOUND = {calls: [[0.0, "frogs", 0.2, 58.0], [0.0, "shama", 0.15, 58.0], [22.26, "roar", 0.3]]};
 var H17_LINES = [[2, 9.6, "H075"], [10, 19.92, "H076"], [21.6, 36.14, "H077"], [36.34, 42.28, "H078"]];
 // The lines as the scene was drawn to them; it plays to H17_LINES, Pan's voice (sets.js hhClock()).
 var H17_PLAN = [[2, 8.6, "H075"], [10, 20.2, "H076"], [21.6, 30.2, "H077"], [31.6, 40.2, "H078"]];
@@ -23,8 +23,8 @@ function h17Bank(t, up, feel, turned) {
   person(0, up > 0 ? 0 : 160, hhBoy(13, {face: 1, feel: up > 0 ? "happy" : "sleepy", blink: up > 0 ? undefined : 1, floor: up > 0 ? "cross" : undefined}));
   pen.restore();
   [["mukhawadi", -220, 1], ["culakantha", 160, -1], ["salicanta", 420, -1]].forEach(function (d, k) {
-    person(H17_BODY[0] + d[1], H17_BODY[1] + 20, ogreDaughter(d[0], {size: 0.72, id: d[0], floor: "side", face: turned ? -d[2] : d[2],
-                                                                     feel: feel, tears: feel === "sad" ? 1 : 0, at: [H17_BODY[0], H17_BODY[1] - 40]}));
+    hhPrincessAt(H17_BODY[0] + d[1], H17_BODY[1] + 20, d[0], {size: 0.72, id: d[0], floor: "side", face: turned ? -d[2] : d[2],
+                                                               feel: feel, tears: feel === "sad" ? 1 : 0, at: [H17_BODY[0], H17_BODY[1] - 40]});
   });
 }
 

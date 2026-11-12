@@ -125,10 +125,12 @@
 //   id         a name of its own, so that which three eyes share its feeling is its own (else "maeng")
 //   slope      the ground under the feet, as the beasts take it (beastLegs() reads it: until 2026-10-21 it worked here
 //              and warned it was not known)
+//   held       (the Hatsadiling flying) a function drawing what it carries, in the bird's own measure, after its body
+//              and before its near leg: its legs reach down and the claws close over it (the Hemmarat's elephant)
 var MYTH_KEYS = {};
 
 ["size", "face", "late", "mouth", "colour", "gold", "belly", "step", "eyes", "trail", "depth", "sing", "horns", "wings", "fly", "head", "trunk", "feel",
- "glow", "wake", "watch", "eyeFeel", "id", "slope", "prey"
+ "glow", "wake", "watch", "eyeFeel", "id", "slope", "prey", "held"
 ].forEach(function (name) { MYTH_KEYS[name] = true; });
 
 // How the two that walk do it, for amble() of beasts.js: [how large it is
@@ -842,17 +844,18 @@ function hatsadiling(x, y, look) {
     pen.closePath();
   }
   function leg(hip, phase, skin) {                  // a bird's leg: a short thigh in feathers, a thin shank, and three toes with claws
-    var at = fly ? [-104, 30] : walk ? beastFoot(look.step + phase, GAITS.hatsadiling[1], 30) : [phase ? 12 : -8, 0];   // one that flies trails its legs behind it
+    var grip = fly && look.held;                    // one that flies trails its legs behind it, or reaches down to grip
+    var at = grip ? [-18 + (phase ? 8 : 0), 62] : fly ? [-104, 30] : walk ? beastFoot(look.step + phase, GAITS.hatsadiling[1], 30) : [phase ? 12 : -8, 0];
     var foot = fly ? [hip[0] + at[0], hip[1] + at[1]] : [hip[0] + at[0], -8 - at[1]];
     var bones = limb(hip[0], hip[1], foot[0], foot[1], 58, 62, [17, 7, 5], skin, function (joint) { return -joint[0]; }, 0.3);
     pen.save();
     pen.translate(bones[0], bones[1]);
-    pen.rotate(fly ? 2.6 : at[1] > 2 ? 0.5 : 0);
+    pen.rotate(grip ? 1.45 : fly ? 2.6 : at[1] > 2 ? 0.5 : 0);
     pen.strokeStyle = inkFor(skin);
     pen.lineWidth = 1.2 * FINE;
     for (var toe = 0; toe < 3; toe++) {
       pen.save();
-      pen.rotate(-0.5 + toe * 0.45);
+      pen.rotate(grip ? -0.9 + toe * 0.9 : -0.5 + toe * 0.45);   // gripping, the toes spread round what it holds
       pen.beginPath();
       pen.moveTo(-3, -3);
       pen.lineTo(30, -3);
@@ -925,6 +928,7 @@ function hatsadiling(x, y, look) {
   pen.lineJoin = "round";
   pen.stroke();
   pen.translate(0, bob);
+  if (fly && look.held) { look.held(); }            // what it carries, under the near leg's claws
   leg([-6, -116], 0, legSkin);
   pen.translate(0, -bob);
   var nodding = 0.03 * Math.sin(clock * 1.5 + seed) + 0.05 * beat;
@@ -1522,16 +1526,17 @@ function changNgu(x, y, look) {
 var HEMMARAT = {colour: "#3a2a4a", belly: "#8a7a9a", gold: "#c89a3a"};
 function hemmarat(x, y, look) {
   look = Object.assign({size: 0.55, fly: true, trunk: 0.7, feel: "angry"}, HEMMARAT, look || {});
-  var prey = look.prey !== false, s = look.size / 0.55, face = look.face || 1;
+  var prey = look.prey !== false;
   delete look.prey;
   if (look.fly === false) { delete look.fly; }
-  var got = hatsadiling(x, y, look);
-  if (prey) {                                        // the elephant in its claws, tipped, its trunk up
-    pen.save();
-    pen.translate(x - 40 * s * face, y + 50 * s);  // its back just under the claws
-    pen.rotate(0.35 * face);
-    elephant(0, 0, {size: 0.12 * s, trunk: 0.9, mouth: 1, face: face});
-    pen.restore();
+  if (prey && look.fly) {                            // the elephant in its claws, tipped, its trunk up: its back under the
+    look.held = function () {                        // belly, the claws closed over it (the owner, 2026-11-12)
+      pen.save();
+      pen.translate(-34, 84);
+      pen.rotate(0.22);
+      elephant(0, 0, {size: 0.2, trunk: 0.9, mouth: 1, face: 1, ground: false});
+      pen.restore();
+    };
   }
-  return got;
+  return hatsadiling(x, y, look);
 }

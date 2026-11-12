@@ -64,7 +64,9 @@ FEEL = {
 }
 
 # A scene with no words has its feelings here, as cues. None yet (the credits are still to make).
-SCENE_FEEL = {}
+# A scene with no words has its feelings here, as cues: 22, the credits (2026-11-12), warm and then glad toward the
+# studio's name, as the White Eel's.
+SCENE_FEEL = {22: [[0.0, "tender"], [96.0, "joy"]]}
 
 
 if __name__ == "__main__":

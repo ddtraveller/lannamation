@@ -78,11 +78,12 @@ function hhSceneTest(t) {
     hhCamera(0.5, 960, 700, 1.15);
     h11Camp(t, kneel);
     if (rise > 0) {
-      var sx = mix(300, 1800, rise), sy = mix(820, 120, rise);
-      var h = hongHin(sx, sy, t, {size: 1.6});
+      var sx = mix(300, 2400, rise), sy = mix(820, -260, rise);   // all the way off the picture (owner, 2026-11-12)
+      var h = hongHin(sx, sy, t, {size: 1.6, rider: true});
       var hands = [h.seat[0] + 50, h.seat[1] - 55];
       person(h.seat[0], h.seat[1], hhBoy(13, {floor: "astride", face: 1, feel: "happy", reachA: hands, reachB: [hands[0] - 10, hands[1] + 6]}));
       hongHinReins(h, hands);
+      h.near();
     }
     hhCameraEnd();
   }

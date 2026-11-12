@@ -564,14 +564,18 @@ function seedPouch(x, base) {
 // puppy(x, y, t, look): the spotted puppy the six wives put in the baby's place: the kit's dog() at three quarters its
 // size, tan with dark patches (the owner's pick, B). (x, y): where its feet stand; look: as dog()'s how ({feel}).
 function puppy(x, y, t, look) {
+  look = look || {feel: "sad"};
+  var e = creatureFeel(look, t), bob = 0.75 * (hop(t, 0.5) * 7 + 3 * e.shake);   // the dog's own bob: the spots ride on it
   hhOver(function () {
-    pen.save(); pen.translate(x, y); pen.scale(0.75, 0.75); dog(0, 0, t, look || {feel: "sad"}); pen.restore();
+    pen.save(); pen.translate(x, y); pen.scale(0.75, 0.75); dog(0, 0, t, look); pen.restore();
   }, function (c) {
     var r = hhRandom(9);
     c.fillStyle = "rgba(196, 150, 96, 0.7)";
     c.fillRect(x - 120, y - 140, 240, 150);
-    c.fillStyle = "#3a2414";
-    for (var k = 0; k < 6; k++) { c.beginPath(); c.ellipse(x - 60 + r() * 120, y - 80 + r() * 50, 6 + r() * 18, 5 + r() * 7, r() * 3, 0, 7); c.fill(); }
+    c.fillStyle = "#3a2414";                         // the patches on its back and flank, where the body is (the dog's
+    for (var k = 0; k < 6; k++) {                    // own measure, x -50 to 26, y -72 to -42), so they move with it
+      c.beginPath(); c.ellipse(x + 0.75 * (-50 + r() * 76), y - bob + 0.75 * (-72 + r() * 30), 0.75 * (6 + r() * 12), 0.75 * (5 + r() * 6), r() * 3, 0, 7); c.fill();
+    }
   });
 }
 

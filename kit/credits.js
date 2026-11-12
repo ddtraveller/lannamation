@@ -61,7 +61,7 @@ function creditRow(row, y) {                            // one row, its middle a
     [row[1], row[2]].forEach(function (one, side) {
       if (!one) { return; }
       var at = WIDE / 2 + (side ? 1 : -1) * 470;
-      creditText(one[0] + "  ·  " + one[1], at, y - 14, "500 29px " + serif, CREDIT_INK);
+      creditText(one[0] ? one[0] + "  ·  " + one[1] : one[1], at, y - 14, "500 29px " + serif, CREDIT_INK);   // a name with no Thai: the English alone
       creditText(one[2], at, y + 20, "italic 23px " + LETTERS_LATIN + ", " + serif, CREDIT_SOFT);
     });
   } else if (row[0] === "end") {

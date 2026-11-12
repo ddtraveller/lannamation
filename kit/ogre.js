@@ -31,10 +31,23 @@ var OGRES = {
   ghoulPale: {skin: "#cfc6b4", dark: "#8a8070", crown: null, hair: "#e6e0d4", eye: "#c8302a"},
   ghoulDark: {skin: "#4a3230", dark: "#241614", crown: null, hair: "#151010", eye: "#e8862a"},
   // the old giantess under the palm at Varanasi's south gate (ย่ายักษ์เถ้า), red, her hair white (the owner's pick, C)
-  giantess:  {skin: "#a8452f", dark: "#5a2414", crown: null, hair: "#e8e3da", eye: "#2a8a4a"}
+  giantess:  {skin: "#a8452f", dark: "#5a2414", crown: null, hair: "#e8e3da", eye: "#2a8a4a", long: true}
 };
 
 function ogFill(fill, ink, width) { pen.fillStyle = fill; pen.fill(); pen.strokeStyle = ink; pen.lineWidth = width || 2; pen.stroke(); }
+// A glint of light on gold: a four-pointed star at (x, y), r long, alpha 0 to 1.
+function ogGlint(x, y, r, alpha) {
+  if (r < 0.5 || alpha <= 0) { return; }
+  pen.save();
+  pen.globalAlpha *= alpha;
+  var g = pen.createRadialGradient(x, y, 0, x, y, r * 1.2);
+  g.addColorStop(0, "rgba(255, 255, 240, 0.95)"); g.addColorStop(1, "rgba(255, 240, 180, 0)");
+  pen.fillStyle = g; pen.beginPath(); pen.arc(x, y, r * 1.2, 0, 7); pen.fill();
+  pen.fillStyle = "#fffef4"; pen.beginPath();
+  pen.moveTo(x, y - r); pen.quadraticCurveTo(x, y, x + r, y); pen.quadraticCurveTo(x, y, x, y + r);
+  pen.quadraticCurveTo(x, y, x - r, y); pen.quadraticCurveTo(x, y, x, y - r); pen.closePath(); pen.fill();
+  pen.restore();
+}
 
 // ogreHead(j, kind, face, t): the head drawn over the person's, j what person() gave back.
 // person() gives its joints in pixels of the sheet, through all the pen's turns and scales (PIX to a film pixel, and a
@@ -45,7 +58,7 @@ function ogJoint(p) {
   var m = pen.getTransform().inverse();
   return [m.a * p[0] + m.c * p[1] + m.e, m.b * p[0] + m.d * p[1] + m.f];
 }
-function ogreHead(j, kind, face, t) {
+function ogreHead(j, kind, face, t, jaw) {
   var crown = ogJoint(j.crown), chin = ogJoint(j.chin);
   var c = OGRES[kind], cx = (crown[0] + chin[0]) / 2, cy = (crown[1] + chin[1]) / 2;
   var h = Math.hypot(chin[0] - crown[0], chin[1] - crown[1]), s = h / 100;
@@ -60,6 +73,23 @@ function ogreHead(j, kind, face, t) {
     for (var k = 0; k <= 16; k++) { var a = Math.PI + k / 16 * Math.PI, r = k % 2 ? 78 : 64; pen.lineTo(Math.cos(a) * r, -10 + Math.sin(a) * r * 0.9 + 6 * Math.sin(t * 2 + k)); }
     pen.closePath();
     ogFill(c.hair, "#000000");
+  }
+  if (c.long) {                                     // long matted hair, white, hanging in clumps past the shoulders
+    for (var lock = 0; lock < 9; lock++) {           // (the owner, 2026-11-12: "long matted white hair")
+      var side = lock < 5 ? -1 : 1, i = lock < 5 ? lock : lock - 5;
+      var x0 = side * (40 + i * 7), len = 150 + 40 * Math.sin(lock * 2.7) + i * 14, sway = 5 * Math.sin(t * 1.1 + lock);
+      pen.beginPath();
+      pen.moveTo(x0 - 9, -30);
+      pen.bezierCurveTo(x0 + side * 18 - 10, 40, x0 + side * 6 - 14 + sway, len - 60, x0 + side * 10 - 6 + sway, len);
+      pen.lineTo(x0 + side * 10 + 2 + sway, len - 14); pen.lineTo(x0 + side * 10 + 8 + sway, len + 6);
+      pen.bezierCurveTo(x0 + side * 6 + 14 + sway, len - 60, x0 + side * 18 + 12, 40, x0 + 9, -30);
+      pen.closePath();
+      ogFill(lock % 2 ? c.hair : "#d6cfc2", "#6a6258", 1.6);
+      pen.strokeStyle = "rgba(110, 100, 88, 0.6)"; pen.lineWidth = 1.2;   // the strands matted together
+      for (var m = 1; m < 4; m++) {
+        pen.beginPath(); pen.moveTo(x0, 10 + m * 20); pen.quadraticCurveTo(x0 + side * 8 + sway * 0.5, 30 + m * (len / 5), x0 + side * 6 + sway, 40 + m * (len / 4)); pen.stroke();
+      }
+    }
   }
   pen.beginPath();                                  // the ears, big, with gold rings
   pen.ellipse(-62, 0, 14, 24, -0.2, 0, 7); ogFill(c.skin, ink);
@@ -80,7 +110,7 @@ function ogreHead(j, kind, face, t) {
   pen.beginPath();                                  // the nose: broad, its nostrils flared
   pen.moveTo(-8, -4); pen.quadraticCurveTo(-16, 18, -12, 22); pen.quadraticCurveTo(0, 28, 12, 22); pen.quadraticCurveTo(16, 18, 8, -4);
   ogFill(c.skin, ink, 1.8);
-  var open = 0.5 + 0.5 * Math.sin(t * 1.3);
+  var open = jaw === undefined ? 0.5 + 0.5 * Math.sin(t * 1.3) : 2.2 * jaw - 0.6;   // jaw 0 shut, 1 wide (to eat)
   pen.beginPath();                                  // the mouth: the width of the face, open, a row of teeth
   pen.moveTo(-36, 32); pen.quadraticCurveTo(0, 40 + 10 * open, 36, 32); pen.quadraticCurveTo(0, 54 + 10 * open, -36, 32); pen.closePath();
   ogFill("#6a1a1a", ink, 2);
@@ -90,18 +120,41 @@ function ogreHead(j, kind, face, t) {
     ogFill("#fffaf0", ink, 1.4);
   });
   if (c.crown === "spire") {                        // the spire crown (ชฎา) of gold, in tiers, the flames at the ears
-    pen.beginPath(); pen.moveTo(-52, -42); pen.quadraticCurveTo(0, -70, 52, -42); pen.lineTo(46, -58); pen.quadraticCurveTo(0, -80, -46, -58); pen.closePath();
-    ogFill("#e0b23a", "#7a4a10");
-    for (var tier = 0; tier < 4; tier++) {
-      var w = 40 - tier * 9, y0 = -66 - tier * 24;
-      pen.beginPath(); pen.moveTo(-w, y0); pen.lineTo(-w + 5, y0 - 24); pen.lineTo(w - 5, y0 - 24); pen.lineTo(w, y0); pen.closePath();
-      ogFill(tier % 2 ? "#e0b23a" : "#d8a02e", "#7a4a10", 1.6);
-      oval(0, y0 - 12, 3, 3, "#c8202a");
+    var lit = "#f6d47a", gold = "#e0b23a", deep = "#c8901e", line = "#7a4a10";
+    [-1, 1].forEach(function (side) {               // behind each ear a flame of gold in three tongues, curling back and down
+      pen.save(); pen.translate(side * 52, -44); pen.scale(0.7, 0.62); pen.translate(-side * 52, 44);
+      for (var f = 2; f >= 0; f--) {                // (kranok; the owner, 2026-11-12: a new crown, more detailed)
+        pen.beginPath(); pen.moveTo(side * 50, -50 + f * 4);
+        pen.bezierCurveTo(side * (84 + f * 8), -50 + f * 6, side * (98 + f * 8), -10 + f * 10, side * (90 + f * 6), 30 + f * 14);
+        pen.quadraticCurveTo(side * (104 + f * 6), 26 + f * 14, side * (106 + f * 6), 12 + f * 14);
+        pen.quadraticCurveTo(side * (110 + f * 6), 44 + f * 14, side * (84 + f * 4), 46 + f * 14);
+        pen.bezierCurveTo(side * (80 + f * 4), 10 + f * 8, side * 72, -24, side * 56, -34); pen.closePath();
+        ogFill(f % 2 ? lit : gold, line, 1.6);
+      }
+      pen.restore();
+      oval(side * 64, -40, 5, 5, "#2e8a6a");
+    });
+    pen.beginPath(); pen.moveTo(-54, -40); pen.quadraticCurveTo(0, -70, 54, -40); pen.lineTo(48, -60); pen.quadraticCurveTo(0, -84, -48, -60); pen.closePath();
+    ogFill(gold, line);                             // the band over the brow, set with a row of stones and a great red one
+    for (var n = -4; n <= 4; n++) { oval(n * 10, -52 - (16 - n * n) * 0.6, 3.2, 3.2, n % 2 ? "#2e8a6a" : "#c8202a"); }
+    pen.beginPath(); pen.moveTo(-10, -62); pen.lineTo(0, -80); pen.lineTo(10, -62); pen.lineTo(0, -54); pen.closePath(); ogFill("#c8202a", line, 1.4);
+    for (var tier = 0; tier < 5; tier++) {           // five tiers, each edged with lotus petals, a stone at its middle
+      var w = 40 - tier * 7.5, y0 = -66 - tier * 21, y1 = y0 - 21;
+      pen.beginPath(); pen.moveTo(-w, y0); pen.lineTo(-w + 4, y1); pen.lineTo(w - 4, y1); pen.lineTo(w, y0); pen.closePath();
+      var g = pen.createLinearGradient(-w, 0, w, 0); g.addColorStop(0, lit); g.addColorStop(0.5, tier % 2 ? gold : deep); g.addColorStop(1, "#9a6a1e");
+      ogFill(g, line, 1.5);
+      var petals = Math.max(3, Math.round(w / 7));
+      for (var q = 0; q < petals; q++) {
+        var px = -w + (q + 0.5) * 2 * w / petals, pr = w / petals;
+        pen.beginPath(); pen.moveTo(px - pr, y0); pen.quadraticCurveTo(px, y0 - 2.4 * pr, px + pr, y0); ogFill(q % 2 ? lit : gold, line, 0.9);
+      }
+      oval(0, y0 - 13, 3.4, 3.4, tier % 2 ? "#2e8a6a" : "#c8202a");
     }
-    pen.beginPath(); pen.moveTo(-6, -162); pen.lineTo(0, -196); pen.lineTo(6, -162); pen.closePath(); ogFill("#e0b23a", "#7a4a10", 1.4);
-    [-1, 1].forEach(function (side) {               // the gold flames flaring behind the ears
-      pen.beginPath(); pen.moveTo(side * 56, -30); pen.quadraticCurveTo(side * 96, -50, side * 90, -90); pen.quadraticCurveTo(side * 76, -56, side * 58, -46); pen.closePath();
-      ogFill("#e0b23a", "#7a4a10", 1.4);
+    pen.beginPath(); pen.moveTo(-7, -171); pen.quadraticCurveTo(-3, -196, 0, -214); pen.quadraticCurveTo(3, -196, 7, -171); pen.closePath(); ogFill(lit, line, 1.4);
+    oval(0, -176, 3, 3, "#c8202a");
+    [[0, -70], [-30, -50], [30, -50], [-20, -100], [20, -120], [0, -150], [0, -206], [-74, -20], [74, -20]].forEach(function (q, i) {
+      var on = Math.max(0, Math.sin(t * 2.4 + i * 2.1));   // the sparkles: small stars that flash in turn
+      ogGlint(q[0], q[1], 14 * on * on, on);
     });
   }
   pen.restore();
@@ -166,15 +219,16 @@ function ogreDaughter(name, more) {
 }
 
 // ogre(x, y, t, look): the ogre standing on (x, y) at second t (see the top of this file). look.kind: "mural" unless
-// told. Returns the joints person() gives back.
+// told; look.jaw: how far its mouth is open, 0 shut to 1 wide (to eat), else it opens and closes on its own. Returns the joints person() gives back.
 // e.g. var j = ogre(1300, GROUND, t, {kind: "forest", face: -1, step: t * 0.5, at: [600, 700]});
 function ogre(x, y, t, look) {
   look = look || {};
   var kind = OGRES[look.kind] ? look.kind : "mural";
   if (look.kind && !OGRES[look.kind]) { checkName("The ogre's kind", look.kind, OGRES); }
-  var given = Object.assign({}, look);
+  var given = Object.assign({}, look), jaw = look.jaw;
   delete given.kind;
+  delete given.jaw;
   var j = person(x, y, Object.assign({size: 1.75, skin: OGRES[kind].skin, hidden: ["hair"], buttons: false, feel: "angry"}, OGRE_LOOKS[kind], given));
-  ogreHead(j, kind, given.face || 1, t);
+  ogreHead(j, kind, given.face || 1, t, jaw);
   return j;
 }

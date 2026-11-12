@@ -10,14 +10,25 @@ var H03_PLAN = [[1.5, 7.4, "H011"], [8.6, 11.8, "H012"], [17, 23.2, "H013"], [24
 var H03_CUTS = [16.5, 29.2, 43.6];
 var H03_MAT = [860, CNG_FLOOR + 40];                    // where Vimala lies on the mat
 var H03_HOLE = [1180, CNG_FLOOR + 70];                  // the hole in the floor
+var H03_LIE = [1010, CNG_FLOOR + 6, 300];                  // Vimala lying on the mat: her middle, and her length
 
 // The room by night, its lamp, Vimala and the six. t: seconds; part: "crowd" (they come round her) or "hands".
 function h03Room(t, part) {
   pen.drawImage(cngRoom("night"), 0, 0);
   sceneryLampLight(t, 520, CNG_FLOOR - 40, CNG_FLOOR + 20, {reach: 420, strength: 0.9, seed: 5});
   var faint = part === "hands" || t > 9.5, list = [];
-  list.push({name: "vimala", kind: "person", x: H03_MAT[0], y: H03_MAT[1], draw: function () {
-    person(H03_MAT[0], H03_MAT[1], hhVimala({floor: "side", face: 1, feel: faint ? "sleepy" : "concerned", blink: faint ? 1 : undefined}));
+  var down = part === "hands" ? 1 : between(t, 9.5, 10.3);   // she faints and lies down on the mat, her eyes shut
+  list.push({name: "vimala", kind: "person", x: H03_MAT[0], y: mix(H03_MAT[1], H03_LIE[1], down), draw: function () {   // (owner, 2026-11-12)
+    if (down < 1) {
+      pen.save(); pen.globalAlpha = 1 - down;
+      person(H03_MAT[0], H03_MAT[1], hhVimala({floor: "side", face: 1, feel: "concerned"}));
+      pen.restore();
+    }
+    if (down > 0) {
+      pen.save(); pen.globalAlpha = down;
+      hhCarried(H03_LIE[0], H03_LIE[1], H03_LIE[2], hhVimala({feel: "sleepy", blink: 1}), 1);
+      pen.restore();
+    }
   }});
   for (var k = 0; k < 6; k++) {
     (function (k) {
@@ -30,8 +41,8 @@ function h03Room(t, part) {
   }
   if (part === "hands") {                               // the puppy beside her; one wife at the hole with the child
     var gone = between(t, 25.5, 27.5);
-    list.push({name: "puppy", kind: "dog", x: H03_MAT[0] + 120, y: H03_MAT[1] + 20, draw: function () {
-      pen.save(); pen.translate(H03_MAT[0] + 120, H03_MAT[1] + 20); pen.scale(0.55, 0.55);
+    list.push({name: "puppy", kind: "dog", x: H03_LIE[0] + 60, y: H03_LIE[1] + 40, draw: function () {
+      pen.save(); pen.translate(H03_LIE[0] + 60, H03_LIE[1] + 40); pen.scale(0.55, 0.55);
       puppy(0, 0, t, {feel: "sad"}); pen.restore();
     }});
     list.push({name: "wife at the hole", kind: "person", x: H03_HOLE[0] + 120, y: H03_HOLE[1], draw: function () {

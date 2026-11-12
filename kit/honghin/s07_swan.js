@@ -17,16 +17,21 @@ function hhSceneSwan(t) {
     var glow = between(t, 8, 14), made = between(t, 14, 16.5), sword = between(t, 28.5, 30.5);
     hhCamera(0.5, 1000, 640, 1.2);
     hhHeaven(t, 1060);
-    if (made < 1) { pen.save(); pen.globalAlpha = 1 - made; hhBoulder(H07_SWAN[0], 900, glow); pen.restore(); }
+    if (made < 1) {                                      // the boulder sits in the cloud, its foot hidden in it (owner, 2026-11-12)
+      pen.save(); pen.globalAlpha = 1 - made; hhBoulder(H07_SWAN[0], 900, glow); pen.restore();
+    }
+    hhCloudFeet(H07_SWAN[0], 900, t, 520, 16);
     if (made > 0) {
       pen.save(); pen.globalAlpha = made;
       hongHin(H07_SWAN[0], H07_SWAN[1] + 40 * Math.sin(t * 0.8), t, {size: 2.4, face: -1});
       pen.restore();
     }
-    var ij = indra(1640, 940, t, {pose: "stand", id: "indra", face: -1, feel: made > 0 ? "happy" : "thinking", at: [H07_SWAN[0], 760]});
+    var ij = indra(1640, 940, t, {pose: "stand", id: "indra", face: -1, feel: made > 0 ? "happy" : "thinking", at: [H07_SWAN[0], 760], ground: false});
+    hhCloudFeet(1640, 940, t, 360, 17);
     var bx = 640, by = 940;
     person(bx, by, hhBoy(13, {face: 1, feel: made > 0 ? "awe" : "surprised", at: made > 0 ? [H07_SWAN[0], 560] : [H07_SWAN[0], 800],
-                              reachA: sword > 0.5 ? [bx + 60, by - 300] : undefined}));
+                              reachA: sword > 0.5 ? [bx + 60, by - 300] : undefined, ground: false}));
+    hhCloudFeet(bx, by, t, 260, 18);
     if (sword > 0) {                                     // Kanchai, from Indra's hand to the boy's
       var from = himmaJoint(ij.wristA), to = [bx + 60, by - 300];
       kanchai(mix(from[0], to[0], sword), mix(from[1], to[1], sword), {size: 0.55, angle: mix(-0.6, 0.2, sword)});
@@ -54,11 +59,12 @@ function hhSceneSwan(t) {
       thaiCloud(c % 2 ? 420 : 1500, cy, 900, t, 3 + c);
     }
     var sx = mix(1500, 900, between(s, 0, 8)), sy = 420 + 30 * Math.sin(t * 1.2);
-    var h = hongHin(sx, sy, t, {size: 1.9, face: -1});
+    var h = hongHin(sx, sy, t, {size: 1.9, face: -1, rider: true});
     var hands = [h.seat[0] - 50, h.seat[1] - 55];
     person(h.seat[0], h.seat[1], hhBoy(13, {floor: "astride", face: -1, feel: "happy", reachA: hands, reachB: [hands[0] + 10, hands[1] + 6],
                                             at: [h.beak[0] - 80, h.beak[1]]}));
     hongHinReins(h, hands);
+    h.near();                                            // the near wing over the boy's leg (owner, 2026-11-12)
   }
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H07_CUTS, H07_PLAN, H07_LINES, H07_LONG));

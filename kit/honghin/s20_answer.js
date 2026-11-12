@@ -1,8 +1,8 @@
 // s20_answer.js - scene 20 of the film of Hong Hin: Vimala's answer (55 s). The orchard by day: two ministers bow before
 // Vimala; she sends them away: a broken bowl cannot be mended. Then the king himself on his elephant, banners before
 // him; he kneels in the garden and weeps, the boy beside him; she forgives him, and asks that the old gardeners come too.
-var H20_LONG = 55;
-var H20_SOUND = {calls: [[0.0, "shama", 0.2, 55.0], [16.14, "elephant-trumpet", 0.3], [16.14, "plate-ting", 0.2]]};
+var H20_LONG = 35;                                     // 55 until 2026-11-12 (owner: cut the scene at 19:45)
+var H20_SOUND = {calls: [[0.0, "shama", 0.2, 35.0], [16.14, "elephant-trumpet", 0.3], [16.14, "plate-ting", 0.2]]};
 var H20_LINES = [[2, 8.22, "H088"], [9, 15.92, "H089"], [16.6, 23.2, "H090"], [26, 32.7, "H091"]];
 // The lines as the scene was drawn to them; it plays to H20_LINES, Pan's voice (sets.js hhClock()).
 var H20_PLAN = [[2, 7.6, "H088"], [9, 15.2, "H089"], [16.6, 24.6, "H090"], [26, 33.2, "H091"]];

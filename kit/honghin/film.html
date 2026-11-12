@@ -71,10 +71,11 @@
 <script src="s19_truth.js"></script>
 <script src="s20_answer.js"></script>
 <script src="s21_crowned.js"></script>
+<script src="s22_credits.js"></script>
 <script>
-// The film of Hong Hin, its 21 scenes one after another, with their words. Each scene is its own file and
-// its own page (s01.html ... s21.html); this one only lays them end to end. Made by film_page.py.
-var PARTS = [[H01_LONG, hhSceneGhouls, H01_LINES], [H02_LONG, hhSceneAstrologers, H02_LINES], [H03_LONG, hhScenePuppy, H03_LINES], [H04_LONG, hhSceneDriven, H04_LINES], [H05_LONG, hhSceneGardeners, H05_LINES], [H06_LONG, hhSceneHeaven, H06_LINES], [H07_LONG, hhSceneSwan, H07_LINES], [H08_LONG, hhSceneMother, H08_LINES], [H09_LONG, hhSceneSaba, H09_LINES], [H10_LONG, hhSceneGiantess, H10_LINES], [H11_LONG, hhSceneTest, H11_LINES], [H12_LONG, hhSceneFirst, H12_LINES], [H13_LONG, hhSceneSecond, H13_LINES], [H14_LONG, hhSceneGhouls2, H14_LINES], [H15_LONG, hhSceneHemmarat, H15_LINES], [H16_LONG, hhSceneCrime, H16_LINES], [H17_LONG, hhSceneRevival, H17_LINES], [H18_LONG, hhSceneSpeaks, H18_LINES], [H19_LONG, hhSceneTruth, H19_LINES], [H20_LONG, hhSceneAnswer, H20_LINES], [H21_LONG, hhSceneCrowned, H21_LINES]];
+// The film of Hong Hin, its 22 scenes one after another, with their words. Each scene is its own file and
+// its own page (s01.html ... s22.html); this one only lays them end to end. Made by film_page.py.
+var PARTS = [[H01_LONG, hhSceneGhouls, H01_LINES], [H02_LONG, hhSceneAstrologers, H02_LINES], [H03_LONG, hhScenePuppy, H03_LINES], [H04_LONG, hhSceneDriven, H04_LINES], [H05_LONG, hhSceneGardeners, H05_LINES], [H06_LONG, hhSceneHeaven, H06_LINES], [H07_LONG, hhSceneSwan, H07_LINES], [H08_LONG, hhSceneMother, H08_LINES], [H09_LONG, hhSceneSaba, H09_LINES], [H10_LONG, hhSceneGiantess, H10_LINES], [H11_LONG, hhSceneTest, H11_LINES], [H12_LONG, hhSceneFirst, H12_LINES], [H13_LONG, hhSceneSecond, H13_LINES], [H14_LONG, hhSceneGhouls2, H14_LINES], [H15_LONG, hhSceneHemmarat, H15_LINES], [H16_LONG, hhSceneCrime, H16_LINES], [H17_LONG, hhSceneRevival, H17_LINES], [H18_LONG, hhSceneSpeaks, H18_LINES], [H19_LONG, hhSceneTruth, H19_LINES], [H20_LONG, hhSceneAnswer, H20_LINES], [H21_LONG, hhSceneCrowned, H21_LINES], [H22_LONG, hhSceneCredits, H22_LINES]];
 var SCENES = [], at = 0;
 PARTS.forEach(function (part) { SCENES.push([at, at + part[0], part[1], part[2]]); at += part[0]; });
 var DURATION = at;

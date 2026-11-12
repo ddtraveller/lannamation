@@ -294,6 +294,10 @@ function hhHeaven(t, low) {
   thaiCloud(300, (low || 1000) - 20, 900, t, 3);
   thaiCloud(1500, (low || 1000) + 10, 1000, t, 5);
 }
+// A tuft of cloud in front of what stands in heaven (x, y its foot), its tops over the feet, so they stand in the cloud
+// (the owner, 2026-11-12: "Put their feet behind the tops of a cloud"). Those standing there have ground: false (no
+// shadow). wide: the tuft's width (280 unless told). e.g. person(x, y, {..., ground: false}); hhCloudFeet(x, y, t);
+function hhCloudFeet(x, y, t, wide, seed) { thaiCloud(x, y + 0.16 * (wide || 280), wide || 280, t, seed || 11); }
 // The golden boulder Indra makes the swan from: a rounded stone of gold, flecked, glowing as he speaks over it.
 // (x, y): its foot; glow 0 to 1. e.g. hhBoulder(900, 900, between(t, 8, 12));
 function hhBoulder(x, y, glow) {
@@ -313,6 +317,52 @@ function hhBoulder(x, y, glow) {
     pen.beginPath(); pen.arc(x - 120 + dice(k + 300) * 250, y - 150 + dice(k + 400) * 140, 1.5 + 2 * dice(k + 500), 0, 7); pen.fill();
   }
 }
+// Kanchai in a hand: its grip in the wrist person() gave back (j.wristA, or j.wristB with hand "B"), the blade at angle
+// (radians, 0 upright, + forward for face 1). The owner, 2026-11-12: "Make sure he is holding the sword" (drawn at the
+// hand's goal, it floated where the arm did not reach). e.g. hhSword(person(...), -0.7, 0.42);
+function hhSword(j, angle, size, hand) {
+  var w = himmaJoint(hand === "B" ? j.wristB : j.wristA), grip = 48 * size;
+  kanchai(w[0] - Math.sin(angle) * grip, w[1] + Math.cos(angle) * grip, {size: size, angle: angle});
+}
+// What draw() gives back (person()'s joints), drawn on a sheet that is thrown away: where a figure's mouth or hands will
+// be before it is drawn for the film (the giants at the feast bring their meat to their mouths). e.g.
+// var j = hhJointsOf(function () { return ogre(x, y, t, look); });
+var HH_SCRAP = null;
+function hhJointsOf(draw) {
+  if (!HH_SCRAP || HH_SCRAP.width !== pen.canvas.width) {
+    HH_SCRAP = document.createElement("canvas"); HH_SCRAP.width = pen.canvas.width; HH_SCRAP.height = pen.canvas.height;
+  }
+  var scrap = HH_SCRAP.getContext("2d"), keep = pen;
+  scrap.setTransform(keep.getTransform());
+  pen = scrap;
+  try { return draw(); } finally { pen = keep; }
+}
+// A tree a ghoul throws, torn up by the roots: at (x, y) its middle, turned by turn radians, size 1 about 200 long.
+function hhThrownTree(x, y, turn, size) {
+  pen.save(); pen.translate(x, y); pen.rotate(turn); pen.scale(size, size);
+  pen.strokeStyle = "#5a3a1e"; pen.lineWidth = 4; pen.lineCap = "round";
+  [[-80, -6, -104, -22], [-80, 0, -110, 4], [-80, 6, -100, 24]].forEach(function (r) { pen.beginPath(); pen.moveTo(r[0], r[1]); pen.lineTo(r[2], r[3]); pen.stroke(); });
+  pen.fillStyle = "#6a4424"; pen.beginPath(); pen.moveTo(-84, -9); pen.lineTo(40, -6); pen.lineTo(40, 6); pen.lineTo(-84, 9); pen.closePath(); pen.fill();
+  pen.fillStyle = "#3e6a34"; pen.strokeStyle = "#24401e"; pen.lineWidth = 2;
+  [[50, -20, 34], [78, 4, 36], [52, 22, 30], [96, -18, 26], [30, 0, 26]].forEach(function (c) { pen.beginPath(); pen.arc(c[0], c[1], c[2], 0, 7); pen.fill(); pen.stroke(); });
+  pen.fillStyle = "rgba(160, 200, 110, 0.5)"; pen.beginPath(); pen.arc(60, -26, 14, 0, 7); pen.arc(88, -6, 12, 0, 7); pen.fill();
+  pen.restore();
+}
+// Tears running down a face, from the joints person() gave back (j.crown, j.chin): a wet line from each eye and a drop
+// sliding down it, again and again (t: seconds). The painted women's faces draw no tears of their own (Vimala's happy
+// tears, the owner 2026-11-12, were not seen). face: the way the head turns (1 right). e.g. hhTears(vj, -1, t);
+function hhTears(j, face, t) {
+  var cr = himmaJoint(j.crown), ch = himmaJoint(j.chin), h = Math.hypot(ch[0] - cr[0], ch[1] - cr[1]);
+  [[-0.17, 0], [0.14, 0.5]].forEach(function (e) {
+    var x = mix(cr[0], ch[0], 0.55) + (e[0] + 0.12) * h * face, y = mix(cr[1], ch[1], 0.58), run = (t * 0.6 + e[1]) % 1;
+    pen.strokeStyle = "rgba(170, 215, 245, 0.75)"; pen.lineWidth = Math.max(1, 0.025 * h); pen.lineCap = "round";
+    pen.beginPath(); pen.moveTo(x, y); pen.quadraticCurveTo(x + 0.02 * h * face, y + 0.12 * h, x + 0.01 * h * face, y + 0.24 * h); pen.stroke();
+    var dy = y + 0.24 * h * run, r = Math.max(1.2, 0.035 * h);
+    pen.fillStyle = "rgba(190, 230, 255, 0.95)"; pen.strokeStyle = "rgba(70, 130, 180, 0.8)"; pen.lineWidth = 0.8;
+    pen.beginPath(); pen.moveTo(x, dy - 1.6 * r); pen.quadraticCurveTo(x + r, dy, x, dy + r); pen.quadraticCurveTo(x - r, dy, x, dy - 1.6 * r);
+    pen.fill(); pen.stroke();
+  });
+}
 // The boy at an age (years), as the film's prince: HH_BOY at the size of his years. e.g. person(x, y, hhBoy(13, {face: 1}));
 function hhBoy(years, extra) {
   return welPerson("fellow", Object.assign({}, HH_BOY, {size: 0.3 + 0.028 * years, sabai: false}), Object.assign({id: "boy"}, extra || {}));
@@ -321,7 +371,7 @@ function hhBoy(years, extra) {
 // ---------- the giant kingdoms ----------
 // A giant king's palace (scenes 12, 13): the hall (pieces.js hoKham, fine) in the colours of his kingdom under a sky of
 // its own, its court of red earth, far hills. kingdom: "red" (Wassawaro's), "green" (Kumbhanda's, in the forest) or
-// "blue" (Anumat's). HH_GIANT_HALL: [x, base, size]. who: [[x offset, look], ...] seated on the dais.
+// "blue" (Anumat's). HH_GIANT_HALL: [x, base, size]. who: [[x offset, look or painter (x, y)], ...] seated on the dais.
 var HH_GIANT_HALL = [960, 900, 1.0];
 var HH_GIANT_SKY = {red: ["#6a2a3a", "#e8905a", "#f6d0a0"], green: ["#2a5a4a", "#9ac8a0", "#e8f0d0"], blue: ["#2a3a6a", "#8aa0d8", "#e0e4f0"]};
 function hhGiantCity(t, kingdom, who, sprites) {
@@ -335,9 +385,32 @@ function hhGiantCity(t, kingdom, who, sprites) {
   var list = [{name: "hall back", kind: "palace", z: "set", y: dais - 1, draw: function () { hoKham(pen, h[0], h[1], h[2], {part: "back", fine: true}); }},
               {name: "hall front", kind: "palace", z: "set", y: dais + 1, draw: function () { hoKham(pen, h[0], h[1], h[2], {part: "front", fine: true, pediment: "peacock"}); }}];
   (who || []).forEach(function (w, k) {
-    list.push({name: "dais " + k, kind: "person", z: "set", x: h[0] + w[0], y: dais, draw: function () { person(h[0] + w[0], dais, w[1]); }});
+    list.push({name: "dais " + k, kind: "person", z: "set", x: h[0] + w[0], y: dais, draw: function () {
+      if (typeof w[1] === "function") { w[1](h[0] + w[0], dais); } else { person(h[0] + w[0], dais, w[1]); }   // a look, or a painter (x, y)
+    }});
   });
   drawByZ(list.concat(sprites || []));
+}
+
+// A giant king's daughter (ogre.js ogreDaughter()) with her arms down: her mural's pose let go (Culakantha's is the
+// celestial's, an arm raised to the sky; the owner, 2026-11-12: "put their princess's arm down").
+// e.g. hhGiantCity(t, "green", [[0, hhDaughter("culakantha", {size: 0.8, floor: "side"})]]);
+function hhDaughter(name, more) {
+  var look = ogreDaughter(name, more);
+  if (look.woman && typeof look.woman === "object") { look.woman = Object.assign({}, look.woman, {pose: undefined, holds: undefined}); }
+  return look;
+}
+
+// A giant king's daughter drawn at (x, y), facing the way more.face says. ogreDaughter()'s painted women face right
+// whatever their face (found 2026-11-12: Mukhawadi turned to her father, away from the boy, though told face -1), so one
+// facing left is drawn mirrored about x, the point she looks at mirrored with her. Culakantha with her arms down
+// (hhDaughter()). Gives back person()'s joints. e.g. hhPrincessAt(900, dais, "mukhawadi", {floor: "side", face: -1, at: [500, 700]});
+function hhPrincessAt(x, y, name, more) {
+  var left = more.face === -1, own = Object.assign({}, more, {face: 1});
+  if (left && own.at) { own.at = [2 * x - own.at[0], own.at[1]]; }
+  var look = name === "culakantha" ? hhDaughter(name, own) : ogreDaughter(name, own);
+  if (left) { pen.save(); pen.translate(x, 0); pen.scale(-1, 1); pen.translate(-x, 0); }
+  try { return person(x, y, look); } finally { if (left) { pen.restore(); } }
 }
 
 // ---------- the ghouls' place ----------
