@@ -7,7 +7,7 @@ var C02_LONG = 44.4;
 var C02_SOUND = {calls: []};
 // Read by Pan's daughter (2026-11-11), each line as long as her take: the gate's shot grew by 4.4 s to hold C006 and
 // C007 (the whole column now reaches the gate), and the last shot comes 4.4 s later with all in it.
-var C02_LINES = [[0.9, 12.0, "C005"], [13.2, 22.05, "C006"], [22.25, 29.9, "C007"], [31.8, 38.15, "C008"]];
+var C02_LINES = [[0.9, 12.0, "C005"], [13.2, 22.1, "C006"], [22.25, 29.9, "C007"], [31.8, 38.15, "C008"]];
 var C02_CUTS = [12, 30.4];                             // where the shots change, through black
 var C02_COLUMN = 9;                                    // the Khom soldiers in the column
 // The meadow before the gate (sets.js cngFields(), the owner, 2026-10-27), its life clear of the two columns' ways:
