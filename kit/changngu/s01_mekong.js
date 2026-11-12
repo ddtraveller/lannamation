@@ -3,10 +3,13 @@
 // ducks on the water; the title; the voice begins the tale; the camera pans slowly left along the river to Yonok on its
 // bank, its roofs, its great chedi and, far off, its north rampart running down to the water (no wall along the river:
 // the Mae Khong was the city's moat on that side).
-var C01_LONG = 33.3;
+var C01_LONG = 41;
 // Its sounds (sounds.py, laid in by the film's music as a life's calls are): the river's birds at dawn.
 var C01_SOUND = {calls: [[0, "crickets", 0.25, 8]]};
-var C01_LINES = [[9.0, 13.92, "C001"], [14.12, 20.82, "C002"], [21.02, 26.28, "C003"], [26.48, 31.81, "C004"]];
+// The title said under the title (C000), then the tale begins: all five read by Pan's daughter (2026-11-11), each
+// line as long as her take, 0.2 s between them; the scene grew from 33.3 s to hold them.
+var C01_LINES = [[1.7, 8.25, "C000"], [9.0, 14.15, "C001"], [14.35, 25.25, "C002"], [25.45, 32.2, "C003"],
+                 [32.4, 39.45, "C004"]];
 // Its life (decorate.js; owner, 2026-10-25: "decorate it with birds, animals, fish ..."), before the voice begins at
 // 9 s: a flock high across the dawn from the right, an egret low over the water from the left, a barb that leaps by
 // the sandbar. The sky's are on the frame (C01_SKY_LIFE, drawn with the clouds), the river's on the pan (C01_LIFE).

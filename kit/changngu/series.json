@@ -4,6 +4,6 @@
  "parts": [
   {"name": "hero", "page": "sash_maeng.html", "seconds": 122.5},
   {"name": "card", "page": "sls_intro.html", "seconds": 12.0},
-  {"name": "tale", "page": "changngu/film.html", "seconds": 1161.5}
+  {"name": "tale", "page": "changngu/film.html", "seconds": 1173.6}
  ]
 }

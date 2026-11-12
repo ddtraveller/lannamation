@@ -10,7 +10,7 @@ var C26_LINES = [];                                    // no words are said: mus
 var C26_ROLL = [3.0, 131.0];                           // the credits come up from below the frame, and the end stops
 var C26_THANKS = [134.5, 136.0];                       // the roll's words go, and the pandas have come up
 var C26_WAIS = [[137.0, 138.0, 139.0], [141.5, 141.5, 141.5], [145.0, 145.0, 145.0]];   // when each of the three bows
-var C26_THANK_YOU = ["ขอบคุณหลาย ๆ เจ้า", "Thank you, Amornrat Jaijar, for the voice of this tale"];
+var C26_THANK_YOU = ["ขอบคุณหลาย ๆ เจ้า", "Thank you, Amornrat Jaijar and her daughter, for the voices of this tale"];
 var C26_MOON = [1500, 170, 54];                        // the moon over Laos: its middle and its radius
 var C26_OWL = [40, 54, [[-160, 360, 0.7], [2100, 120, 0.7]]];   // the barn owl across the river and the moon: from, to, path
 var C26_BATS = [[70, [1700, 60], [1100, 520]], [112, [1760, 120], [900, 520]]];   // [start, from, to]: down behind the far hills
@@ -28,8 +28,10 @@ var C26_ROWS = [
   ["line", "https://github.com/ddtraveller/lannamation"],
   ["line", "Claude AI (Anthropic)"],
   ["gap"],
-  ["head", "เสียงเล่าเรื่อง", "Narrator (AI voice)"],
+  ["head", "เสียงเล่าเรื่อง", "Narration"],
   ["line", "อมรรัตน์ ใจจา · Amornrat Jaijar"],
+  ["line", "และลูกสาว · and her daughter"],
+  ["small", "Amornrat's voice made by AI from her recordings; the title and the first lines in her daughter's own voice"],
   ["gap"],
   ["head", "ค้นคว้าภาษา", "Language research"],
   ["line", "อมรรัตน์ ใจจา · Amornrat Jaijar"],

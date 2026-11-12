@@ -1,14 +1,15 @@
 // words.js - the narration of Chang Ngu, line by line: CHANGNGU_WORDS[id] = [what the voice says, what the subtitle
 // writes, the English]. Written by ../tale_plan.py from story.py: do not edit by hand.
 var CHANGNGU_WORDS = {
-  C001: ["แต่ปางก่อน ตี้ฝั่งแม่น้ำของเน้อ", "แต่ปางก่อน ตี้ฝั่งแม่น้ำของเน้อ", "Long, long ago, on the bank of the Mae Khong,"],
-  C002: ["มีเวียงหลวงหน่วยนึ่ง มีกำแพงล้อม จื้อว่าเวียงโยนก", "มีเวียงหลวงหน่วยนึ่ง มีกำแพงล้อม จื้อว่าเวียงโยนก", "stood a great walled city called Yonok."],
-  C003: ["ยามนี้ หมู่เฮาฮ้องเวียงนี้ว่าเจียงแสน", "ยามนี้ หมู่เฮาฮ้องเวียงนี้ว่าเชียงแสน", "Today we call it Chiang Saen."],
-  C004: ["นี่เป๋นเรื่องของจ๊างงู งูตี้กลายเป๋นจ๊างเจ้า", "นี่เป๋นเรื่องของช้างงู งูตี้กลายเป๋นช้างเจ้า", "This is the story of Chang Ngu, the snake that became an elephant."],
-  C005: ["พญาเวียงโยนกยังหนุ่มนัก อายุก้าสิบแปดปี๋ จื้อว่าพระองค์พัง", "พญาเวียงโยนกยังหนุ่มนัก อายุก้าสิบแปดปี๋ จื้อว่าพระองค์พัง", "The king of Yonok was young, only eighteen. His name was Phang."],
-  C006: ["จากเมืองอุโมงค์เสลานคร หมู่ขอมดำยกพลมา", "จากเมืองอุโมงค์เสลานคร หมู่ขอมดำยกพลมา", "From the city of Umong Sela Nakhon came the Black Khom."],
-  C007: ["ขอมยึดเวียงได้ พญาขอมดำขึ้นครองเวียงโยนก", "ขอมยึดเวียงได้ พญาขอมดำขึ้นครองเวียงโยนก", "They took the city, and their king sat on the throne of Yonok."],
-  C008: ["ส่วนพระองค์พัง ถูกขับออกจากเวียง", "ส่วนพระองค์พัง ถูกขับออกจากเวียง", "And King Phang was sent away."],
+  C000: ["นิทานล้านนา ขอเล่าต๋ำนานจ๊างงูเจ้า", "นิทานล้านนา ขอเล่าต๋ำนานจ๊างงูเจ้า", "Lanna Tales Presents - The Story of The Elephant Snakes"],
+  C001: ["สมัยตะก่อน ตี้ฝั่งแม่น้ำโขง", "สมัยตะก่อน ตี้ฝั่งแม่น้ำโขง", "Long, long ago, on the bank of the Mae Khong,"],
+  C002: ["มีเวียงหลวงเมืองนึ่ง มีก๋ำแปงล้อม จื้อว่าเวียงโยนก", "มีเวียงหลวงเมืองนึ่ง มีก๋ำแปงล้อม จื้อว่าเวียงโยนก", "stood a great walled city called Yonok."],
+  C003: ["บะเด่วนี้ หมู่เฮาฮ้องเวียงนี้ว่า เจียงแสน", "บะเด่วนี้ หมู่เฮาฮ้องเวียงนี้ว่า เจียงแสน", "Today we call it Chiang Saen."],
+  C004: ["นี่เป๋นเรื่องของจ๊างงู งูตี้ก๋ายเป๋นจ๊างเจ้า", "นี่เป๋นเรื่องของจ๊างงู งูตี้ก๋ายเป๋นจ๊างเจ้า", "This is the story of Chang Ngu, the snake that became an elephant."],
+  C005: ["พญาเวียงโยนกยังหนุ่ม อายุได้สิบแปดปี๋ จื้อว่าพระองค์พัง", "พญาเวียงโยนกยังหนุ่ม อายุได้สิบแปดปี๋ จื้อว่าพระองค์พัง", "The king of Yonok was young, only eighteen. His name was Phang."],
+  C006: ["จากเมืองอุโมงค์ เสลานคร หมู่ขอมดำ ยกพลมา", "จากเมืองอุโมงค์ เสลานคร หมู่ขอมดำ ยกพลมา", "From the city of Umong Sela Nakhon came the Black Khom."],
+  C007: ["ขอมยึดเวียงได้ พญาขอมดำ ขึ้นครอง เวียงโยนก", "ขอมยึดเวียงได้ พญาขอมดำ ขึ้นครอง เวียงโยนก", "They took the city, and their king sat on the throne of Yonok."],
+  C008: ["ส่วนพระองค์พัง ถูกขับไล่ออกจากเวียง", "ส่วนพระองค์พัง ถูกขับไล่ออกจากเวียง", "And King Phang was sent away."],
   C009: ["ขอมหื้อพระองค์ไปเป๋นป้อหลวง อยู่เวียงศรีทวง ตี้ไกลขนาด", "ขอมหื้อพระองค์ไปเป๋นป้อหลวง อยู่เวียงศรีทวง ตี้ไกลขนาด", "The Khom made him a village headman, far away in Wiang Si Tuang."],
   C010: ["พระองค์พาพระนางเทวี เตียวไปตางตะวันตกเฉียงเหนือ ตามลำน้ำแม่สาย", "พระองค์พาพระนางเทวี เตียวไปตางตะวันตกเฉียงเหนือ ตามลำน้ำแม่สาย", "With Queen Thewi, he walked north-west along the Mae Sai river,"],
   C011: ["ไปเถิงหมู่บ้านหน้อย ลุ่มดอยสูง", "ไปเถิงหมู่บ้านหน้อย ลุ่มดอยสูง", "to a little village under the mountains."],

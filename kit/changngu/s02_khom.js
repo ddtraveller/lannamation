@@ -1,23 +1,25 @@
-// s02_khom.js - scene 2 of the film of Chang Ngu: the Black Khom take Yonok (40 s). Three shots, a fade through black
+// s02_khom.js - scene 2 of the film of Chang Ngu: the Black Khom take Yonok (44.4 s). Three shots, a fade through black
 // between each: Yonok's courtyard, young King Phang on the dais of his hall, two courtiers on the floor before him;
 // outside the city, its gate opening and a column of the Black Khom marching up the road and in at it (no fighting:
 // the chronicle has the city simply taken); and the courtyard again, the Khom king on the dais, and King Phang led
 // away across the courtyard between two Khom soldiers, his head down.
-var C02_LONG = 40;
+var C02_LONG = 44.4;
 var C02_SOUND = {calls: []};
-var C02_LINES = [[1.2, 7.8, "C005"], [13.2, 19.22, "C006"], [19.42, 24.92, "C007"], [27.4, 31.32, "C008"]];
-var C02_CUTS = [12, 26];                               // where the shots change, through black
+// Read by Pan's daughter (2026-11-11), each line as long as her take: the gate's shot grew by 4.4 s to hold C006 and
+// C007 (the whole column now reaches the gate), and the last shot comes 4.4 s later with all in it.
+var C02_LINES = [[0.9, 12.0, "C005"], [13.2, 22.05, "C006"], [22.25, 29.9, "C007"], [31.8, 38.15, "C008"]];
+var C02_CUTS = [12, 30.4];                             // where the shots change, through black
 var C02_COLUMN = 9;                                    // the Khom soldiers in the column
 // The meadow before the gate (sets.js cngFields(), the owner, 2026-10-27), its life clear of the two columns' ways:
 // egrets feeding between the wall and the soldiers, butterflies near, a flock going over.
 var C02_LIFE = [
-  cngFeeding("egret 1", "egret", {size: 0.5, seed: 1}, 330, 912, 3, 12, 26, 120),
-  cngFeeding("egret 2", "egret", {size: 0.46, seed: 2}, 520, 900, 5, 12, 26, 90),
-  cngFeeding("egret 3", "egret", {size: 0.5, seed: 3}, 1560, 908, 7, 12, 26, 120),
+  cngFeeding("egret 1", "egret", {size: 0.5, seed: 1}, 330, 912, 3, 12, 30.4, 120),
+  cngFeeding("egret 2", "egret", {size: 0.46, seed: 2}, 520, 900, 5, 12, 30.4, 90),
+  cngFeeding("egret 3", "egret", {size: 0.5, seed: 3}, 1560, 908, 7, 12, 30.4, 120),
   {name: "butterfly", kind: "butterfly", layer: "back", look: {size: 0.8, seed: 3},
-   course: [[12, 60, 1050], [15, 300, 1040, "sip"], [18, 300, 1040], [26, 760, 1060]]},
+   course: [[12, 60, 1050], [15, 300, 1040, "sip"], [18, 300, 1040], [30.4, 760, 1060]]},
   {name: "butterfly, right", kind: "butterfly", layer: "back", look: {kind: "birdwing", size: 0.7, seed: 4},
-   course: [[12, 1880, 1030], [16, 1660, 1050, "sip"], [19, 1660, 1050], [26, 1300, 1040]]},
+   course: [[12, 1880, 1030], [16, 1660, 1050, "sip"], [19, 1660, 1050], [30.4, 1300, 1040]]},
   {name: "flock", kind: "flock", layer: "back", course: [[12.5, -320, 260], [20.5, 2150, 210]]}
 ];
 
@@ -93,9 +95,10 @@ function cngSceneKhom(t) {
   } else if (t < C02_CUTS[1]) {
     c02Gate(t);
   } else {
-    var lead = between(t, 28, 39);                       // King Phang led away to the left between two Khom soldiers
+    var from = C02_CUTS[1] + 2;                          // King Phang led away to the left between two Khom soldiers,
+    var lead = between(t, from, from + 11);              // from 2 s into the shot, for 11 s
     var x = mix(p[0] - 40, -260, lead), y = 1000;
-    var step = (t - 28) / BEAT / 2;
+    var step = (t - from) / BEAT / 2;
     var walkers = [
       {name: "phang, led away", kind: "person", x: x, y: y, draw: function () {
         person(x, y, cngPerson("noble", CNG_KING, {id: "phang2", face: -1, step: lead > 0 && lead < 1 ? step : 0, feel: "sad",

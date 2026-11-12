@@ -20,7 +20,7 @@ OUT = HERE.parent / "out" / "changngu_music"
 # Each line's feeling, as its sentence has it.
 FEEL = {
     # 1: the Mae Khong, Yonok, the title
-    "C001": "wonder", "C002": "wonder", "C003": "calm", "C004": "wonder",
+    "C000": "wonder", "C001": "wonder", "C002": "wonder", "C003": "calm", "C004": "wonder",
     # 2: the young king; the Black Khom take the city
     "C005": "royal", "C006": "tense", "C007": "tense", "C008": "sad",
     # 3: to Si Tuang; the crown comes off

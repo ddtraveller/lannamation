@@ -17,6 +17,7 @@ none is named each time this runs, and stands red on the plan. From it this writ
                 the English], as maeng/words.js: a scene names its lines by id (sNN_LINES), the film page puts them
                 on its clock. The ids are PLAN["prefix"] and a number in the order of the lines (C001, C002 ...):
                 a line put in or taken out renumbers those after it, so ids are settled before the voice speaks.
+                A TITLE_LINE in story.py (the tale's name, said over scene 1's title) is <prefix>000.
   central.txt   the Central Thai, a line each, in order: what a writer of Kam Mueang (or a translator) is given.
 Edit story.py and run it again; nothing else is hand-written.
 
@@ -47,11 +48,16 @@ def clock(seconds):
 
 
 def lines_of(story):
-    """Every line in order: [id, scene number, English, Central Thai, Kam Mueang]."""
-    out = []
+    """Every line in order: [id, scene number, English, Central Thai, Kam Mueang]. A story's TITLE_LINE (English,
+    Central Thai, Kam Mueang), the tale's name said over scene 1's title, comes first as <prefix>000, so the ids of
+    the lines after it stay as they were."""
+    title = getattr(story, "TITLE_LINE", None)
+    out = [["%s000" % story.PLAN["prefix"], 1] + list(title)] if title else []
+    count = 0
     for number, scene in enumerate(story.SCENES, 1):
         for english, central, kam in scene[5]:
-            out.append(["%s%03d" % (story.PLAN["prefix"], len(out) + 1), number, english, central, kam])
+            count += 1
+            out.append(["%s%03d" % (story.PLAN["prefix"], count), number, english, central, kam])
     return out
 
 

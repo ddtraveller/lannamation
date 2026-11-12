@@ -1,6 +1,7 @@
 // words.js - the narration of The White Eel, line by line: WHITEEEL_WORDS[id] = [what the voice says, what the subtitle
 // writes, the English]. Written by ../tale_plan.py from story.py: do not edit by hand.
 var WHITEEEL_WORDS = {
+  W000: ["นิทานล้านนา ขอเล่าต๋ำนานป๋าเหยี่ยนเผือกเจ้า", "นิทานล้านนา ขอเล่าต๋ำนานป๋าเหยี่ยนเผือกเจ้า", "Lanna Tales presents the story of the White Eel"],
   W001: ["ตี้เจียงฮาย ใกล้เจียงแสน มีหนองน้ำกว้างหลวง จื่อหนองหล่ม", "ตี้เจียงฮาย ใกล้เจียงแสน มีหนองน้ำกว้างหลวง จื่อหนองหล่ม", "In Chiang Rai, near Chiang Saen, there is a wide marsh called Nong Lom."],
   W002: ["คนเฒ่าคนแก่เล่าว่า ตี้เพ้เกยมีเมืองหลวงตั้งอยู่", "คนเฒ่าคนแก่เล่าว่า ตี้เพ้เกยมีเมืองหลวงตั้งอยู่", "The old people say that a great city once stood here."],
   W003: ["นี่เป๋นเรื่องของป๋าเหยี่ยนเผือก ละก่อเมืองตี้ล่มจ๋มลงไป", "นี่เป๋นเรื่องของป๋าเหยี่ยนเผือก ละก่อเมืองตี้ล่มจ๋มลงไป", "This is the story of the white eel, and how that city sank."],

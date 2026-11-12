@@ -9,7 +9,7 @@ var W15_LINES = [];                                    // no words are said: mus
 var W15_ROLL = [3.0, 101.0];                           // the credits come up from below the frame, and the end stops
 var W15_THANKS = [104.5, 106.0];                       // the roll's words go, and the pandas have come up
 var W15_WAIS = [[107.0, 108.0, 109.0], [111.5, 111.5, 111.5], [115.0, 115.0, 115.0]];   // when each of the three bows
-var W15_THANK_YOU = ["ขอบคุณหลาย ๆ เจ้า", "Thank you, Amornrat Jaijar, for the voice of this tale"];
+var W15_THANK_YOU = ["ขอบคุณหลาย ๆ เจ้า", "Thank you, Amornrat Jaijar and her daughter, for the voices of this tale"];
 
 // What rolls (credits.js, creditRow()). The Lanna titles are scene 1's (W01_SERIES, W01_STORY), by the rules of
 // krueng.ai's Kam Mueang alphabet; the tale's from its converter, not yet checked by a reader of the script.
@@ -22,8 +22,10 @@ var W15_ROWS = [
   ["line", "https://github.com/ddtraveller/lannamation"],
   ["line", "Claude AI (Anthropic)"],
   ["gap"],
-  ["head", "เสียงเล่าเรื่อง", "Narrator (AI voice)"],
+  ["head", "เสียงเล่าเรื่อง", "Narration"],
   ["line", "อมรรัตน์ ใจจา · Amornrat Jaijar"],
+  ["line", "และลูกสาว · and her daughter"],
+  ["small", "the tale in Amornrat's own voice, its title in her daughter's"],
   ["gap"],
   ["head", "คำเมือง", "The Kam Mueang"],
   ["line", "put into Kam Mueang by krueng.ai's Kam Mueang writer"],

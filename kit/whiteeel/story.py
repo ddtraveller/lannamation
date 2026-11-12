@@ -372,6 +372,10 @@ SCENERY = {
         "the island's temple lamp (sceneryLampLight)",
 }
 
+# The tale's name, said over scene 1's title (W000): read by Pan's daughter as she read it (2026-11-11).
+TITLE_LINE = ("Lanna Tales presents the story of the White Eel", "นิทานล้านนา ขอเสนอ ตำนานปลาไหลเผือก",
+              "นิทานล้านนา ขอเล่าต๋ำนานป๋าเหยี่ยนเผือกเจ้า")
+
 # Names and words said the Northern way by the voice; the subtitle keeps the written form.
 SAY_AS = {"เชียงแสน": "เจียงแสน", "เชียงราย": "เจียงฮาย",
           "แต้ๆ": "แต้แต้", "หน้อยๆ": "หน้อยหน้อย"}   # Pan's ๆ (W049, W054): her subtitle keeps it, the voice says the word twice

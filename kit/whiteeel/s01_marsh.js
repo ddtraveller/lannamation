@@ -10,7 +10,8 @@ var W01_LONG = 32.25;
 var W01_SOUND = {calls: [[0, "frogs", 0.25, 14.95], [7.5, "buffalo", 0.3], [11.98, "plover", 0.2]]};
 // The narration: [from, to, id] in the scene's own seconds. Placeholders from story.py's length until Pan's voice is
 // recorded; the scene is timed again to her takes (docs/kit/films.md, step 4).
-var W01_LINES = [[9.0, 15.71, "W001"], [17.08, 24.09, "W002"], [24.35, 30.7, "W003"]];
+// W000, the title said under the title, read by Pan's daughter (2026-11-11), as long as her take.
+var W01_LINES = [[1.7, 8.55, "W000"], [9.0, 15.71, "W001"], [17.08, 24.09, "W002"], [24.35, 30.7, "W003"]];
 
 // The titles in the mist (as changngu/s01_mekong.js's): the series, Lanna Tales (นิทานล้านนา), in the Lanna script, as
 // the first two films have it; then the tale's name, ตำนานปลาไหลเผือก, in the Lanna script, from the Kam Mueang

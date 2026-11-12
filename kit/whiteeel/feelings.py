@@ -20,7 +20,7 @@ OUT = HERE.parent / "out" / "whiteeel_music"
 # Each line's feeling, as its sentence has it.
 FEEL = {
     # 1: Nong Lom today; the title
-    "W001": "calm", "W002": "mystery", "W003": "wonder",
+    "W000": "calm", "W001": "calm", "W002": "mystery", "W003": "wonder",
     # 2: the Brahman meets the prince
     "W004": "hope", "W005": "mystery", "W006": "royal", "W007": "tender", "W008": "mystery",
     # 3: the naga digs the moat; the city is named

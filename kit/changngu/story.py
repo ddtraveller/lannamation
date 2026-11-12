@@ -80,14 +80,14 @@ SCENES = [('The Mae Khong',
   'walled city of Yonok. Title: ตำนานช้างงู.',
   'bdWater, waves, foam; mistLay; cumulus sky',
   'the Mae Khong (a wide river set with its banks); a city wall with a gate and a moat',
-  [('Long, long ago, on the bank of the Mae Khong,', 'นานมาแล้ว ริมฝั่งแม่น้ำของ', 'แต่ปางก่อน ตี้ฝั่งแม่น้ำของเน้อ'),
+  [('Long, long ago, on the bank of the Mae Khong,', 'นานมาแล้ว ริมฝั่งแม่น้ำของ', 'สมัยตะก่อน ตี้ฝั่งแม่น้ำโขง'),
    ('stood a great walled city called Yonok.',
     'มีเมืองใหญ่มีกำแพงล้อม ชื่อเมืองโยนก',
-    'มีเวียงหลวงหน่วยนึ่ง มีกำแพงล้อม จื้อว่าเวียงโยนก'),
-   ('Today we call it Chiang Saen.', 'ทุกวันนี้เราเรียกเมืองนี้ว่าเชียงแสน', 'ยามนี้ หมู่เฮาฮ้องเวียงนี้ว่าเชียงแสน'),
+    'มีเวียงหลวงเมืองนึ่ง มีก๋ำแปงล้อม จื้อว่าเวียงโยนก'),
+   ('Today we call it Chiang Saen.', 'ทุกวันนี้เราเรียกเมืองนี้ว่าเชียงแสน', 'บะเด่วนี้ หมู่เฮาฮ้องเวียงนี้ว่า เจียงแสน'),
    ('This is the story of Chang Ngu, the snake that became an elephant.',
     'นี่คือเรื่องของช้างงู งูที่กลายเป็นช้าง',
-    'นี่เป๋นเรื่องของช้างงู งูตี้กลายเป๋นช้างเจ้า')]),
+    'นี่เป๋นเรื่องของจ๊างงู งูตี้ก๋ายเป๋นจ๊างเจ้า')]),
  ('The Black Khom',
   40,
   'Young King Phang on his throne. Black Khom soldiers in black, pointed caps and spears, come down the hills; '
@@ -96,14 +96,14 @@ SCENES = [('The Mae Khong',
   "the Black Khom king's look",
   [('The king of Yonok was young, only eighteen. His name was Phang.',
     'กษัตริย์เมืองโยนกยังหนุ่มนัก อายุเพียงสิบแปดปี ชื่อพระองค์พัง',
-    'พญาเวียงโยนกยังหนุ่มนัก อายุก้าสิบแปดปี๋ จื้อว่าพระองค์พัง'),
+    'พญาเวียงโยนกยังหนุ่ม อายุได้สิบแปดปี๋ จื้อว่าพระองค์พัง'),
    ('From the city of Umong Sela Nakhon came the Black Khom.',
     'จากเมืองอุโมงค์เสลานคร พวกขอมดำยกพลมา',
-    'จากเมืองอุโมงค์เสลานคร หมู่ขอมดำยกพลมา'),
+    'จากเมืองอุโมงค์ เสลานคร หมู่ขอมดำ ยกพลมา'),
    ('They took the city, and their king sat on the throne of Yonok.',
     'ขอมยึดเมืองได้ พระยาขอมดำขึ้นครองเมืองโยนก',
-    'ขอมยึดเวียงได้ พญาขอมดำขึ้นครองเวียงโยนก'),
-   ('And King Phang was sent away.', 'ส่วนพระองค์พังถูกขับออกจากเมือง', 'ส่วนพระองค์พัง ถูกขับออกจากเวียง')]),
+    'ขอมยึดเวียงได้ พญาขอมดำ ขึ้นครอง เวียงโยนก'),
+   ('And King Phang was sent away.', 'ส่วนพระองค์พังถูกขับออกจากเมือง', 'ส่วนพระองค์พัง ถูกขับไล่ออกจากเวียง')]),
  ('To Si Tuang',
   35,
   'King Phang and Queen Thewi walk north-west along the Mae Sai to a small village under the mountains; he takes off '
@@ -527,6 +527,11 @@ SCENES = [('The Mae Khong',
    ('Be brave, like Phrom, and generous to your brothers and sisters.',
     'จงกล้าหาญเหมือนพรหมกุมาร และมีน้ำใจต่อพี่น้อง',
     'หื้อกล้าหาญเหมือนพรหมกุมาร ละก่อมีน้ำใจ๋ต่อปี้น้องเน้อ')])]
+
+# The tale's name, said over scene 1's title (C000): read by Pan's daughter as she read it (2026-11-11), as were C001 to
+# C008, in her words.
+TITLE_LINE = ('Lanna Tales Presents - The Story of The Elephant Snakes', 'นิทานล้านนา ขอเสนอ ตำนานช้างงู',
+              'นิทานล้านนา ขอเล่าต๋ำนานจ๊างงูเจ้า')
 
 # Names and words said the Northern way by the voice; the subtitle keeps the written form.
 SAY_AS = {'ช้าง': 'จ๊าง', 'เชียงแสน': 'เจียงแสน'}
