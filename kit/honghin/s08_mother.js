@@ -35,21 +35,29 @@ function hhSceneMother(t) {
     hhCamera(1, HH_ORCHARD_HOUSE[0] - 240, 820, 1.75);
     hhOrchardAt(t, "dusk");
     sceneryLampLight(t, HH_ORCHARD_HOUSE[0] - 40, 760, 960, {reach: 300, strength: 0.7, seed: 4});
-    var vx = HH_ORCHARD_HOUSE[0] - 120, bx = mix(HH_ORCHARD_HOUSE[0] - 430, vx - 70, embrace), g = 990;
+    var vx = HH_ORCHARD_HOUSE[0] - 120, bx = mix(HH_ORCHARD_HOUSE[0] - 430, vx - 52, embrace), g = 990;
     var turned = t > 13 && t < 21, vj, bj;
     function mother() {                                  // in the embrace her arms round his shoulders, happy tears
       vj = person(vx, g, hhVimala({face: turned ? 1 : -1, feel: embrace > 0.5 ? "happy" : knows ? "sad" : turned ? "concerned" : "surprised",
                                    tears: knows ? 1 : 0, at: [bx, g - 300], free: true,
-                                   reachA: embrace > 0 ? [mix(vx - 60, bx - 24, embrace), mix(g - 300, g - 150, embrace)] : undefined,
+                                   reachA: embrace > 0 ? [mix(vx - 60, bx - 30, embrace), mix(g - 300, g - 100, embrace)] : undefined,
                                    reachB: embrace > 0 ? [mix(vx - 40, bx + 16, embrace), mix(g - 280, g - 140, embrace)] : undefined}));
       if (knows && vj && vj.crown) { hhTears(vj, turned ? 1 : -1, t); }
     }
     function son() {
       bj = person(bx, g + 10, hhBoy(13, {face: 1, feel: knows ? "happy" : "concerned", wai: vow ? 1 : undefined,
                                          mouth: welTalk(t, welSays(t, H08_PLAN, ["H032"])), at: [vx, g - 400],
-                                         reachA: embrace > 0.6 ? [vx - 20, g - 200] : undefined, reachB: embrace > 0.6 ? [vx + 10, g - 210] : undefined}));
+                                         reachA: embrace > 0.6 ? [vx + 46, g - 168] : undefined, reachB: embrace > 0.6 ? [vx + 26, g - 160] : undefined}));
     }
-    if (embrace > 0.5) { son(); mother(); } else { mother(); son(); }   // held, he is behind her arms (owner, 2026-11-12)
+    // The embrace (owner, 2026-11-13, twice): his far arm behind her, his near arm round her and over her; her far arm
+    // behind him, her near arm in front of him. Drawn: him, her, him again without his far forearm, her near forearm.
+    if (embrace > 0.5) {                                 // (owner, 2026-11-13, again) both far arms behind everything
+      var pv = hhJointsOf(function () { mother(); return vj; }), ps = hhJointsOf(function () { son(); return bj; });
+      son();                                                              // he whole, his far arm with him
+      mother();                                                           // she over it (her far arm behind her and him)
+      hhArmUnder(ps, "B", 13, son);                                       // he again over her, but for his far forearm
+      hhArmOver(pv, "A", 40, mother);                                     // her near forearm over him
+    } else { mother(); son(); }
     if (milk > 0 && vj && bj && bj.chin) {               // her milk streaming to his mouth, a thin bright arc
       var sh = vj.shoulderA ? himmaJoint(vj.shoulderA) : null;
       var from = sh ? [sh[0] - 14, sh[1] + 22] : [vx - 20, g - 300];

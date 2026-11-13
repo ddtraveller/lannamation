@@ -28,19 +28,23 @@ function hhSceneDriven(t) {
                                                  at: [p[0] - 300, 900]})]], wives);
     hhCameraEnd();
   } else {                                               // the gate at dusk, she walks out with the dog in her arms
-    var s = t - H04_CUTS[0], walk = between(s, 1, 26), x = mix(CNG_GATE[0], 260, walk), y = mix(830, 1010, walk);
+    // Down the gate's road to the road along the wall, then straight along it to the left and away (owner, 2026-11-13:
+    // "have Vimala walk straight to the left once she reaches the road"; on a slant through the field she stuck in it).
+    var s = t - H04_CUTS[0], walk = between(s, 1, 26), down = between(s, 1, 8), along = between(s, 8, 28);
+    var x = mix(CNG_GATE[0], -160, along), y = mix(830, CNG_ROAD + 6, down);
     pen.drawImage(welSky("sunset"), 0, 0);
     scenerySun(t, 1560, 560, 40, {glow: 10, colour: "255, 180, 120"});
     pen.drawImage(hhFields("dusk"), 0, 0);               // the mountains in the dusk's light (scenery pass)
     cngGateWall(1 - between(s, 3, 6), t);
+    sceneryBeds(t, hhFieldsEdge());                       // the wall's foot planted on a wandering line (owner, 2026-11-13)
     pen.fillStyle = "rgba(120, 50, 60, " + (0.2 + 0.3 * walk).toFixed(3) + ")";   // the dusk deepening
     pen.fillRect(0, 0, WIDE, 1080);
-    var size = mix(0.5, 0.82, walk);
+    var size = mix(0.5, 0.72, down);
     var vj = person(x, y, hhVimala({size: size, face: -1, feel: "sad", step: s * 0.7, tears: 1,
                                     reachA: [x - 30 * size, y - 250 * size], reachB: [x - 10 * size, y - 240 * size]}));
     if (vj && vj.crown) { hhTears(vj, -1, t); }          // her tears (the painted face draws none)
     hhAtChest(x, y, size, -1, function (cx, cy) {
-      pen.save(); pen.translate(cx - 10, cy + 20); pen.scale(0.9 * size, 0.9 * size); puppy(0, 0, t, {feel: "sad"}); pen.restore();
+      pen.save(); pen.translate(cx - 10, cy + 20); pen.scale(0.9 * size, 0.9 * size); puppy(0, 0, t, {feel: "sad", still: true}); pen.restore();
     });
     sceneryAir(t, {butterfly: null, petals: [10, "#f6b8cc", 2, 1], light: null});
   }

@@ -20,25 +20,29 @@ function hhSceneGardeners(t) {
     var lit = between(t, 3, 5), come = between(t, 4, 11), inside = between(t, 14, 19);
     var ox = mix(hx - 60, hx - 330, come), wx = mix(hx - 120, hx - 380, come);
     var vx = mix(hx - 520, hx - 120, inside);
+    var torchTop = null;
     drawByZ([
       {name: "vimala", kind: "person", x: vx, y: g + 30, draw: function () {
         person(vx, g + 30, hhVimala({face: 1, feel: inside > 0 ? "sad" : "sad", tears: 1, step: inside > 0 && inside < 1 ? t * 0.7 : 0,
                                      reachA: [vx + 20, g + 30 - 200], reachB: [vx + 30, g + 30 - 190]}));
-        pen.save(); pen.translate(vx + 26, g + 30 - 160); pen.scale(0.6, 0.6); puppy(0, 0, t, {feel: "sad"}); pen.restore();
+        pen.save(); pen.translate(vx + 26, g + 30 - 160); pen.scale(0.6, 0.6); puppy(0, 0, t, {feel: "sad", still: true}); pen.restore();
       }},
       {name: "old man", kind: "person", x: ox, y: g, draw: function () {
-        person(ox, g, welPerson("elder", HH_OLD_MAN, {id: "oldman", face: -1, step: come > 0 && come < 1 ? t * 0.6 : 0,
-                                                      reachA: [ox - 50, g - 230], holding: null, feel: "surprised", at: [vx, g - 200]}));
+        // The torch a wooden brand, its head bound with resin-soaked cloth, held in his closed fist at his chest, the
+        // hand still (owner, 2026-11-13: "change the torch to look like a wooden stick ... doesn't wave her hand").
+        var man = welPerson("elder", HH_OLD_MAN, {id: "oldman", face: -1, step: come > 0 && come < 1 ? t * 0.6 : 0,
+                                                  reachA: [ox - 46, g - 190], grip: lit > 0, holding: null, feel: "surprised", at: [vx, g - 200]});
+        if (lit > 0) { torchTop = hhBrand(hhJointsOf(function () { return person(ox, g, man); }), -0.18); }
+        person(ox, g, man);
       }},
       {name: "old woman", kind: "person", x: wx, y: g + 16, draw: function () {
         person(wx, g + 16, welPerson("grandmother", HH_OLD_WOMAN, {id: "oldwoman", face: -1, step: come > 0 && come < 1 ? t * 0.6 : 0,
                                                                    feel: "concerned", at: [vx, g - 200]}));
       }}
     ]);
-    if (lit > 0) {                                        // the torch in the old man's hand
-      var fx = ox - 54, fy = g - 250;
-      sceneryLampLight(t, fx, fy, g, {reach: 300 * lit, strength: lit, seed: 7});
-      pen.fillStyle = "#ffcc55"; pen.beginPath(); pen.ellipse(fx, fy - 6, 7, 13 * (0.9 + 0.1 * Math.sin(t * 11)), 0, 0, 7); pen.fill();
+    if (lit > 0 && torchTop) {                           // the torch's flame at the brand's head, and its light
+      sceneryLampLight(t, torchTop[0], torchTop[1], g, {reach: 300 * lit, strength: lit, seed: 7});
+      hhFlame(torchTop[0], torchTop[1], t, lit);
     }
     hhCameraEnd();
   } else {                                               // morning: she waters the beds; the old woman beside her

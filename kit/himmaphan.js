@@ -343,6 +343,7 @@ function thewada(x, y, t, look) {
   pen.closePath();
   himmaFill(HIMMA.gold, HIMMA.goldLine, 1);
   [[-6, -45], [2, -40], [10, -45]].forEach(function (j) { pen.fillStyle = HIMMA.jewel; pen.beginPath(); pen.arc(j[0], j[1], 1.4, 0, Math.PI * 2); pen.fill(); });
+  himmaTwinkle([[3, -27, 2.2], [-6, -45, 1.4], [2, -40, 1.4], [10, -45, 1.4]], t + seed);   // the jewels twinkle (owner, 2026-11-13)
   // the back arm, bent, its hand before the chest in the dance's hand
   pen.beginPath();
   pen.moveTo(-8, -46);
@@ -988,7 +989,9 @@ function hongHin(x, y, t, look) {
     pen.drawImage(HONG_HIN_SHEET, 0, 0);
     pen.restore();
   }
-  plated(function () { hongFlight(x, y, t, look, rider ? function (draw) { near = draw; } : null); });
+  // The near wing is kept back and drawn after the saddle cloth, so the cloth lies behind it (owner, 2026-11-13: "change
+  // the z order of the saddle so it is behind the near wing"); with a rider, after the rider too (near()).
+  plated(function () { hongFlight(x, y, t, look, function (draw) { near = draw; }); });
   pen.save();                                        // the saddle cloth on its back, red with a gold border
   pen.translate(x, y);
   pen.scale(size * face, size);
@@ -998,9 +1001,10 @@ function hongHin(x, y, t, look) {
   pen.fillStyle = HONG_HIN.saddle; pen.fill();
   pen.lineWidth = 5 / size; pen.strokeStyle = HONG_HIN.border; pen.stroke();
   pen.restore();
-  var got = {seat: [x - 18 * size * face, y - 13 * size + 8], behind: [x - 52 * size * face, y - 9 * size + 8],
+  // the seat 25 back (18 until 2026-11-13: the rider back a little, his knee behind the near wing)
+  var got = {seat: [x - 33 * size * face, y - 13 * size + 8], behind: [x - 52 * size * face, y - 9 * size + 8],
              beak: [x + 112 * size * face, y - 56 * size]};
-  if (near) { got.near = function () { plated(near); }; }
+  if (near && rider) { got.near = function () { plated(near); }; } else if (near) { plated(near); }
   return got;
 }
 
@@ -1031,7 +1035,7 @@ function himmaJoint(p) {                            // a joint person() gave bac
 function spireCrown(j, tall, t) {
   var crown = himmaJoint(j.crown), chin = himmaJoint(j.chin);
   var h = Math.hypot(chin[0] - crown[0], chin[1] - crown[1]), tilt = Math.atan2(chin[0] - crown[0], chin[1] - crown[1]);
-  var s = h / 100, w = 52 * s, up = (tall || 1.1) * 100 * s, k, n;
+  var s = h / 100, w = 52 * s, up = (tall || 1.1) * 100 * s, k, n, stones = [];
   pen.save();
   pen.translate(crown[0], crown[1]);
   pen.rotate(-tilt);
@@ -1047,6 +1051,7 @@ function spireCrown(j, tall, t) {
     pen.closePath(); pen.fillStyle = HIMMA.gold; pen.fill(); pen.stroke();
     pen.beginPath(); pen.moveTo(side * w * 1.0, 16 * s); pen.quadraticCurveTo(side * w * 1.28, 30 * s, side * w * 1.27, 60 * s); pen.stroke();
     pen.fillStyle = HIMMA.jewel; pen.beginPath(); pen.arc(side * w * 1.1, 22 * s, 2.6 * s, 0, Math.PI * 2); pen.fill();
+    stones.push([side * w * 1.1, 22 * s, 2.6 * s]);
   });
   pen.beginPath();                                   // the band round the brow
   pen.moveTo(-w, 12 * s); pen.quadraticCurveTo(0, -4 * s, w, 12 * s); pen.lineTo(w * 0.9, 26 * s);
@@ -1055,6 +1060,7 @@ function spireCrown(j, tall, t) {
   for (n = -4; n <= 4; n++) {                        // a row of small stones along the band, red and green by turns
     var bx = n * w * 0.2, by = 13 * s + Math.abs(n) * Math.abs(n) * 0.35 * s;
     pen.fillStyle = n % 2 ? HIMMA.jewel2 : HIMMA.jewel; pen.beginPath(); pen.arc(bx, by, 2.4 * s, 0, Math.PI * 2); pen.fill();
+    stones.push([bx, by, 2.4 * s]);
   }
   for (k = 0; k < 6; k++) {                          // the tiers to the spire, each edged with a row of lotus petals
     var y0 = 6 * s - k * up / 7, y1 = 6 * s - (k + 1) * up / 7, w0 = w * (0.8 - k * 0.12), w1 = w * (0.8 - (k + 1) * 0.12);
@@ -1071,6 +1077,7 @@ function spireCrown(j, tall, t) {
     pen.lineWidth = 1.6;
     pen.fillStyle = k % 2 ? HIMMA.jewel2 : HIMMA.jewel;   // a stone in the middle of each tier
     pen.beginPath(); pen.arc(0, (y0 + y1) / 2 - 2 * s, Math.max(1.4, 3.2 * s * (1 - k * 0.1)), 0, Math.PI * 2); pen.fill(); pen.stroke();
+    stones.push([0, (y0 + y1) / 2 - 2 * s, Math.max(1.4, 3.2 * s * (1 - k * 0.1))]);
   }
   pen.beginPath();
   pen.moveTo(-w * 0.08, 6 * s - 6 * up / 7); pen.lineTo(0, 6 * s - up * 1.12); pen.lineTo(w * 0.08, 6 * s - 6 * up / 7);
@@ -1082,8 +1089,22 @@ function spireCrown(j, tall, t) {
       var gx = q[0] * w, gy = q[1] < 0 ? 6 * s + q[1] * up / 7 : q[1] * s, on = Math.max(0, Math.sin(t * 2.4 + i * 2.3));
       himmaGlint(gx, gy, 9 * s * on * on, on);
     });
+    stones.push([0, 10 * s, 5 * s]);
+    himmaTwinkle(stones, t);                         // and every stone twinkles, as the regalia's do (owner, 2026-11-13)
   }
   pen.restore();
+}
+// Stones that twinkle, as person()'s regalia's do: each [x, y, r] brightens and fades in its own time, now and then
+// flashing a small star (owner, 2026-11-13: "Make all of Indra's jewels sparkle like on his sash, necklace, arm band
+// and belt"). t: seconds. e.g. himmaTwinkle([[0, 10, 5]], t);
+function himmaTwinkle(stones, t) {
+  stones.forEach(function (q, i) {
+    var lit = 0.5 + 0.5 * Math.sin(t * 3.1 + i * 1.7);
+    pen.fillStyle = "rgba(255, 255, 240, " + (0.55 * lit).toFixed(2) + ")";
+    pen.beginPath(); pen.arc(q[0] - q[2] * 0.3, q[1] - q[2] * 0.3, q[2] * 0.55, 0, Math.PI * 2); pen.fill();
+    var on = Math.max(0, Math.sin(t * 1.9 + i * 2.9));
+    himmaGlint(q[0], q[1], q[2] * 2.6 * Math.pow(on, 6), Math.pow(on, 3));
+  });
 }
 // A glint of light, a four-pointed star at (x, y), r long, alpha 0 to 1. e.g. himmaGlint(0, 0, 8, 1);
 function himmaGlint(x, y, r, alpha) {
@@ -1139,6 +1160,7 @@ function indra(x, y, t, look) {
       pen.beginPath(); pen.moveTo(px, y - 136 * u); pen.lineTo(px + 34 * u, y - 94 * u); pen.lineTo(px, y - 52 * u); pen.lineTo(px - 34 * u, y - 94 * u); pen.closePath();
       pen.fillStyle = HIMMA.gold; pen.fill(); pen.strokeStyle = INDRA.throneLine; pen.lineWidth = 1; pen.stroke();
       pen.fillStyle = HIMMA.jewel; pen.beginPath(); pen.arc(px, y - 94 * u, 6 * u, 0, Math.PI * 2); pen.fill();
+      himmaTwinkle([[px, y - 94 * u, 6 * u], [px, y - 136 * u, 3 * u], [px, y - 52 * u, 3 * u], [px - 34 * u, y - 94 * u, 3 * u], [px + 34 * u, y - 94 * u, 3 * u]], t + side);
     });
     for (var lp = 0; lp < 17; lp++) {                 // the lotus band under the cushion
       var lx = x - 168 * u + (lp + 0.5) * 336 * u / 17;
@@ -1154,6 +1176,40 @@ function indra(x, y, t, look) {
     if (pose !== "stand") { checkName("Indra's pose", pose, {fly: true, stand: true, throne: true}); }
     j = person(x, y, Object.assign({}, INDRA_LOOK, {skin: INDRA.body, size: look.size || 1.5, halo: true}, own));
   }
+  indraChest(j);
   spireCrown(j, 1.2, t);
   return j;
+}
+// Indra's chest and belly drawn in detail over person()'s bare body (owner, 2026-11-13): the chest's two muscles with
+// their lower edges shaded, the breastbone's line between them, the ribs' edge, the belly's muscles in two rows of three,
+// the navel, the line down from it, a light on the chest. j: what person() gave back.
+function indraChest(j) {
+  if (!j || !j.shoulderA || !j.shoulderB || !j.waist) { return; }
+  var sa = himmaJoint(j.shoulderA), sb = himmaJoint(j.shoulderB), w = himmaJoint(j.waist);
+  var mx = (sa[0] + sb[0]) / 2, my = (sa[1] + sb[1]) / 2, half = Math.abs(sa[0] - sb[0]) * 0.42 + 8, down = w[1] - my;
+  if (down < 20) { return; }
+  var ink = "rgba(20, 60, 34, 0.55)", shade = "rgba(20, 60, 34, 0.18)", lit = "rgba(220, 255, 220, 0.25)";
+  pen.save(); pen.lineCap = "round";
+  [-1, 1].forEach(function (d) {                    // the chest's muscles, their lower edges in shade
+    pen.beginPath(); pen.moveTo(mx + d * 3, my + down * 0.14);
+    pen.quadraticCurveTo(mx + d * half * 0.9, my + down * 0.12, mx + d * half, my + down * 0.3);
+    pen.quadraticCurveTo(mx + d * half * 0.6, my + down * 0.42, mx + d * 3, my + down * 0.36); pen.closePath();
+    pen.fillStyle = shade; pen.fill();
+    pen.strokeStyle = ink; pen.lineWidth = 1.6;
+    pen.beginPath(); pen.moveTo(mx + d * half, my + down * 0.3); pen.quadraticCurveTo(mx + d * half * 0.6, my + down * 0.42, mx + d * 3, my + down * 0.36); pen.stroke();
+    pen.fillStyle = lit; pen.beginPath(); pen.ellipse(mx + d * half * 0.55, my + down * 0.2, half * 0.25, down * 0.05, 0, 0, 7); pen.fill();
+    pen.strokeStyle = shade; pen.lineWidth = 1.4;   // the ribs' edge under the chest
+    pen.beginPath(); pen.moveTo(mx + d * 6, my + down * 0.46); pen.quadraticCurveTo(mx + d * half * 0.7, my + down * 0.5, mx + d * half * 0.9, my + down * 0.62); pen.stroke();
+  });
+  pen.strokeStyle = ink; pen.lineWidth = 1.3;       // the breastbone's line, down into the belly's middle line
+  pen.beginPath(); pen.moveTo(mx, my + down * 0.16); pen.lineTo(mx, my + down * 0.88); pen.stroke();
+  for (var r = 0; r < 3; r++) {                     // the belly's muscles, two rows of three, their edges
+    var ry = my + down * (0.5 + 0.13 * r);
+    [-1, 1].forEach(function (d) {
+      pen.beginPath(); pen.moveTo(mx + d * 3, ry + down * 0.1); pen.quadraticCurveTo(mx + d * half * 0.32, ry + down * 0.12, mx + d * half * 0.42, ry + down * 0.04); pen.stroke();
+      pen.beginPath(); pen.moveTo(mx + d * half * 0.42, ry - down * 0.02); pen.quadraticCurveTo(mx + d * half * 0.46, ry + down * 0.05, mx + d * half * 0.42, ry + down * 0.1); pen.stroke();
+    });
+  }
+  pen.fillStyle = "rgba(20, 50, 30, 0.6)"; pen.beginPath(); pen.ellipse(mx, my + down * 0.9, 2.2, 3, 0, 0, 7); pen.fill();   // the navel
+  pen.restore();
 }

@@ -4,9 +4,9 @@
 // an elephant with the old woman, and in the weeds the boy lies still.
 var H16_LONG = 60;
 var H16_SOUND = {calls: [[0.0, "wind", 0.2, 9.26], [10.13, "frogs", 0.25, 49.87], [35.72, "crickets", 0.25, 24.28], [37.73, "elephant-trumpet", 0.3]]};
-var H16_LINES = [[2, 8.96, "H071"], [11, 20.46, "H072"], [20.66, 28.3, "H073"], [28.6, 36.31, "H074"]];
+var H16_LINES = [[2, 8.96, "H071"], [11, 20.46, "H072"], [20.66, 28.3, "H073"], [28.6, 36.31, "H074"], [37.4, 42.99, "H097"]];
 // The lines as the scene was drawn to them; it plays to H16_LINES, Pan's voice (sets.js hhClock()).
-var H16_PLAN = [[2, 9.6, "H071"], [11, 17.6, "H072"], [19, 27.2, "H073"], [28.6, 36.2, "H074"]];
+var H16_PLAN = [[2, 9.6, "H071"], [11, 17.6, "H072"], [19, 27.2, "H073"], [28.6, 36.2, "H074"], [37.4, 44.4, "H097"]];   // H097 added 2026-11-13
 var H16_CUTS = [10.2, 18.6, 27.6];
 
 // The river at an hour: the Kok's plain (whiteeel/sets.js), "dusk" or "night". t: seconds.
@@ -21,11 +21,38 @@ function h16River(t, hour) {
   pen.drawImage(welPlain(), 0, 0, WIDE, 1080);
   var kok = welKokWater();
   sceneryWaterDepths(kok);
+  if (hour !== "night") { h16Under(t, kok); }
   sceneryWaterSurface(t, kok);
+  if (hour !== "night") { hhFishLeap(t, 7, 1240); hhFishLeap(t, 41, 560); decorate(t, H16_LIFE, "front"); }   // fish and birds (owner, 2026-11-13)
+  sceneryBeds(t, hhRiverBank(), {sway: 0.3});           // the near bank planted, not ruled (owner, 2026-11-13)
   if (hour === "night") { hhNight(0.6, t); }
   else { pen.fillStyle = "rgba(150, 70, 60, 0.22)"; pen.fillRect(0, 0, WIDE, 1080); }
 }
 
+// The river's life by day (owner, 2026-11-13: "Display interesting fish and birds from the kit here"): a gourami, a
+// flying barb and a snakehead leaping, a kingfisher on a reed that dives, an egret wading, a turtle coming up to breathe.
+var H16_LIFE = [
+  {name: "gourami", kind: "fish", look: {kind: "gourami", size: 0.7}, course: [[3, 1260, 650, "hide"], [4.2, 1420, 652, "hide"], [9, 1500, 648, "hide"], [10, 1600, 650, "hide"]]},
+  {name: "barb", kind: "fish", look: {kind: "flying", size: 0.6}, course: [[12, 700, 660, "hide"], [13, 840, 662, "hide"], [21, 420, 655, "hide"], [21.8, 320, 656, "hide"]]},
+  {name: "snakehead", kind: "fish", look: {kind: "snakehead", size: 0.8}, course: [[16, 1660, 668, "hide"], [17.4, 1500, 672, "hide"]]},
+  {name: "kingfisher", kind: "kingfisher", look: {size: 0.7}, course: [[0, 1780, 690], [8, 1780, 690], [9, 1700, 640, "dive"], [10, 1690, 660, "dive"], [11, 1780, 690], [26, 1780, 690]]},
+  {name: "egret", kind: "egret", look: {size: 0.8}, course: [[0, 260, 735], [6, 330, 738, "peck"], [12, 330, 738], [18, 420, 742, "peck"], [27, 420, 742]]},
+];
+// Under the water, as the hero film's pond fish swim (owner, 2026-11-13: the turtle was on top of the water): drawn
+// after the water's depths and before its surface, half seen through it, a turtle paddling and a fish gliding by.
+function h16Under(t, kok) {
+  pen.save();
+  pen.beginPath(); pen.rect(0, WEL_KOK + 6, WIDE, WEL_KOK_BANK - WEL_KOK - 6); pen.clip();
+  pen.globalAlpha *= 0.72;
+  var tu = between(t, 4, 26), tx = mix(560, 1060, tu), ty = WEL_KOK + 36 + 5 * Math.sin(t * 0.7);
+  goldTurtle(tx, ty, t, {swim: true, size: 0.62, face: 1});
+  var fu = (t * 0.06) % 1;
+  nativeFish(pen, mix(WIDE + 80, -80, fu), WEL_KOK + 58 + 6 * Math.sin(t * 1.1), 0.8, -1, "gourami", t);
+  nativeFish(pen, mix(-80, WIDE + 80, (fu + 0.4) % 1), WEL_KOK + 70, 0.6, 1, "barb", t);
+  pen.restore();
+  pen.save(); pen.globalAlpha *= 0.25; pen.fillStyle = "#cfe4e8";           // the water's skin over them, its glints
+  pen.fillRect(0, WEL_KOK + 6, WIDE, WEL_KOK_BANK - WEL_KOK - 6); pen.restore();
+}
 // Scene 16, the entry the film calls. From sets.js: hhHeaven(), hhBoy(), hhSon(), HH_GRAN, hhNight(); honghin.js vimana();
 // himmaphan.js hongHin(); whiteeel/sets.js welPlain(), welKokWater().
 function hhSceneCrime(t) {
@@ -70,7 +97,7 @@ function hhSceneCrime(t) {
     drawByZ(ring);
     hhCameraEnd();
   } else {                                               // night: they ride away with her; the boy lies in the weeds
-    var s = t - H16_CUTS[2], ride = between(s, 1, 34);
+    var s = t - H16_CUTS[2], ride = between(s, 1, 27);   // a little quicker to the left (34 until 2026-11-13)
     h16River(t, "night");
     pen.save(); pen.translate(520, bank + 70); pen.rotate(-Math.PI / 2);   // the boy lying still
     person(0, 160, hhBoy(13, {face: 1, feel: "sleepy", blink: 1}));
@@ -80,7 +107,9 @@ function hhSceneCrime(t) {
     for (var n = 1; n < 6; n++) {                        // the five on foot behind the elephant, further back (owner, 2026-11-12)
       person(ex + 150 + n * 90, bank - 70 - (n % 2) * 16, hhSon(n, {face: -1, step: t * 0.8 + n, id: "walk" + n, size: 0.72}));
     }
-    var e = elephant(ex, bank - 40, {size: 0.62, face: -1, step: t * 0.5, cloth: "#8a2a3a"});
+    // its steps from the ground it covers, one stride to every 162 pixels at this size (beasts.js amble()'s pace), so
+    // its feet do not slide (owner, 2026-11-13: "the elephant looks like its walking on ice"): slower steps than before
+    var e = elephant(ex, bank - 40, {size: 0.62, face: -1, step: (1500 - ex) / (120 * 1.35 * 0.62), cloth: "#8a2a3a"});
     person(e.seat[0], e.seat[1], welPerson("grandmother", HH_GRAN, {id: "gran", floor: "astride", face: -1, feel: "sad", tears: 1}));
     person(e.seat[0] + 70, e.seat[1] + 6, hhSon(0, {floor: "astride", face: -1, id: "rider"}));
     sceneryMoon(t, HH_MOON[0], HH_MOON[1], HH_MOON[2], {});

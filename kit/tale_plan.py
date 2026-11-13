@@ -15,7 +15,8 @@ none is named each time this runs, and stands red on the plan. From it this writ
                 red: new) and its lines in English, Central Thai and Kam Mueang. For the owner, before anything else.
   words.js      the film's words for its pages, <FOLDER>_WORDS[id] = [what the voice says, what the subtitle writes,
                 the English], as maeng/words.js: a scene names its lines by id (sNN_LINES), the film page puts them
-                on its clock. The ids are PLAN["prefix"] and a number in the order of the lines (C001, C002 ...):
+                on its clock. The ids are PLAN["prefix"] and a number in the order of the lines (C001, C002 ...),
+                but a line given a fourth item keeps it as its id (one added later, the others not renumbered):
                 a line put in or taken out renumbers those after it, so ids are settled before the voice speaks.
   central.txt   the Central Thai, a line each, in order: what a writer of Kam Mueang (or a translator) is given.
 Edit story.py and run it again; nothing else is hand-written.
@@ -48,10 +49,16 @@ def clock(seconds):
 
 def lines_of(story):
     """Every line in order: [id, scene number, English, Central Thai, Kam Mueang]."""
-    out = []
+    out, n = [], 0
     for number, scene in enumerate(story.SCENES, 1):
-        for english, central, kam in scene[5]:
-            out.append(["%s%03d" % (story.PLAN["prefix"], len(out) + 1), number, english, central, kam])
+        for line in scene[5]:
+            english, central, kam = line[:3]
+            if len(line) > 3:                         # a line added after the voice was made keeps an id of its own (Hong
+                ident = line[3]                       # Hin's H097-H099, 2026-11-13), so the lines after it keep theirs
+            else:
+                n += 1
+                ident = "%s%03d" % (story.PLAN["prefix"], n)
+            out.append([ident, number, english, central, kam])
     return out
 
 
@@ -71,7 +78,7 @@ def problems(story):
             continue
         if scene[1] <= 0:
             out.append("scene %d (%s) has no seconds" % (number, scene[0]))
-        for english, central, kam in scene[5]:
+        for english, central, kam in (line[:3] for line in scene[5]):
             if not kam.strip():
                 out.append("scene %d: no Kam Mueang for %r" % (number, english))
             if "ๆ" in spoken(story, kam):     # a subtitle may keep its ๆ when SAY_AS says the word twice

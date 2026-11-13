@@ -41,8 +41,8 @@ function hhSceneFirst(t) {
     hhCameraEnd();
   } else {                                               // the wedding feast
     hhCamera(0.6, h[0], 800, 1.25);
-    var feast = [];
-    [[-560, "king", 1], [-380, "mural", 1], [380, "forest", -1], [560, "king", -1]].forEach(function (g, k) {
+    var feast = [];                                      // the guests, giants of their own (owner, 2026-11-13)
+    [[-560, "ochre", 1], [-380, "violet", 1], [380, "teal", -1], [560, "ash", -1]].forEach(function (g, k) {
       feast.push({name: "giant " + k, kind: "person", x: h[0] + g[0], y: 1020, draw: function () {
         // each eats: the meat up to the mouth, the jaw open as it comes, a bite, chewing as the hand goes down (the
         // owner, 2026-11-12: "opening their mouths and closing it and putting the food in their mouths")
@@ -53,9 +53,14 @@ function hhSceneFirst(t) {
         var cr = himmaJoint(probe.crown), ch = himmaJoint(probe.chin);
         var mouth = [mix(cr[0], ch[0], 0.92) + 4 * g[2], mix(cr[1], ch[1], 0.92)];
         var sh = himmaJoint(probe.shoulderA), rest = [sh[0] + 50 * g[2], sh[1] + 110], goal = [mix(rest[0], mouth[0] + 34 * g[2], up), mix(rest[1], mouth[1] + 46, up)];
-        var j = ogre(x, 1020, t, Object.assign(look, {reachA: goal, jaw: jaw}));
+        // The bone held in the fist (owner, 2026-11-13: "make it look like the giants are holding the bones ... the z order
+        // of the thumb, hand and bone correct"): the giant, the meat at his hand, then his forearm and closed hand laid
+        // again over the bone's shaft (sets.js hhArmOver()).
+        Object.assign(look, {reachA: goal, jaw: jaw, grip: true});
+        var j = ogre(x, 1020, t, look);
         var w = himmaJoint(j.wristA);
-        ogreMeat(j.wristA, Math.atan2(mouth[1] - w[1], mouth[0] - w[0]) * up + (g[2] > 0 ? -0.4 : 3.5) * (1 - up));
+        ogreMeat(j.handA, Math.atan2(mouth[1] - w[1], mouth[0] - w[0]) * up + (g[2] > 0 ? -0.4 : 3.5) * (1 - up));
+        hhArmOver(j, "A", 16, function () { ogre(x, 1020, t, look); });
       }});
     });
     hhGiantCity(t, "red", [[-70, hhBoy(13, {floor: "cross", face: 1, feel: "happy", at: [h[0] + 70, dais - 120]})],

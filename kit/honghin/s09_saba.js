@@ -15,7 +15,7 @@ function h09Lane(t, feel, down, boy) {
   hhPlace("lane");
   pen.drawImage(cngSky("day"), 0, 0);
   cngClouds(t + 20, "day");
-  pen.drawImage(welLane("day"), 0, 0);
+  pen.drawImage(hhLane("day"), 0, 0);              // textured, the wall's foot planted (owner, 2026-11-13)
   var list = [];
   for (var n = 0; n < 6; n++) {                          // the row of gold pieces, standing, or knocked flat
     (function (n) {
@@ -66,20 +66,34 @@ function hhSceneSaba(t) {
     hhCamera(0.6, 900, 820, 1.25);
     var l3 = h09Lane(t, down > 3 ? "sad" : "surprised", down, [bx, by]);
     var home = between(t, 50, 54);
+    // Each throw as the owner's reference: the seed cocked by his head, the arm out up and forward, the wrist flicked
+    // through (sets.js hhThrow()); his hand still between throws (2026-11-13: "make him stop waving").
+    var release = null;
     l3.push({name: "boy", kind: "person", x: mix(bx + 200, -80, home), y: by, draw: function () {
-      var x = mix(bx + 200, -80, home);
-      person(x, by, hhBoy(13, {face: home > 0 ? -1 : 1, feel: "happy", step: home > 0 ? t * 0.8 : 0,
-                               reachA: home > 0 ? undefined : [x + 60, by - 260]}));
+      var x = mix(bx + 200, -80, home), look = {face: home > 0 ? -1 : 1, feel: "happy", step: home > 0 ? t * 0.8 : 0};
+      var w = H09_THROWS.filter(function (w) { return t > w - 0.6 && t < w + 0.4; })[0];
+      if (home <= 0 && w !== undefined) {
+        var probe = hhJointsOf(function () { return person(x, by, hhBoy(13, look)); });
+        var th = hhThrow(probe, 1, (t - (w - 0.6)) / 1.0);
+        look.reachA = th.reach; look.wristA = th.wrist; look.grip = th.held;
+        release = th.release;
+        var j = person(x, by, hhBoy(13, look));
+        if (th.held) { var hd = himmaJoint(j.handA); redSeed(hd[0], hd[1]); }
+      } else {
+        person(x, by, hhBoy(13, look));
+        if (home <= 0) { release = hhThrow(hhJointsOf(function () { return person(x, by, hhBoy(13, look)); }), 1, 0.6).release; }
+      }
     }});
     drawByZ(l3);
-    H09_THROWS.forEach(function (w, n) {                  // each seed's arc
+    H09_THROWS.forEach(function (w, n) {                  // each seed's arc, from where it left his hand
       var u = between(t, w, w + 0.8);
-      if (u <= 0 || u >= 1) { return; }
-      var x0 = bx + 260, y0 = by - 260, x1 = H09_ROW[0] + n * 70, y1 = H09_ROW[1] - 20;
+      if (u <= 0 || u >= 1 || !release) { return; }
+      var x0 = release[0], y0 = release[1], x1 = H09_ROW[0] + n * 70, y1 = H09_ROW[1] - 20;
       redSeed(mix(x0, x1, u), mix(y0, y1, u) - 180 * Math.sin(u * Math.PI));
     });
     hhCameraEnd();
   }
+  sceneryBeds(t, hhBottomPlants(9, {tall: 44, at: 1094}), {sway: 0.3});       // the second line: planted along the picture's foot
   hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);
   hhCuts(said, hhSaidAll(H09_CUTS, H09_PLAN, H09_LINES, H09_LONG));

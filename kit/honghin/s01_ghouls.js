@@ -75,8 +75,13 @@ function hhSceneGhouls(t) {
       });
       hhCarried(x, y - 320, 170, welPerson("grandmother", HH_OLD_QUEEN, {id: "oldqueen", feel: "fear"}), -1);
       if (s > 3.5) {                                     // the young king on the wall, a lamp held out, looking after them
-        var kx = HH_EDGE_WALL[0] + 220, ky = HH_EDGE_TOP + 24;
-        person(kx, ky, welPerson("noble", HH_KING_YOUNG, {id: "kingyoung", face: -1, feel: "fear", reachA: [kx - 70, ky - 190], at: [x, y - 300]}));
+        // He stands on the walk behind the parapet, the battlements drawn again over him, so they hide his feet (owner,
+        // 2026-11-13: "change the king's z order and put his feet behind the battlements").
+        var kx = HH_EDGE_WALL[0] + 220, ky = HH_EDGE_TOP - 2;
+        person(kx, ky, welPerson("noble", HH_KING_YOUNG, {id: "kingyoung", face: -1, feel: "fear", reachA: [kx - 70, ky - 190], grip: true, at: [x, y - 300]}));
+        pen.save(); pen.beginPath(); pen.rect(kx - 160, HH_EDGE_TOP - 60, 320, 110); pen.clip();
+        pen.drawImage(hhEdgeWallNight(), 0, 0);
+        pen.restore();
         sceneryLampLight(t, kx - 74, ky - 200, ky, {reach: 200, strength: 0.9, seed: 3});
         pen.fillStyle = "#ffd27a"; pen.beginPath(); pen.arc(kx - 74, ky - 200, 6, 0, 7); pen.fill();
       }

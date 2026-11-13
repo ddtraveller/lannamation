@@ -9,6 +9,30 @@ var H11_LINES = [[2, 10.36, "H049"], [12.8, 19.03, "H050"], [20, 26.16, "H051"],
 var H11_PLAN = [[2, 11.2, "H049"], [12.8, 18, "H050"], [20, 27.8, "H051"], [29.4, 35.4, "H052"]];
 var H11_CUTS = [12.2, 19.4];
 
+// A painted man's face for soldier n (the owner, 2026-11-13: "truly different faces with different head shapes and
+// lines for the eyes, noses and mouths"): one of the kit's six painted men (people.js MURAL_MEN), its jaw, brows, eyes,
+// nose and smile changed by a seeded draw, as castMix() changes a woman's. Gives back the "man" settings for a look.
+function h11Face(n) {
+  var names = ["farmer", "drummer", "swordsman", "townsman", "lue", "elder"], m = peopleDraw(300 + n * 7);
+  var f = JSON.parse(JSON.stringify(MURAL_MEN[names[n % 6]].man));
+  f.face = Object.assign({}, f.face);
+  f.face.jaw = {cheek: m.between(-3, 4), corner: [m.between(-4, 4), m.between(-2, 3)], chin: [m.between(-2, 3), m.between(-2, 4)], far: m.between(-1, 2)};
+  f.face.brows = Object.assign({}, f.face.brows, {lift: m.between(-2, 2.5), arch: m.between(-1.5, 3), thick: m.between(0.8, 1.5)});
+  f.face.eyes = Object.assign({}, f.face.eyes, {open: m.between(-0.8, 1), tilt: m.between(-0.05, 0.18), gaze: [m.between(-1, 1.5), m.between(-0.5, 0.8)]});
+  f.face.mu = Object.assign({}, f.face.mu, {nose: m.pick(["now", "lanna", "between", "low", "button", "exact"]), tara: m.between(0.1, 0.6)});
+  f.face.feel = {smile: m.between(0, 0.4)};
+  f.face.hairdo = "knot"; f.hands = "normal";
+  delete f.holds; delete f.pose;
+  return f;
+}
+// The soldiers, each his own: skin, the shape of his face, eyes, lips, height and build.
+var H11_MEN = [{skin: "#e8c4a0", north: "round", eyes: 1, lips: 1, head: 1.06, scale: 1},
+               {skin: "#c89a72", north: "square", eyes: 0.88, lips: 1.15, head: 0.9, scale: 1.06, build: 0.3, beard: "#2a2018"},
+               {skin: "#dcb08a", north: "full", eyes: 1.08, lips: 1.05, head: 1.16, scale: 0.95, body: "fat"},
+               {skin: "#b8865e", north: "broad", eyes: 0.94, lips: 1.24, head: 1.1, scale: 1.02, lid: "crease"},
+               {skin: "#f0d0b0", north: "soft", eyes: 1.16, lips: 0.86, head: 0.88, scale: 0.92},
+               {skin: "#cfa07a", north: "square", eyes: 1.04, lips: 0.95, head: 0.94, scale: 1.08, build: 0.45, age: 0.3},
+               {skin: "#a87a52", north: "round", eyes: 0.86, lips: 1.12, head: 1.0, scale: 0.98, age: 0.5, beard: "#3a3028"}];
 // The river camp: the Kok's plain (whiteeel/sets.js) by day, the army along the bank, the six sitting. t: seconds;
 // kneel: 0 to 1, the soldiers going down on their knees.
 function h11Camp(t, kneel) {
@@ -20,14 +44,31 @@ function h11Camp(t, kneel) {
   var kok = welKokWater();
   sceneryWaterDepths(kok);
   sceneryWaterSurface(t, kok);
+  hhFishLeap(t, 9, 1300); hhFishLeap(t, 33, 820);       // a fish leaps now and then (owner, 2026-11-13)
+  sceneryBeds(t, hhRiverBank(), {sway: 0.3});           // the near bank planted, not ruled (owner, 2026-11-13)
   var list = [];
   for (var n = 0; n < 14; n++) {                         // the soldiers, in ranks along the bank
     (function (n) {
       var x = 120 + (n % 7) * 150 + (n > 6 ? 70 : 0), y = WEL_KOK_BANK + 120 + (n > 6 ? 120 : 0);
       list.push({name: "soldier " + n, kind: "person", x: x, y: y, draw: function () {
-        person(x, y, welPerson("soldier", {size: 0.62 + (n > 6 ? 0.06 : 0)}, {id: "sol" + n, face: 1, floor: kneel > 0.5 ? "cross" : undefined,
-                                                                             wai: kneel > 0.7 ? 1 : undefined, feel: kneel > 0 ? "awe" : "neutral",
-                                                                             at: kneel > 0 ? [1300, 200] : [1500, 800]}));
+        // each his own body (owner, 2026-11-13: "unique bodies with slightly varying skin tone, shape of face, eyes and
+        // height/build"): H11_MEN[n % 7], the near rank's turned about so no two side by side are alike
+        var m = H11_MEN[(n * 3 + (n > 6 ? 2 : 0)) % H11_MEN.length], face = h11Face(n);
+        // painted men can only stand (people.js: no seated man yet), so they stand in awe, spear in hand, looking up as the
+        // swan rises (the narration says nothing of kneeling)
+        var size = (0.62 + (n > 6 ? 0.06 : 0)) * m.scale, k = size / 0.62, gx = x + 30 * k, top = y - 380 * k;
+        var sl = welPerson("soldier", {size: size, skin: m.skin, body: m.body, build: m.build, age: m.age, beard: m.beard, man: face},
+                               {id: "sol" + n, face: 1, feel: kneel > 0 ? "awe" : "neutral", reachA: [gx - 2, y - 175 * k], grip: true,
+                                at: kneel > 0 ? [1300, 200] : [1500, 800]});
+        var hj = hhJointsOf(function () { return person(x, y, sl); }), hd = himmaJoint(hj.handA);
+        gx = hd[0] + 2;                                   // the spear through his hand as it falls
+        pen.save(); pen.lineCap = "round";                   // the spear, planted, its shaft behind his hand
+        pen.strokeStyle = "#5a3a1e"; pen.lineWidth = 5; pen.beginPath(); pen.moveTo(gx, y + 4); pen.lineTo(gx, top); pen.stroke();
+        pen.fillStyle = "#c8ccd4"; pen.strokeStyle = "#4a4c52"; pen.lineWidth = 1.2;
+        pen.beginPath(); pen.moveTo(gx - 6, top + 4); pen.lineTo(gx, top - 34); pen.lineTo(gx + 6, top + 4); pen.closePath(); pen.fill(); pen.stroke();
+        pen.fillStyle = "#b8294a"; pen.fillRect(gx - 3, top + 4, 6, 8);   // a red tassel at its neck
+        pen.restore();
+        person(x, y, sl);
       }});
     })(n);
   }

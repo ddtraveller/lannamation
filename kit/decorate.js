@@ -111,6 +111,11 @@ var LIFE_KINDS = {
     return [at.x - 30 * size, at.y - 20 * size, at.x + 30 * size, at.y + 20 * size];
   },
   chick: function (at, look, t) { return lifeChick(at, look, t); },
+  kite: function (at, look, t) {                    // lannabirds.js brahminyKite(): soaring along its course
+    var size = look.size || 1;
+    brahminyKite(at.x, at.y, t, Object.assign({}, look, {face: at.face}));
+    return [at.x - 130 * size, at.y - 90 * size, at.x + 130 * size, at.y + 40 * size];
+  },
   // a grasshopper (oldcartoon.js): it sits at a stop, its feelers stirring, and goes from stop to stop in hops, an
   // arc higher the further it goes, its hind legs kicked out behind; at a "caught" stop it is snapped up, into the
   // beak over its spot in a tenth of a second (the hen's "caught" shows it there after); then "hide"

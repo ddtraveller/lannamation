@@ -819,7 +819,8 @@ function sceneryStarSheet(band, horizon, count, glow, seed) {
 // nothing: it draws with pen.
 // e.g. sceneryClouds(t, {light: "night", count: 4, top: 100, bottom: 360});
 var SCENERY_CLOUD_LIGHT = {day: ["#c9d3e0", "#eef2f6", "#ffffff"], dawn: ["#7a6a96", "#b49ab6", "#f4c9a8"],
-                           dusk: ["#8a5a6a", "#d88a6a", "#ffd2a0"], night: ["#2a2f4e", "#454c72", "#8890b8"]};
+                           dusk: ["#8a5a6a", "#d88a6a", "#ffd2a0"], night: ["#2a2f4e", "#454c72", "#8890b8"],
+                           heaven: ["#c4cbe4", "#f1eff6", "#fffaf0"]};   // heaven's: lit warm, shaded a soft blue
 function sceneryClouds(t, look) {
   look = look || {};
   var count = look.count === undefined ? 5 : look.count, top = look.top === undefined ? 80 : look.top, bottom = look.bottom || 380;
@@ -860,6 +861,33 @@ function sceneryCloud(wide, seed, colours) {
     puffs.forEach(function (p) { puff(p[0] - p[2] * 0.08, p[1] - p[2] * 0.3, p[2] * 1.0, colours[1], 0.65); });  // the half light
     puffs.forEach(function (p) { puff(p[0] - p[2] * 0.15, p[1] - p[2] * 0.55, p[2] * 0.62, colours[2], 0.6); }); // the lit tops
   }, PIX);
+}
+
+// A bank of soft cloud (the owner, 2026-11-13: the soft clouds are the kit's clouds from now on, "default to using them
+// in the future"): what stands or floats on cloud (a heaven's floor, the cloud at a being's feet, a floating palace's
+// cloud, clouds rushing past in a flight) made of sceneryCloud()'s puffs, heaped higher in the middle and drifting a
+// little; dense lays them over themselves so what stands in them is hidden to the tops. t: seconds; (x, y): the
+// bank's foot's middle; wide: film pixels; look: {light ("heaven" unless told, or a key of SCENERY_CLOUD_LIGHT, or
+// colours), seed, dense (2), drift (pixels it sways, 10), alpha}. Returns nothing: it draws with pen.
+// e.g. sceneryCloudBank(t, 960, 1000, 1400, {seed: 3});   person(x, y, look); sceneryCloudBank(t, x, y + 30, 300, {dense: 3});
+function sceneryCloudBank(t, x, y, wide, look) {
+  look = look || {};
+  var colours = Array.isArray(look.light) ? look.light : SCENERY_CLOUD_LIGHT[look.light || "heaven"];
+  var seed = look.seed || 1, dense = look.dense === undefined ? 2 : look.dense, drift = look.drift === undefined ? 10 : look.drift;
+  var n = Math.max(3, Math.round(wide / 150)), k, pass;   // three at least: one over its middle
+  pen.save();
+  if (look.alpha !== undefined) { pen.globalAlpha *= look.alpha; }
+  for (pass = 0; pass < dense; pass++) {
+    for (k = 0; k < n; k++) {
+      var q = n === 1 ? 0.5 : k / (n - 1), mid = 1 - Math.abs(q - 0.5) * 2, j = seed * 37 + k * 5;
+      var size = Math.round(wide * (0.34 + 0.22 * mid + 0.1 * dice(j + 1)) / 10) * 10;
+      var sprite = thkOnce("cloud " + size + " " + j + " " + colours.join(","), function () { return sceneryCloud(size, j, colours); });
+      var px = x - wide * 0.42 + q * wide * 0.84 + drift * Math.sin(t * 0.35 + k * 1.7 + seed);
+      var py = y - wide * (0.02 + 0.07 * mid) * (pass ? 0.6 : 1) + 3 * Math.sin(t * 0.5 + k + seed);
+      thkPlace(sprite, px, py, 1, 0);
+    }
+  }
+  pen.restore();
 }
 
 // --- the moon ---

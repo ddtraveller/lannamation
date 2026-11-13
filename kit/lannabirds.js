@@ -16,6 +16,7 @@
 //                               or the small common kingfisher, นกกระเต็นน้อยธรรมดา (kind: "common")
 //   parakeet(x, y, t, look)     the red-breasted parakeet, นกแขกเต้า: perches, climbs by its bill, eats from its foot,
 //                               preens, calls, flies; or the blossom-headed parakeet, นกแก้วหัวแพร (kind: "blossom")
+//   brahminyKite(x, y, t, look)  the Brahminy kite, เหยี่ยวแดง: soars, glides and beats over rivers (2026-11-13)
 //
 // Why these (each said again above its bird, with its source; the research is the NotebookLM notebook "Birds and
 // animals of Lanna", 52 sources, checked claim by claim against the sources other than its own report):
@@ -1253,4 +1254,69 @@ function parakeet(x, y, t, look) {
   }
   nbEnd(keep);
   return {bill: bill};
+}
+
+// ---------- the Brahminy kite ----------
+// brahminyKite(x, y, t, look): the Brahminy kite, เหยี่ยวแดง, soaring over the north's rivers and paddies (the owner,
+// 2026-11-13: "Animate a different kind of bird to fly in the kit to give the cartoons variety"): a chestnut body and
+// wings, a white head, neck and breast finely streaked, black tips to the long fingered primaries, a rounded tail, a
+// hooked yellow bill. It soars: long glides on wings held flat and a little raised, a few slow beats now and then, the
+// fingers of the wingtips spread, the tail fanning and tilting as it steers. (x, y): the middle of its body; look:
+// {size (1: about 260 across the wings), face (1 flies right), seed}. Returns nothing: it draws with pen.
+// e.g. brahminyKite(600, 300, t, {face: -1, size: 0.8});
+function brahminyKite(x, y, t, look) {
+  look = look || {};
+  checkNames("The kite's name", look, {size: true, face: true, seed: true, id: true});
+  var s = look.size || 1, face = look.face || 1, seed = look.seed || 0;
+  var cycle = (t * 0.35 + seed) % 1, beating = cycle > 0.78, beat = beating ? Math.sin((cycle - 0.78) / 0.22 * Math.PI * 4) : 0;
+  var bank = 0.12 * Math.sin(t * 0.4 + seed);
+  var chestnut = "#a8462a", deep = "#6e2a16", white = "#f4ede2", ink = "#3a1a0e";
+  pen.save(); pen.translate(x, y + 6 * Math.sin(t * 0.9 + seed) * s); pen.rotate(bank); pen.scale(s * face, s);
+  pen.lineJoin = "round";
+  // Seen from below as it crosses the sky, the wings spread wide, one toward the top of the picture and one toward the
+  // foot, swept a little back; a beat folds them in and out, a glide holds them flat.
+  function wing(side) {                              // side -1 the far wing (toward the top, a little darker), 1 the near
+    var k = side < 0 ? 0.94 : 1, span = (1 - 0.32 * Math.max(0, beat) + 0.08 * Math.max(0, -beat)) * k, sweep = 0.25 + 0.15 * Math.max(0, beat);
+    pen.save(); pen.scale(1, -side);                 // drawn upward; the near wing flipped to the foot
+    var L = 118 * span, tipX = -L * sweep - 6;
+    pen.beginPath();                                 // the wing: broad at the body, long, the trailing edge scalloped
+    pen.moveTo(16, -4);
+    pen.bezierCurveTo(14, -L * 0.4, tipX + 34, -L * 0.85, tipX + 22, -L);
+    pen.lineTo(tipX - 10, -L * 0.96);
+    for (var e = 0; e < 7; e++) { var q = e / 6; pen.quadraticCurveTo(mix(tipX - 18, -26, q) - 4, mix(-L * 0.9, -6, q) + 6, mix(tipX - 16, -24, q + 1 / 6), mix(-L * 0.86, -4, q + 1 / 6)); }
+    pen.closePath();
+    var g = pen.createLinearGradient(0, 0, 0, -L); g.addColorStop(0, side < 0 ? deep : chestnut); g.addColorStop(0.7, chestnut); g.addColorStop(1, "#d8a888");
+    pen.fillStyle = g; pen.fill(); pen.strokeStyle = ink; pen.lineWidth = 1.4; pen.stroke();
+    for (var f = 0; f < 6; f++) {                    // the fingered primaries, black-tipped, spread at the wing's end
+      var fx = tipX + 20 - f * 6.5, fy = -L * (0.97 - f * 0.03), a = -1.75 - f * 0.12, len = 22 + 3 * (f % 3);
+      pen.beginPath(); pen.moveTo(fx - 3, fy + 4); pen.lineTo(fx + Math.cos(a) * len - 2, fy + Math.sin(a) * len);
+      pen.lineTo(fx + Math.cos(a) * len + 3, fy + Math.sin(a) * len + 1); pen.lineTo(fx + 4, fy + 4); pen.closePath();
+      pen.fillStyle = "#1e1410"; pen.fill();
+    }
+    pen.strokeStyle = "rgba(255, 225, 200, 0.4)"; pen.lineWidth = 1;   // the rows of the coverts across the underwing
+    for (var r = 1; r < 4; r++) { pen.beginPath(); pen.moveTo(14 - r * 8, -6); pen.quadraticCurveTo(10 - r * 6, -L * 0.45, tipX + 24 - r * 7, -L * 0.82); pen.stroke(); }
+    pen.restore();
+  }
+  wing(-1);
+  wing(1);
+  var fan = 0.8 + 0.2 * Math.sin(t * 0.6 + seed);   // the tail: a rounded fan behind, tilting as it steers
+  pen.save(); pen.translate(-40, 4); pen.rotate(0.1 * Math.sin(t * 0.5 + seed));
+  pen.beginPath(); pen.moveTo(0, -6); pen.lineTo(-44, -14 * fan); pen.quadraticCurveTo(-54, 0, -44, 14 * fan); pen.lineTo(0, 6); pen.closePath();
+  pen.fillStyle = chestnut; pen.fill(); pen.strokeStyle = ink; pen.lineWidth = 1.2; pen.stroke();
+  pen.restore();
+  pen.beginPath();                                   // the body: chestnut below, the breast white
+  pen.moveTo(-44, 0); pen.quadraticCurveTo(-20, -16, 14, -12); pen.quadraticCurveTo(30, -8, 32, 0);
+  pen.quadraticCurveTo(18, 12, -10, 10); pen.quadraticCurveTo(-30, 8, -44, 0); pen.closePath();
+  pen.fillStyle = chestnut; pen.fill(); pen.strokeStyle = ink; pen.lineWidth = 1.4; pen.stroke();
+  pen.beginPath(); pen.moveTo(2, -12); pen.quadraticCurveTo(26, -10, 32, 0); pen.quadraticCurveTo(20, 9, 0, 8); pen.closePath();
+  pen.fillStyle = white; pen.fill();
+  pen.beginPath(); pen.ellipse(36, -6, 11, 9, -0.2, 0, Math.PI * 2); pen.fillStyle = white; pen.fill(); pen.stroke();   // the head
+  pen.strokeStyle = "rgba(90, 60, 40, 0.5)"; pen.lineWidth = 0.7;   // fine streaks on the white
+  for (var n = 0; n < 7; n++) { pen.beginPath(); pen.moveTo(8 + n * 4, -6 + (n % 2) * 3); pen.lineTo(10 + n * 4, -2 + (n % 2) * 3); pen.stroke(); }
+  pen.beginPath(); pen.moveTo(45, -9); pen.quadraticCurveTo(53, -9, 52, -3); pen.lineTo(48, -4); pen.closePath();   // the hooked bill
+  pen.fillStyle = "#e8c04a"; pen.fill(); pen.strokeStyle = ink; pen.lineWidth = 1; pen.stroke();
+  pen.fillStyle = "#1e1410"; pen.beginPath(); pen.arc(39, -8, 1.8, 0, Math.PI * 2); pen.fill();
+  pen.fillStyle = "#e8c04a"; pen.beginPath(); pen.arc(39, -8, 2.6, 0, Math.PI * 2); pen.globalAlpha *= 0.4; pen.fill(); pen.globalAlpha /= 0.4;
+  pen.fillStyle = "#e8c04a"; pen.beginPath(); pen.ellipse(-8, 9, 6, 2.5, 0.3, 0, Math.PI * 2); pen.fill();   // the feet tucked under
+  pen.restore();
 }

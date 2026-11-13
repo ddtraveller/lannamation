@@ -412,7 +412,10 @@ SCENES = [
        "ปี้น้องตึงหกละอยู่ หมู่เขาแย่งเอาย่าไป รุมกั๋นตี๋ละอ่อนจ๋นต๋าย"),
       ("They left him in the weeds, put her on an elephant, and rode through the night to claim the reward.",
        "ทิ้งเขาไว้ในพงหญ้า เอาย่าขึ้นหลังช้าง แล้วรีบกลับไปรับบำเหน็จ",
-       "ขว้างเปิ้นไว้ในป่าหญ้า เอาย่าขึ้นหลังจ๊าง แล้วฟ้าวปิ๊กไปฮับรางวัล")]),
+       "ขว้างเปิ้นไว้ในป่าหญ้า เอาย่าขึ้นหลังจ๊าง แล้วฟ้าวปิ๊กไปฮับรางวัล"),
+      ("They told the old woman he was only knocked out, so that she would not cry out.",   # owner, 2026-11-13
+       "พวกเขาบอกย่าว่า เขาแค่สลบไป ย่าจะได้ไม่ร้องไห้",
+       "หมู่เขาบอกย่าว่า เปิ้นแค่สลบไป ย่าจะได้บ่าฮ้องไห้", "H097")]),
 
     ("The three wives, and Indra", 60,
      "Morning: the three princesses cross the river and find him; Mukhawadi holds his head, Culakantha his hands, "
@@ -432,7 +435,10 @@ SCENES = [
        "แล้วแปลงเป๋นยักษ์ฮ้าย จะกิ๋นร่างของเปิ้น นางตึงสามว่า จะก่อไฟกองหลวง แล้วโดดเข้าไป ต๋ายไปตวยเปิ้น"),
       ("Then Indra came as an old Brahman, poured heavenly medicine on the boy's wounds, and he lived again.",
        "แล้วพระอินทร์แปลงเป็นพราหมณ์ชรา เทยาทิพย์ลงบนแผล เด็กก็ฟื้นคืนชีวิต",
-       "แล้วพระอินทร์แปลงเป๋นพราหมณ์เฒ่า เทยาทิพย์ลงบนแผล ละอ่อนก่อฟื้นคืนมา")]),
+       "แล้วพระอินทร์แปลงเป๋นพราหมณ์เฒ่า เทยาทิพย์ลงบนแผล ละอ่อนก่อฟื้นคืนมา"),
+      ("He decided to go to the city, to find the king and his mother.",   # owner, 2026-11-13
+       "เขาตัดสินใจไปในเมือง ไปตามหาพระราชากับแม่ของเขา",
+       "ละอ่อนเลยใค่ไปเมือง ไปซอกหาพระญากับแม่ของเปิ้น", "H098")]),
 
     ("The grandmother speaks", 55,
      "Varanasi: the six parade with the grandmother; a victory feast being set up. Days pass; she weeps at a window. "
@@ -449,6 +455,9 @@ SCENES = [
       ("A shining boy on a swan of stone brought me out. They only took me from him at the river.",
        "เด็กหนุ่มขี่หงส์หินพาข้าออกมา พวกมันแค่แย่งข้าไปที่แม่น้ำ",
        "ละอ่อนขี่หงส์หินปาข้าออกมา หมู่มันก้าแย่งข้าไปตี้แม่น้ำ"),
+      ("The king wanted to look for the one on the swan, without the brothers knowing.",   # owner, 2026-11-13
+       "พระราชาอยากตามหาคนที่ขี่หงส์ โดยไม่ให้พี่น้องทั้งหกรู้",
+       "พระญาใค่ซอกหาคนตี้ขี่หงส์ โดยบ่าหื้อปี้น้องตึงหกฮู้", "H099"),
       ("So the king built a high pavilion at the fair, and the whole city had to come in by one gate.",
        "พระราชาจึงสร้างพลับพลาสูงที่ลานงาน ให้คนทั้งเมืองเข้าทางประตูเดียว",
        "พระญาเลยแป๋งพลับพลาสูงตี้ข่วงงาน หื้อคนตึงเมืองเข้าตางประตู๋เดียว"),

@@ -18,7 +18,7 @@ var HH_OLD_QUEEN = {shirt: "#f2e2c4", sin: 2, sabai: ["#c9962a", "#8a2a3a"], ear
 // The old queen as the ghouls kept her twenty years: thin, bent, in a grey blouse, no gold (scenes 14 to 18).
 var HH_GRAN = Object.assign({}, HH_OLD_QUEEN, {shirt: "#8a8478", sabai: false, sin: 1, bend: 0.3, earplug: undefined, bangles: 0, size: 0.68});
 var HH_VIMALA = {size: 0.78};                         // castWoman("princess"), her own size in the film
-var HH_WIVES = [3, 8, 12, 17, 21, 26];                // the six, each a woman of castMix(): her own face, hair and dress
+var HH_WIVES = [3, 8, 12, 17, 30, 18];                // the six, each a woman of castMix(): her own face (six different painted faces, none Vimala's princess: 21, 26 until 2026-11-13), hair and dress
 var HH_SONS = [["#24335e", "#e0b23a"], ["#2f5a4a", "#d0a040"], ["#5a2a4a", "#e0b23a"], ["#3a3a6a", "#c8a050"],
                ["#6a3a24", "#e8c060"], ["#24485a", "#d8b050"]];   // each son's cloth and its gold
 // The boy grows up poor, a gardener's grandson (the brothers in brocade and gold): bare, a plain indigo cloth, a white
@@ -28,11 +28,40 @@ var HH_BOY = {bare: true, regalia: false, turban: "#f2ead6", pins: false, bangle
 var HH_BOY_CROWNED = {bare: true, regalia: true, turban: "#b8294a", pins: true, bangles: 4, sarong: ["#8a2a3a", BROCADE],
                       skin: "#f1d2b4", smile: 0.7, eyes: 1.1};
 
-// One of the six sons (k 0 to 5), as welPerson() gives a look: a noble in his own cloth. e.g. person(x, y, hhSon(2, {size: 0.8}));
+// Each son his own face and frame (owner, 2026-11-13: "Give the 6 brothers distinct faces. Make one a little smaller and
+// fatter and one a little taller and thinner. Give one a few wrinkles and change the shapes of their faces and sizes of
+// their lips and eyes just a bit"): a face of the north's shape, eyes and lips a little larger or smaller, and scale, a
+// factor on the size the scene gives.
+var HH_SON_FACES = [                                    // and their skin, head shape and hair their own (owner, 2026-11-13, again)
+  {north: "square", age: 0.45, eyes: 0.95, lips: 1.1, skin: "#e9c39e", head: 1.08, beard: "#2a1e16", scale: 1},   // the eldest, lined, a moustache
+  {north: "full", body: "fat", eyes: 1.05, lips: 1.18, skin: "#d9a87e", head: 1.15, scale: 0.92},                 // shorter and stouter
+  {build: 0.45, head: 0.86, eyes: 0.9, lips: 0.85, skin: "#f0d2b0", hair: "#3a2a1e", scale: 1.08},                // taller and thinner
+  {north: "broad", eyes: 1.1, lips: 1, lid: "crease", skin: "#c8956a", head: 1.0, hair: "#1a1410", scale: 1},
+  {north: "soft", eyes: 0.88, lips: 1.22, skin: "#e2b48c", head: 0.94, hair: "#2e2218", scale: 0.98},
+  {north: "round", eyes: 1.14, lips: 0.9, head: 1.05, skin: "#f4dcc0", scale: 0.96}];                             // the youngest             // the youngest
+// One of the six sons (k 0 to 5), as welPerson() gives a look: a noble in his own cloth, his own face and frame (scale
+// multiplies the size given, 0.8 unless told). e.g. person(x, y, hhSon(2, {size: 0.8}));
+// Three of the six drawn new, from scratch, after the northern temple murals (honghin.js muralMan(); the owner,
+// 2026-11-13: "Redraw the fat brother from scratch. Redraw the 2 brothers to the far right from scratch as well"):
+// the stout one (1) and the two at the far right of the lane (4, 5). Their looks carry mural: true, and person() below
+// draws them with muralMan().
+var HH_MURAL_SONS = {1: {body: "stout", skin: "#d9a87e", faceShape: "round"},
+                     4: {body: "slim", skin: "#e2b48c", faceShape: "long"},
+                     5: {body: "tall", skin: "#f0d2b0", faceShape: "oval"}};
 function hhSon(k, extra) {
-  var c = HH_SONS[k % 6];
-  return welPerson("noble", {sarong: [c[0], BROCADE], turban: c[0], size: 0.8, eyes: 1 + 0.03 * k, smile: 0.3}, extra);
+  var c = HH_SONS[k % 6], f = Object.assign({}, HH_SON_FACES[k % 6]), scale = f.scale;
+  if (HH_MURAL_SONS[k % 6]) {
+    var m = HH_MURAL_SONS[k % 6], size0 = (extra && extra.size !== undefined ? extra.size : 0.8) * scale;
+    return Object.assign({mural: true, cloth: [c[0], c[1]], band: c[0]}, m, extra || {}, {size: size0 * 1.4});   // as tall as the kit-drawn brothers beside them
+  }
+  delete f.scale;
+  var size = (extra && extra.size !== undefined ? extra.size : 0.8) * scale;
+  return welPerson("noble", Object.assign({sarong: [c[0], BROCADE], turban: c[0], smile: 0.3}, f), Object.assign({}, extra, {size: size}));
 }
+
+// person() as the kit has it, but a look marked mural: true (Hong Hin's mural brothers) is drawn by muralMan().
+var HH_PERSON = person;
+person = function (x, y, look) { return look && look.mural ? muralMan(x, y, look) : HH_PERSON(x, y, look); };
 
 // ---------- the words ----------
 // The narration's subtitles, as the White Eel's (welSubtitles), from this film's words (words.js).
@@ -157,12 +186,12 @@ function hhLotusJar(x, y, size, seed) {
 }
 // The court's royal things (the owner's "yes", 2026-11-12): two tall gold parasols (honghin.js chatra()) on the dais
 // either side of the throne, behind who sits there, and two lotus jars at the foot of the steps; drawByZ sprites.
-function hhCourtThings() {
+function hhCourtThings(t) {
   var p = CNG_PALACE, s = p[2], dais = hoKhamDais(p[1], p[2]);
   return [[-205, "chatra"], [205, "chatra"], [-120, "jar"], [120, "jar"]].map(function (d, k) {
     var x = p[0] + d[0] * s, y = d[1] === "chatra" ? dais : p[1] + 12;
     var one = {name: d[1] + " " + k, kind: "thing", x: x, y: d[1] === "chatra" ? dais - 0.5 : y, draw: function () {
-      if (d[1] === "chatra") { chatra(x, y, 300 * s); } else { hhLotusJar(x, y, 0.62, k); }
+      if (d[1] === "chatra") { chatra(x, y, 300 * s, t); } else { hhLotusJar(x, y, 0.62, k); }
     }};
     if (d[1] === "chatra") { one.z = "set"; }           // on the dais, among the hall's parts
     return one;
@@ -229,6 +258,7 @@ var HH_AIR = {
       return [{sprite: sceneryHanging(480, 200, 551, THK_GREENS, [["bougainvillea", 30, 12, "#d8338a"]]), x: 150, y: -30}];
     }), {blur: 5, sway: 0.4});
     sceneryAir(t, {butterfly: null, petals: [10, "#e85a7a", 11, 1.0], light: [0.5, 6]});
+    sceneryBeds(t, hhBottomPlants(553, {tall: 46, at: 1094}), {sway: 0.3});   // the second line, along the picture's foot
   },
   ghouls: function (t) {
     var dark = THK_SHADE.map(function (g) { return blend(g, "#0e1612", 0.6); });
@@ -236,6 +266,7 @@ var HH_AIR = {
       return [{sprite: sceneryHanging(520, 220, 561, dark, []), x: 140, y: -40}, {sprite: sceneryHanging(460, 200, 563, dark, []), x: WIDE - 150, y: -40}];
     }), {blur: 5, sway: 0.3});
     softMist(t, 990, 60, 0.3, 19, "190, 204, 190");
+    sceneryBeds(t, hhBottomPlants(563, {tall: 50, at: 1094, greens: dark}), {sway: 0.3});   // the second line, along the picture's foot
   },
   "river-day": function (t) {
     sceneryBeds(t, hhFrameOf("river-day", function () { return hhCorners(571); }), {blur: 5, sway: 0.4});
@@ -254,9 +285,67 @@ var HH_AIR = {
     sceneryAir(t, {butterfly: null, petals: [12, "#f6b8cc", 15, 1.0], light: [0.6, 8]});
   }
 };
+// Each place's life, as fits it (owner, 2026-11-13: "add birds, flowers, plants, animals, fish, etc. as appropriate"): on
+// courses of the picture's own pixels (decorate.js), a scene's seconds from 0; drawn with the place's air, in front,
+// at the edges where it hides no one. Birds go home at dusk; nothing walks the night but the fireflies and the bats.
+var HH_LIFE = {
+  court: [{name: "flock", kind: "flock", course: [[3, -100, 150], [15, WIDE + 300, 90]]},
+          {name: "sunbird", kind: "sunbird", look: {size: 0.9}, course: [[6, WIDE + 40, 420], [9, WIDE - 210, 300, "sip"], [12, WIDE - 210, 300], [15, WIDE - 380, 260, "hover"], [17, WIDE + 60, 200]]}],
+  fields: [{name: "flock", kind: "flock", course: [[2, WIDE + 200, 120], [16, -300, 200]]},
+           {name: "egret", kind: "egret", look: {size: 0.8, fly: true}, course: [[10, -120, 300], [24, WIDE + 160, 220]]},
+           {name: "magpie", kind: "magpie", look: {size: 0.8}, course: [[20, WIDE + 60, 860], [22, WIDE - 160, 1000], [26, WIDE - 160, 1000, "peck"], [30, WIDE - 160, 1000], [33, WIDE + 80, 820]]}],
+  "orchard-day": [{name: "hen", kind: "hen", look: {size: 0.7}, course: [[0, 160, 1050], [6, 300, 1048, "peck"], [10, 300, 1048], [18, 120, 1056, "peck"], [24, 120, 1056], [40, 380, 1050, "peck"], [60, 380, 1050]]},
+                  {name: "chick 1", kind: "chick", look: {size: 0.7}, course: [[0, 200, 1062], [8, 330, 1060, "peck"], [14, 330, 1060], [22, 160, 1066], [60, 400, 1064, "peck"]]},
+                  {name: "chick 2", kind: "chick", look: {size: 0.7}, course: [[0, 240, 1070], [9, 360, 1070, "peck"], [15, 360, 1070], [23, 190, 1074], [60, 430, 1072]]},
+                  {name: "flock", kind: "flock", course: [[12, WIDE + 200, 140], [28, -300, 90]]},
+                  {name: "deer far", kind: "deer", look: {size: 0.22}, course: [[0, 1400, 492], [8, 1300, 494, "graze"], [20, 1300, 494], [23, 1280, 494, "alert"], [28, 1280, 494], [44, 1320, 494, "graze"], [60, 1420, 492]]},
+                  {name: "fawn far", kind: "deer", look: {size: 0.22, fawn: true}, course: [[0, 1460, 496], [9, 1360, 498, "graze"], [22, 1360, 498], [45, 1380, 498, "graze"], [60, 1480, 496]]},
+                  {name: "deer far 2", kind: "deer", look: {size: 0.24}, course: [[0, 560, 490], [14, 470, 492, "graze"], [40, 470, 492], [60, 560, 490]]},
+                  {name: "hornbill", kind: "hornbill", look: {size: 0.5}, course: [[10, -120, 300], [24, WIDE + 140, 240]]},
+                  {name: "magpie", kind: "magpie", look: {size: 0.6}, course: [[2, -60, 300], [6, 300, 560, "perch"], [16, 300, 560], [20, WIDE + 80, 260]]},
+                  {name: "sunbird", kind: "sunbird", look: {size: 0.8}, course: [[18, WIDE + 60, 420], [23, 1500, 760, "sip"], [30, 1500, 760], [32, 1380, 700, "hover"], [36, -60, 520]]}],
+  // and far off at the jungle's edge, small with distance, deer come out to graze (owner, 2026-11-13)
+  "orchard-dusk": [{name: "flock home", kind: "flock", course: [[1, -200, 260], [14, WIDE + 300, 160]]},
+                   {name: "flock home 2", kind: "flock", course: [[18, -200, 200], [32, WIDE + 300, 120]]}],
+  lane: [{name: "hen", kind: "hen", look: {size: 0.6}, course: [[0, WIDE - 160, 1030], [8, WIDE - 330, 1028, "peck"], [14, WIDE - 330, 1028], [26, WIDE - 200, 1034, "peck"], [60, WIDE - 200, 1034]]},
+         {name: "chick", kind: "chick", look: {size: 0.6}, course: [[0, WIDE - 120, 1046], [10, WIDE - 290, 1044, "peck"], [20, WIDE - 290, 1044], [60, WIDE - 160, 1050]]},
+         {name: "rooster", kind: "rooster", look: {size: 0.62}, course: [[0, 70, 1036], [12, 70, 1036, "peck"], [20, 160, 1040], [60, 160, 1040]]},
+         {name: "flock", kind: "flock", course: [[4, -200, 120], [18, WIDE + 300, 60]]}],
+  giant: [{name: "hornbill", kind: "hornbill", look: {size: 0.7}, course: [[2, WIDE + 160, 220], [14, -160, 170]]},
+          {name: "flock", kind: "flock", course: [[20, -200, 140], [34, WIDE + 300, 90]]}],
+  ghouls: [{name: "hornbill", kind: "hornbill", look: {size: 0.6}, course: [[4, -160, 260], [16, WIDE + 160, 200]]},
+           {name: "magpie", kind: "magpie", look: {size: 0.7}, course: [[1, WIDE + 60, 300], [5, 1500, 700, "perch"], [12, 1500, 700], [16, -80, 260]]},
+           {name: "sunbird", kind: "sunbird", look: {size: 0.8}, course: [[6, -40, 650], [9, 380, 700, "sip"], [13, 380, 700], [15, 520, 660, "hover"], [17, -60, 600]]},
+           {name: "flock", kind: "flock", course: [[18, -200, 160], [32, WIDE + 300, 100]]},
+           {name: "pheasant", kind: "pheasant", look: {size: 0.7}, course: [[8, WIDE + 80, 820], [12, WIDE - 160, 830, "peck"], [18, WIDE - 160, 830], [22, WIDE + 100, 816]]}],
+  "river-day": [{name: "kite", kind: "kite", look: {size: 0.7, seed: 1}, course: [[1, -160, 220], [10, 700, 160], [18, 1300, 240], [30, WIDE + 160, 170]]},
+                {name: "egret", kind: "egret", look: {size: 0.8, fly: true}, course: [[3, WIDE + 160, 260], [18, -160, 190]]},
+                {name: "flock", kind: "flock", course: [[22, -200, 150], [36, WIDE + 300, 100]]}],
+  "river-dusk": [{name: "flock home", kind: "flock", course: [[2, WIDE + 200, 220], [16, -300, 150]]}]
+};
+function hhLife(t, place) { if (HH_LIFE[place]) { decorate(t, HH_LIFE[place], "front"); } }
+// The river's near bank planted on a wandering line, reeds, grass and a bush in flower here and there, so its edge is
+// not ruled (owner, 2026-11-13): sceneryBeds() items, drawn after the water. e.g. sceneryBeds(t, hhRiverBank());
+function hhRiverBank() {
+  if (HH_BEDS.riverBank) { return HH_BEDS.riverBank; }
+  var line = hhWander(WEL_KOK_BANK + 4, 6, 12), list = [], x, k = 0;
+  for (x = -30; x < WIDE + 40; k++) {
+    var high = 30 + 26 * dice(k + 801), wide = high * (1.4 + dice(k + 803));
+    list.push(k % 4 === 3 ? {sprite: sceneryBush(wide, high, 811 + k, THK_GREENS, [[["jasmine", 10, 5], ["marigold", 6, 6], ["hibiscus", 4, 8, "#e8508a"]][k % 3]]), x: x, y: line(x) + 6}
+                          : {sprite: sceneryGrass(high, 9, 821 + k), x: x, y: line(x) + 3});
+    x += wide * (0.5 + 0.3 * dice(k + 807));
+  }
+  return (HH_BEDS.riverBank = list);
+}
+// A fish of the river that leaps once at second at, from x (the water's face at WEL_KOK + 50), in the place's light.
+function hhFishLeap(t, at, x) {
+  var leap = {at: at, from: [x, WEL_KOK + 56], to: [x + 130, WEL_KOK + 60], high: 70, air: 0.9, size: 0.6};
+  sceneryLeap(t, "rings", leap); sceneryLeap(t, "air", leap);
+}
 function hhPlaceAir(t) {
   var place = HH_PLACE;
   HH_PLACE = null;
+  if (place) { hhLife(t, place); }                       // its life first, the framing over it
   if (place && HH_AIR[place]) { HH_AIR[place](t); }
 }
 
@@ -284,10 +373,31 @@ function hhFields(light) {                              // light: the mountains'
   b.fillStyle = "#c9b285";                               // the road from the near fields to the gate, and along the wall
   b.beginPath(); b.moveTo(CNG_GATE[0] - 50, 790); b.lineTo(CNG_GATE[0] + 50, 790);
   b.lineTo(CNG_GATE[0] + 260, 1080); b.lineTo(CNG_GATE[0] - 260, 1080); b.closePath(); b.fill();
-  b.fillRect(0, CNG_ROAD - 26, WIDE, 52);
+  // the road along the wall with wandering edges, not ruled (owner, 2026-11-13), worn and textured
+  var top = hhWander(CNG_ROAD - 26, 6, 4), bot = hhWander(CNG_ROAD + 26, 7, 8), x;
+  b.beginPath(); b.moveTo(0, top(0)); for (x = 0; x <= WIDE; x += 20) { b.lineTo(x, top(x)); }
+  for (x = WIDE; x >= 0; x -= 20) { b.lineTo(x, bot(x)); } b.closePath(); b.fill();
+  hhGroundTexture(b, 0, CNG_ROAD - 34, WIDE, CNG_ROAD + 34, "#c9b285", 41, {many: 1.4});
+  hhGroundTexture(b, CNG_GATE[0] - 260, 790, CNG_GATE[0] + 260, 1080, "#c9b285", 43, {many: 0.8});
   [[260, 760, 0.55, 3], [1520, 770, 0.6, 5]].forEach(function (c) { bamboo(b, c[0], c[1], c[2], c[3]); });
   HH_FIELDS[light] = paper;
   return paper;
+}
+// The wall's foot by day planted along a wandering line, clear of the gate's road (owner, 2026-11-13: no ruled edge where
+// the moat's bank meets the fields): sceneryBeds() items, drawn after cngGateWall(). e.g. sceneryBeds(t, hhFieldsEdge());
+function hhFieldsEdge() {
+  if (HH_BEDS.fieldsEdge) { return HH_BEDS.fieldsEdge; }
+  var line = hhWander(784, 8, 5), list = [], x, k = 0;
+  var blooms = [["bougainvillea", 16, 10, "#d8338a"], ["jasmine", 22, 6], ["hibiscus", 7, 11, "#d93a2e"], ["marigold", 10, 8], ["tahern", 8, 8]];
+  for (x = -30; x < WIDE + 40; k++) {
+    var high = 46 + 34 * dice(k + 701), wide = high * (1.6 + dice(k + 703));
+    if (Math.abs(x - CNG_GATE[0]) > 120) {
+      list.push(k % 3 === 2 ? {sprite: sceneryGrass(high, 10, 711 + k), x: x, y: line(x) + 4}
+                            : {sprite: sceneryBush(wide, high, 721 + k, THK_GREENS, [blooms[k % blooms.length]]), x: x, y: line(x) + 8});
+    }
+    x += wide * (0.55 + 0.25 * dice(k + 707));
+  }
+  return (HH_BEDS.fieldsEdge = list);
 }
 // The frangipani by the gate, white in flower (a temple's and a palace's tree at night), on a sheet of its own.
 var HH_GATE_TREE = null;
@@ -324,6 +434,21 @@ function hhNightFrame() {
   return HH_BEDS.frame;
 }
 
+// The bananas forest() draws at a wood's foot (highlands.js, the same dice), only those whose x which(x) chooses: so some
+// can be drawn before the wood (behind its crowns) and the rest after. e.g. hhForestBananas(b, 0, 800, 820, 420, 11, f);
+function hhForestBananas(brush, left, right, base, tall, seed, which) {
+  for (var x = left + 40 * dice(seed * 127), n = 0; x < right; n++) {
+    if (which(x)) {
+      brush.save();
+      brush.translate(x, base);
+      var scale = tall / 420 * (0.8 + 0.4 * dice(seed * 131 + n));
+      brush.scale(scale * (dice(seed * 137 + n) < 0.5 ? -1 : 1), scale);
+      banana(brush, 0, 0);
+      brush.restore();
+    }
+    x += 180 + 260 * dice(seed * 139 + n);
+  }
+}
 // The forest's edge by the city wall at night (scenes 1): the dark forest on the left, the wall running off to the
 // right, the moon. HH_EDGE_WALL: the wall's left end, its foot, its size; the wall's top is HH_EDGE_TOP.
 var HH_EDGE_WALL = [980, 760, 1.6];
@@ -341,7 +466,15 @@ function hhEdge() {
   b.beginPath(); b.moveTo(160, 868); b.quadraticCurveTo(560, 852, HH_EDGE_WALL[0] + 40, 866);
   b.lineTo(HH_EDGE_WALL[0] + 40, 902); b.quadraticCurveTo(560, 896, 160, 914); b.closePath(); b.fill();
   forest(b, -60, 1000, 640, {tall: 300, seed: 7, far: 0.3});
-  forest(b, -120, 860, 820, {tall: 420, seed: 11});
+  // The bananas at the wood's foot as forest() sets them, but the one by the middle drawn before the wood, behind the
+  // crown it overlapped (owner, 2026-11-13: "put the banana tree near the center behind the bush it overlaps with").
+  hhForestBananas(b, -120, 860, 820, 420, 11, function (x) { return x > 600; });
+  forest(b, -120, 860, 820, {tall: 420, seed: 11, front: false});
+  hhForestBananas(b, -120, 860, 820, 420, 11, function (x) { return x <= 600; });
+  // the forest's foot planted on a wandering line, the field below it textured (owner, 2026-11-13: the straight-line
+  // and texture rules in scene 1)
+  hhGroundTexture(b, 0, 760, WIDE, 1080, "#6e8a50", 61, {grass: true, many: 1.6, weeds: 20});
+  hhEdgePlants(b, hhWander(826, 10, 17), -60, 900, 63, {tall: 70});
   HH_EDGE = paper;
   return paper;
 }
@@ -351,7 +484,36 @@ function hhEdgeNight(t) {
   sceneryMoon(t, HH_MOON[0], HH_MOON[1], HH_MOON[2], {});
   pen.drawImage(hhEdge(), 0, 0);
   cityWall(pen, HH_EDGE_WALL[0], HH_EDGE_WALL[1], WIDE - HH_EDGE_WALL[0] + 200, HH_EDGE_WALL[2], {gate: false, t: t});
+  pen.drawImage(hhEdgeRampart(), 0, 0);                 // its earth face textured, its foot planted (owner, 2026-11-13)
   hhWallLamp(t, 1560, HH_EDGE_TOP);
+}
+// The rampart of the forest's edge (s01) on a sheet of its own: its earth face grass-grown in tufts and stones (a plain
+// face of one colour no more), and its foot planted on a wandering line, no ruled edge where it meets the field.
+var HH_EDGE_RAMPART = null;
+function hhEdgeRampart() {
+  if (HH_EDGE_RAMPART) { return HH_EDGE_RAMPART; }
+  var paper = document.createElement("canvas"); paper.width = WIDE; paper.height = 1080;
+  var b = paper.getContext("2d"), s = HH_EDGE_WALL[2], x0 = HH_EDGE_WALL[0], base = HH_EDGE_WALL[1], top = HH_EDGE_TOP;
+  b.save(); b.beginPath(); b.moveTo(x0, base); b.lineTo(x0 + 30 * s, top + 26 * s); b.lineTo(WIDE + 200, top + 26 * s); b.lineTo(WIDE + 200, base); b.closePath(); b.clip();
+  hhGroundTexture(b, x0, top + 26 * s, WIDE, base, "#828a4e", 67, {grass: true, many: 2.4});
+  b.restore();
+  hhEdgePlants(b, hhWander(base + 8, 6, 19), x0 - 20, WIDE + 40, 69, {tall: 52});
+  HH_EDGE_RAMPART = paper;
+  return paper;
+}
+// The wall of the forest's edge alone, in the night's tint (hhNight(0.6)), on a clear sheet: drawn again over someone
+// standing on it, clipped to the parapet, so the battlements stand in front of them (s01's young king).
+var HH_EDGE_WALL_NIGHT = null;
+function hhEdgeWallNight() {
+  if (HH_EDGE_WALL_NIGHT) { return HH_EDGE_WALL_NIGHT; }
+  var paper = document.createElement("canvas");
+  paper.width = WIDE; paper.height = 1080;
+  var b = paper.getContext("2d");
+  cityWall(b, HH_EDGE_WALL[0], HH_EDGE_WALL[1], WIDE - HH_EDGE_WALL[0] + 200, HH_EDGE_WALL[2], {gate: false, t: 0});
+  b.globalCompositeOperation = "source-atop";
+  b.fillStyle = "rgba(10, 16, 46, 0.6)"; b.fillRect(0, 0, WIDE, 1080);
+  HH_EDGE_WALL_NIGHT = paper;
+  return paper;
 }
 // A lamp on the wall's top: a post, a little roof, the flame (its light is laid after the night: HH_EDGE_LAMP).
 var HH_EDGE_LAMP = [1560, HH_EDGE_TOP - 64];
@@ -410,7 +572,7 @@ function hhCourt(t, onDais, sprites) {
   cngBeds(t, "court", "back");
   var list = [{name: "hall, back", kind: "palace", z: "set", y: dais - 1, draw: function () { cngPalace("back"); }},
               {name: "hall, front", kind: "palace", z: "set", y: dais + 1, draw: function () { cngPalace("front"); }}];
-  hhCourtThings().forEach(function (s) { list.push(s); });   // the parasols and the lotus jars by the steps
+  hhCourtThings(t).forEach(function (s) { list.push(s); });   // the parasols and the lotus jars by the steps
   (onDais || []).forEach(function (d, k) {
     list.push({name: "dais " + k, kind: "person", z: "set", x: p[0] + d[0], y: dais, draw: function () { person(p[0] + d[0], dais, d[1]); }});
   });
@@ -463,9 +625,83 @@ function hhCuts(t, cuts) {
   });
 }
 // A painted wife of the six (k 0 to 5). e.g. person(x, y, hhWife(2, {face: -1, feel: "worry"}));
-function hhWife(k, extra) { return welPerson(HH_WIVES[k % 6], {size: 0.72}, Object.assign({id: "wife" + k}, extra || {})); }
+// young and pretty, their hair dark (owner, 2026-11-13: castMix() makes one woman in eight old and grey)
+var HH_WIFE_HAIR = ["#17110e", "#1d1410", "#24150e", "#120e14", "#1a1214", "#1d1410"];
+function hhWife(k, extra) { return welPerson(HH_WIVES[k % 6], {size: 0.72, hair: HH_WIFE_HAIR[k % 6], age: 0}, Object.assign({id: "wife" + k}, extra || {})); }
 // Vimala, the chief queen. e.g. person(x, y, hhVimala({floor: "side"}));
 function hhVimala(extra) { return welPerson("woman:princess", HH_VIMALA, Object.assign({id: "vimala"}, extra || {})); }
+// An astrologer's chart, propped on the floor before him (x, y its foot's middle), after the owner's references
+// (2026-11-13): kind 0 a palm-leaf page with a circle of nine cells and their numerals, the animals of the year below it;
+// kind 1 a horoscope wheel of the twelve signs, coloured, in a rim of gold kranok flames.
+function hhChart(x, y, kind, t) {
+  pen.save(); pen.translate(x, y); pen.scale(1, 0.62);   // propped back, seen a little from above
+  var k, n;
+  if (kind === 0) {
+    pen.fillStyle = "#efe2c0"; pen.strokeStyle = "#7a5a30"; pen.lineWidth = 2;
+    pen.beginPath(); pen.rect(-72, -150, 144, 150); pen.fill(); pen.stroke();
+    pen.strokeStyle = "#3a2a1a"; pen.lineWidth = 2;
+    pen.beginPath(); pen.arc(0, -98, 38, 0, 7); pen.stroke();
+    pen.lineWidth = 1.4;
+    [-13, 13].forEach(function (d) { pen.beginPath(); pen.moveTo(d, -134); pen.lineTo(d, -62); pen.moveTo(-36, -98 + d); pen.lineTo(36, -98 + d); pen.stroke(); });
+    var thai = ["๔", "๙", "๒", "๓", "๕", "๗", "๑", "๖", "๘"];
+    pen.fillStyle = "#3a2a1a"; pen.font = "12px serif"; pen.textAlign = "center"; pen.textBaseline = "middle";
+    for (k = 0; k < 9; k++) { pen.fillText(thai[k], -26 + (k % 3) * 26, -124 + Math.floor(k / 3) * 26); }
+    ["#b8806a", "#d8d4cc", "#c08a5a"].forEach(function (c, i) {   // the animals of the year, a dog after another, in a column
+      pen.fillStyle = c; pen.beginPath(); pen.ellipse(-36, -46 + i * 18, 16, 6, 0, 0, 7); pen.fill();
+      pen.beginPath(); pen.arc(-20, -50 + i * 18, 5, 0, 7); pen.fill();
+      pen.strokeStyle = "#5a3a2a"; pen.lineWidth = 0.8; pen.beginPath(); pen.moveTo(0, -46 + i * 18); pen.lineTo(56, -46 + i * 18); pen.stroke();
+    });
+  } else {
+    pen.fillStyle = "#f4dce0"; pen.strokeStyle = "#a8707a"; pen.lineWidth = 2;
+    pen.beginPath(); pen.rect(-76, -156, 152, 156); pen.fill(); pen.stroke();
+    var cx = 0, cy = -80;
+    for (k = 0; k < 16; k++) {                          // the rim of gold flames
+      var a = k / 16 * Math.PI * 2;
+      pen.save(); pen.translate(cx + Math.cos(a) * 60, cy + Math.sin(a) * 60); pen.rotate(a + Math.PI / 2);
+      pen.beginPath(); pen.moveTo(-9, 4); pen.quadraticCurveTo(-6, -12, 0, -16); pen.quadraticCurveTo(6, -12, 9, 4); pen.closePath();
+      pen.fillStyle = "#f0cc5a"; pen.fill(); pen.strokeStyle = "#a8781e"; pen.lineWidth = 1; pen.stroke(); pen.restore();
+    }
+    pen.beginPath(); pen.arc(cx, cy, 52, 0, 7); pen.fillStyle = "#ffffff"; pen.fill(); pen.strokeStyle = "#a8707a"; pen.lineWidth = 1.5; pen.stroke();
+    var tints = ["#f2b8c0", "#bcd8f0", "#d0c8d8", "#ffffff"];
+    for (k = 0; k < 12; k++) {                          // the twelve houses, coloured by turns, a mark of writing in each
+      var a0 = k / 12 * Math.PI * 2 - Math.PI / 2, a1 = (k + 1) / 12 * Math.PI * 2 - Math.PI / 2;
+      pen.beginPath(); pen.moveTo(cx, cy); pen.arc(cx, cy, 42, a0, a1); pen.closePath();
+      pen.fillStyle = tints[k % 4]; pen.fill(); pen.strokeStyle = "#8a6a7a"; pen.lineWidth = 0.8; pen.stroke();
+      var am = (a0 + a1) / 2; pen.fillStyle = "#3a2a3a";
+      for (n = 0; n < 3; n++) { pen.fillRect(cx + Math.cos(am) * (18 + n * 7) - 1.5, cy + Math.sin(am) * (18 + n * 7) - 0.8, 3, 1.6); }
+    }
+    pen.beginPath(); pen.rect(cx - 9, cy - 9, 18, 18); pen.fillStyle = "#f6e27a"; pen.fill(); pen.stroke();
+    pen.fillStyle = "#f4b8c0"; pen.fillRect(-64, -18, 60, 14); pen.fillStyle = "#c8c0e0"; pen.fillRect(4, -18, 60, 14);   // the tables below
+  }
+  pen.restore();
+}
+// A long goatee from the chin of someone person() drew (j its joints), grey, a little swinging. e.g. hhGoatee(j, t);
+function hhGoatee(j, t) {
+  var cr = himmaJoint(j.crown), ch = himmaJoint(j.chin), h = Math.hypot(ch[0] - cr[0], ch[1] - cr[1]), d = cr[0] < ch[0] ? 1 : 1;
+  var x = ch[0] + 0.08 * h, y = ch[1] - 0.02 * h, sw = 0.04 * h * Math.sin(t * 1.3);
+  pen.save();
+  pen.beginPath(); pen.moveTo(x - 0.1 * h, y); pen.quadraticCurveTo(x - 0.06 * h, y + 0.35 * h, x + sw, y + 0.62 * h);
+  pen.quadraticCurveTo(x + 0.04 * h, y + 0.3 * h, x + 0.1 * h, y); pen.closePath();
+  pen.fillStyle = "#d8d2c8"; pen.fill(); pen.strokeStyle = "#8a8478"; pen.lineWidth = 1; pen.stroke();
+  pen.strokeStyle = "rgba(120, 112, 100, 0.6)";
+  for (var k = -1; k <= 1; k++) { pen.beginPath(); pen.moveTo(x + k * 0.04 * h, y + 0.04 * h); pen.quadraticCurveTo(x + k * 0.03 * h, y + 0.3 * h, x + sw * 0.8, y + 0.56 * h); pen.stroke(); }
+  pen.restore();
+}
+// Strings of beads hanging from someone's headband over the eyes, no lower than the nose (j: person()'s joints).
+function hhBeadVeil(j, t) {
+  var cr = himmaJoint(j.crown), ch = himmaJoint(j.chin), h = Math.hypot(ch[0] - cr[0], ch[1] - cr[1]);
+  var top = mix(cr[1], ch[1], 0.3), low = mix(cr[1], ch[1], 0.66), mx = mix(cr[0], ch[0], 0.5) + 0.06 * h;
+  pen.save();
+  for (var k = -4; k <= 4; k++) {
+    var x = mx + k * 0.075 * h, sway = 0.01 * h * Math.sin(t * 1.6 + k), end = low - Math.abs(k) * 0.02 * h;
+    pen.strokeStyle = "rgba(60, 40, 20, 0.6)"; pen.lineWidth = 0.6; pen.beginPath(); pen.moveTo(x, top); pen.lineTo(x + sway, end); pen.stroke();
+    for (var y = top + 0.03 * h; y <= end; y += 0.045 * h) {
+      pen.fillStyle = ["#c8302a", "#e0b23a", "#2e6a8a", "#f4eee0"][(k + 8 + Math.round(y)) % 4];
+      pen.beginPath(); pen.arc(x + sway * (y - top) / (end - top), y, 0.017 * h, 0, 7); pen.fill();
+    }
+  }
+  pen.restore();
+}
 // An astrologer's board (a slate of black lacquer, its reckoning in chalk), lying before him at (x, y).
 function hhBoard(x, y, seed) {
   pen.save();
@@ -492,10 +728,39 @@ function hhOrchard(light) {                             // light: the mountains'
   var b = paper.getContext("2d"), k;
   b.drawImage(hhRangeAt(600, light), 0, 0);             // the film's own mountains (scenery pass, 2026-11-12)
   sceneryMeadow(b, 0, WIDE, 590, 1080, {seed: 21, haze: "#b4cfa0", many: 1.2});
+  // the meadow's far edge, where it met the hills in a ruled line, planted on a wandering line, small with distance
+  // (owner, 2026-11-13: the two-line way)
+  // behind the garden the jungle's edge (owner, 2026-11-13, twice: "more of a on the edge of the jungle feel"): a belt of
+  // forest with palms and bamboo, its foot planted on a wandering line
+  forest(b, -80, WIDE + 80, 640, {tall: 210, seed: 33, far: 0.25, palms: 4, bamboo: 4, front: false});
+  hhEdgePlants(b, hhWander(642, 8, 11), -40, WIDE + 40, 31, {tall: 46, trees: true});
   thkTreeOn(b, 260, 760, 0.34, 81, [["mango", 22, 14]]);
   thkTreeOn(b, 1700, 770, 0.3, 83, [["frangipani", 26, 12]]);
   floraTree(b, 760, 800, 0.8, "mango", 3);
   for (k = 0; k < 4; k++) { banana(b, 560 + k * 70, 820 + 6 * (k % 2)); }
+  // the garden full (owner, 2026-11-13): fruit trees and bushes, herbs and flowers in clumps, before and beside the hut
+  var keep = pen; pen = b;
+  try {
+    [["pineapple", 470, 900, 0.4], ["sugarcane", 1880, 840, 0.6]].forEach(function (f) { flora(f[0], f[1], f[2], {size: f[3], ground: false}); });
+    [[1300, 800, 0.18, "longan"], [1560, 790, 0.16, "mango"], [110, 805, 0.2, "longan"]].forEach(function (f, k) {   // small fruit trees
+      thkTreeOn(b, f[0], f[1], f[2], 141 + k, [[f[3], 22, 12]]);
+    });
+    [["phlu", 330, 935], ["hom", 400, 945], ["makhwaen", 1180, 935], ["miang", 1420, 945], ["tahern", 1500, 950],
+     ["marigold", 1600, 955], ["dokkaew", 1680, 945], ["sompoi", 1760, 950], ["kettawa", 1840, 945], ["orchid", 1100, 940],
+     ["hibiscus", 210, 950], ["buatong", 1060, 955]].forEach(function (f, k) { flora(f[0], f[1], f[2], {size: 0.36 + 0.06 * (k % 3), ground: false}); });
+    // the garden full (owner, again): flowering bushes round the hut and along the beds, banana and herbs in clumps, more
+    // fruit trees, rows of herbs in the beds
+    [[960, 860, 200, 90, "bougainvillea", "#d8338a"], [1520, 870, 180, 80, "hibiscus", "#f0a030"], [1640, 880, 220, 96, "jasmine"],
+     [700, 880, 170, 80, "marigold"], [1810, 890, 200, 90, "hibiscus", "#d93a2e"], [60, 900, 220, 100, "bougainvillea", "#e86a2a"],
+     [380, 880, 160, 70, "tahern"], [1150, 905, 150, 66, "dokkaew"]].forEach(function (u, k) {
+      thkPlace(sceneryBush(u[2], u[3], 161 + k, THK_GREENS, [[u[4], 18, 10, u[5]]]), u[0], u[1], 1, 0);
+    });
+    [[860, 800, 0.22, "mango"], [1880, 790, 0.2, "longan"]].forEach(function (f, k) { thkTreeOn(b, f[0], f[1], f[2], 171 + k, [[f[3], 22, 12]]); });
+    for (var bn = 0; bn < 3; bn++) { banana(b, 1080 + bn * 46, 860 + 6 * (bn % 2)); }
+    for (var hb = 0; hb < 18; hb++) {                     // rows of herbs and greens in the beds
+      flora(["phlu", "hom", "makhwaen", "miang", "tahern", "sompoi"][hb % 6], 260 + (hb % 6) * 150 + 30 * Math.floor(hb / 6), 975 - 8 * Math.floor(hb / 6), {size: 0.3, ground: false});
+    }
+  } finally { pen = keep; }
   ruenPhuk(b, HH_ORCHARD_HOUSE[0], HH_ORCHARD_HOUSE[1], HH_ORCHARD_HOUSE[2], {});
   for (k = 0; k < 5; k++) {                              // the vegetable beds, rows of green
     b.fillStyle = "#7a5a3a"; b.fillRect(240 + k * 150, 960, 120, 28);
@@ -534,13 +799,16 @@ function hhHeaven(t, low) {
   pen.fillStyle = glow; pen.fillRect(-WIDE, -400, 3 * WIDE, 2000);
   vimana(1560, 420, t, {kind: "prasat", size: 0.3});
   vimana(300, 360, t + 4, {kind: "hall", size: 0.22});
-  thaiCloud(300, (low || 1000) - 20, 900, t, 3);
-  thaiCloud(1500, (low || 1000) + 10, 1000, t, 5);
+  // heaven's floor of soft cloud, the kit's clouds (owner, 2026-11-13: "Replace the clouds in the video with the new
+  // style clouds"), a sea of it across the foot and a bank on each side
+  sceneryCloudBank(t, 960, (low || 1000) + 120, 2600, {seed: 2, dense: 2});
+  sceneryCloudBank(t, 300, (low || 1000) + 10, 1000, {seed: 3});
+  sceneryCloudBank(t, 1500, (low || 1000) + 30, 1100, {seed: 5});
 }
 // A tuft of cloud in front of what stands in heaven (x, y its foot), its tops over the feet, so they stand in the cloud
 // (the owner, 2026-11-12: "Put their feet behind the tops of a cloud"). Those standing there have ground: false (no
 // shadow). wide: the tuft's width (280 unless told). e.g. person(x, y, {..., ground: false}); hhCloudFeet(x, y, t);
-function hhCloudFeet(x, y, t, wide, seed) { thaiCloud(x, y + 0.16 * (wide || 280), wide || 280, t, seed || 11); }
+function hhCloudFeet(x, y, t, wide, seed) { sceneryCloudBank(t, x, y + 0.06 * (wide || 280) + 24, (wide || 280) * 1.15, {seed: seed || 11, dense: 4, drift: 4}); }
 // The golden boulder Indra makes the swan from: a rounded stone of gold, flecked, glowing as he speaks over it.
 // (x, y): its foot; glow 0 to 1. e.g. hhBoulder(900, 900, between(t, 8, 12));
 function hhBoulder(x, y, glow) {
@@ -591,6 +859,115 @@ function hhThrownTree(x, y, turn, size) {
   pen.fillStyle = "rgba(160, 200, 110, 0.5)"; pen.beginPath(); pen.arc(60, -26, 14, 0, 7); pen.arc(88, -6, 12, 0, 7); pen.fill();
   pen.restore();
 }
+// Shackles round both wrists of someone person() drew (j its joints): an iron cuff round each, across the forearm, and a
+// short chain hanging between (owner, 2026-11-13: "Make sure there are shackles around each wrist"). size: 1 at a
+// grown person's. e.g. hhShackles(person(x, y, look), 0.8);
+function hhShackles(j, size) {
+  if (!j || !j.wristA || !j.wristB) { return; }
+  var u = size || 1, cuffs = [["A"], ["B"]].map(function (w) {
+    var wr = himmaJoint(j["wrist" + w[0]]), el = himmaJoint(j["elbow" + w[0]]), a = Math.atan2(wr[1] - el[1], wr[0] - el[0]);
+    return [wr[0] - Math.cos(a) * 4 * u, wr[1] - Math.sin(a) * 4 * u, a];
+  });
+  pen.save();
+  var c0 = cuffs[0], c1 = cuffs[1], sag = 14 * u + 0.25 * Math.abs(c0[0] - c1[0]);   // the chain, sagging, in oval links
+  for (var k = 0; k <= 6; k++) {
+    var q = k / 6, x = mix(c0[0], c1[0], q), y = mix(c0[1], c1[1], q) + sag * 4 * q * (1 - q);
+    pen.save(); pen.translate(x, y); pen.rotate(k % 2 ? 1.2 : 0.2);
+    pen.strokeStyle = "#2e3034"; pen.lineWidth = 2.4 * u; pen.beginPath(); pen.ellipse(0, 0, 4.2 * u, 2.6 * u, 0, 0, 7); pen.stroke();
+    pen.restore();
+  }
+  cuffs.forEach(function (c) {                        // each cuff: a band of iron round the wrist, lit on its edge
+    pen.save(); pen.translate(c[0], c[1]); pen.rotate(c[2]);
+    pen.fillStyle = "#4a4c52"; pen.strokeStyle = "#1a1b1e"; pen.lineWidth = 1.4 * u;
+    pen.beginPath(); pen.rect(-4 * u, -9 * u, 8 * u, 18 * u); pen.fill(); pen.stroke();
+    pen.fillStyle = "rgba(220, 225, 235, 0.45)"; pen.fillRect(-3 * u, -8 * u, 2 * u, 16 * u);
+    pen.fillStyle = "#1a1b1e"; pen.beginPath(); pen.arc(0, 9 * u, 2 * u, 0, 7); pen.fill();   // its rivet
+    pen.restore();
+  });
+  pen.restore();
+}
+// The other way round from hhArmOver(): someone drawn again whole except one forearm (from mid upper arm to the hand),
+// so that forearm stays behind what was drawn over it (an embrace: his far arm behind her). e.g. hhArmUnder(sj, "B", 22, son);
+function hhArmUnder(j, which, wide, draw) {
+  var sh = himmaJoint(j["shoulder" + which]), el = himmaJoint(j["elbow" + which]);
+  var pts = [[mix(sh[0], el[0], 0.5), mix(sh[1], el[1], 0.5)], el, himmaJoint(j["wrist" + which]), himmaJoint(j["hand" + which])];
+  pen.save();
+  pen.beginPath(); pen.rect(-2 * WIDE, -2000, 5 * WIDE, 5000);
+  pts.forEach(function (q, k) {
+    if (k === 0) { return; }
+    var a = pts[k - 1], len = Math.hypot(q[0] - a[0], q[1] - a[1]) || 1, nx = -(q[1] - a[1]) / len * wide, ny = (q[0] - a[0]) / len * wide;
+    var ex = (q[0] - a[0]) / len * wide, ey = (q[1] - a[1]) / len * wide;
+    pen.moveTo(a[0] + nx, a[1] + ny); pen.lineTo(q[0] + nx + ex, q[1] + ny + ey); pen.lineTo(q[0] - nx + ex, q[1] - ny + ey); pen.lineTo(a[0] - nx, a[1] - ny); pen.closePath();
+  });
+  pen.clip("evenodd");
+  try { draw(); } finally { pen.restore(); }
+}
+// A torch: a wooden brand held in the fist of j (person()'s joints, the near hand), leaning by lean radians (0 upright, -
+// toward a figure facing left's front), drawn before the figure so the fist closes over it. Gives back the point of its
+// head, where hhFlame() burns. e.g. var top = hhBrand(hhJointsOf(function () { return person(x, y, look); }), -0.2);
+function hhBrand(j, lean) {
+  var w = himmaJoint(j.wristA), h = himmaJoint(j.handA), grip = [mix(w[0], h[0], 0.55), mix(w[1], h[1], 0.55)];
+  var up = [Math.sin(lean), -Math.cos(lean)], foot = [grip[0] - up[0] * 46, grip[1] - up[1] * 46], top = [grip[0] + up[0] * 96, grip[1] + up[1] * 96];
+  pen.save();
+  pen.lineCap = "round";
+  pen.strokeStyle = "#3a2410"; pen.lineWidth = 11;   // the stick, dark-edged
+  pen.beginPath(); pen.moveTo(foot[0], foot[1]); pen.lineTo(top[0], top[1]); pen.stroke();
+  pen.strokeStyle = "#7a5230"; pen.lineWidth = 7;
+  pen.beginPath(); pen.moveTo(foot[0], foot[1]); pen.lineTo(top[0], top[1]); pen.stroke();
+  pen.strokeStyle = "rgba(40, 24, 10, 0.55)"; pen.lineWidth = 1.2;   // its grain and a knot
+  pen.beginPath(); pen.moveTo(foot[0] + 1.5, foot[1]); pen.lineTo(top[0] + 1.5, top[1]); pen.stroke();
+  pen.fillStyle = "#4a2e14"; pen.beginPath(); pen.ellipse(mix(foot[0], top[0], 0.3) - 2, mix(foot[1], top[1], 0.3), 2.5, 4, lean, 0, 7); pen.fill();
+  pen.translate(top[0], top[1]); pen.rotate(lean);   // the head: cloth bound round it, charred
+  pen.fillStyle = "#4a3a2a"; pen.beginPath(); pen.ellipse(0, 8, 9, 16, 0, 0, 7); pen.fill();
+  pen.strokeStyle = "#2a1c10"; pen.lineWidth = 1.5;
+  for (var k = 0; k < 4; k++) { pen.beginPath(); pen.moveTo(-9, k * 7); pen.lineTo(9, k * 7 + 4); pen.stroke(); }
+  pen.restore();
+  return [top[0], top[1] - 6];
+}
+// A flame at (x, y) (its foot), flickering at second t, alpha a: the torch's. e.g. hhFlame(500, 600, t, 1);
+function hhFlame(x, y, t, a) {
+  var tall = 34 * (0.9 + 0.12 * Math.sin(t * 11) + 0.06 * Math.sin(t * 23));
+  pen.save(); pen.globalAlpha *= a; pen.translate(x, y);
+  [["rgba(255, 120, 40, 0.75)", 15, tall], ["#ffb440", 10, tall * 0.78], ["#fff2b0", 5, tall * 0.5]].forEach(function (f, k) {
+    var sway = 3 * Math.sin(t * 7 + k);
+    pen.fillStyle = f[0]; pen.beginPath(); pen.moveTo(-f[1], 0);
+    pen.quadraticCurveTo(-f[1], -f[2] * 0.5, sway, -f[2]); pen.quadraticCurveTo(f[1], -f[2] * 0.5, f[1], 0);
+    pen.quadraticCurveTo(0, f[1] * 0.6, -f[1], 0); pen.fill();
+  });
+  pen.restore();
+}
+// A throw, as the owner's reference (a jump shot, 2026-11-13: "cock his arm back and fold it and then extend the arm and
+// rotate it forward and take the wrist from a cocked back position to a follow through flex"). j: the thrower's joints
+// (person()'s, from hhJointsOf() before drawing), face: 1 or -1, p: 0 to 1 through the throw (0.6 the release). Gives
+// back {reach, wrist, held, release}: reachA and wristA for the look, held true while the thing is still in the hand,
+// release where it leaves it. e.g. var th = hhThrow(probe, 1, p); look.reachA = th.reach; look.wristA = th.wrist;
+function hhThrow(j, face, p) {
+  var sh = himmaJoint(j.shoulderA), cr = himmaJoint(j.crown), ch = himmaJoint(j.chin), u = Math.hypot(ch[0] - cr[0], ch[1] - cr[1]) / 100;
+  function at(dx, dy) { return [sh[0] + dx * u * face, sh[1] + dy * u]; }
+  var rest = at(40, 60), cocked = at(16, -140), out = at(70, -232), through = at(100, -196);   // cocked above the brow, clear of the face
+  var hand, wrist;
+  if (p < 0.4) { var a = between(p, 0, 0.4); hand = [mix(rest[0], cocked[0], a), mix(rest[1], cocked[1], a)]; wrist = mix(0, -1.1, a); }
+  else if (p < 0.6) { var b = between(p, 0.4, 0.6); hand = [mix(cocked[0], out[0], b), mix(cocked[1], out[1], b)]; wrist = mix(-1.1, -0.5, b); }
+  else if (p < 0.78) { var c = between(p, 0.6, 0.78); hand = [mix(out[0], through[0], c), mix(out[1], through[1], c)]; wrist = mix(-0.5, 1.6, c); }
+  else { var d = between(p, 0.78, 1); hand = [mix(through[0], rest[0], d * d), mix(through[1], rest[1], d * d)]; wrist = mix(1.6, 0, d); }
+  return {reach: hand, wrist: wrist, held: p < 0.6, release: out};
+}
+// One forearm of someone already drawn, laid again over what was drawn after them: draw() draws them again, clipped to
+// a band round j's elbow, wrist and hand (which "A" near or "B" far, wide pixels of the film each side). So in an
+// embrace her near arm lies over him while her far arm stays behind him. e.g. hhArmOver(vj, "A", 30, function () { person(...); });
+function hhArmOver(j, which, wide, draw) {
+  var pts = [j["elbow" + which], j["wrist" + which], j["hand" + which]].map(himmaJoint);
+  pen.save();
+  pen.beginPath();
+  pts.forEach(function (q, k) {
+    if (k === 0) { return; }
+    var a = pts[k - 1], len = Math.hypot(q[0] - a[0], q[1] - a[1]) || 1, nx = -(q[1] - a[1]) / len * wide, ny = (q[0] - a[0]) / len * wide;
+    var ex = (q[0] - a[0]) / len * wide, ey = (q[1] - a[1]) / len * wide;   // past each end a little, round the hand
+    pen.moveTo(a[0] + nx, a[1] + ny); pen.lineTo(q[0] + nx + ex, q[1] + ny + ey); pen.lineTo(q[0] - nx + ex, q[1] - ny + ey); pen.lineTo(a[0] - nx, a[1] - ny); pen.closePath();
+  });
+  pen.clip();
+  try { draw(); } finally { pen.restore(); }
+}
 // Tears running down a face, from the joints person() gave back (j.crown, j.chin): a wet line from each eye and a drop
 // sliding down it, again and again (t: seconds). The painted women's faces draw no tears of their own (Vimala's happy
 // tears, the owner 2026-11-12, were not seen). face: the way the head turns (1 right). e.g. hhTears(vj, -1, t);
@@ -619,6 +996,22 @@ var HH_GIANT_HALL = [960, 900, 1.0];
 var HH_GIANT_SKY = {red: ["#6a2a3a", "#e8905a", "#f6d0a0"], green: ["#2a5a4a", "#9ac8a0", "#e8f0d0"], blue: ["#2a3a6a", "#8aa0d8", "#e0e4f0"]};
 // Each kingdom's own far mountains in its air: [colour, air, seed] for farRange() (scenery pass, 2026-11-12).
 var HH_GIANT_FAR = {red: ["#a8869a", "236, 196, 170", 31], green: ["#8aa898", "226, 238, 220", 33], blue: ["#8e9ac0", "220, 226, 244", 35]};
+// A giant city's court, painted once for each kingdom, WIDE + 400 across from x -200: its earth (blue-grey in Anumat's
+// city, red elsewhere) textured, and where it meets the far hills an undulating line planted thick with flowering
+// bushes, grass and small trees, so no ruled edge shows (the owner, 2026-11-13, of the big brown field at 11:26).
+var HH_GIANT_GROUND = {};
+function hhGiantGround(kingdom) {
+  if (HH_GIANT_GROUND[kingdom]) { return HH_GIANT_GROUND[kingdom]; }
+  var paper = document.createElement("canvas"); paper.width = WIDE + 400; paper.height = 1080;
+  var b = paper.getContext("2d"), blue = kingdom === "blue", seed = {red: 3, green: 5, blue: 7}[kingdom];
+  b.translate(200, 0);
+  csBand(b, -200, 640, WIDE + 400, 700, blue ? "#8a8aa0" : "#b8784e", blue ? "#6a6a84" : "#8a5236");
+  hhGroundTexture(b, -200, 640, WIDE + 200, 1080, blue ? "#7c7c94" : "#a86a44", seed * 11, {many: 2.2, weeds: 34});
+  hhEdgePlants(b, hhWander(652, 10, seed), -200, WIDE + 200, seed * 13, {tall: 70, trees: true,
+    greens: kingdom === "green" ? THK_SHADE : THK_GREENS});
+  HH_GIANT_GROUND[kingdom] = paper;
+  return paper;
+}
 function hhGiantCity(t, kingdom, who, sprites) {
   var c = HH_GIANT_SKY[kingdom], g = pen.createLinearGradient(0, 0, 0, 900);
   g.addColorStop(0, c[0]); g.addColorStop(0.55, c[1]); g.addColorStop(1, c[2]);
@@ -626,7 +1019,7 @@ function hhGiantCity(t, kingdom, who, sprites) {
   hhPlace("giant");
   pen.drawImage(farRange(HH_GIANT_FAR[kingdom][0], HH_GIANT_FAR[kingdom][1], 660, {peak: false, ridges: 2, pines: 12, seed: HH_GIANT_FAR[kingdom][2]}), 0, 0);
   if (kingdom === "green") { forest(pen, -100, WIDE + 100, 700, {tall: 320, seed: 13, far: 0.4}); }
-  csBand(pen, -200, 640, WIDE + 400, 700, kingdom === "blue" ? "#8a8aa0" : "#b8784e", kingdom === "blue" ? "#6a6a84" : "#8a5236");
+  pen.drawImage(hhGiantGround(kingdom), -200, 0);       // the court textured, its far edge planted (owner, 2026-11-13)
   pen.drawImage(hhGiantTrees(kingdom), 0, 0);           // trees in flower round the hall (scenery pass, 2026-11-12)
   var h = HH_GIANT_HALL, dais = hoKhamDais(h[1], h[2]);
   var list = [{name: "hall back", kind: "palace", z: "set", y: dais - 1, draw: function () { hoKham(pen, h[0], h[1], h[2], {part: "back", fine: true}); }},
@@ -657,9 +1050,270 @@ function hhPrincessAt(x, y, name, more) {
   if (left && own.at) { own.at = [2 * x - own.at[0], own.at[1]]; }
   var look = name === "culakantha" ? hhDaughter(name, own) : ogreDaughter(name, own);
   if (left) { pen.save(); pen.translate(x, 0); pen.scale(-1, 1); pen.translate(-x, 0); }
-  try { return person(x, y, look); } finally { if (left) { pen.restore(); } }
+  try { var j = person(x, y, look); hhFangs(j, HH_FANG_AT[name]); return j; } finally { if (left) { pen.restore(); } }
+}
+// A giant princess's two small fangs (owner, 2026-11-13: "The princess giants should have little fangs sticking out like
+// the reference image but otherwise be the same"): white, rising from the corners of the lower lip, on a face turned to
+// the right (hhPrincessAt() mirrors one facing left). j: person()'s joints.
+// at: [how far down the crown-to-chin line her mouth is, how far forward], by her painted face (HH_FANG_AT)
+var HH_FANG_AT = {mukhawadi: [1.22, 0.19], culakantha: [1.22, 0.19], salicanta: [1.22, 0.19]};   // measured on the painted faces drawn large (2026-11-13)
+function hhFangs(j, at) {
+  if (!j || !j.crown || !j.chin) { return; }
+  var cr = himmaJoint(j.crown), ch = himmaJoint(j.chin), h = Math.hypot(ch[0] - cr[0], ch[1] - cr[1]);
+  at = at || [1.22, 0.19];
+  var m = [mix(cr[0], ch[0], at[0]) + at[1] * h, mix(cr[1], ch[1], at[0])];   // the painted face's mouth: below the joints' chin (measured 2026-11-13)
+  // a mouth a little larger than the painted one, drawn over it and fitted round the tusks (owner, 2026-11-13)
+  pen.save();
+  var mw = 0.075 * h, mh = 0.018 * h;
+  pen.beginPath(); pen.moveTo(m[0] - mw, m[1] + 0.012 * h); pen.quadraticCurveTo(m[0] - mw * 0.4, m[1] - mh, m[0], m[1] - mh * 0.4);
+  pen.quadraticCurveTo(m[0] + mw * 0.4, m[1] - mh, m[0] + mw, m[1] + 0.012 * h);
+  pen.quadraticCurveTo(m[0], m[1] + 0.012 * h + mh * 2.6, m[0] - mw, m[1] + 0.012 * h); pen.closePath();
+  pen.fillStyle = "#b8404a"; pen.fill(); pen.strokeStyle = "rgba(90, 30, 30, 0.8)"; pen.lineWidth = Math.max(0.6, h * 0.006); pen.stroke();
+  pen.strokeStyle = "rgba(60, 10, 10, 0.9)"; pen.beginPath(); pen.moveTo(m[0] - mw * 0.9, m[1] + 0.012 * h); pen.quadraticCurveTo(m[0], m[1] + 0.02 * h, m[0] + mw * 0.9, m[1] + 0.012 * h); pen.stroke();
+  pen.fillStyle = "rgba(255, 220, 220, 0.35)"; pen.beginPath(); pen.ellipse(m[0], m[1] + 0.026 * h, mw * 0.35, mh * 0.4, 0, 0, 7); pen.fill();
+  pen.restore();
+  pen.save(); pen.fillStyle = "#fffaf0"; pen.strokeStyle = "rgba(90, 60, 50, 0.8)"; pen.lineWidth = Math.max(0.6, h * 0.008);
+  [-1, 1].forEach(function (d) {                    // tiny tusks as her father's (owner, 2026-11-13): from the lower lip's
+    var x = m[0] + d * 0.055 * h, y = m[1] + 0.03 * h;   // from the lower lip at its corners   // corners: the base under the lower lip, the point up
+    pen.beginPath(); pen.moveTo(x - 0.014 * h, y); pen.lineTo(x + 0.014 * h, y);
+    pen.quadraticCurveTo(x + d * 0.012 * h, y - 0.03 * h, x + d * 0.016 * h, y - 0.07 * h);
+    pen.quadraticCurveTo(x - d * 0.006 * h, y - 0.035 * h, x - 0.014 * h, y); pen.closePath(); pen.fill(); pen.stroke();
+  });
+  pen.restore();
 }
 
+// ---------- ground: no flat field, no ruled edge (the owner, 2026-11-13) ----------
+// "Check for large fields of a single color and give them texture and decoration" and the two-line way: "make an
+// undulating invisible line along the straight line where the green and brown fields meet. Then add vegetation,
+// bushes, grasses, trees, flowers, etc. ... then make a second invisible line along the bottom of the canvas and add
+// more decoration." docs/kit/places.md, "Painting the scenery", 10.
+
+// Texture on a field of one colour, painted on b once: specks of lighter and darker earth, dry tufts, pebbles, fallen
+// leaves and petals, a paler worn patch or two; smaller far (y0) than near (y1). base: the field's colour; seed: a
+// number; look: {grass: green tufts instead of dry, many: how thick, 1}. e.g. hhGroundTexture(b, 0, 660, WIDE, 1080, "#b9a070", 3);
+function hhGroundTexture(b, x0, y0, x1, y1, base, seed, look) {
+  look = look || {};
+  var many = look.many || 1, w = x1 - x0, h = y1 - y0, k, x, y, near, n;
+  b.save();
+  b.beginPath(); b.rect(x0, y0, w, h); b.clip();
+  for (k = 0; k < 3; k++) {                         // worn patches, paler, soft-edged
+    x = x0 + w * dice(seed * 7 + k); y = y0 + h * (0.3 + 0.6 * dice(seed * 11 + k)); near = (y - y0) / h;
+    var g = b.createRadialGradient(x, y, 0, x, y, 160 + 160 * near);
+    var pale = blend(base, "#f4ead0", 0.3), rgb = [1, 3, 5].map(function (i) { return parseInt(pale.slice(i, i + 2), 16); }).join(", ");
+    g.addColorStop(0, "rgba(" + rgb + ", 0.8)"); g.addColorStop(1, "rgba(" + rgb + ", 0)");   // to clear in its own colour (to clear black darkened it)
+    b.fillStyle = g; b.save(); b.translate(x, y); b.scale(1, 0.32); b.translate(-x, -y);
+    b.beginPath(); b.arc(x, y, 160 + 160 * near, 0, 7); b.fill(); b.restore();
+  }
+  for (k = 0; k < 2600 * many * w / WIDE; k++) {    // specks of earth
+    x = x0 + w * dice(seed * 13 + k); y = y0 + h * Math.sqrt(dice(seed * 17 + k)); near = (y - y0) / h;
+    b.fillStyle = dice(seed * 19 + k) < 0.5 ? blend(base, "#5a4024", 0.35) : blend(base, "#fff4dc", 0.35);
+    b.globalAlpha = 0.7; b.fillRect(x, y, 1.5 + 3 * near, 1 + 2 * near);
+  }
+  b.globalAlpha = 1;
+  for (k = 0; k < 90 * many * w / WIDE; k++) {      // pebbles, a light on each
+    x = x0 + w * dice(seed * 23 + k); y = y0 + h * dice(seed * 29 + k); near = 0.4 + 0.6 * (y - y0) / h;
+    b.fillStyle = blend("#8a8070", base, 0.3 * dice(k));
+    b.beginPath(); b.ellipse(x, y, (2 + 4 * dice(seed * 31 + k)) * near, (1.4 + 2.4 * dice(seed * 37 + k)) * near, 0, 0, 7); b.fill();
+    b.fillStyle = "rgba(255, 250, 235, 0.5)"; b.beginPath(); b.ellipse(x - near, y - near, 1.2 * near, 0.8 * near, 0, 0, 7); b.fill();
+  }
+  for (k = 0; k < 160 * many * w / WIDE; k++) {     // tufts: short blades in a fan
+    x = x0 + w * dice(seed * 41 + k); y = y0 + h * dice(seed * 43 + k); near = 0.35 + 0.65 * (y - y0) / h;
+    var green = look.grass || dice(seed * 47 + k) < 0.35;
+    b.strokeStyle = green ? blend("#6a8a3a", base, 0.2 + 0.3 * dice(k)) : blend("#a08850", base, 0.3);
+    b.lineWidth = 1.1 * near + 0.3;
+    for (n = 0; n < 5; n++) {
+      var a = -Math.PI / 2 + (n - 2) * 0.28 + 0.2 * (dice(k * 5 + n) - 0.5), len = (7 + 9 * dice(k * 7 + n)) * near;
+      b.beginPath(); b.moveTo(x + n - 2, y); b.quadraticCurveTo(x + n - 2 + Math.cos(a) * len * 0.5, y + Math.sin(a) * len * 0.6, x + n - 2 + Math.cos(a) * len, y + Math.sin(a) * len); b.stroke();
+    }
+  }
+  if (look.weeds) {                                 // low weeds in flower here and there, on the ground's own sheet
+    var keep = pen; pen = b;
+    try {
+      for (k = 0; k < look.weeds; k++) {
+        x = x0 + w * dice(seed * 71 + k); y = y0 + h * (0.08 + 0.92 * dice(seed * 73 + k)); near = 0.35 + 0.65 * (y - y0) / h;
+        var bl = [["marigold", 5, 6], ["jasmine", 8, 4], ["dokkaew", 6, 4], ["tahern", 4, 5]][k % 4];
+        thkPlace(k % 3 ? sceneryGrass(34 * near + 10, 7, seed * 79 + k) : sceneryBush(60 * near + 20, 30 * near + 12, seed * 83 + k, THK_GREENS, [bl]), x, y, 1, 0);
+      }
+    } finally { pen = keep; }
+  }
+  var leaf = ["#8a6a2a", "#a8742a", "#6a7a3a", "#c88a3a", "#f3a6c0", "#fbf6ee"];
+  for (k = 0; k < 70 * many * w / WIDE; k++) {      // fallen leaves and petals
+    x = x0 + w * dice(seed * 53 + k); y = y0 + h * dice(seed * 59 + k); near = 0.4 + 0.6 * (y - y0) / h;
+    b.fillStyle = leaf[Math.floor(dice(seed * 61 + k) * leaf.length)];
+    b.beginPath(); b.ellipse(x, y, 4 * near, 1.8 * near, dice(seed * 67 + k) * 3, 0, 7); b.fill();
+  }
+  b.restore();
+}
+// An undulating line: y at x, wandering about base by amp (two waves, seed sets their phase). e.g. hhWander(660, 14, 3)(400);
+function hhWander(base, amp, seed) {
+  return function (x) { return base + amp * (0.6 * Math.sin(x / 173 + seed) + 0.4 * Math.sin(x / 61 + seed * 2.3)); };
+}
+// The first line planted, on b once: along line(x) from x0 to x1, thick with flowering bushes, grass and, if look.trees,
+// small trees in flower behind them; look.skip: [[from, to], ...] stretches left clear (a house's front); look.tall: the
+// bushes' height (90); look.greens; look.blooms ([[name, count, r, colour]] choices); seed. Its plants' feet are on the
+// line, the line itself hidden under them. e.g. hhEdgePlants(b, hhWander(660, 12, 2), 0, WIDE, 7, {trees: true});
+function hhEdgePlants(b, line, x0, x1, seed, look) {
+  look = look || {};
+  var tall = look.tall || 90, greens = look.greens || THK_GREENS, keep = pen, x, k = 0;
+  var blooms = look.blooms || [["bougainvillea", 18, 10, "#d8338a"], ["hibiscus", 8, 12, "#d93a2e"], ["jasmine", 26, 6],
+                                 ["ixora", 0, 0], ["marigold", 12, 9], ["tahern", 10, 9], ["dokkaew", 14, 7]];
+  blooms = blooms.filter(function (bl) { return THK_BLOOMS[bl[0]]; });
+  function clear(x) { return !(look.skip || []).some(function (s) { return x > s[0] && x < s[1]; }); }
+  pen = b;
+  try {
+    if (look.trees) {                               // small trees in flower, behind the bushes
+      for (x = x0 + 60 * dice(seed); x < x1; x += 260 + 200 * dice(seed * 3 + x)) {
+        var tb = [["ratchaphruek", 28, 14], ["mango", 20, 14], ["frangipani", 28, 12], ["longan", 24, 14]][Math.floor(dice(x + seed) * 4)];
+        if (clear(x)) { thkTreeOn(b, x, line(x) - 6, 0.16 + 0.08 * dice(seed * 5 + x), seed * 7 + Math.round(x), [tb]); }
+      }
+    }
+    for (x = x0 - 40; x < x1 + 40; k++) {           // bushes and grass, close, overlapping
+      var wide = tall * (1.4 + 1.2 * dice(seed * 11 + k)), high = tall * (0.7 + 0.6 * dice(seed * 13 + k));
+      if (clear(x)) {
+        if (k % 3 === 2) { thkPlace(sceneryGrass(high * 0.9, 10, seed * 17 + k, greens), x, line(x) + 4, 1, 0); }
+        else { thkPlace(sceneryBush(wide, high, seed * 19 + k, greens, [blooms[k % blooms.length]]), x, line(x) + 6, 1, 0); }
+      }
+      x += wide * (0.45 + 0.25 * dice(seed * 23 + k));
+    }
+  } finally { pen = keep; }
+}
+// The second line: along the bottom of the picture, low grass, flowers and leaves, as sceneryBeds() items (they sway),
+// drawn after the people (their feet stand above it). seed; look: {greens, tall: (70), at: the line's y (1086)}.
+// e.g. var front = hhBottomPlants(5); ... sceneryBeds(t, front, {sway: 0.3});
+var HH_BOTTOM = {};
+function hhBottomPlants(seed, look) {
+  look = look || {};
+  var key = seed + ":" + (look.tall || 70) + ":" + (look.at || 1086);
+  if (HH_BOTTOM[key]) { return HH_BOTTOM[key]; }
+  var tall = look.tall || 70, greens = look.greens || THK_GREENS, line = hhWander(look.at || 1086, 8, seed), list = [], x, k = 0;
+  var blooms = [["marigold", 8, 8], ["jasmine", 14, 5], ["hibiscus", 4, 9, "#e8508a"], ["dokkaew", 10, 6], ["tahern", 6, 7]];
+  blooms = blooms.filter(function (bl) { return THK_BLOOMS[bl[0]]; });
+  for (x = -30; x < WIDE + 60; k++) {
+    var high = tall * (0.6 + 0.7 * dice(seed * 29 + k)), wide = high * (1.5 + dice(seed * 31 + k));
+    list.push(k % 2 ? {sprite: sceneryGrass(high, 9, seed * 37 + k, greens), x: x, y: line(x)}
+                    : {sprite: sceneryBush(wide, high, seed * 41 + k, greens, [blooms[k % blooms.length]]), x: x, y: line(x) + 10});
+    x += wide * (0.5 + 0.3 * dice(seed * 43 + k));
+  }
+  HH_BOTTOM[key] = list;
+  return list;
+}
+// The White Eel's lane (welLane()) dressed for Hong Hin: its ground textured, the wall's foot planted between the
+// houses along a wandering line (owner, 2026-11-13). e.g. pen.drawImage(hhLane("day"), 0, 0);
+function hhLane(kind) {
+  return welLane(kind, ["hh", function (b) {
+    hhGroundTexture(b, 0, 660, WIDE, 1080, "#b9a070", 9, {many: 2.2, weeds: 26});
+    hhEdgePlants(b, hhWander(668, 7, 3), 0, WIDE, 9, {tall: 64});   // the houses are drawn after: they stand before it
+  }]);
+}
+// A ghoul's hut (scene 14), detailed and shaded (owner, 2026-11-13: "give the huts and water pots more detail and
+// shading"): its shadow on the ground, the kit's fieldHut(), then the thatch in strands, a ragged eave, the shade under
+// it on the posts, the floor's slats, the posts' grain, a charm of bones hanging from the eave. (x, base, size) as fieldHut.
+function hhGhoulHut(x, base, size) {
+  var k, keep = pen;
+  pen.save();
+  pen.fillStyle = "rgba(10, 8, 4, 0.35)"; pen.beginPath(); pen.ellipse(x + 6 * size, base, 58 * size, 9 * size, 0, 0, 7); pen.fill();
+  fieldHut(pen, x, base, size);
+  pen.translate(x, base); pen.scale(size, size);
+  pen.save();                                       // within the roof: its strands of thatch and its shade
+  pen.beginPath(); pen.moveTo(-50, -46); pen.lineTo(-22, -78); pen.lineTo(22, -78); pen.lineTo(50, -46); pen.closePath(); pen.clip();
+  for (k = 0; k < 140; k++) {
+    var sx = -50 + 100 * dice(k + 901), sy = -78 + 32 * dice(k + 907), lean = sx < -20 ? -0.7 : sx > 20 ? 0.7 : 0;
+    pen.strokeStyle = dice(k + 911) < 0.5 ? "rgba(110, 76, 34, 0.55)" : "rgba(246, 222, 160, 0.5)"; pen.lineWidth = 0.7;
+    pen.beginPath(); pen.moveTo(sx, sy); pen.lineTo(sx + lean * 6, sy + 7 + 4 * dice(k + 913)); pen.stroke();
+  }
+  var shade = pen.createLinearGradient(-50, 0, 50, 0);
+  shade.addColorStop(0, "rgba(255, 240, 200, 0.18)"); shade.addColorStop(0.5, "rgba(0, 0, 0, 0)"); shade.addColorStop(1, "rgba(40, 24, 8, 0.35)");
+  pen.fillStyle = shade; pen.fillRect(-50, -80, 100, 36);
+  pen.restore();
+  pen.fillStyle = "#c8a462"; pen.strokeStyle = "rgba(90, 60, 25, 0.9)"; pen.lineWidth = 0.8;   // the ragged eave
+  pen.beginPath(); pen.moveTo(-51, -47);
+  for (k = 0; k <= 20; k++) { pen.lineTo(-51 + k * 5.1, -46 + (k % 2 ? 4 + 3 * dice(k + 921) : 0)); }
+  pen.lineTo(51, -47); pen.closePath(); pen.fill(); pen.stroke();
+  pen.fillStyle = "rgba(20, 12, 4, 0.4)"; pen.fillRect(-36, -45, 72, 8);   // the shade under the eaves
+  pen.strokeStyle = "rgba(60, 40, 20, 0.5)"; pen.lineWidth = 0.6;          // the floor's slats, the posts' grain
+  for (k = -34; k < 36; k += 5) { pen.beginPath(); pen.moveTo(k, -24); pen.lineTo(k + 1, -18); pen.stroke(); }
+  [[-17, 46], [17, 46], [-30, 52], [30, 52]].forEach(function (p) { pen.beginPath(); pen.moveTo(p[0] - 0.8, -p[1] + 2); pen.lineTo(p[0] - 0.4, -4); pen.stroke(); });
+  pen.strokeStyle = "#5a4024"; pen.lineWidth = 0.7;   // a charm of bones on a cord from the eave
+  pen.beginPath(); pen.moveTo(30, -44); pen.lineTo(30, -32); pen.stroke();
+  pen.fillStyle = "#efe6d2";
+  [[30, -31], [28, -27], [32, -25]].forEach(function (b, n) { pen.save(); pen.translate(b[0], b[1]); pen.rotate(0.6 * n - 0.4); pen.fillRect(-3, -0.8, 6, 1.6); pen.beginPath(); pen.arc(-3, 0, 1.1, 0, 7); pen.arc(3, 0, 1.1, 0, 7); pen.fill(); pen.restore(); });
+  pen.restore();
+  pen = keep;
+}
+// A hut smashed (owner, 2026-11-13: "make the wrecked huts look rough textured like piles of hay and broken wood"): a
+// heap of its thatch in strands, its posts and floor slats broken and thrown across it, splintered ends, straw scattered.
+function hhWreckedHut(x, base, size) {
+  var k, s = size;
+  pen.save();
+  pen.fillStyle = "rgba(10, 8, 4, 0.35)"; pen.beginPath(); pen.ellipse(x, base - 4 * s, 62 * s, 10 * s, 0, 0, 7); pen.fill();
+  pen.fillStyle = "#6a4c24"; pen.beginPath();       // the heap's dark body
+  pen.moveTo(x - 58 * s, base - 4 * s); pen.quadraticCurveTo(x - 40 * s, base - 30 * s, x - 6 * s, base - 34 * s);
+  pen.quadraticCurveTo(x + 30 * s, base - 30 * s, x + 56 * s, base - 4 * s); pen.closePath(); pen.fill();
+  [[-40, -12, 1.2], [26, -10, -0.9], [-6, -26, 0.3], [40, -6, 2.6]].forEach(function (p) {   // posts, broken, splintered
+    pen.save(); pen.translate(x + p[0] * s, base + p[1] * s); pen.rotate(p[2]);
+    pen.fillStyle = "#5a3e22"; pen.strokeStyle = "#2a1c0c"; pen.lineWidth = 1;
+    pen.beginPath(); pen.moveTo(-24 * s, -2.5 * s); pen.lineTo(18 * s, -2.5 * s); pen.lineTo(22 * s, -1 * s); pen.lineTo(19 * s, 0); pen.lineTo(24 * s, 1.5 * s);
+    pen.lineTo(18 * s, 2.5 * s); pen.lineTo(-24 * s, 2.5 * s); pen.closePath(); pen.fill(); pen.stroke();
+    pen.restore();
+  });
+  for (k = 0; k < 340; k++) {                       // the thatch in strands, rough, every way
+    var a = dice(k + 931) * Math.PI, r = Math.sqrt(dice(k + 937)), px = x + (dice(k + 941) - 0.5) * 108 * s, top = base - 34 * s * (1 - Math.pow((px - x) / (56 * s), 2));
+    var py = base - 2 * s - (base - 2 * s - top) * r * dice(k + 947);
+    pen.strokeStyle = ["#e2c27a", "#b48a46", "#c9a96e", "#8a6a3a", "#f0d898"][k % 5]; pen.lineWidth = 0.6 * s + 0.4;
+    pen.beginPath(); pen.moveTo(px, py); pen.lineTo(px + Math.cos(a) * 9 * s, py - Math.sin(a) * 4 * s); pen.stroke();
+  }
+  [[-18, -18, -0.3], [14, -22, 0.4], [-34, -8, 0.15]].forEach(function (p) {   // floor slats thrown across
+    pen.save(); pen.translate(x + p[0] * s, base + p[1] * s); pen.rotate(p[2]);
+    pen.fillStyle = "#c9a96e"; pen.strokeStyle = "#5a4024"; pen.lineWidth = 0.8; pen.fillRect(-16 * s, -1.4 * s, 32 * s, 2.8 * s); pen.strokeRect(-16 * s, -1.4 * s, 32 * s, 2.8 * s);
+    pen.restore();
+  });
+  for (k = 0; k < 40; k++) {                        // straw scattered about it on the ground
+    var gx = x + (dice(k + 951) - 0.5) * 170 * s, gy = base + (dice(k + 953) - 0.3) * 14 * s, ga = (dice(k + 957) - 0.5) * 1.2;
+    pen.strokeStyle = k % 2 ? "#e2c27a" : "#b48a46"; pen.lineWidth = 0.6 * s;
+    pen.beginPath(); pen.moveTo(gx, gy); pen.lineTo(gx + Math.cos(ga) * 7 * s, gy + Math.sin(ga) * 2 * s); pen.stroke();
+  }
+  pen.restore();
+}
+// A water pot of earthenware (s: 1 about 60 tall), its foot at (x, y): its shadow, the body lit from the upper left, an
+// incised band of zigzag round its shoulder, a flared rim and its dark mouth, a highlight. e.g. hhWaterPot(640, 930, 1);
+function hhWaterPot(x, y, s) {
+  pen.save();
+  pen.fillStyle = "rgba(10, 8, 4, 0.4)"; pen.beginPath(); pen.ellipse(x + 4 * s, y, 30 * s, 6 * s, 0, 0, 7); pen.fill();
+  pen.beginPath(); pen.moveTo(x - 12 * s, y - 52 * s); pen.bezierCurveTo(x - 40 * s, y - 40 * s, x - 34 * s, y - 2 * s, x - 10 * s, y);
+  pen.lineTo(x + 10 * s, y); pen.bezierCurveTo(x + 34 * s, y - 2 * s, x + 40 * s, y - 40 * s, x + 12 * s, y - 52 * s); pen.closePath();
+  var body = pen.createRadialGradient(x - 12 * s, y - 36 * s, 4 * s, x, y - 26 * s, 40 * s);
+  body.addColorStop(0, "#c88a5a"); body.addColorStop(0.55, "#9a5a32"); body.addColorStop(1, "#5a2e16");
+  pen.fillStyle = body; pen.fill(); pen.strokeStyle = "#3a1c0a"; pen.lineWidth = 1.4; pen.stroke();
+  pen.strokeStyle = "rgba(60, 28, 10, 0.75)"; pen.lineWidth = 1;   // the incised band round the shoulder
+  pen.beginPath(); pen.moveTo(x - 27 * s, y - 38 * s); pen.quadraticCurveTo(x, y - 33 * s, x + 27 * s, y - 38 * s); pen.stroke();
+  pen.beginPath();
+  for (var k = 0; k <= 10; k++) { var zx = x - 26 * s + k * 5.2 * s, zy = y - 35 * s + (k % 2 ? 4 * s : 0) + 2.5 * s * Math.sin(k / 10 * Math.PI); if (k) { pen.lineTo(zx, zy); } else { pen.moveTo(zx, zy); } }
+  pen.stroke();
+  pen.beginPath(); pen.ellipse(x, y - 53 * s, 15 * s, 4.5 * s, 0, 0, 7); pen.fillStyle = "#b07040"; pen.fill(); pen.strokeStyle = "#3a1c0a"; pen.stroke();   // the rim
+  pen.beginPath(); pen.ellipse(x, y - 53 * s, 10 * s, 2.6 * s, 0, 0, 7); pen.fillStyle = "#1e0e06"; pen.fill();                                     // its mouth
+  pen.fillStyle = "rgba(255, 230, 200, 0.35)"; pen.beginPath(); pen.ellipse(x - 13 * s, y - 34 * s, 4 * s, 9 * s, 0.4, 0, 7); pen.fill();
+  pen.restore();
+}
+// A pot smashed (owner, 2026-11-13: "Show the smashed bottoms of the pots"): its bottom standing, its broken top edge
+// jagged and the dark inside seen, the shards about it (curved, the outside and the inside's colour), the water's stain.
+function hhSmashedPot(x, y, s, seed) {
+  var k;
+  pen.save();
+  pen.fillStyle = "rgba(20, 14, 8, 0.45)"; pen.beginPath(); pen.ellipse(x + 10 * s, y + 2 * s, 46 * s, 9 * s, 0, 0, 7); pen.fill();   // the spilled water
+  pen.beginPath(); pen.moveTo(x - 26 * s, y - 16 * s);   // the bottom: the pot's lower half, its top edge broken
+  for (k = 0; k <= 8; k++) { pen.lineTo(x - 26 * s + k * 6.5 * s, y - 16 * s - (k % 2 ? 8 + 6 * dice(seed + k) : 2 * dice(seed + k + 9)) * s); }
+  pen.lineTo(x + 26 * s, y - 16 * s); pen.bezierCurveTo(x + 30 * s, y - 4 * s, x + 18 * s, y, x + 10 * s, y); pen.lineTo(x - 10 * s, y);
+  pen.bezierCurveTo(x - 18 * s, y, x - 30 * s, y - 4 * s, x - 26 * s, y - 16 * s); pen.closePath();
+  var body = pen.createLinearGradient(x - 28 * s, 0, x + 28 * s, 0); body.addColorStop(0, "#b07040"); body.addColorStop(1, "#5a2e16");
+  pen.fillStyle = body; pen.fill(); pen.strokeStyle = "#3a1c0a"; pen.lineWidth = 1.2; pen.stroke();
+  pen.fillStyle = "#2a140a"; pen.beginPath(); pen.ellipse(x, y - 17 * s, 21 * s, 4 * s, 0, 0, 7); pen.fill();   // the dark inside
+  for (k = 0; k < 6; k++) {                         // the shards
+    var sx = x + (dice(seed * 3 + k) - 0.5) * 120 * s, sy = y - 2 * s + dice(seed * 5 + k) * 10 * s, r = (6 + 7 * dice(seed * 7 + k)) * s, a = dice(seed * 11 + k) * 6;
+    pen.beginPath(); pen.arc(sx, sy, r, a, a + 1.6); pen.arc(sx, sy, r * 0.6, a + 1.6, a, true); pen.closePath();
+    pen.fillStyle = k % 2 ? "#9a5a32" : "#c88a5a"; pen.fill(); pen.strokeStyle = "#3a1c0a"; pen.lineWidth = 0.8; pen.stroke();
+  }
+  pen.restore();
+}
 // ---------- the ghouls' place ----------
 // Thatched huts in the deep forest (scene 14): dark trees close round, shafts of light, the huts, bones, water pots.
 // HH_GHOUL_HUTS: [x, base, size]; HH_GHOUL_POTS: [x, y]. broken: 0 to 1, the huts and pots smashed.
@@ -670,11 +1324,36 @@ function hhGhoulForest() {
   if (HH_GHOUL_FOREST) { return HH_GHOUL_FOREST; }
   var paper = document.createElement("canvas");
   paper.width = WIDE; paper.height = 1080;
-  var b = paper.getContext("2d");
+  var b = paper.getContext("2d"), k;
   b.fillStyle = "#24302a"; b.fillRect(0, 0, WIDE, 1080);
   forest(b, -100, WIDE + 100, 520, {tall: 420, seed: 17, far: 0.6});
   forest(b, -100, WIDE + 100, 760, {tall: 560, seed: 19, far: 0.2});
-  csBand(b, 0, 760, WIDE, 320, "#4a4030", "#3a3024");
+  // the ground's far edge follows the line the jungle is planted on, not a ruled one (owner, 2026-11-13, twice)
+  var edge = hhWander(770, 14, 6), x;
+  b.fillStyle = "#463c2e"; b.beginPath(); b.moveTo(0, 1080);
+  for (x = 0; x <= WIDE; x += 12) { b.lineTo(x, edge(x) - 18); }
+  b.lineTo(WIDE, 1080); b.closePath(); b.fill();
+  csBand(b, 0, 800, WIDE, 280, "#463c2e", "#3a3024");
+  hhGroundTexture(b, 0, 750, WIDE, 1080, "#443a2c", 23, {many: 2, weeds: 30, grass: true});
+  var jungle = THK_SHADE.map(function (g) { return blend(g, "#16241a", 0.25); });
+  var keep = pen; pen = b;
+  try {                                                  // behind the bushes: tall plants of the forest floor, of many kinds
+    for (x = -20, k = 0; x < WIDE + 40; k++) {
+      var kind = ["kettawa", "tahern", "hom", "phlu", "orchid", "miang"][k % 6];
+      thkPlace(k % 3 === 2 ? sceneryGrass(150 + 40 * dice(k + 901), 12, 911 + k, jungle) : sceneryPlant(kind, 0.7 + 0.3 * dice(k + 903)), x, edge(x) - 10, 1, 0);
+      x += 90 + 70 * dice(k + 907);
+    }
+  } finally { pen = keep; }
+  hhEdgePlants(b, edge, -40, WIDE + 40, 29, {tall: 120, greens: jungle,
+    blooms: [["orchid", 10, 8], ["hibiscus", 6, 11, "#c8302a"], ["jasmine", 14, 6], ["kettawa", 8, 8]]});
+  pen = b;
+  try {                                                  // and before them, low ferns, herbs and flowers in their own line
+    var front = hhWander(812, 10, 9);
+    for (x = 10, k = 0; x < WIDE; k++) {
+      thkPlace(k % 2 ? sceneryGrass(46 + 20 * dice(k + 921), 9, 931 + k, jungle) : sceneryPlant(["dokkaew", "marigold", "buatong", "sompoi"][k % 4], 0.38), x, front(x), 1, 0);
+      x += 110 + 90 * dice(k + 927);
+    }
+  } finally { pen = keep; }
   HH_GHOUL_FOREST = paper;
   return paper;
 }
@@ -689,19 +1368,11 @@ function hhGhoulPlace(t, broken) {
   });
   pen.restore();
   HH_GHOUL_HUTS.forEach(function (h, k) {
-    if (broken > 0.5 && k !== 1) {                       // a smashed hut: its thatch and posts on the ground
-      pen.fillStyle = "#8a6a3a"; pen.beginPath(); pen.ellipse(h[0], h[1] - 20, 140 * h[2], 30 * h[2], 0.1, 0, 7); pen.fill();
-      pen.strokeStyle = "#4a3418"; pen.lineWidth = 8;
-      [[-80, -30, 60, 10], [-20, -60, 90, -10]].forEach(function (p) { pen.beginPath(); pen.moveTo(h[0] + p[0], h[1] + p[1]); pen.lineTo(h[0] + p[2], h[1] + p[3]); pen.stroke(); });
-    } else { fieldHut(pen, h[0], h[1], h[2]); }
+    if (broken > 0.5 && k !== 1) { hhWreckedHut(h[0], h[1], h[2]); }   // a heap of hay and broken wood (owner, 2026-11-13)
+    else { hhGhoulHut(h[0], h[1], h[2]); }
   });
   HH_GHOUL_POTS.forEach(function (p, k) {
-    if (broken > 0.5) {
-      pen.fillStyle = "#8a4a2a";
-      for (var n = 0; n < 4; n++) { pen.beginPath(); pen.ellipse(p[0] - 30 + n * 20, p[1] + 4, 12, 6, n, 0, 7); pen.fill(); }
-    } else {
-      pen.beginPath(); pen.ellipse(p[0], p[1] - 26, 26, 30, 0, 0, 7); pen.fillStyle = "#9a5a32"; pen.fill(); pen.strokeStyle = "#4a2410"; pen.lineWidth = 2; pen.stroke();
-    }
+    if (broken > 0.5) { hhSmashedPot(p[0], p[1], 1, k * 17 + 3); } else { hhWaterPot(p[0], p[1], 1); }
   });
   pen.fillStyle = "#efe6d2";                             // bones about the huts
   [[520, 960, 0.3], [880, 975, -0.4], [1440, 965, 0.9], [1700, 980, 0.2]].forEach(function (b) {

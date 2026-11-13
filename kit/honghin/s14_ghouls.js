@@ -35,9 +35,14 @@ function hhSceneGhouls2(t) {
       pen.fillStyle = "rgba(20, 24, 20, 0.85)"; pen.fillRect(1240, 560, 520, 300);
       pen.beginPath(); pen.rect(1240, 560, 520, 300); pen.clip();
       [[1360, "ghoul"], [1500, "ghoulDark"], [1640, "ghoulPale"]].forEach(function (g, k) {
-        var j = ogre(g[0], 850, t, {kind: g[1], id: "eat" + k, size: 0.55, face: k % 2 ? -1 : 1, bend: 0.3, feel: "angry",
-                                    reachA: [g[0] + 30, 850 - 150 + 10 * Math.sin(t * 6 + k)]});
-        ogreMeat(j.wristA, -0.8);
+        // tearing at it at the mouth, the fist round the bone, not held up like a paddle (owner, 2026-11-13: no waving)
+        var d = k % 2 ? -1 : 1, look = {kind: g[1], id: "eat" + k, size: 0.55, face: d, bend: 0.3, feel: "angry", grip: true};
+        var pj = hhJointsOf(function () { return ogre(g[0], 850, t, Object.assign({}, look)); });
+        var ch = himmaJoint(pj.chin), mouth = [ch[0] + 40 * d, ch[1] + 26 + 8 * Math.abs(Math.sin(t * 5 + k))];
+        var j = ogre(g[0], 850, t, Object.assign(look, {reachA: mouth, jaw: 0.6 + 0.4 * Math.abs(Math.sin(t * 5 + k))}));
+        var hd = himmaJoint(j.handA);
+        ogreMeat(j.handA, Math.atan2(ch[1] - hd[1], ch[0] - hd[0]) + Math.PI, 0.45);   // the bone toward him, the haunch out at his mouth
+        hhArmOver(j, "A", 10, function () { ogre(g[0], 850, t, look); });
       });
       pen.restore();
       pen.strokeStyle = "#e3b04a"; pen.lineWidth = 3; pen.strokeRect(1240, 560, 520, 300);
@@ -73,10 +78,21 @@ function hhSceneGhouls2(t) {
     hs3.near();
     H14_HORDE_FLY.forEach(function (g, k) {
       var gx = mix(-200 + k * 90, 700 + k * 60, between(s, 0, 8)), gy = 700 - k * 50 + 30 * Math.sin(t * 2 + k);
-      var j = ogre(gx, gy, t, {kind: g, id: "fly" + k, size: 0.7, face: 1, bend: -0.1, feel: "angry", reachA: [gx + 60, gy - 280]});
-      if ((t * 0.7 + k * 0.37) % 1 < 0.5) {               // a stone thrown, or a tree torn up by the roots (owner, 2026-11-12)
-        var u = (t * 0.7 + k * 0.37) % 1 * 2, tx = mix(gx + 60, hs3.seat[0] - 100, u), ty = mix(gy - 280, hs3.seat[1], u) - 80 * Math.sin(u * Math.PI);
-        if (k === 1 || k === 4) { hhThrownTree(tx, ty, u * 5 + k, 0.8); }
+      // Each throws as the owner's reference, a jump shot (2026-11-13: "have them use the basketball throw style", no
+      // waving): the stone or the tree cocked by the head, the arm out up and forward, the wrist flicked through.
+      var c = (t * 0.7 + k * 0.37) % 1, p = c >= 0.6 ? (c - 0.6) / 0.4 * 0.6 : c < 0.3 ? 0.6 + c / 0.3 * 0.4 : 0;
+      var look = {kind: g, id: "fly" + k, size: 0.7, face: 1, bend: -0.1, feel: "angry"};
+      var probe = hhJointsOf(function () { return ogre(gx, gy, t, Object.assign({}, look)); });
+      var th = hhThrow(probe, 1, p);
+      var j = ogre(gx, gy, t, Object.assign(look, p > 0 ? {reachA: th.reach, wristA: th.wrist, grip: th.held} : {}));
+      var tree = k === 1 || k === 4;
+      if (p > 0 && th.held) {                             // in the hand, cocked
+        var hd = himmaJoint(j.handA);
+        if (tree) { hhThrownTree(hd[0], hd[1] - 30, -1.2, 0.8); } else { pen.fillStyle = "#6a6458"; pen.beginPath(); pen.arc(hd[0], hd[1] - 6, 12, 0, 7); pen.fill(); }
+      }
+      if (c < 0.5) {                                      // in the air, from where it left the hand (owner, 2026-11-12: trees too)
+        var u = c * 2, tx = mix(th.release[0], hs3.seat[0] - 100, u), ty = mix(th.release[1], hs3.seat[1], u) - 80 * Math.sin(u * Math.PI);
+        if (tree) { hhThrownTree(tx, ty, u * 5 + k, 0.8); }
         else { pen.fillStyle = "#6a6458"; pen.beginPath(); pen.arc(tx, ty, 12, 0, 7); pen.fill(); }
       }
     });

@@ -496,9 +496,12 @@ var WEL_LANE_HOMES = [[250, 880, 0.7, "teak", [222, 670], [187, 775]], [720, 878
                       [1240, 884, 0.6, "teak", [1216, 704], [1186, 794]], [1740, 874, 0.92, "bamboo", [1712, 666], [1812, 776]]];
 
 // kind: "day" or "dusk" (the bamboo houses' doorways lit). Gives back the lane's canvas, WIDE by 1080, clear above the
-// far hills; painted once for each. e.g. pen.drawImage(welLane("dusk"), 0, 0);
-function welLane(kind) {
-  if (WEL_LANE[kind]) { return WEL_LANE[kind]; }
+// far hills; painted once for each. dress (optional): a name and a painter, [name, function (b) {...}], called on the
+// ground before the houses stand on it (Hong Hin's textured ground and planted wall foot, 2026-11-13); each dressing
+// is its own canvas. e.g. pen.drawImage(welLane("dusk"), 0, 0);
+function welLane(kind, dress) {
+  var key = dress ? kind + ":" + dress[0] : kind;
+  if (WEL_LANE[key]) { return WEL_LANE[key]; }
   var paper = document.createElement("canvas");
   paper.width = WIDE;
   paper.height = 1080;
@@ -508,6 +511,7 @@ function welLane(kind) {
   var blooms = [["ratchaphruek", 28, 14], ["mango", 20, 14], ["frangipani", 28, 12], ["longan", 24, 14]];
   for (n = 0; n < 7; n++) { thkTreeOn(b, 60 + n * 300 + 50 * dice(n + 60), 680, 0.26 + 0.07 * dice(n + 61), 81 + n, [blooms[n % 4]]); }
   csBand(b, 0, 660, WIDE, 420, "#b9a070", "#9a8058");    // the ground
+  if (dress) { dress[1](b); }
   pen = b;
   var feet = [["hibiscus", "marigold"], ["dokkaew", "tahern"], ["jasmine", "marigold"], ["tahern", "hibiscus"]];
   WEL_LANE_HOMES.forEach(function (h, k) {
@@ -528,7 +532,7 @@ function welLane(kind) {
     thkPlace(sceneryGrass(30 + 30 * dice(n), 8, 521 + n), 60 + n * 120 + 40 * dice(n + 3), CNG_LANE_Y - 40 + (n % 2 ? 0 : 124), 1, 0);
   }
   pen = keep;
-  WEL_LANE[kind] = paper;
+  WEL_LANE[key] = paper;
   return paper;
 }
 

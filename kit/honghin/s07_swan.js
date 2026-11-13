@@ -18,7 +18,7 @@ function hhSceneSwan(t) {
     hhCamera(0.5, 1000, 640, 1.2);
     hhHeaven(t, 1060);
     if (made < 1) {                                      // the boulder sits in the cloud, its foot hidden in it (owner, 2026-11-12)
-      pen.save(); pen.globalAlpha = 1 - made; hhBoulder(H07_SWAN[0], 900, glow); pen.restore();
+      pen.save(); pen.globalAlpha = 1 - made; hhBoulder(H07_SWAN[0], 908, glow); pen.restore();   // 8 lower: its foot all in the cloud (owner, 2026-11-13)
     }
     hhCloudFeet(H07_SWAN[0], 900, t, 520, 16);
     if (made > 0) {
@@ -28,14 +28,22 @@ function hhSceneSwan(t) {
     }
     var ij = indra(1640, 940, t, {pose: "stand", id: "indra", face: -1, feel: made > 0 ? "happy" : "thinking", at: [H07_SWAN[0], 760], ground: false});
     hhCloudFeet(1640, 940, t, 360, 17);
-    var bx = 640, by = 940;
-    person(bx, by, hhBoy(13, {face: 1, feel: made > 0 ? "awe" : "surprised", at: made > 0 ? [H07_SWAN[0], 560] : [H07_SWAN[0], 800],
-                              reachA: sword > 0.5 ? [bx + 60, by - 300] : undefined, ground: false}));
-    hhCloudFeet(bx, by, t, 260, 18);
-    if (sword > 0) {                                     // Kanchai, from Indra's hand to the boy's
-      var from = himmaJoint(ij.wristA), to = [bx + 60, by - 300];
-      kanchai(mix(from[0], to[0], sword), mix(from[1], to[1], sword), {size: 0.55, angle: mix(-0.6, 0.2, sword)});
+    // Kanchai comes from Indra's hand to the boy's, and he holds it: his hand closed round the grip, the blade up, drawn
+    // before him so his fist is over the hilt (owner, 2026-11-13: "show the prince holding the sword and stop him from
+    // waving hello at it").
+    var bx = 640, by = 940, boy = hhBoy(13, {face: 1, feel: made > 0 ? "awe" : "surprised", at: made > 0 ? [H07_SWAN[0], 560] : [H07_SWAN[0], 800],
+                                             reachA: sword > 0.5 ? [bx + 90, by - 250] : undefined, grip: sword >= 1, ground: false});
+    if (sword > 0) {
+      var bj = hhJointsOf(function () { return person(bx, by, boy); });
+      var from = himmaJoint(ij.wristA), held = sword >= 1;
+      if (held) { hhSword(bj, 0.15, 0.55); }
+      else {
+        var to = himmaJoint(bj.wristA);
+        kanchai(mix(from[0], to[0], sword), mix(from[1], to[1], sword) + 48 * 0.55 * sword, {size: 0.55, angle: mix(-0.6, 0.15, sword)});
+      }
     }
+    person(bx, by, boy);
+    hhCloudFeet(bx, by, t, 260, 18);
     if (made > 0 && made < 1) {                          // the flash as it wakes
       pen.save(); pen.globalCompositeOperation = "lighter";
       var f = pen.createRadialGradient(H07_SWAN[0], H07_SWAN[1], 10, H07_SWAN[0], H07_SWAN[1], 600);
@@ -54,17 +62,17 @@ function hhSceneSwan(t) {
       pen.drawImage(hhFields(), 0, 0); cngGateWall(0, t);
       pen.restore();
     }
-    for (var c = 0; c < 4; c++) {                        // clouds rushing up past them
-      var cy = ((c * 420 - s * 260) % 1680 + 1680) % 1680 - 300;
-      thaiCloud(c % 2 ? 420 : 1500, cy, 900, t, 3 + c);
-    }
     var sx = mix(1500, 900, between(s, 0, 8)), sy = 420 + 30 * Math.sin(t * 1.2);
     var h = hongHin(sx, sy, t, {size: 1.9, face: -1, rider: true});
     var hands = [h.seat[0] - 50, h.seat[1] - 55];
-    person(h.seat[0], h.seat[1], hhBoy(13, {floor: "astride", face: -1, feel: "happy", reachA: hands, reachB: [hands[0] + 10, hands[1] + 6],
-                                            at: [h.beak[0] - 80, h.beak[1]]}));
+    person(h.seat[0], h.seat[1], hhBoy(13, {floor: "astride", shin: 0.75, face: -1, feel: "happy", reachA: hands, reachB: [hands[0] + 10, hands[1] + 6],
+                                            grip: true, at: [h.beak[0] - 80, h.beak[1]]}));   // the shin swung back, clear of the wing (owner, 2026-11-13)
     hongHinReins(h, hands);
     h.near();                                            // the near wing over the boy's leg (owner, 2026-11-12)
+    for (var c = 0; c < 4; c++) {                        // clouds rushing up past them, in front: they fly through them (owner, 2026-11-13)
+      var cy = ((c * 420 - s * 260) % 1680 + 1680) % 1680 - 300;
+      sceneryCloudBank(t, c % 2 ? 420 : 1500, cy, 1000, {seed: 3 + c, light: "day"});   // soft, the kit's (2026-11-13)
+    }
   }
   hhPlaceAir(t);                                        // the place's air and framing (scenery pass)
   welFadeIn(t, 1.5);

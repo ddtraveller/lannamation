@@ -23,10 +23,18 @@ function h02People(t, feel) {
   [[-500, 1, 31], [-290, 1, 37]].forEach(function (a, i) {   // the two astrologers, each with his board before him, clear
     var x = p[0] + a[0] - 300, y = floor + 70;                 // of the dais (owner, 2026-11-12: a board lay over the throne)
     list.push({name: "astrologer " + i, kind: "person", x: x, y: y, draw: function () {
-      hhBoard(x + 85, y + 34, a[2]);
       var talking = welSays(t, H02_PLAN, ["H009"]) && i === 0;
-      person(x, y, welPerson("elder", CNG_SEER, {id: "seer" + i, floor: "cross", face: 1, size: 0.66, feel: "thinking",
-                                                 at: [p[0], 600], mouth: welTalk(t, talking)}));
+      hhChart(x + 92, y + 30, i, t);                       // the charts after the owner's references (2026-11-13)
+      if (i === 0) {                                       // the first after the mural sage: bare, gold at his neck and arms, a
+        person(x, y, welPerson("noble", {regalia: true, turban: "#c8642a", sarong: ["#2e5a4a", BROCADE], smile: 0.5, skin: "#e6b98e",
+                                         pins: false, bangles: 3, north: "soft"},          // patterned cloth, a finger raised, no crown
+                               {id: "seer0", floor: "cross", face: 1, size: 0.66, feel: "thinking", at: [p[0], 600], mouth: welTalk(t, talking),
+                                reachA: [x + 46, y - 230], gestureA: "point"}));
+      } else {                                             // the second as before, a long goatee, beads over his eyes
+        var sj = person(x, y, welPerson("elder", CNG_SEER, {id: "seer1", floor: "cross", face: 1, size: 0.66, feel: "thinking",
+                                                            at: [p[0], 600], mouth: welTalk(t, talking)}));
+        hhGoatee(sj, t); hhBeadVeil(sj, t);
+      }
     }});
   });
   return list;

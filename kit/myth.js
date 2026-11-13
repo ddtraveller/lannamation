@@ -130,7 +130,7 @@
 var MYTH_KEYS = {};
 
 ["size", "face", "late", "mouth", "colour", "gold", "belly", "step", "eyes", "trail", "depth", "sing", "horns", "wings", "fly", "head", "trunk", "feel",
- "glow", "wake", "watch", "eyeFeel", "id", "slope", "prey", "held"
+ "glow", "wake", "watch", "eyeFeel", "id", "slope", "prey", "held", "jaw", "shut", "wide"
 ].forEach(function (name) { MYTH_KEYS[name] = true; });
 
 // How the two that walk do it, for amble() of beasts.js: [how large it is
@@ -964,7 +964,7 @@ function hatsadiling(x, y, look) {
   pen.save();                                       // the head: an elephant's, dark, with a flame of gold on its crown
   pen.translate(146, -424);
   pen.rotate(nodding - 0.12 * lift + (e ? 0.5 * e.nod - 0.1 * e.raise + 0.04 * e.shake : 0));
-  var dusk = inkFor(c.head), blink = Math.sin(clock * 0.8 + seed * 3) > 0.985, flop = 0.1 * Math.sin(clock * 1.9 + seed) + 0.2 * beat;
+  var dusk = inkFor(c.head), blink = !!look.shut || Math.sin(clock * 0.8 + seed * 3) > 0.985, flop = 0.1 * Math.sin(clock * 1.9 + seed) + 0.2 * beat;
   function dome() {
     pen.beginPath();
     pen.moveTo(-46, 32);
@@ -1008,11 +1008,30 @@ function hatsadiling(x, y, look) {
     trunk.push([mix(hang[n][0], held[n][0], lift) + (1 - lift) * n * 1.8 * Math.sin(clock * 1.3 + seed + n * 0.5),
                 mix(hang[n][1], held[n][1], lift)]);
   }
+  if (look.jaw) {                                   // a lower jaw with fangs, open as look.mouth says (the Hemmarat; owner, 2026-11-13)
+    var gape = 6 + 26 * clamp(look.mouth === undefined ? 0.4 : look.mouth);
+    pen.beginPath(); pen.moveTo(8, 28); pen.quadraticCurveTo(36, 22, 66, 18);   // the mouth's dark inside
+    pen.lineTo(68, 22 + gape); pen.quadraticCurveTo(34, 34 + gape, 6, 36); pen.closePath();
+    shape("#4a1418");
+    [[22, 1], [38, 1], [54, 1], [30, -1], [48, -1]].forEach(function (f) {   // fangs: up from the jaw, down from the lip
+      var fx = f[0], base = f[1] > 0 ? 30 + gape * (fx - 6) / 62 + 2 : 23 - (fx - 8) * 0.08, tip = base - f[1] * (10 + 4 * (fx % 3));
+      pen.beginPath(); pen.moveTo(fx - 4, base); pen.lineTo(fx, tip); pen.lineTo(fx + 4, base); pen.closePath(); shape("#fff6ea");
+    });
+    pen.beginPath(); pen.moveTo(4, 32); pen.quadraticCurveTo(36, 30 + gape, 70, 22 + gape);   // the jaw itself, heavy
+    pen.lineTo(72, 32 + gape); pen.quadraticCurveTo(36, 50 + gape, 0, 42); pen.closePath();
+    shape(blend(c.head, "#000000", 0.15));
+  }
   elephantTrunk(nagaLine(trunk, 12), 21, 8, c.head, true);
   tusk(0, 0, 0);
   pen.save();
   pen.translate(30, -24);
-  elephantEye(dusk === INK ? "#f6dc8a" : blend(c.head, "#ffffff", 0.55), blink, e, c.head);
+  if (look.wide) {                                  // look.wide 0 to 1: the eye goes wide in shock, a white ring round a
+    var wd = clamp(look.wide);                      // small dark pupil (the Hemmarat struck; owner, 2026-11-13)
+    pen.beginPath(); pen.ellipse(0, 0, 11 + 9 * wd, 8 + 9 * wd, 0, 0, 7); pen.fillStyle = "#fffaf0"; pen.fill();
+    pen.lineWidth = 2; pen.strokeStyle = INK; pen.stroke();
+    pen.beginPath(); pen.arc(2, 0, 4 - 1.5 * wd, 0, 7); pen.fillStyle = "#120a08"; pen.fill();
+    pen.lineWidth = 2.4; pen.beginPath(); pen.moveTo(-14 - 6 * wd, -14 - 12 * wd); pen.quadraticCurveTo(0, -24 - 14 * wd, 16 + 6 * wd, -14 - 10 * wd); pen.stroke();   // the brow flung up
+  } else { elephantEye(dusk === INK ? "#f6dc8a" : blend(c.head, "#ffffff", 0.55), blink, e, c.head); }
   pen.restore();
   var crown = pen.getTransform().transformPoint(new DOMPoint(0, -84));
   pen.restore();
@@ -1525,7 +1544,7 @@ function changNgu(x, y, look) {
 // e.g. hemmarat(700, GROUND - 420, {face: -1, trunk: 0.7});
 var HEMMARAT = {colour: "#3a2a4a", belly: "#8a7a9a", gold: "#c89a3a"};
 function hemmarat(x, y, look) {
-  look = Object.assign({size: 0.55, fly: true, trunk: 0.7, feel: "angry"}, HEMMARAT, look || {});
+  look = Object.assign({size: 0.55, fly: true, trunk: 0.7, feel: "angry", jaw: true}, HEMMARAT, look || {});   // a jaw with fangs (2026-11-13)
   var prey = look.prey !== false;
   delete look.prey;
   if (look.fly === false) { delete look.fly; }

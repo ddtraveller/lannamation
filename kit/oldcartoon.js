@@ -404,7 +404,7 @@ function blendOutline(t, P, Q, F) {
 // redrawn from scratch"). look.body names one of BODIES: its chests (a man's and a lady's, each as three lists:
 // profile, three-quarter and full face, for blendOutline), where its shoulders, hips and feet stand from the middle
 // (profile, three-quarter, full face, as blend3), how thick its arms and legs are (at the root, the joint and the
-// end; legThin under a skirt), how wide its waist is where cloth hangs from it (tier), how much wider its hems,
+// end; legThin under a skirt), how wide its waist is where cloth hangs from it (tier; clothX moves a tube of cloth forward, under a belly), how much wider its hems,
 // its waist cloth and its neck, where a hanging hand comes to rest (clear of the belly), its shadow, and how broad
 // its face is drawn. "slim" is the kit's own body; a child is any body at a child's measure (build).
 //
@@ -448,7 +448,7 @@ var BODIES = {
          waist: 30, hem: 0, cloth: 1, neck: 13, hand: 12, shadow: 96, face: 1},
   fat: {chest: {man: chestTurns(CHEST_MAN_FAT), lady: chestTurns(CHEST_LADY_FAT)},
         root: [7, 56, 62], hips: [11, 36, 40], feet: [12, 38, 42], arm: [20, 17, 12.5], leg: [27, 21, 13], legThin: [16, 12.5, 8.5],
-        waist: 56, hem: 28, cloth: 1.75, neck: 21, hand: 44, shadow: 140, face: 1.1}
+        waist: 66, hem: 30, cloth: 1.75, neck: 21, hand: 44, shadow: 140, face: 1.1, clothX: 16}   // waist 56, no clothX until 2026-11-13 (owner: "Fix the fat brother's pants to fit him")
 };
 var BODY = BODIES.slim;                             // the body being drawn now: person() sets it, as it sets SKIN
 
@@ -4011,9 +4011,11 @@ function wrap(ax, ay, bx, by, wideA, wideB, colour, bands, from, to, open) {
 //   kind     also "astride": one who rides, the near leg hanging down the animal's side (in cloth, both legs, as
 //            side-saddle)
 //   hipY     the hips' height, in pen's pixels: below 0, above the ground
+//   shin     "astride" only: radians the lower leg swings back from hanging (look.shin; the owner, 2026-11-13:
+//            the boy's shin clear of the swan's near wing)
 // It draws in pen's frame as it is (the caller has moved pen to the person's place on the ground).
 // e.g. var joints = seated("cross", -60, "#3d4f78", null, false, 1);
-function seated(kind, hipY, colour, bands, slight, longer) {
+function seated(kind, hipY, colour, bands, slight, longer, shin) {
   function toes(x, y, way, turn) {                  // a foot with its heel at (x, y), its toes pointing along x (way 1) or back (-1)
     pen.save();
     pen.translate(x, y);
@@ -4037,15 +4039,16 @@ function seated(kind, hipY, colour, bands, slight, longer) {
     // other side and is not seen. In cloth both legs hang together on the
     // near side, as one who rides side-saddle.
     var hang = bands ? [24, 19, 13] : [16, 13, 10];
-    var kneeAt = [52, hipY + 44], ankleAt = [38, hipY + 44 + 104 * longer];
+    var kneeAt = [52, hipY + 44], down = [-14, 104 * longer], back = shin || 0;
+    var ankleAt = [kneeAt[0] + down[0] * Math.cos(back) - down[1] * Math.sin(back), kneeAt[1] + down[0] * Math.sin(back) + down[1] * Math.cos(back)];
     seat();
     if (bands) {
       wrap(4, hipY + 6, kneeAt[0], kneeAt[1], hang[0], hang[1], colour, bands, 0.1, 0.5, 0.35);
-      toes(ankleAt[0] - 6, ankleAt[1] + 12, 1, 0.5);
+      toes(ankleAt[0] - 6, ankleAt[1] + 12, 1, 0.5 + back);
       wrap(kneeAt[0], kneeAt[1], ankleAt[0], ankleAt[1], hang[1], hang[2], colour, bands, 0.5, 1);
     } else {
       limb(6, hipY + 4, ankleAt[0], ankleAt[1], 400, 400, hang, colour, kneeAt, 0.3);
-      toes(ankleAt[0] - 6, ankleAt[1] + 12, 1, 0.5);
+      toes(ankleAt[0] - 6, ankleAt[1] + 12, 1, 0.5 + back);
     }
     return [kneeAt, kneeAt, ankleAt, ankleAt];
   }
@@ -4885,8 +4888,8 @@ var LOOK_KEYS = {};
 
 ["age", "anger", "at", "bangles", "bare", "beads", "beard", "bend", "blink", "body", "build", "bun", "buttons", "cap", "coat", "collar", "dance", "dap", "drum", "earplug", "earrings", "eyes", "face",
  "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
- "handB", "hat", "head", "hidden", "holding", "id", "late", "laugh", "lady", "legs", "lid", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "rapt", "reachA", "reachB",
- "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt", "sleepy",
+ "handB", "hat", "head", "hello", "hidden", "holding", "id", "ivory", "late", "laugh", "lady", "legs", "lid", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "rapt", "reachA", "reachB",
+ "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shin", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt", "sleepy",
  "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tears", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wink", "wonder", "worn", "worry", "wrap", "wraps", "wristA", "wristB"
 ].forEach(function (name) { LOOK_KEYS[name] = true; });
 
@@ -4952,6 +4955,8 @@ var LOOK_KEYS = {};
 //   fan             true: a fan of gold leaves behind the bun
 //   bangles         how many rings on each wrist (a lady has 3 unless told, anyone else 2, one in a coat none)
 //   skin            this figure's own skin colour ("#rrggbb"); otherwise STYLE.skin
+//   ivory           false: a grown woman's skin kept as given (with STYLE.face "lanna" it is drawn toward ivory,
+//                   as the paintings paint her: a red giantess came out pink, 2026-11-13)
 //   eyes, lips      the face's own measure: how large its eyes and how wide its mouth are (1 is the kit's)
 //   lid             the upper lid of the Lanna eye (STYLE.lids "lanna"): "crease", "hooded" or "none" (LIDS);
 //                   unless told, a lady's creased, a fellow's and an old person's hooded, a child's none
@@ -5016,6 +5021,10 @@ var LOOK_KEYS = {};
 //                   and "anger" still work); it also leans the body and tilts the head,
 //                   unless bend or tilt is given
 //   dance           true: a lifted hand takes the pose of Thai dance
+//   shin            with floor "astride": radians the lower leg swings back from hanging (0.75 clears a
+//                   wing the rider sits behind)
+//   hello           true, "A" or "B": a lifted hand opens its palm to us, fingers spread (a wave);
+//                   by default (since 2026-11-13) a lifted hand stays loosely curled, its back to us
 //   gestureA, gestureB  a hand of classical dance by name (GESTURES): "wong", "jeeb", "jeebDown",
 //                   "fan", "point", or the Khmer dance's "planting", "growing", "youngLeaves",
 //                   "leaves", "flowering", "fruit", "fallingFruit", "ripeFruit"; or {from, to, u}
@@ -5105,7 +5114,8 @@ var LOOK_KEYS = {};
 //                   to one side, the knees to the front and the feet out behind (phap phiap);
 //                   anyone else sits cross-legged. "side" or "cross" says which, and "astride"
 //                   is for one who rides: the near leg hangs down the animal's side (in a
-//                   skirt, both legs together, as one who rides side-saddle). The seat stays
+//                   skirt, both legs together, as one who rides side-saddle; look.shin, radians,
+//                   swings the lower leg back from hanging, clear of a wing). The seat stays
 //                   on the ground: the beat only moves what is above it. One who sits does not
 //                   walk, half-sit or lift a foot: step, sit and raise are not read
 //   ground          false: no shadow on the ground, for a figure cut from paper (the figures
@@ -5229,7 +5239,7 @@ function personLook(fig) {
   }
   var scene = pen.getTransform();                 // the scene's own frame, before this figure moves the pen: a reach is given in it
   SKIN = look.skin || STYLE.skin;                 // this figure's own skin, or the film's
-  if (STYLE.face === "lanna" && lady && !((look.build || 0) < 0) && /^#[0-9a-f]{6}$/i.test(SKIN)) {
+  if (STYLE.face === "lanna" && lady && look.ivory !== false && !((look.build || 0) < 0) && /^#[0-9a-f]{6}$/i.test(SKIN)) {
     SKIN = blend(SKIN, "#fbf1e6", 0.55);          // a grown woman's toward ivory, as the paintings paint her (a girl keeps hers)
   }
   HAIR = look.hair || STYLE.hair;                 // and its own hair: white hair wants a line of its own too
@@ -5500,7 +5510,7 @@ function personLegs(fig) {
                               [[0.88, woven[2], 60]], woven[1])];
   }
   if (seat) {
-    var sat = seated(seat, hipY, lap ? lap[0] : look.legs, lap ? lap[1] : null, slight, leggy);
+    var sat = seated(seat, hipY, lap ? lap[0] : look.legs, lap ? lap[1] : null, slight, leggy, look.shin);
     knees = [[sat[0][0], sat[0][1] - hipY + 14], [sat[1][0], sat[1][1] - hipY + 14]];
     joints.kneeB = spot(sat[0][0], sat[0][1]);
     joints.kneeA = spot(sat[1][0], sat[1][1]);
@@ -5809,8 +5819,10 @@ function personTrunk(fig) {
     if (!seat) {
     var hemAt = 196 * leggy - dip * 0.5;            // to the ankle; a patoi stops at the knee (true) or higher (0.5 is half-way up the thigh)
     if (look.patoi) { hemAt = ((knees[0][1] + knees[1][1]) / 2 + 6) * (look.patoi === true ? 1 : look.patoi); }
+    pen.save(); pen.translate(BODY.clothX || 0, 0);   // a stout body's cloth sits forward, under the belly (2026-11-13)
     tier(hemAt, (look.sin !== undefined ? 58 : 64) * swell, 22 * stir, phase, tube[0], look.sin !== undefined ? 3 : 6,
          tube[1], kneePush);
+    pen.restore();
     }
   } else if (look.coat) {
     tier(seat ? ground - 6 : 120 * leggy - dip * 0.6, 70 * swell, (seat ? 6 : 26) * stir, phase, "#ffffff", seat ? 3 : 9);  // a long coat flows the same way
@@ -5909,13 +5921,17 @@ function personReach(fig) {
     var beat = calm ? 0 : flex * (rest ? 0.3 : 1);
     var angle = Math.atan2(wrist[1] - wrist[3], wrist[0] - wrist[2]) + (near ? 1 : -1) * beat
               + (bend !== undefined ? bend : near && look.holding === "stick" ? 0.9 : 0);   // a hand on a stick lies over its top
-    var lifted = look.dance ? 1.6 : 0.7 + 0.3 * up;
+    // A lifted hand opened its palm to us, fingers spread, and read everywhere as waving hello (owner, 2026-11-13:
+    // "Can you turn that off by default so hands are still instead of always waving hello?"). Now it stays loosely
+    // curled, its back or edge to us, unless the look asks for the open palm (look.hello) or dances.
+    var hello = look.dance || look.hello === true || look.hello === which;
+    var lifted = look.dance ? 1.6 : hello ? 0.7 + 0.3 * up : 0.35;
     var open = look.grip || (near && (look.holding === "stick" || look.holding === "spear" || look.holding === "dap")) ? 0.12 : given[1] < 0 ? lifted : rest ? 0.1 : 0.35;   // a grip is a fist round a thing
     var curls = fingers || (rest ? (STYLE.hands === "flat" ? (near ? REST_A : REST_B) : REST) : undefined);
     if (near && (look.holding === "stick" || look.holding === "spear")) { curls = undefined; }
     if (near && look.holding === "dap" && !fingers) { curls = [0.92, 0.95, 0.97, 0.98, 0.7]; }   // a fist round the hilt
     var thumb = near ? -1 : given[1] < 0 ? 1 : -1;  // a lifted hand turns its thumb to the head; a hanging hand turns its thumb forward
-    var palm = rest ? 0.15 : given[1] < 0 ? (look.dance ? 0.15 : 0.85) : 0.3;   // the back of a hanging hand; the palm of a lifted one; the dance hand's back, its long nails seen whole
+    var palm = rest ? 0.15 : given[1] < 0 ? (look.dance ? 0.15 : hello ? 0.85 : 0.3) : 0.3;   // the back of a hanging hand; the palm of a lifted one; the dance hand's back, its long nails seen whole
     var nails = look.nails === "long" ? "long" : look.nails && given[1] < 0;   // long nails are worn all the time; tips show on a lifted hand
     if (look.wai) {                                 // the hands stand upright whatever the forearms do, the fingers straight and together, the thumbs to the chest
       var w = waiOf(look), upright = -Math.PI / 2 + (near ? -0.05 : 0.05);
@@ -8673,14 +8689,16 @@ function crowd(t, y, slide, lanterns) {
 // high or low, its ears go up or back, its tail wags or droops, its brows
 // and its mouth show it, and its eyes close, slant or go wide.
 // x, y: where its feet stand, in the sheet's pixels; it faces right and is about 140 long. t: seconds (it
-// trots on the beat). how: {feel}, or nothing; another name warns. Returns nothing: it draws with pen.
+// trots on the beat). how: {feel, still: true for a dog that stands, its legs at rest, no bob (its tail and face still
+// alive; owner, 2026-11-13: "Have the dog be still instead of walking in place")}, or nothing; another name warns.
+// Returns nothing: it draws with pen.
 // e.g. dog(500, GROUND, t, {feel: "happy"});
 function dog(x, y, t, how) {
   how = how || {};
-  checkNames("The dog's name", how, {feel: true});
-  var e = creatureFeel(how, t), wagging = 1 + 1.6 * e.wag, carried = 14 * e.tail;
+  checkNames("The dog's name", how, {feel: true, still: true});
+  var e = creatureFeel(how, t), wagging = 1 + 1.6 * e.wag, carried = 14 * e.tail, stand = !!how.still;
   var trot = t / BEAT * Math.PI;
-  var bob = hop(t, 0.5) * 7 + 3 * e.shake;
+  var bob = stand ? 3 * e.shake : hop(t, 0.5) * 7 + 3 * e.shake;
   var coat = "#d9a86c", ink = inkFor(coat);
   var parts = [], n;
   parts.push([-34, -56, 30, -58, 24, 23, 2]);                    // the body
@@ -8691,8 +8709,8 @@ function dog(x, y, t, how) {
   for (n = 0; n < 4; n++) {
     var front = n > 1;
     var hipX = front ? 24 + (n - 2) * 12 : -40 + n * 12, hipY = -44;
-    var swing = Math.sin(trot + (n % 2) * Math.PI + (front ? 0 : Math.PI));     // legs trot in crossed pairs
-    var lifted = Math.max(0, Math.cos(trot + (n % 2) * Math.PI + (front ? 0 : Math.PI))) * 9;
+    var swing = stand ? (n % 2 ? 0.25 : -0.25) : Math.sin(trot + (n % 2) * Math.PI + (front ? 0 : Math.PI));   // legs trot in crossed pairs
+    var lifted = stand ? 0 : Math.max(0, Math.cos(trot + (n % 2) * Math.PI + (front ? 0 : Math.PI))) * 9;
     var pawX = hipX + swing * 15, pawY = bob - 6 - lifted;
     var kneeX = (hipX + pawX) / 2 + (front ? 4 : -5) + lifted * (front ? 0.5 : -0.5);
     var kneeY = (hipY + pawY) / 2;

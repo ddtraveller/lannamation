@@ -764,7 +764,9 @@ is painted once into a sprite and placed every frame, swaying, so a frame stays 
    sides (`sceneryEdgePlants()`, `sceneryWaterPlants()`); lotus rising out of it (`sceneryLotus()`); mist lying on it
    and rising off it. A flier over it is mirrored (`sceneryMirrored()`); one fish may leap once (`sceneryLeap()`).
 7. **The sky.** Soft clouds with no edge (`sceneryClouds()`, in the light of the hour) in place of the cartoon
-   cumulus; at night many fine stars, a few bright ones twinkling (`sceneryStars()`, no Milky Way unless asked), the
+   cumulus (and since 2026-11-13 the kit's clouds everywhere: what stands or floats on cloud, a heaven's floor, the
+   cloud at a being's feet, a floating palace, clouds rushing past a flight, is a bank of the same soft puffs,
+   `sceneryCloudBank()`; Thai painting's outlined `thaiCloud()` only when asked); at night many fine stars, a few bright ones twinkling (`sceneryStars()`, no Milky Way unless asked), the
    moon (`sceneryMoon()`), and bats going out over the mountains (night.js `batStream()`, drawn between a far range
    and a near one so they fly behind it). A sky of its hour, not day and night mixed (a dusk at a third of the way to
    night was a muddy grey): a painted sunset, violet overhead through rose to gold at the hills, or a sunrise (the
@@ -783,11 +785,22 @@ is painted once into a sprite and placed every frame, swaying, so a frame stays 
    seen near have their grain (`ruenPhuk()`, `kok()`, `hoKham()` look.fine; `sceneryWoodGrain()`,
    `sceneryBambooGrain()`). What moves through a place leaves a sign of it where the line allows: dust behind a
    run (paler than the path, or it is lost on it), bushes shaking as someone pushes past, a flock started up.
-10. **Look, then watch.** Stills of each scene at its moments, the owner's notes taken scene by scene; then a quick
+10. **No flat field, no ruled edge** (owner, 2026-11-13, of Hong Hin). A wide field of one flat colour (a brown court,
+   a bare village ground) gets texture and things on it: grass tufts, stones, a path worn paler, cart ruts, fallen
+   leaves and flowers, a puddle. Where ground meets ground, water or a building in a ruler-straight line that nature
+   would curve, use two lines: an invisible undulating line along that edge, planted thick (bushes, grasses, trees,
+   flowers) until the edge reads as forest or meadow; then a second invisible line along the bottom of the picture,
+   planted the same way.
+11. **Z-order, item by item.** On the stills of each scene, check by eye what stands over what: feet behind
+   battlements and walls, the near wing over a rider, an embrace's arms (whose is in front), a hand round what it
+   holds (thumb in front, fingers behind), flyers behind the clouds they pass, a thing falling in front of what it
+   falls on. And no raised open palm unless the line asks for it: it reads as waving hello.
+12. **Look, then watch.** Stills of each scene at its moments, the owner's notes taken scene by scene; then a quick
    clip of the scene with its own narration (`render.py <page> clip.mp4 --fast --no-vanish --from A --to B`, the
    film's sound laid under it with ffmpeg) for the owner to watch; only then the full render. A change to the kit is
    checked on a copy (`checks/kit_check.py`), and a film already made must look the same where nothing was meant to
-   change (its frames before and after, compared pixel by pixel).
+   change (its frames before and after, compared pixel by pixel). Before any render, stills of every scene go to the
+   owner for z-order, scenery and detail, and the render waits for the owner's yes.
 
 A tale's plan names each scene's scenery before anything is drawn (`SCENERY` in its `story.py`; `tale_plan.py` names
 any scene without one, and the plan shows it red), so a new film is painted this way from its first scene.

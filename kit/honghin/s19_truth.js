@@ -38,7 +38,7 @@ function hhSceneTruth(t) {
     wives.push({name: "maid", kind: "person", x: p[0] - 220, y: 1010, draw: function () {
       person(p[0] - 220, 1010, welPerson(40, {size: 0.66}, {id: "maid", face: 1, feel: "concerned", mouth: welTalk(t, t > 17 && t < 21.4),
                                                            at: [p[0], dais - 120]}));
-      pen.save(); pen.translate(p[0] - 140, 1010); pen.scale(0.4, 0.4); puppy(0, 0, t, {feel: "happy"}); pen.restore();
+      pen.save(); pen.translate(p[0] - 140, 1010); pen.scale(0.4, 0.4); puppy(0, 0, t, {feel: "happy", still: true}); pen.restore();
     }});
     hhCamera(0.8, p[0] + 60, 780, 1.4);
     hhCourt(t, king("angry"), wives);
@@ -50,9 +50,12 @@ function hhSceneTruth(t) {
       (function (n) {
         var x = p[0] - 520 + n * 200, y = 1010;
         bound.push({name: "bound " + n, kind: "person", x: x, y: y, draw: function () {
-          person(x, y, hhWife(n, {face: x < p[0] ? 1 : -1, floor: "side", feel: "sad", at: [p[0], dais - 100]}));
-          fetters(x + 20, y + 10);
-          person(x + 80, y + 30, hhSon(n, {face: x < p[0] ? 1 : -1, floor: "cross", feel: "sad", id: "son" + n, at: [p[0], dais - 100]}));
+          // shackles round each wrist, the hands brought together before them (owner, 2026-11-13)
+          var d = x < p[0] ? 1 : -1;
+          hhShackles(person(x, y, hhWife(n, {face: d, floor: "side", feel: "sad", at: [p[0], dais - 100],
+                                             reachA: [x + 44 * d, y - 52], reachB: [x + 58 * d, y - 48]})), 0.8);
+          hhShackles(person(x + 80, y + 30, hhSon(n, {face: d, floor: "cross", feel: "sad", id: "son" + n, at: [p[0], dais - 100],
+                                                     reachA: [x + 80 + 40 * d, y - 30], reachB: [x + 80 + 54 * d, y - 26]})), 0.8);
         }});
       })(n);
     }

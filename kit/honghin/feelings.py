@@ -61,6 +61,7 @@ FEEL = {
     "H088": "royal", "H089": "sad", "H090": "tender", "H091": "hope",
     # 21: Hong Hin is crowned
     "H092": "wonder", "H093": "joy", "H094": "royal", "H095": "triumph", "H096": "tender",
+    "H097": "sad", "H098": "hope", "H099": "mystery",   # the lines added 2026-11-13
 }
 
 # A scene with no words has its feelings here, as cues. None yet (the credits are still to make).
