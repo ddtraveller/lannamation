@@ -3,9 +3,9 @@
 // fire-guns; her second craving, for Khom blood, is left out for children, the owner's choice). In the village a smith
 // hammers on his anvil, sparks flying at each stroke, his fellow working the bamboo bellows of the forge; finished
 // weapons lie on a mat; the queen watches, and smiles.
-var C09_LONG = 30;
+var C09_LONG = 34.97;
 var C09_SOUND = {calls: []};
-var C09_LINES = [[1.4, 9.54, "C039"], [9.74, 15.94, "C040"], [16.14, 18.44, "C041"]];
+var C09_LINES = [[1.4, 10.48, "C039"], [10.75, 19.64, "C040"], [19.91, 23.35, "C041"]];
 var C09_FORGE = [940, 860, 1.25];                      // the forge: x, base, size (above the words under the picture)
 var C09_STRIKE = 0.9;                                  // seconds between the hammer's strokes
 
@@ -53,7 +53,7 @@ function cngSceneWeapons(t) {
                                                                        reachA: [bellows[0], bellows[1]], reachB: [bellows[0] + 26 * s, f[1] - 150 * s - 20 * s * Math.sin(t * 4)]}));
     }},
     {name: "queen", kind: "person", x: 470, y: 830, draw: function () {
-      person(470, 830, cngPerson("maiden", CNG_QUEEN, {id: "thewi", face: 1, feel: t > 15.5 ? "happy" : undefined, smile: t > 15.5 ? 1 : 0.4,
+      person(470, 830, cngPerson("maiden", CNG_QUEEN, {id: "thewi", face: 1, feel: t > 19.27 ? "happy" : undefined, smile: t > 19.27 ? 1 : 0.4,
                                                        at: anvil}));
     }}
   ]);

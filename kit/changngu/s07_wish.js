@@ -4,13 +4,13 @@
 // and makes his wish; then under the great tree at the hill's foot he sits, and the days go over him, day and night;
 // and in the night a small light rises from where he sat and drifts away over the hills toward Si Tuang. Told gently
 // (the owner's choice): he fades as the light rises; nothing of his death is shown.
-var C07_LONG = 46.4;
+var C07_LONG = 65.08;
 var C07_SOUND = {calls: []};
-var C07_LINES = [[1.6, 7.9, "C027"], [8.4, 10.58, "C028"], [15.6, 22.8, "C029"], [23.0, 28.94, "C030"], [30.0, 34.44, "C031"], [37.0, 44.94, "C032"]];
+var C07_LINES = [[1.6, 11.41, "C027"], [11.99, 17.21, "C028"], [22.29, 31.04, "C029"], [31.31, 40.55, "C030"], [41.69, 49.08, "C031"], [51.72, 63.54, "C032"]];
 // Its life (decorate.js; owner, 2026-10-25): only a flock going home over the hill at dusk, in the quiet after his
 // first words; nothing moves after, through his wish and his passing (the kit's rule: nothing moves through a death).
-var C07_LIFE = [{name: "flock home at dusk", kind: "flock", layer: "back", course: [[10.8, -320, 260], [14.4, 2150, 200]]}];
-var C07_CUTS = [14.6, 29.4];
+var C07_LIFE = [{name: "flock home at dusk", kind: "flock", layer: "back", course: [[17.49, -320, 260], [21.09, 2150, 200]]}];
+var C07_CUTS = [21.29, 41.09];
 var C07_SUN = [330, 330, 430];                         // the setting sun: its x, the y it is at, the y it goes down to
 
 // The climb, wide: the novice small on the path, up to the chedi; there he lifts his bowl above his head.
@@ -21,9 +21,9 @@ function c07Climb(t) {
              {glow: 10, colour: "255, 180, 100", disc: ["#fff2d0", "#ffcf80", "#ffaa5a"]});
   decorate(t, C07_LIFE, "back");
   pen.drawImage(cngKuKaeo("dusk"), 0, 0);
-  var u = between(t, 0.5, 8), size = mix(0.42, 0.3, u);
+  var u = between(t, 0.5, 11.59), size = mix(0.42, 0.3, u);
   var x = mix(760, CNG_CHEDI[0] - 110, u), y = mix(800, CNG_CHEDI[1] + 8, Math.pow(u, 0.8));
-  var lift = between(t, 8.6, 10.2), face = 1;
+  var lift = between(t, 12.55, 16.89), face = 1;
   var bowl = [mix(x + 34 * size * face, x + 6 * face, lift), y - mix(236, 330, lift) * size];   // from his waist up over his head, no jump
   person(x, y, cngPerson("monk", CNG_NOVICE, {id: "novice", size: size, face: face, step: u > 0 && u < 1 ? (t - 0.5) / BEAT / 2 : 0,
                                               reachA: [bowl[0] - 20 * size, bowl[1] + 10 * size], reachB: [bowl[0] + 20 * size, bowl[1] + 10 * size]}));
@@ -39,7 +39,7 @@ function c07Kneel(t) {
   pen.translate(-CNG_CHEDI[0] + 60, -CNG_CHEDI[1] + 60);
   pen.drawImage(cngSky("sunset"), 0, 0);
   pen.drawImage(cngKuKaeo("dusk"), 0, 0);
-  var speaking = t > 21.2 && t < 26.4;
+  var speaking = t > 29.24 && t < 36.81;
   person(CNG_CHEDI[0] - 130, CNG_CHEDI[1] + 26, cngPerson("monk", CNG_NOVICE, {id: "novice2", size: 0.3, face: 1, floor: "side", wai: 1,
                                                                              mouth: speaking ? {open: 0.04 + 0.12 * Math.abs(Math.sin(t * 7)), wide: 0.4, round: 0.1} : undefined}));
   almsBowl(pen, CNG_CHEDI[0] - 60, CNG_CHEDI[1] + 4, 0.2);   // his bowl given, set down before the chedi
@@ -49,8 +49,8 @@ function c07Kneel(t) {
 // Under the great tree: he sits; the days go over him (the sky from day to night and back, three times, slow); in the
 // night a small light rises from where he sat, and goes away over the hills.
 function c07Days(t) {
-  var turn = between(t, 29.8, 36.3), dark = 0.5 - 0.5 * Math.cos(turn * Math.PI * 5);   // day, night, day, night, ... night
-  if (t > 36.3) { dark = 1; }
+  var turn = between(t, 41.49, 51.02), dark = 0.5 - 0.5 * Math.cos(turn * Math.PI * 5);   // day, night, day, night, ... night
+  if (t > 51.02) { dark = 1; }
   pen.save();                                              // close on the tree, so he sits clear of the words under him
   pen.translate(560, 560);
   pen.scale(1.35, 1.35);
@@ -64,14 +64,14 @@ function c07Days(t) {
   pen.drawImage(cngKuKaeo(), 0, 0);
   pen.fillStyle = "rgba(10, 14, 40, " + (0.62 * dark).toFixed(3) + ")";
   pen.fillRect(0, 0, WIDE, 1080);
-  var gone = between(t, 36.8, 39.3), seat = [CNG_KUKAEO_TREE[0] + 90, CNG_KUKAEO_TREE[1] + 40];
+  var gone = between(t, 51.52, 55.24), seat = [CNG_KUKAEO_TREE[0] + 90, CNG_KUKAEO_TREE[1] + 40];
   if (gone < 1) {
     pen.save();
     pen.globalAlpha = 1 - gone;
     person(seat[0], seat[1], cngPerson("monk", CNG_NOVICE, {id: "novice3", face: -1, floor: "cross", wai: 1, feel: "sleepy"}));
     pen.restore();
   }
-  var rise = between(t, 36.8, 41.8);                           // the small light: up from where he sat, then away to the left
+  var rise = between(t, 51.52, 59.07);                           // the small light: up from where he sat, then away to the left
   if (rise > 0) {
     var lx = mix(seat[0], seat[0] - 520, Math.max(0, rise - 0.35) / 0.65), ly = seat[1] - 140 - 520 * Math.min(1, rise * 1.6) + 20 * Math.sin(t * 2);
     var glow = pen.createRadialGradient(lx, ly, 2, lx, ly, 46);

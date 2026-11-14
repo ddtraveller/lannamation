@@ -3,14 +3,14 @@
 // a soft light about him; the headman, little Thukkhita and the household's women come close to look; an old man in
 // white (the chronicle: the family's elders and a brahmin named him "for the sign, beautiful as a Brahma come down")
 // lifts his hand and names him Phrom Kuman.
-var C10_LONG = 30;
+var C10_LONG = 37.66;
 var C10_SOUND = {calls: []};
-var C10_LINES = [[1.4, 5.28, "C042"], [5.48, 9.22, "C043"], [11.4, 13.4, "C044"], [16.6, 19.74, "C045"]];
+var C10_LINES = [[1.4, 6.39, "C042"], [6.66, 13.75, "C043"], [15.99, 20.24, "C044"], [23.52, 27.34, "C045"]];
 var C10_BABY = [930, CNG_FLOOR - 150];                 // the baby in the queen's arms (set from her shoulders as she sits)
 
 // The newborn's light: a soft glow round him, brightest as he is first shown. e.g. c10Glow(5);
 function c10Glow(t) {
-  var bright = 0.35 + 0.35 * between(t, 5.4, 8) - 0.15 * between(t, 14, 20);
+  var bright = 0.35 + 0.35 * between(t, 6.58, 11.8) - 0.15 * between(t, 20.92, 27.66);
   var g = pen.createRadialGradient(C10_BABY[0], C10_BABY[1], 10, C10_BABY[0], C10_BABY[1], 220);
   g.addColorStop(0, "rgba(255, 244, 210, " + bright.toFixed(3) + ")");
   g.addColorStop(1, "rgba(255, 230, 170, 0)");
@@ -28,9 +28,9 @@ function cngSceneBorn(t) {
   pen.scale(1.4, 1.4);
   pen.translate(-960, -(CNG_FLOOR - 110));
   pen.drawImage(cngRoom("day"), 0, 0);
-  pen.fillStyle = "rgba(240, 170, 120, " + (0.2 * (1 - between(t, 0, 12))).toFixed(3) + ")";   // the dawn's warmth
+  pen.fillStyle = "rgba(240, 170, 120, " + (0.2 * (1 - between(t, 0, 17.51))).toFixed(3) + ")";   // the dawn's warmth
   pen.fillRect(0, 0, WIDE, 1600);
-  var names = between(t, 16.4, 17.2) * (1 - between(t, 19.6, 20.6));
+  var names = between(t, 23.32, 24.29) * (1 - between(t, 27.26, 28.26));
   drawByZ([
     {name: "queen and baby", kind: "person", x: 840, y: CNG_FLOOR + 50, draw: function () {
       var look = cngPerson("maiden", CNG_QUEEN, {id: "thewi", floor: "side", face: 1, feel: "happy"});

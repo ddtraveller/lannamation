@@ -3,10 +3,10 @@
 // the village, then going south through it and chasing the people, who scatter (as the chronicle: "ไล่กวด ... แตกตื่น",
 // more funny than frightening); and the room at first light, the queen sitting up with a start and telling her husband,
 // who answers that one of great merit will be born to her (the chronicle has King Phang read the dream himself).
-var C08_LONG = 40;
+var C08_LONG = 56.4;
 var C08_SOUND = {calls: []};
-var C08_LINES = [[0.8, 4.44, "C033"], [5.3, 10.46, "C034"], [10.66, 17.6, "C035"], [22.6, 26.68, "C036"], [27.2, 31.96, "C037"], [32.2, 35.46, "C038"]];
-var C08_CUTS = [4.8, 21.8];
+var C08_LINES = [[0.8, 6.52, "C033"], [7.44, 14.94, "C034"], [15.2, 25.5, "C035"], [30.57, 36.06, "C036"], [36.64, 46.33, "C037"], [46.65, 51.8, "C038"]];
+var C08_CUTS = [6.94, 29.77];
 var C08_MAT = [760, CNG_FLOOR + 70];                   // where she lies, on the mat
 
 // The queen asleep, lying on her side on the mat, her head to the left, a blanket over her: the kit's figure turned
@@ -28,13 +28,13 @@ function c08Sleeper(t) {
 // The dream: the village in a dream's light; the white elephant stands, then goes south (left) through it, the people
 // running before it.
 function c08Dream(t) {
-  var village = cngVillage(), cam = WIDE * 0.7 - 260 * between(t, 9, 21);
+  var village = cngVillage(), cam = WIDE * 0.7 - 260 * between(t, 13.03, 28.97);
   pen.drawImage(cngSky("dream"), 0, 0);
   cngClouds(t + 40, "day", 0.7);                         // soft pale clouds in the dream's sky
   pen.save();
   pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
-  var go = between(t, 9, 21), ex = mix(WIDE + 900, WIDE - 150, go), step = go > 0 && go < 1 ? (t - 9) / BEAT / 3 : 0;
+  var go = between(t, 13.03, 28.97), ex = mix(WIDE + 900, WIDE - 150, go), step = go > 0 && go < 1 ? (t - 13.03) / BEAT / 3 : 0;
   var sprites = [{name: "the white elephant", kind: "elephant", x: ex, y: CNG_GROUND + 20, draw: function () {
     elephant(ex, CNG_GROUND + 20, {size: 0.62, face: -1, colour: "#f1ddd3", cloth: "#c9962a", step: step,
                                    trunk: 0.2 + 0.4 * Math.max(0, Math.sin(t * 1.5)), mouth: go > 0 ? 0.3 : 0});
@@ -82,15 +82,15 @@ function cngSceneDream(t) {
     pen.scale(1.5, 1.5);
     pen.translate(-(C08_MAT[0] + 90), -(CNG_FLOOR - 110));
     pen.drawImage(cngRoom("day"), 0, 0);
-    pen.fillStyle = "rgba(60, 40, 80, " + (0.35 * (1 - between(t, 22, 30))).toFixed(3) + ")";   // the first light coming in
+    pen.fillStyle = "rgba(60, 40, 80, " + (0.35 * (1 - between(t, 29.97, 42.72))).toFixed(3) + ")";   // the first light coming in
     pen.fillRect(0, 0, WIDE, 1080);
-    var tells = t > 22.6 && t < 26.4, answers = (t > 27.2 && t < 31.4) || (t > 32.2 && t < 35.6);
+    var tells = t > 30.57 && t < 35.84, answers = (t > 36.64 && t < 45.76) || (t > 46.65 && t < 52);
     var talk = function (on) { return on ? {open: 0.06 + 0.24 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined; };
     person(C08_MAT[0] - 80, CNG_FLOOR + 60, cngPerson("maiden", CNG_QUEEN, {id: "thewi", floor: "side", face: 1,
-                                                                            feel: t < 25 ? "surprised" : "concerned", mouth: talk(tells),
+                                                                            feel: t < 33.94 ? "surprised" : "concerned", mouth: talk(tells),
                                                                             at: [C08_MAT[0] + 260, CNG_FLOOR - 240]}));
     person(C08_MAT[0] + 260, CNG_FLOOR + 50, cngPerson("noble", Object.assign({}, CNG_HEADMAN, {sarong: CNG_KING.sarong}),
-                                                      {id: "phang", floor: "cross", face: -1, feel: t > 27 ? "happy" : "concerned",
+                                                      {id: "phang", floor: "cross", face: -1, feel: t > 36.44 ? "happy" : "concerned",
                                                        mouth: talk(answers), at: [C08_MAT[0] - 80, CNG_FLOOR - 200]}));
     cngMotes(t);                                           // dust in the first light
     pen.restore();
