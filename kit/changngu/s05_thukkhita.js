@@ -2,14 +2,14 @@
 // house by day: the queen sits on the mat beside the hanging cradle and rocks it, her hand on its edge, the baby
 // asleep in it; the headman stands by, tired and smiling at him; the camera comes slowly in on the cradle as the voice
 // says to remember the boy's name.
-var C05_LONG = 25;
+var C05_LONG = 30.55;
 var C05_SOUND = {calls: []};
-var C05_LINES = [[1.6, 7.22, "C018"], [7.42, 14.62, "C019"], [14.82, 20.34, "C020"]];
+var C05_LINES = [[1.6, 8.64, "C018"], [8.91, 17.65, "C019"], [17.93, 25.82, "C020"]];
 // Its life (decorate.js; owner, 2026-10-25: "decorate it with ... animals"): a tokay on the teak wall above the
 // headman, crawling down a little and resting, as tokays do in a house by day; of the set (z), behind the people.
 var C05_LIFE = [
   {name: "tokay", kind: "gecko", z: "set", look: {size: 0.55},
-   course: [[0, 1210, 450], [5, 1180, 500], [9, 1150, 540, "rest"], [18, 1150, 540], [22, 1080, 580, "rest"], [40, 1080, 580]]}
+   course: [[0, 1210, 450], [5.98, 1180, 500], [10.87, 1150, 540, "rest"], [22.65, 1150, 540], [27.55, 1080, 580, "rest"], [45.55, 1080, 580]]}
 ];
 var C05_CRADLE = [860, 820];                           // the cradle's lowest point, low over the floor by the queen
 
@@ -18,7 +18,7 @@ var C05_CRADLE = [860, 820];                           // the cradle's lowest po
 // from chiangsaen.js hangingCradle(). Its words are C05_LINES (C018 to C020). Its z plan: the room, then by drawByZ the
 // queen, the cradle (hung over the floor, by its foot) and the headman, nearer lower. e.g. cngSceneThukkhita(10);
 function cngSceneThukkhita(t) {
-  var push = Math.pow(between(t, 12, 24), 1.3), zoom = 1.45 + 0.35 * push * push * (3 - 2 * push);
+  var push = Math.pow(between(t, 14.59, 29.55), 1.3), zoom = 1.45 + 0.35 * push * push * (3 - 2 * push);
   pen.save();
   pen.translate(C05_CRADLE[0], C05_CRADLE[1]);
   pen.scale(zoom, zoom);

@@ -4,11 +4,11 @@
 // Khom king's courtyard he stands waiting with his bowl; the king, on the step of his hall, speaks and points him out;
 // his people turn their backs; the novice turns and walks away. The novice is the kit's monk at a novice's age, kit
 // only: never in the maker.
-var C06_LONG = 42;
+var C06_LONG = 47.16;
 var C06_SOUND = {calls: []};
-var C06_LINES = [[1.4, 9.1, "C021"], [9.3, 15.28, "C022"], [17.0, 23.16, "C023"], [23.36, 29.26, "C024"], [29.46, 32.4, "C025"], [32.6, 36.56, "C026"]];
-var C06_CUTS = [16.2];
-var C06_SPEAKS = [[23.36, 28.86], [29.46, 32.0]];         // the Khom king's words (the narrator says them over him)
+var C06_LINES = [[1.4, 14.19, "C021"], [14.46, 20.37, "C022"], [22.16, 28.25, "C023"], [28.52, 34.34, "C024"], [34.62, 37.5, "C025"], [37.76, 41.65, "C026"]];
+var C06_CUTS = [21.36];
+var C06_SPEAKS = [[28.52, 34.02], [34.62, 37.16]];         // the Khom king's words (the narrator says them over him)
 
 // The novice at (x, y) with his bowl at his waist, held in both hands; look: the scene's keys (face, step, feel);
 // rice: 0 to 1, how much of the rice given him shows in the bowl (left out, none).
@@ -30,17 +30,17 @@ function c06Lane(t) {
   cngClouds(t + 30, "dawn");
   pen.drawImage(cngLane("dawn"), 0, 0);
   softMist(t, 720, 60, 0.35, 23, "250, 232, 214");      // the dawn's mist lying low between the houses
-  var walk = between(t, 0.5, 8), x = mix(200, 930, walk), step = walk > 0 && walk < 1 ? (t - 0.5) / BEAT / 2 : 0;
-  var giving = between(t, 9.5, 11) * (1 - between(t, 12.5, 13.5));   // her hand to his bowl and back
+  var walk = between(t, 0.5, 12.71), x = mix(200, 930, walk), step = walk > 0 && walk < 1 ? (t - 0.5) / BEAT / 2 : 0;
+  var giving = between(t, 14.66, 16.16) * (1 - between(t, 17.66, 18.66));   // her hand to his bowl and back
   // the rice: in her hand until it is over the bowl (11 s), dropped into the bowl by 11.4 s, then in it (the owner,
   // 2026-10-27: "the rice should go in the monk's bowl"; until then it stayed in her hand, beside the bowl)
-  var bowl = [930 + 34 * CNG_NOVICE.size, CNG_LANE_Y - 236 * CNG_NOVICE.size], drop = between(t, 11, 11.4);
+  var bowl = [930 + 34 * CNG_NOVICE.size, CNG_LANE_Y - 236 * CNG_NOVICE.size], drop = between(t, 16.16, 16.56);
   var hand = [mix(1060, bowl[0] + 14, giving), mix(CNG_LANE_Y - 130, bowl[1] - 22, giving)];
-  var leaves = between(t, 14, 16), xn = x + 500 * leaves;
+  var leaves = between(t, 19.16, 21.16), xn = x + 500 * leaves;
   decorate(t, cngYard(1650, 905, 8), "back");                 // the yard's fowl (owner, 2026-10-25)
   drawByZ([
     {name: "novice", kind: "person", x: xn, y: CNG_LANE_Y, draw: function () {
-      c06Novice(xn, CNG_LANE_Y, {face: 1, step: leaves > 0 ? (t - 14) / BEAT / 2 : step}, drop >= 1 ? 1 : 0);
+      c06Novice(xn, CNG_LANE_Y, {face: 1, step: leaves > 0 ? (t - 19.16) / BEAT / 2 : step}, drop >= 1 ? 1 : 0);
     }},
     {name: "woman", kind: "person", x: 1090, y: CNG_LANE_Y + 10, draw: function () {
       person(1090, CNG_LANE_Y + 10, cngPerson("weaver", {size: 0.72, id: "giver", face: -1, feel: "happy",
@@ -66,13 +66,13 @@ function c06Court(t) {
   cngBeds(t, "court", "back");
   var speaking = C06_SPEAKS.some(function (s) { return t >= s[0] && t < s[1]; });
   var rest = [p[0] - 150, floor - 55], points = [p[0] - 330, floor - 160];   // his hand at his side; pointing at the novice
-  var arm = poseSteps(t, [[0, {reachA: rest}], [23.56, {reachA: points}], [32.0, {reachA: rest}]], 0.35);   // eased, not switched (pop_check)
-  var turned = t > 30.7, goes = between(t, 32.2, 41.2), nx = mix(620, -200, goes);
+  var arm = poseSteps(t, [[0, {reachA: rest}], [28.72, {reachA: points}], [37.16, {reachA: rest}]], 0.35);   // eased, not switched (pop_check)
+  var turned = t > 35.86, goes = between(t, 37.36, 46.36), nx = mix(620, -200, goes);
   drawByZ([
     {name: "hall, back", kind: "palace", z: "set", y: floor - 1, draw: function () { cngPalace("back"); }},
     {name: "hall, front", kind: "palace", z: "set", y: floor, draw: function () { cngPalace("front"); }},
     {name: "khom king", kind: "person", x: p[0] - 120, y: floor + 60, draw: function () {
-      person(p[0] - 120, floor + 60, cngPerson("khomsoldier", CNG_KHOM_KING, {id: "khomking", face: -1, feel: speaking || t > 22 ? "angry" : undefined,
+      person(p[0] - 120, floor + 60, cngPerson("khomsoldier", CNG_KHOM_KING, {id: "khomking", face: -1, feel: speaking || t > 27.16 ? "angry" : undefined,
                                                                              reachA: arm.reachA,
                                                                              mouth: speaking ? {open: 0.06 + 0.26 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined,
                                                                              at: [nx, CNG_LANE_Y - 200]}));
@@ -84,8 +84,8 @@ function c06Court(t) {
       person(p[0] + 120, floor + 130, cast("khomsoldier", {size: 0.76, id: "kc2", face: turned ? 1 : -1, holding: null}));
     }},
     {name: "novice", kind: "person", x: nx, y: 1000, draw: function () {
-      c06Novice(nx, 1000, {face: goes > 0 ? -1 : 1, step: goes > 0 && goes < 1 ? (t - 32.2) / BEAT / 2 : 0,
-                           feel: t > 24 ? "sad" : undefined});
+      c06Novice(nx, 1000, {face: goes > 0 ? -1 : 1, step: goes > 0 && goes < 1 ? (t - 37.36) / BEAT / 2 : 0,
+                           feel: t > 29.16 ? "sad" : undefined});
     }}
   ]);
 }

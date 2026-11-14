@@ -4,10 +4,10 @@
 // the size of small bael fruits", หมากพิน); long ago, in the colour of an old picture, a Lua chief of this place offering
 // the same gold to a king of Yonok, which gave the place its name; and now, two men carrying the year's gold away down
 // the road to the Khom, the headman and the villagers watching them go.
-var C04_LONG = 45.8;
+var C04_LONG = 61.46;
 var C04_SOUND = {calls: []};
-var C04_LINES = [[1.4, 6.22, "C013"], [13.6, 18.08, "C014"], [20.8, 31.3, "C015"], [31.5, 36.46, "C016"], [37.8, 44.26, "C017"]];
-var C04_CUTS = [12.6, 20.2, 37.0];
+var C04_LINES = [[1.4, 8.89, "C013"], [16.33, 25.64, "C014"], [28.42, 41.05, "C015"], [41.32, 48.55, "C016"], [49.96, 59.85, "C017"]];
+var C04_CUTS = [15.33, 27.82, 49.16];
 var C04_STREAM = [760, 1010];                         // where the panners stand in the Mae Sai, close
 
 // A lump of gold, a rough round nugget the size of a small bael fruit, lit from the upper left; at (x, y), its foot.
@@ -50,7 +50,7 @@ function c04Panning(t) {
       var hands = cngMeasure(x, y, look), tilt = 0.18 * Math.sin(t * 2.2 + i);
       var at = [x + 70 * size * p[1], y - 120 * size];
       person(x, y, Object.assign(look, {reachA: [at[0] - 30 * size * p[1], at[1]], reachB: [at[0] + 30 * size * p[1], at[1]]}));
-      goldPan(pen, at[0], at[1] + 4, size * 1.1, {tilt: tilt, gold: i === 1 && t > 8, t: t + i});
+      goldPan(pen, at[0], at[1] + 4, size * 1.1, {tilt: tilt, gold: i === 1 && t > 10.73, t: t + i});
       void hands;
     }});
   });
@@ -147,7 +147,7 @@ function c04Tuang(t) {
   pen.drawImage(c04Close(), 0, 0);
   c04Shadow(560, 724, 150);
   flora("bael", 560, 720, {size: 3.2});
-  var shown = between(t, 13.6, 17);                       // the lumps come one after another as the line counts them
+  var shown = between(t, 16.33, 23.87);                       // the lumps come one after another as the line counts them
   C04_LUMPS.forEach(function (p, i) {
     if (shown * 4 > i) {
       c04Shadow(p[0] + 10, p[1] + 2, 100);
@@ -188,7 +188,7 @@ function c04Away(t) {
   pen.save();
   pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
-  var go = between(t, 37.4, 48.4), x0 = mix(WIDE + 260, WIDE - 1100, go), step = (t - 37.4) / BEAT / 2;
+  var go = between(t, 49.56, 64.06), x0 = mix(WIDE + 260, WIDE - 1100, go), step = (t - 49.56) / BEAT / 2;
   drawByZ([
     {name: "porter, gold 1", kind: "person", x: x0, y: CNG_GROUND, draw: function () {
       cngPorter(x0, CNG_GROUND, cngPerson("khomsoldier", {size: 0.7, id: "goldman1", face: -1, step: step, holding: null}), true);

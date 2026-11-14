@@ -2,10 +2,10 @@
 // the Mae Sai under Doi Nang Non, two of their people behind them with their things on carrying poles, the camera going
 // with them out of the valley and into the village; before the house that will be theirs he lifts the crown from his
 // head with both hands, and stands in a headman's plain head-cloth, the queen beside him.
-var C03_LONG = 35;
+var C03_LONG = 50.85;
 var C03_SOUND = {calls: []};
-var C03_LINES = [[1.6, 7.96, "C009"], [8.16, 15.45, "C010"], [15.65, 19.11, "C011"], [25.6, 31.72, "C012"]];
-var C03_OFF = [24.0, 25.4];                            // he lifts the crown off: his hands up, then down
+var C03_LINES = [[1.6, 14.24, "C009"], [14.52, 29.05, "C010"], [29.31, 33.8, "C011"], [40.36, 47.5, "C012"]];
+var C03_OFF = [38.76, 40.16];                            // he lifts the crown off: his hands up, then down
 // The meadow's life (sets.js cngVillage(): the valley a meadow in flower, the owner, 2026-10-27), in the two panels'
 // pixels: egrets feeding in it, a barking deer and her fawn grazing at the forest's edge, doves on the near
 // ground, butterflies over the flowers, a flock going over.
@@ -18,16 +18,16 @@ var C03_LIFE = [
   cngFeeding("dove 1", "dove", {size: 0.55}, 520, 1046, 13, 0, 36, 140),
   cngFeeding("dove 2", "dove", {size: 0.55}, 640, 1052, 15, 0, 36, 140),
   {name: "butterfly 1", kind: "butterfly", layer: "back", look: {size: 0.7, seed: 1},
-   course: [[0, 260, 1010], [3, 520, 990, "sip"], [5, 520, 990], [9, 900, 1020, "sip"], [12, 900, 1020], [16, 1300, 1000], [36, 2600, 980]]},
+   course: [[0, 260, 1010], [4.51, 520, 990, "sip"], [8.68, 520, 990], [16.26, 900, 1020, "sip"], [22.46, 900, 1020], [29.79, 1300, 1000], [51.85, 2600, 980]]},
   {name: "butterfly 2", kind: "butterfly", layer: "back", look: {kind: "birdwing", size: 0.6, seed: 2},
-   course: [[0, 1180, 980], [4, 980, 1000, "sip"], [7, 980, 1000], [12, 1400, 970, "sip"], [15, 1400, 970], [36, 2900, 990]]},
-  {name: "flock", kind: "flock", layer: "back", course: [[2.0, 2150, 240], [11.0, -320, 190]]}
+   course: [[0, 1180, 980], [6.6, 980, 1000, "sip"], [12.84, 980, 1000], [22.46, 1400, 970, "sip"], [28.66, 1400, 970], [51.85, 2900, 990]]},
+  {name: "flock", kind: "flock", layer: "back", course: [[2.43, 2150, 240], [20.4, -320, 190]]}
 ];
 
 // Where the walkers are at second t: the king's x (pixels of the village's two panels) and his step; they walk from the
 // valley's far left to before the headman's house, arriving at 23 s. e.g. var w = c03Walk(10);
 function c03Walk(t) {
-  var u = between(t, 1, 23), eased = u < 1 ? u : 1;
+  var u = between(t, 1, 37.76), eased = u < 1 ? u : 1;
   return {x: mix(220, CNG_HOUSE[0] - 160, eased), step: u > 0 && u < 1 ? (t - 1) / BEAT / 2 : 0, walking: u > 0 && u < 1};
 }
 
@@ -52,12 +52,12 @@ function cngSceneSituang(t) {
   var ground = CNG_GROUND;
   drawByZ([
     {name: "king", kind: "person", x: w.x, y: ground, draw: function () {
-      person(w.x, ground, cngPerson("noble", king, {id: "phang", face: 1, step: w.step, feel: t > 20 ? "sad" : undefined,
+      person(w.x, ground, cngPerson("noble", king, {id: "phang", face: 1, step: w.step, feel: t > 34.76 ? "sad" : undefined,
                                                    handA: lift > 0 ? liftHand(lift) : undefined,
                                                    handB: lift > 0 ? liftHand(lift, -1) : undefined}));
     }},
     {name: "queen", kind: "person", x: w.x - 120, y: ground - 14, draw: function () {
-      person(w.x - 120, ground - 14, cngPerson("maiden", CNG_QUEEN, {id: "thewi", face: 1, step: w.step + 0.4, feel: t > 22 ? "concerned" : undefined}));
+      person(w.x - 120, ground - 14, cngPerson("maiden", CNG_QUEEN, {id: "thewi", face: 1, step: w.step + 0.4, feel: t > 36.76 ? "concerned" : undefined}));
     }},
     {name: "porter 1", kind: "person", x: w.x - 300, y: ground + 10, draw: function () {
       cngPorter(w.x - 300, ground + 10, cngPerson("villager", {size: 0.66, id: "porter1", face: 1, step: w.step + 0.2, sabai: false}));
