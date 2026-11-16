@@ -412,14 +412,17 @@ function blendOutline(t, P, Q, F) {
 // shoulders sloping and round, a thick neck, the chest running down and forward into a round belly carried low, at
 // its fullest under the navel, tucking under to a wide waist; a lady's bust fuller, a soft belly under it, a wide
 // waist, the back rounder at the shoulder blade.
-var CHEST_MAN_FAT = [[-56, 2],
-                     [[-68, -24], [-78, -64], [-74, -104]],         // a broad back, out from the waist
-                     [[-72, -124], [-56, -136], [-30, -142]],
+// Seen three-quarter, the weight is on both sides of him: the back and its flank as full as the front, the belly round
+// and low but not jutting (owner, 2026-11-16: "The fat brother looks like his fat is for a profile view body. Fix it":
+// the back ran to -78 and the belly to 114, all of it forward, as a body seen from the side).
+var CHEST_MAN_FAT = [[-66, 2],
+                     [[-84, -22], [-90, -64], [-80, -104]],         // a broad back, the flank full above the waist
+                     [[-76, -124], [-58, -136], [-30, -142]],
                      [[0, -148], [26, -143]],                       // a thick neck
-                     [[56, -138], [74, -126], [74, -104]],          // the shoulder, sloping and round
-                     [[82, -84], [104, -62], [110, -32]],           // the chest running into the belly
-                     [[114, -2], [86, 14], [52, 12]],               // the belly, fullest low, tucking under
-                     [[0, 18], [-56, 2]]];
+                     [[56, -138], [76, -126], [78, -104]],          // the shoulder, sloping and round
+                     [[84, -84], [96, -62], [98, -34]],             // the chest running into the belly
+                     [[100, -4], [78, 14], [44, 14]],               // the belly, fullest low, tucking under
+                     [[0, 18], [-66, 2]]];
 var CHEST_LADY_FAT = [[-50, 2],
                       [[-60, -26], [-70, -62], [-66, -100]],
                       [[-66, -120], [-52, -132], [-26, -139]],
@@ -2095,15 +2098,15 @@ function lannaNose(V, lady) {
   if (V.face) { pen.clip(V.face); }
   pen.lineCap = "round";
   pen.globalAlpha = (1 - V.toProfile) * (1 - 0.55 * V.toFront);
-  pen.strokeStyle = "rgba(58, 30, 20, 0.55)";
-  pen.lineWidth = LINE * 0.45;
-  pen.beginPath();
+  pen.strokeStyle = lady ? "rgba(58, 30, 20, 0.55)" : "rgba(58, 30, 20, 0.75)";   // a man's firmer: at a film's size his
+  pen.lineWidth = LINE * (lady ? 0.45 : 0.6);                                     // nose was all but gone (owner, 2026-11-16,
+  pen.beginPath();                                                                // of the Hong Hin brothers: "Make sure they have noses")
   pen.moveTo(V.nose + (V.tip - V.nose) * 0.2, -279);
   pen.quadraticCurveTo(V.nose + (V.tip - V.nose) * 0.65, -270, V.tip + 1, base - 4);
   pen.stroke();
   pen.globalAlpha = Math.min(1, 1 - V.toProfile + side);
   pen.strokeStyle = "rgba(58, 30, 20, 0.85)";
-  pen.lineWidth = LINE * 0.55;
+  pen.lineWidth = LINE * (lady ? 0.55 : 0.7);
   pen.beginPath();
   pen.moveTo(V.tip + 1, base - 4);
   pen.quadraticCurveTo(V.tip + 2.5 * (1 - V.toFront), base - 0.5, V.tip - 1.5, base);
@@ -4887,9 +4890,9 @@ var HIDEABLE = {hair: true};                       // the parts a look may hide 
 var LOOK_KEYS = {};
 
 ["age", "anger", "at", "bangles", "bare", "beads", "beard", "bend", "blink", "body", "build", "bun", "buttons", "cap", "coat", "collar", "dance", "dap", "drum", "earplug", "earrings", "eyes", "face",
- "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
- "handB", "hat", "head", "hello", "hidden", "holding", "id", "ivory", "late", "laugh", "lady", "legs", "lid", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "rapt", "reachA", "reachB",
- "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shin", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt", "sleepy",
+ "fan", "fear", "feel", "fingersA", "fingersB", "flex", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
+ "handB", "hat", "head", "hello", "hidden", "holding", "id", "ivory", "late", "laugh", "lady", "legs", "lid", "lips", "maiwai", "malai", "mouth", "muscles", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "rapt", "reachA", "reachB",
+ "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shin", "shirt", "shoes", "shoulders", "sin", "sleeves", "sing", "sit", "size", "skin", "skirt", "sleepy",
  "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tears", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wink", "wonder", "worn", "worry", "wrap", "wraps", "wristA", "wristB"
 ].forEach(function (name) { LOOK_KEYS[name] = true; });
 
@@ -4901,6 +4904,7 @@ var LOOK_KEYS = {};
 //                   broad back, sloping shoulders, a thick neck, a round belly carried low (a lady's a fuller bust and
 //                   a soft belly), thicker arms and legs, wider hips, and its cloth cut wider; a child at its measure
 //   shirt, legs     colours
+//   sleeves         false: the shirt has no sleeves, the arms are skin (a ragged one's torn sleeves are drawn over)
 //   skirt           true for a long striped skirt (a pha sin)
 //   weave           0 to 3: which weave the pha sin is (see WEAVES)
 //   sabai           [cloth colour, border colour] of the sabai over the shoulder: one wide band
@@ -4979,7 +4983,9 @@ var LOOK_KEYS = {};
 //   bare            true: no shirt. The chest and the arms are skin (with tattoo, the ink of a man of the north on the
 //                   breast and along the collarbones too), a ring round the neck, a cord round each upper arm, and the
 //                   waist cloth's ends hanging bright to the knee (the owner's reference picture, 2026-10-14)
-//   regalia         true, with bare: a noble's gold: a broad collar, armbands and a sash of gold across the chest,
+//   muscles         with bare: a strong chest and belly drawn on the skin (bodyMuscles()), under the sash and the
+//                   arms: true, or the colour of their lines (a god's green skin takes a green ink)
+//   regalia        true, with bare: a noble's gold: a broad collar, armbands and a sash of gold across the chest,
 //                   a jewelled belt, earrings, and gold flowers at the knot of the hair; the head-cloth is patterned
 //   hat, bun        a woven hat, or a lady's hair tied up: true, or the name of a way of
 //                   wearing it, "wong", "low" or "ipun" (see BUN_STYLES)
@@ -5025,6 +5031,8 @@ var LOOK_KEYS = {};
 //                   wing the rider sits behind)
 //   hello           true, "A" or "B": a lifted hand opens its palm to us, fingers spread (a wave);
 //                   by default (since 2026-11-13) a lifted hand stays loosely curled, its back to us
+//   flex            true: the wrists bend a little on the beat and the fingers have a little life, as
+//                   the 1930s hands did; by default (since 2026-11-16) every hand is still
 //   gestureA, gestureB  a hand of classical dance by name (GESTURES): "wong", "jeeb", "jeebDown",
 //                   "fan", "point", or the Khmer dance's "planting", "growing", "youngLeaves",
 //                   "leaves", "flowering", "fruit", "fallingFruit", "ripeFruit"; or {from, to, u}
@@ -5855,7 +5863,10 @@ function personReach(fig) {
   // The arms, worked out here so that an arm which hangs behind the body
   // (the far arm of a figure seen from the side) can be drawn before the
   // chest; the rest are drawn after the head, over the body.
-  var flex = Math.sin(phase * 2 - 1.1) * 0.22;     // the wrist bends a little after the arm, once a beat
+  // The wrist bent a little after the arm, once a beat, and a lifted hand or a fist rocked with it, which read as waving
+  // (owner, 2026-11-16, of a prince holding a sword and an old man holding a torch: "stop his hands from waving ... Make
+  // sure this waving behavior is turned off by default in the kit"). Now hands are still unless the look asks (look.flex).
+  var flex = look.flex ? Math.sin(phase * 2 - 1.1) * 0.22 : 0;
   var wristA, wristB, poseA, poseB;
   var rootHalf = blend3(chestTurn, BODY.root[0], BODY.root[1], BODY.root[2]);      // the shoulders this far from the spine: over the middle in profile, widest seen from the front
   var rootA = chest(rootHalf, shoulderY), rootB = chest(-rootHalf, shoulderY);   // the shoulders, where the spine, their line and the arms have put them
@@ -5864,7 +5875,7 @@ function personReach(fig) {
   // kept, and the wrist and the elbow it gives back are put where they came
   // to. Anyone else's arms are drawn as they are.
   var arms = Math.min(1, leggy) / trunk;
-  var sleeve = look.bare ? SKIN : look.shirt;       // a bare chest has bare arms
+  var sleeve = look.bare || look.sleeves === false ? SKIN : look.shirt;   // a bare chest has bare arms; sleeves: false, a shirt without them
   function armOf(root, hand, outward, key) {
     if (arms === 1) { return arm(root[0], root[1], hand, outward, sleeve, key); }
     var pen0 = LINE;
@@ -5917,7 +5928,7 @@ function personReach(fig) {
   function handPose(which, wrist, given) {
     var near = which === "A", bend = near ? look.wristA : look.wristB, fingers = near ? look.fingersA : look.fingersB, turned = near ? look.palmA : look.palmB;
     var rest = given[1] >= 0 && !look.grip && !look.gloves && !fingers;
-    var calm = rest && still;                       // a hand at rest where nobody hops is still: no bend on the beat, no life in its fingers (owner, 2026-10-19: "the woman's hands are shaking. Can you make them still?")
+    var calm = !look.flex || (rest && still);       // a hand is still: no bend on the beat, no life in its fingers (owner, 2026-10-19: "the woman's hands are shaking. Can you make them still?"; 2026-11-16, any hand, unless look.flex)
     var beat = calm ? 0 : flex * (rest ? 0.3 : 1);
     var angle = Math.atan2(wrist[1] - wrist[3], wrist[0] - wrist[2]) + (near ? 1 : -1) * beat
               + (bend !== undefined ? bend : near && look.holding === "stick" ? 0.9 : 0);   // a hand on a stick lies over its top
@@ -6136,7 +6147,7 @@ function personBody(fig) {
       sabaiLine = fig.sabaiLine, seat = fig.seat, shoulderTip = fig.shoulderTip, spine = fig.spine, who = fig.who,
       x = fig.x;
   var b = {look: look, lady: lady, long: long, chest: chest, spine: spine, neckX: neckX, shoulderTip: shoulderTip, hipTip: hipTip, who: who,
-           phase: phase, x: x, seat: seat, ground: ground, land: land, sabaiLine: sabaiLine};   // what the body's parts read (below)
+           phase: phase, x: x, seat: seat, ground: ground, land: land, sabaiLine: sabaiLine, chestTurn: chestTurn};   // what the body's parts read (below)
   if (rig) {                                        // the drawn torso, hips to shoulders, slanted to where the spine ends
     pen.save();
     pen.transform(1, 0, -spine(-134) / 134, 1, 0, 0);
@@ -6147,6 +6158,7 @@ function personBody(fig) {
   outline(blendOutline(chestTurn, chests[0], chests[1], chests[2]), chest);   // the chest, turned, bent along the spine and tipped
   shape(look.bare ? SKIN : look.shirt);              // a bare chest is the skin
   bodyPaint(b);
+  if (look.bare && look.muscles) { bodyMuscles(b); }   // on the skin, under the collar, the sash and the arms
   if (look.collar) { bodyCollar(b); }
   var sabaiFront = null;                            // the kit's sabai, kept to be drawn again over an upper arm in a wai
   if ((look.skirt || look.sabai) && look.sabai !== false) {   // the sabai across the chest, over the body and under the arms; sabai: false for none (a cloth of sabai.js is worn instead)
@@ -6327,6 +6339,62 @@ function bodyTattoo(b) {
   pen.quadraticCurveTo(bones[0], bones[1] + 18, bones[0] + 36, bones[1] + 4);
   pen.stroke();
   pen.setLineDash([]);
+  pen.restore();
+}
+
+// A strong bare chest (look.muscles): the chest's two muscles, their lower edges in shade and a light on each, the
+// breastbone's line, the ribs' edge, the belly's muscles in three rows of two, the navel. Drawn in the body's own frame
+// through chest(), so they turn, bend and lean with the chest; the breastbone forward of the spine on a three-quarter
+// chest (the near muscle wide, the far one narrowed by the turn), on the spine seen full face. Inside the chest's
+// outline, under the collar, the sash and the arms (owner, 2026-11-16, of Indra: "Make his pectorals and abs so they
+// are more aligned to his chest"; until then they were laid over the finished figure, on the shoulders' midpoint,
+// over his arm). b: personBody()'s body; look.muscles true (a dark ink) or the colour of the lines.
+function bodyMuscles(b) {
+  var chest = b.chest, turn = b.chestTurn || 0, chests = BODY.chest[b.lady ? "lady" : "man"];
+  var mid = blend3(turn, 26, 20, 0), near = blend3(turn, 36, 40, 42), far = blend3(turn, 6, 24, 42);   // the breastbone, and each muscle's width from it
+  var ink = typeof b.look.muscles === "string" ? b.look.muscles : "rgba(40, 24, 14, 0.5)";
+  function at(u, y) { return chest(u, y); }
+  function curve(points) {                          // a line through the body's points: a move, then quadratic pairs
+    var p = at(points[0][0], points[0][1]);
+    pen.moveTo(p[0], p[1]);
+    for (var k = 1; k + 1 < points.length; k += 2) {
+      var c = at(points[k][0], points[k][1]), e = at(points[k + 1][0], points[k + 1][1]);
+      pen.quadraticCurveTo(c[0], c[1], e[0], e[1]);
+    }
+  }
+  pen.save();
+  outline(blendOutline(turn, chests[0], chests[1], chests[2]), chest);
+  pen.clip();                                       // the muscles stay on the body
+  pen.lineCap = "round";
+  pen.strokeStyle = ink;
+  [[-1, near], [1, far]].forEach(function (side) {  // the chest's muscles: under the collarbone, round to the breastbone, up to the armpit
+    var d = side[0], w = side[1];
+    pen.beginPath();
+    curve([[mid + d * 2, -120], [mid + d * w * 0.6, -126], [mid + d * w, -106],
+           [mid + d * w * 0.95, -84], [mid + d * w * 0.5, -80], [mid + d * 2, -86], [mid + d * 2, -120]]);
+    pen.globalAlpha = 0.28; pen.fillStyle = ink; pen.fill();   // the muscle's shade, under the light
+    pen.globalAlpha = 1;
+    var lit = at(mid + d * w * 0.5, -108);
+    pen.fillStyle = "rgba(255, 255, 240, 0.22)";
+    pen.beginPath(); pen.ellipse(lit[0], lit[1], w * 0.26, 7, 0, 0, Math.PI * 2); pen.fill();
+    pen.lineWidth = 1.6;                            // its lower edge, the line that shows
+    pen.beginPath(); curve([[mid + d * w, -104], [mid + d * w * 0.95, -84], [mid + d * w * 0.5, -80], [mid + d * 2, -86], [mid + d * 2, -86]]);
+    pen.stroke();
+    pen.globalAlpha = 0.45; pen.lineWidth = 1.3;    // the ribs' edge under it
+    pen.beginPath(); curve([[mid + d * w * 0.55, -74], [mid + d * w * 0.85, -70], [mid + d * w * 0.95, -56]]); pen.stroke();
+    pen.globalAlpha = 1;
+  });
+  pen.lineWidth = 1.3;                              // the breastbone's line, down the belly's middle to the navel
+  pen.beginPath(); curve([[mid, -118], [mid, -60], [mid - 1, -18]]); pen.stroke();
+  [-72, -54, -36].forEach(function (top, row) {     // the belly's muscles: three rows of two, the far ones narrower
+    [[-1, near], [1, far]].forEach(function (side) {
+      var d = side[0], w = side[1] * (0.42 - 0.03 * row);
+      pen.beginPath(); curve([[mid + d * 2, top + 15], [mid + d * w * 0.8, top + 17], [mid + d * w, top + 9]]); pen.stroke();   // its lower edge
+      pen.beginPath(); curve([[mid + d * w, top - 2], [mid + d * w * 1.08, top + 6], [mid + d * w, top + 13]]); pen.stroke();   // its outer edge
+    });
+  });
+  var navel = at(mid - 1, -12);
+  pen.fillStyle = ink; pen.beginPath(); pen.ellipse(navel[0], navel[1], 2.2, 3, 0, 0, Math.PI * 2); pen.fill();
   pen.restore();
 }
 

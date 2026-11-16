@@ -32,7 +32,7 @@ var OGRES = {
   ghoulDark: {skin: "#4a3230", dark: "#241614", crown: null, hair: "#151010", eye: "#e8862a", yaksha: true},
   // the old giantess under the palm at Varanasi's south gate (ย่ายักษ์เถ้า), red, her hair white (the owner's pick, C)
   giantess:  {skin: "#a8452f", dark: "#5a2414", crown: null, hair: "#e8e3da", eye: "#2a8a4a", long: true,
-              statue: true, band: "#e07a28", flowerSide: 0, collar: "#e07a28", tusk: 0.9},
+              statue: true, band: "#e07a28", flowerSide: 0, collar: null, tusk: 0.9},   // no necklace (owner, 2026-11-16)
   // the guests at Wassawaro's feast (the owner, 2026-11-13: "make sure the giants are unique at the feast and not the
   // ones he will visit in the next 2 scenes"): giants of the court, each its own skin, a beaded band, no crown
   violet:    {skin: "#7a4a8a", dark: "#3a1e48", crown: null, hair: "#1a1020", eye: "#e0b23a", statue: true, band: "#e0b23a",
@@ -370,7 +370,10 @@ var OGRE_LOOKS = {
   // an old woman's body at the build of the paintings (build 1: the kit's old women are short, and the head looked too big)
   // in rags (owner, 2026-11-13: "Give the giantess ... ragged clothes. Her skin should be entirely red"): a torn
   // cloth of faded brown, her skin red everywhere (ivory: false), the rags drawn over by ogreRags()
-  giantess:  {lady: true, shirt: "#6a5440", sin: 2, age: 1, bend: 0.2, build: 1, nails: "long", ivory: false},
+  // (owner, 2026-11-16: "get rid of the giantess skirt and extend her bone skirt to just above knee level. Get rid of her
+  // necklace and make the arms of her shirt ragged"): no sin, her red legs bare under the bones, her arms bare below
+  // torn sleeves (sleeves: false, the sleeves drawn by ogreRags())
+  giantess:  {lady: true, shirt: "#6a5440", legs: "#a8452f", sleeves: false, plain: true, age: 1, bend: 0.2, build: 1, nails: "long", ivory: false},
   violet:    {bare: true, regalia: true, sarong: ["#3a1e48", BROCADE], turban: "#1a1020"},
   ochre:     {bare: true, regalia: true, sarong: ["#6a2410", BROCADE], turban: "#2a1a0c"},
   teal:      {bare: true, regalia: true, sarong: ["#143a4a", BROCADE], turban: "#0c1a1a"},
@@ -422,9 +425,11 @@ function ogreDaughter(name, more) {
   return cast(w.cast, Object.assign({}, w.look, own, {woman: woman}, more));
 }
 
-// The giantess's rags: the cloth person() drew, torn: a ragged hem at the blouse's foot by the waist and at the skirt's
-// by the ankles, strips hanging from each, a patch and a tear. j: person()'s joints; t: seconds (the strips sway).
-function ogreRags(j, t) {
+// The giantess's rags: the cloth person() drew, torn: a ragged hem at the blouse's foot by the waist, strips hanging from
+// it, a patch and a tear; a skirt of bones to just above the knee; the blouse's sleeves torn on the forearm, ragged, over
+// her bare hands and wrists (her look's sleeves: false). j: person()'s joints; t: seconds (the strips sway); arms: the sleeves to draw ("AB", the
+// default, or one).
+function ogreRags(j, t, arms) {
   var w = ogJoint(j.waist), aa = ogJoint(j.ankleA), ab = ogJoint(j.ankleB), cr = ogJoint(j.crown), ch = ogJoint(j.chin);
   var u = Math.hypot(ch[0] - cr[0], ch[1] - cr[1]) / 100, k;
   pen.save();
@@ -440,12 +445,13 @@ function ogreRags(j, t) {
     }
   }
   hem(w[0], w[1] + 6 * u, 44 * u, "#5a4634", 3);
+  var knee = w[1] + 0.48 * (Math.max(aa[1], ab[1]) - w[1]);   // just above the knee: the bones end there (owner, 2026-11-16)
   // a skirt of bones over her rags (owner, 2026-11-13: "Give the giantess a skirt made of bones"): a cord at the waist,
   // long bones hanging from it close round the hips, knobbed at both ends, a skull at her side
   pen.strokeStyle = "#3a2a1a"; pen.lineWidth = 3 * u;
   pen.beginPath(); pen.moveTo(w[0] - 50 * u, w[1] + 4 * u); pen.quadraticCurveTo(w[0], w[1] + 14 * u, w[0] + 50 * u, w[1] + 4 * u); pen.stroke();
   for (k = 0; k < 11; k++) {
-    var q = k / 10, bx = w[0] - 46 * u + q * 92 * u, by = w[1] + 6 * u + 8 * u * Math.sin(q * Math.PI), len = (70 + 22 * dice(k + 61)) * u;
+    var q = k / 10, bx = w[0] - 46 * u + q * 92 * u, by = w[1] + 6 * u + 8 * u * Math.sin(q * Math.PI), len = knee - by - (8 * dice(k + 61)) * u;
     var lean = (q - 0.5) * 0.35 + 0.04 * Math.sin(t * 1.5 + k);
     pen.save(); pen.translate(bx, by); pen.rotate(lean);
     pen.fillStyle = k % 3 === 1 ? "#e4dac4" : "#f2ead6"; pen.strokeStyle = "#7a6a50"; pen.lineWidth = 1.2 * u;
@@ -458,7 +464,30 @@ function ogreRags(j, t) {
   pen.beginPath(); pen.arc(0, 0, 11 * u, Math.PI, 0); pen.lineTo(7 * u, 9 * u); pen.lineTo(-7 * u, 9 * u); pen.closePath(); pen.fill(); pen.stroke();
   pen.fillStyle = "#3a2a1a"; pen.beginPath(); pen.arc(-4 * u, -1 * u, 2.8 * u, 0, 7); pen.arc(4 * u, -1 * u, 2.8 * u, 0, 7); pen.fill();
   pen.restore();
-  hem((aa[0] + ab[0]) / 2, Math.max(aa[1], ab[1]) - 22 * u, 52 * u, "#4a3a2c", 9);
+  (arms || "AB").split("").forEach(function (which, n) {   // each sleeve torn on the forearm (below her hair), its end in
+    var sh = ogJoint(j["shoulder" + which]), el = ogJoint(j["elbow" + which]), wr = ogJoint(j["wrist" + which]);   // rags
+    var end = [mix(el[0], wr[0], 0.74), mix(el[1], wr[1], 0.74)], wide = 13 * u;   // down to the forearm, below her long hair
+    function across(a, b) { var dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1; return [-dy / l, dx / l, dx / l, dy / l]; }
+    var c1 = across(sh, el), c2 = across(el, end), ce = [(c1[0] + c2[0]) / 2, (c1[1] + c2[1]) / 2];
+    pen.beginPath();
+    pen.moveTo(sh[0] + c1[0] * wide - c1[2] * 6 * u, sh[1] + c1[1] * wide - c1[3] * 6 * u);
+    pen.lineTo(el[0] + ce[0] * wide, el[1] + ce[1] * wide);
+    for (var e = 0; e <= 8; e++) {                      // the ragged end, across the forearm
+      var f = 1 - e / 4, deep = (e % 2 ? 9 + 8 * dice(n * 11 + e) : -2) * u;
+      pen.lineTo(end[0] + c2[2] * deep + c2[0] * wide * 0.85 * f, end[1] + c2[3] * deep + c2[1] * wide * 0.85 * f);
+    }
+    pen.lineTo(el[0] - ce[0] * wide, el[1] - ce[1] * wide);
+    pen.lineTo(sh[0] - c1[0] * wide - c1[2] * 6 * u, sh[1] - c1[1] * wide - c1[3] * 6 * u); pen.closePath();
+    ogFill("#6a5440", "#2a1c10", 1.2);
+    pen.strokeStyle = "rgba(42, 28, 16, 0.6)"; pen.lineWidth = 1;   // a split up the sleeve
+    pen.beginPath(); pen.moveTo(end[0] + c2[0] * 3 * u, end[1] + c2[1] * 3 * u); pen.lineTo(mix(el[0], end[0], 0.3) + c2[0] * 5 * u, mix(el[1], end[1], 0.3) + c2[1] * 5 * u); pen.stroke();
+    for (e = 0; e < 2; e++) {                           // two strips hanging from its end
+      var side = e ? -0.55 : 0.45, sx = end[0] + c2[2] * 6 * u + c2[0] * wide * side, sy = end[1] + c2[3] * 6 * u + c2[1] * wide * side;
+      var sway = 2 * Math.sin(t * 1.9 + e + n), dl = (14 + 10 * dice(n * 7 + e)) * u;
+      pen.beginPath(); pen.moveTo(sx - 2.5 * u, sy); pen.lineTo(sx + 2.5 * u, sy); pen.lineTo(sx + sway, sy + dl); pen.closePath();
+      ogFill("#5a4634", "#2a1c10", 0.8);
+    }
+  });
   pen.fillStyle = "#7a6650"; pen.strokeStyle = "#2a1c10"; pen.lineWidth = 1;   // a patch sewn on, and a tear
   pen.beginPath(); pen.rect(w[0] - 20 * u, w[1] + 40 * u, 16 * u, 14 * u); pen.fill(); pen.stroke();
   pen.lineWidth = 1.6;
@@ -479,7 +508,7 @@ function ogre(x, y, t, look) {
   var j = person(x, y, Object.assign({size: 1.75, skin: OGRES[kind].skin, hidden: ["hair"], buttons: false, feel: "angry"}, OGRE_LOOKS[kind], given));
   if (OGRES[kind].collar && j.shoulderA && j.elbowA) { ogreCollar(j, OGRES[kind]); }
   if (OGRES[kind].yaksha && j.shoulderA) { ogreBones(j, OGRES[kind]); }
-  if (kind === "giantess" && j.waist && j.ankleA) { ogreRags(j, t); }
+  if (kind === "giantess" && j.waist && j.ankleA) { ogreRags(j, t, "AB"); }   // (her arms both show past her body, her bent stance)
   ogreHead(j, kind, given.face || 1, t, jaw);
   return j;
 }

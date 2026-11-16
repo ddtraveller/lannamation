@@ -47,16 +47,21 @@ function hhSceneMother(t) {
     function son() {
       bj = person(bx, g + 10, hhBoy(13, {face: 1, feel: knows ? "happy" : "concerned", wai: vow ? 1 : undefined,
                                          mouth: welTalk(t, welSays(t, H08_PLAN, ["H032"])), at: [vx, g - 400],
-                                         reachA: embrace > 0.6 ? [vx + 46, g - 168] : undefined, reachB: embrace > 0.6 ? [vx + 26, g - 160] : undefined}));
+                                         reachB: embrace > 0.6 ? [vx + 26, g - 160] : undefined,
+                                         handA: embrace > 0.6 ? [-9, 58] : undefined}));   // his far, left hand behind his chest, unseen (2026-11-16: below the waist the kit draws it over the sarong)
     }
     // The embrace (owner, 2026-11-13, twice): his far arm behind her, his near arm round her and over her; her far arm
-    // behind him, her near arm in front of him. Drawn: him, her, him again without his far forearm, her near forearm.
+    // behind him, her near arm in front of him.
     if (embrace > 0.5) {                                 // (owner, 2026-11-13, again) both far arms behind everything
       var pv = hhJointsOf(function () { mother(); return vj; }), ps = hhJointsOf(function () { son(); return bj; });
-      son();                                                              // he whole, his far arm with him
-      mother();                                                           // she over it (her far arm behind her and him)
-      hhArmUnder(ps, "B", 13, son);                                       // he again over her, but for his far forearm
-      hhArmOver(pv, "A", 40, mother);                                     // her near forearm over him
+      // (owner, 2026-11-16, at 8:20: "change the queen's right arm to be behind the prince ... make his left lower arm and
+      // hand invisible. His right arm should be on top"). Her right arm, the one that lay across his chest (a painted woman
+      // facing left is drawn mirrored, so it is her arm B), now goes behind him; his far, left arm hangs behind his own
+      // body (no reach: the kit's behindA), unseen; his near, right arm (B) round her is laid on top.
+      son();                                                              // he
+      mother();                                                           // she over him
+      son();                                                              // he again over her: her arms behind him, her hand at his side
+      hhArmOver(ps, "B", 13, son);                                        // his near, right forearm on top of all
     } else { mother(); son(); }
     if (milk > 0 && vj && bj && bj.chin) {               // her milk streaming to his mouth, a thin bright arc
       var sh = vj.shoulderA ? himmaJoint(vj.shoulderA) : null;

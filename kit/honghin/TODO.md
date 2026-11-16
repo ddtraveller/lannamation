@@ -166,6 +166,29 @@ right drawn new, from scratch, after northern temple murals and thangka (not the
 larger mouth fitted round the tusks. 7. s16 the turtle under the water, as the hero film's pond fish swim. 8. s17 a new
 kind of bird in flight in the kit.
 
+## The owner's notes on v3 (2026-11-16), by film time
+1. 3:21, 3:48, 4:50 the wife with a raised hand (castMix(30): no load, the dancer's pose): hhWife() lowers the arms
+of any wife with nothing to hold. 2. 3:32 the astrologer pointing at the sky an old man (age, white hair, a white
+moustache). 3. The other astrologer's beads tied to his headband: hhBeadVeil() hangs each string from the band's lower
+edge in the head's frame, a cord along it. 4. 4:21 Indra's chest and belly: the kit's look.muscles (bodyMuscles()),
+drawn through chest() on the skin, under the sash and the arms, the breastbone forward of the spine on a three-quarter
+chest; indraChest(), laid over the finished figure (and so over his arm), removed. 5. 5:41 the old man's torch in his
+near hand (fingersB, hhBrand(..., "B")), so the far arm hangs behind him and no upper arm lies over his cloth. 6. 5:52
+a pot of fired clay in Vimala's hands, tipped, the water running onto the bed (h05Pot(), h05PotDraw()). 7. 7:20 the
+prince's arm rises to the sword by an arc, the hand curling, and holds it still. 8. KIT DEFAULT: no hand rocks on the
+beat and no fingers stir unless look.flex (the waving at 5:41 and 7:20 was the wrist's flex on a lifted hand or fist).
+9. 5:52 the pot's layers: she, the pot over her far hand at its neck, her near forearm over the pot (hhArmOver B).
+10. 8:20 the embrace: her right arm behind him (a painted woman facing left is drawn mirrored: it is her arm B, which had
+been laid over him); his left hand hung behind his chest (handA [-9, 58]: lower, the kit draws a hanging far hand over
+the sarong); his right forearm laid on top. 11. 8:42 the stout son and the two at the far right back in the kit's own
+drawing (hhSon(): no muralMan), each his own build: 1 fat, 4 wiry (build 0.25), 5 the tallest and thinnest (build 0.55);
+KIT: CHEST_MAN_FAT rebalanced for three-quarter (it was a profile's belly: back -78, belly 114); a man's lannaNose()
+firmer (his nose was all but gone at a film's size). 12. 9:38 the giantess (kit ogre.js): no sin, her legs bare, the
+bones to just above the knee, no necklace, sleeves torn on the forearm (KIT: look.sleeves false). 13. 10:14 she walks at
+him without stopping; Kanchai tucked at the back of his waist cloth, his hand to the hilt, pulled up and back over his
+shoulder, held, then the stroke. 14. 10:31 the bag of gold smaller (0.72), in front of him, his near hand cupped under
+its foot, his far hand at its side (hhArmOver of the far forearm had laid it over the bag).
+
 ## Open
 
 - Pan's ear on the Kam Mueang (story.py `ASK`), then her voice; the lines retimed to her takes (each scene's

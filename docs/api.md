@@ -1184,7 +1184,7 @@ Returns nothing: it draws with pen.
 e.g. wrap(4, -54, 92, -21, 24, 17, "#2f3f6e", SINS[0][1], 0.1, 0.5, 0.35);
 ```
 
-### `seated(kind, hipY, colour, bands, slight, longer)`
+### `seated(kind, hipY, colour, bands, slight, longer, shin)`
 
 ```
 The lower body of one who sits on the floor, drawn about the hips at
@@ -1200,6 +1200,8 @@ It gives back where the joints are: [knee B, knee A, ankle B, ankle A].
   kind     also "astride": one who rides, the near leg hanging down the animal's side (in cloth, both legs, as
            side-saddle)
   hipY     the hips' height, in pen's pixels: below 0, above the ground
+  shin     "astride" only: radians the lower leg swings back from hanging (look.shin; the owner, 2026-11-13:
+           the boy's shin clear of the swan's near wing)
 It draws in pen's frame as it is (the caller has moved pen to the person's place on the ground).
 e.g. var joints = seated("cross", -60, "#3d4f78", null, false, 1);
 ```
@@ -1480,6 +1482,18 @@ The kit's sabai across the chest, over the body and under the arms. b: personBod
 
 ```
 A bare chest's tattoo, a man of the north's: a star on the breast and a row of dots along the collarbones. b: personBody()'s body.
+```
+
+### `bodyMuscles(b)`
+
+```
+A strong bare chest (look.muscles): the chest's two muscles, their lower edges in shade and a light on each, the
+breastbone's line, the ribs' edge, the belly's muscles in three rows of two, the navel. Drawn in the body's own frame
+through chest(), so they turn, bend and lean with the chest; the breastbone forward of the spine on a three-quarter
+chest (the near muscle wide, the far one narrowed by the turn), on the spine seen full face. Inside the chest's
+outline, under the collar, the sash and the arms (owner, 2026-11-16, of Indra: "Make his pectorals and abs so they
+are more aligned to his chest"; until then they were laid over the finished figure, on the shoulders' midpoint,
+over his arm). b: personBody()'s body; look.muscles true (a dark ink) or the colour of the lines.
 ```
 
 ### `bodyShirtFront(b)`
@@ -1927,7 +1941,9 @@ how: {feel: a feeling, as a person's (creatureFeel())}: its head is carried
 high or low, its ears go up or back, its tail wags or droops, its brows
 and its mouth show it, and its eyes close, slant or go wide.
 x, y: where its feet stand, in the sheet's pixels; it faces right and is about 140 long. t: seconds (it
-trots on the beat). how: {feel}, or nothing; another name warns. Returns nothing: it draws with pen.
+trots on the beat). how: {feel, still: true for a dog that stands, its legs at rest, no bob (its tail and face still
+alive; owner, 2026-11-13: "Have the dog be still instead of walking in place")}, or nothing; another name warns.
+Returns nothing: it draws with pen.
 e.g. dog(500, GROUND, t, {feel: "happy"});
 ```
 
@@ -8347,20 +8363,64 @@ ogre.js - a living ogre (ยักษ์), for the Lanna cartoon kit: the ogres 
 
 (no comment)
 
-### `ogreHead(j, kind, face, t)`
+### `ogGlint(x, y, r, alpha)`
+
+```
+A glint of light on gold: a four-pointed star at (x, y), r long, alpha 0 to 1.
+```
+
+### `ogJoint(p)`
 
 ```
 ogreHead(j, kind, face, t): the head drawn over the person's, j what person() gave back.
-person() gives its joints in pixels of the sheet, PIX to a film pixel; the head is drawn in film pixels, so they are
-divided by PIX here (until 2026-11-11 they were not: on a film's page, at two pixels, the head was drawn at twice its
-place and size, off the body).
+person() gives its joints in pixels of the sheet, through all the pen's turns and scales (PIX to a film pixel, and a
+scene's camera); the head is drawn with the pen as it is now, so each joint is taken back through the pen's
+transform (ogJoint). Until 2026-11-11 they were used as they came: on a film's page, at two pixels, the head was drawn
+at twice its place and size, off the body.
 ```
 
-### `ogreMeat(p, turn)`
+### `ogreStatueFace(c, t, jaw, ink)`
+
+```
+The face after the owner's reference (2026-11-13, the sea giantess's statue): a full round face, a heavy brow ridge
+knit in a frown, round eyes under heavy lids, a broad flat nose with flared nostrils, thick lips shut (open to eat), and
+two tusks rising from the lower jaw at the mouth's corners, curving up and out past the upper lip. Drawn in the head's
+own measure (100 from crown to chin), the pen already there.
+```
+
+### `ogreCollar(j, c)`
+
+```
+The beaded collar and the arm band of the statue (c: a kind of OGRES with a collar), over the body person() drew: a
+broad band round the neck and over the chest, a row of beads on it and points hanging; a band round the near upper arm.
+```
+
+### `ogreYakshaFace(c, t, jaw, ink)`
+
+```
+The ghouls' face after the owner's reference (2026-11-13, a temple mural's yaksha): turned three quarters toward the
+way it faces, a long face with a great hooked nose, one bulging eye under a heavy brow curling up like a flame, the
+mouth drawn back in a grimace baring both rows of teeth, fangs up from the lower jaw and down from the upper, the
+lower jaw a shade darker; its hair drawn up in a topknot in a gold band, a gold ring in the long ear. In the head's own
+measure (crown to chin 100), facing +x.
+```
+
+### `ogreBones(j, c)`
+
+```
+The ghouls' bodies, bony and thin, their muscles drawn (owner, 2026-11-13): over the body person() drew, the ribs and
+the breastbone, the collarbones, the hollow belly, the long muscles of the upper arm and forearm, the knees' knobs.
+```
+
+### `ogreHead(j, kind, face, t, jaw)`
+
+(no comment)
+
+### `ogreMeat(p, turn, size)`
 
 ```
 ogreMeat(p, turn): a raw haunch of meat, the bone's end showing, held at p (a joint person() gave back, in pixels of
-the sheet, as wristA) and turned by turn radians: what the ghouls carry and eat. Returns nothing; it draws with pen.
+the sheet, as wristA) and turned by turn radians (size: a scale, 1 unless told): what the ghouls carry and eat. Returns nothing; it draws with pen.
 e.g. var j = ogre(600, GROUND, t, {kind: "ghoul", reachA: [660, GROUND - 330]}); ogreMeat(j.wristA, -0.6);
 ```
 
@@ -8368,11 +8428,20 @@ e.g. var j = ogre(600, GROUND, t, {kind: "ghoul", reachA: [660, GROUND - 330]});
 
 (no comment)
 
+### `ogreRags(j, t, arms)`
+
+```
+The giantess's rags: the cloth person() drew, torn: a ragged hem at the blouse's foot by the waist, strips hanging from
+it, a patch and a tear; a skirt of bones to just above the knee; the blouse's sleeves torn on the forearm, ragged, over
+her bare hands and wrists (her look's sleeves: false). j: person()'s joints; t: seconds (the strips sway); arms: the sleeves to draw ("AB", the
+default, or one).
+```
+
 ### `ogre(x, y, t, look)`
 
 ```
 ogre(x, y, t, look): the ogre standing on (x, y) at second t (see the top of this file). look.kind: "mural" unless
-told. Returns the joints person() gives back.
+told; look.jaw: how far its mouth is open, 0 shut to 1 wide (to eat), else it opens and closes on its own. Returns the joints person() gives back.
 e.g. var j = ogre(1300, GROUND, t, {kind: "forest", face: -1, step: t * 0.5, at: [600, 700]});
 ```
 
@@ -9001,6 +9070,19 @@ as they were).
 e.g. parakeet(900, 420, clock, {eat: 1});
 ```
 
+### `brahminyKite(x, y, t, look)`
+
+```
+---------- the Brahminy kite ----------
+brahminyKite(x, y, t, look): the Brahminy kite, เหยี่ยวแดง, soaring over the north's rivers and paddies (the owner,
+2026-11-13: "Animate a different kind of bird to fly in the kit to give the cartoons variety"): a chestnut body and
+wings, a white head, neck and breast finely streaked, black tips to the long fingered primaries, a rounded tail, a
+hooked yellow bill. It soars: long glides on wings held flat and a little raised, a few slow beats now and then, the
+fingers of the wingtips spread, the tail fanning and tilting as it steers. (x, y): the middle of its body; look:
+{size (1: about 260 across the wings), face (1 flies right), seed}. Returns nothing: it draws with pen.
+e.g. brahminyKite(600, 300, t, {face: -1, size: 0.8});
+```
+
 ## taleanimals.js
 
 taleanimals.js - five animals of the tales and the rites of Lanna, for the Lanna cartoon kit. Load it after the kit, beasts.js, northbirds.js and lannabirds.js (it draws with their helpers):  <script src="oldcartoon.js"></script> <script src="beasts.js"></script> <script src="northbirds.js"></script> <script src="lannabirds.js"></script> <script src="taleanimals.js"></script>  and call each from a scene as the kit's rooster() is called: (x, y) is where its feet are; t is the second; look holds what it does, and a name it does not know is warned of.  toad(x, y, t, look)           the Asian common toad, คันคาก, or the rice-field frog, กบนา (kind: "frog"): sits breathing, blinks, calls with its throat swelling, hops, catches a fly with its tongue; the frog swims rhinoBeetle(x, y, t, look)    the rhinoceros beetle, กว่าง: walks, raises its horns, flies; the horned male (กว่าง โซ้ง), a smaller male (กว่างแซม) or the hornless female (แม่อี่หลุ้ม) kwangFight(x, y, t, look)     two males fighting on the log for the female in its middle, as the north plays ชนกว่าง goldTurtle(x, y, t, look)     the golden turtle, เต่าอองคำ: walks, swims, draws in its head, surfaces to breathe, shines; or a p
@@ -9511,7 +9593,7 @@ angles in radians, the head's first. It changes nothing outside itself; each cal
 e.g. var angles = hongChain(function (s) { return 6 * Math.sin(s * 0.45); }, t);
 ```
 
-### `hongFlight(x, y, t, look)`
+### `hongFlight(x, y, t, look, keepNear)`
 
 ```
 The hong flying, about the middle of its body, to the right (look.face -1 left). Its spine moves as
@@ -9546,7 +9628,8 @@ hongHin(x, y, t, look): the stone swan flying, about the middle of its body, to 
 look: the hong's keys (HIMMA_KEYS), size 2.25 unless told (a boy of size 0.7 sits on it). It flies level (the rider
 keeps his seat) unless look.level is false. Returns {seat, behind, beak}, points of the scene: where the rider sits
 (person(..., {floor: "astride"})), where one more sits behind him (the grandmother, on the way home), and the beak,
-where the reins end (hongHinReins()).
+where the reins end (hongHinReins()). With look.rider true the near wing is not drawn: it comes back as near(), to be
+called after the rider, so the wing is in front of his legs (the owner, 2026-11-12).
 e.g. var h = hongHin(900, 500, t, {});
      var j = person(h.seat[0], h.seat[1], cast("boy", {floor: "astride", reachA: [h.seat[0] + 58, h.seat[1] - 62]}));
      hongHinReins(h, [h.seat[0] + 58, h.seat[1] - 62]);
@@ -9556,16 +9639,36 @@ e.g. var h = hongHin(900, 500, t, {});
 
 ```
 hongHinReins(h, hands): the red reins from the rider's hands (a point of the scene: where the scene sent his hands,
-or a joint person() gave back divided by PIX) to the beak; h is what hongHin() gave back. Draw it after the rider.
+or a joint person() gave back, through himmaJoint()) to the beak; h is what hongHin() gave back. Draw it after the rider.
 ```
 
-### `spireCrown(j, tall)`
+### `himmaJoint(p)`
 
 ```
-spireCrown(j, tall): a gold spire crown (ชฎา) on a person's head, from the joints person() gave back: a band over the
-brow with a red stone, six tiers, each narrower, to a point. tall: its height in heads (1.1 unless told). Returns
-nothing; it draws with pen. A head under it is best drawn with hidden: ["hair"].
+spireCrown(j, tall, t): a gold spire crown (ชฎา) on a person's head, from the joints person() gave back: a band over the
+brow set with stones, ear flanges, six tiers edged with lotus petals, each narrower, to a point; given t (seconds),
+glints of light flash over it in turn (the owner, 2026-11-12: "more detail and sparkle"). tall: its height in heads
+(1.1 unless told). Returns nothing; it draws with pen. A head under it is best drawn with hidden: ["hair"].
 e.g. spireCrown(person(900, GROUND, {regalia: true, hidden: ["hair"]}), 1.2);
+a joint person() gave back, in the pen's present measure
+```
+
+### `spireCrown(j, tall, t)`
+
+(no comment)
+
+### `himmaTwinkle(stones, t)`
+
+```
+Stones that twinkle, as person()'s regalia's do: each [x, y, r] brightens and fades in its own time, now and then
+flashing a small star (owner, 2026-11-13: "Make all of Indra's jewels sparkle like on his sash, necklace, arm band
+and belt"). t: seconds. e.g. himmaTwinkle([[0, 10, 5]], t);
+```
+
+### `himmaGlint(x, y, r, alpha)`
+
+```
+A glint of light, a four-pointed star at (x, y), r long, alpha 0 to 1. e.g. himmaGlint(0, 0, 8, 1);
 ```
 
 ### `indra(x, y, t, look)`
@@ -9573,7 +9676,8 @@ e.g. spireCrown(person(900, GROUND, {regalia: true, hidden: ["hair"]}), 1.2);
 ```
 indra(x, y, t, look): Indra. look.pose: "fly" (the default: (x, y) the middle of the figure, as thewada()), "stand"
 ((x, y) the ground under him; a halo) or "throne" ((x, y) the ground under his stone throne, he sits cross-legged on
-it); size (1.6 flying, 1.5 standing, 1.35 seated, unless told), face, seed; at, feel, id and sarong as person()'s.
+it); size (1.6 flying, 1.5 standing, 1.35 seated, unless told), face, seed; at, feel, id, sarong and ground (false: no
+shadow, as on a cloud) as person()'s.
 Returns person()'s joints when he stands or sits, else nothing.
 e.g. indra(960, GROUND, t, {pose: "throne", at: [600, 700]});
 ```
@@ -10179,11 +10283,11 @@ the beam its cords go up to; 170 above it at size 1 when left out: a cradle hang
 e.g. hangingCradle(pen, 900, 760, 1, t, {top: 300, beam: false});
 ```
 
-### `swaddledBaby(brush, x, y, size)`
+### `swaddledBaby(brush, x, y, size, feel)`
 
 ```
-A baby swaddled in cloth, lying, its head to the left, eyes shut, a tuft of hair. At (x, y), its middle.
-e.g. swaddledBaby(pen, 900, 730, 1);
+A baby swaddled in cloth, lying, its head to the left, eyes shut, a tuft of hair. At (x, y), its middle. feel "sad":
+a frown and a tear on its cheek, else a small smile. e.g. swaddledBaby(pen, 900, 730, 1);
 ```
 
 ### `almsBowl(brush, x, y, size)`
@@ -10449,7 +10553,9 @@ a flame at each tier's corners. Returns the top's y.
 
 ```
 Thai painting's cloud: round lobes heaped in rows into one billow, white lit from above, blue in its underside,
-the lobes' upper edges inked, a gold line on the lit side, and a scroll curling at each end.
+the lobes' upper edges inked, a gold line on the lit side, and a scroll curling at each end. The old style: since
+2026-11-13 the kit's clouds are the soft ones (scenery.js sceneryClouds(), sceneryCloudBank()); this for a film that
+asks for Thai painting's (vimana()'s look.thai).
 ```
 
 ### `streamer(x, y, long, wide, colour, t, dir, phase)`
@@ -10458,10 +10564,14 @@ the lobes' upper edges inked, a gold line on the lit side, and a scroll curling 
 A streamer (a tung's tail or a ribbon) from (x, y), long, rippling in the wind behind (to the left: dir -1).
 ```
 
-### `chatra(x, y, h)`
+### `chatra(x, y, h, t)`
 
 ```
-A tiered parasol (ฉัตร) on its pole, its foot at (x, y), h tall.
+A tiered parasol (ฉัตร) on its pole, its foot at (x, y), h tall; t (seconds, optional) makes its gold sparkle. As much
+detail as it will carry (owner, 2026-11-13: "Give them as much detail as you can"): a gilt lotus stand, the pole
+gilded and ringed, seven tiers each a white cloth canopy edged in gold with a band of embroidery, three skirts of
+scalloped fringe hanging under it (gold, red, white), a gold drop at each scallop's point, and a lotus-bud finial with
+a stone. e.g. chatra(300, 900, 300, t);
 ```
 
 ### `vimanaPrasat(x, base, s, t)`
@@ -10576,6 +10686,33 @@ glow (0 to 1; 1). The owner's pick (C). For a hand, put (x, y) at the wrist, div
 ### `vimana(x, base, t, look)`
 
 (no comment)
+
+### `muralMan(x, y, look)`
+
+```
+---------- a man of the northern murals ----------
+muralMan(x, y, look): a man drawn from scratch after the temple murals of the north (Wat Phumin, Wat Phra Singh's Lai
+Kham) and Lanna thangka (the owner, 2026-11-13, of Hong Hin's brothers: "Redraw ... from scratch ... without
+reference to other sprites in the kit. Use thangka paintings or Thai temple paintings from the North of Thailand as
+reference inspiration"): about six and a half heads tall, slender and long in the limb, a three-quarter face with
+almond eyes turned up at their outer corners and fine arched brows, a small mouth, long ear lobes with gold plugs, the
+hair drawn up in a knot under a head-cloth whose ends hang behind; bare to the waist with a gold collar, a sash across
+the chest, arm bands and bracelets; a brocade sarong to the ankle. (x, y): the ground under his feet. look: {size
+(1: about 330 tall, as the kit's person()), face (1 looks right), body ("slim", "stout" or "tall"), skin, cloth
+([colour, gold]), band (the head-cloth's colour), faceShape ("oval", "round", "long"), feel (neutral, happy, angry,
+sad, fear, concerned, surprised, awe, thinking, sleepy), mouth (0 to 1, open as he speaks), blink, step (a number: he
+walks, the feet changing on each whole step), floor ("cross": seated cross-legged), wai (1: the hands together
+before the chest), reachA, reachB (points of the scene the near and the far hand go to), grip (the hands closed),
+ground (false: no shadow)}. Gives back the joints as person() does, in pixels of the sheet (crown, chin, neck,
+shoulderA/B, elbowA/B, wristA/B, handA/B, waist, hip, kneeA/B, ankleA/B). It draws with pen.
+e.g. var j = muralMan(800, 900, {size: 0.8, body: "stout", cloth: ["#2f5a4a", "#d0a040"], feel: "happy"});
+```
+
+### `muralHead(x, chin, crown, look, skin, band, stout)`
+
+```
+muralMan()'s head, in his frame (facing right): the chin at (x, chin), the crown at (x, crown); look as muralMan's.
+```
 
 ## people.js
 
@@ -12151,6 +12288,18 @@ them, each a round of colour fading to nothing at its edge, the whole flattened.
 number; colours: [shade, half light, lit tops]. Returns thkSprite()'s.
 ```
 
+### `sceneryCloudBank(t, x, y, wide, look)`
+
+```
+A bank of soft cloud (the owner, 2026-11-13: the soft clouds are the kit's clouds from now on, "default to using them
+in the future"): what stands or floats on cloud (a heaven's floor, the cloud at a being's feet, a floating palace's
+cloud, clouds rushing past in a flight) made of sceneryCloud()'s puffs, heaped higher in the middle and drifting a
+little; dense lays them over themselves so what stands in them is hidden to the tops. t: seconds; (x, y): the
+bank's foot's middle; wide: film pixels; look: {light ("heaven" unless told, or a key of SCENERY_CLOUD_LIGHT, or
+colours), seed, dense (2), drift (pixels it sways, 10), alpha}. Returns nothing: it draws with pen.
+e.g. sceneryCloudBank(t, 960, 1000, 1400, {seed: 3});   person(x, y, look); sceneryCloudBank(t, x, y + 30, 300, {dense: 3});
+```
+
 ### `sceneryMoon(t, x, y, r, look)`
 
 ```
@@ -13123,7 +13272,8 @@ none is named each time this runs, and stands red on the plan. From it this writ
                 red: new) and its lines in English, Central Thai and Kam Mueang. For the owner, before anything else.
   words.js      the film's words for its pages, <FOLDER>_WORDS[id] = [what the voice says, what the subtitle writes,
                 the English], as maeng/words.js: a scene names its lines by id (sNN_LINES), the film page puts them
-                on its clock. The ids are PLAN["prefix"] and a number in the order of the lines (C001, C002 ...):
+                on its clock. The ids are PLAN["prefix"] and a number in the order of the lines (C001, C002 ...),
+                but a line given a fourth item keeps it as its id (one added later, the others not renumbered):
                 a line put in or taken out renumbers those after it, so ids are settled before the voice speaks.
   central.txt   the Central Thai, a line each, in order: what a writer of Kam Mueang (or a translator) is given.
 Edit story.py and run it again; nothing else is hand-written.

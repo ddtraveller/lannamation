@@ -30,9 +30,13 @@ function hhSceneSwan(t) {
     hhCloudFeet(1640, 940, t, 360, 17);
     // Kanchai comes from Indra's hand to the boy's, and he holds it: his hand closed round the grip, the blade up, drawn
     // before him so his fist is over the hilt (owner, 2026-11-13: "show the prince holding the sword and stop him from
-    // waving hello at it").
+    // waving hello at it"). His arm rises to it by an arc as it comes, the hand already curling to take it, and closes on
+    // the grip; held, it is still (owner, 2026-11-16, at 7:20: "stop the prince from waving": the arm had snapped up with
+    // a half-open hand, and the kit rocked a lifted hand on the beat).
+    var lift = between(t, 28.5, 29.9); lift = lift * lift * (3 - 2 * lift);
     var bx = 640, by = 940, boy = hhBoy(13, {face: 1, feel: made > 0 ? "awe" : "surprised", at: made > 0 ? [H07_SWAN[0], 560] : [H07_SWAN[0], 800],
-                                             reachA: sword > 0.5 ? [bx + 90, by - 250] : undefined, grip: sword >= 1, ground: false});
+                                             reachA: sword > 0 ? [bx + 90, by - 250, lift] : undefined, grip: sword >= 1,
+                                             fingersA: sword > 0 && sword < 1 ? [0.55, 0.6, 0.65, 0.7, 0.45] : undefined, ground: false});
     if (sword > 0) {
       var bj = hhJointsOf(function () { return person(bx, by, boy); });
       var from = himmaJoint(ij.wristA), held = sword >= 1;

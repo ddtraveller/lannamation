@@ -1125,7 +1125,8 @@ function himmaGlint(x, y, r, alpha) {
 var INDRA = {skin: "#5aa06a", skinLit: "#8ccc96", skinShade: "#3a7a4e", skinLine: "#1e4a2a", body: "#4f9a62",
              throne: "#c8786a", throneLine: "#5a2a20", cushion: "#e3b04a"};
 var INDRA_LOOK = {bare: true, regalia: true, sarong: ["#8a2a3a", BROCADE], pins: true, bangles: 5, hidden: ["hair"],
-                  buttons: false, smile: 0.6};
+                  buttons: false, smile: 0.6,
+                  muscles: "rgba(20, 60, 34, 0.6)"};   // his chest and belly drawn on the skin, in green ink (person(), bodyMuscles())
 var INDRA_KEYS = {pose: true, size: true, face: true, seed: true, at: true, feel: true, id: true, sarong: true, ground: true};
 
 // indra(x, y, t, look): Indra. look.pose: "fly" (the default: (x, y) the middle of the figure, as thewada()), "stand"
@@ -1176,40 +1177,6 @@ function indra(x, y, t, look) {
     if (pose !== "stand") { checkName("Indra's pose", pose, {fly: true, stand: true, throne: true}); }
     j = person(x, y, Object.assign({}, INDRA_LOOK, {skin: INDRA.body, size: look.size || 1.5, halo: true}, own));
   }
-  indraChest(j);
   spireCrown(j, 1.2, t);
   return j;
-}
-// Indra's chest and belly drawn in detail over person()'s bare body (owner, 2026-11-13): the chest's two muscles with
-// their lower edges shaded, the breastbone's line between them, the ribs' edge, the belly's muscles in two rows of three,
-// the navel, the line down from it, a light on the chest. j: what person() gave back.
-function indraChest(j) {
-  if (!j || !j.shoulderA || !j.shoulderB || !j.waist) { return; }
-  var sa = himmaJoint(j.shoulderA), sb = himmaJoint(j.shoulderB), w = himmaJoint(j.waist);
-  var mx = (sa[0] + sb[0]) / 2, my = (sa[1] + sb[1]) / 2, half = Math.abs(sa[0] - sb[0]) * 0.42 + 8, down = w[1] - my;
-  if (down < 20) { return; }
-  var ink = "rgba(20, 60, 34, 0.55)", shade = "rgba(20, 60, 34, 0.18)", lit = "rgba(220, 255, 220, 0.25)";
-  pen.save(); pen.lineCap = "round";
-  [-1, 1].forEach(function (d) {                    // the chest's muscles, their lower edges in shade
-    pen.beginPath(); pen.moveTo(mx + d * 3, my + down * 0.14);
-    pen.quadraticCurveTo(mx + d * half * 0.9, my + down * 0.12, mx + d * half, my + down * 0.3);
-    pen.quadraticCurveTo(mx + d * half * 0.6, my + down * 0.42, mx + d * 3, my + down * 0.36); pen.closePath();
-    pen.fillStyle = shade; pen.fill();
-    pen.strokeStyle = ink; pen.lineWidth = 1.6;
-    pen.beginPath(); pen.moveTo(mx + d * half, my + down * 0.3); pen.quadraticCurveTo(mx + d * half * 0.6, my + down * 0.42, mx + d * 3, my + down * 0.36); pen.stroke();
-    pen.fillStyle = lit; pen.beginPath(); pen.ellipse(mx + d * half * 0.55, my + down * 0.2, half * 0.25, down * 0.05, 0, 0, 7); pen.fill();
-    pen.strokeStyle = shade; pen.lineWidth = 1.4;   // the ribs' edge under the chest
-    pen.beginPath(); pen.moveTo(mx + d * 6, my + down * 0.46); pen.quadraticCurveTo(mx + d * half * 0.7, my + down * 0.5, mx + d * half * 0.9, my + down * 0.62); pen.stroke();
-  });
-  pen.strokeStyle = ink; pen.lineWidth = 1.3;       // the breastbone's line, down into the belly's middle line
-  pen.beginPath(); pen.moveTo(mx, my + down * 0.16); pen.lineTo(mx, my + down * 0.88); pen.stroke();
-  for (var r = 0; r < 3; r++) {                     // the belly's muscles, two rows of three, their edges
-    var ry = my + down * (0.5 + 0.13 * r);
-    [-1, 1].forEach(function (d) {
-      pen.beginPath(); pen.moveTo(mx + d * 3, ry + down * 0.1); pen.quadraticCurveTo(mx + d * half * 0.32, ry + down * 0.12, mx + d * half * 0.42, ry + down * 0.04); pen.stroke();
-      pen.beginPath(); pen.moveTo(mx + d * half * 0.42, ry - down * 0.02); pen.quadraticCurveTo(mx + d * half * 0.46, ry + down * 0.05, mx + d * half * 0.42, ry + down * 0.1); pen.stroke();
-    });
-  }
-  pen.fillStyle = "rgba(20, 50, 30, 0.6)"; pen.beginPath(); pen.ellipse(mx, my + down * 0.9, 2.2, 3, 0, 0, 7); pen.fill();   // the navel
-  pen.restore();
 }

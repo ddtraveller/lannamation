@@ -37,31 +37,19 @@ var HH_SON_FACES = [                                    // and their skin, head 
   {north: "full", body: "fat", eyes: 1.05, lips: 1.18, skin: "#d9a87e", head: 1.15, scale: 0.92},                 // shorter and stouter
   {build: 0.45, head: 0.86, eyes: 0.9, lips: 0.85, skin: "#f0d2b0", hair: "#3a2a1e", scale: 1.08},                // taller and thinner
   {north: "broad", eyes: 1.1, lips: 1, lid: "crease", skin: "#c8956a", head: 1.0, hair: "#1a1410", scale: 1},
-  {north: "soft", eyes: 0.88, lips: 1.22, skin: "#e2b48c", head: 0.94, hair: "#2e2218", scale: 0.98},
-  {north: "round", eyes: 1.14, lips: 0.9, head: 1.05, skin: "#f4dcc0", scale: 0.96}];                             // the youngest             // the youngest
+  {north: "soft", build: 0.25, eyes: 0.88, lips: 1.22, skin: "#e2b48c", head: 0.94, hair: "#2e2218", scale: 1.0},  // wiry
+  {north: "round", build: 0.55, eyes: 1.14, lips: 0.9, head: 0.9, skin: "#f4dcc0", scale: 1.1}];                  // the youngest, the tallest and thinnest
 // One of the six sons (k 0 to 5), as welPerson() gives a look: a noble in his own cloth, his own face and frame (scale
 // multiplies the size given, 0.8 unless told). e.g. person(x, y, hhSon(2, {size: 0.8}));
-// Three of the six drawn new, from scratch, after the northern temple murals (honghin.js muralMan(); the owner,
-// 2026-11-13: "Redraw the fat brother from scratch. Redraw the 2 brothers to the far right from scratch as well"):
-// the stout one (1) and the two at the far right of the lane (4, 5). Their looks carry mural: true, and person() below
-// draws them with muralMan().
-var HH_MURAL_SONS = {1: {body: "stout", skin: "#d9a87e", faceShape: "round"},
-                     4: {body: "slim", skin: "#e2b48c", faceShape: "long"},
-                     5: {body: "tall", skin: "#f0d2b0", faceShape: "oval"}};
+// All six in the kit's own drawing (owner, 2026-11-16: the stout one and the two at the far right, drawn from scratch
+// after the murals on 2026-11-13, "look like a totally different style then the other brothers. Try to draw them so they
+// are unique but in the same style ... Make sure they have noses as well"): each his own build and face instead.
 function hhSon(k, extra) {
   var c = HH_SONS[k % 6], f = Object.assign({}, HH_SON_FACES[k % 6]), scale = f.scale;
-  if (HH_MURAL_SONS[k % 6]) {
-    var m = HH_MURAL_SONS[k % 6], size0 = (extra && extra.size !== undefined ? extra.size : 0.8) * scale;
-    return Object.assign({mural: true, cloth: [c[0], c[1]], band: c[0]}, m, extra || {}, {size: size0 * 1.4});   // as tall as the kit-drawn brothers beside them
-  }
   delete f.scale;
   var size = (extra && extra.size !== undefined ? extra.size : 0.8) * scale;
   return welPerson("noble", Object.assign({sarong: [c[0], BROCADE], turban: c[0], smile: 0.3}, f), Object.assign({}, extra, {size: size}));
 }
-
-// person() as the kit has it, but a look marked mural: true (Hong Hin's mural brothers) is drawn by muralMan().
-var HH_PERSON = person;
-person = function (x, y, look) { return look && look.mural ? muralMan(x, y, look) : HH_PERSON(x, y, look); };
 
 // ---------- the words ----------
 // The narration's subtitles, as the White Eel's (welSubtitles), from this film's words (words.js).
@@ -627,7 +615,15 @@ function hhCuts(t, cuts) {
 // A painted wife of the six (k 0 to 5). e.g. person(x, y, hhWife(2, {face: -1, feel: "worry"}));
 // young and pretty, their hair dark (owner, 2026-11-13: castMix() makes one woman in eight old and grey)
 var HH_WIFE_HAIR = ["#17110e", "#1d1410", "#24150e", "#120e14", "#1a1214", "#1d1410"];
-function hhWife(k, extra) { return welPerson(HH_WIVES[k % 6], {size: 0.72, hair: HH_WIFE_HAIR[k % 6], age: 0}, Object.assign({id: "wife" + k}, extra || {})); }
+// A wife with nothing to hold stands with her arms down: castMix() gave the fifth (30) the dancer's pose, a hand raised
+// over her head, which read as asking a question in class (owner, 2026-11-16: "Make her lower her arm").
+function hhWife(k, extra) {
+  var look = welPerson(HH_WIVES[k % 6], {size: 0.72, hair: HH_WIFE_HAIR[k % 6], age: 0}, Object.assign({id: "wife" + k}, extra || {}));
+  if (look.woman && typeof look.woman === "object" && look.woman.pose && !look.woman.holds) {
+    look.woman = Object.assign({}, look.woman, {pose: undefined, hands: "normal"});
+  }
+  return look;
+}
 // Vimala, the chief queen. e.g. person(x, y, hhVimala({floor: "side"}));
 function hhVimala(extra) { return welPerson("woman:princess", HH_VIMALA, Object.assign({id: "vimala"}, extra || {})); }
 // An astrologer's chart, propped on the floor before him (x, y its foot's middle), after the owner's references
@@ -687,17 +683,51 @@ function hhGoatee(j, t) {
   for (var k = -1; k <= 1; k++) { pen.beginPath(); pen.moveTo(x + k * 0.04 * h, y + 0.04 * h); pen.quadraticCurveTo(x + k * 0.03 * h, y + 0.3 * h, x + sw * 0.8, y + 0.56 * h); pen.stroke(); }
   pen.restore();
 }
-// Strings of beads hanging from someone's headband over the eyes, no lower than the nose (j: person()'s joints).
-function hhBeadVeil(j, t) {
-  var cr = himmaJoint(j.crown), ch = himmaJoint(j.chin), h = Math.hypot(ch[0] - cr[0], ch[1] - cr[1]);
-  var top = mix(cr[1], ch[1], 0.3), low = mix(cr[1], ch[1], 0.66), mx = mix(cr[0], ch[0], 0.5) + 0.06 * h;
+// Strings of beads hanging from someone's headband over the eyes, no lower than the nose (j: person()'s joints; face: 1 or
+// -1 as the person faces). Each string is tied to the band's lower edge, where the kit's head-cloth crosses the brow
+// (oldcartoon.js headTurban()), and a cord runs along that edge: worked out in the head's own frame (from the crown down
+// to the chin) and carried into the scene, so the veil tilts with the head (owner, 2026-11-16: "change the astrologer
+// with the beads over his eyes so the beads are attached to his head band"; before, the strings began on one level line
+// over the slanting band, on it at the front and under it, the skin between, at the back).
+var HH_BAND_LOW = [[58, -292], [44, -306], [14, -312], [-14, -310], [-38, -308], [-52, -298], [-56, -286]];   // headTurban()'s lower edge: two curves
+function hhBeadVeil(j, t, face) {
+  var cr = himmaJoint(j.crown), ch = himmaJoint(j.chin), d = face === -1 ? -1 : 1;
+  var top = STYLE.face === "lanna" ? -348 + LANNA_HEAD.down : -348, tall = -227 - top;   // the crown and chin in the head's frame (personHead())
+  var down = [(ch[0] - cr[0]) / tall, (ch[1] - cr[1]) / tall], across = [d * down[1], -d * down[0]];
+  function at(hx, hy) { return [cr[0] + (hy - top) * down[0] + hx * across[0], cr[1] + (hy - top) * down[1] + hx * across[1]]; }
+  var edge = [], c = HH_BAND_LOW;
+  [0, 3].forEach(function (s0) {                     // the band's lower edge, sampled along its two curves
+    for (var n = 0; n <= 20; n++) {
+      var u = n / 20, v = 1 - u;
+      edge.push([v * v * v * c[s0][0] + 3 * v * v * u * c[s0 + 1][0] + 3 * v * u * u * c[s0 + 2][0] + u * u * u * c[s0 + 3][0],
+                 v * v * v * c[s0][1] + 3 * v * v * u * c[s0 + 1][1] + 3 * v * u * u * c[s0 + 2][1] + u * u * u * c[s0 + 3][1]]);
+    }
+  });
+  function bandAt(hx) {                              // the edge's height at hx (it runs from the face's side, x 58, to the knot's)
+    for (var n = 1; n < edge.length; n++) {
+      if ((edge[n - 1][0] - hx) * (edge[n][0] - hx) <= 0) {
+        var w = (hx - edge[n - 1][0]) / ((edge[n][0] - edge[n - 1][0]) || 1);
+        return mix(edge[n - 1][1], edge[n][1], w);
+      }
+    }
+    return edge[edge.length - 1][1];
+  }
+  var scale = Math.hypot(down[0], down[1]), low = top + 0.66 * tall;
   pen.save();
+  pen.lineCap = "round";
+  pen.strokeStyle = "#7a5a24"; pen.lineWidth = 2.6 * scale;   // the cord along the band's edge, the strings tied to it
+  pen.beginPath();
+  for (var hx = -32; hx <= 50; hx += 2) { var e = at(hx, bandAt(hx) - 1); if (hx === -32) { pen.moveTo(e[0], e[1]); } else { pen.lineTo(e[0], e[1]); } }
+  pen.stroke();
   for (var k = -4; k <= 4; k++) {
-    var x = mx + k * 0.075 * h, sway = 0.01 * h * Math.sin(t * 1.6 + k), end = low - Math.abs(k) * 0.02 * h;
-    pen.strokeStyle = "rgba(60, 40, 20, 0.6)"; pen.lineWidth = 0.6; pen.beginPath(); pen.moveTo(x, top); pen.lineTo(x + sway, end); pen.stroke();
-    for (var y = top + 0.03 * h; y <= end; y += 0.045 * h) {
-      pen.fillStyle = ["#c8302a", "#e0b23a", "#2e6a8a", "#f4eee0"][(k + 8 + Math.round(y)) % 4];
-      pen.beginPath(); pen.arc(x + sway * (y - top) / (end - top), y, 0.017 * h, 0, 7); pen.fill();
+    var sx = 7 + 9 * k, from = bandAt(sx) - 1, end = low - Math.abs(k) * 0.02 * tall, sway = 1.2 * Math.sin(t * 1.6 + k);
+    var p0 = at(sx, from), p1 = at(sx + sway, end);
+    pen.strokeStyle = "rgba(60, 40, 20, 0.6)"; pen.lineWidth = 0.6; pen.beginPath(); pen.moveTo(p0[0], p0[1]); pen.lineTo(p1[0], p1[1]); pen.stroke();
+    pen.fillStyle = "#e0b23a"; pen.beginPath(); pen.arc(p0[0], p0[1], 2.4 * scale, 0, 7); pen.fill();   // its knot on the cord
+    for (var y = from + 4, m = 0; y <= end; y += 0.045 * tall, m++) {
+      var b = at(sx + sway * (y - from) / (end - from), y);
+      pen.fillStyle = ["#c8302a", "#e0b23a", "#2e6a8a", "#f4eee0"][(k + 8 + m) % 4];
+      pen.beginPath(); pen.arc(b[0], b[1], 0.017 * tall * scale, 0, 7); pen.fill();
     }
   }
   pen.restore();
@@ -902,11 +932,11 @@ function hhArmUnder(j, which, wide, draw) {
   pen.clip("evenodd");
   try { draw(); } finally { pen.restore(); }
 }
-// A torch: a wooden brand held in the fist of j (person()'s joints, the near hand), leaning by lean radians (0 upright, -
-// toward a figure facing left's front), drawn before the figure so the fist closes over it. Gives back the point of its
-// head, where hhFlame() burns. e.g. var top = hhBrand(hhJointsOf(function () { return person(x, y, look); }), -0.2);
-function hhBrand(j, lean) {
-  var w = himmaJoint(j.wristA), h = himmaJoint(j.handA), grip = [mix(w[0], h[0], 0.55), mix(w[1], h[1], 0.55)];
+// A torch: a wooden brand held in the fist of j (person()'s joints; hand "A" the default, or "B"), leaning by lean radians
+// (0 upright, - toward a figure facing left's front), drawn before the figure so the fist closes over it. Gives back the
+// point of its head, where hhFlame() burns. e.g. var top = hhBrand(hhJointsOf(function () { return person(x, y, look); }), -0.2);
+function hhBrand(j, lean, hand) {
+  var w = himmaJoint(hand === "B" ? j.wristB : j.wristA), h = himmaJoint(hand === "B" ? j.handB : j.handA), grip = [mix(w[0], h[0], 0.55), mix(w[1], h[1], 0.55)];
   var up = [Math.sin(lean), -Math.cos(lean)], foot = [grip[0] - up[0] * 46, grip[1] - up[1] * 46], top = [grip[0] + up[0] * 96, grip[1] + up[1] * 96];
   pen.save();
   pen.lineCap = "round";

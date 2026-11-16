@@ -1,6 +1,6 @@
 // s10_giantess.js - scene 10 of the film of Hong Hin: the giantess under the palm (60 s). Outside the south gate at noon:
 // the great old sugar palm, the hollow at its foot, bones; no one on the road. The red giantess comes out; the boy
-// walks up to the tree; she springs; he speaks; he draws Kanchai: the stroke, then a cut to her fallen under the palm
+// walks up to the tree; she comes at him; he speaks; he draws Kanchai: the stroke, then a cut to her fallen under the palm
 // (the owner, 2026-11-11). The six brothers creep up, beat the body with sticks and the butt of a musket, smear its
 // blood on their clothes, and press a bag of gold into the boy's hands.
 var H10_LONG = 60;
@@ -86,19 +86,35 @@ function hhSceneGiantess(t) {
     ogre(mix(H10_PALM[0] + 10, H10_PALM[0] - 120, out), H10_PALM[1] + 10, t, {kind: "giantess", id: "giantess", face: -1, size: 1.25,
                                                                                step: out > 0 && out < 1 ? t * 0.6 : 0, at: [700, 800]});
     hhCameraEnd();
-  } else if (t < H10_CUTS[1]) {                          // the boy walks up; she springs; he speaks; he draws Kanchai
-    var s = t - H10_CUTS[0], walk = between(s, 0, 6), spring = between(t, 26.5, 28.5), draw = between(t, 32, 33.5), stroke = between(t, 34.2, 35);
+  } else if (t < H10_CUTS[1]) {                          // the boy walks up; she comes at him; he speaks; he draws Kanchai
+    // (owner, 2026-11-16, at 10:14: "make the prince not wave his hand. Change the animation so the prince pulls his sword
+    // out as the giantess approaches and she doesn't stop to wait"): she walks at him from 26.5 s without stopping, her
+    // arms out, and is within reach as the stroke comes; Kanchai is tucked at the back of his waist cloth, his hand goes
+    // to its hilt, pulls it up and back over his shoulder (the blade turning with it), holds it there, then the stroke.
+    var s = t - H10_CUTS[0], walk = between(s, 0, 6), stroke = between(t, 34.2, 35);
+    var come = between(t, 26.5, 34.4), toHilt = between(t, 30.4, 31), pull = between(t, 31, 32.4);
+    pull = pull * pull * (3 - 2 * pull);
     hhCamera(1, H10_PALM[0] - 380, 800, 1.55);
     h10Gate(t);
-    var gx = mix(H10_PALM[0] - 120, H10_PALM[0] - 230, spring), bx = mix(860, H10_PALM[0] - 520, walk);
-    ogre(gx, H10_PALM[1] + 10, t, {kind: "giantess", id: "giantess", face: -1, size: 1.25, feel: "angry",
-                                    reachA: spring > 0 ? [gx - 200, H10_PALM[1] - 300] : undefined, reachB: spring > 0 ? [gx - 180, H10_PALM[1] - 260] : undefined});
-    var g = H10_PALM[1] + 30;                            // the sword held up to chop, then brought down (owner, 2026-11-12)
-    var hand = [mix(bx + 40, bx + 150, stroke), mix(g - 400, g - 230, stroke)];
-    var bj = person(bx, g, hhBoy(13, {face: 1, feel: spring > 0 ? "angry" : "neutral", step: walk > 0 && walk < 1 ? s * 0.8 : 0,
-                                      mouth: welTalk(t, welSays(t, H10_PLAN, ["H045"])), at: [gx, H10_PALM[1] - 360],
-                                      reachA: draw > 0 ? hand : undefined}));
-    if (draw > 0) { hhSword(bj, mix(-0.9, 2.2, stroke), 0.42); }
+    var gx = mix(H10_PALM[0] - 120, H10_PALM[0] - 300, come), bx = mix(860, H10_PALM[0] - 520, walk);
+    ogre(gx, H10_PALM[1] + 10, t, {kind: "giantess", id: "giantess", face: -1, size: 1.25, feel: "angry", step: come > 0 && come < 1 ? t * 0.7 : 0,
+                                    reachA: come > 0 ? [gx - 200, H10_PALM[1] - 300, Math.min(1, come * 3)] : undefined,
+                                    reachB: come > 0 ? [gx - 180, H10_PALM[1] - 260, Math.min(1, come * 3)] : undefined});
+    var g = H10_PALM[1] + 30;
+    var boyOwn = {face: 1, feel: come > 0 ? "angry" : "neutral", step: walk > 0 && walk < 1 ? s * 0.8 : 0,
+                  mouth: welTalk(t, welSays(t, H10_PLAN, ["H045"])), at: [gx, H10_PALM[1] - 360]};
+    var bj0 = hhJointsOf(function () { return person(bx, g, hhBoy(13, boyOwn)); });
+    var wst = himmaJoint(bj0.waist), hilt = [wst[0] - 8, wst[1] + 4], up = [bx + 40, g - 400], tucked = -2.3, ready = -0.9;
+    var reach, angle;
+    if (stroke > 0) { reach = [mix(bx + 40, bx + 150, stroke), mix(g - 400, g - 230, stroke)]; angle = mix(ready, 2.2, stroke); }   // the chop (owner, 2026-11-12)
+    else if (pull > 0) { reach = [mix(hilt[0], up[0], pull) - 30 * Math.sin(Math.PI * pull), mix(hilt[1], up[1], pull)]; angle = mix(tucked, ready, pull); }
+    else if (toHilt > 0) { reach = [hilt[0], hilt[1], toHilt]; }
+    if (pull <= 0) {                                     // Kanchai at the back of his waist cloth, the blade down behind him
+      var grip0 = 48 * 0.42;
+      kanchai(hilt[0] - Math.sin(tucked) * grip0, hilt[1] + Math.cos(tucked) * grip0, {size: 0.42, angle: tucked});
+    }
+    var bj = person(bx, g, hhBoy(13, Object.assign({}, boyOwn, {reachA: reach, grip: pull > 0 || stroke > 0})));
+    if (pull > 0) { hhSword(bj, angle, 0.42); }
     if (stroke > 0) {                                    // the stroke: a flash across the picture
       pen.save(); pen.globalCompositeOperation = "lighter";
       pen.strokeStyle = "rgba(255, 246, 210, " + (0.9 * (1 - stroke)).toFixed(3) + ")"; pen.lineWidth = 26; pen.lineCap = "round";
@@ -116,19 +132,20 @@ function hhSceneGiantess(t) {
     // Her blood on the ground about her, pooled and spattered, under everyone (owner, 2026-11-13: "place the blood stains
     // more properly and make sure z order is correct").
     if (come > 0) { h10Blood(H10_FALLEN[0], H10_FALLEN[1] + 10, between(c, 3, 9)); }
-    // The bag of gold pressed into his hands: held before his belly in both, his near hand over it, still (no wave).
+    // The bag of gold pressed into his hands: held before his belly in both, still (no wave). The bag in front of him, his
+    // near hand (B) cupped under its bottom, his far hand (A) at its far side (owner, 2026-11-16, at 10:31: "change the z
+    // order of the prince's arms. Make sure it looks like he's holding a bag of gold": his far forearm had been laid over it).
     var boyLook = hhBoy(13, {face: 1, feel: "concerned", at: [H10_FALLEN[0], H10_FALLEN[1] - 60]}), bag = null;
     if (pay > 0.5) {
       var probe = hhJointsOf(function () { return person(780, H10_PALM[1] + 40, boyLook); });
       var wa = himmaJoint(probe.waist), nk = himmaJoint(probe.neck);
-      bag = [wa[0] + 34, mix(nk[1], wa[1], 0.75)];
+      bag = [wa[0] + 34, mix(nk[1], wa[1], 0.62) - 10];   // its foot just above where his near hand can reach
       boyLook = hhBoy(13, {face: 1, feel: "concerned", at: [H10_FALLEN[0], H10_FALLEN[1] - 60], grip: true,
-                           reachA: [bag[0] - 14, bag[1] + 6], reachB: [bag[0] + 18, bag[1] - 2]});
+                           reachA: [bag[0] + 26, bag[1] + 6], reachB: [bag[0] - 6, bag[1] + 38]});
     }
     var boyJ = person(780, H10_PALM[1] + 40, boyLook);
     if (bag) {
-      h10GoldBag(bag[0], bag[1]);
-      hhArmOver(boyJ, "A", 18, function () { person(780, H10_PALM[1] + 40, boyLook); });
+      pen.save(); pen.translate(bag[0], bag[1]); pen.scale(0.72, 0.72); h10GoldBag(0, 0); pen.restore();   // a bag a boy can hold
     }
     var order = [0, 2, 4, 1, 3, 5];                       // the back row (even, nearer the wall) before the front row
     for (var o = 0; o < 6; o++) {
