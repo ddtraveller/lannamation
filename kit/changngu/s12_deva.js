@@ -3,19 +3,19 @@
 // chronicle: "cut a hook of wood, wash your face in the Mae Khong; three white elephants will float down"); as it
 // tells of the three elephants a vision opens over the sleeper, a soft round of river with white elephants floating
 // down it, one, then two, then three, the third brightest (it wins Lanna and the Black Khom).
-var C12_LONG = 45;
+var C12_LONG = 64.63;
 var C12_SOUND = {calls: []};
-var C12_LINES = [[1.6, 7.82, "C050"], [8.02, 11.94, "C051"], [12.14, 17.14, "C052"], [18.4, 23.12, "C053"], [23.6, 28.66, "C054"], [29.4, 33.9, "C055"], [35.2, 42.7, "C056"]];
+var C12_LINES = [[1.6, 9.93, "C050"], [10.2, 17.59, "C051"], [17.85, 26.29, "C052"], [27.62, 33.93, "C053"], [34.47, 43.48, "C054"], [44.29, 50.59, "C055"], [51.97, 62.26, "C056"]];
 var C12_MAT = [780, CNG_FLOOR + 70];
 var C12_VISION = [880, 520, 300, 150];                 // the vision's middle, and its half width and height
-var C12_COUNT = [23.6, 29.4, 35.2];                    // when each elephant comes into the vision
+var C12_COUNT = [34.47, 44.29, 51.97];                    // when each elephant comes into the vision
 // Each elephant's blanket, as the snake it stands for (owner, 2026-10-27: "Give them each a saddle or blanket like the colors
 // of the dragon they represent"): the first red (naga.js crimson), the second deep green (emerald), the third gold.
 var C12_CLOTHS = ["#b8301e", "#1f5a40", "#c9962a"];
 
 // The vision: a soft round of the Mae Khong with the white elephants floating down it, how many by t. e.g. c12Vision(30);
 function c12Vision(t) {
-  var open = between(t, 18.4, 20) * (1 - between(t, 42, 44)), v = C12_VISION;
+  var open = between(t, 27.62, 29.84) * (1 - between(t, 61.54, 63.63)), v = C12_VISION;
   if (open <= 0) { return; }
   pen.save();
   pen.globalAlpha = open;
@@ -79,7 +79,7 @@ function cngSceneDeva(t) {
   pen.beginPath(); pen.moveTo(C12_MAT[0] - 40, C12_MAT[1] - 6);
   pen.quadraticCurveTo(C12_MAT[0] + 40, C12_MAT[1] - 54 - breath, C12_MAT[0] + 130, C12_MAT[1] - 30);
   pen.lineTo(C12_MAT[0] + 150, C12_MAT[1] - 4); pen.closePath(); pen.fill();
-  var come = between(t, 4, 7.5) * (1 - between(t, 42.5, 44.5));
+  var come = between(t, 4.91, 9.68) * (1 - between(t, 62.13, 64.13));
   if (come > 0) {                                          // the deva, coming in its own light and floating over him
     var dx = 1360, dy = 640 + 12 * Math.sin(t * 1.2);
     var light = pen.createRadialGradient(dx, dy, 20, dx, dy, 420);

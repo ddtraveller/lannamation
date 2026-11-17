@@ -4,13 +4,13 @@
 // in the village he calls the children, and they come running from the houses, many of them (the chronicle: fifty
 // children, เด็กน้อยทั้งหลาย); on the Mae Khong's bank they run in, and he kneels at the water's edge and washes his
 // face while they wait on the sand, looking at the river.
-var C13_LONG = 35;
+var C13_LONG = 48.6;
 var C13_SOUND = {calls: []};
-var C13_LINES = [[1.4, 6.28, "C057"], [10.6, 13.31, "C058"], [20.6, 23.9, "C059"], [25.0, 32.12, "C060"]];
+var C13_LINES = [[1.4, 9.49, "C057"], [13.87, 20.36, "C058"], [27.71, 34.09, "C059"], [35.26, 45.65, "C060"]];
 // Its life (decorate.js; owner, 2026-10-25): on the bank, a barb that leaps by the sandbar while they wait.
 var C13_LIFE = [{name: "barb", kind: "fish", layer: "back", look: {size: 1.1},
-                 course: [[27.0, 1450, 712, "hide"], [29.0, 1450, 712], [29.8, 1570, 712, "hide"], [99, 1570, 712, "hide"]]}];
-var C13_CUTS = [10.0, 20.0];
+                 course: [[38.26, 1450, 712, "hide"], [41.27, 1450, 712], [42.47, 1570, 712, "hide"], [112.6, 1570, 712, "hide"]]}];
+var C13_CUTS = [13.27, 27.11];
 
 // Phrom at 13 with his hook in his near hand, held up (the hook's foot at his hand). look: the scene's keys.
 function c13Phrom(x, y, look) {
@@ -36,7 +36,7 @@ function c13Bamboo(t) {
   bamboo(pen, 1260, 900, 1.3, 3);
   bamboo(pen, 1460, 920, 1.1, 5);
   pen.fillStyle = "rgba(240, 170, 120, 0.2)"; pen.fillRect(0, 0, WIDE, 1080);
-  var cut = t < 4.5, swing = cut ? Math.max(0, Math.sin(t * 5)) : 0, size = cngAgeSize(13);
+  var cut = t < 6.79, swing = cut ? Math.max(0, Math.sin(t * 5)) : 0, size = cngAgeSize(13);
   if (cut) {
     var j = person(1080, 900, cngPerson("boy", CNG_PHROM, {id: "phrom", size: size, face: 1, at: [1260, 760],
                                                           reachA: [1180 + 30 * swing, 760 - 70 * swing]}));
@@ -57,10 +57,10 @@ function c13Children(t) {
   pen.save();
   pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
-  var px = WIDE + 400, calls = t > 10.4 && t < 12.6;
+  var px = WIDE + 400, calls = t > 13.67 && t < 19.28;
   var sprites = [{name: "phrom", kind: "person", x: px, y: CNG_GROUND, draw: function () {
     c13Phrom(px, CNG_GROUND, {face: 1, feel: "happy", mouth: calls ? {open: 0.3, wide: 0.6, round: 0.3} : undefined,
-                              reachB: [px + 80, CNG_GROUND - 360, between(t, 10.4, 10.7) * (1 - between(t, 12.3, 12.6))]});   // his arm up as he calls, eased
+                              reachB: [px + 80, CNG_GROUND - 360, between(t, 13.67, 14.14) * (1 - between(t, 18.47, 19.28))]});   // his arm up as he calls, eased
   }}];
   for (var k = 0; k < CNG_KIDS; k++) {                     // three deep beside him, the rows running on past the frame
     (function (k) {
@@ -78,7 +78,7 @@ function c13Children(t) {
 }
 
 // The bank: they run in along the sand; he kneels at the edge and washes his face; they wait, looking at the river.
-var C13_RINGS = [[1330, CNG_BANK - 6, 25.5], [1340, CNG_BANK - 4, 27.0], [1330, CNG_BANK - 6, 28.4]];
+var C13_RINGS = [[1330, CNG_BANK - 6, 36.01], [1340, CNG_BANK - 4, 38.26], [1330, CNG_BANK - 6, 40.37]];
 function c13Bank(t) {
   var river = cngRiver();
   pen.drawImage(cngSky("day"), 0, 0);
@@ -88,11 +88,11 @@ function c13Bank(t) {
   decorate(t, C13_LIFE, "back");
   pen.drawImage(river.near, 0, 0);
   cngRiverBank(t, "edge");                               // reeds and grass along the water's edge
-  var run = between(t, 20, 25), px = mix(-100, 1260, run), washing = t > 25 && t < 31;
+  var run = between(t, 27.11, 35.26), px = mix(-100, 1260, run), washing = t > 35.26 && t < 44.27;
   var sprites = [{name: "phrom", kind: "person", x: px, y: CNG_BANK + 30, draw: function () {
     if (run < 1) { c13Phrom(px, CNG_BANK + 30, {face: 1, step: t / BEAT * 1.4}); return; }
-    var dip = washing ? Math.max(0, Math.sin((t - 25) * 2.4)) * (1 - between(t, 30.2, 31)) : 0;   // his hands down to the water and up to his face, still by the end
-    var down = between(t, 25, 25.6);                          // he crouches at the water's edge, eased from his run
+    var dip = washing ? Math.max(0, Math.sin((t - 35.26) * 2.4)) * (1 - between(t, 43.07, 44.27)) : 0;   // his hands down to the water and up to his face, still by the end
+    var down = between(t, 35.26, 36.16);                          // he crouches at the water's edge, eased from his run
     person(px, CNG_BANK + 30, cngPerson("boy", CNG_PHROM, {id: "phrom", size: cngAgeSize(13), face: 1, sit: 0.7 * down, bend: (0.4 + 0.3 * dip) * down,
                                                           reachA: [px + 60, CNG_BANK - 40 * (1 - dip) - 120 * (1 - dip), down],
                                                           reachB: [px + 80, CNG_BANK - 30 - 130 * (1 - dip), down]}));
@@ -102,7 +102,7 @@ function c13Bank(t) {
     (function (k) {
       var wait = cngWaiting(k), r = between(t, 20.4 + k * 0.2, 26 + k * 0.2), x = mix(-160 - k * 40, wait[0], r), y = wait[1];
       sprites.push({name: "child " + k, kind: "person", x: x, y: y, draw: function () {
-        c13Child(k, x, y, {face: 1, step: r > 0 && r < 1 ? t / BEAT * 1.4 + k : 0, feel: t > 28 ? "surprised" : "happy", at: [1200, CNG_WATER + 80]});
+        c13Child(k, x, y, {face: 1, step: r > 0 && r < 1 ? t / BEAT * 1.4 + k : 0, feel: t > 39.77 ? "surprised" : "happy", at: [1200, CNG_WATER + 80]});
       }});
     })(k);
   }
