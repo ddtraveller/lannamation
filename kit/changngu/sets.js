@@ -972,6 +972,79 @@ function cngHowdahRider(e, size, face, look) {
   return joints;
 }
 
+// ---------- King Phang's crown ----------
+// The crown King Phang wears until, in Si Tuang, he takes it off as the voice says so (C012, "พระองค์ถอดมงกุฎ": the owner,
+// 2026-11-19: "Give him a crown that he can wear in the early scenes and take off when it is mentioned. Then he should
+// change clothes just as he does"; until then the kit's regalia gave him only gold on his head-cloth). CNG_CROWN_KIND:
+// "chada", a tall spire of gold tiers (himmaphan.js spireCrown()'s); "lanna", lower, three tiers to a lotus bud and a
+// gold flame over each ear; "band", a gold band over the head-cloth with a flame-shaped plate at the front.
+var CNG_CROWN_KIND = "lanna";
+var CNG_CROWN_SITS = 34;                                 // its band's middle this far down the head, hundredths (top 0, chin 100)
+// cngCrown(base, h, tilt): the crown drawn with its band's middle at base, [x, y] in the canvas's own pixels, h the
+// head's height there (the top of the skull to the chin, as person()'s joints give them), tilt its lean in radians.
+// e.g. cngCrown([900, 400], 120, 0);
+function cngCrown(base, h, tilt) {
+  var s = h / 100, kind = CNG_CROWN_KIND, w = (kind === "band" ? 50 : 52) * s, k;
+  var keep = pen.getTransform();
+  pen.save();
+  pen.setTransform(1, 0, 0, 1, 0, 0);
+  pen.translate(base[0], base[1]);
+  pen.rotate(tilt || 0);
+  pen.translate(0, -19 * s);                             // the skull's top: the band lies 12 to 26 below it
+  pen.lineWidth = 1.6; pen.lineJoin = "round";
+  pen.strokeStyle = HIMMA.goldLine;
+  function gold(path, lit) { path(); pen.fillStyle = lit ? HIMMA.goldLit : HIMMA.gold; pen.fill(); pen.stroke(); }
+  function flame(x, y, wide, tall, lean) {               // a gold flame (kranok), its foot at (x, y)
+    gold(function () {
+      pen.beginPath(); pen.moveTo(x - wide, y);
+      pen.quadraticCurveTo(x - wide * 0.9, y - tall * 0.55, x + lean, y - tall);
+      pen.quadraticCurveTo(x + wide * 0.5, y - tall * 0.5, x + wide, y); pen.closePath();
+    }, true);
+  }
+  if (kind === "lanna") {                                // the flames over the ears, behind the band
+    flame(-w * 0.98, 18 * s, 9 * s, 34 * s, -14 * s);
+    flame(w * 0.98, 18 * s, 9 * s, 34 * s, 14 * s);
+  }
+  if (kind === "band") {                                 // the plate at the front, over the brow
+    flame(0, 12 * s, 16 * s, 40 * s, 0);
+  }
+  gold(function () {                                     // the band round the brow
+    pen.beginPath(); pen.moveTo(-w, 12 * s); pen.quadraticCurveTo(0, -4 * s, w, 12 * s); pen.lineTo(w * 0.9, 26 * s);
+    pen.quadraticCurveTo(0, 12 * s, -w * 0.9, 26 * s); pen.closePath();
+  });
+  if (kind !== "band") {
+    var tiers = kind === "chada" ? 6 : 3, up = (kind === "chada" ? 110 : 62) * s, step = kind === "chada" ? 0.12 : 0.2;
+    for (k = 0; k < tiers; k++) {                        // the tiers to the spire
+      var y0 = 6 * s - k * up / (tiers + 1), y1 = 6 * s - (k + 1) * up / (tiers + 1), w0 = w * (0.8 - k * step), w1 = w * (0.8 - (k + 1) * step);
+      pen.beginPath(); pen.moveTo(-w0, y0); pen.lineTo(-w1, y1); pen.lineTo(w1, y1); pen.lineTo(w0, y0); pen.closePath();
+      pen.fillStyle = k % 2 ? "#e9bd58" : "#d49a32"; pen.fill(); pen.stroke();
+    }
+    var top = 6 * s - tiers * up / (tiers + 1), tw = w * (0.8 - tiers * step);
+    if (kind === "chada") {                              // a needle of gold
+      gold(function () { pen.beginPath(); pen.moveTo(-tw, top); pen.lineTo(0, 6 * s - up * 1.12); pen.lineTo(tw, top); pen.closePath(); }, true);
+    } else {                                             // a lotus bud
+      gold(function () {
+        pen.beginPath(); pen.moveTo(-tw, top); pen.quadraticCurveTo(-tw * 1.4, top - 14 * s, 0, top - 26 * s);
+        pen.quadraticCurveTo(tw * 1.4, top - 14 * s, tw, top); pen.closePath();
+      }, true);
+    }
+  }
+  pen.fillStyle = HIMMA.jewel;                           // a red stone on the band
+  pen.beginPath(); pen.arc(0, (kind === "band" ? 18 : 18) * s, 4.5 * s, 0, 7); pen.fill();
+  pen.restore();
+  pen.setTransform(keep);
+}
+// The crown on a head: from person()'s joints (the top of the skull and the chin). e.g. cngCrownOn(person(...));
+function cngCrownOn(j) {
+  var h = Math.hypot(j.chin[0] - j.crown[0], j.chin[1] - j.crown[1]), tilt = -Math.atan2(j.chin[0] - j.crown[0], j.chin[1] - j.crown[1]);
+  cngCrown([j.crown[0] - Math.sin(tilt) * CNG_CROWN_SITS * h / 100, j.crown[1] + Math.cos(tilt) * CNG_CROWN_SITS * h / 100], h, tilt);
+}
+// The king's look with his crown: his head-cloth off under the tall crowns (the crown sits on the head, the hair
+// under it unseen), on under the band. e.g. cngPerson("noble", cngCrowned(CNG_KING), {...});
+function cngCrowned(look) {
+  return CNG_CROWN_KIND === "band" ? look : Object.assign({}, look, {turban: undefined, hidden: ["hair"]});
+}
+
 var CNG_SCRATCH = null;
 function cngMeasure(x, y, look) {
   if (!CNG_SCRATCH) {
@@ -994,23 +1067,44 @@ function cngMeasure(x, y, look) {
 // gestures like they're laughing/mocking"); then both arms hung free. Since 2026-11-18 (the owner: "the two people
 // carrying a pole on their backs should have their left hands on the pole to steady it", with a photograph of a woman
 // carrying baskets on a shoulder pole) the LEFT hand holds the pole a little ahead of the chest, the elbow down, below
-// the chin: the far hand facing right, the near hand facing left. look: person()'s, with its face; gold:
-// the tribute's gold showing in the baskets. Gives back nothing: it draws with pen. e.g. cngPorter(600, 930, look, true);
+// the chin. Since 2026-11-19 it is the hand on the pole's own side, the far one, whichever way they face (the owner:
+// "the pole carriers both have weirdly flipping elbows. They should walk like the other people with poles": facing left
+// the left hand was the near one, which reached across the chest for the pole, its elbow turning over as they walked),
+// and the pole is drawn over the body, the steadying forearm and hand over the pole (the owner: "the pole ... should be
+// in front of the body of the carrier but leave the hand and arm in front of the pole"): the figure, then the pole,
+// then the figure again inside the forearm and hand only. look: person()'s, with its face; gold: the tribute's gold
+// showing in the baskets. Gives back nothing: it draws with pen. e.g. cngPorter(600, 930, look, true);
 function cngPorter(x, y, look, gold) {
   var joints = cngMeasure(x, y, look), shoulder = joints.shoulderB, size = look.size || 1.3, face = look.face || 1;
-  var left = face > 0 ? "B" : "A";                      // facing right the left arm is the far one, facing left the near one
+  var left = "B";                                       // the far arm: the pole's own side
   var arm = Math.hypot(joints["elbow" + left][0] - joints["shoulder" + left][0], joints["elbow" + left][1] - joints["shoulder" + left][1])
           + Math.hypot(joints["wrist" + left][0] - joints["elbow" + left][0], joints["wrist" + left][1] - joints["elbow" + left][1]);
   var along = CNG_PORTER_GRIP[0] * arm, tilt = face * CNG_PORTER_GRIP[2];   // the pole slopes down to the front basket
   var grip = [shoulder[0] + face * along * Math.cos(CNG_PORTER_GRIP[2]), shoulder[1] - 6 * size + along * Math.sin(CNG_PORTER_GRIP[2]) + CNG_PORTER_GRIP[1] * size];
-  pen.save();
+  var hold = {};
+  hold["reach" + left] = grip;
+  var held = Object.assign({}, look, hold), drawn = person(x, y, held);
+  pen.save();                                           // the pole over the body
   pen.translate(shoulder[0], shoulder[1] - 6 * size);
   pen.rotate(tilt);
   carryPole(pen, 0, 0, size * 0.85, {gold: gold});
   pen.restore();
-  var hold = {};
-  hold["reach" + left] = grip;
-  person(x, y, Object.assign({}, look, hold));
+  // the forearm and hand over the pole: the figure once more, inside a band from the elbow through the wrist to past
+  // the fingers (the joints person() gave back are in the canvas's own pixels: the band is laid there)
+  var e = drawn["elbow" + left], w = drawn["wrist" + left], s = drawn["shoulder" + left];
+  var dx = w[0] - e[0], dy = w[1] - e[1], fore = Math.hypot(dx, dy) || 1, ux = dx / fore, uy = dy / fore, half = fore * 0.34;
+  var from = [e[0] + (s[0] - e[0]) * 0.25, e[1] + (s[1] - e[1]) * 0.25], to = [w[0] + ux * fore * 0.75, w[1] + uy * fore * 0.75];
+  var keep = pen.getTransform();
+  pen.save();
+  pen.setTransform(1, 0, 0, 1, 0, 0);
+  pen.beginPath();
+  pen.moveTo(from[0] - uy * half, from[1] + ux * half); pen.lineTo(to[0] - uy * half, to[1] + ux * half);
+  pen.lineTo(to[0] + uy * half, to[1] - ux * half); pen.lineTo(from[0] + uy * half, from[1] - ux * half); pen.closePath();
+  pen.arc(to[0], to[1], half, 0, 7);
+  pen.clip();
+  pen.setTransform(keep);
+  person(x, y, held);
+  pen.restore();
 }
 var CNG_PORTER_GRIP = [0.7, 3, 0.18];                   // the left wrist: this much of the arm's length along the pole
                                                         // ahead of the shoulder, this far under it (times the size); the

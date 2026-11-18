@@ -27,7 +27,7 @@ function c07Climb(t) {
   var bowl = [mix(x + 34 * size * face, x + 6 * face, lift), y - mix(236, 330, lift) * size];   // from his waist up over his head, no jump
   person(x, y, cngPerson("monk", CNG_NOVICE, {id: "novice", size: size, face: face, step: u > 0 && u < 1 ? (t - 0.5) / BEAT / 2 : 0,
                                               reachA: [bowl[0] - 20 * size, bowl[1] + 10 * size], reachB: [bowl[0] + 20 * size, bowl[1] + 10 * size]}));
-  almsBowl(pen, bowl[0], bowl[1], size * 0.8);
+  almsBowl(pen, bowl[0], bowl[1], size * 0.8, {sling: false});   // as in scene 6
 }
 
 // Close at the chedi: he kneels before it, his hands together, and says his wish.
@@ -42,7 +42,7 @@ function c07Kneel(t) {
   var speaking = t > 29.24 && t < 36.81;
   person(CNG_CHEDI[0] - 130, CNG_CHEDI[1] + 26, cngPerson("monk", CNG_NOVICE, {id: "novice2", size: 0.3, face: 1, floor: "side", wai: 1,
                                                                              mouth: speaking ? {open: 0.04 + 0.12 * Math.abs(Math.sin(t * 7)), wide: 0.4, round: 0.1} : undefined}));
-  almsBowl(pen, CNG_CHEDI[0] - 60, CNG_CHEDI[1] + 4, 0.2);   // his bowl given, set down before the chedi
+  almsBowl(pen, CNG_CHEDI[0] - 60, CNG_CHEDI[1] + 4, 0.2, {sling: false});   // his bowl given, set down before the chedi
   pen.restore();
 }
 

@@ -5,7 +5,8 @@
 var C03_LONG = 50.85;
 var C03_SOUND = {calls: []};
 var C03_LINES = [[1.6, 14.24, "C009"], [14.52, 29.05, "C010"], [29.31, 33.8, "C011"], [40.36, 47.5, "C012"]];
-var C03_OFF = [38.76, 40.16];                            // he lifts the crown off: his hands up, then down
+var C03_OFF = [43.3, 44.3, 44.7, 45.8];                // his hands to the crown; it leaves his head; lifted clear; brought
+                                                        // down before him in both hands (C012: "พระองค์ถอดมงกุฎ", at 43.8 s)
 // The meadow's life (sets.js cngVillage(): the valley a meadow in flower, the owner, 2026-10-27), in the two panels'
 // pixels: a barking deer and her fawn grazing at the forest's edge, doves on the near ground, butterflies over the
 // flowers, a flock going over; and on the path ahead of the walkers six red avadavats (C03_FLOCK), which took the
@@ -29,6 +30,23 @@ var C03_LIFE = [
 function c03Walk(t) {
   var u = clamp((t - 1) / 36.76);
   return {x: mix(220, CNG_HOUSE[0] - 160, u), step: u > 0 && u < 1 ? (t - 1) / BEAT / 2 : 0, walking: u > 0 && u < 1};
+}
+
+// His hands at second t, taking the crown off (C03_OFF): from his sides to its band, at the front and the back of his
+// head, then up a little and down before his waist, holding it. x, y: where he stands; look: his, as person() takes it.
+// Gives back the reach keys (eased in by their third number: no jump). e.g. person(x, y, Object.assign(look, c03Hands(44, x, y, look)));
+function c03Hands(t, x, y, look) {
+  if (t < C03_OFF[0]) { return {}; }
+  var m = cngMeasure(x, y, look), h = Math.hypot(m.chin[0] - m.crown[0], m.chin[1] - m.crown[1]), s = h / 100, f = look.face || 1;
+  var band = [m.crown[0], m.crown[1] + CNG_CROWN_SITS * s], up = between(t, C03_OFF[1], C03_OFF[2]) * 22 * s, down = between(t, C03_OFF[2], C03_OFF[3]);
+  var held = [mix(band[0], band[0] + f * 0.6 * h, down), mix(band[1] - up, m.chin[1] + 1.5 * h, down)], amount = between(t, C03_OFF[0], C03_OFF[1]);
+  return {reachA: [held[0] + f * 42 * s, held[1], amount], reachB: [held[0] - f * 42 * s, held[1], amount]};
+}
+// The crown at second t: on his head until it leaves it, then between his hands. j: the joints person() gave him.
+function c03Crown(t, j) {
+  if (t < C03_OFF[1]) { cngCrownOn(j); return; }
+  var h = Math.hypot(j.chin[0] - j.crown[0], j.chin[1] - j.crown[1]);
+  cngCrown([(j.wristA[0] + j.wristB[0]) / 2, (j.wristA[1] + j.wristB[1]) / 2], h, 0);
 }
 
 // Six red avadavats (chiangsaen.js redAvadavat(), นกกระติ๊ดแดง) pecking on the path ahead of the walkers (the owner,
@@ -73,9 +91,8 @@ function c03Flock(t) {
 // near ground's fences over them. e.g. cngSceneSituang(12);
 function cngSceneSituang(t) {
   var w = c03Walk(t), cam = Math.max(0, Math.min(WIDE, w.x - 720));
-  var lift = between(t, C03_OFF[0] - 0.5, C03_OFF[0] + 0.7) * (1 - between(t, C03_OFF[1] - 0.2, C03_OFF[1] + 1.2));   // over 1.2 and 1.4 s: faster, the forearm's reach jumps (pop_check)
-  var crowned = t < (C03_OFF[0] + C03_OFF[1]) / 2;       // the crown comes off while his hands are at his head
-  var king = Object.assign({}, crowned ? CNG_KING : CNG_HEADMAN, crowned ? {} : {sarong: CNG_KING.sarong});
+  var crowned = t < C03_OFF[1];                          // the crown and the king's clothes until it leaves his head
+  var king = crowned ? cngCrowned(CNG_KING) : Object.assign({}, CNG_HEADMAN, {sarong: CNG_KING.sarong});
   pen.drawImage(cngSky("day"), 0, 0);
   cngClouds(t + 10, "day");
   var village = cngVillage();
@@ -88,9 +105,8 @@ function cngSceneSituang(t) {
   var ground = CNG_GROUND;
   drawByZ([
     {name: "king", kind: "person", x: w.x, y: ground, draw: function () {
-      person(w.x, ground, cngPerson("noble", king, {id: "phang", face: 1, step: w.step, feel: t > 34.76 ? "sad" : undefined,
-                                                   handA: lift > 0 ? liftHand(lift) : undefined,
-                                                   handB: lift > 0 ? liftHand(lift, -1) : undefined}));
+      var look = cngPerson("noble", king, {id: "phang", face: 1, step: w.step, feel: t > 34.76 ? "sad" : undefined});
+      c03Crown(t, person(w.x, ground, Object.assign(look, c03Hands(t, w.x, ground, look))));
     }},
     {name: "queen", kind: "person", x: w.x - 120, y: ground - 14, draw: function () {
       person(w.x - 120, ground - 14, cngPerson("maiden", CNG_QUEEN, {id: "thewi", face: 1, step: w.step + 0.4, feel: t > 36.76 ? "concerned" : undefined}));

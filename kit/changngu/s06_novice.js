@@ -18,7 +18,7 @@ function c06Novice(x, y, look, rice) {
   var size = CNG_NOVICE.size, face = look.face || 1, bowl = [x + 34 * size * face, y - 236 * size], s = size * 0.8;
   person(x, y, cngPerson("monk", CNG_NOVICE, Object.assign({id: "novice", reachA: [bowl[0] - C06_CRADLE[0] * s * face, bowl[1] + C06_CRADLE[1] * s],
                                                             reachB: [bowl[0] + C06_CRADLE[2] * s * face, bowl[1] + C06_CRADLE[3] * s]}, look)));
-  almsBowl(pen, bowl[0], bowl[1], size * 0.8);
+  almsBowl(pen, bowl[0], bowl[1], size * 0.8, {sling: false});   // carried in his hands: no sling (the owner, 2026-11-19)
   if (rice > 0) {                                     // the sticky rice in the bowl, a white mound over its rim
     var s = size * 0.8;
     pen.fillStyle = "#f6f0e2";
@@ -73,8 +73,8 @@ function c06Court(t) {
   drawByZ([
     {name: "hall, back", kind: "palace", z: "set", y: floor - 1, draw: function () { cngPalace("back"); }},
     {name: "hall, front", kind: "palace", z: "set", y: floor, draw: function () { cngPalace("front"); }},
-    {name: "khom king", kind: "person", x: p[0] - 120, y: floor + 60, draw: function () {
-      person(p[0] - 120, floor + 60, cngPerson("khomsoldier", CNG_KHOM_KING, {id: "khomking", face: -1, feel: speaking || t > 31.61 ? "angry" : undefined,
+    {name: "khom king", kind: "person", z: "set", x: p[0] - 120, y: floor + 0.5, draw: function () {   // standing on his hall's
+      person(p[0] - 120, floor, cngPerson("khomsoldier", CNG_KHOM_KING, {id: "khomking", face: -1, feel: speaking || t > 31.61 ? "angry" : undefined,
                                                                              reachA: arm.reachA,
                                                                              mouth: speaking ? {open: 0.06 + 0.26 * Math.abs(Math.sin(t * 8)), wide: 0.5, round: 0.15} : undefined,
                                                                              at: [nx, CNG_LANE_Y - 200]}));

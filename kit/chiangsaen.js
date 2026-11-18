@@ -526,9 +526,12 @@ function spotbill(brush, x, y, size, look) {
 
 // The smiths' forge: a clay hearth with its fire, the upright bellows of mainland Southeast Asia (two tubes of bamboo,
 // a plunger in each, worked turn and turn about) and an anvil of iron on a log. The hearth's foot's middle on (x, base),
-// size 1 about 340 wide; t moves the fire and the plungers. e.g. forge(pen, 800, 900, 1, t);
-function forge(brush, x, base, size, t) {
+// size 1 about 340 wide; t moves the fire and the plungers. look: pumping (false: the plungers stand still, the fire
+// still burning: no one at the bellows, the owner, 2026-11-19: "the bellows is pumping with no one working it. Simply
+// stop it from moving"). e.g. forge(pen, 800, 900, 1, t); forge(pen, 800, 900, 1, t, {pumping: false});
+function forge(brush, x, base, size, t, look) {
   var s = size;
+  look = look || {};
   brush.fillStyle = "#9a6a4a";
   brush.beginPath(); brush.moveTo(x - 70 * s, base); brush.lineTo(x - 60 * s, base - 60 * s); brush.lineTo(x + 60 * s, base - 60 * s); brush.lineTo(x + 70 * s, base); brush.fill();
   for (var f = 0; f < 5; f++) {
@@ -539,7 +542,7 @@ function forge(brush, x, base, size, t) {
   brush.fillStyle = "#f6d06a";
   brush.beginPath(); brush.arc(x, base - 64 * s, 10 * s, 0, 7); brush.fill();
   for (var b = 0; b < 2; b++) {
-    var bx = x - 120 * s + b * 26 * s, up = 20 * s * Math.sin((t || 0) * 4 + b * Math.PI);
+    var bx = x - 120 * s + b * 26 * s, up = look.pumping === false ? 0 : 20 * s * Math.sin((t || 0) * 4 + b * Math.PI);
     brush.fillStyle = "#b8a058"; brush.fillRect(bx, base - 110 * s, 20 * s, 110 * s);
     brush.strokeStyle = "#7a6a30"; brush.lineWidth = 2; brush.strokeRect(bx, base - 110 * s, 20 * s, 110 * s);
     brush.fillStyle = "#6a4a2a"; brush.fillRect(bx + 8 * s, base - 150 * s + up, 4 * s, 50 * s);
@@ -739,14 +742,18 @@ function swaddledBaby(brush, x, y, size) {
 }
 
 // A novice's alms bowl of dark lacquer, its lid off, on its cloth sling, held at the waist: at (x, y), its rim's middle.
-// Kit only: never in the maker (the respect rule). size 1 is 60 across. e.g. almsBowl(pen, 820, 700, 1);
-function almsBowl(brush, x, y, size) {
+// Kit only: never in the maker (the respect rule). size 1 is 60 across. look: sling (false: no sling, for a bowl carried
+// in the hands: the owner, 2026-11-19, of Chang Ngu's novice: "There is a red string coming up off his bowl you can
+// remove"). e.g. almsBowl(pen, 820, 700, 1); almsBowl(pen, 820, 700, 1, {sling: false});
+function almsBowl(brush, x, y, size, look) {
   var s = size;
+  look = look || {};
   brush.fillStyle = "#2a2622";
   brush.beginPath(); brush.ellipse(x, y + 16 * s, 30 * s, 26 * s, 0, 0, Math.PI); brush.fill();
   brush.fillRect(x - 30 * s, y + 2 * s, 60 * s, 14 * s);
   brush.fillStyle = "#4a443c";
   brush.beginPath(); brush.ellipse(x, y + 2 * s, 30 * s, 8 * s, 0, 0, 7); brush.fill();
+  if (look.sling === false) { return; }
   brush.strokeStyle = "#b8732a"; brush.lineWidth = 4 * s;
   brush.beginPath(); brush.moveTo(x - 30 * s, y + 8 * s); brush.quadraticCurveTo(x - 50 * s, y - 60 * s, x - 10 * s, y - 120 * s); brush.stroke();
 }

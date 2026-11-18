@@ -170,7 +170,7 @@ function c04Long(t) {
   person(p[0], dais, cngPerson("noble", CNG_KING, {id: "oldking", floor: "cross", face: -1, age: 0.7, beard: "#e8e2d6",
                                                    at: [p[0] - 300, floor]}));
   cngPalace("front");
-  var x = p[0] - 330, y = floor + 70, chief = {size: 0.7, turban: "#2a2a3a", sabai: ["#3a3a5a", "#1e1e2a", "check"],
+  var x = p[0] - 330, y = floor + 140, chief = {size: 0.7, turban: "#2a2a3a", sabai: ["#3a3a5a", "#1e1e2a", "check"],
                                                sarong: "#2a2a3a", id: "luachief", face: 1, floor: "side"};
   var at = [x + 80, y - 150];
   person(x, y, cngPerson("villager", Object.assign(chief, {reachA: [at[0] - 20, at[1]], reachB: [at[0] + 20, at[1]]})));

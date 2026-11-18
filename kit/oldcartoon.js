@@ -3579,10 +3579,18 @@ function paintBone(ax, ay, bx, by, wideA, wideB, colour) {
 //              of the arc, and the forearm does the rest.
 //   ELBOW      the most a forearm folds from straight, to either side: it
 //              never lies flat along the upper arm, and never bends back.
+//   ELBOW_BACK the most, in degrees, a forearm may fold the wrong way (back,
+//              behind the upper arm's line) when the hand is at or below its
+//              shoulder: an elbow folds toward the front of the upper arm
+//              only. Of the two elbows that reach such a wrist the arm takes
+//              the one that folds forward (owner, 2026-11-19: "fix the kit so
+//              arms can't hyper extend by rule"; a man working a bellows had
+//              his elbow swing to the wrong side as the rod came up). A lifted
+//              hand keeps the rules above, its elbow out to its own side.
 // And neither joint jumps: of two elbows as good as each other an arm keeps
 // the one it has, and when the better one changes, the elbow swings across
 // in a fifth of a second (bendOf).
-var SHOULDER = [-30, 200], ELBOW = 150, FOREARM_SHORT = 0.4;
+var SHOULDER = [-30, 200], ELBOW = 150, FOREARM_SHORT = 0.4, ELBOW_BACK = 10;
 // A woman's lifted arm (owner, 2026-10-22: "women should extend their biceps up at a slightly less steep
 // angle", the upper arm "angles away from the body slightly"): with her hand above the shoulder her upper
 // arm rises no steeper than "top" and stands at least "out" from her side; at the top of a lift (liftHand)
@@ -3700,7 +3708,17 @@ function armJoints(wx, wy, upper, lower, outward, key, sure) {
     var hx = ex + fx / fl * lower, hy = ey + fy / fl * lower;      // where the wrist comes to at full length
     var miss = Math.sqrt((hx - wx) * (hx - wx) + (hy - wy) * (hy - wy));
     var shown = held ? Math.max(lower * FOREARM_SHORT, Math.min(lower, fl)) : lower;
-    ways.push([ex + fx / fl * shown, ey + fy / fl * shown, ex, ey, ex * (wy < 0 ? outward : -0.6) + ey * 0.8 - (must ? 60 : 6) * miss, miss]);
+    ways.push([ex + fx / fl * shown, ey + fy / fl * shown, ex, ey, ex * (wy < 0 ? outward : -0.6) + ey * 0.8 - (must ? 60 : 6) * miss, miss, fold]);
+  }
+  // No elbow bends back (ELBOW_BACK): the figure's own frame faces +x, so a forearm folding forward turns from its upper
+  // arm the negative way. With the hand at or below the shoulder, when one of the two elbows folds back past
+  // ELBOW_BACK and the other does not, the arm takes the other, for a wrist with a place to be as well.
+  if (wy >= 0) {
+    var back = ELBOW_BACK * Math.PI / 180, wrong0 = ways[0][6] > back, wrong1 = ways[1][6] > back;
+    if (wrong0 !== wrong1) {
+      ways[wrong0 ? 0 : 1][4] -= 1e4;
+      ways[wrong0 ? 0 : 1][5] += 1e4;
+    }
   }
   var part = (bendOf(key, ways[0][4] - ways[1][4]) + 1) / 2;       // 1: the first elbow; 0: the second
   if (key) {                                                        // the way it points, for the next frame

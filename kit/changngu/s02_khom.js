@@ -38,7 +38,7 @@ function c02Court(t, who, walkers) {
   cngBeds(t, "court", "back");
   drawByZ([
     {name: "hall, back", kind: "palace", z: "set", y: dais - 1, draw: function () { cngPalace("back"); }},
-    {name: "on the dais", kind: "person", z: "set", x: p[0], y: dais, draw: function () { person(p[0], dais, who); }},
+    {name: "on the dais", kind: "person", z: "set", x: p[0], y: dais, draw: function () { cngCrownOn(person(p[0], dais, who)); }},   // King Phang, crowned
     {name: "hall, front", kind: "palace", z: "set", y: dais + 1, draw: function () { cngPalace("front"); }},
     {name: "courtier, left", kind: "person", x: p[0] - 230, y: floor + 40, draw: function () {
       person(p[0] - 230, floor + 40, cngPerson("fellow", {size: 0.62, sabai: ["#9a8a66", "#6a5a44", "check"], floor: "cross",
@@ -91,7 +91,7 @@ function c02Gate(t) {
 function cngSceneKhom(t) {
   var p = CNG_PALACE;
   if (t < C02_CUTS[0]) {
-    c02Court(t, cngPerson("noble", CNG_KING, {id: "phang", floor: "cross", face: -1, at: [p[0] - 600, 900]}));
+    c02Court(t, cngPerson("noble", cngCrowned(CNG_KING), {id: "phang", floor: "cross", face: -1, at: [p[0] - 600, 900]}));
   } else if (t < C02_CUTS[1]) {
     c02Gate(t);
   } else {
@@ -101,8 +101,8 @@ function cngSceneKhom(t) {
     var step = (t - from) / BEAT / 2;
     var walkers = [
       {name: "phang, led away", kind: "person", x: x, y: y, draw: function () {
-        person(x, y, cngPerson("noble", CNG_KING, {id: "phang2", face: -1, step: lead > 0 && lead < 1 ? step : 0, feel: "sad",
-                                                   regalia: false, pins: false}));
+        cngCrownOn(person(x, y, cngPerson("noble", cngCrowned(CNG_KING), {id: "phang2", face: -1, step: lead > 0 && lead < 1 ? step : 0, feel: "sad",
+                                                                          regalia: false, pins: false})));   // still crowned (scene 3 takes it off)
       }},
       {name: "khom, behind", kind: "person", x: x + 150, y: y - 30, draw: function () {
         person(x + 150, y - 30, cast("khomsoldier", {size: 0.78, face: -1, step: lead > 0 && lead < 1 ? step : 0, id: "guard1"}));

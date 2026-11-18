@@ -46,7 +46,7 @@ function cngSceneGrowing(t) {
   pen.drawImage(village.back, 0, 0);
   pen.restore();
   pen.drawImage(cngForgeGround(f, false), 0, 0);           // the yard (sets.js), as scene 9's
-  forge(pen, f[0], f[1], f[2], t);
+  forge(pen, f[0], f[1], f[2], t, {pumping: false});        // no one at the bellows: still (the owner, 2026-11-19)
   natSteam(t, f[0] - 40, f[0] + 40, f[1] - 70, {count: 10, rise: 240, wide: 60, life: 6, lean: 120, alpha: 0.2, flat: 0.8,
                                                 patch: 0.6, colour: "190, 184, 176", seed: 11});   // its smoke
   var sprites = [];
@@ -89,5 +89,6 @@ function cngSceneGrowing(t) {
   cngBeds(t, "village", "frame");
   sceneryAir(t, {butterfly: {kind: "grassyellow", x: 200, y: 520, vx: 60, weave: 50, seed: 3, size: 1.1, turn: 1.2, wing: 2},
                  petals: null, light: [0.5, 11]});        // a boy growing up: the day's light, one butterfly
-  cngCutsOver(t, [15.4, 27]);
+  cngCutsOver(t, [27]);                                     // none at 15.4: the same people, the same place (the owner,
+                                                            // 2026-11-19: "don't make the canvas go dark there")
 }

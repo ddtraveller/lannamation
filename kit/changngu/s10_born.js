@@ -36,7 +36,7 @@ function cngSceneBorn(t) {
       var look = cngPerson("maiden", CNG_QUEEN, {id: "thewi", floor: "side", face: 1, feel: "happy"});
       var shoulder = cngMeasure(840, CNG_FLOOR + 50, look).shoulderA;   // the baby at her breast, in the crook of her arms
       C10_BABY = [shoulder[0] + 16, shoulder[1] + 62];      // low across her front, on her lap (owner, 2026-10-25: he floated)
-      person(840, CNG_FLOOR + 50, Object.assign(look, {reachA: [C10_BABY[0] - 18, C10_BABY[1] + 2], reachB: [C10_BABY[0] + 20, C10_BABY[1] + 4],
+      person(840, CNG_FLOOR + 50, Object.assign(look, {reachA: [C10_BABY[0] - 18, C10_BABY[1] + 2], reachB: [C10_BABY[0] + 26, C10_BABY[1] + 22],
                                                       at: C10_BABY}));
       swaddledBaby(pen, C10_BABY[0], C10_BABY[1], 0.55);   // over her hands: they hold him from beneath
     }},

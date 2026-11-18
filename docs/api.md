@@ -10119,12 +10119,14 @@ broken by the water, a small wake behind it; it bobs with t. At (x, y), the wate
 e.g. spotbill(pen, 300, 800, 1, {face: 1, t: t});
 ```
 
-### `forge(brush, x, base, size, t)`
+### `forge(brush, x, base, size, t, look)`
 
 ```
 The smiths' forge: a clay hearth with its fire, the upright bellows of mainland Southeast Asia (two tubes of bamboo,
 a plunger in each, worked turn and turn about) and an anvil of iron on a log. The hearth's foot's middle on (x, base),
-size 1 about 340 wide; t moves the fire and the plungers. e.g. forge(pen, 800, 900, 1, t);
+size 1 about 340 wide; t moves the fire and the plungers. look: pumping (false: the plungers stand still, the fire
+still burning: no one at the bellows, the owner, 2026-11-19: "the bellows is pumping with no one working it. Simply
+stop it from moving"). e.g. forge(pen, 800, 900, 1, t); forge(pen, 800, 900, 1, t, {pumping: false});
 ```
 
 ### `dap(brush, x, y, size, look)`
@@ -10202,11 +10204,13 @@ A baby swaddled in cloth, lying, its head to the left, eyes shut, a tuft of hair
 e.g. swaddledBaby(pen, 900, 730, 1);
 ```
 
-### `almsBowl(brush, x, y, size)`
+### `almsBowl(brush, x, y, size, look)`
 
 ```
 A novice's alms bowl of dark lacquer, its lid off, on its cloth sling, held at the waist: at (x, y), its rim's middle.
-Kit only: never in the maker (the respect rule). size 1 is 60 across. e.g. almsBowl(pen, 820, 700, 1);
+Kit only: never in the maker (the respect rule). size 1 is 60 across. look: sling (false: no sling, for a bowl carried
+in the hands: the owner, 2026-11-19, of Chang Ngu's novice: "There is a red string coming up off his bowl you can
+remove"). e.g. almsBowl(pen, 820, 700, 1); almsBowl(pen, 820, 700, 1, {sling: false});
 ```
 
 ### `risingWall(brush, x, base, wide, tall, u)`

@@ -21,12 +21,12 @@ function cngSceneThukkhita(t) {
   pen.scale(zoom, zoom);
   pen.translate(-C05_CRADLE[0], -C05_CRADLE[1]);
   pen.drawImage(cngRoom("day"), 0, 0);
-  var swing = Math.sin(t * 1.6) * 10 * 0.9;              // as hangingCradle swings it
   drawByZ(lifeSprites(t, C05_LIFE).concat([
     {name: "queen", kind: "person", x: C05_CRADLE[0] - 200, y: CNG_FLOOR + 40, draw: function () {
       person(C05_CRADLE[0] - 200, CNG_FLOOR + 40, cngPerson("maiden", CNG_QUEEN, {id: "thewi", floor: "side", face: 1, feel: "happy",
-                                                                                  reachA: [C05_CRADLE[0] - 64 + swing, C05_CRADLE[1] - 18],
-                                                                                  at: [C05_CRADLE[0], C05_CRADLE[1] - 30]}));
+                                                                                  at: [C05_CRADLE[0], C05_CRADLE[1] - 30]}));   // her
+                                                          // arm down (the owner, 2026-11-19: "the woman is doing strange
+                                                          // things with her fingers. Put her arm down")
     }},
     {name: "cradle", kind: "thing", x: C05_CRADLE[0], y: CNG_FLOOR + 30, draw: function () {
       hangingCradle(pen, C05_CRADLE[0], C05_CRADLE[1], 0.9, t, {beam: false, top: CNG_BEAM});
