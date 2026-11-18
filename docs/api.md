@@ -7369,7 +7369,7 @@ draws and leaves them at 1 and STYLE.line; pen's frame is restored.
 e.g. naga(640, 560, {size: 0.6, face: -1, heads: 5, late: 0.2, feel: "happy"})
 ```
 
-### `riverSnakeSpine(x, water, s, face, phase)`
+### `riverSnakeSpine(x, water, s, face, phase, raised)`
 
 (no comment)
 
@@ -7512,14 +7512,19 @@ A point and its slope on the cubic curve a, b, c, d (each [x, y]) at u (0 to 1):
 e.g. riverNagaCubic([0, 0], [10, 0], [20, 10], [30, 10], 0.5)
 ```
 
-### `riverNaga(x, water, s, face, late, colours)`
+### `riverNagaTail(f, face, s, kind, seed)`
+
+(no comment)
+
+### `riverNaga(x, water, s, face, late, colours, tail)`
 
 ```
 riverSnake()'s kind "naga": the snake swimming as riverSnake() lays it (the same spine, water line and wake), drawn as
 a Naga. x, water, s: the head's x, the water line, the size; face: 1 or -1; late: as riverSnake(); colours: the name
-of its palette in RIVER_NAGA_COLOURS ("gold" unless told). Returns {head,
+of its palette in RIVER_NAGA_COLOURS ("gold" unless told); tail: a dragon's tail, "flame", "tuft" or "fin"
+(riverNagaTail()), or none (the round end under the water). Returns {head,
 neck} as riverSnake() does. It sets FINE and LINE while it draws and leaves them at 1 and STYLE.line.
-e.g. riverNaga(1100, 780, 1.6, -1, 0, "gold");
+e.g. riverNaga(1100, 780, 1.6, -1, 0, "gold", "tuft");
 ```
 
 ## dragon.js
@@ -7794,13 +7799,14 @@ draws it for one in regalia. Returns nothing.
 e.g. elephantAnklet();
 ```
 
-### `elephantRegalia(phase)`
+### `elephantRegalia(phase, parts)`
 
 ```
 The regalia on the back, in elephant()'s frame for the body: the caparison (gold, a white field with a champagne sheen,
 a border of beads, a four-petalled medallion with a purple stone, gold scrolls, a gold fringe), the collar of bells,
 and the howdah of white and gold under a parasol of four tiers, with a pennant at either end. phase: the walk's step
 (or the clock), for the fringe and the bells. Returns nothing.
+parts: look.regalia when it is an object ({howdah: false}, {parasol: false}), else all of it.
 e.g. elephantRegalia(clock * 0.25);
 ```
 
@@ -8347,14 +8353,19 @@ ogre.js - a living ogre (ยักษ์), for the Lanna cartoon kit: the ogres 
 
 (no comment)
 
-### `ogreHead(j, kind, face, t)`
+### `ogJoint(p)`
 
 ```
 ogreHead(j, kind, face, t): the head drawn over the person's, j what person() gave back.
-person() gives its joints in pixels of the sheet, PIX to a film pixel; the head is drawn in film pixels, so they are
-divided by PIX here (until 2026-11-11 they were not: on a film's page, at two pixels, the head was drawn at twice its
-place and size, off the body).
+person() gives its joints in pixels of the sheet, through all the pen's turns and scales (PIX to a film pixel, and a
+scene's camera); the head is drawn with the pen as it is now, so each joint is taken back through the pen's
+transform (ogJoint). Until 2026-11-11 they were used as they came: on a film's page, at two pixels, the head was drawn
+at twice its place and size, off the body.
 ```
+
+### `ogreHead(j, kind, face, t)`
+
+(no comment)
 
 ### `ogreMeat(p, turn)`
 
@@ -9556,17 +9567,22 @@ e.g. var h = hongHin(900, 500, t, {});
 
 ```
 hongHinReins(h, hands): the red reins from the rider's hands (a point of the scene: where the scene sent his hands,
-or a joint person() gave back divided by PIX) to the beak; h is what hongHin() gave back. Draw it after the rider.
+or a joint person() gave back, through himmaJoint()) to the beak; h is what hongHin() gave back. Draw it after the rider.
 ```
 
-### `spireCrown(j, tall)`
+### `himmaJoint(p)`
 
 ```
 spireCrown(j, tall): a gold spire crown (ชฎา) on a person's head, from the joints person() gave back: a band over the
 brow with a red stone, six tiers, each narrower, to a point. tall: its height in heads (1.1 unless told). Returns
 nothing; it draws with pen. A head under it is best drawn with hidden: ["hair"].
 e.g. spireCrown(person(900, GROUND, {regalia: true, hidden: ["hair"]}), 1.2);
+a joint person() gave back, in the pen's present measure
 ```
+
+### `spireCrown(j, tall)`
+
+(no comment)
 
 ### `indra(x, y, t, look)`
 
@@ -13125,6 +13141,7 @@ none is named each time this runs, and stands red on the plan. From it this writ
                 the English], as maeng/words.js: a scene names its lines by id (sNN_LINES), the film page puts them
                 on its clock. The ids are PLAN["prefix"] and a number in the order of the lines (C001, C002 ...):
                 a line put in or taken out renumbers those after it, so ids are settled before the voice speaks.
+                A TITLE_LINE in story.py (the tale's name, said over scene 1's title) is <prefix>000.
   central.txt   the Central Thai, a line each, in order: what a writer of Kam Mueang (or a translator) is given.
 Edit story.py and run it again; nothing else is hand-written.
 
@@ -13135,7 +13152,7 @@ reads the written repeat badly: write the word twice), or a scene with no lines 
 
 - `story_of(folder)`: The film folder's story.py, as a module. e.g. story_of(Path("changngu")).SCENES[0][0] is "The Mae Khong".
 - `clock(seconds)`: m:ss for a number of seconds. e.g. clock(95) is "1:35".
-- `lines_of(story)`: Every line in order: [id, scene number, English, Central Thai, Kam Mueang].
+- `lines_of(story)`: Every line in order: [id, scene number, English, Central Thai, Kam Mueang]. A story's TITLE_LINE (English,
 - `spoken(story, written)`: What the voice says for a written line: each name in SAY_AS said its way. e.g. spoken(s, "ช้าง") is "จ๊าง".
 - `problems(story)`: What is wrong with story.py, as sentences; none when it is ready.
 - `e(text)`: (no docstring)

@@ -8,14 +8,16 @@ var C06_LONG = 58.83;
 var C06_SOUND = {calls: []};
 var C06_LINES = [[1.4, 14.19, "C021"], [14.46, 21.97, "C022"], [23.76, 33.09, "C023"], [33.36, 40.97, "C024"], [41.25, 47.36, "C025"], [47.62, 53.32, "C026"]];
 var C06_CUTS = [22.96];
+var C06_CRADLE = [24, 38, 18, 36];                         // his wrists under the bowl's base: near x back, y down; far x on, y down (bowl units)
 var C06_SPEAKS = [[33.36, 40.65], [41.25, 47.02]];         // the Khom king's words (the narrator says them over him)
 
-// The novice at (x, y) with his bowl at his waist, held in both hands; look: the scene's keys (face, step, feel);
-// rice: 0 to 1, how much of the rice given him shows in the bowl (left out, none).
+// The novice at (x, y) with his bowl before him, carried in both hands, cradled from under its base (the owner,
+// 2026-11-18: "make the monk's hands carry the bowl"; until then his hands were at its rim's sides, as if beside it);
+// look: the scene's keys (face, step, feel); rice: 0 to 1, how much of the rice given him shows in the bowl (left out, none).
 function c06Novice(x, y, look, rice) {
-  var size = CNG_NOVICE.size, face = look.face || 1, bowl = [x + 34 * size * face, y - 236 * size];
-  person(x, y, cngPerson("monk", CNG_NOVICE, Object.assign({id: "novice", reachA: [bowl[0] - 22 * size * face, bowl[1] + 10 * size],
-                                                            reachB: [bowl[0] + 24 * size * face, bowl[1] + 10 * size]}, look)));
+  var size = CNG_NOVICE.size, face = look.face || 1, bowl = [x + 34 * size * face, y - 236 * size], s = size * 0.8;
+  person(x, y, cngPerson("monk", CNG_NOVICE, Object.assign({id: "novice", reachA: [bowl[0] - C06_CRADLE[0] * s * face, bowl[1] + C06_CRADLE[1] * s],
+                                                            reachB: [bowl[0] + C06_CRADLE[2] * s * face, bowl[1] + C06_CRADLE[3] * s]}, look)));
   almsBowl(pen, bowl[0], bowl[1], size * 0.8);
   if (rice > 0) {                                     // the sticky rice in the bowl, a white mound over its rim
     var s = size * 0.8;

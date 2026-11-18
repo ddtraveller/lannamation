@@ -60,7 +60,9 @@
 //   regalia    true: a royal elephant's equipment in white and gold (ELEPHANT_REGALIA): a caparison, a head
 //              ornament with a tassel, gold on the tusks, a collar of bells, a howdah under a tiered parasol
 //              with two pennants, anklets; it takes the place of cloth and howdah. The seat it gives back is
-//              the neck's, where the mahout sits, unless howdah is true too
+//              the neck's, where the mahout sits, unless howdah is true too. Or the parts to leave out:
+//              {howdah: false} without the howdah and its pennants, {parasol: false} without the parasol
+//              (an elephant in its stable: Chang Ngu's scene 19, the owner, 2026-11-18)
 //   only       "head": only its head is drawn, the legs, the body and the tail left out (Chang Ngu's
 //              heads on their necks, myth.js; a clip cut its jaw and its lifted trunk)
 // and for the buffalo only:
@@ -324,8 +326,10 @@ function elephantAnklet() {
 // a border of beads, a four-petalled medallion with a purple stone, gold scrolls, a gold fringe), the collar of bells,
 // and the howdah of white and gold under a parasol of four tiers, with a pennant at either end. phase: the walk's step
 // (or the clock), for the fringe and the bells. Returns nothing.
+// parts: look.regalia when it is an object ({howdah: false}, {parasol: false}), else all of it.
 // e.g. elephantRegalia(clock * 0.25);
-function elephantRegalia(phase) {
+function elephantRegalia(phase, parts) {
+  parts = parts && typeof parts === "object" ? parts : {};
   var swing = Math.sin(phase * Math.PI * 2);
   // the caparison: gold outside, a white field inside with a border of beads, a medallion and gold scrolls, a fringe
   var cap = new Path2D();
@@ -382,6 +386,7 @@ function elephantRegalia(phase) {
     pen.restore();
   });
   // the howdah: a white seat with gold rails, a high back with a gold scroll
+  if (parts.howdah !== false) {
   pen.beginPath();
   pen.moveTo(-126, -556); pen.quadraticCurveTo(-20, -572, 92, -552); pen.lineTo(92, -592); pen.quadraticCurveTo(-20, -610, -126, -596); pen.closePath();
   elephantGilt(ELEPHANT_REGALIA.white, 2.2);
@@ -415,7 +420,9 @@ function elephantRegalia(phase) {
     for (k = 0; k <= 10; k++) { var w2 = k / 10; pen.lineTo(pole[0] - 140 * w2, top + 34 + w2 * 0 + wave(w2)); }
     pen.stroke();
   });
+  }                                                 // the howdah and its pennants, unless left out
   // the parasol: a gold pole from the howdah, four tiers of white with gold rims and fringes, a gold spire on top
+  if (parts.parasol === false) { return; }
   pen.save();
   pen.translate(-16, -560);
   pen.rotate(0.02 * Math.sin(clock * 1.1));
@@ -1114,7 +1121,7 @@ function elephant(x, y, look) {
     pen.stroke();
   }
   pen.restore();
-  if (look.regalia) { elephantRegalia(walk ? look.step : clock * 0.25); }   // the regalia over the back
+  if (look.regalia) { elephantRegalia(walk ? look.step : clock * 0.25, look.regalia); }   // the regalia over the back
   else if (look.cloth) {                            // a cloth over the back, with a gold border and a fringe
     pen.beginPath();
     pen.moveTo(-156, -532);

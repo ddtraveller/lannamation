@@ -914,6 +914,64 @@ function cngForgeGround(f, mat) {
   return paper;
 }
 
+// A blanket over someone asleep on their side on a mat (drawn by the kit's figure turned onto its side: scenes 8 and
+// 12), from the shoulders to the feet, the face clear of it (the owner, 2026-11-18, of the queen and of Phrom: "adjust
+// the blanket so it covers the woman's body but not her face", "make it so the blanket covers the boy's body but not
+// his face"; until then it began over the face and covered a band of the body). x, y: the sleeper's feet, where the
+// scene translated to before turning the figure; k: the sleeper's size against the queen's (0.76); breath: its rise,
+// pixels; colour, edge: the cloth and its hem. The hem over the shoulders, the upper side, round the feet, draped past
+// the lower side onto the mat, two soft folds. e.g. cngBlanket(930, 946, 1, 3 * Math.sin(t * 1.4), "#8a4a3a", "#c9962a");
+function cngBlanket(x, y, k, breath, colour, edge) {
+  function outline() {
+    pen.beginPath(); pen.moveTo(x - 182 * k, y + 64 * k);
+    pen.quadraticCurveTo(x - 204 * k, y + 4 * k, x - 178 * k, y - 52 * k - breath * 0.5);
+    pen.quadraticCurveTo(x - 100 * k, y - 72 * k - breath, x + 26 * k, y - 32 * k);
+    pen.quadraticCurveTo(x + 46 * k, y + 12 * k, x + 22 * k, y + 48 * k);
+    pen.quadraticCurveTo(x - 80 * k, y + 76 * k, x - 182 * k, y + 64 * k);
+    pen.closePath();
+  }
+  pen.save();
+  outline();
+  pen.fillStyle = colour; pen.fill();
+  pen.clip();
+  pen.strokeStyle = "rgba(40, 20, 14, 0.35)"; pen.lineWidth = 3 * k;
+  [[-110, -1], [-40, 1]].forEach(function (f) {          // the folds over the hip and the knees
+    pen.beginPath(); pen.moveTo(x + (f[0] - 6) * k, y - 56 * k - breath);
+    pen.quadraticCurveTo(x + (f[0] + 14 * f[1]) * k, y + 4 * k, x + (f[0] + 4) * k, y + 70 * k); pen.stroke();
+  });
+  pen.restore();
+  outline();
+  pen.strokeStyle = edge; pen.lineWidth = 3; pen.stroke();
+}
+
+// Someone riding in the white elephant's howdah (beasts.js regalia), seated in it: the elephant drawn with
+// {regalia: true, howdah: true} gives back e, the seat on the howdah's cushion. They are drawn only above the box's
+// front, so their legs are in it and unseen, and the howdah's posts and top rail are drawn again over them, so they sit
+// behind the rail; their hands rest on the rail before them unless the look says otherwise (the owner, 2026-11-18:
+// "put Phrom in the box and just don't draw his legs as if they are in the box"; until then he sat on the neck or
+// behind the box, his legs over the caparison). size, face: the elephant's; look: person()'s, with its id and size.
+// Gives back person()'s joints. In the regalia's frame (beasts.js elephantRegalia) the box's front runs from x -126 to
+// 92 at y -596 to -556, its top rail from (-122, -610) to (98, -604), its posts at -55, 16 and 87; the seat is (-14, -592).
+// e.g. var e = elephant(800, 860, {size: 0.5, face: 1, colour: "#f1ddd3", regalia: true, howdah: true});
+//      cngHowdahRider(e, 0.5, 1, cngPerson("boy", CNG_PHROM, {id: "phromrides", size: cngAgeSize(16), face: 1}));
+function cngHowdahRider(e, size, face, look) {
+  var S = e.seat, at = function (bx, by) { return [S[0] + (bx + 14) * size * face, S[1] + (by + 592) * size]; };
+  var a = at(-130, -598), b = at(96, -598), lo = Math.min(a[0], b[0]), hi = Math.max(a[0], b[0]);
+  var hands = {reachA: at(34, -606), reachB: at(62, -604)};
+  pen.save();                                            // all of the sheet but the box's front and what is under it
+  pen.beginPath(); pen.rect(-WIDE * 4, -4000, WIDE * 10, 9000); pen.rect(lo, a[1], hi - lo, 4000); pen.clip("evenodd");
+  var joints = person(S[0], S[1], Object.assign(hands, {floor: "astride"}, look));
+  pen.restore();
+  [-55, 16, 87].forEach(function (px) {                  // the posts and the top rail again, over the rider
+    var p0 = at(px, -598), p1 = at(px, -604), top = at(px, -608);
+    hose(p0[0], p0[1], p1[0], p1[1], 0, 6 * size, ELEPHANT_REGALIA.gold);
+    oval(top[0], top[1], 6 * size, 6 * size, ELEPHANT_REGALIA.goldLight);
+  });
+  var r0 = at(-122, -610), r1 = at(98, -604);
+  hose(r0[0], r0[1], r1[0], r1[1], 0, 6 * size, ELEPHANT_REGALIA.gold);
+  return joints;
+}
+
 var CNG_SCRATCH = null;
 function cngMeasure(x, y, look) {
   if (!CNG_SCRATCH) {
@@ -930,20 +988,33 @@ function cngMeasure(x, y, look) {
   return joints;
 }
 
-// Someone walking with a carrying pole on the far shoulder, a basket before and behind, the near arm swinging free:
+// Someone walking with a carrying pole on the far shoulder, a basket before and behind, the left hand on the pole:
 // the pole measured onto the shoulder (cngMeasure), drawn before them. Until 2026-10-27 the near hand held the pole
 // in front, which put it before the face, a hand over the mouth as in a laugh (the owner: "shouldn't be making hand
-// gestures like they're laughing/mocking"). look: person()'s, with its face; gold:
+// gestures like they're laughing/mocking"); then both arms hung free. Since 2026-11-18 (the owner: "the two people
+// carrying a pole on their backs should have their left hands on the pole to steady it", with a photograph of a woman
+// carrying baskets on a shoulder pole) the LEFT hand holds the pole a little ahead of the chest, the elbow down, below
+// the chin: the far hand facing right, the near hand facing left. look: person()'s, with its face; gold:
 // the tribute's gold showing in the baskets. Gives back nothing: it draws with pen. e.g. cngPorter(600, 930, look, true);
 function cngPorter(x, y, look, gold) {
-  var shoulder = cngMeasure(x, y, look).shoulderB, size = look.size || 1.3;
+  var joints = cngMeasure(x, y, look), shoulder = joints.shoulderB, size = look.size || 1.3, face = look.face || 1;
+  var left = face > 0 ? "B" : "A";                      // facing right the left arm is the far one, facing left the near one
+  var arm = Math.hypot(joints["elbow" + left][0] - joints["shoulder" + left][0], joints["elbow" + left][1] - joints["shoulder" + left][1])
+          + Math.hypot(joints["wrist" + left][0] - joints["elbow" + left][0], joints["wrist" + left][1] - joints["elbow" + left][1]);
+  var along = CNG_PORTER_GRIP[0] * arm, tilt = face * CNG_PORTER_GRIP[2];   // the pole slopes down to the front basket
+  var grip = [shoulder[0] + face * along * Math.cos(CNG_PORTER_GRIP[2]), shoulder[1] - 6 * size + along * Math.sin(CNG_PORTER_GRIP[2]) + CNG_PORTER_GRIP[1] * size];
   pen.save();
   pen.translate(shoulder[0], shoulder[1] - 6 * size);
-  pen.rotate(Math.PI / 2 * 0);
+  pen.rotate(tilt);
   carryPole(pen, 0, 0, size * 0.85, {gold: gold});
   pen.restore();
-  person(x, y, look);
+  var hold = {};
+  hold["reach" + left] = grip;
+  person(x, y, Object.assign({}, look, hold));
 }
+var CNG_PORTER_GRIP = [0.7, 3, 0.18];                   // the left wrist: this much of the arm's length along the pole
+                                                        // ahead of the shoulder, this far under it (times the size); the
+                                                        // pole's slope down to the front, radians (the photograph's)
 
 // How dark the sheet is at second t from a scene's cuts between its shots: 1 at a cut, 0 half a second either side.
 // cuts: the seconds where the shots change, through black. e.g. cngDark(12.2, [12, 26]) is 0.6

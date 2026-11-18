@@ -15,15 +15,14 @@ var C21_LAYER = null;                                  // the sheet the elephant
 // The white elephant with Phrom on its back and the mahout on its neck striking the plate; at (x, y), its size and
 // facing; walking: its step. Gives back the elephant's {seat, head}.
 function c21War(t, x, y, size, face, walking) {
-  var e = elephant(x, y, {size: size, face: face, colour: "#f1ddd3", regalia: true, step: walking ? t / BEAT / 2.4 : 0,
+  var e = elephant(x, y, {size: size, face: face, colour: "#f1ddd3", regalia: true, howdah: true, step: walking ? t / BEAT / 2.4 : 0,
                           trunk: 0.5 + 0.3 * Math.sin(t * 2)});
-  var back = [e.seat[0] - face * 130 * size, e.seat[1] + 14 * size];   // Phrom further back, the mahout on the neck
-  person(back[0], back[1], cngPerson("boy", CNG_PHROM, {id: "phromwar", size: cngAgeSize(16) * size / 0.6, face: face, floor: "astride",
-                                                       feel: "happy", handA: liftHand(0.5)}));
+  cngHowdahRider(e, size, face, cngPerson("boy", CNG_PHROM, {id: "phromwar", size: cngAgeSize(16) * size / 0.6, face: face, feel: "happy"}));
+  var neck = [e.seat[0] + face * 98 * size, e.seat[1] + 64 * size];   // Phrom in the howdah, the mahout on the neck
   var hit = Math.max(0, Math.sin((t % C21_STRIKES) / C21_STRIKES * Math.PI));
-  var j = person(e.seat[0], e.seat[1], cngPerson("villager", {size: 0.66 * size / 0.6, id: "mahout", face: face, floor: "astride", sabai: false,
-                                                              reachA: [e.seat[0] + face * 90 * size, e.seat[1] - 150 * size],
-                                                              reachB: [e.seat[0] + face * (60 + 30 * hit) * size, e.seat[1] - 120 * size]}));
+  var j = person(neck[0], neck[1], cngPerson("villager", {size: 0.66 * size / 0.6, id: "mahout", face: face, floor: "astride", sabai: false,
+                                                          reachA: [neck[0] + face * 90 * size, neck[1] - 150 * size],
+                                                          reachB: [neck[0] + face * (60 + 30 * hit) * size, neck[1] - 120 * size]}));
   var hand = cngLocal(j.wristA);
   pen.strokeStyle = "#b8294a"; pen.lineWidth = 3;
   pen.beginPath(); pen.moveTo(hand[0], hand[1]); pen.lineTo(hand[0], hand[1] + 26 * size); pen.stroke();

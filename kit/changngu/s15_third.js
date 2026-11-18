@@ -104,9 +104,14 @@ function cngSceneThird(t) {
   c15Water(t);
   pen.drawImage(river.near, 0, 0);
   cngRiverBank(t, "edge");                               // reeds and grass along the water's edge
-  if (changed && elephantAt) {                             // Phrom on its neck, over the water (the elephant swims in it)
+  if (changed && elephantAt) {                             // Phrom on its neck, over the water (the elephant swims in it):
+    var cheer = between(t, C15_CHANGE[1] + 0.6, C15_CHANGE[1] + 1.4) * (1 - between(t, C15_CHANGE[1] + 3.4, C15_CHANGE[1] + 4.4));
     person(elephantAt.seat[0], elephantAt.seat[1], cngPerson("boy", CNG_PHROM, {id: "phromrides", size: size, face: -1, floor: "astride",
-                                                                                feel: "happy", handA: liftHand(0.6 + 0.3 * Math.sin(t * 2))}));
+                                                                                feel: "happy",   // his arm up once for joy, then down
+                                                                                // (owner, 2026-11-18: "raise his arm up once only then lower his arm"; it rose and fell
+                                                                                // with the beat until the scene ended)
+                                                                                reachA: cheer > 0 ? [elephantAt.seat[0] - 120 * size, elephantAt.seat[1] - 330 * size, cheer] : undefined}));
+                                                                                // up and forward, clear of his face (liftHand brought it to his brow, a salute)
   }
   var onBank = [];                                         // the children still on the bank, and Phrom before he leaps
   for (var c2 = 0; c2 < CNG_KIDS; c2++) {

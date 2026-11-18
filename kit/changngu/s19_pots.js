@@ -9,6 +9,11 @@ var C19_SOUND = {calls: []};
 var C19_LINES = [[1.4, 5.96, "C087"], [6.16, 14.64, "C088"], [15.8, 18.56, "C089"], [19.0, 21.68, "C090"], [23.0, 26.96, "C091"], [30.0, 35.12, "C092"]];
 var C19_CUTS = [15.2, 29.4];
 
+// At home the elephant wears its white and gold blanket and its head ornament, but no howdah and no parasol (the owner,
+// 2026-11-18, of the stable: "remove the umbrella and sitting box on the elephant but keep the white blanket on its back";
+// the parasol stood up through the stable's roof); in the yard too, so it does not change within the scene.
+var C19_DRESS = {howdah: false, parasol: false};
+
 // The yard: Phrom speaks to his father, the elephant standing behind him.
 function c19Yard(t) {
   var village = cngVillage(), cam = WIDE * 0.62;
@@ -17,7 +22,7 @@ function c19Yard(t) {
   pen.save(); pen.translate(-cam, 0); pen.drawImage(village.back, 0, 0); pen.restore();
   pen.drawImage(cngForgeGround(null, false), 0, 0);       // the yard's beaten earth (sets.js)
   var speaks = t > 6.2 && t < 14.2;
-  elephant(1420, 830, {size: 0.5, face: -1, colour: "#f1ddd3", regalia: true, trunk: 0.2 + 0.2 * Math.sin(t)});
+  elephant(1420, 830, {size: 0.5, face: -1, colour: "#f1ddd3", regalia: C19_DRESS, trunk: 0.2 + 0.2 * Math.sin(t)});
   decorate(t, cngYard(1780, 880, 6), "back");                 // the yard's fowl (owner, 2026-10-25)
   drawByZ([
     {name: "phrom", kind: "person", x: 980, y: 870, draw: function () {
@@ -48,7 +53,7 @@ function c19Stable(t) {
   cngStable(pen, sx, base, 1, "back");
   var eats = t < 21 ? Math.max(0, Math.sin((t - 15) * 1.4)) : 0;
   salung(pen, sx - 300, base - 4, 0.9, {grass: true});
-  elephant(sx + 30, base, {size: 0.55, face: -1, colour: "#f1ddd3", regalia: true, trunk: 0.15 + 0.45 * eats, mouth: 0.3 * eats});
+  elephant(sx + 30, base, {size: 0.55, face: -1, colour: "#f1ddd3", regalia: C19_DRESS, trunk: 0.15 + 0.45 * eats, mouth: 0.3 * eats});
   var pot = t > 22.6, plop = between(t, 25.2, 26.0);
   if (pot) {
     var px = sx + 300;
@@ -65,6 +70,51 @@ function c19Stable(t) {
   sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 25]});
 }
 
+// Four hill mynas (นกขุนทอง) flying over Wiang Phan as the men dig, right to left in a loose line, wings beating (the
+// owner, 2026-11-18: "Add 4 'nok kun tong' birds flying over in this scene"). In flight, as the kit draws none (mangrai.js
+// hillMyna() stands on a branch): glossy black, the white patch on each wing that shows when it flies, the yellow wattle
+// behind the eye, the stout orange bill, the legs tucked away. x, y: its body's middle; s: size (1, about 70 long);
+// face: -1 to the left; beat: -1 to 1, the wings down to up. e.g. c19FlyingMyna(900, 240, 0.8, -1, Math.sin(t * 14));
+function c19FlyingMyna(x, y, s, face, beat) {
+  pen.save();
+  pen.translate(x, y);
+  pen.scale(s * face, s);
+  pen.lineJoin = "round"; pen.lineWidth = 1.6 / s; pen.strokeStyle = "#050408";
+  function wing(far) {                                   // root over the shoulder, the tip up or down with the beat
+    var b = beat * (far ? 0.85 : 1), tipY = -4 - 48 * b, tipX = -8 + 8 * Math.abs(b);
+    pen.beginPath(); pen.moveTo(12, -5);
+    pen.quadraticCurveTo(10, -4 - 22 * b, tipX + 4, tipY);
+    pen.lineTo(tipX - 6, tipY + 6 * Math.sign(b || 1));
+    pen.quadraticCurveTo(-8, -4 - 14 * b, -10, -4); pen.closePath();
+    pen.fillStyle = far ? "#0c0a10" : "#1a1622"; pen.fill(); pen.stroke();
+    pen.beginPath();                                     // the white patch across the flight feathers
+    pen.ellipse(mix(2, tipX, 0.55), mix(-4, tipY, 0.55), 5, 3.2, Math.atan2(tipY + 4, tipX - 2), 0, 7);
+    pen.fillStyle = "#f4f0e8"; pen.fill();
+  }
+  wing(true);
+  pen.beginPath(); pen.moveTo(-18, -2); pen.lineTo(-34, -6); pen.lineTo(-34, 3); pen.closePath();   // the short tail
+  pen.fillStyle = "#14121a"; pen.fill(); pen.stroke();
+  pen.beginPath(); pen.ellipse(0, 0, 22, 9, -0.05, 0, 7);                                    // the body, a purple-green sheen
+  var gloss = pen.createLinearGradient(-20, -9, 20, 9);
+  gloss.addColorStop(0, "#2a1e3a"); gloss.addColorStop(0.5, "#14121a"); gloss.addColorStop(1, "#16241e");
+  pen.fillStyle = gloss; pen.fill(); pen.stroke();
+  pen.beginPath(); pen.arc(23, -5, 8, 0, 7); pen.fillStyle = "#14121a"; pen.fill(); pen.stroke();  // the head
+  pen.beginPath(); pen.ellipse(20, -6, 3, 4.5, 0.3, 0, 7); pen.fillStyle = "#f2c81e"; pen.fill(); // the yellow wattle
+  pen.beginPath(); pen.arc(25, -7, 1.6, 0, 7); pen.fillStyle = "#3a1a10"; pen.fill();             // the eye
+  pen.beginPath(); pen.moveTo(29, -8); pen.quadraticCurveTo(38, -6, 40, -3); pen.lineTo(29, -2); pen.closePath();   // the bill
+  pen.fillStyle = "#f29a1a"; pen.fill(); pen.strokeStyle = "#8a4a08"; pen.stroke();
+  pen.strokeStyle = "#050408";
+  wing(false);
+  pen.restore();
+}
+function c19Mynas(t) {
+  [[31.0, 250], [31.5, 210], [31.9, 280], [32.6, 236]].forEach(function (b, k) {
+    var x = WIDE + 120 - (t - b[0]) * 300;
+    if (x < -120 || x > WIDE + 120) { return; }
+    c19FlyingMyna(x, b[1] + 10 * Math.sin(t * 2 + k), 0.8, -1, Math.sin(t * 13 + k * 1.7));
+  });
+}
+
 // Wiang Phan: men dig the moat; the bank of earth with its palisade and a timber gate, opening and shutting.
 function c19Moat(t) {
   pen.drawImage(cngSky("day"), 0, 0);
@@ -72,12 +122,16 @@ function c19Moat(t) {
   pen.drawImage(cngVillage().back, -WIDE * 0.5, 0);
   cityWall(pen, -60, 760, WIDE + 120, 0.9, {plain: true, open: 0.5 + 0.5 * Math.sin((t - 29.4) * 0.8), outer: true, t: t});
   pen.drawImage(cngFields(), 0, 830, WIDE, 250, 0, 830, WIDE, 250);   // outside it the fields and the road to its gate, not the village
+  c19Mynas(t);
   var sprites = [];
   [[300, 1], [520, -1], [1350, 1], [1600, -1]].forEach(function (d, k) {
     var dig = Math.max(0, Math.sin(t * 2.4 + k));
     sprites.push({name: "digger " + k, kind: "person", x: d[0], y: 930, draw: function () {
+      // both hands on the hoe's handle, the stroke from the shoulder down (the owner, 2026-11-18: "stop all hand waving
+      // behavior": one hand swung up to his brow with a short hoe, like a salute, the other hand rocked on the beat)
+      var grip = [d[0] + 64 * d[1], 930 - 120 + 90 * dig];   // from his chest down to the ground, never at his face
       var j = person(d[0], 930, cngPerson("villager", {size: 0.66, id: "digger" + k, face: d[1], sabai: false, bend: 0.3 + 0.3 * dig,
-                                                      reachA: [d[0] + 60 * d[1], 930 - 200 + 140 * dig]}));
+                                                      reachA: grip, reachB: [grip[0] + 12 * d[1], grip[1] + 44]}));
       var w = cngLocal(j.wristA);                          // a hoe (chok) in his hands
       pen.strokeStyle = "#7a5432"; pen.lineWidth = 5;
       pen.beginPath(); pen.moveTo(w[0] - 30 * d[1], w[1] - 50); pen.lineTo(w[0] + 20 * d[1], w[1] + 60); pen.stroke();

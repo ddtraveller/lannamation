@@ -7,12 +7,10 @@ var C03_SOUND = {calls: []};
 var C03_LINES = [[1.6, 14.24, "C009"], [14.52, 29.05, "C010"], [29.31, 33.8, "C011"], [40.36, 47.5, "C012"]];
 var C03_OFF = [38.76, 40.16];                            // he lifts the crown off: his hands up, then down
 // The meadow's life (sets.js cngVillage(): the valley a meadow in flower, the owner, 2026-10-27), in the two panels'
-// pixels: egrets feeding in it, a barking deer and her fawn grazing at the forest's edge, doves on the near
-// ground, butterflies over the flowers, a flock going over.
+// pixels: a barking deer and her fawn grazing at the forest's edge, doves on the near ground, butterflies over the
+// flowers, a flock going over; and on the path ahead of the walkers six red avadavats (C03_FLOCK), which took the
+// egrets' place (the owner, 2026-11-18: "replace the egrets with a flock of nok gating daeng").
 var C03_LIFE = [
-  cngFeeding("egret 1", "egret", {size: 0.5, seed: 1}, 760, 836, 3, 0, 36, 160),
-  cngFeeding("egret 2", "egret", {size: 0.46, seed: 2}, 1060, 822, 5, 0, 36, 160),
-  cngFeeding("egret 3", "egret", {size: 0.55, seed: 3}, 1500, 850, 7, 0, 36, 200),
   cngFeeding("barking deer", "deer", {size: 0.4}, 1840, 786, 9, 0, 36, 120),
   cngFeeding("her fawn", "deer", {size: 0.4, fawn: true}, 1730, 790, 11, 0, 36, 90),
   cngFeeding("dove 1", "dove", {size: 0.55}, 520, 1046, 13, 0, 36, 140),
@@ -25,10 +23,47 @@ var C03_LIFE = [
 ];
 
 // Where the walkers are at second t: the king's x (pixels of the village's two panels) and his step; they walk from the
-// valley's far left to before the headman's house, arriving at 23 s. e.g. var w = c03Walk(10);
+// valley's far left to before the headman's house, arriving at 37.76 s, at one pace from the first step to the last
+// (the owner, 2026-11-18: "the people are walking without moving at first": between() eased in, so their legs strode
+// for seconds while they hardly moved). e.g. var w = c03Walk(10);
 function c03Walk(t) {
-  var u = between(t, 1, 37.76), eased = u < 1 ? u : 1;
-  return {x: mix(220, CNG_HOUSE[0] - 160, eased), step: u > 0 && u < 1 ? (t - 1) / BEAT / 2 : 0, walking: u > 0 && u < 1};
+  var u = clamp((t - 1) / 36.76);
+  return {x: mix(220, CNG_HOUSE[0] - 160, u), step: u > 0 && u < 1 ? (t - 1) / BEAT / 2 : 0, walking: u > 0 && u < 1};
+}
+
+// Six red avadavats (chiangsaen.js redAvadavat(), นกกระติ๊ดแดง) pecking on the path ahead of the walkers (the owner,
+// 2026-11-18: "Add 6 birds in a flock pecking on the ground and when the people approach the nearest bird should fly
+// away off screen and as soon as it takes off the other birds should fly away as well"). [x, y] on the ground, the
+// nearest to the walkers first; the first goes up when the king is C03_SHY pixels from it, the others one by one
+// after it, each away from the walkers and up out of the picture.
+var C03_FLOCK = [[1150, 876], [1196, 884], [1232, 870], [1278, 880], [1318, 873], [1362, 883]];   // on the meadow behind the path, clear of the words
+var C03_SHY = 260;
+var C03_FINCH = 1.3;                                     // their size: redAvadavat()'s (a little over life, to be seen)
+function c03Up(k) {                                      // the second bird k takes off
+  var first = 1 + 36.76 * (C03_FLOCK[0][0] - C03_SHY - 220) / (CNG_HOUSE[0] - 160 - 220);
+  return first + (k ? 0.3 + 0.13 * k : 0);
+}
+function c03OnGround(k, t) {                             // on the ground: pecking, a little hop now and then
+  var clock = t / 1.7 + dice(k * 7 + 1), slot = Math.floor(clock), into = clock - slot;
+  var spot = function (n) { return (dice(k * 31 + n * 3) - 0.5) * 30; };
+  var hop = clamp(into / 0.16), dx = mix(spot(slot - 1), spot(slot), hop);
+  return {x: C03_FLOCK[k][0] + dx, y: C03_FLOCK[k][1] - 7 * Math.sin(Math.PI * hop) * (into < 0.16 ? 1 : 0),
+          face: spot(slot) >= spot(slot - 1) ? 1 : -1, peck: into > 0.24 ? Math.max(0, Math.sin((t + k * 0.37) * Math.PI * 4)) : 0};
+}
+function c03Flock(t) {
+  C03_FLOCK.forEach(function (home, k) {
+    var up = c03Up(k);
+    if (t < up) {
+      var at = c03OnGround(k, t);
+      redAvadavat(pen, at.x, at.y, C03_FINCH, {face: at.face, t: t + k, peck: at.peck});
+      return;
+    }
+    var u = (t - up) / 1.9;
+    if (u >= 1) { return; }
+    var from = c03OnGround(k, up);                       // up and away ahead of them, gone off the top right
+    var x = from.x + 1300 * u + 60 * Math.sin(u * 7 + k), y = from.y - 18 - 820 * u * (0.6 + 0.4 * u);
+    redAvadavat(pen, x, y, C03_FINCH, {face: 1, t: t + k * 0.2, fly: true});
+  });
 }
 
 // Scene 3, the entry the film calls (SCENES): t, its own second, 0 to C03_LONG (35 s). Gives back nothing: it draws the
@@ -49,6 +84,7 @@ function cngSceneSituang(t) {
   pen.drawImage(village.back, 0, 0);
   decorate(t, cngYard(CNG_HOUSE[0] + 300, CNG_GROUND - 24, 1), "back");                 // the yard's fowl (owner, 2026-10-25)
   decorate(t, C03_LIFE, "back");                         // the meadow's birds, deer and butterflies
+  c03Flock(t);                                           // the red avadavats on the path, until the walkers come
   var ground = CNG_GROUND;
   drawByZ([
     {name: "king", kind: "person", x: w.x, y: ground, draw: function () {

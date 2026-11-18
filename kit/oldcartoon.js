@@ -4884,7 +4884,7 @@ var HIDEABLE = {hair: true};                       // the parts a look may hide 
 var LOOK_KEYS = {};
 
 ["age", "anger", "at", "bangles", "bare", "beads", "beard", "bend", "blink", "body", "build", "bun", "buttons", "cap", "coat", "collar", "dance", "dap", "drum", "earplug", "earrings", "eyes", "face",
- "fan", "fear", "feel", "fingersA", "fingersB", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
+ "fan", "fear", "feel", "fingersA", "fingersB", "flex", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
  "handB", "hat", "head", "hidden", "holding", "id", "late", "laugh", "lady", "legs", "lid", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "rapt", "reachA", "reachB",
  "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt", "sleepy",
  "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tears", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wink", "wonder", "worn", "worry", "wrap", "wraps", "wristA", "wristB"
@@ -5016,6 +5016,8 @@ var LOOK_KEYS = {};
 //                   and "anger" still work); it also leans the body and tilts the head,
 //                   unless bend or tilt is given
 //   dance           true: a lifted hand takes the pose of Thai dance
+//   flex            true: the wrists bend a little on the beat and the fingers have a little life, as
+//                   the 1930s hands did; by default (since 2026-11-16) every hand is still
 //   gestureA, gestureB  a hand of classical dance by name (GESTURES): "wong", "jeeb", "jeebDown",
 //                   "fan", "point", or the Khmer dance's "planting", "growing", "youngLeaves",
 //                   "leaves", "flowering", "fruit", "fallingFruit", "ripeFruit"; or {from, to, u}
@@ -5843,7 +5845,10 @@ function personReach(fig) {
   // The arms, worked out here so that an arm which hangs behind the body
   // (the far arm of a figure seen from the side) can be drawn before the
   // chest; the rest are drawn after the head, over the body.
-  var flex = Math.sin(phase * 2 - 1.1) * 0.22;     // the wrist bends a little after the arm, once a beat
+  // The wrist bent a little after the arm, once a beat, and a lifted hand or a fist rocked with it, which read as waving
+  // (owner, 2026-11-16, of a prince holding a sword and an old man holding a torch: "stop his hands from waving ... Make
+  // sure this waving behavior is turned off by default in the kit"). Now hands are still unless the look asks (look.flex).
+  var flex = look.flex ? Math.sin(phase * 2 - 1.1) * 0.22 : 0;
   var wristA, wristB, poseA, poseB;
   var rootHalf = blend3(chestTurn, BODY.root[0], BODY.root[1], BODY.root[2]);      // the shoulders this far from the spine: over the middle in profile, widest seen from the front
   var rootA = chest(rootHalf, shoulderY), rootB = chest(-rootHalf, shoulderY);   // the shoulders, where the spine, their line and the arms have put them
@@ -5905,7 +5910,7 @@ function personReach(fig) {
   function handPose(which, wrist, given) {
     var near = which === "A", bend = near ? look.wristA : look.wristB, fingers = near ? look.fingersA : look.fingersB, turned = near ? look.palmA : look.palmB;
     var rest = given[1] >= 0 && !look.grip && !look.gloves && !fingers;
-    var calm = rest && still;                       // a hand at rest where nobody hops is still: no bend on the beat, no life in its fingers (owner, 2026-10-19: "the woman's hands are shaking. Can you make them still?")
+    var calm = !look.flex || (rest && still);       // a hand is still: no bend on the beat, no life in its fingers (owner, 2026-10-19: "the woman's hands are shaking. Can you make them still?"; 2026-11-16, any hand, unless look.flex)
     var beat = calm ? 0 : flex * (rest ? 0.3 : 1);
     var angle = Math.atan2(wrist[1] - wrist[3], wrist[0] - wrist[2]) + (near ? 1 : -1) * beat
               + (bend !== undefined ? bend : near && look.holding === "stick" ? 0.9 : 0);   // a hand on a stick lies over its top

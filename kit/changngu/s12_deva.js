@@ -74,11 +74,8 @@ function cngSceneDeva(t) {
   pen.rotate(-Math.PI / 2);
   person(0, 0, cngPerson("boy", CNG_PHROM, {id: "phromasleep", size: size, face: -1, feel: "sleepy", blink: 1}));
   pen.restore();
-  pen.fillStyle = "#5a4a7a";
-  var breath = 2 * Math.sin(t * 1.3);
-  pen.beginPath(); pen.moveTo(C12_MAT[0] - 40, C12_MAT[1] - 6);
-  pen.quadraticCurveTo(C12_MAT[0] + 40, C12_MAT[1] - 54 - breath, C12_MAT[0] + 130, C12_MAT[1] - 30);
-  pen.lineTo(C12_MAT[0] + 150, C12_MAT[1] - 4); pen.closePath(); pen.fill();
+  cngBlanket(C12_MAT[0] + 120, C12_MAT[1] - 18, size / 0.76, 2 * Math.sin(t * 1.3), "#5a4a7a", "#3e3256");   // his cloth: from
+                                                          // his shoulders to his feet, his face clear (the owner, 2026-11-18)
   var come = between(t, 4.91, 9.68) * (1 - between(t, 62.13, 64.13));
   if (come > 0) {                                          // the deva, coming in its own light and floating over him
     var dx = 1360, dy = 640 + 12 * Math.sin(t * 1.2);

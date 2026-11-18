@@ -18,7 +18,9 @@ function c17Yard(t) {
   pen.save(); pen.translate(-cam, 0); pen.drawImage(village.back, 0, 0); pen.restore();
   pen.drawImage(cngForgeGround(null, false), 0, 0);       // the yard's beaten earth (sets.js)
   var speaks = (t > 5.2 && t < 10.75) || (t > 11.35 && t < 16.71);
-  decorate(t, cngYard(1360, 884, 4), "back");                 // the yard's fowl (owner, 2026-10-25)
+  decorate(t, cngYard(1360, 884, 4).slice(1), "back");        // the yard's fowl (owner, 2026-10-25), its two hens: the rooster
+                                                               // walked under the seer's feet, drawn behind him (owner,
+                                                               // 2026-11-18: "you can just remove the chicken in question")
   drawByZ([
     {name: "headman", kind: "person", x: 820, y: 860, draw: function () {
       person(820, 860, cngPerson("noble", Object.assign({}, CNG_HEADMAN, {sarong: CNG_KING.sarong, age: 0.45}),

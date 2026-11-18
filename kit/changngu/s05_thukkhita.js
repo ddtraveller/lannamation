@@ -5,12 +5,9 @@
 var C05_LONG = 30.55;
 var C05_SOUND = {calls: []};
 var C05_LINES = [[1.6, 8.64, "C018"], [8.91, 17.65, "C019"], [17.93, 25.82, "C020"]];
-// Its life (decorate.js; owner, 2026-10-25: "decorate it with ... animals"): a tokay on the teak wall above the
-// headman, crawling down a little and resting, as tokays do in a house by day; of the set (z), behind the people.
-var C05_LIFE = [
-  {name: "tokay", kind: "gecko", z: "set", look: {size: 0.55},
-   course: [[0, 1210, 450], [5.98, 1180, 500], [10.87, 1150, 540, "rest"], [22.65, 1150, 540], [27.55, 1080, 580, "rest"], [45.55, 1080, 580]]}
-];
+// Its life (decorate.js): none. The tokay on the teak wall above the headman (owner, 2026-10-25: "decorate it with
+// ... animals") was taken out (owner, 2026-11-18: "remove the tokay lizard from the scene").
+var C05_LIFE = [];
 var C05_CRADLE = [860, 820];                           // the cradle's lowest point, low over the floor by the queen
 
 // Scene 5, the entry the film calls (SCENES): t, its own second, 0 to C05_LONG (25 s). Gives back nothing: it draws the

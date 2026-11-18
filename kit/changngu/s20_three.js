@@ -45,15 +45,16 @@ function c20Field(t, age, season) {
   pen.drawImage(village.back, -WIDE * 0.3, 0);
   pen.drawImage(c20Ground(), 0, 0);
   var lap = (t * 0.09) % 1, ex = mix(-500, WIDE + 500, lap);
-  var e = elephant(ex, 840, {size: 0.5, face: 1, colour: "#f1ddd3", regalia: true, step: t / BEAT / 2.2, trunk: 0.6});
-  person(e.seat[0], e.seat[1], cngPerson("boy", CNG_PHROM, {id: "phromrides", size: cngAgeSize(age), face: 1, floor: "astride",
-                                                           feel: "happy", handA: liftHand(0.7)}));
-  var sprites = [], thrust = Math.max(0, Math.sin(t * 2.6));
+  var e = elephant(ex, 840, {size: 0.5, face: 1, colour: "#f1ddd3", regalia: true, howdah: true, step: t / BEAT / 2.2, trunk: 0.6});
+  cngHowdahRider(e, 0.5, 1, cngPerson("boy", CNG_PHROM, {id: "phromrides", size: cngAgeSize(age), face: 1, feel: "happy"}));   // in the
+                                                         // howdah, his hands on its rail (his arm was up all the while: a wave)
+  var sprites = [];   // the spearmen stand at drill, each holding his spear (the owner, 2026-11-18: "stop all hand waving":
+                       // a reach pumped the hand in the air, the spear left standing beside it)
   for (var k = 0; k < 10; k++) {
     (function (k) {
       var x = 360 + (k % 5) * 260 + Math.floor(k / 5) * 90, y = 930 + Math.floor(k / 5) * 40;
       sprites.push({name: "spearman " + k, kind: "person", x: x, y: y, draw: function () {
-        person(x, y, cast("soldier", {size: 0.62, id: "drill" + k, face: 1, reachA: [x + 90 + 60 * thrust, y - 250 + 10 * thrust]}));
+        person(x, y, cast("soldier", {size: 0.62, id: "drill" + k, face: 1}));   // his spear in his fist, as the kit holds it
       }});
     })(k);
   }
@@ -107,10 +108,10 @@ function c20Khom(t) {
     {name: "hall, back", kind: "palace", z: "set", y: floor - 1, draw: function () { cngPalace("back"); }},
     {name: "hall, front", kind: "palace", z: "set", y: floor, draw: function () { cngPalace("front"); }},
     {name: "khom king", kind: "person", x: p[0] - 100, y: floor + 60 - 6 * stamp, draw: function () {
-      person(p[0] - 100, floor + 60 - 6 * stamp, poseEased(t, function (s) {   // his fist up as he stamps and shouts, eased (poseEased)
-        var shouting = s > 33.08 && s < 38.16;
-        var stamping = between(s, 27.4, 27.9) * (1 - between(s, 30.5, 31)) * (0.5 - 0.5 * Math.cos((s - 27.4) * 7));   // a smooth pump from rest, no corners
-        return cngPerson("khomsoldier", CNG_KHOM_KING, {id: "khomking", face: -1, feel: "angry", handA: liftHand(shouting ? 0.9 : 0.4 * stamping),
+      person(p[0] - 100, floor + 60 - 6 * stamp, poseEased(t, function (s) {   // his fist up once as he shouts, eased (poseEased);
+        var shouting = s > 33.08 && s < 38.16;                // he stamps with it down (the owner, 2026-11-18: "stop the king's hand
+                                                              // waving behavior": it pumped as he stamped and rocked while up)
+        return cngPerson("khomsoldier", CNG_KHOM_KING, {id: "khomking", face: -1, feel: "angry", handA: shouting ? liftHand(0.9) : undefined,
                                                         mouth: shouting ? {open: 0.2 + 0.3 * Math.abs(Math.sin(s * 8)), wide: 0.7, round: 0.3} : undefined});
       }));
     }},
@@ -139,7 +140,9 @@ function c20Khom(t) {
 function cngSceneThree(t) {
   if (t < C20_CUTS[0]) { c20Field(t, 14); }
   else if (t < C20_CUTS[1]) { c20Spies(t); }
-  else if (t < C20_CUTS[2]) { var y = Math.min(2, Math.floor(between(t, 16.4, 26.6) * 3)); c20Field(t, 14 + y, y); }
+  else if (t < C20_CUTS[2]) { var y = Math.min(2, Math.floor(between(t, 16.4, 26.6) * 3)); c20Field(t, 14 + y, 0); }   // he grows,
+                                                         // the light stays the first season's (the owner, 2026-11-18: "The first
+                                                         // time to indicate the past is ok but then it should stay that same color")
   else { c20Khom(t); }
   cngCutsOver(t, C20_CUTS);
 }

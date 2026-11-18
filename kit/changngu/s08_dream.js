@@ -17,12 +17,8 @@ function c08Sleeper(t) {
   pen.rotate(-Math.PI / 2);
   person(0, 0, cngPerson("maiden", CNG_QUEEN, {id: "thewiasleep", face: -1, feel: "sleepy", blink: 1}));
   pen.restore();
-  pen.fillStyle = "#8a4a3a";                              // the blanket, rising and falling with her breath
-  var breath = 3 * Math.sin(t * 1.4);
-  pen.beginPath(); pen.moveTo(C08_MAT[0] - 70, C08_MAT[1] - 8);
-  pen.quadraticCurveTo(C08_MAT[0] + 40, C08_MAT[1] - 70 - breath, C08_MAT[0] + 170, C08_MAT[1] - 44);
-  pen.lineTo(C08_MAT[0] + 190, C08_MAT[1] - 6); pen.closePath(); pen.fill();
-  pen.strokeStyle = "#c9962a"; pen.lineWidth = 3; pen.stroke();
+  cngBlanket(C08_MAT[0] + 170, C08_MAT[1] - 24, 1, 3 * Math.sin(t * 1.4), "#8a4a3a", "#c9962a");   // her blanket, breathing: from
+                                                          // her shoulders to her feet, her face clear (the owner, 2026-11-18)
 }
 
 // The dream: the village in a dream's light; the white elephant stands, then goes south (left) through it, the people
