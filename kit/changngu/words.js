@@ -63,7 +63,7 @@ var CHANGNGU_WORDS = {
   C059: ["ปากั๋นล่นลงไปตี้แม่น้ำโขง", "ปากั๋นล่นลงไปตี้แม่น้ำโขง", "and they all ran down to the Mae Khong."],
   C060: ["เปิ้นซ๊วยหน้าในแม่น้ำ แล้วตึงหมดก่อถ้ากั๋นอยู่ฮิมฝั่ง", "เปิ้นซ๊วยหน้าในแม่น้ำ แล้วตึงหมดก่อถ้ากั๋นอยู่ฮิมฝั่ง", "He washed his face in the river, and they waited on the bank."],
   C061: ["บะเมิน ก่อมีอะหยั๋งลอยล่องน้ำมา", "บะเมิน ก่อมีอะหยั๋งลอยล่องน้ำมา", "Soon, something came floating down the river."],
-  C062: ["งู! ตั๋วเต้าหลองข้าว ลายโก้งไปตึงตั๋ว", "งู! ตั๋วเต้าหลองข้าว ลายโก้งไปตึงตั๋ว", "A snake! As big as a rice granary, blotched all along."],
+  C062: ["งู! ตั๋วเต้าหลองข้าว ลายโก้งไปตึงตั๋ว", "งู! ตั๋วเต้าหลองข้าว ลายโก้งไปตึงตั๋ว", "A snake! As big as a rice granary, striped all along."],
   C063: ["ละอ่อนฮ้องสนั่น ล่นหนีขึ้นฝั่ง", "ละอ่อนฮ้องสนั่น ล่นหนีขึ้นฝั่ง", "The children screamed and scrambled up the bank."],
   C064: ["งูตั๋วนั้นลอยไป แล้วก่อมีตั๋วตี้สองโตยมา", "งูตั๋วนั้นลอยไป แล้วก่อมีตั๋วตี้สองโตยมา", "The snake floated by. Then came a second,"],
   C065: ["ตั๋วหลวงเต้าต้นตาล เกล็ดเหลื้อมไปตึงตั๋ว", "ตั๋วหลวงเต้าต้นตาล เกล็ดเหลื้อมไปตึงตั๋ว", "as thick as a palm tree, and shining all over."],
