@@ -78,7 +78,8 @@ said "begin on all of it". What came of it, and the words a film uses:
   `SIDE` (the old bar's width), and draw each scene's figures under `pen.translate(SIDE, 0)`, so
   every old coordinate keeps its place while the sky, hills, crowd and lanterns span the frame.
 - **The print's wear.** `film: 0.6` in the style shows the grain, flicker, dust, scratches,
-  dark corners and the shake at six tenths; 0 is a clean picture, 1 the full 1930s print.
+  dark corners and the shake at six tenths; 0 is a clean picture, 1 the full 1930s print. Since
+  2026-11-18 every Lanna film is 0 (the owner, 2026-11-18: "All Lanna films should have no grain or shake"), and the kit warns a page that sets more.
 - **The light.** `light: [-0.6, 0.5]` says where it comes from; each figure then throws a
   lozenge of shadow on the ground, sheared away from it, beside the soft pool it always had.
 - **The air between.** sash.html lays a veil of the sky's colour over the far ranges (thick at

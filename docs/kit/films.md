@@ -361,7 +361,7 @@ mound of clumps, hundreds of small leaves each lit by its clump's upper left as 
 leaves standing out from the edge, and flowers of flora.js (`THK_BLOOMS`, their own bloom painters) in clusters on
 the sunny faces. `thkGrass()`, `thkTrunk()`, `thkPetals()`, `thkLight()` (shafts and pollen) and `thkVignette()`
 make the rest. `thkOnce()` builds a scene's layers once. The style (`thicket/style.js`): 1920 wide at two pixels,
-the old print at three tenths. Sounds by `hear()`: the cicadas of Chom Thong under all of it (sounds.py, CC BY 4.0),
+no old print (three tenths until 2026-11-18: no Lanna film has grain or shake). Sounds by `hear()`: the cicadas of Chom Thong under all of it (sounds.py, CC BY 4.0),
 the shama, the sunbird and the magpie where they are.
 
 Looked at as stills large, round by round, each scene on its own (owner, 2026-10-25: "a few iterations making them

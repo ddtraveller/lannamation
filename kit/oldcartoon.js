@@ -202,7 +202,7 @@ var STYLE = {
   sun: "flames",                        // a disc ringed with flame scrolls; "face" for the 1930s sun
   lens: "blur(0.5px) saturate(0.93) sepia(0.14) contrast(1.04)",  // the old print
   wide: 1440,                           // the sheet's width: 1440 with black bars, 1920 to fill the screen (read before this sheet: see WIDE)
-  film: 0,                              // (1 until 2026-11-09, the owner: "Turn off the shake and grain by default and for the Lanna Tales cartoons") how much of the old print shows: grain, flicker, dust, dark corners, the shake in the gate; 0 is a clean picture
+  film: 0,                              // (1 until 2026-11-09, the owner: "Turn off the shake and grain by default and for the Lanna Tales cartoons"; and 2026-11-18, "All Lanna films should have no grain or shake": a page that sets more is warned) how much of the old print shows: grain, flicker, dust, dark corners, the shake in the gate; 0 is a clean picture
   pixels: 1,                            // device pixels per film pixel: 2 draws everything at twice the size and lets the browser smooth it down (read before this sheet: see PIX)
   light: null,                          // where the light comes from, [across, down]: [-0.6, 0.5] throws a shadow to the right; null for the soft pool alone
   letters: null,                        // the fonts of the film's words, {thai, latin}; null for the kit's own (read before this sheet: see LETTERS)
@@ -12189,6 +12189,9 @@ function film(t, scenes) {
   // Old film. The sheet goes to the screen a little soft and a little brown,
   // with black bars left and right, and it shakes by a pixel or two in the gate.
   var wear = STYLE.film;                           // how much of the old print shows
+  if (wear > 0) {                                  // none in a Lanna film: said every time a page asks for it
+    warn("STYLE.film is " + wear + ": no grain or shake in any Lanna film (the owner, 2026-11-18: \"All Lanna films should have no grain or shake\"); set film: 0");
+  }
   screen.setTransform(PIX, 0, 0, PIX, 0, 0);       // the screen's base scale, kept for the subtitles drawn after
   screen.fillStyle = "#000000";
   screen.fillRect(0, 0, 1920, 1080);
