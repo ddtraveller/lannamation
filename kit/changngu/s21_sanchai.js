@@ -9,9 +9,12 @@ var C21_LONG = 55;
 var C21_SOUND = {calls: []};
 var C21_LINES = [[1.4, 4.7, "C099"], [5.4, 13.26, "C100"], [14.4, 18.26, "C101"], [18.46, 25.1, "C102"], [25.3, 29.23, "C103"], [37.0, 44.45, "C104"]];
 var C21_CUTS = [13.8, 36.0];
-var C21_DRESS = {back: 92};                              // the howdah this far back toward the tail (beasts.js regalia
+var C21_DRESS = {back: 50};                              // the howdah this far back toward the tail (beasts.js regalia
                                                         // parts), clear of the mahout on the neck (the owner, 2026-11-19: "move
-                                                        // the thing the other boy is sitting in toward's the elephant's tail")
+                                                        // the thing the other boy is sitting in toward's the elephant's tail");
+                                                        // at 92 it hung out past the rump, so it and the mahout came forward
+                                                        // together (the owner, 2026-11-19: "so that the thing is not hanging in space")
+var C21_MAHOUT = 274;                                  // the mahout this far before the seat, on the neck behind the ears
 var C21_STRIKES = 0.7;                                 // seconds between the mahout's strokes on the plate
 var C21_LAYER = null;                                  // the sheet the elephant fades on, going through the gate
 
@@ -22,7 +25,7 @@ function c21War(t, x, y, size, face, walking) {
               trunk: 0.5 + 0.3 * Math.sin(t * 2)};
   var e = elephant(x, y, look);
   cngHowdahRider(e, size, face, cngPerson("boy", CNG_PHROM, {id: "phromwar", size: cngAgeSize(16) * size / 0.6, face: face, feel: "happy"}));
-  var neck = [e.seat[0] + face * (98 + C21_DRESS.back + 44) * size, e.seat[1] + 70 * size];   // Phrom in the howdah, the mahout
+  var neck = [e.seat[0] + face * C21_MAHOUT * size, e.seat[1] + 70 * size];   // Phrom in the howdah, the mahout
                                                           // forward on the neck, toward the trunk (the owner, 2026-11-19)
   var hit = Math.max(0, Math.sin((t % C21_STRIKES) / C21_STRIKES * Math.PI));
   var j = person(neck[0], neck[1], cngPerson("villager", {size: 0.66 * size / 0.6, id: "mahout", face: face, floor: "astride", sabai: false,
