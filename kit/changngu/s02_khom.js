@@ -38,7 +38,10 @@ function c02Court(t, who, walkers) {
   cngBeds(t, "court", "back");
   drawByZ([
     {name: "hall, back", kind: "palace", z: "set", y: dais - 1, draw: function () { cngPalace("back"); }},
-    {name: "on the dais", kind: "person", z: "set", x: p[0], y: dais, draw: function () { cngCrownOn(person(p[0], dais, who)); }},   // King Phang, crowned
+    {name: "on the dais", kind: "person", z: "set", x: p[0], y: dais, draw: function () {   // King Phang crowned; the Khom king in his own black crown (the owner, 2026-11-19)
+      var j = person(p[0], dais, who);
+      if (who.id === "phang") { cngCrownOn(j); }
+    }},
     {name: "hall, front", kind: "palace", z: "set", y: dais + 1, draw: function () { cngPalace("front"); }},
     {name: "courtier, left", kind: "person", x: p[0] - 230, y: floor + 40, draw: function () {
       person(p[0] - 230, floor + 40, cngPerson("fellow", {size: 0.62, sabai: ["#9a8a66", "#6a5a44", "check"], floor: "cross",
