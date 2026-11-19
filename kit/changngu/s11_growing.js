@@ -95,6 +95,7 @@ function cngSceneGrowing(t) {
   cngBeds(t, "village", "frame");
   sceneryAir(t, {butterfly: {kind: "grassyellow", x: 200, y: 520, vx: 60, weave: 50, seed: 3, size: 1.1, turn: 1.2, wing: 2},
                  petals: null, light: [0.5, 11]});        // a boy growing up: the day's light, one butterfly
-  cngCutsOver(t, [27.38, 31.98]);                           // through black as the year turns: the boy older, a new weapon                                     // none at 15.4: the same people, the same place (the owner,
+  cngCutsOver(t, [27.38, 31.98]);                           // through black as the year turns: the boy older, a new weapon;
+                                                            // none at 15.4: the same people, the same place (the owner,
                                                             // 2026-11-19: "don't make the canvas go dark there")
 }
