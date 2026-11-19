@@ -817,7 +817,20 @@ function statuePool(brush, x, y, size, t) {
     brush.strokeStyle = "rgba(230, 245, 250, 0.8)"; brush.lineWidth = 3;
     brush.beginPath(); brush.moveTo(jx, y - 6 * s); brush.quadraticCurveTo(jx + 10 * s, y - 6 * s - jh, jx + 24 * s, y - 10 * s); brush.stroke();
   }
-  brush.fillStyle = "#e6dfcf"; brush.fillRect(x - 70 * s, y - 60 * s, 140 * s, 54 * s);
+  var l = x - 70 * s, r = x + 70 * s, top = y - 60 * s, foot = y - 6 * s, dx = 18 * s, dy = 14 * s;   // the plinth, a
+  brush.fillStyle = "#e6dfcf"; brush.fillRect(l, top, 140 * s, 54 * s);   // box (the owner, 2026-11-19: "a 3d style block"):
+  brush.fillStyle = "#f4efe3";                                            // its front, its top in the light,
+  brush.beginPath(); brush.moveTo(l, top); brush.lineTo(l + dx, top - dy); brush.lineTo(r + dx, top - dy); brush.lineTo(r, top);
+  brush.closePath(); brush.fill();
+  brush.fillStyle = "#c4bba8";                                            // its right side in shade
+  brush.beginPath(); brush.moveTo(r, top); brush.lineTo(r + dx, top - dy); brush.lineTo(r + dx, foot - dy); brush.lineTo(r, foot);
+  brush.closePath(); brush.fill();
+  brush.strokeStyle = "#9c937f"; brush.lineWidth = Math.max(1, 2.4 * s); brush.lineJoin = "round";   // and its edges
+  brush.beginPath();
+  brush.moveTo(l, foot); brush.lineTo(l, top); brush.lineTo(r, top); brush.lineTo(r, foot);
+  brush.moveTo(l, top); brush.lineTo(l + dx, top - dy); brush.lineTo(r + dx, top - dy); brush.lineTo(r, top);
+  brush.moveTo(r + dx, top - dy); brush.lineTo(r + dx, foot - dy);
+  brush.stroke();
 }
 
 // ---------- the white eel of Wiang Nong Lom ----------

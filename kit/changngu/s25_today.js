@@ -11,6 +11,7 @@ var C25_LIFE = [{name: "flock home at dusk", kind: "flock", layer: "back", cours
 var C25_SPEAKS = [[13.0, 18.25]];                      // Bua-kham says the moral herself: her mouth moves through it
 var C25_WAI = [18.8, 19.3, 23.2, 23.7];                // the hands come up, are joined, part, are down
 var C25_POOL = [880, 800, 0.9];                        // the pool: its middle's x and y, its size
+var C25_RING = [880, 796, 370, 104];                   // the roundabout round it: its middle, its outer half-width and half-height
 var C25_CLOSE = [1.7, 9.6, 12.4];                      // close on the statue at 1.7 times, easing out to the wide from 9.6 to 12.4 s
 
 // The road into Chiang Saen at dusk, painted once (the scenery pass, 2026-10-26): Chang Ngu's range in the dusk's
@@ -36,8 +37,17 @@ function c25Set() {
   b.globalCompositeOperation = "source-over";
   b.fillStyle = "#7a7470";                                // the road, across and into the town at the right
   b.fillRect(-200, 760, WIDE + 400, 70);
+  var ring = C25_RING;                                    // the roundabout: the road runs round the statue's pool (the
+  b.beginPath(); b.ellipse(ring[0], ring[1], ring[2], ring[3], 0, 0, 7); b.fill();   // owner, 2026-11-19), the island
+  b.fillStyle = "#cfc6b4";                                // in its middle, a kerb and grass, the pool on it
+  b.beginPath(); b.ellipse(ring[0], ring[1], ring[2] - 74, ring[3] - 38, 0, 0, 7); b.fill();
+  b.fillStyle = "#7f9a5c";
+  b.beginPath(); b.ellipse(ring[0], ring[1] + 2, ring[2] - 84, ring[3] - 46, 0, 0, 7); b.fill();
   b.fillStyle = "#e9e2c8";
-  for (d = 0; d < WIDE; d += 120) { b.fillRect(d, 792, 60, 5); }
+  for (d = 0; d < WIDE; d += 120) { if (d + 60 < ring[0] - ring[2] - 10 || d > ring[0] + ring[2] + 10) { b.fillRect(d, 792, 60, 5); } }
+  b.strokeStyle = "#e9e2c8"; b.lineWidth = 5; b.setLineDash([46, 40]);   // the lane's line goes round it too
+  b.beginPath(); b.ellipse(ring[0], ring[1], ring[2] - 37, ring[3] - 19, 0, 0, 7); b.stroke();
+  b.setLineDash([]);
   C25_SET = paper;
   return paper;
 }
@@ -61,13 +71,15 @@ function cngSceneToday(t) {
   pen.drawImage(c25Set(), -200, 0);                                    // the range, the fields, the town's trees, the road
   for (var k = 0; k < 7; k++) {                                        // street lamps along it, coming on
     var lx = 140 + k * 280, on = between(t, 1 + k * 0.4, 2.4 + k * 0.4);
+    var across = (lx - C25_RING[0]) / C25_RING[2], lift = Math.abs(across) < 1 ?   // by the roundabout it stands at the
+        Math.max(0, 760 - (C25_RING[1] - C25_RING[3] * Math.sqrt(1 - across * across)) + 4) : 0;   // ring's far edge
     pen.strokeStyle = "#3a3a40"; pen.lineWidth = 5;
-    pen.beginPath(); pen.moveTo(lx, 760); pen.lineTo(lx, 640); pen.lineTo(lx + 24, 640); pen.stroke();
+    pen.beginPath(); pen.moveTo(lx, 760 - lift); pen.lineTo(lx, 640 - lift); pen.lineTo(lx + 24, 640 - lift); pen.stroke();
     if (on > 0) {
-      var g = pen.createRadialGradient(lx + 24, 646, 2, lx + 24, 646, 60);
+      var g = pen.createRadialGradient(lx + 24, 646 - lift, 2, lx + 24, 646 - lift, 60);
       g.addColorStop(0, "rgba(255, 230, 160, " + (0.9 * on).toFixed(3) + ")"); g.addColorStop(1, "rgba(255, 230, 160, 0)");
-      pen.fillStyle = g; pen.fillRect(lx - 40, 586, 130, 120);
-      sceneryLampLight(t, lx + 24, 646, 800, {reach: 200, strength: 0.6 * on, colour: "255, 220, 150", seed: k});   // its pool on the road
+      pen.fillStyle = g; pen.fillRect(lx - 40, 586 - lift, 130, 120);
+      sceneryLampLight(t, lx + 24, 646 - lift, 800 - lift, {reach: 200, strength: 0.6 * on, colour: "255, 220, 150", seed: k});   // its pool on the road
     }
   }
   statuePool(pen, pool[0], pool[1], pool[2], t);
