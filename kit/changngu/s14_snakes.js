@@ -62,11 +62,12 @@ function cngSceneSnakes(t) {
   }
   var px = 1260, py = CNG_BANK + 30;
   sprites.push({name: "phrom", kind: "person", x: px, y: py, draw: function () {
-    var j = person(px, py, cngPerson("boy", CNG_PHROM, {id: "phrom", size: cngAgeSize(13), face: 1,
+    person(px, py, cngPerson("boy", CNG_PHROM, {id: "phrom", size: cngAgeSize(13), face: 1,
                                                         feel: fear > 0.4 ? "surprised" : t > 54.03 ? "concerned" : undefined,
-                                                        at: [mix(1500, 400, between(t, 26.42, 55.03)), C14_SWIM - 80]}));
-    var w = cngLocal(j.wristA);
-    elephantHook(pen, w[0], w[1] + 30 * cngAgeSize(13), cngAgeSize(13) * 0.9, {angle: 0.12});
+                                                        at: [mix(1500, 400, between(t, 26.42, 55.03)), C14_SWIM - 80],
+                                                        holdA: {way: -Math.PI / 2 + 0.12, draw: function (g) {   // the hook in his fist, as in scene 13
+      elephantHook(pen, g.x, g.y + 30 * cngAgeSize(13), cngAgeSize(13) * 0.9, {angle: 0.12});
+    }}}));
   }});
   drawByZ(sprites);
   cngRiverBank(t, "frame");
