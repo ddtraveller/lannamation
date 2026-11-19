@@ -1193,13 +1193,27 @@ function elephant(x, y, look) {
     pen.closePath();
     shape(ivory);
     if (rings) { elephantRings([[128 + dx, 86 + dy, 172 + dx, 58 + dy], [150 + dx, 110 + dy, 190 + dx, 80 + dy]]); }
-    pen.beginPath();                                // the skin it comes out of: a sheath of the head's own grey, three
-    pen.moveTo(102 + dx, 30 + dy);                  // sided, round its root (owner, 2026-11-19, from a photograph of a
-    pen.lineTo(146 + dx, 22 + dy);                  // tusker: "the skin the tusk comes out of")
-    pen.quadraticCurveTo(148 + dx, 50 + dy, 140 + dx, 74 + dy);
-    pen.quadraticCurveTo(118 + dx, 56 + dy, 102 + dx, 30 + dy);
+    var skin = blend(colour, "#8a847e", 0.38), ink = inkFor(skin);   // the skin it comes out of: a sheath of the head's
+    pen.beginPath();                                // own grey, three sided, round its root (owner, 2026-11-19, from a
+    pen.moveTo(100 + dx, 28 + dy);                  // photograph of a tusker: "the skin the tusk comes out of"). The
+    pen.lineTo(148 + dx, 20 + dy);                  // root all inside it, the tusk out through its right side only
+    pen.quadraticCurveTo(152 + dx, 54 + dy, 134 + dx, 90 + dy);   // (the owner, 2026-11-19: "covers it completely")
+    pen.quadraticCurveTo(104 + dx, 66 + dy, 100 + dx, 28 + dy);
     pen.closePath();
-    shape(blend(colour, "#8a847e", 0.38));
+    pen.fillStyle = skin;
+    pen.fill();
+    pen.beginPath();                                // its left side inked as the head's line
+    pen.moveTo(134 + dx, 90 + dy);
+    pen.quadraticCurveTo(104 + dx, 66 + dy, 100 + dx, 28 + dy);
+    pen.strokeStyle = ink; pen.lineWidth = LINE; pen.lineJoin = "round"; pen.lineCap = "round";
+    heavy(ink); pen.stroke(); light();
+    pen.beginPath();                                // the two sides from its top right point in the grey of the trunk's
+    pen.moveTo(100 + dx, 28 + dy);                  // lines (the owner, 2026-11-19)
+    pen.lineTo(148 + dx, 20 + dy);
+    pen.quadraticCurveTo(152 + dx, 54 + dy, 134 + dx, 90 + dy);
+    pen.strokeStyle = "rgba(50, 50, 60, 0.42)"; pen.lineWidth = 1.4 * FINE;
+    pen.stroke();
+    pen.lineCap = "butt";
   }
   if (look.tusks !== false) { tusk(20, -10, "#e9dcc0", look.cloth || look.regalia); }   // the far tusk, behind the trunk. One that is dressed has gold on its tusks
   // The trunk: a row of points, each turned a little from the one before.
