@@ -26,7 +26,8 @@ function c12Vision(t) {
   C12_COUNT.forEach(function (at, k) {
     var shown = between(t, at, at + 1.2);
     if (shown <= 0) { return; }
-    var x = v[0] - 200 + k * 200 + 30 * Math.sin(t * 0.6 + k), y = v[1] + 60 + 6 * Math.sin(t * 1.5 + k);
+    var x = v[0] - 200 + k * 200, y = v[1] + 60;            // still in the river, each where it comes (the owner, 2026-11-19:
+                                                            // "the elephants should appear in the river and be still")
     pen.save();
     pen.globalAlpha = open * shown * (k === 2 ? 1 : 0.8);
     elephant(x, y, {size: 0.18, face: -1, colour: "#f1ddd3", cloth: C12_CLOTHS[k], trunk: 0.3});
@@ -45,7 +46,7 @@ function c12Vision(t) {
   pen.strokeStyle = "rgba(250, 240, 220, 0.5)"; pen.lineWidth = 1.5;
   C12_COUNT.forEach(function (at, k) {
     if (between(t, at, at + 1.2) <= 0) { return; }
-    var x = v[0] - 200 + k * 200 + 30 * Math.sin(t * 0.6 + k);
+    var x = v[0] - 200 + k * 200;
     pen.beginPath(); pen.ellipse(x, v[1] + 22, 50, 5, 0, 0, 7); pen.stroke();
   });
   pen.restore();

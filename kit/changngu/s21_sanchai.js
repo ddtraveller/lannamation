@@ -9,16 +9,21 @@ var C21_LONG = 55;
 var C21_SOUND = {calls: []};
 var C21_LINES = [[1.4, 4.7, "C099"], [5.4, 13.26, "C100"], [14.4, 18.26, "C101"], [18.46, 25.1, "C102"], [25.3, 29.23, "C103"], [37.0, 44.45, "C104"]];
 var C21_CUTS = [13.8, 36.0];
+var C21_DRESS = {back: 92};                              // the howdah this far back toward the tail (beasts.js regalia
+                                                        // parts), clear of the mahout on the neck (the owner, 2026-11-19: "move
+                                                        // the thing the other boy is sitting in toward's the elephant's tail")
 var C21_STRIKES = 0.7;                                 // seconds between the mahout's strokes on the plate
 var C21_LAYER = null;                                  // the sheet the elephant fades on, going through the gate
 
 // The white elephant with Phrom on its back and the mahout on its neck striking the plate; at (x, y), its size and
 // facing; walking: its step. Gives back the elephant's {seat, head}.
 function c21War(t, x, y, size, face, walking) {
-  var e = elephant(x, y, {size: size, face: face, colour: "#f1ddd3", regalia: true, howdah: true, step: walking ? t / BEAT / 2.4 : 0,
-                          trunk: 0.5 + 0.3 * Math.sin(t * 2)});
+  var look = {size: size, face: face, colour: "#f1ddd3", regalia: C21_DRESS, howdah: true, step: walking ? t / BEAT / 2.4 : 0,
+              trunk: 0.5 + 0.3 * Math.sin(t * 2)};
+  var e = elephant(x, y, look);
   cngHowdahRider(e, size, face, cngPerson("boy", CNG_PHROM, {id: "phromwar", size: cngAgeSize(16) * size / 0.6, face: face, feel: "happy"}));
-  var neck = [e.seat[0] + face * 98 * size, e.seat[1] + 64 * size];   // Phrom in the howdah, the mahout on the neck
+  var neck = [e.seat[0] + face * (98 + C21_DRESS.back + 44) * size, e.seat[1] + 70 * size];   // Phrom in the howdah, the mahout
+                                                          // forward on the neck, toward the trunk (the owner, 2026-11-19)
   var hit = Math.max(0, Math.sin((t % C21_STRIKES) / C21_STRIKES * Math.PI));
   var j = person(neck[0], neck[1], cngPerson("villager", {size: 0.66 * size / 0.6, id: "mahout", face: face, floor: "astride", sabai: false,
                                                           reachA: [neck[0] + face * 90 * size, neck[1] - 150 * size],
@@ -27,6 +32,7 @@ function c21War(t, x, y, size, face, walking) {
   pen.strokeStyle = "#b8294a"; pen.lineWidth = 3;
   pen.beginPath(); pen.moveTo(hand[0], hand[1]); pen.lineTo(hand[0], hand[1] + 26 * size); pen.stroke();
   cngPlate(hand[0], hand[1] + 70 * size, 0.42 * size / 0.6, t);
+  cngEarOver(e, function () { elephant(x, y, look); });   // his leg under the ear
   return e;
 }
 
@@ -62,10 +68,12 @@ function c21Field(t) {
   var sprites = [];
   sprites.push({name: "white elephant", kind: "elephant", x: wx, y: 900, draw: function () { c21War(t, wx, 900, 0.6, 1, come < 1); }});
   sprites.push({name: "khom elephant", kind: "elephant", x: kx + shake, y: 880, draw: function () {
-    var e = elephant(kx + shake, 880, {size: 0.55, face: kface, colour: "#8a8a8a", cloth: "#1e1e24", step: flee > 0 ? t / BEAT / 2 : 0,
-                                       trunk: flee > 0 ? 0.7 : 0.2, mouth: flee > 0 ? 0.4 : 0});
+    var kLook = {size: 0.55, face: kface, colour: "#8a8a8a", cloth: "#1e1e24", step: flee > 0 ? t / BEAT / 2 : 0,
+                 trunk: flee > 0 ? 0.7 : 0.2, mouth: flee > 0 ? 0.4 : 0};
+    var e = elephant(kx + shake, 880, kLook);
     person(e.seat[0], e.seat[1], cngPerson("khomsoldier", CNG_KHOM_KING, {id: "khomkingrides", size: 0.6, face: kface, floor: "astride",
                                                                           feel: t > 19.4 ? "fear" : "angry"}));
+    cngEarOver(e, function () { elephant(kx + shake, 880, kLook); });   // his leg under the ear (the owner, 2026-11-19)
   }});
   for (var k = 0; k < 10; k++) {
     (function (k) {

@@ -60,12 +60,16 @@ function c17Forge(t) {
   var phase = (t % 0.8) / 0.8, up = phase < 0.6 ? phase / 0.6 : 1 - (phase - 0.6) / 0.4;
   drawByZ([
     {name: "smith", kind: "person", x: anvil[0] + 130, y: f[1] + 10, draw: function () {
-      var j = person(anvil[0] + 130, f[1] + 10, cngPerson("villager", CNG_SMITH, {id: "smith", face: -1, feel: "happy",
-                                                                                 reachA: [anvil[0] + 34, anvil[1] - 44 - 130 * up], at: anvil}));
-      cngHammer(j);
+      person(anvil[0] + 130, f[1] + 10, cngPerson("villager", CNG_SMITH, {id: "smith", face: -1, feel: "happy",
+                                                                                 reachA: [anvil[0] + 34, anvil[1] - 44 - 130 * up], at: anvil,
+                                                                                 holdA: cngHammerHeld}));   // the hammer in his fist
     }},
-    {name: "smith 2", kind: "person", x: anvil[0] - 150, y: f[1] + 14, draw: function () {
-      person(anvil[0] - 150, f[1] + 14, cngPerson("villager", CNG_SMITH, {id: "smith2", face: 1, turban: "#3a4a5a", feel: "happy", at: anvil}));
+    {name: "smith 2", kind: "person", x: f[0] - 200 * s, y: f[1] + 14, draw: function () {
+      // at the bellows, a hand on each plunger's top as forge() works it (the owner, 2026-11-19: "have one of the men work
+      // the bellows while the other makes the gold plate - Now, one is just standing there")
+      var rod = function (b) { return [f[0] - 120 * s + b * 26 * s + 10 * s, f[1] - 150 * s + 20 * s * Math.sin(t * 4 + b * Math.PI) + 4 * s]; };
+      person(f[0] - 200 * s, f[1] + 14, cngPerson("villager", CNG_SMITH, {id: "smith2", face: 1, turban: "#3a4a5a", feel: "happy", at: anvil,
+                                                                         reachA: rod(1), reachB: rod(0)}));
     }}
   ]);
   sceneryLampLight(t, f[0], f[1] - 64 * s, f[1] + 10, {reach: 340, strength: 0.7, colour: "255, 150, 70", seed: 6});   // the fire's light
@@ -81,12 +85,15 @@ function c17Run(t) {
   pen.save(); pen.translate(-cam, 0);
   pen.drawImage(village.back, 0, 0);
   var x = cam + 900;
-  var j = person(x, CNG_GROUND, cngPerson("boy", CNG_THUKKHITA, {id: "thukkhita", size: cngAgeSize(16), face: -1, feel: "happy",
-                                                                 step: t / BEAT * 1.6, reachA: [x - 70, CNG_GROUND - 190]}));
-  var hand = cngLocal(j.wristA);
-  pen.strokeStyle = "#b8294a"; pen.lineWidth = 3;
-  pen.beginPath(); pen.moveTo(hand[0], hand[1]); pen.lineTo(hand[0] - 4, hand[1] + 40); pen.stroke();
-  cngPlate(hand[0] - 4, hand[1] + 80, 0.55, t);
+  // the cord in his fist, the plate hanging from it (the owner, 2026-11-19: "make the hand look like it is holding the
+  // cord with fingers and thumb wrapped around a cord")
+  person(x, CNG_GROUND, cngPerson("boy", CNG_THUKKHITA, {id: "thukkhita", size: cngAgeSize(16), face: -1, feel: "happy",
+                                                         step: t / BEAT * 1.6, reachA: [x - 70, CNG_GROUND - 190],
+                                                         holdA: {way: Math.PI / 2, draw: function (g) {
+    pen.strokeStyle = "#b8294a"; pen.lineWidth = 3;
+    pen.beginPath(); pen.moveTo(g.x, g.y - 12); pen.lineTo(g.x - 4, g.y + 40); pen.stroke();
+    cngPlate(g.x - 4, g.y + 80, 0.55, t);
+  }}}));
   pen.drawImage(village.front, 0, 0);
   pen.restore();
   cngBeds(t, "village", "frame");

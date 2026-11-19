@@ -51,9 +51,9 @@ function cngSceneWeapons(t) {
   decorate(t, cngYard(1500, 872, 2), "back");                 // the yard's fowl (owner, 2026-10-25)
   drawByZ([
     {name: "smith", kind: "person", x: smith, y: f[1] + 10, draw: function () {
-      var j = person(smith, f[1] + 10, cngPerson("villager", CNG_SMITH, {id: "smith", face: -1, feel: "happy",
-                                                                     reachA: [anvil[0] + 34, anvil[1] - 44 - 130 * up], at: anvil}));
-      cngHammer(j);
+      person(smith, f[1] + 10, cngPerson("villager", CNG_SMITH, {id: "smith", face: -1, feel: "happy",
+                                                                     reachA: [anvil[0] + 34, anvil[1] - 44 - 130 * up], at: anvil,
+                                                                     holdA: cngHammerHeld}));   // the hammer in his fist
     }},
     {name: "bellows man", kind: "person", x: f[0] - C09_PUMPER * s, y: f[1] + 6, draw: function () {
       // he stands on a low block of wood, as a bellows man does, and pumps down: at the ground the handles were at his

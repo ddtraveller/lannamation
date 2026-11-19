@@ -61,8 +61,8 @@ function cngSceneThird(t) {
   }
   if (changed) {                                           // the white elephant, swimming, Phrom on its neck
     var bob = 6 * Math.sin(t * 1.4), ex = C15_HELD + 120 - 60 * between(t, 38.22, 59.22);
-    elephantAt = elephant(ex, C15_SWIM + 160 + bob, {size: 0.62, face: -1, colour: "#f1ddd3", cloth: "#c9962a",
-                                                    trunk: 0.5 + 0.4 * Math.sin(t * 1.1), mouth: 0.2});
+    var elephantLook = {size: 0.62, face: -1, colour: "#f1ddd3", cloth: "#c9962a", trunk: 0.5 + 0.4 * Math.sin(t * 1.1), mouth: 0.2};
+    elephantAt = elephant(ex, C15_SWIM + 160 + bob, elephantLook);
   }
   var leap = between(t, 26.62, 28.42);
   var inRiver = [];                                        // who is in the water now, drawn before the water over them
@@ -111,6 +111,12 @@ function cngSceneThird(t) {
                                                                                 // (owner, 2026-11-18: "raise his arm up once only then lower his arm"; it rose and fell
                                                                                 // with the beat until the scene ended)
                                                                                 reachA: cheer > 0 ? [elephantAt.seat[0] - 120 * size, elephantAt.seat[1] - 330 * size, cheer] : undefined}));
+    cngEarOver(elephantAt, function () {                   // his leg under its ear: the elephant, the water and the bank again,
+      elephant(ex, C15_SWIM + 160 + bob, elephantLook);    // inside the ear only
+      c15Water(t);
+      pen.drawImage(river.near, 0, 0);
+      cngRiverBank(t, "edge");
+    });
                                                                                 // up and forward, clear of his face (liftHand brought it to his brow, a salute)
   }
   var onBank = [];                                         // the children still on the bank, and Phrom before he leaps

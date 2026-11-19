@@ -1433,9 +1433,12 @@ function maengSiHuHaTa(x, y, look) {
 //   body     the colour of its scales and of its elephant heads (white unless told)
 //   belly, bars, crest   as the Naga's: the belly band, its bars, the spikes
 //   trunk    0 to 1: how far the trunks are raised (they swing a little unless told)
+//   tail     the end of the tail as a river Naga's (naga.js riverNagaTail(): "flame", "tuft" or "fin", in the gold and
+//            white of the white Naga), or none: a plain tip (owner, 2026-11-19, of the statue in Chiang Saen: "add a
+//            tail to the 3 headed elephant snake like the white naga's tail")
 var CHANG_NGU_KEYS = {};
 
-["size", "face", "heads", "body", "belly", "bars", "crest", "trunk"].forEach(function (name) { CHANG_NGU_KEYS[name] = true; });
+["size", "face", "heads", "body", "belly", "bars", "crest", "trunk", "tail"].forEach(function (name) { CHANG_NGU_KEYS[name] = true; });
 
 // One of Chang Ngu's heads: the kit's elephant() with only its head drawn (only: "head"), the neck's top at the
 // pen's (0, 0). At size 1 the head of elephant(0, 0) runs from x 130 to 720 and y -820 to -40, and the back of its
@@ -1481,6 +1484,16 @@ function changNgu(x, y, look) {
     body.push([middle[n][0] - (b[1] - a[1]) / far * swing, middle[n][1] + (b[0] - a[0]) / far * swing]);
   }
   nagaStrip(body, function (v) { return mix(41, 11, Math.pow(v, 0.8)); }, c, [0.045, 0.2, -0.33, 0.47, -0.6, 0.74]);
+  if (look.tail && typeof riverNagaTail === "function") {   // the tail's end, as the white Naga's (naga.js)
+    var tangents = body.map(function (q, i) {
+      var a = body[Math.max(0, i - 1)], b = body[Math.min(body.length - 1, i + 1)];
+      return [b[0] - a[0], b[1] - a[1]];
+    });
+    var keepColours = RIVER_NAGA;
+    RIVER_NAGA = RIVER_NAGA_COLOURS.gold;
+    riverNagaTail({p: body, t: tangents}, 1, 1, look.tail, 1463);
+    RIVER_NAGA = keepColours;
+  }
   var hub = body[0];
   for (var head = 0; head < count; head++) {        // the necks fan out of the chest, as the Naga's do
     var place = count === 1 ? 0 : head / (count - 1) * 2 - 1;

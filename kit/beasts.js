@@ -61,7 +61,8 @@
 //              ornament with a tassel, gold on the tusks, a collar of bells, a howdah under a tiered parasol
 //              with two pennants, anklets; it takes the place of cloth and howdah. The seat it gives back is
 //              the neck's, where the mahout sits, unless howdah is true too. Or the parts to leave out:
-//              {howdah: false} without the howdah and its pennants, {parasol: false} without the parasol
+//              {howdah: false} without the howdah and its pennants, {parasol: false} without the parasol, {back: 40} the howdah and parasol that much nearer
+//              the tail (the howdah's seat with them)
 //              (an elephant in its stable: Chang Ngu's scene 19, the owner, 2026-11-18)
 //   only       "head": only its head is drawn, the legs, the body and the tail left out (Chang Ngu's
 //              heads on their necks, myth.js; a clip cut its jaw and its lifted trunk)
@@ -385,7 +386,11 @@ function elephantRegalia(phase, parts) {
     oval(0, 36, 3, 3, ELEPHANT_REGALIA.goldDeep);
     pen.restore();
   });
-  // the howdah: a white seat with gold rails, a high back with a gold scroll
+  // the howdah: a white seat with gold rails, a high back with a gold scroll; parts.back moves it and its parasol that
+  // far toward the tail (owner, 2026-11-19, of Chang Ngu's scene 21: "move the thing the other boy is sitting in toward's
+  // the elephant's tail so it is not overlapping with the first boy", the mahout on the neck)
+  var back = parts.back || 0;
+  pen.translate(-back, 0);
   if (parts.howdah !== false) {
   pen.beginPath();
   pen.moveTo(-126, -556); pen.quadraticCurveTo(-20, -572, 92, -552); pen.lineTo(92, -592); pen.quadraticCurveTo(-20, -610, -126, -596); pen.closePath();
@@ -422,7 +427,7 @@ function elephantRegalia(phase, parts) {
   });
   }                                                 // the howdah and its pennants, unless left out
   // the parasol: a gold pole from the howdah, four tiers of white with gold rims and fringes, a gold spire on top
-  if (parts.parasol === false) { return; }
+  if (parts.parasol === false) { pen.translate(back, 0); return; }
   pen.save();
   pen.translate(-16, -560);
   pen.rotate(0.02 * Math.sin(clock * 1.1));
@@ -450,6 +455,7 @@ function elephantRegalia(phase, parts) {
   elephantGilt(ELEPHANT_REGALIA.gold, 1.8);
   oval(0, -454, 9, 6, ELEPHANT_REGALIA.goldLight);
   pen.restore();
+  pen.translate(back, 0);
 }
 
 // The regalia on the head, in elephant()'s frame for the head: a white head-cloth from the crown to the trunk's root under a net of gold
@@ -920,7 +926,8 @@ var ELEPHANT_UNSEEN = null;                         // the sheet the body goes o
 //          facing right): its keys are BEAST_KEYS above (the elephant reads
 //          size, face, ground, step, colour, late, front, trunk, tusks, cloth,
 //          howdah, regalia, sit, mouth, feel, and slope: radians, as beastLegs() says)
-// Returns {seat: [x, y], head: [x, y]}, points of the sheet. It draws with
+// Returns {seat: [x, y], head: [x, y], ear}, points of the sheet and the near ear's outline (a Path2D in the canvas's own pixels:
+// clip to it and draw the elephant again to put its ear over a rider's leg). It draws with
 // pen at the film's clock; it sets the kit's FINE and LINE while it draws
 // and leaves them at 1 and STYLE.line.
 // e.g. var e = elephant(700, GROUND, {size: 0.6, step: clock / BEAT / 4, trunk: 0.4, cloth: "#b23a2a"});
@@ -1186,6 +1193,13 @@ function elephant(x, y, look) {
     pen.closePath();
     shape(ivory);
     if (rings) { elephantRings([[128 + dx, 86 + dy, 172 + dx, 58 + dy], [150 + dx, 110 + dy, 190 + dx, 80 + dy]]); }
+    pen.beginPath();                                // the skin it comes out of: a sheath of the head's own grey, three
+    pen.moveTo(102 + dx, 30 + dy);                  // sided, round its root (owner, 2026-11-19, from a photograph of a
+    pen.lineTo(146 + dx, 22 + dy);                  // tusker: "the skin the tusk comes out of")
+    pen.quadraticCurveTo(148 + dx, 50 + dy, 140 + dx, 74 + dy);
+    pen.quadraticCurveTo(118 + dx, 56 + dy, 102 + dx, 30 + dy);
+    pen.closePath();
+    shape(blend(colour, "#8a847e", 0.38));
   }
   if (look.tusks !== false) { tusk(20, -10, "#e9dcc0", look.cloth || look.regalia); }   // the far tusk, behind the trunk. One that is dressed has gold on its tusks
   // The trunk: a row of points, each turned a little from the one before.
@@ -1275,6 +1289,15 @@ function elephant(x, y, look) {
   pen.save();                                       // the ear: its top folds over, it narrows to a lobe that hangs, and it flaps
   pen.translate(8, -78);
   pen.rotate(flap);
+  var earLine = new Path2D();                       // its outline, given back in the canvas's own pixels (a rider's leg under it)
+  earLine.moveTo(12, -8);
+  earLine.bezierCurveTo(-40, -48, -122, -22, -116, 52);
+  earLine.bezierCurveTo(-112, 108, -62, 156, -24, 132);
+  earLine.bezierCurveTo(2, 114, 22, 70, 26, 34);
+  earLine.quadraticCurveTo(28, 6, 12, -8);
+  earLine.closePath();
+  var ear = new Path2D();
+  ear.addPath(earLine, pen.getTransform().translate(-45, 60).scale(1.06).translate(45, -60));   // a little wider: its ink line too
   pen.beginPath();
   pen.moveTo(12, -8);
   pen.bezierCurveTo(-40, -48, -122, -22, -116, 52);
@@ -1309,7 +1332,8 @@ function elephant(x, y, look) {
   FINE = 1;
   LINE = STYLE.line;
   // The seat: in the howdah, on its cushion; or else behind the ears, where a mahout sits.
-  return {seat: [x + (look.howdah ? -14 : 84) * size * face, y - ((look.howdah ? 592 : 528) + rise) * size], head: [crown.x, crown.y]};
+  return {seat: [x + (look.howdah ? -14 - ((look.regalia && look.regalia.back) || 0) : 84) * size * face, y - ((look.howdah ? 592 : 528) + rise) * size], head: [crown.x, crown.y],
+          ear: ear};                                // the near ear's outline, a Path2D in the canvas's own pixels (with its line's width)
 }
 
 // A water buffalo, standing on (x, y). Everything about it is in "look"

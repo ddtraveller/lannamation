@@ -20,7 +20,9 @@ var C24_LIFE = [
   {name: "egret, behind", kind: "egret", layer: "back", look: {fly: true, size: 0.7, seed: 3}, course: [[34.0, -260, 430], [41.0, 2000, 360]]}
 ];
 var C24_CUTS = [15.8, 24.2];
-var C24_PHANG = Object.assign({}, CNG_KING, {age: 0.45});              // Phang, the boys' father, older now
+var C24_PHANG = cngCrowned(Object.assign({}, CNG_KING, {age: 0.45}));  // Phang, the boys' father, older now, king again: his
+                                                                        // crown on (the owner, 2026-11-19: "the king should be
+                                                                        // wearing his crown again")
 var C24_GROOM = Object.assign({}, CNG_PHROM, {sarong: ["#5a3f32", BROCADE], smile: 0.8});
 var C24_WALL = [620, 0.9];                                             // Wiang Chai Prakan's rampart: its foot, its size
 var C24_KOK = [770, 80];                                               // the Kok before it: its far edge, how wide
@@ -47,7 +49,7 @@ function c24Court(t) {
   drawByZ([
     {name: "hall, back", kind: "palace", z: "set", y: dais - 1, draw: function () { cngPalace("back"); }},
     {name: "king", kind: "person", z: "set", x: p[0] - 60, y: dais, draw: function () {
-      person(p[0] - 60, dais, poseEased(t, kingAt));          // eased wherever his look steps (poseEased)
+      cngCrownOn(person(p[0] - 60, dais, poseEased(t, kingAt)));   // eased wherever his look steps (poseEased); crowned
     }},
     {name: "queen", kind: "person", z: "set", x: p[0] + 90, y: dais, draw: function () {
       person(p[0] + 90, dais, cngPerson("maiden", CNG_QUEEN, {id: "thewiagain", floor: "side", face: -1, feel: "happy", age: 0.4}));
@@ -78,7 +80,7 @@ function c24Wedding(t) {
   var sprites = [
     {name: "hall, back", kind: "palace", z: "set", y: dais - 1, draw: function () { cngPalace("back", dusk); }},
     {name: "king", kind: "person", z: "set", x: p[0] - 200, y: dais, draw: function () {
-      person(p[0] - 200, dais, cngPerson("noble", C24_PHANG, {id: "phangwed", floor: "cross", face: 1, feel: "happy", at: [p[0], dais - 100]}));
+      cngCrownOn(person(p[0] - 200, dais, cngPerson("noble", C24_PHANG, {id: "phangwed", floor: "cross", face: 1, feel: "happy", at: [p[0], dais - 100]})));
     }},
     {name: "groom", kind: "person", z: "set", x: p[0] - 50, y: dais, draw: function () {
       person(p[0] - 50, dais, cngPerson("boy", C24_GROOM, {id: "groom", size: cngAgeSize(16), floor: "cross", face: 1, feel: "happy",

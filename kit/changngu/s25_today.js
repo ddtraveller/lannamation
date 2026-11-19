@@ -71,7 +71,8 @@ function cngSceneToday(t) {
     }
   }
   statuePool(pen, pool[0], pool[1], pool[2], t);
-  changNgu(pool[0], pool[1] - 60 * pool[2], {size: 0.36, face: 1});
+  changNgu(pool[0], pool[1] - 60 * pool[2], {size: 0.36, face: 1, tail: "tuft"});   // its tail as the white Naga's (the owner,
+                                                          // 2026-11-19: "add a tail to the 3 headed elephant snake like the white naga's tail")
   var look = cast("buakham", {size: 0.86, id: "buakhamcng", smile: 1}), walk = stroll(t, 2120, 1460, 10.4, look);
   if (t > walk.arrives) {
     var speaking = C25_SPEAKS.some(function (s) { return t >= s[0] && t < s[1]; });

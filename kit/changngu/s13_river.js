@@ -14,10 +14,11 @@ var C13_CUTS = [13.27, 27.11];
 
 // Phrom at 13 with his hook in his near hand, held up (the hook's foot at his hand). look: the scene's keys.
 function c13Phrom(x, y, look) {
-  var size = cngAgeSize(13), j = person(x, y, cngPerson("boy", CNG_PHROM, Object.assign({id: "phrom", size: size}, look)));
-  var w = cngLocal(j.wristA);
-  elephantHook(pen, w[0], w[1] + 30 * size, size * 0.9, {angle: (look.face || 1) * 0.12});
-  return j;
+  var size = cngAgeSize(13), lean = (look.face || 1) * 0.12;
+  return person(x, y, cngPerson("boy", CNG_PHROM, Object.assign({id: "phrom", size: size,
+                                                                 holdA: {way: -Math.PI / 2 + lean, draw: function (g) {   // its shaft in his fist
+    elephantHook(pen, g.x, g.y + 30 * size, size * 0.9, {angle: lean});
+  }}}, look)));
 }
 
 // One of the village's children at (x, y): k picks a look from CNG_CHILDREN; look: the scene's keys.
@@ -38,12 +39,11 @@ function c13Bamboo(t) {
   pen.fillStyle = "rgba(240, 170, 120, 0.2)"; pen.fillRect(0, 0, WIDE, 1080);
   var cut = t < 6.79, swing = cut ? Math.max(0, Math.sin(t * 5)) : 0, size = cngAgeSize(13);
   if (cut) {
-    var j = person(1080, 900, cngPerson("boy", CNG_PHROM, {id: "phrom", size: size, face: 1, at: [1260, 760],
-                                                          reachA: [1180 + 30 * swing, 760 - 70 * swing]}));
-    var w = cngLocal(j.wristA);
-    dap(pen, w[0], w[1], size * 0.5, {angle: 0.9 - 1.2 * swing});
+    person(1080, 900, cngPerson("boy", CNG_PHROM, {id: "phrom", size: size, face: 1, at: [1260, 760], holding: "dap", dap: 0.5,
+                                                  reachA: [1180 + 30 * swing, 760 - 70 * swing]}));   // the dap in his fist (the owner,
+                                                          // 2026-11-19: "so it looks like he is actually holding the sword")
   } else {
-    c13Phrom(1080, 900, {face: -1, feel: "happy", reachA: [1010, 700]});
+    c13Phrom(1080, 900, {face: -1, feel: "happy", reachA: [985, 745]});   // held up before his chest, clear of his face
   }
   cngBeds(t, "village", "frame");
   sceneryAir(t, {butterfly: null, petals: null, light: [0.5, 13]});   // the first light

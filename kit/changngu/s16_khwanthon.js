@@ -54,7 +54,7 @@ function cngSceneKhwanthon(t) {
   pen.drawImage(cngSky("day"), 0, 0);
   cngClouds(t + 80, "day");
   pen.drawImage(river.back, 0, 0);
-  cngRiverLife(t, {flushed: 1 - between(t, 0, 20)});
+  cngRiverLife(t, {birds: false});                          // no birds (the owner, 2026-11-19: "Remove the hovering birds")
   decorate(t, C16_LIFE, "back");
   var upstream = between(t, 11, 30), shake = t > 7 && t < 11 ? Math.sin((t - 7) * 9) * 0.5 : 0;
   var ex = mix(1000, 1500, upstream), bob = 6 * Math.sin(t * 1.4);

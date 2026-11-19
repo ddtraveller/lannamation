@@ -993,7 +993,9 @@ function cngCrown(base, h, tilt) {
   pen.translate(0, -19 * s);                             // the skull's top: the band lies 12 to 26 below it
   pen.lineWidth = 1.6; pen.lineJoin = "round";
   pen.strokeStyle = HIMMA.goldLine;
-  function gold(path, lit) { path(); pen.fillStyle = lit ? HIMMA.goldLit : HIMMA.gold; pen.fill(); pen.stroke(); }
+  var shine = pen.createLinearGradient(-w, 20 * s, w * 0.6, -40 * s);   // the gold lit from above and the front, as the
+  shine.addColorStop(0, HIMMA.gold); shine.addColorStop(1, HIMMA.goldLit);   // thewada's crown is (himmaphan.js himmaCrown())
+  function gold(path, lit) { path(); pen.fillStyle = lit ? HIMMA.goldLit : kind === "lanna" ? shine : HIMMA.gold; pen.fill(); pen.stroke(); }
   function flame(x, y, wide, tall, lean) {               // a gold flame (kranok), its foot at (x, y)
     gold(function () {
       pen.beginPath(); pen.moveTo(x - wide, y);
@@ -1001,9 +1003,13 @@ function cngCrown(base, h, tilt) {
       pen.quadraticCurveTo(x + wide * 0.5, y - tall * 0.5, x + wide, y); pen.closePath();
     }, true);
   }
-  if (kind === "lanna") {                                // the flames over the ears, behind the band
-    flame(-w * 0.98, 18 * s, 9 * s, 34 * s, -14 * s);
-    flame(w * 0.98, 18 * s, 9 * s, 34 * s, 14 * s);
+  if (kind === "lanna") {                                // the flames over the ears, behind the band, each with its inner line
+    [-1, 1].forEach(function (e) {
+      flame(e * w * 0.98, 18 * s, 9 * s, 34 * s, e * 14 * s);
+      pen.save(); pen.lineWidth = 1;
+      pen.beginPath(); pen.moveTo(e * w * 0.98, 14 * s); pen.quadraticCurveTo(e * w * 1.02, 0, e * (w * 0.98 + 9 * s), -12 * s); pen.stroke();
+      pen.restore();
+    });
   }
   if (kind === "band") {                                 // the plate at the front, over the brow
     flame(0, 12 * s, 16 * s, 40 * s, 0);
@@ -1017,7 +1023,22 @@ function cngCrown(base, h, tilt) {
     for (k = 0; k < tiers; k++) {                        // the tiers to the spire
       var y0 = 6 * s - k * up / (tiers + 1), y1 = 6 * s - (k + 1) * up / (tiers + 1), w0 = w * (0.8 - k * step), w1 = w * (0.8 - (k + 1) * step);
       pen.beginPath(); pen.moveTo(-w0, y0); pen.lineTo(-w1, y1); pen.lineTo(w1, y1); pen.lineTo(w0, y0); pen.closePath();
-      pen.fillStyle = k % 2 ? "#e9bd58" : "#d49a32"; pen.fill(); pen.stroke();
+      pen.fillStyle = k % 2 ? "#e9bd58" : "#d49a32";
+      if (kind === "lanna") {                            // each tier lit, its rim arched and beaded (the owner, 2026-11-19: "Look at
+        var tier = pen.createLinearGradient(-w0, y0, w0, y1);   // Indra's crown in the kit and add nice detail to the Lanna crown")
+        tier.addColorStop(0, "#c88e2a"); tier.addColorStop(0.55, "#f0c866"); tier.addColorStop(1, "#d49a32");
+        pen.fillStyle = tier;
+      }
+      pen.fill(); pen.stroke();
+      if (kind === "lanna") {
+        pen.save(); pen.lineWidth = 1.1;
+        pen.beginPath(); pen.moveTo(-w0, y0); pen.quadraticCurveTo(0, y0 - 5 * s, w0, y0); pen.stroke();   // the rim, arched
+        pen.fillStyle = HIMMA.goldLit;
+        for (var b = -2; b <= 2; b++) {                  // beads along it
+          pen.beginPath(); pen.arc(b * w0 / 2.6, y0 - 2.2 * s * (1 - (b * b) / 9), 1.7 * s, 0, 7); pen.fill(); pen.stroke();
+        }
+        pen.restore();
+      }
     }
     var top = 6 * s - tiers * up / (tiers + 1), tw = w * (0.8 - tiers * step);
     if (kind === "chada") {                              // a needle of gold
@@ -1027,10 +1048,29 @@ function cngCrown(base, h, tilt) {
         pen.beginPath(); pen.moveTo(-tw, top); pen.quadraticCurveTo(-tw * 1.4, top - 14 * s, 0, top - 26 * s);
         pen.quadraticCurveTo(tw * 1.4, top - 14 * s, tw, top); pen.closePath();
       }, true);
+      pen.save(); pen.lineWidth = 1;                     // the bud's petals
+      pen.beginPath(); pen.moveTo(0, top); pen.quadraticCurveTo(-tw * 0.5, top - 12 * s, 0, top - 24 * s);
+      pen.moveTo(0, top); pen.quadraticCurveTo(tw * 0.5, top - 12 * s, 0, top - 24 * s); pen.stroke();
+      pen.restore();
     }
   }
-  pen.fillStyle = HIMMA.jewel;                           // a red stone on the band
-  pen.beginPath(); pen.arc(0, (kind === "band" ? 18 : 18) * s, 4.5 * s, 0, 7); pen.fill();
+  if (kind === "lanna") {                                // the band's finer work: a row of small points on its top edge, its
+    pen.save(); pen.lineWidth = 1;                       // stones red, green and red, each in gold
+    for (k = -4; k <= 4; k++) {
+      var px = k * w / 5, py = 12 * s - 8 * s * (1 - (k * k) / 25);
+      gold(function () { pen.beginPath(); pen.moveTo(px - 3.2 * s, py + 1.5 * s); pen.lineTo(px, py - 5 * s); pen.lineTo(px + 3.2 * s, py + 1.5 * s); pen.closePath(); }, true);
+    }
+    [[-w * 0.5, HIMMA.jewel], [0, HIMMA.jewel2], [w * 0.5, HIMMA.jewel]].forEach(function (j, n) {
+      var jy = (n === 1 ? 18 : 20) * s;
+      pen.fillStyle = HIMMA.goldLit; pen.beginPath(); pen.arc(j[0], jy, (n === 1 ? 5.6 : 4.2) * s, 0, 7); pen.fill(); pen.stroke();
+      pen.fillStyle = j[1]; pen.beginPath(); pen.arc(j[0], jy, (n === 1 ? 4 : 2.9) * s, 0, 7); pen.fill();
+      pen.fillStyle = "rgba(255, 255, 255, 0.6)"; pen.beginPath(); pen.arc(j[0] - 1.2 * s, jy - 1.2 * s, 1 * s, 0, 7); pen.fill();
+    });
+    pen.restore();
+  } else {
+    pen.fillStyle = HIMMA.jewel;                         // a red stone on the band
+    pen.beginPath(); pen.arc(0, 18 * s, 4.5 * s, 0, 7); pen.fill();
+  }
   pen.restore();
   pen.setTransform(keep);
 }
@@ -1043,6 +1083,21 @@ function cngCrownOn(j) {
 // under it unseen), on under the band. e.g. cngPerson("noble", cngCrowned(CNG_KING), {...});
 function cngCrowned(look) {
   return CNG_CROWN_KIND === "band" ? look : Object.assign({}, look, {turban: undefined, hidden: ["hair"]});
+}
+
+// An elephant's ear drawn again over whoever rides behind it, so a rider's near leg goes under the ear (the owner,
+// 2026-11-19: "put the boy's leg behind the elephant's ear in z order"): e, what elephant() gave back (its ear's outline,
+// in the canvas's own pixels); again, a function that draws the elephant and whatever lies over it there once more
+// (only what falls inside the ear is drawn). e.g. cngEarOver(e, function () { elephant(x, y, look); });
+function cngEarOver(e, again) {
+  if (!e || !e.ear) { return; }
+  var keep = pen.getTransform();
+  pen.save();
+  pen.setTransform(1, 0, 0, 1, 0, 0);
+  pen.clip(e.ear);
+  pen.setTransform(keep);
+  again();
+  pen.restore();
 }
 
 var CNG_SCRATCH = null;
@@ -1392,6 +1447,32 @@ function cngLocal(point) {
 
 // A smith's hammer in his hand (scenes 9 and 17): a short wooden haft along the hand's line, an iron head across its end.
 // joints: what person() gave back. e.g. cngHammer(joints);
+// The same hammer held in the fist (the kit's holdA: the fingers and the thumb round its handle; the owner, 2026-11-19:
+// "should hold the tools they are using in their hands properly with fingers and thumbs around the staff of the
+// tool"): its handle through the grip toward the thumb, its head at the end. e.g. person(x, y, Object.assign(look,
+// {holdA: cngHammerHeld}));
+function cngHammerHeld(g) {
+  var a = Math.atan2(g.ay, g.ax);
+  pen.save();
+  pen.translate(g.x, g.y);
+  pen.rotate(a);
+  pen.fillStyle = "#7a5432"; pen.fillRect(-14, -3, 72, 6);
+  pen.fillStyle = "#3a3a40"; pen.fillRect(54, -14, 18, 28);
+  pen.restore();
+}
+// The same hammer held in the fist (the kit's holdA: the fingers and the thumb round its handle; the owner, 2026-11-19:
+// "should hold the tools they are using in their hands properly with fingers and thumbs around the staff of the
+// tool"): its handle through the grip toward the thumb, its head at the end. e.g. person(x, y, Object.assign(look,
+// {holdA: cngHammerHeld}));
+function cngHammerHeld(g) {
+  var a = Math.atan2(g.ay, g.ax);
+  pen.save();
+  pen.translate(g.x, g.y);
+  pen.rotate(a);
+  pen.fillStyle = "#7a5432"; pen.fillRect(-14, -3, 72, 6);
+  pen.fillStyle = "#3a3a40"; pen.fillRect(54, -14, 18, 28);
+  pen.restore();
+}
 function cngHammer(joints) {
   var w = cngLocal(joints.wristA), h = cngLocal(joints.handA), a = Math.atan2(h[1] - w[1], h[0] - w[0]);
   pen.save();

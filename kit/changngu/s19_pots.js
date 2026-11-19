@@ -57,8 +57,12 @@ function c19Stable(t) {
   var pot = t > 22.6, plop = between(t, 25.2, 26.0);
   if (pot) {
     var px = sx + 300;
-    person(px + 60, base + 10, cngPerson("villager", {size: 0.66, id: "potman", face: -1, sabai: false, feel: t > 25.2 ? "surprised" : "concerned",
-                                                      reachA: [px, base - 70], reachB: [px + 20, base - 290]}));   // his other hand at his nose
+    var potLook = cngPerson("villager", {size: 0.66, id: "potman", face: -1, sabai: false, feel: t > 25.2 ? "surprised" : "concerned",
+                                         reachA: [px, base - 70]});
+    var head = cngMeasure(px + 60, base + 10, potLook), hh = Math.hypot(head.chin[0] - head.crown[0], head.chin[1] - head.crown[1]);
+    // his other hand over his eyes, his elbow bent, peeking out under it (the owner, 2026-11-19: "like he is trying to
+    // cover his eyes but he should be peeking out but not raising his hand like asking a question")
+    person(px + 60, base + 10, Object.assign(potLook, {reachB: [head.crown[0] - 0.5 * hh, head.crown[1] + 0.3 * hh]}));
     goldPot(pen, px, base - 10, 0.8);
     if (plop > 0 && plop < 1) {                            // a small dark ball dropping into the pot
       pen.fillStyle = "#5a4630";
@@ -130,12 +134,18 @@ function c19Moat(t) {
       // both hands on the hoe's handle, the stroke from the shoulder down (the owner, 2026-11-18: "stop all hand waving
       // behavior": one hand swung up to his brow with a short hoe, like a salute, the other hand rocked on the beat)
       var grip = [d[0] + 64 * d[1], 930 - 120 + 90 * dig];   // from his chest down to the ground, never at his face
-      var j = person(d[0], 930, cngPerson("villager", {size: 0.66, id: "digger" + k, face: d[1], sabai: false, bend: 0.3 + 0.3 * dig,
-                                                      reachA: grip, reachB: [grip[0] + 12 * d[1], grip[1] + 44]}));
-      var w = cngLocal(j.wristA);                          // a hoe (chok) in his hands
-      pen.strokeStyle = "#7a5432"; pen.lineWidth = 5;
-      pen.beginPath(); pen.moveTo(w[0] - 30 * d[1], w[1] - 50); pen.lineTo(w[0] + 20 * d[1], w[1] + 60); pen.stroke();
-      pen.fillStyle = "#4a4a50"; pen.fillRect(w[0] + 10 * d[1] - 6, w[1] + 56, 26 * d[1], 10);
+      // a hoe (chok): its handle through both fists, drawn with the lower (far) one, the upper closing over it too (the
+      // owner, 2026-11-19: "hold the tools they are using in their hands properly with fingers and thumbs around the staff")
+      var way = Math.atan2(110, 50 * d[1]), ux = Math.cos(way), uy = Math.sin(way);
+      person(d[0], 930, cngPerson("villager", {size: 0.66, id: "digger" + k, face: d[1], sabai: false, bend: 0.3 + 0.3 * dig,
+                                               reachA: grip, reachB: [grip[0] + 12 * d[1], grip[1] + 44], holdA: {way: way},
+                                               holdB: {way: way, draw: function (g) {
+        pen.strokeStyle = "#7a5432"; pen.lineWidth = 5;
+        pen.beginPath(); pen.moveTo(g.x - ux * 110, g.y - uy * 110); pen.lineTo(g.x + ux * 66, g.y + uy * 66); pen.stroke();
+        pen.save(); pen.translate(g.x + ux * 66, g.y + uy * 66); pen.rotate(way + Math.PI / 2);
+        pen.fillStyle = "#4a4a50"; pen.fillRect(-4, -4, 26 * d[1], 10);
+        pen.restore();
+      }}}));
     }});
   });
   drawByZ(sprites);

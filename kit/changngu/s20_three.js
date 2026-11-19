@@ -107,8 +107,8 @@ function c20Khom(t) {
   drawByZ([
     {name: "hall, back", kind: "palace", z: "set", y: floor - 1, draw: function () { cngPalace("back"); }},
     {name: "hall, front", kind: "palace", z: "set", y: floor, draw: function () { cngPalace("front"); }},
-    {name: "khom king", kind: "person", x: p[0] - 100, y: floor + 60 - 6 * stamp, draw: function () {
-      person(p[0] - 100, floor + 60 - 6 * stamp, poseEased(t, function (s) {   // he shouts and stamps, his hands down (the owner,
+    {name: "khom king", kind: "person", z: "set", x: p[0] - 100, y: floor + 0.5, draw: function () {   // on the white floor
+      person(p[0] - 100, floor - 6 * stamp, poseEased(t, function (s) {   // he shouts and stamps, his hands down (the owner,
         var shouting = s > 33.08 && s < 38.16;                // 2026-11-18: "stop the king's hand waving behavior": it pumped as he
                                                               // stamped; then an open hand lifted by his head still read as a wave)
         return cngPerson("khomsoldier", CNG_KHOM_KING, {id: "khomking", face: -1, feel: "angry",

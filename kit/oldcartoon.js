@@ -4902,7 +4902,7 @@ var HIDEABLE = {hair: true};                       // the parts a look may hide 
 var LOOK_KEYS = {};
 
 ["age", "anger", "at", "bangles", "bare", "beads", "beard", "bend", "blink", "body", "build", "bun", "buttons", "cap", "coat", "collar", "dance", "dap", "drum", "earplug", "earrings", "eyes", "face",
- "fan", "fear", "feel", "fingersA", "fingersB", "flex", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "hair", "halo", "handA",
+ "fan", "fear", "feel", "fingersA", "fingersB", "flex", "floor", "flower", "full", "garland", "gestureA", "gestureB", "glance", "gloves", "grip", "ground", "holdA", "holdB", "hair", "halo", "handA",
  "handB", "hat", "head", "hidden", "holding", "id", "late", "laugh", "lady", "legs", "lid", "lips", "maiwai", "malai", "mouth", "nails", "north", "palmA", "palmB", "parasol", "patoi", "pins", "plain", "raise", "rapt", "reachA", "reachB",
  "regalia", "regalia", "regalia", "rig", "sabai", "sad", "sarong", "shaved", "shirt", "shoes", "shoulders", "sin", "sing", "sit", "size", "skin", "skirt", "sleepy",
  "smile", "spring", "step", "stride", "sway", "tail", "tattoo", "tears", "tilt", "turban", "turn", "twist", "ueang", "up", "wai", "weave", "wink", "wonder", "worn", "worry", "wrap", "wraps", "wristA", "wristB"
@@ -5074,6 +5074,17 @@ var LOOK_KEYS = {};
 //                   a wai 0.25; a lift's hand (liftHand) turns from its back to its palm as it goes up
 //   wristA, wristB  the bend of each wrist, in radians: a hand laid flat on a thing
 //   grip            true: both hands closed round a thing, such as a pestle
+//   holdA, holdB    a thing held in that hand, the fingers and the thumb wrapped round it as round a hilt or a
+//                   spear's shaft (owner, 2026-11-19: "a hand holding a stick or other generic item where the thumb
+//                   and fingers wrap around it"): a function the kit calls while it draws the hand, after the palm
+//                   and before the fingers and the thumb, with {x, y, ax, ay} in the scene's pixels (the pen in the
+//                   scene's frame): the grip's middle and the way across the palm toward the thumb; it draws the
+//                   thing through that point. Or {draw: that function, way: radians}: the way the thing runs
+//                   through the fist, in the scene's frame, and the fist turns square to it (the nearer of the two
+//                   ways round to the forearm). The hand closes to a fist. {way} with no draw: a fist round a thing
+//                   the other hand draws (a hoe's handle in both hands). Needs the hand in the round (not
+//                   STYLE.hands "flat" or gloves). e.g. holdA: {way: -1.4, draw: function (g) { hose(g.x, g.y - 60,
+//                   g.x, g.y + 60, 0, 5, "#7a5234"); }}
 //   fingersA, fingersB
 //                   five curls each, 0 straight to 1 curled (the first finger to the little
 //                   one, then the thumb), as a track reads them from a hand model
@@ -5935,8 +5946,24 @@ function personReach(fig) {
     var lifted = look.dance ? 1.6 : 0.7 + 0.3 * up;
     var open = look.grip || (near && (look.holding === "stick" || look.holding === "spear" || look.holding === "dap")) ? 0.12 : given[1] < 0 ? lifted : rest ? 0.1 : 0.35;   // a grip is a fist round a thing
     var curls = fingers || (rest ? (STYLE.hands === "flat" ? (near ? REST_A : REST_B) : REST) : undefined);
-    if (near && (look.holding === "stick" || look.holding === "spear")) { curls = undefined; }
+    if (near && look.holding === "stick") { curls = undefined; }
+    if (near && look.holding === "spear") {          // a fist round the shaft, square to it (owner, 2026-11-19: "fingers
+      if (!fingers) { curls = [0.92, 0.95, 0.97, 0.98, 0.7]; }   // wrapped around the shaft of the spear")
+      var spearFore = Math.atan2(wrist[1] - wrist[3], wrist[0] - wrist[2]);
+      angle = Math.cos(spearFore) >= 0 ? 0 : Math.PI;   // the shaft upright: the fist across it, forward or back as the forearm is
+    }
     if (near && look.holding === "dap" && !fingers) { curls = [0.92, 0.95, 0.97, 0.98, 0.7]; }   // a fist round the hilt
+    var hold = near ? look.holdA : look.holdB;
+    if (hold) {                                     // a thing held (holdA, holdB): a fist round it
+      open = 0.12;
+      if (!fingers) { curls = [0.92, 0.95, 0.97, 0.98, 0.7]; }
+      if (hold.way !== undefined) {                 // square to the thing's way, the nearer way round to the forearm
+        var toHere = pen.getTransform().inverse().multiply(fig.sceneFrame);
+        var wv = toHere.transformPoint(new DOMPoint(Math.cos(hold.way), Math.sin(hold.way), 0, 0)), wa = Math.atan2(wv.y, wv.x);
+        var fore = Math.atan2(wrist[1] - wrist[3], wrist[0] - wrist[2]), turnBy = function (c) { return Math.abs(Math.atan2(Math.sin(c - fore), Math.cos(c - fore))); };
+        angle = turnBy(wa + Math.PI / 2) <= turnBy(wa - Math.PI / 2) ? wa + Math.PI / 2 : wa - Math.PI / 2;
+      }
+    }
     var thumb = near ? -1 : given[1] < 0 ? 1 : -1;  // a lifted hand turns its thumb to the head; a hanging hand turns its thumb forward
     var palm = rest ? 0.15 : given[1] < 0 ? (look.dance ? 0.15 : 0.85) : 0.3;   // the back of a hanging hand; the palm of a lifted one; the dance hand's back, its long nails seen whole
     var nails = look.nails === "long" ? "long" : look.nails && given[1] < 0;   // long nails are worn all the time; tips show on a lifted hand
@@ -6014,6 +6041,7 @@ function personReach(fig) {
     // A glove keeps its cuff and a sleeve its edge.
     var bare = sleeve === SKIN && !look.gloves;
     var back = (13 + HAND.wrist + 2) * handSize + 2 * LINE;   // the palm starts 13 back from the wrist, round at its end, and its ink a line beyond
+    var calledIn = pen.getTransform();               // the arms' frame, as personArms() drew in it (a spear through the fist)
     pen.save();
     pen.translate(wrist[0], wrist[1]);
     var atWrist = pen.getTransform(), wristShape;
@@ -6046,7 +6074,9 @@ function personReach(fig) {
     pen.save();
     pen.scale(handSize, handSize);
     if (near && look.parasol) { gripHand(0, 0, pose.angle); }   // a hand closed round the parasol's handle, from the photograph
-    else if (look.gloves || STYLE.hands === "flat") { glove(0, 0, pose.angle, pose.thumb, !look.gloves, pose.open, pose.nails, pose.curls); }
+    else if (look.gloves || STYLE.hands === "flat") {
+      if (near ? look.holdA : look.holdB) { warn("holdA, holdB need the hand in the round: not gloves or STYLE.hands \"flat\""); }
+      glove(0, 0, pose.angle, pose.thumb, !look.gloves, pose.open, pose.nails, pose.curls); }
     else {
       var round = roundPose(pose);
       if (bare) {
@@ -6087,12 +6117,32 @@ function personReach(fig) {
                          pen.clip();
                        }};
       }
+      if (near && look.holding === "spear" && fig.spearAt) {   // the spear's shaft through the fist: the palm under it, the
+        round.held = function (gx, gy) {             // fingers and the thumb over it
+          var at = calledIn.inverse().multiply(pen.getTransform()).transformPoint(new DOMPoint(gx, gy));
+          pen.save();
+          pen.setTransform(calledIn);
+          fig.spearAt(at.x, at.y);
+          pen.restore();
+        };
+      }
       if (near && look.holding === "dap") {         // a Lanna sword in the fist: its hilt across the palm, the blade out the thumb's side
         round.held = function (gx, gy) {             // the blade square to the forearm, up from it, leaning DAP_TILT forward
           if (typeof dap !== "function") { warn("holding \"dap\" needs chiangsaen.js"); return; }
           var way = forearm - Math.PI / 2 + DAP_TILT - pose.angle, bx = Math.cos(way), by = Math.sin(way);   // into the hand's frame
           var size = (look.dap || 0.55) / handSize, top = [gx + bx * 35 * size, gy + by * 35 * size];   // the hilt's middle in the fist
           dap(pen, top[0], top[1], size, {angle: Math.atan2(bx, -by)});
+        };
+      }
+      var held = near ? look.holdA : look.holdB, drawHeld = typeof held === "function" ? held : held && held.draw;
+      if (drawHeld && !(near && look.holding === "dap")) {
+        round.held = function (gx, gy, ax, ay) {     // the thing held (holdA, holdB), drawn in the scene's frame
+          var toScene = fig.sceneFrame.inverse().multiply(pen.getTransform());
+          var g = toScene.transformPoint(new DOMPoint(gx, gy)), a = toScene.transformPoint(new DOMPoint(ax, ay, 0, 0)), al = Math.hypot(a.x, a.y) || 1;
+          pen.save();
+          pen.setTransform(fig.sceneFrame);
+          drawHeld({x: g.x, y: g.y, ax: a.x / al, ay: a.y / al});
+          pen.restore();
         };
       }
       hand(0, 0, pose.angle, round);
@@ -7538,8 +7588,8 @@ function personArms(fig) {
     var palmX = wristA[0] + Math.cos(angleA) * 13, palmY = wristA[1] + Math.sin(angleA) * 13;
     hose(palmX - 3, palmY - 20, palmX + 8, ground / trunk - 2, 0.02, 6, "#7a5234");
   }
-  if (look.holding === "spear") {                   // a spear: from the ground up through the fist to well above the head
-    var gripX = wristA[0] + Math.cos(angleA) * 13, gripY = wristA[1] + Math.sin(angleA) * 13, footY = ground / trunk - 2;
+  var spearAt = function (gripX, gripY) {           // a spear: from the ground up through the fist to well above the head
+    var footY = ground / trunk - 2;
     var footX = gripX + 6, rise = footY - gripY, tipX = footX + (gripX - footX) * (SPEAR_LONG / rise), tipY = footY - SPEAR_LONG;
     pen.strokeStyle = "#7a5234";
     pen.lineWidth = 6;
@@ -7566,8 +7616,13 @@ function personArms(fig) {
     pen.quadraticCurveTo(-14, -22, 0, -58);
     shape("#9aa0a8");
     pen.restore();
+  };
+  if (look.holding === "spear") {                   // through the near fist as drawHand() draws it (the fingers round the
+    if (behindA || look.gloves || STYLE.hands === "flat") { spearAt(wristA[0] + Math.cos(angleA) * 13, wristA[1] + Math.sin(angleA) * 13); }
+    else { fig.spearAt = spearAt; }                 // shaft), or over the hand as before when that hand is not in the round
   }
   if (!behindA) { drawHand("A", wristA, poseA); }
+  fig.spearAt = null;
   }                                                 // end of the kit's own arms
   if (look.holding === "lotus") {                   // a lotus held up in the near hand
     pen.strokeStyle = "#3f6e45";

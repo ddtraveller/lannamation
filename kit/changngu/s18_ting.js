@@ -96,18 +96,28 @@ function cngSceneTing(t) {
   var laugh = t > 20;
   person(e.seat[0], e.seat[1], cngPerson("boy", CNG_PHROM, {id: "phromrides", size: cngAgeSize(13), face: face, floor: "astride",
                                                            feel: laugh ? "laughing" : "happy"}));
-  var tx = 520, ty = CNG_BANK + 70, struck = c18Since(t) < 0.25;   // Thukkhita, the plate held up by its cord
-  var j = person(tx, ty, cngPerson("boy", CNG_THUKKHITA, {id: "thukkhita", size: cngAgeSize(16), face: 1, feel: laugh ? "laughing" : "happy",
-                                                          reachA: [tx + 80, ty - 330], reachB: struck ? [tx + 70, ty - 250] : [tx + 30, ty - 210]}));
-  var hand = cngLocal(j.wristA), swing = Math.sin(Math.min(c18Since(t), 3) * 9) * Math.exp(-Math.min(c18Since(t), 3) * 1.5) * 0.15;
-  pen.save();
-  pen.translate(hand[0], hand[1]);
-  pen.rotate(swing);
-  pen.strokeStyle = "#b8294a"; pen.lineWidth = 3;
-  pen.beginPath(); pen.moveTo(0, 0); pen.lineTo(0, 40); pen.stroke();
-  cngPlate(0, 90, 0.6, t);
-  pen.restore();
-  c18Rings(t, [hand[0], hand[1] + 90]);
+  // Thukkhita, the plate held out by its cord at arm's length, clear of his face, a stick in his other fist to strike it
+  // (the owner, 2026-11-19: "the boy should strike the gong with a stick and have him hold it out and away from himself a
+  // bit more so his arms aren't in front of his face")
+  var tx = 520, ty = CNG_BANK + 70, struck = c18Since(t) < 0.25, sz = cngAgeSize(16);
+  var cordHand = [tx + 175 * sz, ty - 300 * sz], plate = [cordHand[0], cordHand[1] + 90];
+  var swing = Math.sin(Math.min(c18Since(t), 3) * 9) * Math.exp(-Math.min(c18Since(t), 3) * 1.5) * 0.15;
+  person(tx, ty, cngPerson("boy", CNG_THUKKHITA, {id: "thukkhita", size: sz, face: 1, feel: laugh ? "laughing" : "happy",
+                                                  reachA: cordHand, reachB: struck ? [plate[0] - 74, plate[1] + 6] : [plate[0] - 120, plate[1] + 34],
+                                                  holdA: {way: Math.PI / 2, draw: function (g) {   // the cord in his fist
+    pen.save();
+    pen.translate(g.x, g.y);
+    pen.rotate(swing);
+    pen.strokeStyle = "#b8294a"; pen.lineWidth = 3;
+    pen.beginPath(); pen.moveTo(0, -12); pen.lineTo(0, 40); pen.stroke();
+    cngPlate(0, 90, 0.6, t);
+    pen.restore();
+  }},
+                                                  holdB: function (g) {                     // the stick, toward the plate's face
+    var dx = plate[0] - g.x, dy = plate[1] - g.y, d = Math.hypot(dx, dy) || 1;
+    hose(g.x - dx / d * 14, g.y - dy / d * 14, g.x + dx / d * 64, g.y + dy / d * 64, 0, 4, "#7a5234");
+  }}));
+  c18Rings(t, plate);
   c18Name(t);
   cngRiverBank(t, "frame");
   sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 18]});

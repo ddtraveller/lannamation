@@ -7877,7 +7877,8 @@ folded, so that someone can climb on.
          facing right): its keys are BEAST_KEYS above (the elephant reads
          size, face, ground, step, colour, late, front, trunk, tusks, cloth,
          howdah, regalia, sit, mouth, feel, and slope: radians, as beastLegs() says)
-Returns {seat: [x, y], head: [x, y]}, points of the sheet. It draws with
+Returns {seat: [x, y], head: [x, y], ear}, points of the sheet and the near ear's outline (a Path2D in the canvas's own pixels:
+clip to it and draw the elephant again to put its ear over a rider's leg). It draws with
 pen at the film's clock; it sets the kit's FINE and LINE while it draws
 and leaves them at 1 and STYLE.line.
 e.g. var e = elephant(700, GROUND, {size: 0.6, step: clock / BEAT / 4, trunk: 0.4, cloth: "#b23a2a"});

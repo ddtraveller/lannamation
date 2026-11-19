@@ -8,6 +8,11 @@ var C11_SOUND = {calls: []};
 var C11_LINES = [[1.4, 9.04, "C046"], [9.36, 20.28, "C047"], [21.39, 29.43, "C048"], [37.18, 41.37, "C049"]];
 var C11_FORGE = [1420, 860, 1.0];
 var C11_YEARS = [[21.19, 8], [27.38, 10], [31.98, 12]];     // when the smith hands him a weapon, and his age then
+// The year's weapon in the smith's hand (the owner, 2026-11-19: "start with the weapon in the king's hand, have him extend
+// his hand towards the boy and the boy raise his hand as if about to accept the weapon then change to the larger boy and
+// a new weapon. The king should give him a knife as is shown, a spear, and then a larger sword in turn"): the kit's
+// holding, and a dap's size.
+var C11_GIFTS = [{holding: "dap", dap: 0.32}, {holding: "spear"}, {holding: "dap", dap: 0.62}];
 
 // Phrom's age at second t: seven, then each gift a little older, thirteen at the end. e.g. c11Age(20) is 10
 function c11Age(t) {
@@ -61,12 +66,13 @@ function cngSceneGrowing(t) {
                                  {id: "phang", face: -1, feel: t > 12.17 ? "happy" : undefined, at: [px, 700]}));
     }});
   } else {                                                 // the years: the smith hands him a weapon; at thirteen, practice
-    var year = C11_YEARS.filter(function (y) { return t >= y[0]; }).length - 1, gift = between(t, C11_YEARS[Math.max(0, year)][0], C11_YEARS[Math.max(0, year)][0] + 1.5);
-    var practice = t >= 35.18, bx = practice ? 700 : f[0] - 280;
+    var year = C11_YEARS.filter(function (y) { return t >= y[0]; }).length - 1, gift = between(t, C11_YEARS[Math.max(0, year)][0] + 0.3, C11_YEARS[Math.max(0, year)][0] + 1.8);
+    var practice = t >= 35.18, bx = practice ? 700 : f[0] - 330;
     sprites.push({name: "phrom", kind: "person", x: bx, y: 860, draw: function () {
       var stroke = 0.5 - 0.5 * Math.cos(t * 3.2);          // the guard and the stroke, in turn
-      person(bx, 860, cngPerson("boy", CNG_PHROM, {id: "phrom", size: size, face: 1, feel: "happy", holding: "dap",
-                                                   reachA: practice ? c11Stroke(bx, 860, size, 1, stroke) : [mix(bx + 40, f[0] - 150, gift), 860 - 220 * size],
+      var take = between(t, C11_YEARS[Math.max(0, year)][0] + 1.6, C11_YEARS[Math.max(0, year)][0] + 2.7);   // his hand up toward it
+      person(bx, 860, cngPerson("boy", CNG_PHROM, {id: "phrom", size: size, face: 1, feel: "happy", holding: practice ? "dap" : undefined,
+                                                   reachA: practice ? c11Stroke(bx, 860, size, 1, stroke) : [bx + 70, 690, take],
                                                    at: practice ? [bx + 300, 700] : [f[0] - 150, 700]}));
     }});
     if (practice) {
@@ -77,8 +83,8 @@ function cngSceneGrowing(t) {
       }});
     } else {
       sprites.push({name: "smith", kind: "person", x: f[0] - 140, y: 870, draw: function () {
-        person(f[0] - 140, 870, cngPerson("villager", CNG_SMITH, {id: "smith", face: -1, feel: "happy",
-                                                                  reachA: [mix(f[0] - 200, bx + 60, gift), 860 - 200 * 0.78]}));
+        person(f[0] - 140, 870, cngPerson("villager", CNG_SMITH, Object.assign({id: "smith", face: -1, feel: "happy",
+                                                                  reachA: [mix(f[0] - 170, bx + 110, gift), mix(720, 650, gift)]}, C11_GIFTS[Math.max(0, year)])));
       }});
     }
   }
@@ -89,6 +95,6 @@ function cngSceneGrowing(t) {
   cngBeds(t, "village", "frame");
   sceneryAir(t, {butterfly: {kind: "grassyellow", x: 200, y: 520, vx: 60, weave: 50, seed: 3, size: 1.1, turn: 1.2, wing: 2},
                  petals: null, light: [0.5, 11]});        // a boy growing up: the day's light, one butterfly
-  cngCutsOver(t, [27]);                                     // none at 15.4: the same people, the same place (the owner,
+  cngCutsOver(t, [27.38, 31.98]);                           // through black as the year turns: the boy older, a new weapon                                     // none at 15.4: the same people, the same place (the owner,
                                                             // 2026-11-19: "don't make the canvas go dark there")
 }
