@@ -7,9 +7,13 @@ var C09_LONG = 34.97;
 var C09_SOUND = {calls: []};
 var C09_LINES = [[1.4, 10.48, "C039"], [10.75, 19.64, "C040"], [19.91, 23.35, "C041"]];
 var C09_FORGE = [940, 860, 1.25];
-var C09_HANDLE = 190;                                   // the bellows' handles this high over the forge's base (times its size)
+var C09_HANDLE = 215;                                   // the bellows' handles this high over the forge's base (times its size; 190 before the block went to 100)
+var C09_BLOCK = 100;                                   // the block the bellows man stands on this high (times its size): at 70 his
+                                                        // hands came up to his chest at the top of the stroke and his elbow
+                                                        // went from one side to the other (the owner, 2026-11-19, 9:15)
 var C09_GRIP = [10, 2];                                 // his wrists this far back of and under each handle (times its size)                      // the forge: x, base, size (above the words under the picture)
-var C09_PUMPER = 140;                                  // where he stands, on his block, back of the forge (times its size; 200 until 2026-11-18: out of reach)
+var C09_PUMPER = 160;                                  // where he stands, on his block, back of the forge (times its size; 200 until 2026-11-18: out of reach;
+                                                        // 140 until 2026-11-19: the near handle under his shoulder, his arm folded up)
 var C09_STRIKE = 0.9;                                  // seconds between the hammer's strokes
 
 
@@ -58,7 +62,7 @@ function cngSceneWeapons(t) {
     {name: "bellows man", kind: "person", x: f[0] - C09_PUMPER * s, y: f[1] + 6, draw: function () {
       // he stands on a low block of wood, as a bellows man does, and pumps down: at the ground the handles were at his
       // shoulder, his arms at full stretch, and his far hand jumped twice a stroke (pop_check)
-      var up = 70 * s;
+      var up = C09_BLOCK * s;
       pen.fillStyle = "#7a5432"; pen.fillRect(f[0] - C09_PUMPER * s - 42 * s, f[1] + 6 - up, 60 * s, up);   // narrow, clear of the bamboo
       pen.strokeStyle = "#4a3018"; pen.lineWidth = 2; pen.strokeRect(f[0] - C09_PUMPER * s - 42 * s, f[1] + 6 - up, 60 * s, up);
       person(f[0] - C09_PUMPER * s, f[1] + 6 - up, cngPerson("villager", CNG_SMITH, {id: "bellows", face: 1, turban: "#3a4a5a",

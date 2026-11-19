@@ -3684,9 +3684,9 @@ function armJoints(wx, wy, upper, lower, outward, key, sure) {
   for (var n = 0; n < 2; n++) {
     var side = n ? -1 : 1;
     var ex = dx * along - side * dy * out, ey = dy * along + side * dx * out;
-    var turn = Math.atan2(ex * outward, ey) * 180 / Math.PI, held = false;   // the upper arm's angle
+    var turn = Math.atan2(ex * outward, ey) * 180 / Math.PI, held = false, pinned = false;   // the upper arm's angle
     if (turn < SHOULDER[0] && turn > SHOULDER[1] - 360) {           // in the inward arc: back to its nearer end
-      held = true;
+      held = pinned = true;                                          // (pinned: the elbow rule's, below)
       turn = (turn > (SHOULDER[0] + SHOULDER[1] - 360) / 2 ? SHOULDER[0] : SHOULDER[1]) * Math.PI / 180;
       ex = Math.sin(turn) * outward * upper;
       ey = Math.cos(turn) * upper;
@@ -3708,14 +3708,16 @@ function armJoints(wx, wy, upper, lower, outward, key, sure) {
     var hx = ex + fx / fl * lower, hy = ey + fy / fl * lower;      // where the wrist comes to at full length
     var miss = Math.sqrt((hx - wx) * (hx - wx) + (hy - wy) * (hy - wy));
     var shown = held ? Math.max(lower * FOREARM_SHORT, Math.min(lower, fl)) : lower;
-    ways.push([ex + fx / fl * shown, ey + fy / fl * shown, ex, ey, ex * (wy < 0 ? outward : -0.6) + ey * 0.8 - (must ? 60 : 6) * miss, miss, fold]);
+    ways.push([ex + fx / fl * shown, ey + fy / fl * shown, ex, ey, ex * (wy < 0 ? outward : -0.6) + ey * 0.8 - (must ? 60 : 6) * miss, miss, fold, pinned]);
   }
   // No elbow bends back (ELBOW_BACK): the figure's own frame faces +x, so a forearm folding forward turns from its upper
   // arm the negative way. With the hand at or below the shoulder, when one of the two elbows folds back past
-  // ELBOW_BACK and the other does not, the arm takes the other, for a wrist with a place to be as well.
+  // ELBOW_BACK and the other does not, the arm takes the other, for a wrist with a place to be as well; but not when
+  // that other is held by the shoulder's arc (a hand close before the chest, a little behind the shoulder: the
+  // upper arm stood up past the face, the forearm hanging down to the hand; Chang Ngu's novice with his bowl, 2026-11-19).
   if (wy >= 0) {
     var back = ELBOW_BACK * Math.PI / 180, wrong0 = ways[0][6] > back, wrong1 = ways[1][6] > back;
-    if (wrong0 !== wrong1) {
+    if (wrong0 !== wrong1 && !ways[wrong0 ? 1 : 0][7]) {
       ways[wrong0 ? 0 : 1][4] -= 1e4;
       ways[wrong0 ? 0 : 1][5] += 1e4;
     }
