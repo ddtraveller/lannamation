@@ -4,21 +4,21 @@
 // going left), and the place takes the name (the chronicle: "สถานที่ช้างทวนน้ำอยู่นั้นก็ได้ชื่อว่าควานทน", the place
 // where the elephant swam against the water was called Khwan Thon), the name coming up in gold; the children climb out,
 // and one of them runs off along the bank for home, to tell Phrom's father.
-var C16_LONG = 35;
+var C16_LONG = 41.18;
 var C16_SOUND = {calls: []};
-var C16_LINES = [[1.4, 6.14, "C074"], [7.0, 9.38, "C075"], [12.5, 15.5, "C076"], [18.5, 22.58, "C077"], [25.0, 29.56, "C078"]];
+var C16_LINES = [[1.4, 8.74, "C074"], [9.67, 12.46, "C075"], [15.65, 19.69, "C076"], [22.75, 28.04, "C077"], [30.53, 35.67, "C078"]];
 // Its life (decorate.js; owner, 2026-10-25): a flock over the river in the quiet after "C075", a barb that leaps by
 // the sandbar, twice.
 var C16_LIFE = [
-  {name: "flock over the river", kind: "flock", layer: "back", course: [[9.4, 2150, 240], [12.4, -320, 190]]},
-  {name: "barb", kind: "fish", layer: "back", look: {size: 1.1}, course: [[2.0, 1420, 712, "hide"], [4.0, 1420, 712], [4.8, 1540, 712, "hide"], [99, 1540, 712, "hide"]]},
-  {name: "barb again", kind: "fish", layer: "back", look: {size: 1}, course: [[14.0, 1500, 712, "hide"], [16.0, 1500, 712], [16.8, 1620, 712, "hide"], [99, 1620, 712, "hide"]]}
+  {name: "flock over the river", kind: "flock", layer: "back", course: [[12.55, 2150, 240], [15.55, -320, 190]]},
+  {name: "barb", kind: "fish", layer: "back", look: {size: 1.1}, course: [[2.38, 1420, 712, "hide"], [5.63, 1420, 712], [6.93, 1540, 712, "hide"], [105.18, 1540, 712, "hide"]]},
+  {name: "barb again", kind: "fish", layer: "back", look: {size: 1}, course: [[17.8, 1500, 712, "hide"], [20.25, 1500, 712], [21.05, 1620, 712, "hide"], [105.18, 1620, 712, "hide"]]}
 ];
 var C16_SWIM = CNG_BANK - 54;
 
 // The name of the place in gold over the river, as the voice says it. e.g. c16Name(20);
 function c16Name(t) {
-  var a = between(t, 18.6, 19.6) * (1 - between(t, 23.4, 24.4));
+  var a = between(t, 22.89, 24.24) * (1 - between(t, 28.93, 29.93));
   if (a <= 0) { return; }
   pen.save();
   pen.globalAlpha = a;
@@ -56,7 +56,7 @@ function cngSceneKhwanthon(t) {
   pen.drawImage(river.back, 0, 0);
   cngRiverLife(t, {birds: false});                          // no birds (the owner, 2026-11-19: "Remove the hovering birds")
   decorate(t, C16_LIFE, "back");
-  var upstream = between(t, 11, 30), shake = t > 7 && t < 11 ? Math.sin((t - 7) * 9) * 0.5 : 0;
+  var upstream = between(t, 14.15, 36.18), shake = t > 9.67 && t < 14.15 ? Math.sin((t - 9.67) * 9) * 0.5 : 0;
   var ex = mix(1000, 1500, upstream), bob = 6 * Math.sin(t * 1.4);
   var e = elephant(ex, C16_SWIM + 160 + bob, {size: 0.62, face: shake > 0 ? 1 : -1, colour: "#f1ddd3", cloth: "#c9962a",
                                               trunk: 0.3 + 0.4 * Math.abs(Math.sin(t * 1.3)), mouth: shake ? 0.3 : 0.1});
@@ -67,9 +67,9 @@ function cngSceneKhwanthon(t) {
   }
   pen.drawImage(river.near, 0, 0);
   cngRiverBank(t, "edge");                               // reeds and grass along the water's edge
-  var reach = t < 11 ? Math.max(0, Math.sin(t * 1.6)) : 0;  // he reaches forward with the hook, toward its head
+  var reach = t < 14.15 ? Math.max(0, Math.sin(t * 1.6)) : 0;  // he reaches forward with the hook, toward its head
   var j = person(e.seat[0], e.seat[1], cngPerson("boy", CNG_PHROM, {id: "phromrides", size: size, face: -1, floor: "astride",
-                                                                   feel: t < 11 ? "concerned" : "surprised",
+                                                                   feel: t < 14.15 ? "concerned" : "surprised",
                                                                    reachA: [e.head[0] + 30 - 30 * reach, e.head[1] - 40 + 20 * reach]}));
   var hand = cngLocal(j.wristA);
   elephantHook(pen, hand[0], hand[1] + 30 * size, size * 0.9, {angle: -0.9 - 0.4 * reach});
@@ -77,11 +77,11 @@ function cngSceneKhwanthon(t) {
   for (var k = 0; k < CNG_KIDS; k++) {                     // all of them, three deep, as they huddled (sets.js cngHuddle)
     (function (k) {
       var x = cngHuddle(k)[0], y = cngHuddle(k)[1], c = CNG_CHILDREN[k % CNG_CHILDREN.length];
-      var runs = k === 3 ? between(t, 25.4, 33) : 0, rx = mix(x, -260, runs);
+      var runs = k === 3 ? between(t, 30.99, 39.18) : 0, rx = mix(x, -260, runs);
       kids.push({name: "child " + k, kind: "person", x: rx, y: y, draw: function () {
         person(rx, y, cngPerson(c.kind, c.look, {id: "child" + k, size: cngAgeSize(9 + (k % 4)), face: runs > 0 ? -1 : 1,
                                                  step: runs > 0 && runs < 1 ? t / BEAT * 1.6 : 0,
-                                                 feel: t > 11 ? "surprised" : "happy", at: [ex, C16_SWIM - 80]}));
+                                                 feel: t > 14.15 ? "surprised" : "happy", at: [ex, C16_SWIM - 80]}));
       }});
     })(k);
   }

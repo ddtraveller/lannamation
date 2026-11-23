@@ -5,16 +5,16 @@
 // after him; a ring of light and a burst of spray, and where the snake was a white elephant swims, Phrom on its neck,
 // the children round it in the water (the candidates of 2026-10-22: "1 Phrom on its neck, 2 a ring of light and spray,
 // 3 the white elephant").
-var C15_LONG = 59.22;
+var C15_LONG = 62.88;
 var C15_SOUND = {calls: []};
-var C15_LINES = [[1.4, 4.39, "C067"], [5.54, 13.38, "C068"], [13.65, 19.41, "C069"], [19.68, 27.34, "C070"], [27.6, 32.27, "C071"], [32.54, 36.55, "C072"], [38.42, 41.92, "C073"]];
+var C15_LINES = [[1.4, 4.39, "C067"], [5.54, 13.38, "C068"], [13.65, 19.41, "C069"], [19.68, 28.43, "C070"], [28.69, 33.13, "C071"], [33.63, 39.72, "C072"], [41.59, 45.58, "C073"]];
 var C15_SWIM = CNG_BANK - 54;                          // the water line in the channel before the bank
-var C15_CHANGE = [35.22, 38.22];                             // the ring of light and the spray: the snake becomes the elephant
+var C15_CHANGE = [37.85, 41.39];                             // the ring of light and the spray: the snake becomes the elephant
 var C15_HELD = 1080;                                   // where the snake's head stops, held
 
 // Where the third snake's head is at t: down the channel from the right to where Phrom holds it, then held there.
 function c15Head(t) {
-  return mix(WIDE + 500, C15_HELD, Math.min(1, between(t, 13.29, 23.72)));
+  return mix(WIDE + 500, C15_HELD, Math.min(1, between(t, 13.29, 24.33)));
 }
 
 // The river drawn over whoever is in it, from the water line down to the bank, so only their heads and shoulders show.
@@ -60,13 +60,13 @@ function cngSceneThird(t) {
     neck = [snake.neck[0], snake.neck[1]];
   }
   if (changed) {                                           // the white elephant, swimming, Phrom on its neck
-    var bob = 6 * Math.sin(t * 1.4), ex = C15_HELD + 120 - 60 * between(t, 38.22, 59.22);
+    var bob = 6 * Math.sin(t * 1.4), ex = C15_HELD + 120 - 60 * between(t, 41.39, 62.88);
     var elephantLook = {size: 0.62, face: -1, colour: "#f1ddd3", cloth: "#c9962a", trunk: 0.5 + 0.4 * Math.sin(t * 1.1), mouth: 0.2};
     elephantAt = elephant(ex, C15_SWIM + 160 + bob, elephantLook);
   }
-  var leap = between(t, 26.62, 28.42);
+  var leap = between(t, 27.66, 29.47);
   var inRiver = [];                                        // who is in the water now, drawn before the water over them
-  if (t >= 28.42 && !changed) {
+  if (t >= 29.47 && !changed) {
     inRiver.push(function () {                             // Phrom holding the snake by its neck
       c15InWater(neck[0] + 40, cngPerson("boy", CNG_PHROM, {id: "phrom", size: size, face: -1, feel: "concerned",
                                                             reachA: [neck[0], neck[1] - 6], reachB: [neck[0] - 20, neck[1] + 6]}), 10);
@@ -85,13 +85,13 @@ function cngSceneThird(t) {
     })(k);
   }
   var leaper = null;                                       // Phrom calling on the bank, then leaping: the end of his leap into
-  if (t < 28.42) {                                         // the water is drawn with who is in it, before the water over them
-    var calls = t > 18.09 && t < 23.82, land = [(neck || [C15_HELD])[0] + 40, C15_SWIM + 230 * size - 10];   // where he is in the water, holding on
+  if (t < 29.47) {                                         // the water is drawn with who is in it, before the water over them
+    var calls = t > 18.09 && t < 24.44, land = [(neck || [C15_HELD])[0] + 40, C15_SWIM + 230 * size - 10];   // where he is in the water, holding on
     var px = mix(1260, land[0], leap), py = mix(CNG_BANK + 30, land[1], leap) - 110 * Math.sin(Math.PI * leap);
     leaper = {name: "phrom", kind: "person", x: px, y: py, draw: function () {
       var j = person(px, py, cngPerson("boy", CNG_PHROM, {id: "phrom", size: size, face: leap > 0 ? -1 : 1,
                                                          feel: t < 16.21 ? "thinking" : "angry",   // thinking hard (owner, 2026-10-25)
-                                                         reachA: t < 25.22 ? [px - 40, py - 380 * size, between(t, 18.09, 18.56) * (1 - between(t, 23.52, 23.82))]   // his arm up as he calls, eased
+                                                         reachA: t < 26.05 ? [px - 40, py - 380 * size, between(t, 18.09, 18.56) * (1 - between(t, 24.1, 24.44))]   // his arm up as he calls, eased
                                                                  : [(neck || [C15_HELD])[0], (neck || [0, C15_SWIM])[1] - 6, leap],   // then out for the neck as he leaps
                                                          reachB: [(neck || [C15_HELD])[0] - 20, (neck || [0, C15_SWIM])[1] + 6, leap],
                                                          mouth: calls ? {open: 0.1 + 0.25 * Math.abs(Math.sin(t * 7)), wide: 0.6, round: 0.3} : undefined,
@@ -128,7 +128,7 @@ function cngSceneThird(t) {
       onBank.push({name: "child" + k, kind: "person", x: x, y: y, draw: function () {
         person(x, y, cngPerson(cc.kind, cc.look, {id: "child" + k, size: cngAgeSize(9 + (k % 4)), face: 1,
                                                   step: at.run > 0 && at.run < 1 ? t / BEAT * 1.4 + k : 0,
-                                                  feel: t > 17.78 && t < 26.22 ? "fear" : "concerned", at: [hx, C15_SWIM - 80]}));
+                                                  feel: t > 17.78 && t < 27.2 ? "fear" : "concerned", at: [hx, C15_SWIM - 80]}));
       }});
     })(c2);
   }

@@ -4,10 +4,10 @@
 // smiths beat the gold into a shining plate (the kit's kangsadan: flat, plain, rings engraved, the owner's pick); and
 // Thukkhita, the elder brother, sixteen, runs it to the river by its red cord (the chronicle: "ให้ทุกขิตกุมารผู้เป็นพี่
 // นั้นเอาไปให้แก่พรหมกุมารผู้น้อง").
-var C17_LONG = 40;
+var C17_LONG = 44.97;
 var C17_SOUND = {calls: []};
-var C17_LINES = [[1.4, 5.0, "C079"], [5.2, 11.15, "C080"], [11.35, 17.11, "C081"], [18.0, 23.44, "C082"], [29.0, 35.26, "C083"]];
-var C17_CUTS = [17.6, 28.2];
+var C17_LINES = [[1.4, 4.99, "C079"], [5.25, 10.74, "C080"], [11.4, 16.53, "C081"], [18.05, 25.19, "C082"], [30.82, 40.16, "C083"]];
+var C17_CUTS = [17.49, 30.02];
 
 
 // The yard: the runner child arrived; the headman listens; the seer speaks.
@@ -17,14 +17,14 @@ function c17Yard(t) {
   cngClouds(t + 30, "day");
   pen.save(); pen.translate(-cam, 0); pen.drawImage(village.back, 0, 0); pen.restore();
   pen.drawImage(cngForgeGround(null, false), 0, 0);       // the yard's beaten earth (sets.js)
-  var speaks = (t > 5.2 && t < 10.75) || (t > 11.35 && t < 16.71);
+  var speaks = (t > 5.25 && t < 10.44) || (t > 11.4 && t < 16.23);
   decorate(t, cngYard(1360, 884, 4).slice(1), "back");        // the yard's fowl (owner, 2026-10-25), its two hens: the rooster
                                                                // walked under the seer's feet, drawn behind him (owner,
                                                                // 2026-11-18: "you can just remove the chicken in question")
   drawByZ([
     {name: "headman", kind: "person", x: 820, y: 860, draw: function () {
       person(820, 860, cngPerson("noble", Object.assign({}, CNG_HEADMAN, {sarong: CNG_KING.sarong, age: 0.45}),
-                                 {id: "phang", face: 1, feel: t < 4 ? "surprised" : "concerned", at: [1150, 600]}));
+                                 {id: "phang", face: 1, feel: t < 4.04 ? "surprised" : "concerned", at: [1150, 600]}));
     }},
     {name: "seer", kind: "person", x: 1150, y: 870, draw: function () {
       person(1150, 870, poseEased(t, function (s) {          // his hand out while he speaks, eased in and out (poseEased)
@@ -55,7 +55,7 @@ function c17Forge(t) {
   forge(pen, f[0], f[1], s, t);
   natSteam(t, f[0] - 40 * s, f[0] + 40 * s, f[1] - 70 * s, {count: 10, rise: 260, wide: 70, life: 6, lean: 120, alpha: 0.22, flat: 0.8,
                                                             patch: 0.6, colour: "190, 184, 176", seed: 17});   // its smoke
-  var grow = between(t, 18, 26);                           // the gold spreading into a plate under the hammer
+  var grow = between(t, 18.05, 27.82);                           // the gold spreading into a plate under the hammer
   cngPlate(anvil[0], anvil[1] - 8, 0.25 + 0.35 * grow, t);
   var phase = (t % 0.8) / 0.8, up = phase < 0.6 ? phase / 0.6 : 1 - (phase - 0.6) / 0.4;
   drawByZ([
@@ -79,7 +79,7 @@ function c17Forge(t) {
 
 // The path out of the village: Thukkhita runs with the plate by its cord toward the river.
 function c17Run(t) {
-  var village = cngVillage(), run = between(t, 28.6, 39), cam = mix(WIDE * 0.9, WIDE * 0.1, run);
+  var village = cngVillage(), run = between(t, 30.42, 43.97), cam = mix(WIDE * 0.9, WIDE * 0.1, run);
   pen.drawImage(cngSky("day"), 0, 0);
   cngClouds(t + 30, "day");
   pen.save(); pen.translate(-cam, 0);
