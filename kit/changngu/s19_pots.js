@@ -4,10 +4,10 @@
 // then, behind it, a man of the house holds a golden pot for its dung, wrinkling his nose (the chronicle: its vessels
 // "for its grass, and even for its dung and its water, all of gold"; the owner's "a quick laugh"); and round the village
 // men dig a moat and set up gates of timber in a bank of earth: Wiang Phan.
-var C19_LONG = 42;
+var C19_LONG = 59.68;
 var C19_SOUND = {calls: []};
-var C19_LINES = [[1.4, 5.96, "C087"], [6.16, 14.64, "C088"], [15.8, 18.56, "C089"], [19.0, 21.68, "C090"], [23.0, 26.96, "C091"], [30.0, 35.12, "C092"]];
-var C19_CUTS = [15.2, 29.4];
+var C19_LINES = [[1.4, 7.34, "C087"], [7.6, 18.59, "C088"], [19.82, 25.36, "C089"], [25.88, 32.54, "C090"], [33.94, 39.73, "C091"], [42.84, 52.73, "C092"]];
+var C19_CUTS = [19.22, 42.24];
 
 // At home the elephant wears its white and gold blanket and its head ornament, but no howdah and no parasol (the owner,
 // 2026-11-18, of the stable: "remove the umbrella and sitting box on the elephant but keep the white blanket on its back";
@@ -21,7 +21,7 @@ function c19Yard(t) {
   cngClouds(t + 20, "day");
   pen.save(); pen.translate(-cam, 0); pen.drawImage(village.back, 0, 0); pen.restore();
   pen.drawImage(cngForgeGround(null, false), 0, 0);       // the yard's beaten earth (sets.js)
-  var speaks = t > 6.2 && t < 14.2;
+  var speaks = t > 7.65 && t < 18.22;
   elephant(1420, 830, {size: 0.5, face: -1, colour: "#f1ddd3", regalia: C19_DRESS, trunk: 0.2 + 0.2 * Math.sin(t)});
   decorate(t, cngYard(1780, 880, 6), "back");                 // the yard's fowl (owner, 2026-10-25)
   drawByZ([
@@ -36,7 +36,7 @@ function c19Yard(t) {
     }},
     {name: "headman", kind: "person", x: 680, y: 860, draw: function () {
       person(680, 860, cngPerson("noble", Object.assign({}, CNG_HEADMAN, {sarong: CNG_KING.sarong, age: 0.45}),
-                                 {id: "phang", face: 1, feel: t > 8 ? "happy" : "surprised", at: [980, 620]}));
+                                 {id: "phang", face: 1, feel: t > 10.03 ? "happy" : "surprised", at: [980, 620]}));
     }}
   ]);
   cngBeds(t, "village", "frame");
@@ -51,13 +51,13 @@ function c19Stable(t) {
   pen.save(); pen.translate(-cam, 0); pen.drawImage(village.back, 0, 0); pen.restore();
   pen.drawImage(cngForgeGround(null, false), 0, 0);
   cngStable(pen, sx, base, 1, "back");
-  var eats = t < 21 ? Math.max(0, Math.sin((t - 15) * 1.4)) : 0;
+  var eats = t < 31.57 ? Math.max(0, Math.sin((t - 19.02) * 1.4)) : 0;
   salung(pen, sx - 300, base - 4, 0.9, {grass: true});
   elephant(sx + 30, base, {size: 0.55, face: -1, colour: "#f1ddd3", regalia: C19_DRESS, trunk: 0.15 + 0.45 * eats, mouth: 0.3 * eats});
-  var pot = t > 22.6, plop = between(t, 25.2, 26.0);
+  var pot = t > 33.54, plop = between(t, 37.34, 38.57);
   if (pot) {
     var px = sx + 300;
-    var potLook = cngPerson("villager", {size: 0.66, id: "potman", face: -1, sabai: false, feel: t > 25.2 ? "surprised" : "concerned",
+    var potLook = cngPerson("villager", {size: 0.66, id: "potman", face: -1, sabai: false, feel: t > 37.34 ? "surprised" : "concerned",
                                          reachA: [px, base - 70]});
     var head = cngMeasure(px + 60, base + 10, potLook), hh = Math.hypot(head.chin[0] - head.crown[0], head.chin[1] - head.crown[1]);
     // his other hand over his eyes, his elbow bent, peeking out under it (the owner, 2026-11-19: "like he is trying to
@@ -124,7 +124,7 @@ function c19Moat(t) {
   pen.drawImage(cngSky("day"), 0, 0);
   cngClouds(t + 40, "day");
   pen.drawImage(cngVillage().back, -WIDE * 0.5, 0);
-  cityWall(pen, -60, 760, WIDE + 120, 0.9, {plain: true, open: 0.5 + 0.5 * Math.sin((t - 29.4) * 0.8), outer: true, t: t});
+  cityWall(pen, -60, 760, WIDE + 120, 0.9, {plain: true, open: 0.5 + 0.5 * Math.sin((t - 42.24) * 0.8), outer: true, t: t});
   pen.drawImage(cngFields(), 0, 830, WIDE, 250, 0, 830, WIDE, 250);   // outside it the fields and the road to its gate, not the village
   c19Mynas(t);
   var sprites = [];

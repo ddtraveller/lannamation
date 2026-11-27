@@ -3,14 +3,14 @@
 // of sound going out over the water; the white elephant, out in the river with Phrom on its neck, turns at the sound
 // and comes in and walks up out of the water onto the sand (the chronicle: "ออกจากน้ำแม่ของด้วยสวัสดี"); its name,
 // Chang Phan Kham, the elephant of the golden plate, comes up in gold; the two brothers laugh together.
-var C18_LONG = 35;
+var C18_LONG = 41.67;
 var C18_SOUND = {calls: [[1.93, "plate-ting", 0.5], [2.76, "plate-ting", 0.5], [4.2, "plate-ting", 0.5], [4.6, "plate-ting", 0.5]]};   // each stroke rings (owner, 2026-10-25)
-var C18_LINES = [[1.6, 5.69, "C084"], [7.0, 12.45, "C085"], [14.0, 18.35, "C086"]];
+var C18_LINES = [[1.6, 5.69, "C084"], [7.0, 14.74, "C085"], [16.29, 25.02, "C086"]];
 // Its life (decorate.js; owner, 2026-10-25): once the words are done and the brothers laugh, a flock goes over the
 // river and a barb leaps by the sandbar.
 var C18_LIFE = [
-  {name: "flock over the river", kind: "flock", layer: "back", course: [[20.0, -320, 220], [27.0, 2150, 260]]},
-  {name: "barb", kind: "fish", layer: "back", look: {size: 1.1}, course: [[23.0, 1350, 712, "hide"], [25.0, 1350, 712], [25.8, 1470, 712, "hide"], [99, 1470, 712, "hide"]]}
+  {name: "flock over the river", kind: "flock", layer: "back", course: [[26.67, -320, 220], [33.67, 2150, 260]]},
+  {name: "barb", kind: "fish", layer: "back", look: {size: 1.1}, course: [[29.67, 1350, 712, "hide"], [31.67, 1350, 712], [32.47, 1470, 712, "hide"], [105.67, 1470, 712, "hide"]]}
 ];
 var C18_STRIKES = [1.93, 2.76, 4.2, 4.6];                 // when the plate is struck ("ting ting", twice and twice)
 var C18_SWIM = CNG_BANK - 54;
@@ -34,7 +34,7 @@ function c18Rings(t, at) {
 
 // The elephant's name in gold, as the voice says it. e.g. c18Name(16);
 function c18Name(t) {
-  var a = between(t, 14.2, 15.2) * (1 - between(t, 19.8, 20.8));
+  var a = between(t, 16.71, 18.82) * (1 - between(t, 26.47, 27.47));
   if (a <= 0) { return; }
   pen.save();
   pen.globalAlpha = a;
@@ -68,7 +68,7 @@ function c18Name(t) {
 // the river's back, the elephant (in the water: the water over its legs; then on the sand), the near bank, Phrom on it,
 // Thukkhita with the plate, the rings and the name over all.
 function cngSceneTing(t) {
-  var river = cngRiver(), comes = between(t, 5.24, 13), out = between(t, 10.5, 13);
+  var river = cngRiver(), comes = between(t, 5.24, 15.29), out = between(t, 12.09, 15.29);
   pen.drawImage(cngSky("day"), 0, 0);
   cngClouds(t + 90, "day");
   pen.drawImage(river.back, 0, 0);
@@ -79,7 +79,7 @@ function cngSceneTing(t) {
   var e = null;
   if (out < 1) {                                           // in the river; on the sand it is drawn once, over the bank, below
     e = elephant(ex, ey, {size: 0.62, face: face, colour: "#f1ddd3", cloth: "#c9962a", step: walking ? t / BEAT / 3 : 0,
-                          trunk: t > 5.24 && t < 9 ? 0.8 : 0.3, mouth: t > 15 ? 0.3 : 0.1});   // (both at once: two trunks)
+                          trunk: t > 5.24 && t < 9.91 ? 0.8 : 0.3, mouth: t > 18.4 ? 0.3 : 0.1});   // (both at once: two trunks)
   }
   if (out < 1) {                                           // the water over its legs while it is still in the river
     pen.save();
@@ -91,9 +91,9 @@ function cngSceneTing(t) {
   cngRiverBank(t, "edge");                               // reeds and grass along the water's edge
   if (out >= 1) {                                          // on the sand now: it is drawn again over the bank
     e = elephant(ex, ey, {size: 0.62, face: face, colour: "#f1ddd3", cloth: "#c9962a", trunk: 0.3 + 0.5 * Math.max(0, Math.sin(t * 2)),
-                          mouth: t > 15 ? 0.3 : 0.1});
+                          mouth: t > 18.4 ? 0.3 : 0.1});
   }
-  var laugh = t > 20;
+  var laugh = t > 26.67;
   person(e.seat[0], e.seat[1], cngPerson("boy", CNG_PHROM, {id: "phromrides", size: cngAgeSize(13), face: face, floor: "astride",
                                                            feel: laugh ? "laughing" : "happy"}));
   // Thukkhita, the plate held out by its cord at arm's length, clear of his face, a stick in his other fist to strike it

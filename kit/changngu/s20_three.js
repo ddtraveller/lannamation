@@ -4,10 +4,10 @@
 // every day); at Yonok's gate two men in plain cloth go in among the people, his spies; the years go over the field,
 // the light of each season, and Phrom is sixteen; and in Yonok the Black Khom king, three years without his gold,
 // shouts for his army (the chronicle: ready "ภายในสามวัน", in three days), and the spies slip out to carry the news.
-var C20_LONG = 55;
+var C20_LONG = 69.71;
 var C20_SOUND = {calls: []};
-var C20_LINES = [[1.4, 8.71, "C093"], [9.8, 14.04, "C094"], [17.0, 25.4, "C095"], [27.4, 32.88, "C096"], [33.08, 38.56, "C097"], [38.76, 42.8, "C098"]];
-var C20_CUTS = [9.3, 16.4, 26.6];
+var C20_LINES = [[1.4, 11.95, "C093"], [13.1, 18.69, "C094"], [21.72, 32.57, "C095"], [34.64, 41.47, "C096"], [41.74, 49.73, "C097"], [50.01, 57.45, "C098"]];
+var C20_CUTS = [12.6, 21.12, 33.84];
 
 // The training field: the elephant charging across with Phrom on it, the spearmen drilling in two rows. age: Phrom's.
 // The drill field below the village painted once (the scenery pass, 2026-10-26): grass, worn to the earth in patches
@@ -102,8 +102,8 @@ function c20Khom(t) {
   cngClouds(t + 20, "day");
   pen.drawImage(cngCourt(), 0, 0);
   cngBeds(t, "court", "back");
-  var shouts = (t > 33.08 && t < 38.16), stamp = t > 27.4 && t < 31 ? Math.abs(Math.sin(t * 6)) : 0;
-  var go = between(t, 38.0, 44.0), spies = between(t, 38.76, 45.2);
+  var shouts = (t > 41.74 && t < 49.41), stamp = t > 34.64 && t < 39.26 ? Math.abs(Math.sin(t * 6)) : 0;
+  var go = between(t, 49.21, 58.71), spies = between(t, 50.01, 59.91);
   drawByZ([
     {name: "hall, back", kind: "palace", z: "set", y: floor - 1, draw: function () { cngPalace("back"); }},
     {name: "hall, front", kind: "palace", z: "set", y: floor, draw: function () { cngPalace("front"); }},
@@ -140,7 +140,7 @@ function c20Khom(t) {
 function cngSceneThree(t) {
   if (t < C20_CUTS[0]) { c20Field(t, 14); }
   else if (t < C20_CUTS[1]) { c20Spies(t); }
-  else if (t < C20_CUTS[2]) { var y = Math.min(2, Math.floor(between(t, 16.4, 26.6) * 3)); c20Field(t, 14 + y, 0); }   // he grows,
+  else if (t < C20_CUTS[2]) { var y = Math.min(2, Math.floor(between(t, 21.12, 33.84) * 3)); c20Field(t, 14 + y, 0); }   // he grows,
                                                          // the light stays the first season's (the owner, 2026-11-18: "The first
                                                          // time to indicate the past is ok but then it should stay that same color")
   else { c20Khom(t); }

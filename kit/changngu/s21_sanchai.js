@@ -5,10 +5,10 @@
 // and runs, and his men scatter (the chronicle; his own elephants trampling his men is left out: no one is hurt on
 // screen); and at Yonok's shut gate the white elephant comes up the road and breaks through it, the doors bursting open
 // (the chronicle: "ไสช้างพานคำเข้าแทงประตูเวียงทะลุ").
-var C21_LONG = 55;
+var C21_LONG = 71.64;
 var C21_SOUND = {calls: []};
-var C21_LINES = [[1.4, 4.7, "C099"], [5.4, 13.26, "C100"], [14.4, 18.26, "C101"], [18.46, 25.1, "C102"], [25.3, 29.23, "C103"], [37.0, 44.45, "C104"]];
-var C21_CUTS = [13.8, 36.0];
+var C21_LINES = [[1.4, 6.49, "C099"], [7.27, 17.26, "C100"], [18.48, 23.92, "C101"], [24.19, 32.86, "C102"], [33.13, 41.97, "C103"], [49.8, 61.03, "C104"]];
+var C21_CUTS = [17.88, 48.8];
 var C21_DRESS = {back: 50};                              // the howdah this far back toward the tail (beasts.js regalia
                                                         // parts), clear of the mahout on the neck (the owner, 2026-11-19: "move
                                                         // the thing the other boy is sitting in toward's the elephant's tail");
@@ -44,8 +44,8 @@ function c21March(t) {
   pen.drawImage(cngSky("day"), 0, 0);
   cngClouds(t + 10, "day");
   pen.drawImage(cngFields(), 0, -120);
-  crowd(t, 820, t * 40, false);
-  var go = t * 70, sprites = [];
+  crowd(t, 820, t * 31, false);                         // (31, 54: as far by the cut as 40, 70 were in 13.8 s)
+  var go = t * 54, sprites = [];
   sprites.push({name: "white elephant", kind: "elephant", x: 700 + go, y: 900, draw: function () { c21War(t, 700 + go, 900, 0.6, 1, true); }});
   for (var k = 0; k < 9; k++) {
     (function (k) {
@@ -65,9 +65,9 @@ function c21Field(t) {
   pen.drawImage(cngSky("day"), 0, 0);
   cngClouds(t + 50, "day");
   pen.drawImage(cngFields(), 0, -120);
-  var come = between(t, 14.0, 19.4), wx = mix(-300, 520, come);
-  var shake = t > 19.4 && t < 25.6 ? 8 * Math.sin(t * 50) : 0, flee = between(t, 25.8, 34);
-  var kx = mix(1380, WIDE + 600, flee * flee), kface = t > 25.8 ? 1 : -1;
+  var come = between(t, 18.08, 25.45), wx = mix(-300, 520, come);
+  var shake = t > 25.45 && t < 33.86 ? 8 * Math.sin(t * 50) : 0, flee = between(t, 34.35, 46.8);
+  var kx = mix(1380, WIDE + 600, flee * flee), kface = t > 34.35 ? 1 : -1;
   var sprites = [];
   sprites.push({name: "white elephant", kind: "elephant", x: wx, y: 900, draw: function () { c21War(t, wx, 900, 0.6, 1, come < 1); }});
   sprites.push({name: "khom elephant", kind: "elephant", x: kx + shake, y: 880, draw: function () {
@@ -75,7 +75,7 @@ function c21Field(t) {
                  trunk: flee > 0 ? 0.7 : 0.2, mouth: flee > 0 ? 0.4 : 0};
     var e = elephant(kx + shake, 880, kLook);
     person(e.seat[0], e.seat[1], cngPerson("khomsoldier", CNG_KHOM_KING, {id: "khomkingrides", size: 0.6, face: kface, floor: "astride",
-                                                                          feel: t > 19.4 ? "fear" : "angry"}));
+                                                                          feel: t > 25.45 ? "fear" : "angry"}));
     cngEarOver(e, function () { elephant(kx + shake, 880, kLook); });   // his leg under the ear (the owner, 2026-11-19)
   }});
   for (var k = 0; k < 10; k++) {
@@ -84,7 +84,7 @@ function c21Field(t) {
       var away = between(t, 26.4 + k * 0.15, 33), dir = k % 3 === 0 ? -0.4 : 1, x = x0 + dir * 1100 * away;
       sprites.push({name: "khom " + k, kind: "person", x: x, y: y, draw: function () {
         person(x, y, cast("khomsoldier", {size: 0.6, id: "khom" + k, face: away > 0 ? (dir > 0 ? 1 : -1) : -1,
-                                          step: away > 0 ? t / BEAT * 1.4 + k : 0, feel: t > 19 ? "fear" : undefined}));
+                                          step: away > 0 ? t / BEAT * 1.4 + k : 0, feel: t > 24.91 ? "fear" : undefined}));
       }});
     })(k);
   }
@@ -97,7 +97,7 @@ function c21Gate(t) {
   pen.drawImage(cngSky("day"), 0, 0);
   cngClouds(t + 70, "day");
   pen.drawImage(cngFields(), 0, 0);
-  var up = between(t, 36.4, 42.6), hit = 42.6;
+  var up = between(t, 49.2, 58.48), hit = 58.48;
   cngGateWall(t < hit ? 0 : Math.min(1, (t - hit) * 4));
   // through the gate: on into it, smaller as it goes, fading into the dust (v3: it was taken off whole at hit + 0.6).
   // While it fades it is drawn on a sheet of its own (C21_LAYER, pen's size and transform) laid down faded: the kit's
