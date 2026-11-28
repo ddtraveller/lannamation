@@ -88,7 +88,7 @@ function c23Hill(t) {
   }
   cngBurst(t, cave[0] - 80, 760, C23_CHANGE);
   var a = between(t, 26.2, 27.2) * (1 - between(t, 33, 34));   // the hill's name
-  cngGoldName("ดอยช้างงู", "Doi Chang Ngu, the hill of the snake elephant", 560, 220, a);
+  cngGoldName("ดอยจ๊างงู", "Doi Chang Ngu, the hill of the snake elephant", 560, 220, a);
   cngBeds(t, "fields", "frame");
   sceneryAir(t, {butterfly: null, petals: null, light: [0.45, 31]});
 }

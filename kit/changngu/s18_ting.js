@@ -49,10 +49,10 @@ function c18Name(t) {
   pen.lineJoin = "round";
   pen.font = "700 80px 'Noto Serif Thai', 'Leelawadee UI', serif";
   pen.strokeStyle = "rgba(70, 40, 12, 0.9)"; pen.lineWidth = 7;
-  pen.strokeText("ช้างพานคำ", WIDE / 2, 200);
+  pen.strokeText("จ๊างพานคำ", WIDE / 2, 200);
   pen.shadowColor = "rgba(255, 196, 90, 0.7)"; pen.shadowBlur = 16;
   pen.fillStyle = "#f2d27a";
-  pen.fillText("ช้างพานคำ", WIDE / 2, 200);
+  pen.fillText("จ๊างพานคำ", WIDE / 2, 200);
   pen.shadowBlur = 0;
   pen.font = "italic 38px " + LETTERS_LATIN + ", serif";
   pen.strokeStyle = "rgba(50, 30, 10, 0.8)"; pen.lineWidth = 4;
